@@ -168,6 +168,15 @@ int replenv_local(char *env_old, char *env_new)
 	return 1;
 }
 
+int replenv_remote(spank_t sp, char *env_old, char *env_new)
+{
+        if (getenv_remote(sp, env_old, buffer3, SZ_PATH)) {
+                setenv_remote(sp, env_new, buffer3, 1);
+        }
+
+        return 1;
+}
+
 int setenv_local(const char *name, const char *value, int replace)
 {
 	if (name == NULL || value == NULL) {

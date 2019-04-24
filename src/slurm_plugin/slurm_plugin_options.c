@@ -269,11 +269,8 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 		if (ioptarg > 4) ioptarg = 4;
 		snprintf(buffer2, 4, "%i", ioptarg);
 
-		setenv_local("OPT_LIBRARY_VERBOSE", buffer2, 1);
-		setenv_local("OPT_LIBRARY", "1", 1);
-
-		// Obsolete
 		setenv_local("OPT_VERBOSE", buffer2, 1);
+		setenv_local("OPT_LIBRARY", "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);

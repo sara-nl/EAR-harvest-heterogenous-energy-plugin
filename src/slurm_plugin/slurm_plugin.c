@@ -78,7 +78,7 @@ void _local_library_disable()
 void _remote_library_disable(spank_t sp)
 {
 	if(isenv_remote(sp, "SLURM_EAR_LIBRARY", "1")) {
-		setenv_remote(sp, "LD_PRELOAD", "", 1);
+		setenv_remote(sp, "SLURM_EAR_LD_PRELOAD", "", 1);
 		setenv_remote(sp, "SLURM_EAR_LIBRARY", "0", 1);
 	}
 }
@@ -211,6 +211,7 @@ int _read_user_info(spank_t sp)
 		unsetenv_local("OPT_"); \
 
 	// Replacing options
+	replace("LIBRARY");
 	replace("LEARNING_PHASE");
 	replace("POWER_POLICY");
 	replace("POWER_POLICY_TH");
@@ -224,6 +225,7 @@ int _read_user_info(spank_t sp)
 	replace("ENERGY_TAG");
 	replace("APP_NAME");
 	replace("TMP");
+	replace("VERBOSE");
 
 	// Getting user ids
 	uid = geteuid();
@@ -244,8 +246,8 @@ int _read_user_info(spank_t sp)
 	}
 
 	// To environment variables
-	setenv_local("SLURM_SLURM_EAR_USER", upw->pw_name, 1);
-	setenv_local("SLURM_SLURM_EAR_GROUP", gpw->gr_name, 1);
+	setenv_local("SLURM_EAR_USER", upw->pw_name, 1);
+	setenv_local("SLURM_EAR_GROUP", gpw->gr_name, 1);
 
 	plug_verbose(sp, 2, "user detected '%u -> %s'", uid, upw->pw_name);
 	plug_verbose(sp, 2, "user group detected '%u -> %s'", gid, gpw->gr_name);
@@ -278,7 +280,7 @@ int _set_ld_preload(spank_t sp)
 	}
 
 	//
-	setenv_local("LD_PRELOAD", buffer2, 1);
+	setenv_local("SLURM_EAR_LD_PRELOAD", buffer2, 1);
 
 	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
@@ -300,10 +302,10 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 	_opt_register(sp);
 
 	if (spank_context() == S_CTX_SRUN) {
-		setenv_local("SLURM_LAST_CONTEXT", "SRUN", 1);
+		setenv_local("SLURM_EAR_LAST_CONTEXT", "SRUN", 1);
 	}
 	if (spank_context() == S_CTX_SBATCH) {
-		setenv_local("SLURM_LAST_CONTEXT", "SBATCH", 1);
+		setenv_local("SLURM_EAR_LAST_CONTEXT", "SBATCH", 1);
 	}
 	if (spank_context() == S_CTX_SRUN || spank_context() == S_CTX_SBATCH) {
 		_local_plugin_enable();	
@@ -352,16 +354,12 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	//
 	if (spank_context() == S_CTX_REMOTE)
   	{
-		_remote_init_environment(sp, ac, av);
-
 		if (remote_eard_report_start(sp) == ESPANK_SUCCESS)
 		{
-			if (isenv_remote(sp, "SLURM_EAR_LIBRARY", "1") && isenv_remote(sp, "SLURM_LAST_CONTEXT", "SRUN")) {
+			if (isenv_remote(sp, "SLURM_EAR_LIBRARY", "1") && isenv_remote(sp, "SLURM_EAR_LAST_CONTEXT", "SRUN")) {
 				remote_read_shared_data_set_environment(sp);
 			}
 		}
-
-		remote_print_environment(sp);
 	}
 	
 	return (ESPANK_SUCCESS);
