@@ -207,8 +207,7 @@ int _read_user_info(spank_t sp)
 
 	#define replace(name) \
 		unsetenv_local("SLURM_EAR_" name); \
-		replenv_local("OPT_" name, "SLURM_EAR_" name); \
-		unsetenv_local("OPT_"); \
+		replenv_local("SLURM_OPT_" name, "SLURM_EAR_" name);
 
 	// Replacing options
 	replace("LIBRARY");
