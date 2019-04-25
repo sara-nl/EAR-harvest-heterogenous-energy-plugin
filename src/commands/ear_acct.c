@@ -802,7 +802,14 @@ void main(int argc, char *argv[])
         verbose(0, "ERROR reading cluster configuration");
     }
     
-    char *user = getlogin();
+    user_t user_info;
+    if (user_all_ids_get(&user_info) != EAR_SUCCESS)
+    {
+        warning("Failed to retrieve user data\n");
+        exit(0);
+    }
+
+    char *user = user_info.ruid_name;
     if (getuid() == 0 || is_privileged_command(&my_conf))
     {
         user = NULL; //by default, privilegd users or root will query all user jobs
