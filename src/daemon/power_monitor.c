@@ -939,7 +939,11 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 			edb_state_t state = eardbd_send_periodic_metric(&current_sample);
 
 			if (edb_state_fail(state)) {
-				error("Error when sending periodic power metric to eardb");
+				if (state_fail(state.server)){
+					error("Error when sending periodic power metric to eardb main server");
+				}else{
+					error("Error when sending periodic power metric to eardb mirror server");
+				}
 				state = eardbd_reconnect(&my_cluster_conf, my_node_conf, state);
 
 				if (edb_state_fail(state)) {
