@@ -54,7 +54,7 @@ struct component_s {
 	.library = "SLURM_ECLIBR",
 	.monitor = "SLURM_ECMONI",
 	.test    = "SLURM_ECTEST",
-	.verbose = "SLURM_ECVERB",
+	.verbose = "SLURM_ECVERB"
 };
 
 struct context_s {
@@ -80,6 +80,7 @@ struct variables_s {
 	varnames_t comp_plug;
 	varnames_t comp_moni;
 	varnames_t comp_test;
+	varnames_t comp_verb;
 	varnames_t verbose;
 	varnames_t policy;
 	varnames_t policy_th;

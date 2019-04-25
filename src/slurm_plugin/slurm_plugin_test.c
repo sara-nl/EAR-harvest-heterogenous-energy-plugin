@@ -58,11 +58,11 @@ void plug_test(spank_t sp)
 	// Opening file
 	getenv_agnostic(sp, "SLURM_SUBMIT_DIR", buffer2, SZ_PATH);
 	getenv_agnostic(sp, "SLURM_JOBID", buffer1, SZ_PATH);
-	sprintf(&buffer2[strlen(buffer2)], "/earplug.%s", buffer1);
+	sprintf(buffer2, "%s/earplug.%s", buffer2, buffer1);
 	getenv_agnostic(sp, "SLURM_STEPID", buffer1, SZ_PATH);
-	sprintf(&buffer2[strlen(buffer2)], ".%s.test", buffer1);
+	sprintf(buffer2, "%s.%s.test", buffer2, buffer1);
 
-	fd = open(buffer1, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	fd = open(buffer2, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
 	// Writing
 	writenv(sp, "EAR_VERBOSE", fd);
