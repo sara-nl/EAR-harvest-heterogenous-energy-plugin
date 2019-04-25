@@ -30,16 +30,51 @@
 #include <common/file.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_test.h>
+#include <slurm_plugin/slurm_plugin_environment.h>
 
-char buffer[SZ_PATH];
+char buffer1[SZ_PATH];
+char buffer2[SZ_PATH];
+
+static void writenv(spank_t sp, char *var, int fd)
+{
+	if (getenv_agnostic(sp, var, buffer1, SZ_PATH)) {
+		sprintf(buffer2, "%s=%s\n", var, buffer1);
+	} else {
+		sprintf(buffer2, "%s=NULL\n", var, buffer1);
+	}
+	
+	write(fd, buffer2, strlen(buffer2));
+}
 
 void plug_test(spank_t sp)
 {
-	int fd = open("~/earplug.test", O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 	ssize_t w;
+	int fd;
 
-	sprintf(buffer, "hola");
-	write(fd, buffer, strlen(buffer));
+	if (!isenv_agnostic(sp, "SLURM_PROCID", "0")) {
+		return;
+	}
+	
+	// Opening file
+	getenv_agnostic(sp, "SLURM_SUBMIT_DIR", buffer1, SZ_PATH);
+	sprintf(buffer1, "%s/earplug.test", buffer1); 
+
+	fd = open(buffer1, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+	// Writing
+	writenv(sp, "EAR_VERBOSE", fd);
+	writenv(sp, "EAR_POWER_POLICY", fd);
+	writenv(sp, "EAR_POWER_POLICY_TH", fd);
+	writenv(sp, "EAR_FREQUENCY", fd);
+	writenv(sp, "EAR_P_STATE", fd);
+	writenv(sp, "EAR_LEARNING_PHASE", fd);
+	writenv(sp, "EAR_ENERGY_TAG", fd);
+	writenv(sp, "EAR_USER_DB_PATHNAME", fd);
+	writenv(sp, "EAR_PERFORMANCE_PENALTY", fd);
+	writenv(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", fd);
+	writenv(sp, "EAR_APP_NAME", fd);
+	writenv(sp, "EAR_TMP", fd);
+	writenv(sp, "LD_PRELOAD", fd);
 
 	close(fd);
 }

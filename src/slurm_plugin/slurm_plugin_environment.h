@@ -104,10 +104,10 @@ struct variables_s {
 }
 	Var __attribute__((weak)) =
 {
-.comp_libr = { .loc = "SLURM_EAR_LIBRARY", .rem = "SLURM_C_PLUG", .ear = "" },
-.comp_plug = { .loc = "SLURM_EAR_PLUGIN",  .rem = "SLURM_C_LIBR", .ear = "" },
-.comp_moni = { .loc = "SLURM_EAR_MONITOR", .rem = "SLURM_C_MONITOR", .ear = "" },
-.comp_test = { .loc = "SLURM_EAR_TEST",    .rem = "SLURM_C_TEST", .ear = "" },
+.comp_libr = { .loc = "SLURM_EAR_LIBRARY", .rem = "", .ear = "" },
+.comp_plug = { .loc = "SLURM_EAR_PLUGIN",  .rem = "", .ear = "" },
+.comp_moni = { .loc = "SLURM_EAR_MONITOR", .rem = "", .ear = "" },
+.comp_test = { .loc = "SLURM_EAR_TEST",    .rem = "", .ear = "" },
 .verbose   = { .loc = "SLURM_O_VERB", .rem = "SLURM_R_VERB", .ear = "EAR_VERBOSE" },
 .policy    = { .loc = "SLURM_O_POLI", .rem = "SLURM_R_POLI", .ear = "EAR_POWER_POLICY" },
 .policy_th = { .loc = "SLURM_O_POTH", .rem = "SLURM_R_POTH", .ear = "EAR_POWER_POLICY_TH" },

@@ -62,4 +62,11 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd);
 
 int plug_serialize_task(spank_t sp, plug_serialization_t *sd);
 
+/*
+ * Cleaning functions
+ */ 
+int plug_clean_remote(spank_t sp);
+
+int plug_clean_task(spank_t sp);
+
 #endif

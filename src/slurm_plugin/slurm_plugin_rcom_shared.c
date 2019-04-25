@@ -42,7 +42,8 @@ int plug_shared_readservs(spank_t sp, plug_serialization_t *sd)
 	servs = attach_services_conf_shared_area(buffer);
 
 	if (servs == NULL) {
-		plug_error(sp, "while reading the shared services memory in '%s'", "hostxxx");
+		plug_error(sp, "while reading the shared services memory in '%s@%s'",
+			sd->subject.host, buffer);
 		return ESPANK_ERROR;
 	}
 
@@ -62,6 +63,7 @@ int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd)
 
 	get_frequencies_path(sd->pack.path_temp, buffer);
 	freqs = attach_frequencies_shared_area(buffer, &n_freqs);
+	slurm_error("FREQS TEMP %s", buffer);
 
 	if (freqs == NULL) {
 		plug_error(sp, "while reading the shared services memory in '%s'", "hostxxx");
@@ -86,6 +88,7 @@ int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 	// Opening settings
 	get_settings_conf_path(sd->pack.path_temp, buffer);
 	setts = attach_settings_conf_shared_area(buffer);
+	slurm_error("SETTS TEMP %s", buffer);
 
 	if (setts == NULL) {
 		plug_error(sp, "while reading the shared configuration memory in node '%s'", "hostxxx");

@@ -65,7 +65,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				// Library == 1: enable
 				// Library == 0: nothing
 				// Library == whatever: enable (bug protection)
-				if (!isenv_agnostic(sp, Var.comp_libr.opt, "0")) {
+				if (!isenv_agnostic(sp, Var.comp_libr.loc, "0")) {
 					plug_component_setenabled(sp, Component.library, 1);
 				}
 			// If disabled by default or de administrator have misswritten
@@ -73,7 +73,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				// Library == 1: nothing
 				// Library == 0: disable
 				// Library == whatever: disable (bug protection)
-				if (!isenv_agnostic(sp, Var.comp_libr.opt, "1")) {
+				if (!isenv_agnostic(sp, Var.comp_libr.loc, "1")) {
 					plug_component_setenabled(sp, Component.library, 0);
 				}
 			}
@@ -226,40 +226,23 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
  */
 int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 {
-	plug_verbose(sp, 2, "function plug_env_readuser");
+	plug_verbose(sp, 2, "function plug_deserialize_local");
 
 	/*
 	 * Components
 	 */
-	if (!isenv_agnostic(sp, Var.comp_plugin.opt, "0")) {
+	if (!isenv_agnostic(sp, Var.comp_plug.loc, "0")) {
 		plug_component_setenabled(sp, Component.plugin, 1);
 	}
-	if (isenv_agnostic(sp, Var.comp_monitor.opt, "1")) {
+        if (isenv_agnostic(sp, Var.comp_libr.loc, "1")) {
+                plug_component_setenabled(sp, Component.library, 1);
+        }
+	if (isenv_agnostic(sp, Var.comp_moni.loc, "1")) {
 		plug_component_setenabled(sp, Component.monitor, 1);
 	}
-	if (isenv_agnostic(sp, Var.comp_test.opt, "1")) {
+	if (isenv_agnostic(sp, Var.comp_test.loc, "1")) {
 		plug_component_setenabled(sp, Component.test, 1);
 	}
-
-	/*
-	 * EAR variables
-	 */
-
-	// Unsetting task variables
-	unsetenv_agnostic(sp, Var.verbose.ear);
-	unsetenv_agnostic(sp, Var.policy.ear);
-	unsetenv_agnostic(sp, Var.policy_th.ear);
-	unsetenv_agnostic(sp, Var.frequency.ear);
-	unsetenv_agnostic(sp, Var.p_state.ear);
-	unsetenv_agnostic(sp, Var.learning.ear);
-	unsetenv_agnostic(sp, Var.tag.ear);
-	unsetenv_agnostic(sp, Var.path_usdb.ear);
-	unsetenv_agnostic(sp, Var.path_trac.ear);
-	unsetenv_agnostic(sp, Var.mpi_dist.ear);
-	unsetenv_agnostic(sp, Var.perf_pen.ear);
-	unsetenv_agnostic(sp, Var.eff_gain.ear);
-	unsetenv_agnostic(sp, Var.name_app.ear);
-	unsetenv_agnostic(sp, Var.path_temp.ear);
 
 	/*
 	 * User information
@@ -403,36 +386,67 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, SZ_PATH);
 
 	// Appending libraries to LD_PRELOAD
-	if (isenv_agnostic(sp, Va.mpi_dist.rem, "openmpi")) {
+	if (isenv_agnostic(sp, Var.mpi_dist.rem, "openmpi")) {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH);
 	} else {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH);
 	}
 
 	setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
+	
+	return ESPANK_SUCCESS;
+}
 
-	/*
-	 *
-	 */
-	unsetenv_agnostic(sp, Var.comp_libr.rem);
-	unsetenv_agnostic(sp, Var.comp_plug.rem);
-	unsetenv_agnostic(sp, Var.comp_moni.rem);
-	unsetenv_agnostic(sp, Var.comp_test.rem);
-	unsetenv_agnostic(sp, Var.verbose.rem);
-	unsetenv_agnostic(sp, Var.policy.rem);
-	unsetenv_agnostic(sp, Var.policy_th.rem);
-	unsetenv_agnostic(sp, Var.frequency.rem);
-	unsetenv_agnostic(sp, Var.p_state.rem);
-	unsetenv_agnostic(sp, Var.learning.rem);
-	unsetenv_agnostic(sp, Var.tag.rem);
-	unsetenv_agnostic(sp, Var.path_usdb.rem);
-	unsetenv_agnostic(sp, Var.path_trac.rem);
-	unsetenv_agnostic(sp, Var.mpi_dist.rem);
-	unsetenv_agnostic(sp, Var.user.rem);
-	unsetenv_agnostic(sp, Var.group.rem);
-	unsetenv_agnostic(sp, Var.path_temp.rem);
-	unsetenv_agnostic(sp, Var.path_inst.rem);
-	unsetenv_agnostic(sp, Var.context.rem);
+/*
+ *
+ *
+ * Cleaning
+ *
+ *
+ */
 
+int plug_clean_remote(spank_t sp)
+{
+        unsetenv_agnostic(sp, Var.verbose.rem);
+        unsetenv_agnostic(sp, Var.policy.rem);
+        unsetenv_agnostic(sp, Var.policy_th.rem);
+        unsetenv_agnostic(sp, Var.frequency.rem);
+        unsetenv_agnostic(sp, Var.p_state.rem);
+        unsetenv_agnostic(sp, Var.learning.rem);
+        unsetenv_agnostic(sp, Var.tag.rem);
+        unsetenv_agnostic(sp, Var.path_usdb.rem);
+        unsetenv_agnostic(sp, Var.path_trac.rem);
+        unsetenv_agnostic(sp, Var.mpi_dist.rem);
+        unsetenv_agnostic(sp, Var.user.rem);
+        unsetenv_agnostic(sp, Var.group.rem);
+        unsetenv_agnostic(sp, Var.path_temp.rem);
+        unsetenv_agnostic(sp, Var.path_inst.rem);
+        unsetenv_agnostic(sp, Var.context.rem);
+	
+	return ESPANK_SUCCESS;
+}
+
+int plug_clean_task(spank_t sp)  
+{	
+        plug_component_setenabled(sp, Component.plugin, 0);
+        plug_component_setenabled(sp, Component.library, 0);
+        plug_component_setenabled(sp, Component.monitor, 0);
+        plug_component_setenabled(sp, Component.test, 0);
+
+        unsetenv_agnostic(sp, Var.verbose.ear);
+        unsetenv_agnostic(sp, Var.policy.ear);
+        unsetenv_agnostic(sp, Var.policy_th.ear);
+        unsetenv_agnostic(sp, Var.frequency.ear);
+        unsetenv_agnostic(sp, Var.p_state.ear);
+        unsetenv_agnostic(sp, Var.learning.ear);
+        unsetenv_agnostic(sp, Var.tag.ear);
+        unsetenv_agnostic(sp, Var.path_usdb.ear);
+        unsetenv_agnostic(sp, Var.path_trac.ear);
+        unsetenv_agnostic(sp, Var.mpi_dist.ear);
+        unsetenv_agnostic(sp, Var.perf_pen.ear);
+        unsetenv_agnostic(sp, Var.eff_gain.ear);
+        unsetenv_agnostic(sp, Var.name_app.ear);
+        unsetenv_agnostic(sp, Var.path_temp.ear);
+	
 	return ESPANK_SUCCESS;
 }

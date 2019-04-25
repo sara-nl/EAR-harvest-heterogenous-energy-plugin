@@ -68,27 +68,28 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	// Filling job data
+	// Cleaning previous task variables
+	plug_clean_task(sp);
+
+	// 
 	if (plug_deserialize_local(sp, &sd) != ESPANK_SUCCESS) {
 		plug_component_setenabled(sp, Component.plugin, 0);
-		return ESPANK_SUCCESS;
 	}
 
 	// Reading plugstack.conf file
 	if (plug_read_plugstack(sp, ac, av, &sd) != ESPANK_SUCCESS) {
 		plug_component_setenabled(sp, Component.plugin, 0);
+	}
+
+	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}
 
 	// EARGMD connection
-	if (plug_component_isenabled(sp, Component.plugin)) {
-		plug_rcom_eargmd_job_start(sp, &sd);
-	}
+	plug_rcom_eargmd_job_start(sp, &sd);
 
-	// The serialization enables the LD_PRELOAD library
-	if (plug_component_isenabled(sp, Component.library)) {
-		plug_serialize_remote(sp, &sd);
-	}
+	//
+	plug_serialize_remote(sp, &sd);
 	
 	return ESPANK_SUCCESS;
 }
@@ -104,23 +105,18 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	if (!plug_component_isenabled(sp, Component.plugin)) {
-		return ESPANK_SUCCESS;
-	}
-
 	//
 	plug_deserialize_remote(sp, &sd);
+	
+	if (!plug_component_isenabled(sp, Component.plugin)) {
+		return plug_clean_remote(sp);
+	}
 
 	// If no shared services, EARD contact won't work, so plugin disabled
-	if (plug_shared_readservs(sp, &sd) != ESPANK_SUCCESS) {
-		plug_component_setenabled(sp, Component.plugin, 0);
-		return ESPANK_SUCCESS;
-	}
+	plug_shared_readservs(sp, &sd);
 
 	// If no frequencies the EARD contact can be done, so library is disabled
-	if (plug_shared_readfreqs(sp, &sd) != ESPANK_SUCCESS) {
-		plug_component_setenabled(sp, Component.library, 0);
-	}
+	plug_shared_readfreqs(sp, &sd);
 
 	// The application can be filled as an empty object if something happen
 	plug_read_application(sp, &sd);
@@ -139,16 +135,24 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 			plug_shared_readsetts(sp, &sd);
 
 			plug_serialize_task(sp, &sd);
-
-			if (plug_component_isenabled(sp, Component.test))
-			{
-				plug_test(sp);
-			}
 		}
 	}
-
-	return ESPANK_SUCCESS;
+	
+	return plug_clean_remote(sp);
 }
+
+int slurm_spank_task_init (spank_t sp, int ac, char **av)
+{
+        plug_verbose(sp, 2, "function slurm_spank_task_init");
+
+	if (plug_component_isenabled(sp, Component.test))
+	{
+		plug_test(sp);
+	}
+
+        return (ESPANK_SUCCESS);
+}
+
 
 // Function order:
 // 	- Local 0

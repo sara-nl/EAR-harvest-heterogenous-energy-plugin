@@ -311,13 +311,10 @@ int plug_verbosity_test(spank_t sp, int level)
 	
 	if (verbosity == -1)
 	{
-		if (getenv_agnostic(sp, "PLUG_VERBOSE", buffer, 8) == 1) {
+		if (getenv_agnostic(sp, "SLURM_EAR_VERBOSE", buffer, 8) == 1) {
 			verbosity = atoi(buffer);
 		} else {
 			verbosity = 0;
-		}
-		
-		if (getenv_agnostic(sp, "PLUG_VERBOSE_LIMIT", buffer, 8) == 1) {
 		}
 	}
 
