@@ -56,7 +56,6 @@ typedef struct plug_vars {
 typedef struct plug_user {
 	char user[SZ_NAME_MEDIUM];
 	char group[SZ_NAME_MEDIUM];
-	char account[SZ_NAME_MEDIUM];
 	plug_vars_t env;
 } plug_user_t;
 

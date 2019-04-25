@@ -47,10 +47,12 @@ struct component_s {
 	plug_component_t plugin;
 	plug_component_t library;
 	plug_component_t monitor;
+	plug_component_t test;
 } Component __attribute__((weak)) = {
-	.plugin  = "PLUG_PLUGIN",
-	.library = "PLUG_LIBRARY",
-	.monitor = "PLUG_MONITOR"
+	.plugin  = "SLURM_C_PLUGIN",
+	.library = "SLURM_C_LIBRARY",
+	.monitor = "SLURM_C_MONITOR",
+	.test    = "SLURM_C_TEST"
 };
 
 struct context_s {
@@ -63,6 +65,72 @@ struct context_s {
 	.sbatch = S_CTX_ALLOCATOR,
 	.remote = S_CTX_REMOTE,
 	.local  = -1
+};
+
+typedef struct vartypes_s {
+	char *loc;
+	char *rem;
+	char *ear;
+} varnames_t;
+
+struct variables_s {
+	varnames_t comp_libr;
+	varnames_t comp_plug;
+	varnames_t comp_moni;
+	varnames_t comp_test;
+	varnames_t verbose;
+	varnames_t policy;
+	varnames_t policy_th;
+	varnames_t frequency;
+	varnames_t p_state;
+	varnames_t learning;
+	varnames_t tag;
+	varnames_t path_usdb;
+	varnames_t path_trac;
+	varnames_t mpi_dist;
+	varnames_t perf_pen;
+	varnames_t eff_gain;
+	varnames_t name_app;
+	varnames_t user;
+	varnames_t group;
+	varnames_t account;
+	varnames_t path_temp;
+	varnames_t path_inst;
+	varnames_t node_list;
+	varnames_t context;
+	varnames_t ld_prel;
+	varnames_t ld_libr;
+	varnames_t node_num;
+}
+	Var __attribute__((weak)) =
+{
+.comp_libr = { .loc = "SLURM_EAR_LIBRARY", .rem = "SLURM_C_PLUG", .ear = "" },
+.comp_plug = { .loc = "SLURM_EAR_PLUGIN",  .rem = "SLURM_C_LIBR", .ear = "" },
+.comp_moni = { .loc = "SLURM_EAR_MONITOR", .rem = "SLURM_C_MONITOR", .ear = "" },
+.comp_test = { .loc = "SLURM_EAR_TEST",    .rem = "SLURM_C_TEST", .ear = "" },
+.verbose   = { .loc = "SLURM_O_VERB", .rem = "SLURM_R_VERB", .ear = "EAR_VERBOSE" },
+.policy    = { .loc = "SLURM_O_POLI", .rem = "SLURM_R_POLI", .ear = "EAR_POWER_POLICY" },
+.policy_th = { .loc = "SLURM_O_POTH", .rem = "SLURM_R_POTH", .ear = "EAR_POWER_POLICY_TH" },
+.frequency = { .loc = "SLURM_O_FREQ", .rem = "SLURM_R_FREQ", .ear = "EAR_FREQUENCY" },
+.p_state   = { .loc = "SLURM_O_PSTA", .rem = "SLURM_R_PSTA", .ear = "EAR_P_STATE" },
+.learning  = { .loc = "SLURM_O_LERN", .rem = "SLURM_R_LERN", .ear = "EAR_LEARNING_PHASE" },
+.tag       = { .loc = "SLURM_O_ETAG", .rem = "SLURM_R_ETAG", .ear = "EAR_ENERGY_TAG" },
+.path_usdb = { .loc = "SLURM_O_USDB", .rem = "SLURM_R_USDB", .ear = "EAR_USER_DB_PATHNAME" },
+.path_trac = { .loc = "SLURM_O_TRAC", .rem = "SLURM_R_TRAC", .ear = "EAR_PATH_TRACE" },
+.mpi_dist  = { .loc = "SLURM_O_MPID", .rem = "SLURM_R_MPID", .ear = "" },
+.perf_pen  = { .loc = "", .rem = "", .ear = "EAR_PERFORMANCE_PENALTY" },
+.eff_gain  = { .loc = "", .rem = "", .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN" },
+.name_app  = { .loc = "", .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME" },
+.user      = { .loc = "", .rem = "SLURM_R_USER",        .ear = "" },
+.group     = { .loc = "", .rem = "SLURM_R_GRUP",        .ear = "" },
+.account   = { .loc = "", .rem = "SLURM_JOB_ACCOUNT",   .ear = "" },
+.path_temp = { .loc = "", .rem = "SLURM_R_TEMP",        .ear = "EAR_TMP" },
+.path_inst = { .loc = "", .rem = "SLURM_R_INST",        .ear = "" },
+.node_list = { .loc = "", .rem = "SLURM_STEP_NODELIST", .ear = "" },
+.context   = { .loc = "", .rem = "SLURM_R_CNTX",        .ear = "" },
+.ld_prel   = { .loc = "", .rem = "LD_PRELOAD",          .ear = "LD_PRELOAD" },
+.ld_libr   = { .loc = "", .rem = "LD_LIBRARY_PATH",     .ear = "LD_LIBRARY_PATH" },
+.node_num  = { .loc = "SLURM_NNODES", .rem = "",        .ear = "" }
 };
 
 /*

@@ -28,6 +28,7 @@
 */
 
 #include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_test.h>
 #include <slurm_plugin/slurm_plugin_rcom.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
@@ -63,8 +64,8 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	//	- Disable library means the plugin works but no library is loaded
 	// ADVISE! No need of testing the context, post_opt is always local
 
-	if (plug_context_is(sp, Context.local)) {
-		plug_component_setenabled(sp, Component.plugin, 1);
+	if (!plug_context_is(sp, Context.local)) {
+		return ESPANK_SUCCESS;
 	}
 
 	// Filling job data
@@ -85,7 +86,7 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	}
 
 	// The serialization enables the LD_PRELOAD library
-	if (plug_context_is(sp, Context.local) && plug_component_isenabled(sp, Component.library)) {
+	if (plug_component_isenabled(sp, Component.library)) {
 		plug_serialize_remote(sp, &sd);
 	}
 	
@@ -103,12 +104,12 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	//
-	plug_deserialize_remote(sp, &sd);
-
 	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}
+
+	//
+	plug_deserialize_remote(sp, &sd);
 
 	// If no shared services, EARD contact won't work, so plugin disabled
 	if (plug_shared_readservs(sp, &sd) != ESPANK_SUCCESS) {
@@ -138,6 +139,11 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 			plug_shared_readsetts(sp, &sd);
 
 			plug_serialize_task(sp, &sd);
+
+			if (plug_component_isenabled(sp, Component.test))
+			{
+				plug_test(sp);
+			}
 		}
 	}
 

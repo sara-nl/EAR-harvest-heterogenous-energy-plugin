@@ -212,6 +212,8 @@ int isenv_agnostic(spank_t sp, char *var, char *val)
 
 int repenv_agnostic(spank_t sp, char *var_old, char *var_new)
 {
+	unsetenv_agnostic(sp, var_new);
+
 	if (plug_context_is(sp, Context.local)) {
 		return repenv_local(var_old, var_new);
 	} else {

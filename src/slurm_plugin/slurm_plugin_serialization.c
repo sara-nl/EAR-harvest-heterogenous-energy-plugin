@@ -65,7 +65,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				// Library == 1: enable
 				// Library == 0: nothing
 				// Library == whatever: enable (bug protection)
-				if (!isenv_agnostic(sp, Component.library, "0")) {
+				if (!isenv_agnostic(sp, Var.comp_libr.opt, "0")) {
 					plug_component_setenabled(sp, Component.library, 1);
 				}
 			// If disabled by default or de administrator have misswritten
@@ -73,7 +73,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				// Library == 1: nothing
 				// Library == 0: disable
 				// Library == whatever: disable (bug protection)
-				if (!isenv_agnostic(sp, Component.library, "1")) {
+				if (!isenv_agnostic(sp, Var.comp_libr.opt, "1")) {
 					plug_component_setenabled(sp, Component.library, 0);
 				}
 			}
@@ -157,27 +157,27 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	} else {
 		app->job.step_id = NO_VAL;
 	}
-	if (!getenv_agnostic(sp, "SLURM_JOB_NAME", app->job.app_id, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.name_app.rem, app->job.app_id, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.app_id, "");
 	}
-	if (!getenv_agnostic(sp, "SLURM_EAR_USER", app->job.user_id, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.user.rem, app->job.user_id, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.user_id, "");
 	}
-	if (!getenv_agnostic(sp, "SLURM_EAR_GROUP", app->job.group_id, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.group.rem, app->job.group_id, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.group_id, "");
 	}
-	if (!getenv_agnostic(sp, "SLURM_JOB_ACCOUNT", app->job.user_acc, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.account.rem, app->job.user_acc, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.user_acc, "");
 	}
-	if (!getenv_agnostic(sp, "SLURM_EAR_POWER_POLICY", app->job.policy, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.policy.rem, app->job.policy, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.policy, "");
 	}
-	if (!getenv_agnostic(sp, "SLURM_EAR_POWER_POLICY_TH", buffer, SZ_NAME_SHORT)) {
+	if (!getenv_agnostic(sp, Var.policy_th.rem, buffer, SZ_NAME_SHORT)) {
 		app->job.th = -1.0;
 	} else {
 		app->job.th = atof(buffer);
 	}
-	if (!getenv_agnostic(sp, "SLURM_EAR_FREQUENCY", buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.frequency.rem, buffer, SZ_NAME_MEDIUM)) {
 		app->job.def_f = 0;
 	} else {
 		app->job.def_f = (ulong) atol(buffer);
@@ -185,13 +185,13 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 			app->job.def_f = 0;
 		}
 	}
-	if (!getenv_agnostic(sp, "SLURM_EAR_LEARNING_PHASE", buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.learning.rem, buffer, SZ_NAME_MEDIUM)) {
 		app->is_learning = 0;
 	} else {
 		app->is_learning = 1;
 		app->job.def_f = freqs[atoi(buffer)];
 	}
-	if (!getenv_agnostic(sp, "SLURM_EAR_ENERGY_TAG", app->job.energy_tag, 32)) {
+	if (!getenv_agnostic(sp, Var.tag.rem, app->job.energy_tag, 32)) {
 		strcpy(app->job.energy_tag, "");
 	}
 
@@ -206,7 +206,7 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
 	{
 		if (plug_component_isenabled(sp, Component.monitor))
 		{
-			if (getenv_agnostic(sp, "SLURM_STEP_NODELIST", buffer, SZ_PATH))  {
+			if (getenv_agnostic(sp, Var.node_list.rem, buffer, SZ_PATH))  {
 				sd->pack.eard.hostlist = slurm_hostlist_create(buffer);
 				return ESPANK_SUCCESS;
 			}
@@ -229,28 +229,37 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "function plug_env_readuser");
 
 	/*
- 	 * EAR variables
- 	 */
-	#define replace1(name) \
-		unetenv_agnostic(sp, "SLURM_EAR_"); \
-		repenv_agnostic(sp, "OPT_" name, "SLURM_EAR_" name);
+	 * Components
+	 */
+	if (!isenv_agnostic(sp, Var.comp_plugin.opt, "0")) {
+		plug_component_setenabled(sp, Component.plugin, 1);
+	}
+	if (isenv_agnostic(sp, Var.comp_monitor.opt, "1")) {
+		plug_component_setenabled(sp, Component.monitor, 1);
+	}
+	if (isenv_agnostic(sp, Var.comp_test.opt, "1")) {
+		plug_component_setenabled(sp, Component.test, 1);
+	}
 
-	// EARD approvation
-	replace1("POWER_POLICY");
-	replace1("POWER_POLICY_TH");
-	replace1("FREQUENCY");
-	replace1("LEARNING_PHASE");
-	replace1("ENERGY_TAG");
-	// Non-EARD dependency
-	replace1("USER_DB_PATHNAME");
-	replace1("PATH_TRACE");
-	replace1("MPI_DIST");
-	// Oldies
-	//replace1("APP_NAME");
-	//replace1("PERFORMANCE_PENALTY");
-	//replace1("MIN_PERFORMANCE_EFFICIENCY_GAIN");
-	//replace1("P_STATE");
-	//replace1("TMP");
+	/*
+	 * EAR variables
+	 */
+
+	// Unsetting task variables
+	unsetenv_agnostic(sp, Var.verbose.ear);
+	unsetenv_agnostic(sp, Var.policy.ear);
+	unsetenv_agnostic(sp, Var.policy_th.ear);
+	unsetenv_agnostic(sp, Var.frequency.ear);
+	unsetenv_agnostic(sp, Var.p_state.ear);
+	unsetenv_agnostic(sp, Var.learning.ear);
+	unsetenv_agnostic(sp, Var.tag.ear);
+	unsetenv_agnostic(sp, Var.path_usdb.ear);
+	unsetenv_agnostic(sp, Var.path_trac.ear);
+	unsetenv_agnostic(sp, Var.mpi_dist.ear);
+	unsetenv_agnostic(sp, Var.perf_pen.ear);
+	unsetenv_agnostic(sp, Var.eff_gain.ear);
+	unsetenv_agnostic(sp, Var.name_app.ear);
+	unsetenv_agnostic(sp, Var.path_temp.ear);
 
 	/*
 	 * User information
@@ -268,18 +277,13 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	strncpy(sd->job.user.user,  upw->pw_name, SZ_NAME_MEDIUM);
 	strncpy(sd->job.user.group, gpw->gr_name, SZ_NAME_MEDIUM);
 
-	getenv_agnostic(sp, "SLURM_JOB_ACCOUNT", sd->job.user.account, SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, "LD_LIBRARY_PATH", sd->job.user.env.ld_library, SZ_PATH);
-	getenv_agnostic(sp, "LD_PRELOAD", sd->job.user.env.ld_preload, SZ_PATH);
-
 	plug_verbose(sp, 2, "user '%u' ('%s')", uid, sd->job.user.user);
 	plug_verbose(sp, 2, "user group '%u' ('%s')", gid, sd->job.user.group);
-	plug_verbose(sp, 2, "user account '%s'", sd->job.user.account);
 
 	/*
 	 * Job
 	 */
-	getenv_agnostic(sp, "SLURM_NNODES", buffer, SZ_PATH);
+	getenv_agnostic(sp, Var.node_num.loc, buffer, SZ_PATH);
 	sd->job.n_nodes = atoi(buffer);
 
 	return ESPANK_SUCCESS;
@@ -288,22 +292,38 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_serialize_remote");
-	
+
+	/*
+	 * EAR variables
+	 */
+
+	// Converting option variables into remote variables.
+	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.rem);
+	repenv_agnostic(sp, Var.policy.loc,    Var.policy.rem);
+	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.rem);
+	repenv_agnostic(sp, Var.learning.loc,  Var.learning.rem);
+	repenv_agnostic(sp, Var.tag.loc,       Var.tag.rem);
+	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.rem);
+	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.rem);
+	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
+	repenv_agnostic(sp, Var.perf_pen.loc,  Var.perf_pen.rem);
+	repenv_agnostic(sp, Var.eff_gain.loc,  Var.eff_gain.rem);
+
 	/*
 	 * User
 	 */
-	setenv_agnostic(sp, "SLURM_EAR_USER",  sd->job.user.user,  1);
-	setenv_agnostic(sp, "SLURM_EAR_GROUP", sd->job.user.group, 1);
-	setenv_agnostic(sp, "SLURM_EAR_PATH_TEMP", sd->pack.path_temp, 1);
-	setenv_agnostic(sp, "SLURM_EAR_PATH_INST", sd->pack.path_inst, 1);
+	setenv_agnostic(sp, Var.user.rem,  sd->job.user.user,  1);
+	setenv_agnostic(sp, Var.group.rem, sd->job.user.group, 1);
+	setenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, 1);
+	setenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, 1);
 
 	/*
 	 * Subject
 	 */
 	if (plug_context_is(sp, Context.srun)) {
-		setenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SRUN", 1);
+		setenv_agnostic(sp, Var.context.rem, "SRUN", 1);
 	} else if (plug_context_is(sp, Context.sbatch)) {
-		setenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SBATCH", 1);
+		setenv_agnostic(sp, Var.context.rem, "SBATCH", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -316,19 +336,21 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * User
 	 */
-	getenv_agnostic(sp, "SLURM_EAR_USER",  sd->job.user.user,  SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, "SLURM_EAR_GROUP", sd->job.user.group, SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, "SLURM_PATH_TEMP", sd->pack.path_temp, SZ_PATH);
-	getenv_agnostic(sp, "SLURM_PATH_INST", sd->pack.path_inst, SZ_PATH);
+	getenv_agnostic(sp, Var.user.rem,  sd->job.user.user,  SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, Var.group.rem, sd->job.user.group, SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, SZ_PATH);
+	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
+	getenv_agnostic(sp, Var.ld_libr.rem, sd->job.user.env.ld_library, SZ_PATH);
+	getenv_agnostic(sp, Var.ld_prel.rem, sd->job.user.env.ld_preload, SZ_PATH);
 
 	/*
  	 * Subject
  	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
-	if (isenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SRUN")) {
+	if (isenv_agnostic(sp, Var.context.rem, "SRUN")) {
 		sd->subject.context_local = Context.srun;
-	} else if (isenv_agnostic(sp, "SLURM_EAR_PLUG_CONTEXT", "SBATCH")) {
+	} else if (isenv_agnostic(sp, Var.context.rem, "SBATCH")) {
 		sd->subject.context_local = Context.sbatch;
 	}
 
@@ -346,50 +368,71 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 
 	// Variable EAR_ENERGY_TAG, unset
 	if (setts->user_type != ENERGY_TAG) {
-		unsetenv_agnostic(sp, "EAR_ENERGY_TAG");
+		unsetenv_agnostic(sp, Var.tag.ear);
 	}
 
 	snprintf(buffer, 16, "%u", setts->def_p_state);
-	setenv_agnostic(sp, "EAR_P_STATE", buffer, 1);
+	setenv_agnostic(sp, Var.p_state.ear, buffer, 1);
 
 	snprintf(buffer, 16, "%lu", setts->def_freq);
-	setenv_agnostic(sp, "EAR_FREQUENCY", buffer, 1);
+	setenv_agnostic(sp, Var.frequency.ear, buffer, 1);
 
 	if(policy_id_to_name(setts->policy, buffer) != EAR_ERROR) {
-		setenv_agnostic(sp, "EAR_POWER_POLICY", buffer, 1);
+		setenv_agnostic(sp, Var.policy.ear, buffer, 1);
 	}
 
 	snprintf(buffer, 16, "%0.2f", setts->th);
-	setenv_agnostic(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer, 1);
-	setenv_agnostic(sp, "EAR_PERFORMANCE_PENALTY", buffer, 1);
+	setenv_agnostic(sp, Var.eff_gain.ear, buffer, 1);
+	setenv_agnostic(sp, Var.perf_pen.ear, buffer, 1);
 
 	if(!setts->learning) {
-		unsetenv_agnostic(sp, "EAR_P_STATE");
-		unsetenv_agnostic(sp, "EAR_LEARNING_PHASE");
+		unsetenv_agnostic(sp, Var.p_state.ear);
+		unsetenv_agnostic(sp, Var.learning.ear);
 	}
 
-	if (getenv_agnostic(sp, "SLURM_JOB_NAME", buffer, sizeof(buffer)) == 1) {
-		setenv_agnostic(sp, "EAR_APP_NAME", buffer, 1);
+	if (getenv_agnostic(sp, Var.name_app.rem, buffer, sizeof(buffer)) == 1) {
+		setenv_agnostic(sp, Var.name_app.ear, buffer, 1);
 	}
-	if (getenv_agnostic(sp, "PLUG_PATH_TEMP", buffer, sizeof(buffer)) == 1) {
-		setenv_agnostic(sp, "EAR_TMP", buffer, 1);
+	if (getenv_agnostic(sp, Var.path_temp.rem, buffer, sizeof(buffer)) == 1) {
+		setenv_agnostic(sp, Var.path_temp.ear, buffer, 1);
 	}
 
 	/*
 	 * LD_PRELOAD
 	 */
-	getenv_agnostic(sp, "LD_PRELOAD", sd->job.user.env.ld_preload, SZ_PATH);
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, SZ_PATH);
 
 	// Appending libraries to LD_PRELOAD
-	if (isenv_agnostic(sp, "EAR_MPI_DIST", "openmpi")) {
+	if (isenv_agnostic(sp, Va.mpi_dist.rem, "openmpi")) {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH);
 	} else {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH);
 	}
 
-	setenv_agnostic(sp, "LD_PRELOAD", buffer, 1);
-	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer);
+	setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
+
+	/*
+	 *
+	 */
+	unsetenv_agnostic(sp, Var.comp_libr.rem);
+	unsetenv_agnostic(sp, Var.comp_plug.rem);
+	unsetenv_agnostic(sp, Var.comp_moni.rem);
+	unsetenv_agnostic(sp, Var.comp_test.rem);
+	unsetenv_agnostic(sp, Var.verbose.rem);
+	unsetenv_agnostic(sp, Var.policy.rem);
+	unsetenv_agnostic(sp, Var.policy_th.rem);
+	unsetenv_agnostic(sp, Var.frequency.rem);
+	unsetenv_agnostic(sp, Var.p_state.rem);
+	unsetenv_agnostic(sp, Var.learning.rem);
+	unsetenv_agnostic(sp, Var.tag.rem);
+	unsetenv_agnostic(sp, Var.path_usdb.rem);
+	unsetenv_agnostic(sp, Var.path_trac.rem);
+	unsetenv_agnostic(sp, Var.mpi_dist.rem);
+	unsetenv_agnostic(sp, Var.user.rem);
+	unsetenv_agnostic(sp, Var.group.rem);
+	unsetenv_agnostic(sp, Var.path_temp.rem);
+	unsetenv_agnostic(sp, Var.path_inst.rem);
+	unsetenv_agnostic(sp, Var.context.rem);
 
 	return ESPANK_SUCCESS;
 }
