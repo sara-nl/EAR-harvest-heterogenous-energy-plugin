@@ -97,13 +97,16 @@ extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 static int sig_reported=0;
 
-#define MAX_NESTED_LEVELS 16384
-powermon_app_t *current_ear_app[MAX_NESTED_LEVELS];
-powermon_app_t default_app;
-int ccontext=-1;
-int num_contexts=0;
 periodic_metric_t current_sample;
 double last_power_reported=0;
+
+/****************** CONTEXT MANAGEMENT ********************/
+#define MAX_NESTED_LEVELS 16384
+#define NULL_SID 4294967294
+static powermon_app_t *current_ear_app[MAX_NESTED_LEVELS],default_app;
+static int current_batch;
+static int ccontext=-1;
+static int num_contexts=0;
 
 #define check_context(msg) \
 if (ccontext<0){ \
@@ -111,6 +114,128 @@ if (ccontext<0){ \
 	return;\
 }
 
+void init_contexts()
+{
+	int i;
+	for (i=0;i<MAX_NESTED_LEVELS;i++) current_ear_app[i]=NULL;
+	current_batch=-1;
+}
+
+int find_empty_context()
+{
+	int i=0,pos=-1;
+	/* No more contexts supported */
+	if (num_contexts==MAX_NESTED_LEVELS) return -1;
+	while ((i<MAX_NESTED_LEVELS) && (pos<0)){
+		if (current_ear_app[i]==NULL){
+			pos=i;
+		}else i++;
+	}
+	return pos;
+}
+
+int find_context_for_job(job_id id,job_id sid)
+{
+	int i,pos=-1;
+	while ((i<MAX_NESTED_LEVELS) && (pos<0)){
+		if ((current_ear_app[i]!=NULL)&& (current_ear_app[i]->app.job.id==id) && (current_ear_app[i]->app.job.step_id==sid)){
+			pos=i;
+		}else i++;
+	}
+	if (pos>=0){
+		verbose(VJOBPMON,"find_context_for_job %d,%d found at pos %d",id,sid,pos);
+	}else{
+		verbose(VJOBPMON,"find_context_for_job %d,%d not found",id,sid);
+	}
+	return pos;
+}
+/* This function is called at job or step end */
+void end_context(int cc)
+{
+  verbose(VJOBPMON,"end_context %d",cc);
+  check_context("end_context: invalid job context");
+	if (current_ear_app[cc]!=NULL){
+  	free(current_ear_app[cc]->governor.governor);
+  	free(current_ear_app[cc]);
+  	current_ear_app[cc]=NULL;
+		num_contexts--;
+	}
+}
+/* This function will be called when job ends to be sure there is not steps pending to clean*/
+void clean_job_contexts(job_id id)
+{
+	int i,cleaned=0;
+	verbose(VJOBPMON,"clean_job_contexts for job %d",id);
+	for (i=0;i<MAX_NESTED_LEVELS;i++){
+		if (current_ear_app[i]!=NULL){
+			if ((current_ear_app[i]!=NULL) && (current_ear_app[i]->app.job.id==id)){ 
+				cleaned++;
+				end_context(i);
+			}
+		}
+	}
+	verbose(VJOBPMON,"%d contexts cleaned",cleaned);
+}
+/* This function is called to remove contexts belonging to jobs different than new one */
+void clean_contexts_diff_than(job_id id)
+{
+	int i;
+	for (i=0;i<MAX_NESTED_LEVELS;i++){
+		if (current_ear_app[i]!=NULL){
+			if ((current_ear_app[i]!=NULL) && (current_ear_app[i]->app.job.id!=id)) end_context(i);
+		}
+	}
+}
+
+int select_last_context()
+{
+	int i,pos=-1;
+	for (i=0;i<MAX_NESTED_LEVELS;i++){
+		if (current_ear_app[i]!=NULL) pos=i;
+	}
+	if (pos>=0){	
+		verbose(VJOBPMON,"select_last_context selects context %d (%d,%d)",pos,current_ear_app[i]->app.job.id,current_ear_app[i]->app.job.step_id);
+	}else{
+		verbose(VJOBPMON,"select_last_context no contexts actives");
+	}
+	return pos;
+}
+
+
+int new_context(job_id id,job_id sid)
+{
+  if (num_contexts==MAX_NESTED_LEVELS){
+    error("Panic: Maximum number of levels reached in new_job %d",ccontext);
+    return EAR_ERROR;
+  }
+	int pos=find_empty_context();
+	if (pos<0){
+    error("Panic: Maximum number of levels reached in new_job %d",ccontext);
+    return EAR_ERROR;
+	}
+  ccontext=pos;
+  current_ear_app[ccontext]=(powermon_app_t*)malloc(sizeof(powermon_app_t));
+  if (current_ear_app[ccontext]==NULL){
+    error("Panic: malloc returns NULL for current context");
+    return EAR_ERROR;
+  }
+  memset(current_ear_app[ccontext],0,sizeof(powermon_app_t));
+  verbose(VJOBPMON+1,"New context created %d",ccontext);
+	if (sid==NULL_SID){
+		current_batch=ccontext;
+	}
+	if (num_contexts>0){
+			/* This case means some messages have been lost, we must clean them */
+			clean_contexts_diff_than(id);
+	}
+	num_contexts++;
+  return EAR_SUCCESS;
+}
+
+
+
+
+/****************** END CONTEXT MANAGEMENT ********************/
 
 powermon_app_t *get_powermon_app()
 {
@@ -490,31 +615,6 @@ void powermon_mpi_finalize()
 
 /* This functiono is called by dynamic_configuration thread when a new_job command arrives */
 
-int new_batch()
-{
-	if (ccontext==MAX_NESTED_LEVELS-1){
-		error("Panic: Maximum number of levels reached in new_job %d",ccontext);
-		return EAR_ERROR;
-	}
-	ccontext++;
-	current_ear_app[ccontext]=(powermon_app_t*)malloc(sizeof(powermon_app_t));
-	if (current_ear_app[ccontext]==NULL){
-		error("Panic: malloc returns NULL for current context");
-		return EAR_ERROR;
-	}
-	memset(current_ear_app[ccontext],0,sizeof(powermon_app_t));
-	verbose(VJOBPMON+1,"New context created %d",ccontext);
-	return EAR_SUCCESS;
-}
-void end_batch()
-{
-	verbose(VJOBPMON+1,"Releasing context %d",ccontext);
-	check_context("end_batch: invalid job context");
-	free(current_ear_app[ccontext]->governor.governor);
-	free(current_ear_app[ccontext]);
-	current_ear_app[ccontext]=NULL;
-	ccontext--;
-}
 
 void powermon_new_job(application_t* appID,uint from_mpi)
 {
@@ -530,12 +630,12 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	ulong f;
 	uint user_type;
 	verbose(VJOBPMON,"powermon_new_job (%u,%u)",appID->job.id,appID->job.step_id);
-	if (new_batch()!=EAR_SUCCESS){
+	if (new_context(appID->job.id,appID->job.step_id)!=EAR_SUCCESS){
 		error("Maximum number of contexts reached, no more concurrent jobs supported");
 		return;
 	}
 	/* Saving the context */
-	check_context("powermon_new_job: after new_batch!");
+	check_context("powermon_new_job: after new_context!");
 	current_ear_app[ccontext]->current_freq=frequency_get_cpu_freq(0);
 	get_governor(&current_ear_app[ccontext]->governor);
 	verbose(VJOBPMON,"Saving governor %s",current_ear_app[ccontext]->governor.governor);
@@ -573,15 +673,6 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 
 }
 
-/* This function checks if this jid, sid are stacked before the current context,meaning one message is lost */
-int lost_message(job_id jid,job_id sid)
-{
-	int pcontext=ccontext-1;
-	if (pcontext>=0){
-		if ((current_ear_app[pcontext]->app.job.id==jid) && (current_ear_app[pcontext]->app.job.step_id==sid)) return 1;
-	} 
-	return 0;
-}
 
 /* This function is called by dynamic_configuration thread when a end_job command arrives */
 
@@ -590,16 +681,21 @@ void powermon_end_job(job_id jid,job_id sid)
     // Application disconnected
     powermon_app_t summary;
     char buffer[128];
-		check_context("powermon_end_job: and not current context");
-		if ((jid!=current_ear_app[ccontext]->app.job.id) || (sid!=current_ear_app[ccontext]->app.job.step_id)){ 
-			error("powermon_end_job inicorrect jid %u %u (current %u %u)",
-			jid,sid,current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
-			/* THIS IS UNEXPECTED: WHat should we do here? */
-			if (lost_message(jid,sid)){
-				warning("powermon_end_job initiated by eard jid %u sid %u automatically",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
-				powermon_end_job(current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
-			}else return;
+		int cc,pcontext;
+		/* Saving ccontext index */
+		pcontext=ccontext;
+		/*check_context("powermon_end_job: and not current context");*/
+		/* jid,sid can finish in a different order than expected */
+		cc=find_context_for_job(jid,sid);
+		if (cc<0){
+			error("powermon_end_job %u,%u and no context created for it",jid,sid);
+			return;
 		}
+		if (cc!=ccontext){
+			warning("End job (%d,%d) is not current context selected=%d current=%d",jid,sid,cc,ccontext);
+		}
+		/* We set ccontex to the specific one */
+		ccontext=cc;
 		verbose(VJOBPMON,"powermon_end_job %u[%u]",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
     while (pthread_mutex_trylock(&app_lock));
     idleNode=1;
@@ -620,7 +716,21 @@ void powermon_end_job(job_id jid,job_id sid)
 		current_node_freq=frequency_get_cpu_freq(0);	
 		clean_job_environment(jid,sid);
 		reset_shared_memory();
-		end_batch();
+		end_context(ccontext);
+		/* At this point we have to set a new one as default */
+		/* This context is removed, now we have to check environment is ok and select a new context */
+		/* If previousy selected is not the one that has finished, we set again the previous one */
+		if (ccontext!=pcontext){	
+			verbose(VJOBPMON,"Setting ccontext to previous one %d",pcontext);
+			ccontext=pcontext;
+		}else{
+			/* If the ccontext has finished we must select a new one */
+			/* Last job was an sbatch */
+			if (sid==NULL_SID){
+				clean_job_contexts(jid);
+			}
+			ccontext=select_last_context();
+		}
 }
 
 /*
@@ -926,6 +1036,8 @@ void *eard_power_monitoring(void *noinfo)
 
 	PM_set_sigusr1();
 	form_database_paths();
+	
+	init_contexts();
 
 	memset((void *)&default_app,0,sizeof(powermon_app_t));
 	
