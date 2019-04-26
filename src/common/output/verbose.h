@@ -35,6 +35,9 @@
 #include <common/output/timestamp.h>
 #include <common/output/output_conf.h>
 
+#define fdout	STDOUT_FILENO
+#define fderr	STDERR_FILENO
+
 int verb_level		__attribute__((weak)) = 0;
 int verb_channel	__attribute__((weak)) = 2;
 int verb_enabled	__attribute__((weak)) = 1;

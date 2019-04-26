@@ -27,27 +27,14 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-
-#include <math.h>
-#include <time.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <signal.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <sys/types.h>
-#if !OFFLINE
-#include <common/database/db_helper.h>
-#endif
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
-
+#if !OFFLINE
+#include <common/database/db_helper.h>
+#endif
 
 // Configuration
 extern cluster_conf_t conf_clus;
@@ -122,12 +109,18 @@ void metrics_print()
 	float alloc;
 	float prcnt;
 	float block;
+	int n;
 	int i;
 
-	printl0();
+	verbose_line();
 
+	for (i = 0, n = 0; i < MAX_TYPES && n == 0; ++i) {
+		n += (sam_index[i] > 0);
+	}
+
+	if (n > 0) {
 	//
-	tprintf_init(stderr, STR_MODE_DEF, "15 13 9 10 10");
+	tprintf_init(fderr, STR_MODE_DEF, "15 13 9 10 10");
 
 	//
 	tprintf("sample (%d)||recv/alloc||%%||t. insr||t. recv", mirror_iam);
@@ -135,6 +128,10 @@ void metrics_print()
 
 	for (i = 0; i < MAX_TYPES; ++i)
 	{
+		if (sam_index[i] == 0) {
+			continue;
+		}
+
 		itime = ((float) difftime(ins_time2[i], ins_time1[i]));
 		gtime = ((float) difftime(glb_time2[i], glb_time1[i]));
 		alloc = ((float) (typ_sizof[i] * sam_inmax[i]) / 1000000.0);
@@ -146,19 +143,17 @@ void metrics_print()
 		}
 
 		tprintf("%s||%lu/%lu||%2.2f||%0.2fs||%0.2fs",
-				sam_iname[i], sam_index[i], sam_inmax[i],
-				prcnt, itime, gtime);
+				sam_iname[i], sam_index[i], sam_inmax[i], prcnt, itime, gtime);
+	}
+
+	verbose_xaxxx("--");
 	}
 
 	//
-	fprintf(stderr, "--\n");
-	fprintf(stderr, "active. sockets: %u\n", soc_activ);
-	fprintf(stderr, "accept. sockets: %u\n", soc_accpt);
-	fprintf(stderr, "discon. sockets: %u\n", soc_discn);
-	fprintf(stderr, "timeout sockets: %u\n", soc_tmout);
-	fprintf(stderr, "unknown samples: %u\n", soc_tmout);
-
-	printl0();
+	verbose_xaxxx("actv./accp. sockets: %u/%u", soc_activ, soc_accpt);
+	verbose_xaxxx("disc./tout. sockets: %u/%u", soc_discn, soc_tmout);
+	verbose_xaxxx("recv. unknown samples: %u", soc_tmout);
+	verbose_line();
 
 	soc_accpt = 0;
 	soc_discn = 0;
@@ -235,9 +230,12 @@ static void insert_apps_mpi()
 	}
 
 	metrics_insert_start(i_appsm);
-	debug("trying to insert '%d' applications (simple: '%d')", i_appsm, !conf_clus.database.report_sig_detail);
+
+	debug("trying to insert '%d' applications (simple: '%d')",
+		  i_appsm, !conf_clus.database.report_sig_detail);
 	db_batch_insert_applications((application_t *) typ_alloc[i_appsm], sam_index[i_appsm]);
-	debug("called db_batch_insert_applications() with result '%d'", r);	
+	debug("called db_batch_insert_applications() with result '%d'", r);
+
 	metrics_insert_stop(i_appsm, sam_index[i_appsm]);
 }
 
@@ -297,8 +295,6 @@ static void insert_aggregations()
 {
 	time_t time_start;
 
-	printp1("inserting aggregations %lu",  sam_index[i_aggrs]);
-
 	if (typ_prcnt[i_aggrs] == 0 || sam_index[i_aggrs] <= 0) {
 		return;
 	}
@@ -323,7 +319,7 @@ static void insert_events()
 
 void insert_hub(uint option, uint reason)
 {
-	printp1("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
+	verbose_xaxxw("looking for possible DB insertion (type 0x%x, reason 0x%x)", option, reason);
 	
 	metrics_print();
 
@@ -493,7 +489,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	index = storage_index_extract(type, &name);
 
 	if (verbosity) {
-		printp1("received '%s' object from host '%s'", name, header->host_src);
+		verbose_xaxxw("received from host '%s' an object of type: '%s'", header->host_src, name);
 	}
 
 	//TODO:
@@ -513,28 +509,16 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	// Storage
 	if (type == CONTENT_TYPE_APM)
 	{
-		if (verbosity == 2) {
-			application_print_channel(stderr, (application_t *) content);
-		}
-
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSM);
 	}
 	else if (type == CONTENT_TYPE_APN)
 	{
-		if (verbosity == 2) {
-			application_print_channel(stderr, (application_t *) content);
-		}
-
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSN);
 	}
 	else if (type == CONTENT_TYPE_APL)
 	{
-		if (verbosity == 2) {
-			application_print_channel(stderr, (application_t *) content);
-		}
-
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_APPSL);
 	}
@@ -554,15 +538,6 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 		periodic_metric_t *met = (periodic_metric_t *) content;
 
-		if (verbosity == 2) {
-			periodic_metrict_print_channel(stderr, met);
-		}
-
-		// Verbosity mpkfa
-		//if (verbosity == 1) {
-		//	printp1("RECEIVED %lu energy from %s", met->DC_energy, met->node_id);
-		//}
-
 		// Add sample to the aggregation
 		add_periodic_aggregation(q, met->DC_energy, met->start_time, met->end_time);
 
@@ -575,7 +550,6 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 		sync_qst_t *question = (sync_qst_t *) content;
 
 		if (veteran || !question->veteran) {
-			//TODO: MPKFA
 			// Passing the question option
 			insert_hub(question->sync_option, RES_SYNC);
 		}

@@ -47,7 +47,7 @@ void process_data_initialize(process_data_t *prodata, char *name, char *path_pid
 void process_update_pid(process_data_t *prodata);
 
 /* */
-int process_exists(const process_data_t *prodata, pid_t *pid);
+int process_exists(const process_data_t *prodata, char *bin_name, pid_t *pid);
 
 /* */
 state_t process_pid_file_save(const process_data_t *prodata);

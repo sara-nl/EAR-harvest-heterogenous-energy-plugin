@@ -100,7 +100,7 @@ void main(int argc,char *argv[])
 
 	//
 	if (!opt_c) {
-		tprintf_init(stdout, STR_MODE_COL, "17 17 10 10 8 8 8 8");
+		tprintf_init(fdout, STR_MODE_COL, "17 17 10 10 8 8 8 8");
 
 		tprintf("Node name||App name||Def. F.||Avg. F.||Seconds||Watts||GBS||CPI");
 		tprintf("---------||--------||-------||-------||-------||-----||---||---");

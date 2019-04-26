@@ -27,16 +27,6 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <math.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -140,11 +130,11 @@ static void body_alarm(struct timeval *timeout_slct)
 				peraggr_t *p = (peraggr_t *) typ_alloc[i_aggrs];
 				peraggr_t *q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-				printp1("completed the aggregation number '%lu' with energy '%lu'",
-					sam_index[i_aggrs], q->DC_energy);
-
 				if (q->n_samples > 0)
 				{
+					verbose_xaxxw("completed the aggregation number '%lu' with energy '%lu'",
+						 sam_index[i_aggrs], q->DC_energy);
+
 					// Aggregation time done, so new aggregation incoming
 					storage_sample_add(NULL, sam_inmax[i_aggrs], &sam_index[i_aggrs], NULL, 0, SYNC_AGGRS);
 
@@ -238,10 +228,14 @@ static void body_connections()
 
 						if (sync_fd_exists(ip, &fd_old))
 						{
-							sockets_get_hostname(&addr_cli, extra_buffer, sizeof(extra_buffer));
-							log("multiple connections from host '%s', disconnecting previous", extra_buffer);
-							//error("multiple connections from host '%s', disconnecting previous", extra_buffer);
-							
+							//sockets_get_hostname(&addr_cli, extra_buffer, sizeof(extra_buffer));
+							//log("multiple connections from host '%s', disconnecting previous", extra_buffer);
+
+							if (verbosity) {
+								verbose_xaxxw("disconnecting from host '%ld' (errno: '%d', strerrno: '%s')",
+											  ip, intern_error_num, intern_error_str);
+							}
+
 							sync_fd_disconnect(fd_old);
 						}
 					}
@@ -249,13 +243,20 @@ static void body_connections()
 					// Test if the maximum number of connection has been reached
 					// (soc_activ >= MAX_CONNECTIONS), and if fulfills that
 					// condition disconnect inmediately.
-					if (!sync_fd_is_mirror(i) && soc_activ >= MAX_CONNECTIONS) {
+					if (!sync_fd_is_mirror(i) && soc_activ >= MAX_CONNECTIONS)
+					{
+						if (verbosity) {
+							verbose_xaxxw("disconnecting from host '%ld' (maximum connections reached)",
+									  ip);
+						}
+
 						sync_fd_disconnect(fd_old);
-					} else {
+					} else
+					{
 						sync_fd_add(fd_cli, ip);
 
 						if (verbosity) {
-							printp1("accepted fd '%d' from ip '%ld'", fd_cli, ip);
+							verbose_xaxxw("accepted fd '%d' from host '%ld'", fd_cli, ip);
 						}
 					}
 				} while(state_ok(s));
@@ -273,18 +274,19 @@ static void body_connections()
 				else
 				{
 					if (state_is(s, EAR_SOCK_DISCONNECTED)) {
-						//printp1("disconnected from socket %d (num: %d, str: %s)",
-						//		i, intern_error_num, intern_error_str);
 						soc_discn += 1;
 					} if (state_is(s, EAR_SOCK_TIMEOUT)) {
-						//sockets_get_hostname_fd(i, extra_buffer, SZ_BUFF_BIG);
-						//printp1("PANIC, disconnected from socket %d and node %s (num: %d, str: %s)",
-						//		i, extra_buffer, intern_error_num, intern_error_str);
 						soc_tmout += 1;
 					} else {
-						//printp1("on reception (num: %d, str: %s), disconnecting from socket %d",
-						//		intern_error_num, intern_error_str, i);
 						soc_unkwn += 1;
+					}
+
+					if (verbosity)
+					{
+						sync_fd_get_ip(i, &ip);
+
+						verbose_xaxxw("disconnecting from host %lu (errno: '%d', strerrno: '%s')",
+								ip, intern_error_num, intern_error_str);
 					}
 
 					sync_fd_disconnect(i);
@@ -304,7 +306,7 @@ void body()
 	int s;
 
 	if (listening) {
-		printml1("phase 7: listening (processing every %lu s)", time_insr);
+		verbose_maslx("phase 7: listening (processing every %lu s)", time_insr);
 	}
 
 	// BODY

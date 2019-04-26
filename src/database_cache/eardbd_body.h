@@ -33,34 +33,32 @@
 #define col1 "\x1b[35m"
 #define col2 "\x1b[0m"
 
+#define verbose_line() \
+		verb(0, col1 line col2);
+
 // Meaning:
 //  - m: master
-//  - l: line
-//  - p: shows the process
-//  - 0: no arguments
-//  - 1: arguments
+//  - a: argument
+//  - s: separator
+//	- l: new line
+// 	- w: who
+//	- x: nothing
 
-#define printp0(format) \
+#define verbose_xxxxw(format) \
 	verb(0, "%s, %s", str_who[mirror_iam], format);
 
-#define printp1(format, ...) \
+#define verbose_xaxxw(format, ...) \
 	verb(0, "%s, " format, str_who[mirror_iam], __VA_ARGS__);
 
-#define printpl0(format) \
-	verb(0, "%s, " format "\n", str_who[mirror_iam]);
+#define verbose_xaxxx(...) \
+		verb(0, __VA_ARGS__);
 
-#define printpl1(format, ...) \
-	verb(0, "%s, " format "\n", str_who[mirror_iam], __VA_ARGS__);
-
-#define printm1(...) \
+#define verbose_maxxx(...) \
     if (!forked || master_iam) { \
 		verb(0, __VA_ARGS__); \
     }
 
-#define printl0() \
-		verb(0, col1 line col2);
-
-#define printml1(...) \
+#define verbose_maslx(...) \
     if (!forked || master_iam) { \
         dprintf(verb_channel, col1 line "\n" __VA_ARGS__); \
         dprintf(verb_channel, col2 "\n"); \
