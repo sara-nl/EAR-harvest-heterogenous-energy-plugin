@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = common database_cache
+COMPONENTS = common
 ifdef CPUF_BASE
 	COMPONENTS += control
 	ifdef DB_BASE
