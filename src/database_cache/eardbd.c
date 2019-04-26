@@ -221,7 +221,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 	strcpy(server_host, argv[3]);
 	strcpy(conf_clus->tmp_dir, argv[5]);
-#endif
+	#endif
 
 	// Print
 	int fd_output = verb_channel;
