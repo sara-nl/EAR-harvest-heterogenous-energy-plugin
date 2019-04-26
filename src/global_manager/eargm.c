@@ -443,7 +443,7 @@ void report_status(gm_warning_t *my_warning)
 void usage(char *app)
 {
     verbose(0, "Usage: %s [-h]|[--help]|verbose_level]", app);
-	verbose(0, "This program controls the energy consumed in a period T2 seconds defined in $ETC/ear/ear.conf file");
+	verbose(0, "This program controls the energy consumed in a period T2 seconds defined in $EAR_ETC/ear/ear.conf file");
 	verbose(0, "energy is checked every T1 seconds interval");
 	verbose(0, "Global manager can be configured in active or passive mode. Automatic actions are taken in active mode (defined in ear.conf file)");
     exit(0);
@@ -471,7 +471,7 @@ void main(int argc,char *argv[])
 	if (argc==2) parse_args(argv);
     // We read the cluster configuration and sets default values in the shared memory
     if (get_ear_conf_path(my_ear_conf_path)==EAR_ERROR){
-        error("Error opening ear.conf file, not available at regular paths (/etc/ear/ear.conf or $EAR_INSTALL_PATH/etc/sysconf/ear.conf)");
+        error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
         exit(0);
     }
     #if SYSLOG_MSG
