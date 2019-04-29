@@ -29,6 +29,10 @@
 #ifndef EAR_EARDBD_BODY_H
 #define EAR_EARDBD_BODY_H
 
+#include <common/output/error.h>
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+
 #define line "---------------------------------------------------------------"
 #define col1 "\x1b[35m"
 #define col2 "\x1b[0m"

@@ -221,6 +221,10 @@ static void body_connections()
 						break;
 					}
 
+					if (verbosity) {
+						sockets_get_hostname(&addr_cli, extra_buffer, SZ_BUFF_BIG);
+					}
+
 					if (!sync_fd_is_mirror(i))
 					{
 						// Disconnect if previously connected
@@ -228,12 +232,11 @@ static void body_connections()
 
 						if (sync_fd_exists(ip, &fd_old))
 						{
-							//sockets_get_hostname(&addr_cli, extra_buffer, sizeof(extra_buffer));
 							//log("multiple connections from host '%s', disconnecting previous", extra_buffer);
 
 							if (verbosity) {
-								verbose_xaxxw("disconnecting from host '%ld' (errno: '%d', strerrno: '%s')",
-											  ip, intern_error_num, intern_error_str);
+								verbose_xaxxw("disconnecting from host '%s' (host was previously connected)",
+										  extra_buffer);
 							}
 
 							sync_fd_disconnect(fd_old);
@@ -246,8 +249,8 @@ static void body_connections()
 					if (!sync_fd_is_mirror(i) && soc_activ >= MAX_CONNECTIONS)
 					{
 						if (verbosity) {
-							verbose_xaxxw("disconnecting from host '%ld' (maximum connections reached)",
-									  ip);
+							verbose_xaxxw("disconnecting from host '%s' (maximum connections reached)",
+									  extra_buffer);
 						}
 
 						sync_fd_disconnect(fd_old);
@@ -256,7 +259,7 @@ static void body_connections()
 						sync_fd_add(fd_cli, ip);
 
 						if (verbosity) {
-							verbose_xaxxw("accepted fd '%d' from host '%ld'", fd_cli, ip);
+							verbose_xaxxw("accepted fd '%d' from host '%s'", fd_cli, extra_buffer);
 						}
 					}
 				} while(state_ok(s));
@@ -273,6 +276,8 @@ static void body_connections()
 				}
 				else
 				{
+					
+
 					if (state_is(s, EAR_SOCK_DISCONNECTED)) {
 						soc_discn += 1;
 					} if (state_is(s, EAR_SOCK_TIMEOUT)) {
@@ -283,10 +288,10 @@ static void body_connections()
 
 					if (verbosity)
 					{
-						sync_fd_get_ip(i, &ip);
-
-						verbose_xaxxw("disconnecting from host %lu (errno: '%d', strerrno: '%s')",
-								ip, intern_error_num, intern_error_str);
+						sockets_get_hostname_fd(i, extra_buffer, SZ_BUFF_BIG);
+	
+						verbose_xaxxw("disconnecting from host %s (errno: '%d', strerrno: '%s')",
+								extra_buffer, intern_error_num, intern_error_str);
 					}
 
 					sync_fd_disconnect(i);

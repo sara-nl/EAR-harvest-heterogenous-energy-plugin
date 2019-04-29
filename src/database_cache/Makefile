@@ -6,7 +6,7 @@ LDFLAGS = $(DB_LDFLAGS) -lm
 eard_BINS = eardbd
 eard_PATH = $(DESTDIR)/sbin
 eard_PERM = 0770
-oths_BINS = eardbd_api.o
+oths_BINS = eardbd_api.o eardbd_monitor
 
 ######## FILES
 
@@ -28,11 +28,14 @@ eard_HDRS = eardbd.h \
 
 all: $(oths_BINS) $(eard_BINS)
 
-eardbd_api.o: eardbd_api.c eardbd_api.h
+eardbd_api.o: eardbd_api.c eardbd_api.h $(eard_OBJS)
 	$(CC) $(CFLAGS) -c $<
 
 eardbd: $(eard_SRCS) $(eard_HDRS) $(eard_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eard_SRCS) $(eard_OBJS) $(LDFLAGS)
+
+eardbd_monitor: eardbd_monitor.c $(eard_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< eardbd_api.o $(eard_OBJS)
 
 ######## OPTIONS
 

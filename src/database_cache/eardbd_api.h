@@ -30,7 +30,8 @@
 #ifndef EAR_EARDBD_API_H
 #define EAR_EARDBD_API_H
 
-#include <database_cache/eardbd.h>
+#include <common/sockets.h>
+#include <common/types/types.h>
 
 typedef struct edb_state {
     state_t server;

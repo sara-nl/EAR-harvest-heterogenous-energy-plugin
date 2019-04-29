@@ -44,9 +44,6 @@
 #include <common/process.h>
 #include <common/sockets.h>
 #include <common/types/types.h>
-#include <common/output/error.h>
-#include <common/output/debug.h>
-#include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 
 #define CONTENT_TYPE_PER	1
