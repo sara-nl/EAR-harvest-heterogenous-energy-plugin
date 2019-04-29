@@ -47,8 +47,6 @@
 cluster_conf_t my_conf;
 #endif
 
-#define MAX_POWER MAX_ERROR_POWER
-#define MIN_POWER 0.0
 
 int full_length = 0;
 int verbose = 0;
@@ -423,7 +421,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 {
-                    if (avg_power < MAX_POWER && avg_power > MIN_POWER)
+                    if (avg_power < MAX_SIG_POWER && avg_power > MIN_SIG_POWER)
                     {
                         if (!is_sbatch)
                         {
@@ -461,7 +459,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_power /= current_apps;
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 {
-                    if (avg_power < MAX_POWER && avg_power > MIN_POWER)
+                    if (avg_power < MAX_SIG_POWER && avg_power > MIN_SIG_POWER)
                     {
                         if (!is_sbatch)
                         {
@@ -533,7 +531,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 				avg_VPI = -1;
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
             {
-                if (avg_power < MAX_POWER & avg_power > MIN_POWER)
+                if (avg_power < MAX_SIG_POWER & avg_power > MIN_SIG_POWER)
                 {
                     if (!is_sbatch)
                     {
@@ -603,7 +601,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
         printf("\nSome jobs are not being shown because either their avg. frequency, time or total energy were 0. To see those jobs run with -l option.\n");
 
     if (wrong_power > 0 && fd==STDOUT_FILENO)
-        printf("\nSome jobs are not being shown because their average power was outside the allowed bounds (between %.1fW and %.1fW). To see those jobs run with -l option.\n", MIN_POWER, MAX_POWER);
+        printf("\nSome jobs are not being shown because their average power was outside the allowed bounds (between %.1fW and %.1fW). To see those jobs run with -l option.\n", MIN_SIG_POWER, MAX_SIG_POWER);
 
     if (avx)
         printf("\nA -1.0 in the VPI column means an absolute 0 in that field. This is done to distinguish from very low values.\n");
