@@ -169,15 +169,15 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	if (!getenv_agnostic(sp, Var.account.rem, app->job.user_acc, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.user_acc, "");
 	}
-	if (!getenv_agnostic(sp, Var.policy.rem, app->job.policy, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.policy.ear, app->job.policy, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.policy, "");
 	}
-	if (!getenv_agnostic(sp, Var.policy_th.rem, buffer, SZ_NAME_SHORT)) {
+	if (!getenv_agnostic(sp, Var.policy_th.ear, buffer, SZ_NAME_SHORT)) {
 		app->job.th = -1.0;
 	} else {
 		app->job.th = atof(buffer);
 	}
-	if (!getenv_agnostic(sp, Var.frequency.rem, buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.frequency.ear, buffer, SZ_NAME_MEDIUM)) {
 		app->job.def_f = 0;
 	} else {
 		app->job.def_f = (ulong) atol(buffer);
@@ -185,13 +185,13 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 			app->job.def_f = 0;
 		}
 	}
-	if (!getenv_agnostic(sp, Var.learning.rem, buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.learning.ear, buffer, SZ_NAME_MEDIUM)) {
 		app->is_learning = 0;
 	} else {
 		app->is_learning = 1;
 		app->job.def_f = freqs[atoi(buffer)];
 	}
-	if (!getenv_agnostic(sp, Var.tag.rem, app->job.energy_tag, 32)) {
+	if (!getenv_agnostic(sp, Var.tag.ear, app->job.energy_tag, 32)) {
 		strcpy(app->job.energy_tag, "");
 	}
 
@@ -224,6 +224,31 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
  *
  *
  */
+
+int plug_clean_task(spank_t sp)
+{
+	plug_component_setenabled(sp, Component.plugin, 0);
+	plug_component_setenabled(sp, Component.library, 0);
+	plug_component_setenabled(sp, Component.monitor, 0);
+	plug_component_setenabled(sp, Component.test, 0);
+
+	unsetenv_agnostic(sp, Var.verbose.ear);
+	unsetenv_agnostic(sp, Var.policy.ear);
+	unsetenv_agnostic(sp, Var.policy_th.ear);
+	unsetenv_agnostic(sp, Var.perf_pen.ear);
+	unsetenv_agnostic(sp, Var.eff_gain.ear);
+	unsetenv_agnostic(sp, Var.frequency.ear);
+	unsetenv_agnostic(sp, Var.p_state.ear);
+	unsetenv_agnostic(sp, Var.learning.ear);
+	unsetenv_agnostic(sp, Var.tag.ear);
+	unsetenv_agnostic(sp, Var.path_usdb.ear);
+	unsetenv_agnostic(sp, Var.path_trac.ear);
+	unsetenv_agnostic(sp, Var.name_app.ear);
+	unsetenv_agnostic(sp, Var.path_temp.ear);
+
+	return ESPANK_SUCCESS;
+}
+
 int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_deserialize_local");
@@ -281,16 +306,14 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	 */
 
 	// Converting option variables into remote variables.
-	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.rem);
-	repenv_agnostic(sp, Var.policy.loc,    Var.policy.rem);
-	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.rem);
-	repenv_agnostic(sp, Var.learning.loc,  Var.learning.rem);
-	repenv_agnostic(sp, Var.tag.loc,       Var.tag.rem);
-	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.rem);
-	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.rem);
+	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
+	repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
+	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
+	repenv_agnostic(sp, Var.learning.loc,  Var.learning.ear);
+	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
+	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
+	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
 	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
-	repenv_agnostic(sp, Var.perf_pen.loc,  Var.perf_pen.rem);
-	repenv_agnostic(sp, Var.eff_gain.loc,  Var.eff_gain.rem);
 
 	/*
 	 * User
@@ -323,8 +346,18 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	getenv_agnostic(sp, Var.group.rem, sd->job.user.group, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, SZ_PATH);
 	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
-	getenv_agnostic(sp, Var.ld_libr.rem, sd->job.user.env.ld_library, SZ_PATH);
-	getenv_agnostic(sp, Var.ld_prel.rem, sd->job.user.env.ld_preload, SZ_PATH);
+
+	/*
+	 * Clean
+	 */
+	unsetenv_agnostic(sp, Var.user.rem);
+	unsetenv_agnostic(sp, Var.group.rem);
+	unsetenv_agnostic(sp, Var.path_temp.rem);
+	unsetenv_agnostic(sp, Var.path_inst.rem);
+
+	unsetenv_agnostic(sp, Var.context.rem);
+	unsetenv_agnostic(sp, Var.mpi_dist.rem);
+
 
 	/*
  	 * Subject
@@ -393,60 +426,6 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	}
 
 	setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
-	
-	return ESPANK_SUCCESS;
-}
-
-/*
- *
- *
- * Cleaning
- *
- *
- */
-
-int plug_clean_remote(spank_t sp)
-{
-        unsetenv_agnostic(sp, Var.verbose.rem);
-        unsetenv_agnostic(sp, Var.policy.rem);
-        unsetenv_agnostic(sp, Var.policy_th.rem);
-        unsetenv_agnostic(sp, Var.frequency.rem);
-        unsetenv_agnostic(sp, Var.p_state.rem);
-        unsetenv_agnostic(sp, Var.learning.rem);
-        unsetenv_agnostic(sp, Var.tag.rem);
-        unsetenv_agnostic(sp, Var.path_usdb.rem);
-        unsetenv_agnostic(sp, Var.path_trac.rem);
-        unsetenv_agnostic(sp, Var.mpi_dist.rem);
-        unsetenv_agnostic(sp, Var.user.rem);
-        unsetenv_agnostic(sp, Var.group.rem);
-        unsetenv_agnostic(sp, Var.path_temp.rem);
-        unsetenv_agnostic(sp, Var.path_inst.rem);
-        unsetenv_agnostic(sp, Var.context.rem);
-	
-	return ESPANK_SUCCESS;
-}
-
-int plug_clean_task(spank_t sp)  
-{	
-        plug_component_setenabled(sp, Component.plugin, 0);
-        plug_component_setenabled(sp, Component.library, 0);
-        plug_component_setenabled(sp, Component.monitor, 0);
-        plug_component_setenabled(sp, Component.test, 0);
-
-        unsetenv_agnostic(sp, Var.verbose.ear);
-        unsetenv_agnostic(sp, Var.policy.ear);
-        unsetenv_agnostic(sp, Var.policy_th.ear);
-        unsetenv_agnostic(sp, Var.frequency.ear);
-        unsetenv_agnostic(sp, Var.p_state.ear);
-        unsetenv_agnostic(sp, Var.learning.ear);
-        unsetenv_agnostic(sp, Var.tag.ear);
-        unsetenv_agnostic(sp, Var.path_usdb.ear);
-        unsetenv_agnostic(sp, Var.path_trac.ear);
-        unsetenv_agnostic(sp, Var.mpi_dist.ear);
-        unsetenv_agnostic(sp, Var.perf_pen.ear);
-        unsetenv_agnostic(sp, Var.eff_gain.ear);
-        unsetenv_agnostic(sp, Var.name_app.ear);
-        unsetenv_agnostic(sp, Var.path_temp.ear);
 	
 	return ESPANK_SUCCESS;
 }
