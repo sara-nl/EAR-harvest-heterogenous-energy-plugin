@@ -313,7 +313,6 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
 	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
 	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
-	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
 
 	/*
 	 * User
@@ -326,6 +325,8 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Subject
 	 */
+	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
+
 	if (plug_context_is(sp, Context.srun)) {
 		setenv_agnostic(sp, Var.context.rem, "SRUN", 1);
 	} else if (plug_context_is(sp, Context.sbatch)) {
@@ -348,27 +349,30 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
 
 	/*
-	 * Clean
-	 */
-	unsetenv_agnostic(sp, Var.user.rem);
-	unsetenv_agnostic(sp, Var.group.rem);
-	unsetenv_agnostic(sp, Var.path_temp.rem);
-	unsetenv_agnostic(sp, Var.path_inst.rem);
-
-	unsetenv_agnostic(sp, Var.context.rem);
-	unsetenv_agnostic(sp, Var.mpi_dist.rem);
-
-
-	/*
- 	 * Subject
- 	 */
+  	 * Subject
+  	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
+
+	getenv_agnostic(sp, Var.mpi_dist.rem, buffer, SZ_PATH);
+	sd->job.mpi = atoi(buffer);
 
 	if (isenv_agnostic(sp, Var.context.rem, "SRUN")) {
 		sd->subject.context_local = Context.srun;
 	} else if (isenv_agnostic(sp, Var.context.rem, "SBATCH")) {
 		sd->subject.context_local = Context.sbatch;
 	}
+
+	/*
+	 * Clean
+	 */
+	unsetenv_agnostic(sp, Var.user.rem);
+	unsetenv_agnostic(sp, Var.group.rem);
+	unsetenv_agnostic(sp, Var.path_temp.rem);
+	unsetenv_agnostic(sp, Var.path_inst.rem);
+	unsetenv_agnostic(sp, Var.mpi_dist.rem);
+	unsetenv_agnostic(sp, Var.context.rem);
+
+
 
 	return ESPANK_SUCCESS;
 }
@@ -419,7 +423,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, SZ_PATH);
 
 	// Appending libraries to LD_PRELOAD
-	if (isenv_agnostic(sp, Var.mpi_dist.rem, "openmpi")) {
+	if (sd->job.mpi) {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH);
 	} else {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH);

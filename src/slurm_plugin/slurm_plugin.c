@@ -109,7 +109,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	plug_deserialize_remote(sp, &sd);
 	
 	if (!plug_component_isenabled(sp, Component.plugin)) {
-		return plug_clean_remote(sp);
+		return ESPANK_SUCCESS;
 	}
 
 	// If no shared services, EARD contact won't work, so plugin disabled
@@ -138,21 +138,8 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		}
 	}
 	
-	return plug_clean_remote(sp);
+	return ESPANK_SUCCESS;
 }
-
-int slurm_spank_task_init (spank_t sp, int ac, char **av)
-{
-        plug_verbose(sp, 2, "function slurm_spank_task_init");
-
-	if (plug_component_isenabled(sp, Component.test))
-	{
-		plug_test(sp);
-	}
-
-        return (ESPANK_SUCCESS);
-}
-
 
 // Function order:
 // 	- Local 0

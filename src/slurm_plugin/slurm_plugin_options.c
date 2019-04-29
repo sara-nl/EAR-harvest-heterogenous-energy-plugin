@@ -191,9 +191,9 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
         }
 		
 		loptarg = (ulong) atol(optarg);
-        	snprintf(buffer, 16, "%lu", loptarg);
+		snprintf(buffer, 16, "%lu", loptarg);
 		setenv_agnostic(NULL, Var.frequency.loc, buffer, 1);
-        	setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
     }
 
     return (ESPANK_SUCCESS);
@@ -290,7 +290,15 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_agnostic(NULL, Var.mpi_dist.loc, optarg, 1);
+		strncpy(buffer, optarg, 32);
+		strtoup(buffer);
+
+		if (strcmp(buffer, "OPENMPI") == 0) {
+			setenv_agnostic(NULL, Var.mpi_dist.loc, "1", 1);
+		} else {
+			setenv_agnostic(NULL, Var.mpi_dist.loc, "0", 1);
+		}
+
 		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
 	}
 
