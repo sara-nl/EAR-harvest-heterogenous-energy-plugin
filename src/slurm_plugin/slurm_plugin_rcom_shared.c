@@ -40,6 +40,7 @@ int plug_shared_readservs(spank_t sp, plug_serialization_t *sd)
 
 	get_services_conf_path(sd->pack.path_temp, buffer);
 	servs = attach_services_conf_shared_area(buffer);
+	plug_verbose(sp, 3, "looking for services in '%s'", buffer);
 
 	if (servs == NULL) {
 		plug_error(sp, "while reading the shared services memory in '%s@%s'",
@@ -62,17 +63,19 @@ int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd)
 	int n_freqs;
 
 	get_frequencies_path(sd->pack.path_temp, buffer);
+	plug_verbose(sp, 3, "looking for frequencies in '%s'", buffer);
 	freqs = attach_frequencies_shared_area(buffer, &n_freqs);
-	slurm_error("FREQS TEMP %s", buffer);
 
 	if (freqs == NULL) {
 		plug_error(sp, "while reading the shared services memory in '%s'", "hostxxx");
 		return ESPANK_ERROR;
 	}
 
+	plug_verbose(sp, 3, "number of attached frequencies '%d' %ld", n_freqs, sizeof(ulong));
 	sd->pack.eard.freqs.n_freqs = n_freqs / sizeof(ulong);
 	sd->pack.eard.freqs.freqs = malloc(n_freqs * sizeof(ulong));
-	memcpy(&sd->pack.eard.freqs.freqs, freqs, n_freqs * sizeof(ulong));
+	memcpy(sd->pack.eard.freqs.freqs, freqs, n_freqs * sizeof(ulong));
+	plug_verbose(sp, 3, "number of attached frequencies '%d'", sd->pack.eard.freqs.n_freqs);
 
 	dettach_frequencies_shared_area();
 
@@ -85,10 +88,11 @@ int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 
 	settings_conf_t *setts;
 
+plug_verbose(sp, 2, "F0 %lu", sd->job.app.job.def_f);
 	// Opening settings
 	get_settings_conf_path(sd->pack.path_temp, buffer);
 	setts = attach_settings_conf_shared_area(buffer);
-	slurm_error("SETTS TEMP %s", buffer);
+	plug_verbose(sp, 3, "looking for services in '%s'", buffer);
 
 	if (setts == NULL) {
 		plug_error(sp, "while reading the shared configuration memory in node '%s'", "hostxxx");
@@ -97,9 +101,10 @@ int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 
 	memcpy(&sd->pack.eard.setts, setts, sizeof(settings_conf_t));
 
-	if (plug_verbosity_test(sp, 4)) {
-		print_settings_conf(setts);
-	}
+plug_verbose(sp, 2, "F1 %lu", sd->job.app.job.def_f);
+plug_verbose(sp, 2, "F2 %lu", setts->def_freq);
+plug_verbose(sp, 2, "L1 %lu", sd->job.app.is_learning);
+plug_verbose(sp, 2, "L2 %lu", setts->learning);
 
 	// Closing shared memory
 	dettach_settings_conf_shared_area();

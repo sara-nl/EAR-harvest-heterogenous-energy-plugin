@@ -122,10 +122,14 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 	return ESPANK_SUCCESS;
 }
 
-static int frequency_exists(ulong *freqs, int n_freqs, ulong freq)
+static int frequency_exists(spank_t sp, ulong *freqs, int n_freqs, ulong freq)
 {
 	int i;
+	
+	plug_verbose(sp, 3, "number of frequencies %d (looking for %lu)", n_freqs, freq);
+
 	for (i = 0; i < n_freqs; ++i) {
+		plug_verbose(sp, 3, "freq #%d: %lu", i, freqs[i]);
 		if (freqs[i] == freq) {
 			return 1;
 		}
@@ -146,7 +150,7 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 
 	// Gathering variables
 	app->is_mpi = plug_component_isenabled(sp, Component.library);
-
+	
 	if (spank_get_item (sp, S_JOB_ID, &item) == ESPANK_SUCCESS) {
 		app->job.id = item;
 	} else {
@@ -181,19 +185,23 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 		app->job.def_f = 0;
 	} else {
 		app->job.def_f = (ulong) atol(buffer);
-		if (!frequency_exists(freqs, n_freqs, app->job.def_f)) {
+		if (!frequency_exists(sp, freqs, n_freqs, app->job.def_f)) {
 			app->job.def_f = 0;
 		}
 	}
 	if (!getenv_agnostic(sp, Var.learning.ear, buffer, SZ_NAME_MEDIUM)) {
 		app->is_learning = 0;
 	} else {
-		app->is_learning = 1;
-		app->job.def_f = freqs[atoi(buffer)];
+plug_verbose(sp, 2, "F-2 %lu", app->job.def_f);
+		if ((unsigned int) atoi(buffer) < n_freqs) {
+			app->job.def_f = freqs[atoi(buffer)];
+			app->is_learning = 1;
+		}
 	}
 	if (!getenv_agnostic(sp, Var.tag.ear, app->job.energy_tag, 32)) {
 		strcpy(app->job.energy_tag, "");
 	}
+plug_verbose(sp, 2, "F-1 %lu", app->job.def_f);
 
 	return ESPANK_SUCCESS;
 }
@@ -284,7 +292,6 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 
 	strncpy(sd->job.user.user,  upw->pw_name, SZ_NAME_MEDIUM);
 	strncpy(sd->job.user.group, gpw->gr_name, SZ_NAME_MEDIUM);
-
 	plug_verbose(sp, 2, "user '%u' ('%s')", uid, sd->job.user.user);
 	plug_verbose(sp, 2, "user group '%u' ('%s')", gid, sd->job.user.group);
 
@@ -302,19 +309,6 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "function plug_serialize_remote");
 
 	/*
-	 * EAR variables
-	 */
-
-	// Converting option variables into remote variables.
-	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
-	repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
-	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
-	repenv_agnostic(sp, Var.learning.loc,  Var.learning.ear);
-	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
-	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
-	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
-
-	/*
 	 * User
 	 */
 	setenv_agnostic(sp, Var.user.rem,  sd->job.user.user,  1);
@@ -325,7 +319,6 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Subject
 	 */
-	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
 
 	if (plug_context_is(sp, Context.srun)) {
 		setenv_agnostic(sp, Var.context.rem, "SRUN", 1);
@@ -339,7 +332,20 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_deserialize_remote");
-	
+
+	/*
+	 * Options
+	 */
+        repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
+        repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
+        repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
+	repenv_agnostic(sp, Var.frequency.loc,  Var.frequency.ear);
+	repenv_agnostic(sp, Var.learning.loc,  Var.learning.ear);
+        repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
+        repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
+        repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
+	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
+
 	/*
 	 * User
 	 */
@@ -371,8 +377,6 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.path_inst.rem);
 	unsetenv_agnostic(sp, Var.mpi_dist.rem);
 	unsetenv_agnostic(sp, Var.context.rem);
-
-
 
 	return ESPANK_SUCCESS;
 }

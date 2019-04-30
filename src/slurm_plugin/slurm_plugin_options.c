@@ -254,7 +254,7 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 		ioptarg = atoi(optarg);
 		if (ioptarg < 0) ioptarg = 0;
 		if (ioptarg > 4) ioptarg = 4;
-		snprintf(buffer, 4, "%i", ioptarg);
+		snprintf(buffer, 4, "%d", ioptarg);
 
 		setenv_agnostic(NULL, Var.verbose.loc, buffer, 1);
 		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
@@ -292,7 +292,7 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 
 		strncpy(buffer, optarg, 32);
 		strtoup(buffer);
-
+		
 		if (strcmp(buffer, "OPENMPI") == 0) {
 			setenv_agnostic(NULL, Var.mpi_dist.loc, "1", 1);
 		} else {
