@@ -151,6 +151,10 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	// Gathering variables
 	app->is_mpi = plug_component_isenabled(sp, Component.library);
 	
+	strcpy(app->job.user_id, sd->job.user.user);
+	strcpy(app->job.group_id, sd->job.user.group);
+	strcpy(app->job.user_acc, sd->job.user.account);
+	
 	if (spank_get_item (sp, S_JOB_ID, &item) == ESPANK_SUCCESS) {
 		app->job.id = item;
 	} else {
@@ -163,15 +167,6 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	}
 	if (!getenv_agnostic(sp, Var.name_app.rem, app->job.app_id, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.app_id, "");
-	}
-	if (!getenv_agnostic(sp, Var.user.rem, app->job.user_id, SZ_NAME_MEDIUM)) {
-		strcpy(app->job.user_id, "");
-	}
-	if (!getenv_agnostic(sp, Var.group.rem, app->job.group_id, SZ_NAME_MEDIUM)) {
-		strcpy(app->job.group_id, "");
-	}
-	if (!getenv_agnostic(sp, Var.account.rem, app->job.user_acc, SZ_NAME_MEDIUM)) {
-		strcpy(app->job.user_acc, "");
 	}
 	if (!getenv_agnostic(sp, Var.policy.ear, app->job.policy, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.policy, "");
@@ -192,7 +187,6 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	if (!getenv_agnostic(sp, Var.learning.ear, buffer, SZ_NAME_MEDIUM)) {
 		app->is_learning = 0;
 	} else {
-plug_verbose(sp, 2, "F-2 %lu", app->job.def_f);
 		if ((unsigned int) atoi(buffer) < n_freqs) {
 			app->job.def_f = freqs[atoi(buffer)];
 			app->is_learning = 1;
@@ -201,7 +195,12 @@ plug_verbose(sp, 2, "F-2 %lu", app->job.def_f);
 	if (!getenv_agnostic(sp, Var.tag.ear, app->job.energy_tag, 32)) {
 		strcpy(app->job.energy_tag, "");
 	}
-plug_verbose(sp, 2, "F-1 %lu", app->job.def_f);
+
+	plug_verbose(sp, 3, "application summary");
+	plug_verbose(sp, 3, "job/step/name '%lu'/'%lu'/'%s'", app->job.id, app->job.step_id, app->job.app_id);
+	plug_verbose(sp, 3, "user/group/acc '%s'/'%s'/'%s'", app->job.user_id, app->job.group_id, app->job.user_acc);
+	plug_verbose(sp, 3, "policy/th/freq '%s'/'%f'/'%lu'", app->job.policy, app->job.th, app->job.def_f);
+	plug_verbose(sp, 3, "learning/tag '%lu'/'%s'", app->is_learning, app->job.energy_tag);
 
 	return ESPANK_SUCCESS;
 }
@@ -351,6 +350,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	 */
 	getenv_agnostic(sp, Var.user.rem,  sd->job.user.user,  SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.group.rem, sd->job.user.group, SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, Var.account.rem, sd->job.user.account, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, SZ_PATH);
 	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
 

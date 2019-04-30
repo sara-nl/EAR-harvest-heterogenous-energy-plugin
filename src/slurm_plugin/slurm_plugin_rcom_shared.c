@@ -71,11 +71,9 @@ int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd)
 		return ESPANK_ERROR;
 	}
 
-	plug_verbose(sp, 3, "number of attached frequencies '%d' %ld", n_freqs, sizeof(ulong));
 	sd->pack.eard.freqs.n_freqs = n_freqs / sizeof(ulong);
 	sd->pack.eard.freqs.freqs = malloc(n_freqs * sizeof(ulong));
 	memcpy(sd->pack.eard.freqs.freqs, freqs, n_freqs * sizeof(ulong));
-	plug_verbose(sp, 3, "number of attached frequencies '%d'", sd->pack.eard.freqs.n_freqs);
 
 	dettach_frequencies_shared_area();
 
@@ -88,7 +86,6 @@ int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 
 	settings_conf_t *setts;
 
-plug_verbose(sp, 2, "F0 %lu", sd->job.app.job.def_f);
 	// Opening settings
 	get_settings_conf_path(sd->pack.path_temp, buffer);
 	setts = attach_settings_conf_shared_area(buffer);
@@ -100,11 +97,6 @@ plug_verbose(sp, 2, "F0 %lu", sd->job.app.job.def_f);
 	}
 
 	memcpy(&sd->pack.eard.setts, setts, sizeof(settings_conf_t));
-
-plug_verbose(sp, 2, "F1 %lu", sd->job.app.job.def_f);
-plug_verbose(sp, 2, "F2 %lu", setts->def_freq);
-plug_verbose(sp, 2, "L1 %lu", sd->job.app.is_learning);
-plug_verbose(sp, 2, "L2 %lu", setts->learning);
 
 	// Closing shared memory
 	dettach_settings_conf_shared_area();

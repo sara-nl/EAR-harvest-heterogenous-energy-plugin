@@ -315,7 +315,7 @@ int _opt_ear_tag(int val, const char *optarg, int remote)
 			return (ESPANK_BAD_ARG);
 		}
 
-		setenv_agnostic(NULL, "OPT_ENERGY_TAG", optarg, 1);
+		setenv_agnostic(NULL, Var.tag.loc, optarg, 1);
 		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
 	}
 	return (ESPANK_SUCCESS);
