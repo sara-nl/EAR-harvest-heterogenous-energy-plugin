@@ -606,6 +606,10 @@ static void init_output_redirection(int argc, char **argv, cluster_conf_t *conf_
 {
 	int fd_output = -1;
 
+	if (listening) {
+		verbose_maslx("phase 7: listening (processing every %lu s)", time_insr);
+	}
+
 	if (conf_clus->db_manager.use_log) {
 		fd_output = create_log(conf_clus->tmp_dir, "eardbd");
 	}

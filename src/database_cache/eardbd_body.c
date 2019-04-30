@@ -310,10 +310,6 @@ void body()
 {
 	int s;
 
-	if (listening) {
-		verbose_maslx("phase 7: listening (processing every %lu s)", time_insr);
-	}
-
 	// BODY
 	while(listening)
 	{
