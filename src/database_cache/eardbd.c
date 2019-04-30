@@ -602,7 +602,7 @@ static void init_pid_files(int argc, char **argv)
 	}
 }
 
-static void init_output_redirection(int argc, char **argv)
+static void init_output_redirection(int argc, char **argv, cluster_conf_t *conf_clus)
 {
 	int fd_output = -1;
 
@@ -666,7 +666,7 @@ int main(int argc, char **argv)
 		init_pid_files(argc, argv);
 
 		// Output file
-		init_output_redirection(argc, argv);
+		init_output_redirection(argc, argv, &conf_clus);
 
 		/*
  		 * Running
