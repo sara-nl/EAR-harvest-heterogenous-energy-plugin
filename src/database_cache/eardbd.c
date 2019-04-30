@@ -187,6 +187,12 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	verbose_maxxx("reading '%s' database configuration file", extra_buffer);
 	read_eardbd_conf(extra_buffer, conf_clus->database.user, conf_clus->database.pass);
 	#endif
+
+	// Output redirection
+	if (conf_clus->db_manager.use_log) {
+		verbose_maxxx("redirecting output to '%s'", conf_clus->tmp_dir);
+	}
+
 	// Database
 	init_db_helper(&conf_clus->database);
 
@@ -222,19 +228,6 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	strcpy(server_host, argv[3]);
 	strcpy(conf_clus->tmp_dir, argv[5]);
 	#endif
-
-	// Print
-	int fd_output = verb_channel;
-
-	if (conf_clus->db_manager.use_log) {
-		fd_output = create_log(conf_clus->tmp_dir, "eardbd");
-	}
-
-	VERB_SET_FD(fd_output);
-	WARN_SET_FD(fd_output);
-	ERROR_SET_FD(fd_output);
-	DEBUG_SET_FD(fd_output);
-	TIMESTAMP_SET_EN(conf_clus->db_manager.use_log);
 
 	// Ports
 	server_port = conf_clus->db_manager.tcp_port;
@@ -609,6 +602,24 @@ static void init_pid_files(int argc, char **argv)
 	}
 }
 
+static void init_output_redirection(int argc, char **argv)
+{
+	int fd_output = -1;
+
+	if (conf_clus->db_manager.use_log) {
+		fd_output = create_log(conf_clus->tmp_dir, "eardbd");
+	}
+	if (fd_output < 0) {
+		fd_output = verb_channel;
+	}
+
+	VERB_SET_FD(fd_output);
+	WARN_SET_FD(fd_output);
+	ERROR_SET_FD(fd_output);
+	DEBUG_SET_FD(fd_output);
+	TIMESTAMP_SET_EN(conf_clus->db_manager.use_log);
+}
+
 /*
  *
  *
@@ -653,6 +664,9 @@ int main(int argc, char **argv)
 
 		// Creating PID files
 		init_pid_files(argc, argv);
+
+		// Output file
+		init_output_redirection(argc, argv);
 
 		/*
  		 * Running

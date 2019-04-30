@@ -120,7 +120,7 @@ void metrics_print()
 
 	if (n > 0) {
 	//
-	tprintf_init(fderr, STR_MODE_DEF, "15 13 9 10 10");
+	tprintf_init(verb_channel, STR_MODE_DEF, "15 13 9 10 10");
 
 	//
 	tprintf("sample (%d)||recv/alloc||%%||t. insr||t. recv", mirror_iam);
