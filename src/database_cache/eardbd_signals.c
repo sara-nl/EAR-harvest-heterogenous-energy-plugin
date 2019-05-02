@@ -27,16 +27,6 @@
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <math.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <signal.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -82,22 +72,22 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	{
 		verbosity = !verbosity;
 		updating  = 1;
-		
-		printpl1("signal SIGUSR1 received, switching verbosity to '%d'", verbosity);
+
+		verbose_xaxxw("signal SIGUSR1 received, switching verbosity to '%d'", verbosity);
 	}
 
 	if (signal == SIGUSR2)
 	{
 		verbosity = (verbosity != 2) * 2;
 		updating  = 1;
-		
-		printpl1("signal SIGUSR2 received, switching verbosity to '%d'", verbosity);
+
+		verbose_xaxxw("signal SIGUSR2 received, switching verbosity to '%d'", verbosity);
 	}
 
 	// Case exit
 	if ((signal == SIGTERM || signal == SIGINT) && !exitting)
 	{
-		printpl0("signal SIGTERM/SIGINT received, exitting");
+		verbose_xxxxw("signal SIGTERM/SIGINT received, exitting");
 
 		propagating   = others_pid > 0 && info->si_pid != others_pid;
 		//waiting     = others_pid > 0 && server_iam;
@@ -110,7 +100,7 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	// Case reconfigure
 	if (signal == SIGHUP && !reconfiguring)
 	{
-		printpl0("signal SIGHUP received, reconfiguring");
+		verbose_xxxxw("signal SIGHUP received, reconfiguring");
 
 		propagating   = others_pid > 0 && info->si_pid != others_pid;
 		//waiting       = others_pid > 0 && server_iam;
@@ -123,7 +113,7 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 
 	if (signal == SIGCHLD)
 	{
-		printpl0("signal SIGCHLD received");
+		verbose_xxxxw("signal SIGCHLD received");
 
 		updating   = 1;
 		waiting    = server_iam & (others_pid > 0);
@@ -138,9 +128,9 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	// Wait for the children (mirror)
 	if (waiting)
 	{
-		printpl0("waiting 1");
+		verbose_xxxxw("waiting 1");
 		waitpid(mirror_pid, NULL, 0);
-		printpl0("waiting 2");
+		verbose_xxxxw("waiting 2");
 
 		others_pid = 0;
 		mirror_pid = 0;

@@ -136,9 +136,12 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
                 else
                     new_ips[num_ips].max_power = (uint) aux_node_conf->max_error_power;
 
-				#if USE_EXT
+				/*#if USE_EXT
 				strcat(node_name,NW_EXT);
-				#endif
+				#endif*/
+                if (strlen(my_cluster_conf.net_ext) > 0)
+                    strcat(node_name, my_cluster_conf.net_ext);
+
                 fill_ip(node_name, &new_ips[num_ips]);
                 num_ips++;
             }
@@ -202,8 +205,8 @@ void usage(char *app)
             "\n\t\t\t\t\t\t\t--status=node_name retrieves the status of that node individually."\
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
-            "\n\t--help \t\t\t\t\t->displays this message.");
-    printf("\n\nThis app requires privileged access privileged accesss to execute.\n", app);
+            "\n\t--help \t\t\t\t\t->displays this message.", app);
+    printf("\n\nThis app requires privileged access privileged accesss to execute.\n");
 	exit(1);
 }
 
@@ -262,9 +265,11 @@ void generate_ip(ip_table_t *ips, char *node_name)
         fprintf(stderr, "Error reading node %s configuration\n", node_name);
     else
         ips[0].max_power = (uint) aux_node_conf->max_error_power;
-#if USE_EXT
+/*#if USE_EXT
     strcat(node_name,NW_EXT);
-#endif
+#endif*/
+    if (strlen(my_cluster_conf.net_ext) > 0)
+        strcat(node_name, my_cluster_conf.net_ext);
     fill_ip(node_name, &ips[0]);
 
 }

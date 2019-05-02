@@ -92,6 +92,7 @@ tests/check/check.sh
 *ear_store_database
 *ear_types
 *eardbd
+*eardbd_monitor
 *eargm_end_job
 *eargm_new_job
 *eargmd

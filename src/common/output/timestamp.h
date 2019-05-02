@@ -27,44 +27,27 @@
  * *   The GNU LEsser General Public License is contained in the file COPYING
  * */
 
-#ifndef EAR_ERROR_H
-#define EAR_ERROR_H
+#ifndef EAR_TIMESTAMP_H
+#define EAR_TIMESTAMP_H
 
+#include <time.h>
 #include <stdio.h>
 #include <string.h>
-#include <syslog.h>
-#include <common/output/timestamp.h>
-#include <common/output/output_conf.h>
 
-int error_channel	__attribute__((weak)) = 2;
-int error_enabled	__attribute__((weak)) = 1;
+int time_enabled __attribute__((weak)) = 0;
+static struct tm *tm_log;
+static time_t time_log;
+static char s_log[64];
 
-// Set
-#define ERROR_SET_FD(fd) error_channel = fd;
-#define ERROR_SET_EN(en) error_enabled = 0;
+#define TIMESTAMP_SET_EN(en) time_enabled = en;
 
-//
-#if SHOW_ERRORS
-#define error(...) \
-	if (error_enabled) \
+#define timestamp(channel) \
+	if (time_enabled) \
 	{ \
-		timestamp(error_channel); \
-		dprintf(error_channel, "ERROR: " __VA_ARGS__); \
-		dprintf(error_channel, "\n"); \
+		time(&time_log); \
+		tm_log = localtime(&time_log); \
+		strftime(s_log, sizeof(s_log), "%c", tm_log); \
+		dprintf(channel, "%s:", s_log); \
 	}
-#else
-#define error(...)
-#endif
 
-// Log
-#if SHOW_LOGS
-#define log(...) 		syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__);
-#define log_open(package)	openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
-#define log_close()		closelog();
-#else
-#define log(...)
-#define log_open(package);
-#define log_close()
-#endif
-
-#endif //EAR_ERROR_H
+#endif //EAR_VERBOSE_H

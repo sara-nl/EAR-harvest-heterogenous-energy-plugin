@@ -35,6 +35,7 @@
 #include <sys/types.h>
 #include <common/output/debug.h>
 #include <common/output/verbose.h>
+#include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
 
 static packet_header_t header;
@@ -71,13 +72,13 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 	if (enabled_server) {
 		state.server = sockets_send(&server_sock, &header, content);
 
-		debug("server '%s':%d, enabled %d, state %d, fd %d", server_sock.host,
+		debug("server '%s:%d', enabled %d, state %d, fd %d", server_sock.host,
 			server_sock.port, enabled_server, state.server, server_sock.fd);
 	}
 	if (enabled_mirror) {
 		state.mirror = sockets_send(&mirror_sock, &header, content);
 
-		debug("mirror '%s':%d, enabled %d, state %d, fd %d", mirror_sock.host,
+		debug("mirror '%s:%d', enabled %d, state %d, fd %d", mirror_sock.host,
 			mirror_sock.port, enabled_mirror, state.mirror, mirror_sock.fd);
 	}
 
@@ -146,7 +147,7 @@ edb_state_t eardbd_send_loop(loop_t *loop)
 	return _send(CONTENT_TYPE_LOO, (char *) loop, sizeof(loop_t));
 }
 
-edb_state_t eardbd_ping()
+edb_state_t eardbd_send_ping()
 {
 	char ping[] = "ping";
 	return _send(CONTENT_TYPE_PIN, (char *) ping, sizeof(ping));
@@ -182,8 +183,8 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	enabled_mirror = (mirror_host != NULL) && (strlen(mirror_host) > 0);
 
 	//
-	debug("server '%s':%d, enabled %d", server_host, server_port, enabled_server);
-	debug("mirror '%s':%d, enabled %d", mirror_host, mirror_port, enabled_mirror);
+	debug("server '%s:%d', enabled %d", server_host, server_port, enabled_server);
+	debug("mirror '%s:%d', enabled %d", mirror_host, mirror_port, enabled_mirror);
 
 	// Maybe it's not enabled, but it's ok.
 	edb_state_init(state, EAR_NOT_INITIALIZED);

@@ -280,7 +280,7 @@ void print()
 	}
 
 	if (!opt_c) {
-		tprintf_init(stdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+		tprintf_init(fdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
 
 		if (opt_g && opt_h) {
 			tprintf("Node name||Frequency|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err");
