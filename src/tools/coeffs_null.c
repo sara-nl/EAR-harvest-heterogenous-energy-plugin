@@ -76,9 +76,7 @@ int main(int argc, char *argv[])
     fd=open(buffer,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     if (fd<0)
 	{
-		sprintf(buffer,"Invalid coeffs path %s (%s)",buffer,strerror(errno));
-		error("Creating null coeffs file '%s' with range '%lu-%lu' KHz", buffer, maxf, minf);
-		printf(buffer);
+		error("invalid coeffs path %s (%s)", buffer, strerror(errno));
 		exit(1);
     }
 	nump=((maxf-minf)/100000)+1;
@@ -86,7 +84,7 @@ int main(int argc, char *argv[])
     coeffs=(coefficient_t*)calloc(sizeof(coefficient_t),nump*nump);
     if (coeffs==NULL) 
 	{
-		error("Not enough memory");
+		error("not enough memory");
 		exit(1);
     }
 	for (i=0;i<nump;i++)

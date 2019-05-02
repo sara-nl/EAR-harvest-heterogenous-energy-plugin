@@ -38,32 +38,34 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
+#include <common/sizes.h>
+#include <common/output/verbose.h>
 #include <common/types/coefficient.h>
-#define POWER 	0
-#define TIME 	1
-#define BOTH	2
-int num_pstates;
-int mode=BOTH;
 
+#define POWER 			0
+#define TIME 			1
+#define BOTH			2
 #define IS_DIFFERENT	0
 #define IS_EQUAL		1
 #define MAX_DIFF		0.1
 #define DEF_FREQ		2401000
 
+char buffer[SZ_PATH];
+int num_pstates;
+int mode=BOTH;
 int file_size;
-char buffer[1024];
 
 void read_file(char *path, coefficient_t *coeffs)
 {
 	int rfd = open(path, O_RDONLY);
 
 	if (rfd < 0) {
-		printf("Error opening file %s\n", strerror(errno));
+		error("Error opening file %s", strerror(errno));
 		return;
 	}
 
 	if (read(rfd, coeffs, file_size) != file_size) {
-		printf("Error reading coefficients for path %s (%s)\n", path, strerror(errno));
+		error("Error reading coefficients for path %s (%s)", path, strerror(errno));
 	}
 
 	close(rfd);
@@ -145,84 +147,90 @@ int main(int argc, char *argv[])
 	coefficient_t *avg,*per_node;
 	int avg_pstates,per_node_pstates;
 	int total_warnings;
-	
 
-	if (argc < 4) {
-		printf("Usage: %s coeffs_avg coeffs_node power|time|both\n", argv[0]);
+	if (argc < 4)
+	{
+		verbose(0, "Usage: %s path.coeffs.1 path.coeffs.2 [power|time|both]", argv[0]);
+		verbose(0, "  Compares two coefficient files.");
 		exit(1);
 	}
+
 	if (strcmp(argv[3],"power")==0) mode=POWER;
 	else if (strcmp(argv[3],"time")==0) mode=TIME;
 	else mode=BOTH;
 
 	/* Reading avg coefficients */
-	fd_avg=open(argv[1],O_RDONLY);	
+	fd_avg=open(argv[1],O_RDONLY);
 	if (fd_avg < 0)
 	{
-		printf(buffer, "Invalid coeffs avg path %s (%s)\n", argv[1], strerror(errno));
+		verbose(0, "Invalid coeffs avg path %s (%s)", argv[1], strerror(errno));
 		exit(1);
 	}
 	file_size = lseek(fd_avg, 0, SEEK_END);
 	lseek(fd_avg,0,SEEK_SET);
 	num_pstates = file_size / sizeof(coefficient_t);
-	printf("Coefficients file size %d, pstates %d\n", file_size, num_pstates);
+	verbose(0, "Coefficients file size %d, pstates %d", file_size, num_pstates);
 	avg_pstates=num_pstates;
 	avg=(coefficient_t *)calloc(1,file_size);
 
 	if (avg == NULL ){
-		printf("Not enough memory \n");
+		verbose(0, "Not enough memory ");
 		exit(0);
 	}
 
 	if (read(fd_avg,avg,file_size)!=file_size){
-		printf("Error reading coefficients\n");
+		error("while reading coefficients");
 		exit(0);
 	}
 	close(fd_avg);
 
 	/* Reading per-node coefficients */
 
-    fd_per_node=open(argv[2],O_RDONLY);  
+    fd_per_node=open(argv[2],O_RDONLY);
     if (fd_per_node < 0)
-    {   
-        printf(buffer, "Invalid coeffs per_node path %s (%s)\n", argv[2], strerror(errno));
+    {
+		error("Invalid coeffs per_node path %s (%s)", argv[2], strerror(errno));
         exit(1);
-    }   
+    }
     file_size = lseek(fd_per_node, 0, SEEK_END);
     lseek(fd_per_node,0,SEEK_SET);
     num_pstates = file_size / sizeof(coefficient_t);
 	per_node_pstates=num_pstates;
-    printf("Coefficients file size %d, pstates %d\n", file_size, num_pstates);
+    verbose(0, "Coefficients file size %d, pstates %d", file_size, num_pstates);
     per_node=(coefficient_t *)calloc(1,file_size);
 
     if (per_node == NULL ){
-        printf("Not enough memory \n");
+        verbose(0, "Not enough memory ");
         exit(0);
-    }   
+    }
 
     if (read(fd_per_node,per_node,file_size)!=file_size){
-        printf("Error reading coefficients\n");
+		error("while reading coefficients");
         exit(0);
-    }   
+    }
     close(fd_per_node);
 
-	
+
 	total_warnings=0;
 	for (i = 0; i <avg_pstates; i++)
 	{
 		for (j=0;j<per_node_pstates;j++)
 		{
-			if ((avg[i].pstate_ref== per_node[j].pstate_ref) && (avg[i].pstate==per_node[j].pstate) && (avg[i].available) && (per_node[j].available) )
+			if ((avg[i].pstate_ref == per_node[j].pstate_ref) &&
+				(avg[i].pstate == per_node[j].pstate) &&
+				(avg[i].available) &&
+				(per_node[j].available))
 			{
 				if (compare_coefficients(&avg[i], &per_node[j]) == IS_DIFFERENT)
 				{
 					total_warnings++;
-					printf("%s pstate_ref %u and pstate %u are different in %lf\n",argv[2],avg[i].pstate_ref,avg[i].pstate,compute_diff(&avg[i], &per_node[j]));
+					verbose(0, "%s pstate_ref %u and pstate %u are different in %lf",
+							argv[2],avg[i].pstate_ref,avg[i].pstate,compute_diff(&avg[i], &per_node[j]));
 				}
 			}
 		}
 	}
 
-	if (total_warnings) printf("Total warnings %d\n", total_warnings);
+	if (total_warnings) verbose(0, "Total warnings %d", total_warnings);
 	return 0;
 }

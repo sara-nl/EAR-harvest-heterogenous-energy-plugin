@@ -63,26 +63,25 @@ int main(int argc, char *argv[])
     int i;
 
     if (argc < 2) {
-        printf("Usage: %s coeffs_file\n",argv[0]);
+        verbose(0, "Usage: %s coeffs_file",argv[0]);
         exit(1);
     }
 
 	size = file_size(argv[1]);
 
 	if (size < 0) {
-		sprintf(buffer, "ERROR, invalid coeffs path %s (%s)\n", argv[1], intern_error_str);
-		printf(buffer);
+		error("invalid coeffs path %s (%s)", argv[1], intern_error_str);
 		exit(1);
 	}
 
     n_pstates = size / sizeof(coefficient_t);
-	printf("coefficients file size: %d\n", size);
-	printf("number of P_STATES: %d\n", n_pstates);
+	verbose(0, "coefficients file size: %d", size);
+	verbose(0, "number of P_STATES: %d", n_pstates);
 
     coeffs = (coefficient_t*) calloc(size ,1);
 
     if (coeffs == NULL) {
-		printf("ERROR, not enough memory\n");
+		error("not enough memory");
 		exit(1);
     }
 

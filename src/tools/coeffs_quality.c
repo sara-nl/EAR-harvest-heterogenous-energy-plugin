@@ -280,14 +280,13 @@ void print()
 	}
 
 	if (!opt_c) {
-		tprintf_init(fdout, STR_MODE_COL, "18 11 15 12 12 15 12 12");
+		tprintf_init(verbose_channel, STR_MODE_COL, "18 11 15 12 12 15 12 12");
 
 		if (opt_g && opt_h) {
 			tprintf("Node name||Frequency|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err");
 			tprintf("---------||---------|| | -------||-------||------|| | -------||-------||------");
 		}
 	}
-
 
 	// When no apps or coeffs found
 	if (n_apps == 0 || n_coeffs == 0)
@@ -464,7 +463,7 @@ void read_applications()
 	if (n_appsn <= 0)
 	{
 		if (!opt_g) {
-			verbose(0, "ERROR, no learning apps found for the node '%s'", name_node); //error
+			error("no learning apps found for the node '%s'", name_node); //error
 		}
 
 		return;
@@ -499,7 +498,7 @@ void read_coefficients()
 	{
 		if (!opt_g)
 		{
-			verbose(0, "ERROR, no island found for node %s", node); //error
+			error("no island found for node %s", node); //error
 			return;
 		}
 	}
@@ -530,7 +529,7 @@ void read_coefficients()
 		if (n_coeffs <= 0)
 		{
 			if (!opt_g) {
-				verbose(0, "ERROR, no default coefficients found"); //error
+				error("no default coefficients found"); //error
 			}
 		}
 	}
@@ -617,7 +616,7 @@ void init()
 	get_ear_conf_path(buffer);
 
 	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS){
-		verbose(0, "ERROR while reading cluster configuration."); //error
+		error("while reading cluster configuration."); //error
 		exit(1);
 	}
 
