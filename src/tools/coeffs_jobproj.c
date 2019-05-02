@@ -175,7 +175,7 @@ static void print()
 	}
 	else if (!opt_c)
 	{
-		tprintf_init(stderr, STR_MODE_DEF, "12 3 11 11 11 11 11 11 11 11 11 11 11 11");
+		tprintf_init(fderr, STR_MODE_DEF, "12 3 11 11 11 11 11 11 11 11 11 11 11 11");
 
 		if (!opt_h) {
 			tprintf("%s||Coe|||T. Real||T. 1||T. 2||T. 3||T. 4||T. 5|||P. Real||P. 1||P. 2||P. 3||P. 4||P. 5",
@@ -253,7 +253,7 @@ static void print()
 	// Print legend
 	verbose(0, "-------------------------");
 	
-	tprintf_init(stderr, STR_MODE_DEF, "5 12 12");
+	tprintf_init(fderr, STR_MODE_DEF, "5 12 12");
 	tprintf("Idx||Freq. from||Freq. to");
 
 	for (t1 = 1; t1 < COLUMNS; ++t1)

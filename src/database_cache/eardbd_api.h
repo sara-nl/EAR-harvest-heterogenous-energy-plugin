@@ -31,14 +31,7 @@
 #define EAR_EARDBD_API_H
 
 #include <common/sockets.h>
-#include <common/types/log.h>
-#include <common/types/loop.h>
-#include <common/types/generic.h>
-#include <common/types/application.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/periodic_aggregation.h>
-#include <common/types/configuration/cluster_conf.h>
-#include <database_cache/eardbd.h>
+#include <common/types/types.h>
 
 typedef struct edb_state {
     state_t server;

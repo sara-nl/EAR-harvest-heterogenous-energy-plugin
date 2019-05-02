@@ -407,13 +407,13 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 			}else{
 				verbose(VJOBPMON,"Authorized user is executing not defined/invalid policy using default %d",my_cluster_conf.default_policy);
 				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
-				print_policy_conf(my_policy);		
 				if (my_policy==NULL){
 					error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 					authorized_context.p_state=1;
 					authorized_context.policy=MONITORING_ONLY;
 					authorized_context.th=0;
 				}else{
+					print_policy_conf(my_policy);		
 					copy_policy_conf(&authorized_context,my_policy);
 				}
 				my_policy=&authorized_context;
@@ -492,11 +492,11 @@ void powermon_mpi_finalize()
 
 int new_batch()
 {
-	ccontext++;
-	if (ccontext==MAX_NESTED_LEVELS){
+	if (ccontext==MAX_NESTED_LEVELS-1){
 		error("Panic: Maximum number of levels reached in new_job %d",ccontext);
 		return EAR_ERROR;
 	}
+	ccontext++;
 	current_ear_app[ccontext]=(powermon_app_t*)malloc(sizeof(powermon_app_t));
 	if (current_ear_app[ccontext]==NULL){
 		error("Panic: malloc returns NULL for current context");
@@ -530,7 +530,10 @@ void powermon_new_job(application_t* appID,uint from_mpi)
 	ulong f;
 	uint user_type;
 	verbose(VJOBPMON,"powermon_new_job (%u,%u)",appID->job.id,appID->job.step_id);
-	new_batch();
+	if (new_batch()!=EAR_SUCCESS){
+		error("Maximum number of contexts reached, no more concurrent jobs supported");
+		return;
+	}
 	/* Saving the context */
 	check_context("powermon_new_job: after new_batch!");
 	current_ear_app[ccontext]->current_freq=frequency_get_cpu_freq(0);
