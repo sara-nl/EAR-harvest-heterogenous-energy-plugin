@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -O2
+CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) 
 
 ######## FILES
 
@@ -11,7 +11,7 @@ papi_OBJS = flops.o \
 
 ######## RULES
 
-all: $(papi_OBJS)
+all: $(papi_OBJS) basic_test
 
 generics.o: generics.c generics.h
 	$(CC) $(CFLAGS) -c $<
@@ -30,6 +30,9 @@ stalls.o: stalls.c stalls.h
 
 energy_cpu.o: energy_cpu.c energy_cpu.h
 	$(CC) $(CFLAGS) -c $<
+
+basic_test: basic_test.c
+	$(CC) $(CFLAGS) -o $@ $< $(papi_OBJS) $(PAPI_LDFLAGS) ../libmetrics.a
 
 ######## OPTIONS
 
