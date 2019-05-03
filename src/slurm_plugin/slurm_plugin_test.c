@@ -50,12 +50,14 @@ typedef struct test_s {
 	char *p_state;
 	char *learning;
 	char *tag;
-	char *name_app;
 	char *path_usdb;
 	char *path_trac;
 	char *path_temp;
+	char *name_app;
 	char *verbose;
 } test_t;
+
+test_t test1 = { .comp_libr = "ON", .verbose = "2" };
 
 static void fake_build(spank_t sp)
 {
@@ -76,7 +78,6 @@ static void fake_build(spank_t sp)
 
 static int fake_test(spank_t sp)
 {
-	if (isenv_agnostic(sp, Var.verbose.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.policy.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.policy_th.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.perf_pen.ear, fake)) return ESPANK_ERROR;
@@ -87,25 +88,30 @@ static int fake_test(spank_t sp)
 	if (isenv_agnostic(sp, Var.tag.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.path_usdb.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.path_trac.ear, fake)) return ESPANK_ERROR;
-	if (isenv_agnostic(sp, Var.name_app.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.path_temp.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.name_app.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.verbose.ear, fake)) return ESPANK_ERROR;
 }
 
 static void option_build(spank_t sp, test_t *test)
 {
-	/*
-	if (e != NULL) {
-		_opt_ear (0, e, 0);
+	if (test->comp_libr != NULL) {
+		_opt_ear (0, test->comp_libr, 0);
 	}
-	if (v != NULL) {
-		_opt_ear_verbose(0, v, 0);
-		setenv_agnostic(sp, Var.verbose.tes, v, 1);
+	if (test->verbose != NULL) {
+		_opt_ear_verbose(0, test->verbose, 0);
+		setenv_agnostic(sp, Var.verbose.tes, test->verbose, 1);
 	}
-	 */
 }
 
 static int option_result(spank_t sp, test_t *test)
 {
+	if (test->comp_libr != NULL) {
+		if (!plug_component_isenabled(sp, Component.library)) return ESPANK_ERROR;
+	}
+	if (test->verbose != NULL) {
+		if (!isenv_agnostic(sp, Var.verbose.tes, test->verbose)) return ESPANK_ERROR;
+	}
 	return ESPANK_SUCCESS;
 }
 
@@ -124,7 +130,7 @@ void plug_test_build(spank_t sp)
 	// Simulating option variables
 	switch (test)
 	{
-		case 1: option_build(sp, NULL); break;
+		case 1: option_build(sp, test1); break;
 		default: return;
 	}
 }
@@ -143,8 +149,6 @@ _opt_ear_verbose (0, "", 0);
 
 void plug_test_result(spank_t sp)
 {
-	plug_verbose(sp, 2, "function plug_test_result");
-	
 	int result;
 	int test;
 
@@ -153,20 +157,20 @@ void plug_test_result(spank_t sp)
 
 	//
 	if (fake_test(sp) != ESPANK_SUCCESS) {
-		plug_error(sp, "plugin fake test failed");
+		plug_verbose(sp, 0, "plugin test %sFAILED%s (fakes)", COL_RED, COL_CLR);
 		return;
 	}
-	plug_verbose(sp, 0, "plugin fake test success");
 
 	//
 	switch (test)
 	{
-		case 1: result = option_result(sp, NULL); break;
+		case 1: result = option_test(sp, test1); break;
 		default: return;
 	}
 
 	if (result != ESPANK_SUCCESS) {
-		plug_error(sp, "plugin option test failed");
+		plug_verbose(sp, 0, "plugin test FAILED (options)", COL_RED, COL_CLR);
+		return;
 	}
-	plug_verbose(sp, 0, "plugin option test success");
+	plug_verbose(sp, 0, "plugin option test %sSUCCESS%s", COL_GRE, COL_CLR);
 }

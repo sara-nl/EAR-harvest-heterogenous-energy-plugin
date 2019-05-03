@@ -90,7 +90,7 @@ int _opt_register(spank_t sp)
 	{
 		if ((s = spank_option_register(sp, &spank_options_manual[i])) != ESPANK_SUCCESS)
 		{
-			plug_error(NULL, "unable to register SPANK option %s", spank_options_manual[i].name);
+			plug_verbose(NULL, 2, "unable to register SPANK option %s", spank_options_manual[i].name);
 			return s;
 		}
 	}
@@ -106,7 +106,7 @@ int _opt_register(spank_t sp)
 
 int _opt_ear (int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_ear");
+	plug_verbose(NULL, 2, "function _opt_ear");
 
 	if (!remote)
 	{
@@ -122,7 +122,7 @@ int _opt_ear (int val, const char *optarg, int remote)
 		} else if (strcmp(buffer, "OFF") == 0) {
 			setenv_agnostic(NULL, Var.comp_libr.loc, "0", 1);
 		} else {
-			plug_error(NULL, "Invalid enabling value '%s'", buffer);
+			plug_verbose(NULL, 2, "Invalid enabling value '%s'", buffer);
 			return ESPANK_BAD_ARG;
 		}
 	}
@@ -132,7 +132,7 @@ int _opt_ear (int val, const char *optarg, int remote)
 
 int _opt_ear_learning (int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_ear_learning");
+	plug_verbose(NULL, 2, "function _opt_ear_learning");
 
 	int ioptarg;
 
@@ -155,7 +155,7 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 
 int _opt_ear_policy (int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_ear_policy");
+	plug_verbose(NULL, 2, "function _opt_ear_policy");
 
 	if (!remote)
 	{
@@ -167,7 +167,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 		strtoup(buffer);
 
 		if (policy_name_to_id(buffer) < 0) {
-			plug_error(NULL, "Invalid policy '%s'", buffer);
+			plug_verbose(NULL, 2, "Invalid policy '%s'", buffer);
 			return ESPANK_STOP;
 		}
 
@@ -180,7 +180,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 
 int _opt_ear_frequency (int val, const char *optarg, int remote)
 {
-    plug_error(NULL, "function _opt_ear_threshold");
+    plug_verbose(NULL, 2, "function _opt_ear_threshold");
 
     ulong loptarg;
 
@@ -201,7 +201,7 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
 
 int _opt_ear_threshold (int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_ear_threshold");
+	plug_verbose(NULL, 2, "function _opt_ear_threshold");
 
 	double foptarg = -1;
 
@@ -224,7 +224,7 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 int _opt_ear_user_db (int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_ear_user_db");
+	plug_verbose(NULL, 2, "function _opt_ear_user_db");
 
 	if (!remote)
 	{
@@ -241,7 +241,7 @@ int _opt_ear_user_db (int val, const char *optarg, int remote)
 
 int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_ear_verbose");
+	plug_verbose(NULL, 2, "function _opt_ear_verbose");
 
 	int ioptarg;
 
@@ -265,7 +265,7 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 int _opt_ear_traces (int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_ear_traces");
+	plug_verbose(NULL, 2, "function _opt_ear_traces");
 
 	if (!remote)
 	{
@@ -282,7 +282,7 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 
 int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_mpi_dist");
+	plug_verbose(NULL, 2, "function _opt_mpi_dist");
 
 	if (!remote)
 	{
@@ -307,7 +307,7 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 
 int _opt_ear_tag(int val, const char *optarg, int remote)
 {
-	plug_error(NULL, "function _opt_tag");
+	plug_verbose(NULL, 2, "function _opt_tag");
 
 	if (!remote)
 	{
