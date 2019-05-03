@@ -32,7 +32,7 @@
 #include <slurm_plugin/slurm_plugin_test.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 
-const char *fake = "FAKE";
+char *fake = "FAKE";
 char buffer1[SZ_PATH];
 char buffer2[SZ_PATH];
 
@@ -91,7 +91,7 @@ static int fake_test(spank_t sp)
 	if (isenv_agnostic(sp, Var.path_temp.ear, fake)) return ESPANK_ERROR;
 }
 
-static void option_build(spank_t sp, test_t test)
+static void option_build(spank_t sp, test_t *test)
 {
 	/*
 	if (e != NULL) {
@@ -104,13 +104,15 @@ static void option_build(spank_t sp, test_t test)
 	 */
 }
 
-static int option_test(spank_t sp, test_t test)
+static int option_result(spank_t sp, test_t *test)
 {
 	return ESPANK_SUCCESS;
 }
 
 void plug_test_build(spank_t sp)
 {
+	plug_verbose(sp, 2, "function plug_test_build");
+
 	int test;
 
 	//
@@ -141,6 +143,8 @@ _opt_ear_verbose (0, "", 0);
 
 void plug_test_result(spank_t sp)
 {
+	plug_verbose(sp, 2, "function plug_test_result");
+	
 	int result;
 	int test;
 
@@ -157,7 +161,7 @@ void plug_test_result(spank_t sp)
 	//
 	switch (test)
 	{
-		case 1: result = option_test(sp, NULL); break;
+		case 1: result = option_result(sp, NULL); break;
 		default: return;
 	}
 

@@ -82,16 +82,12 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	}
 
 	// Reading plugstack.conf file
-	//
-	if (plug_component_isenabled(sp, Component.test)) {
-		plug_test_build(sp);
-	}	//
-	if (plug_component_isenabled(sp, Component.test)) {
-		plug_test_build(sp);
-	}	if (plug_read_plugstack(sp, ac, av, &sd) != ESPANK_SUCCESS) {
+	if (plug_read_plugstack(sp, ac, av, &sd) != ESPANK_SUCCESS) {
 		plug_component_setenabled(sp, Component.plugin, 0);
 	}
 
+	// If ailed during the deserialization or plugstack reading,
+	// then disableing the plugin is mandatory.
 	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}

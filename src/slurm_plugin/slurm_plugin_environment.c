@@ -286,7 +286,7 @@ int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled)
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp)
 {
-	if (getenv_agnostic(sp, comp, buffer)) {
+	if (getenv_agnostic(sp, comp, buffer, SZ_PATH)) {
 		return atoi(buffer) > 0;
 	}
 	return 0;

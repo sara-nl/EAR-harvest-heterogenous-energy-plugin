@@ -250,8 +250,10 @@ int plug_clean_task(spank_t sp)
 	unsetenv_agnostic(sp, Var.tag.ear);
 	unsetenv_agnostic(sp, Var.path_usdb.ear);
 	unsetenv_agnostic(sp, Var.path_trac.ear);
-	unsetenv_agnostic(sp, Var.name_app.ear);
 	unsetenv_agnostic(sp, Var.path_temp.ear);
+	unsetenv_agnostic(sp, Var.name_app.ear);
+
+	printenv_agnostic(sp, Var.path_temp.ear);
 
 	return ESPANK_SUCCESS;
 }
