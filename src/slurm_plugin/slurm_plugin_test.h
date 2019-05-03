@@ -30,6 +30,7 @@
 #ifndef EAR_PRIVATE_SLURM_PLUGIN_TEST_H
 #define EAR_PRIVATE_SLURM_PLUGIN_TEST_H
 
-void plug_test(spank_t sp);
+void plug_test_build(spank_t sp);
+void plug_test_result(spank_t sp);
 
 #endif //EAR_PRIVATE_SLURM_PLUGIN_TEST_H

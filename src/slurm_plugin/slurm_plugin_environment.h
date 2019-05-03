@@ -73,6 +73,7 @@ typedef struct varname_s {
 	char *loc;
 	char *rem;
 	char *ear;
+	char *tes;
 } varnames_t;
 
 struct variables_s {

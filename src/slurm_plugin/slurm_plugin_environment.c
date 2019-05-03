@@ -283,7 +283,10 @@ int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled)
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp)
 {
-	return isenv_agnostic(sp, comp, "1");
+	if (getenv_agnostic(sp, comp, buffer)) {
+		return atoi(buffer) > 0;
+	}
+	return 0;
 }
 
 /*

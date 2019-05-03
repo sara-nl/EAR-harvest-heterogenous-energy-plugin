@@ -32,52 +32,137 @@
 #include <slurm_plugin/slurm_plugin_test.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 
+const char *fake = "FAKE";
 char buffer1[SZ_PATH];
 char buffer2[SZ_PATH];
 
-static void writenv(spank_t sp, char *var, int fd)
+typedef struct test_s {
+	char *comp_libr;
+	char *comp_plug;
+	char *comp_moni;
+	char *comp_test;
+	char *comp_verb;
+	char *policy;
+	char *policy_th;
+	char *perf_pen;
+	char *eff_gain;
+	char *frequency;
+	char *p_state;
+	char *learning;
+	char *tag;
+	char *name_app;
+	char *path_usdb;
+	char *path_trac;
+	char *path_temp;
+	char *verbose;
+} test_t;
+
+static void fake_build(spank_t sp)
 {
-	if (getenv_agnostic(sp, var, buffer1, SZ_PATH)) {
-		sprintf(buffer2, "%s=%s\n", var, buffer1);
-	} else {
-		sprintf(buffer2, "%s=NULL\n", var, buffer1);
-	}
-	
-	write(fd, buffer2, strlen(buffer2));
+	setenv_agnostic(sp, Var.policy.ear, fake, 1);
+	setenv_agnostic(sp, Var.policy_th.ear, fake, 1);
+	setenv_agnostic(sp, Var.perf_pen.ear, fake, 1);
+	setenv_agnostic(sp, Var.eff_gain.ear, fake, 1);
+	setenv_agnostic(sp, Var.frequency.ear, fake, 1);
+	setenv_agnostic(sp, Var.p_state.ear, fake, 1);
+	setenv_agnostic(sp, Var.learning.ear, fake, 1);
+	setenv_agnostic(sp, Var.tag.ear, fake, 1);
+	setenv_agnostic(sp, Var.path_usdb.ear, fake, 1);
+	setenv_agnostic(sp, Var.path_trac.ear, fake, 1);
+	setenv_agnostic(sp, Var.path_temp.ear, fake, 1);
+	setenv_agnostic(sp, Var.name_app.ear, fake, 1);
+	setenv_agnostic(sp, Var.verbose.ear, fake, 1);
 }
 
-void plug_test(spank_t sp)
+static int fake_test(spank_t sp)
 {
-	ssize_t w;
-	int fd;
+	if (isenv_agnostic(sp, Var.verbose.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.policy.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.policy_th.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.perf_pen.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.eff_gain.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.frequency.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.p_state.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.learning.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.tag.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.path_usdb.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.path_trac.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.name_app.ear, fake)) return ESPANK_ERROR;
+	if (isenv_agnostic(sp, Var.path_temp.ear, fake)) return ESPANK_ERROR;
+}
 
-	if (!isenv_agnostic(sp, "SLURM_PROCID", "0")) {
+static void option_build(spank_t sp, test_t test)
+{
+	/*
+	if (e != NULL) {
+		_opt_ear (0, e, 0);
+	}
+	if (v != NULL) {
+		_opt_ear_verbose(0, v, 0);
+		setenv_agnostic(sp, Var.verbose.tes, v, 1);
+	}
+	 */
+}
+
+static int option_test(spank_t sp, test_t test)
+{
+	return ESPANK_SUCCESS;
+}
+
+void plug_test_build(spank_t sp)
+{
+	int test;
+
+	//
+	test = 1;
+
+	// Simulating sbatch variables inheritance
+	fake_build(sp);
+
+	// Simulating option variables
+	switch (test)
+	{
+		case 1: option_build(sp, NULL); break;
+		default: return;
+	}
+}
+
+/*
+_opt_ear_learning (0, "1", 0);
+_opt_ear_policy (0, "MONITORING_ONLY", 0);
+_opt_ear_frequency (0, "2400000", 0);
+_opt_ear_threshold (0, "0.10", 0);
+_opt_ear_tag (0, "", 0);
+_opt_ear_user_db (0, "/tmp/", 0);
+_opt_ear_traces (0, "", 0);
+_opt_ear_mpi_dist (0, "openmpi", 0);
+_opt_ear_verbose (0, "", 0);
+ */
+
+void plug_test_result(spank_t sp)
+{
+	int result;
+	int test;
+
+	//
+	test = 1;
+
+	//
+	if (fake_test(sp) != ESPANK_SUCCESS) {
+		plug_error(sp, "plugin fake test failed");
 		return;
 	}
-	
-	// Opening file
-	getenv_agnostic(sp, "SLURM_SUBMIT_DIR", buffer2, SZ_PATH);
-	getenv_agnostic(sp, "SLURM_JOBID", buffer1, SZ_PATH);
-	sprintf(buffer2, "%s/earplug.%s", buffer2, buffer1);
-	getenv_agnostic(sp, "SLURM_STEPID", buffer1, SZ_PATH);
-	sprintf(buffer2, "%s.%s.test", buffer2, buffer1);
+	plug_verbose(sp, 0, "plugin fake test success");
 
-	fd = open(buffer2, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+	//
+	switch (test)
+	{
+		case 1: result = option_test(sp, NULL); break;
+		default: return;
+	}
 
-	// Writing
-	writenv(sp, "EAR_VERBOSE", fd);
-	writenv(sp, "EAR_POWER_POLICY", fd);
-	writenv(sp, "EAR_POWER_POLICY_TH", fd);
-	writenv(sp, "EAR_FREQUENCY", fd);
-	writenv(sp, "EAR_P_STATE", fd);
-	writenv(sp, "EAR_LEARNING_PHASE", fd);
-	writenv(sp, "EAR_ENERGY_TAG", fd);
-	writenv(sp, "EAR_USER_DB_PATHNAME", fd);
-	writenv(sp, "EAR_PERFORMANCE_PENALTY", fd);
-	writenv(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", fd);
-	writenv(sp, "EAR_APP_NAME", fd);
-	writenv(sp, "EAR_TMP", fd);
-	writenv(sp, "LD_PRELOAD", fd);
-
-	close(fd);
+	if (result != ESPANK_SUCCESS) {
+		plug_error(sp, "plugin option test failed");
+	}
+	plug_verbose(sp, 0, "plugin option test success");
 }

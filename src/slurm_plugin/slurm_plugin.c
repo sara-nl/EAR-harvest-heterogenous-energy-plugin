@@ -68,6 +68,11 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
+	//
+	if (plug_component_isenabled(sp, Component.test)) {
+		plug_test_build(sp);
+	}
+
 	// Cleaning previous task variables
 	plug_clean_task(sp);
 
@@ -77,7 +82,13 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	}
 
 	// Reading plugstack.conf file
-	if (plug_read_plugstack(sp, ac, av, &sd) != ESPANK_SUCCESS) {
+	//
+	if (plug_component_isenabled(sp, Component.test)) {
+		plug_test_build(sp);
+	}	//
+	if (plug_component_isenabled(sp, Component.test)) {
+		plug_test_build(sp);
+	}	if (plug_read_plugstack(sp, ac, av, &sd) != ESPANK_SUCCESS) {
 		plug_component_setenabled(sp, Component.plugin, 0);
 	}
 
@@ -136,6 +147,11 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 			plug_serialize_task(sp, &sd);
 		}
+	}
+
+	//
+	if (plug_component_isenabled(sp, Component.test)) {
+		plug_test_result(sp);
 	}
 	
 	return ESPANK_SUCCESS;
