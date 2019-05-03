@@ -167,7 +167,10 @@ static int repenv_local(char *var_old, char *var_new)
 
 static int repenv_remote(spank_t sp, char *var_old, char *var_new)
 {
-	return 1;
+	if (!getenv_remote(sp, var_old, buffer, SZ_PATH)) {
+		return 0;
+	}
+	return setenv_remote(sp, var_new, buffer, 1);
 }
 
 /*

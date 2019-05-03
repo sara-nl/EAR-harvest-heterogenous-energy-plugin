@@ -192,6 +192,11 @@ void sync_fd_add(int fd, long ip)
 	soc_activ += 1;
 }
 
+void sync_fd_get_ip(int fd, long *ip)
+{
+	*ip = fd_hosts[fd];
+}
+
 void sync_fd_disconnect(int fd)
 {
 	fd_hosts[fd] = 0;
@@ -215,7 +220,7 @@ int sync_question(uint sync_option, int veteran, sync_ans_t *answer)
 	time_t timeout_old;
 	state_t s;
 
-	printp1("synchronization started: asking the question to %s (%d)",
+	verbose_xaxxw("synchronization started: asking the question to %s (%d)",
 			ssync_mir->host_dst, sync_option);
 
 	sync_qst_content.sync_option = sync_option;
@@ -228,21 +233,21 @@ int sync_question(uint sync_option, int veteran, sync_ans_t *answer)
 	s = sockets_socket(ssync_mir);
 
 	if (state_fail(s)) {
-		printp1("failed to create client socket (%d, %s)", s, intern_error_str);
+		verbose_xaxxw("failed to create client socket (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_connect(ssync_mir);
 
 	if (state_fail(s)) {
-		printp1("failed to connect (%d, %s)", s, intern_error_str);
+		verbose_xaxxw("failed to connect (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_send(ssync_mir, &sync_qst_header, (char *) &sync_qst_content);
 
 	if (state_fail(s)) {
-		printp1("failed to send (%d, %s)", s, intern_error_str);
+		verbose_xaxxw("failed to send (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
@@ -258,13 +263,15 @@ int sync_question(uint sync_option, int veteran, sync_ans_t *answer)
 	sockets_timeout_set(ssync_mir->fd, timeout_old);
 
 	if (state_fail(s)) {
-		printp1("failed to receive (%d, %s)", s, intern_error_str);
+		verbose_xaxxw("failed to receive (%d, %s)", s, intern_error_str);
 		return EAR_ERROR;
 	}
 
 	s = sockets_close(ssync_mir);
 
-	printp0("synchronization completed correctly");
+	if (verbosity) {
+		verbose_xxxxw("synchronization completed correctly");
+	}
 
 	if (answer != NULL) {
 		memcpy (answer, &sync_ans_content, sizeof(sync_ans_t));
@@ -278,7 +285,9 @@ int sync_answer(int fd, int veteran)
 	socket_t sync_ans_socket;
 	state_t s;
 
-	printp0("synchronization started: answering the question");
+	if (verbosity) {
+		verbose_xxxxw("synchronization started: answering the question");
+	}
 
 	// Socket
 	sockets_clean(&sync_ans_socket);
@@ -292,11 +301,13 @@ int sync_answer(int fd, int veteran)
 	s = sockets_send(&sync_ans_socket, &sync_ans_header, (char *) &sync_ans_content);
 
 	if (state_fail(s)) {
-		printp1("Failed to send to MIRROR (%d, %s)", s, intern_error_str);
+		verbose_xaxxw("Failed to send to MIRROR (%d, %s)", s, intern_error_str);
 		return EAR_IGNORE;
 	}
 
-	printp0("synchronization completed correctly");
+	if (verbosity) {
+		verbose_xxxxw("synchronization completed correctly");
+	}
 
 	return EAR_SUCCESS;
 }

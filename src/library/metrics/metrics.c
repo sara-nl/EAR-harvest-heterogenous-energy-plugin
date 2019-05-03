@@ -50,7 +50,7 @@
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
 
-#define TEST_MB 1
+//#define TEST_MB 0
 
 /*
  * Low level reading

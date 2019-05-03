@@ -78,7 +78,7 @@ static void print_header()
 	// If not general the header is printed
 	if (!opt_g)
 	{
-		tprintf_init(stdout, STR_MODE_COL, "10 10 10 100");
+		tprintf_init(fdout, STR_MODE_COL, "10 10 10 100");
 
 		tprintf("Time||Power||Bandwidth|||Application");
 		tprintf("----||-----||---------|||-----------");
@@ -87,7 +87,7 @@ static void print_header()
 	}
 
 	// If general
-	tprintf_init(stdout, STR_MODE_COL, "10 7 8 8 9 9 9 10 10 10");
+	tprintf_init(fdout, STR_MODE_COL, "10 7 8 8 9 9 9 10 10 10");
 
 	// If header
 	if (opt_h) {

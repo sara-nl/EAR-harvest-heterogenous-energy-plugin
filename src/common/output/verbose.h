@@ -30,89 +30,55 @@
 #ifndef EAR_VERBOSE_H
 #define EAR_VERBOSE_H
 
-#include <time.h>
 #include <stdio.h>
 #include <string.h>
+//#include <unistd.h>
+#include <common/output/timestamp.h>
 #include <common/output/output_conf.h>
+
+#define fdout	STDOUT_FILENO
+#define fderr	STDERR_FILENO
 
 int verb_level		__attribute__((weak)) = 0;
 int verb_channel	__attribute__((weak)) = 2;
 int verb_enabled	__attribute__((weak)) = 1;
-int verb_timestamp	__attribute__((weak)) = 0;
 int warn_channel	__attribute__((weak)) = 2;
 
-static time_t verbose_time_log;
-static struct tm *verbose_tm_log;
-static char s_log[64];
+// Set
+#define WARN_SET_FD(fd)	warn_channel = fd;
+#define VERB_SET_FD(fd)	verb_channel = fd;
+#define VERB_SET_EN(en)	verb_enabled = en;
+#define VERB_SET_LV(lv)	verb_level   = lv;
 
 #define verbose(v, ...) \
 	if (verb_enabled && v <= verb_level) \
 	{ \
-		if (verb_timestamp) { \
-        	time(&verbose_time_log);\
-        	verbose_tm_log=localtime(&verbose_time_log);\
-        	strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
-        	dprintf(verb_channel, "%s:",s_log); \
-		} \
+		timestamp(verb_channel); \
         dprintf(verb_channel, __VA_ARGS__); \
         dprintf(verb_channel, "\n"); \
 	}
-
-// Compact version
-#define verb(v, ...) \
-	verbose(v, __VA_ARGS__)
 
 // No new line version
 #define verbosen(v, ...) \
 	if (verb_enabled && v <= verb_level) \
 	{ \
-        if (verb_timestamp){ \
-        	time(&verbose_time_log);\
-        	verbose_tm_log=localtime(&verbose_time_log);\
-        	strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
-        	dprintf(verb_channel, "%s:",s_log); \
-        }\
+		timestamp(verb_channel); \
         dprintf(verb_channel, __VA_ARGS__); \
 	}
 
-// Set
-#define VERB_SET_FD(fd)		verb_channel = fd;
-#define VERB_SET_MUTE()		verb_enabled = 0;
-#define VERB_SET_LVL(level)	verb_level = level;
-#define WARN_SET_FD(fd)		warn_channel = fd;
-
-#define VERB_SET_TS(ts)		verb_timestamp = ts;
-
 // Warnings
-#if SHOW_WARNINGS0
+#if SHOW_WARNINGS
 #define warning(...) \
-{\
-        if (verb_timestamp){ \
-        time(&verbose_time_log);\
-        verbose_tm_log=localtime(&verbose_time_log);\
-        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
-        dprintf(warn_channel, "%s:",s_log); \
-        }\
+	{ \
+    	timestamp(warn_channel); \
 	 	dprintf(warn_channel, __VA_ARGS__);\
-}
-
+	}
 #else
 #define warning(...)
 #endif
 
-#if SHOW_WARNINGS1
-#define warning1(...) \
-{ \
-        if (verb_timestamp){ \
-        time(&verbose_time_log);\
-        verbose_tm_log=localtime(&verbose_time_log);\
-        strftime(s_log, sizeof(s_log), "%c", verbose_tm_log);\
-        dprintf(warn_channel, "%s:",s_log); \
-        }\
-		dprintf(warn_channel, __VA_ARGS__); \
-	}
-#else
-#define warning1(...)
-#endif
+// Abbreviations
+#define verb(v, ...) \
+	verbose(v, __VA_ARGS__);
 
 #endif //EAR_VERBOSE_H

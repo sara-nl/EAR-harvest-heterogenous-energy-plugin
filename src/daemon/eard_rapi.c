@@ -991,9 +991,12 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                 while (t < command.node_dist) t *= 2;
                 command.node_dist = t;
             }   
-            #if USE_EXT
+            
+            /*#if USE_EXT
             strcat(node_name, NW_EXT);
-            #endif
+            #endif*/
+            if (strlen(my_cluster_conf.net_ext))
+                strcat(node_name, my_cluster_conf.net_ext);
 
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
@@ -1101,9 +1104,11 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
                 while (t < command.node_dist) t *= 2;
                 command.node_dist = t;
             }   
-            #if USE_EXT
+            /*#if USE_EXT
             strcat(node_name, NW_EXT);
-            #endif
+            #endif*/
+            if (strlen(my_cluster_conf.net_ext) > 0)
+                strcat(node_name, my_cluster_conf.net_ext);
 
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){

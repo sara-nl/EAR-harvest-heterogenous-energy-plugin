@@ -48,6 +48,8 @@ int sync_fd_exists(long ip, int *fd_old);
 
 void sync_fd_add(int fd, long ip);
 
+void sync_fd_get_ip(int fd, long *ip);
+
 void sync_fd_disconnect(int fd);
 
 int sync_question(uint sync_option, int veteran, sync_ans_t *answer);

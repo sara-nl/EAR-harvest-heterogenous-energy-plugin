@@ -30,15 +30,21 @@
 #ifndef EAR_EARDBD_H
 #define EAR_EARDBD_H
 
-#include <netdb.h>
+#include <math.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <signal.h>
+#include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/types.h>
 #include <common/config.h>
 #include <common/process.h>
 #include <common/sockets.h>
 #include <common/types/types.h>
 #include <common/string_enhanced.h>
-#include <common/output/error.h>
-#include <common/output/debug.h>
-#include <common/output/verbose.h>
 
 #define CONTENT_TYPE_PER	1
 #define CONTENT_TYPE_APM	2

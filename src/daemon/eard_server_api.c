@@ -187,10 +187,12 @@ int init_ips(cluster_conf_t *my_conf)
     strtok(buff,".");
     ret = get_range_ips(my_conf, buff, &ips);
     if (ret < 1) return EAR_ERROR;
-#if USE_EXT
+/*#if USE_EXT
     strcat(buff, NW_EXT);
-#endif
-    temp_ip = get_ip(buff);
+#endif*/
+    if (strlen(my_conf->net_ext) > 0)
+        strcat(buff, my_conf->net_ext);
+    temp_ip = get_ip(buff, my_conf);
     for (i = 0; i < ret; i++)
     {
         if (ips[i] == temp_ip)

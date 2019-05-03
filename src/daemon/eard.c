@@ -173,16 +173,19 @@ int is_valid_sec_tag(ulong tag)
 #endif
 }
 
-
-void set_global_eard_variables()
+void set_verbose_variables()
 {
-	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 	verb_level=my_cluster_conf.eard.verbose;
   VERB_SET_FD(fd_my_log);
   ERROR_SET_FD(fd_my_log);
 	WARN_SET_FD(fd_my_log);
 	DEBUG_SET_FD(fd_my_log);
-	VERB_SET_TS(my_cluster_conf.eard.use_log);
+	TIMESTAMP_SET_EN(my_cluster_conf.eard.use_log);
+}
+
+void set_global_eard_variables()
+{
+	strcpy(ear_tmp,my_cluster_conf.tmp_dir);
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -444,6 +447,9 @@ void eard_exit(uint restart)
 	if (restart==0){ 
 		end_service("eard");
 		_exit(0);
+	}else if (restart==2){
+		end_service("eard");
+		_exit(1);
 	}else{
 		eard_restart();
 	}
@@ -1203,6 +1209,7 @@ void main(int argc,char *argv[])
     	fd_my_log=create_log(my_cluster_conf.tmp_dir,"eard");
     	if (fd_my_log<0) fd_my_log=2;
 	}
+	set_verbose_variables();
 
 	int node_size;
 	state_t s;
@@ -1288,12 +1295,6 @@ void main(int argc,char *argv[])
 	{
 		if (strcmp(argv[1],"-h")==0 || strcmp(argv[1],"--help")==0) Usage(argv[0]);
 		verb_level = atoi(argv[1]);
-		VERB_SET_FD(fd_my_log);
-		ERROR_SET_FD(fd_my_log);
-		WARN_SET_FD(fd_my_log);
-		DEBUG_SET_FD(fd_my_log);
- 		VERB_SET_TS(my_cluster_conf.eard.use_log);
-
 
 
 		if ((verb_level < 0) || (verb_level > 4)) {
@@ -1302,6 +1303,7 @@ void main(int argc,char *argv[])
 
 	}
 	set_ear_verbose(verb_level);
+	VERB_SET_LV(verb_level);
 
 	// We catch signals
 	signal_catcher();
@@ -1396,9 +1398,9 @@ void main(int argc,char *argv[])
 		{
 			verbose(VCONF,"Connecting with EAR DB directly");
 			#ifdef USE_EARDBD_CONF
-            read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
-            strcpy(my_cluster_conf.database.user,eardbd_user);
-            strcpy(my_cluster_conf.database.pass,eardbd_pass);
+      read_eardbd_conf(my_eardbd_conf_path,eardbd_user,eardbd_pass);
+      strcpy(my_cluster_conf.database.user,eardbd_user);
+      strcpy(my_cluster_conf.database.pass,eardbd_pass);
 			#endif
 			init_db_helper(&my_cluster_conf.database);
 			db_helper_connected=1;
@@ -1436,6 +1438,11 @@ void main(int argc,char *argv[])
 	*
 	*/
 	while (((numfds_ready=select(numfds_req,&rfds,NULL,NULL,my_to))>=0) || ((numfds_ready<0) && (errno==EINTR))){
+			if (eard_must_exit){
+				verbose(0,"eard exiting");
+				eard_close_comm();
+				eard_exit(2);
+			}
 			if (numfds_ready>=0){ 
 				if (numfds_ready>0){
 					for (i=0;i<ear_daemon_client_requests;i++){

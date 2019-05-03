@@ -845,11 +845,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			remove_chars(token, ' ');
 			strcpy(conf->eargm.host, token);
 		}
-    else if (!strcmp(token, "GLOBALMANAGERUSELOG"))
-    {
+        else if (!strcmp(token, "GLOBALMANAGERUSELOG"))
+        {
 			token = strtok(NULL, "=");
 			conf->eargm.use_log = atoi(token);
-     }
+        }
+        //COMMON CONFIG
+        else if (!strcmp(token, "NETWORKEXTENSION"))
+        {
+            token = strtok(NULL, "=");
+            strcpy(conf->net_ext, token);
+        }
 
 		//MARIADB/MYSQL config
 		else if (!strcmp(token, "MARIADBIP"))
@@ -1139,10 +1145,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 }
 
+
 void set_ear_conf_default(cluster_conf_t *my_conf)
 {
 	if (my_conf==NULL) return;
     my_conf->default_policy = -1; //set to -1 so that it throws an error if it is not set on ear.conf
+#if USE_EXT
+    strcpy(my_conf->net_ext, NW_EXT);
+#else
+    strcpy(my_conf->net_ext, "");
+#endif
 	set_default_eard_conf(&my_conf->eard);
 	set_default_eargm_conf(&my_conf->eargm);
     set_default_db_conf(&my_conf->database);
