@@ -27,9 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/file.h>
+#include <common/colors.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_test.h>
+#include <slurm_plugin/slurm_plugin_options.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 
 char *fake = "FAKE";
@@ -57,7 +58,13 @@ typedef struct test_s {
 	char *verbose;
 } test_t;
 
+#define TEST_FREQ	"2400000"
+
 test_t test1 = { .comp_libr = "ON", .verbose = "2" };
+test_t test2 = { .comp_libr = "ON", .verbose = "3", .policy = "MONITORING_ONLY",        .frequency = TEST_FREQ };
+test_t test3 = { .comp_libr = "ON", .verbose = "4", .policy = "MIN_TIME_TO_SOLUTION",   .frequency = TEST_FREQ };
+test_t test4 = { .comp_libr = "ON", .verbose = "2", .policy = "MIN_ENERGY_TO_SOLUTION", .frequency = TEST_FREQ };
+test_t test5 = { .comp_libr = "ON", .path_trac = "/tmp", .path_usdb = "/tmp" };
 
 static void fake_build(spank_t sp)
 {
@@ -102,6 +109,29 @@ static void option_build(spank_t sp, test_t *test)
 		_opt_ear_verbose(0, test->verbose, 0);
 		setenv_agnostic(sp, Var.verbose.tes, test->verbose, 1);
 	}
+	if (test->policy != NULL) {
+ 		_opt_ear_policy (0, test->policy, 0);
+		setenv_agnostic(sp, Var.policy.tes, test->policy, 1);
+	}
+	if (test->frequency != NULL) {
+ 		_opt_ear_frequency(0, test->frequency, 0);
+		setenv_agnostic(sp, Var.frequency.tes, test->frequency, 1);
+	}
+	if (test->path_usdb != NULL) {
+		_opt_ear_user_db (0, test->path_usdb, 0);
+		setenv_agnostic(sp, Var.path_usdb.tes, test->path_usdb, 1);
+	}
+	if (test->path_trac != NULL) {
+ 		_opt_ear_traces (0, test->path_trac, 0);
+		setenv_agnostic(sp, Var.path_trac.tes, test->path_trac, 1);
+	}
+
+/*
+ * _opt_ear_learning (0, "1", 0);
+ * _opt_ear_threshold (0, "0.10", 0);
+ * _opt_ear_tag (0, "", 0);
+ * _opt_ear_mpi_dist (0, "openmpi", 0);
+ *  */
 }
 
 static int option_result(spank_t sp, test_t *test)
@@ -112,6 +142,19 @@ static int option_result(spank_t sp, test_t *test)
 	if (test->verbose != NULL) {
 		if (!isenv_agnostic(sp, Var.verbose.tes, test->verbose)) return ESPANK_ERROR;
 	}
+	if (test->policy != NULL) {
+		if (!isenv_agnostic(sp, Var.policy.tes, test->policy)) return ESPANK_ERROR;
+        }
+        if (test->frequency != NULL) {
+		if (!isenv_agnostic(sp, Var.frequency.tes, test->frequency)) return ESPANK_ERROR;
+        }
+        if (test->path_usdb != NULL) {
+		if (!isenv_agnostic(sp, Var.path_usdb.tes, test->path_usdb)) return ESPANK_ERROR;
+        }
+        if (test->path_trac != NULL) {
+		if (!isenv_agnostic(sp, Var.path_trac.tes, test->path_trac)) return ESPANK_ERROR;
+        }
+
 	return ESPANK_SUCCESS;
 }
 
@@ -122,30 +165,21 @@ void plug_test_build(spank_t sp)
 	int test;
 
 	//
-	test = 1;
-
+	test = plug_component_isenabled(sp, Component.test);
+	
 	// Simulating sbatch variables inheritance
 	fake_build(sp);
 
 	// Simulating option variables
-	switch (test)
-	{
-		case 1: option_build(sp, test1); break;
+	switch (test) {
+		case 1: option_build(sp, &test1); break;
+		case 2: option_build(sp, &test2); break;
+		case 3: option_build(sp, &test3); break;
+		case 4: option_build(sp, &test4); break;
+		case 5: option_build(sp, &test5); break;
 		default: return;
 	}
 }
-
-/*
-_opt_ear_learning (0, "1", 0);
-_opt_ear_policy (0, "MONITORING_ONLY", 0);
-_opt_ear_frequency (0, "2400000", 0);
-_opt_ear_threshold (0, "0.10", 0);
-_opt_ear_tag (0, "", 0);
-_opt_ear_user_db (0, "/tmp/", 0);
-_opt_ear_traces (0, "", 0);
-_opt_ear_mpi_dist (0, "openmpi", 0);
-_opt_ear_verbose (0, "", 0);
- */
 
 void plug_test_result(spank_t sp)
 {
@@ -153,7 +187,7 @@ void plug_test_result(spank_t sp)
 	int test;
 
 	//
-	test = 1;
+	test = plug_component_isenabled(sp, Component.test);
 
 	//
 	if (fake_test(sp) != ESPANK_SUCCESS) {
@@ -162,9 +196,12 @@ void plug_test_result(spank_t sp)
 	}
 
 	//
-	switch (test)
-	{
-		case 1: result = option_test(sp, test1); break;
+	switch (test) {
+		case 1: result = option_result(sp, &test1); break;
+		case 2: result = option_result(sp, &test2); break;
+		case 3: result = option_result(sp, &test3); break;
+		case 4: result = option_result(sp, &test4); break;
+		case 5: result = option_result(sp, &test5); break;
 		default: return;
 	}
 
@@ -172,5 +209,6 @@ void plug_test_result(spank_t sp)
 		plug_verbose(sp, 0, "plugin test FAILED (options)", COL_RED, COL_CLR);
 		return;
 	}
-	plug_verbose(sp, 0, "plugin option test %sSUCCESS%s", COL_GRE, COL_CLR);
+
+	plug_verbose(sp, 0, "plugin option test %sSUCCESS%s (%d)", COL_GRE, COL_CLR, test);
 }

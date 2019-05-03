@@ -232,28 +232,30 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
  *
  */
 
-int plug_clean_task(spank_t sp)
+int plug_clean_components(spank_t sp)
 {
-	plug_component_setenabled(sp, Component.plugin, 0);
-	plug_component_setenabled(sp, Component.library, 0);
-	plug_component_setenabled(sp, Component.monitor, 0);
-	plug_component_setenabled(sp, Component.test, 0);
+	int e;
 
-	unsetenv_agnostic(sp, Var.verbose.ear);
-	unsetenv_agnostic(sp, Var.policy.ear);
-	unsetenv_agnostic(sp, Var.policy_th.ear);
-	unsetenv_agnostic(sp, Var.perf_pen.ear);
-	unsetenv_agnostic(sp, Var.eff_gain.ear);
-	unsetenv_agnostic(sp, Var.frequency.ear);
-	unsetenv_agnostic(sp, Var.p_state.ear);
-	unsetenv_agnostic(sp, Var.learning.ear);
-	unsetenv_agnostic(sp, Var.tag.ear);
-	unsetenv_agnostic(sp, Var.path_usdb.ear);
-	unsetenv_agnostic(sp, Var.path_trac.ear);
-	unsetenv_agnostic(sp, Var.path_temp.ear);
-	unsetenv_agnostic(sp, Var.name_app.ear);
+        plug_component_setenabled(sp, Component.plugin, 0);
+        plug_component_setenabled(sp, Component.library, 0);
+        plug_component_setenabled(sp, Component.monitor, 0);
+        plug_component_setenabled(sp, Component.test, 0);
 
-	printenv_agnostic(sp, Var.path_temp.ear);
+        /*
+	 * Components
+	*/
+        if (!isenv_agnostic(sp, Var.comp_plug.loc, "0")) {
+                plug_component_setenabled(sp, Component.plugin, 1);
+        }
+        if (isenv_agnostic(sp, Var.comp_libr.loc, "1")) {
+                plug_component_setenabled(sp, Component.library, 1);
+        }
+        if (isenv_agnostic(sp, Var.comp_moni.loc, "1")) {
+                plug_component_setenabled(sp, Component.monitor, 1);
+        }
+        if ((e = plug_component_isenabled(sp, Var.comp_test.loc))) {
+                plug_component_setenabled(sp, Component.test, e);
+        }
 
 	return ESPANK_SUCCESS;
 }
@@ -265,18 +267,19 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Components
 	 */
-	if (!isenv_agnostic(sp, Var.comp_plug.loc, "0")) {
-		plug_component_setenabled(sp, Component.plugin, 1);
-	}
-        if (isenv_agnostic(sp, Var.comp_libr.loc, "1")) {
-                plug_component_setenabled(sp, Component.library, 1);
-        }
-	if (isenv_agnostic(sp, Var.comp_moni.loc, "1")) {
-		plug_component_setenabled(sp, Component.monitor, 1);
-	}
-	if (isenv_agnostic(sp, Var.comp_test.loc, "1")) {
-		plug_component_setenabled(sp, Component.test, 1);
-	}
+        unsetenv_agnostic(sp, Var.verbose.ear);
+        unsetenv_agnostic(sp, Var.policy.ear);
+        unsetenv_agnostic(sp, Var.policy_th.ear);
+        unsetenv_agnostic(sp, Var.perf_pen.ear);
+        unsetenv_agnostic(sp, Var.eff_gain.ear);
+        unsetenv_agnostic(sp, Var.frequency.ear);
+        unsetenv_agnostic(sp, Var.p_state.ear);
+        unsetenv_agnostic(sp, Var.learning.ear);
+        unsetenv_agnostic(sp, Var.tag.ear);
+        unsetenv_agnostic(sp, Var.path_usdb.ear);
+        unsetenv_agnostic(sp, Var.path_trac.ear);
+        unsetenv_agnostic(sp, Var.path_temp.ear);
+        unsetenv_agnostic(sp, Var.name_app.ear);
 
 	/*
 	 * User information

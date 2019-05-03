@@ -68,13 +68,12 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
+	plug_clean_components(sp);
+
 	//
 	if (plug_component_isenabled(sp, Component.test)) {
 		plug_test_build(sp);
 	}
-
-	// Cleaning previous task variables
-	plug_clean_task(sp);
 
 	// 
 	if (plug_deserialize_local(sp, &sd) != ESPANK_SUCCESS) {

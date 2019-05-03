@@ -280,14 +280,14 @@ void printenv_agnostic(spank_t sp, char *var)
 
 int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled)
 {
-	if (enabled) return setenv_agnostic(sp, comp, "1", 1);
-	return setenv_agnostic(sp, comp, "0", 1);
+	sprintf(buffer, "%d", enabled);
+	return setenv_agnostic(sp, comp, buffer, 1);
 }
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp)
 {
-	if (getenv_agnostic(sp, comp, buffer, SZ_PATH)) {
-		return atoi(buffer) > 0;
+	if (getenv_agnostic(sp, comp, buffer, SZ_PATH) && atoi(buffer) > 0) {
+		return atoi(buffer);
 	}
 	return 0;
 }

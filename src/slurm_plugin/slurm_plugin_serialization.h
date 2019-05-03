@@ -54,6 +54,8 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd);
 /*
  * Serialization functions
  */
+int plug_clean_components(spank_t sp);
+
 int plug_deserialize_local(spank_t sp, plug_serialization_t *sd);
 
 int plug_serialize_remote(spank_t sp, plug_serialization_t *sd);
