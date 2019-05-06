@@ -134,7 +134,7 @@ struct variables_s {
 .path_inst = { .rem = "SLURM_ERINST",        .ear = "" },
 .node_list = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
 .context   = { .rem = "SLURM_ERCNTX",        .ear = "" },
-.ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD",    .tes = "SLURM_ETPREL" },
+.ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"},
 .ld_libr   = { .rem = "",                    .ear = "" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" }
 };

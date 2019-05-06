@@ -146,38 +146,46 @@ static void option_build(spank_t sp, test_t *test)
 	}
 }
 
+static int option_compare(spank_t sp, char *var1, char *var2)
+{
+	if (plug_verbosity_test(sp, 3))
+	{
+		printenv_agnostic(sp, var1);
+		printenv_agnostic(sp, var2);
+	}
+	return isenv_agnostic(sp, var1, var2);
+}
+
 static int option_result(spank_t sp, test_t *test)
 {
-	if (test->comp_libr != NULL) {
-		if (!plug_component_isenabled(sp, Component.library)) return ESPANK_ERROR;
-	}
 	if (test->verbose != NULL) {
-		if (!isenv_agnostic(sp, Var.verbose.tes, test->verbose)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.verbose.tes, test->verbose)) return ESPANK_ERROR;
 	}
 	if (test->policy != NULL) {
-		if (!isenv_agnostic(sp, Var.policy.tes, test->policy)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.policy.tes, test->policy)) return ESPANK_ERROR;
 	}
 	if (test->frequency != NULL) {
-		if (!isenv_agnostic(sp, Var.frequency.tes, test->frequency)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.frequency.tes, test->frequency)) return ESPANK_ERROR;
 	}
 	if (test->path_usdb != NULL) {
-		if (!isenv_agnostic(sp, Var.path_usdb.tes, test->path_usdb)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.path_usdb.tes, test->path_usdb)) return ESPANK_ERROR;
 	}
 	if (test->path_trac != NULL) {
-		if (!isenv_agnostic(sp, Var.path_trac.tes, test->path_trac)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.path_trac.tes, test->path_trac)) return ESPANK_ERROR;
 	}
 	if (test->learning != NULL) {
-		if (!isenv_agnostic(sp, Var.learning.tes, test->learning)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.learning.tes, test->learning)) return ESPANK_ERROR;
 	}
 	if (test->policy_th != NULL) {
-		if (!isenv_agnostic(sp, Var.policy_th.tes, test->policy_th)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.policy_th.tes, test->policy_th)) return ESPANK_ERROR;
 	}
 	if (test->tag != NULL) {
-		if (!isenv_agnostic(sp, Var.tag.tes, test->tag)) return ESPANK_ERROR;
+		if (!option_compare(sp, Var.tag.tes, test->tag)) return ESPANK_ERROR;
 	}
 	if (test->mpi_dist != NULL)
 	{
-		getenv_agnostic(sp, buffer1, SZ_PATH);
+		option_compare(sp, Var.mpi_dist.opt, Var.ld_prel.ear)
+		getenv_agnostic(sp, Var.tag.tes, buffer1, SZ_PATH);
 		if (strstr(buffer1, OMPI_C_LIB_PATH) == NULL) {
 			return ESPANK_ERROR;
 		}
