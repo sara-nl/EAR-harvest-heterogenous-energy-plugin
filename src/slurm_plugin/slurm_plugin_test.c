@@ -137,7 +137,7 @@ static void option_build(spank_t sp, test_t *test)
 	}
 }
 
-static void option_compare(spank_t sp, char *var, char *res)
+static int option_compare(spank_t sp, char *var, char *res)
 {
 	if (plug_verbosity_test(sp, 3))
 	{
@@ -150,7 +150,6 @@ static void option_compare(spank_t sp, char *var, char *res)
 static int option_result(spank_t sp, test_t *test)
 {
 	if (test->verbose != NULL) {
-		option_print(sp, Var.verbose.ear, test->verbose);
 		if (!option_compare(sp, Var.verbose.ear, test->verbose)) return ESPANK_ERROR;
 	}
 	if (test->policy != NULL) {
@@ -225,7 +224,7 @@ void plug_test_result(spank_t sp)
 
 	//
 	if (fake_test(sp) != ESPANK_SUCCESS) {
-		plug_verbose(sp, 0, "plugin test %sFAILED%s (fakes)", COL_RED, COL_CLR);
+		plug_verbose(sp, 0, "plugin fake test %sFAILED%s (%d)", COL_RED, COL_CLR, test);
 		return;
 	}
 
@@ -246,7 +245,7 @@ void plug_test_result(spank_t sp)
 	}
 
 	if (result != ESPANK_SUCCESS) {
-		plug_verbose(sp, 0, "plugin test FAILED (options)", COL_RED, COL_CLR);
+		plug_verbose(sp, 0, "plugin option test %sFAILED%s (%d)", COL_RED, COL_CLR, test);
 		return;
 	}
 
