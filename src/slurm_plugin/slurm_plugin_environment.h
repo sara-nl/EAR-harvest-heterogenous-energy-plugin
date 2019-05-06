@@ -74,6 +74,7 @@ typedef struct varname_s {
 	char *rem;
 	char *ear;
 	char *tes;
+	char *cmp;
 } varnames_t;
 
 struct variables_s {
@@ -108,34 +109,34 @@ struct variables_s {
 }
 	Var __attribute__((weak)) =
 {
-.comp_libr = { .loc = "SLURM_COMP_LIBRARY", .rem = "", .ear = "" },
-.comp_plug = { .loc = "SLURM_COMP_PLUGIN",  .rem = "", .ear = "" },
-.comp_moni = { .loc = "SLURM_COMP_MONITOR", .rem = "", .ear = "" },
-.comp_test = { .loc = "SLURM_COMP_TEST",    .rem = "", .ear = "" },
-.comp_verb = { .loc = "SLURM_COMP_VERBOSE", .rem = "", .ear = "" },
+.comp_libr = { .loc = "SLURM_COMP_LIBRARY", },
+.comp_plug = { .loc = "SLURM_COMP_PLUGIN",  },
+.comp_moni = { .loc = "SLURM_COMP_MONITOR", },
+.comp_test = { .loc = "SLURM_COMP_TEST",    },
+.comp_verb = { .loc = "SLURM_COMP_VERBOSE", },
 .verbose   = { .loc = "SLURM_EOVERB", .ear = "EAR_VERBOSE",          .tes = "SLURM_ETVERB" },
 .policy    = { .loc = "SLURM_EOPOLI", .ear = "EAR_POWER_POLICY",     .tes = "SLURM_ETPOLI" },
-.policy_th = { .loc = "SLURM_EOPOTH", .ear = "EAR_POWER_POLICY_TH" },
-.perf_pen  = { .loc = "",             .ear = "EAR_PERFORMANCE_PENALTY" },
-.eff_gain  = { .loc = "",             .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN" },
+.policy_th = { .loc = "SLURM_EOPOTH", .ear = "EAR_POWER_POLICY_TH",  .tes = "SLURM_ETPOTH" },
 .frequency = { .loc = "SLURM_EOFREQ", .ear = "EAR_FREQUENCY",        .tes = "SLURM_ETFREQ" },
-.p_state   = { .loc = "SLURM_EOPSTA", .ear = "EAR_P_STATE" },
-.learning  = { .loc = "SLURM_EOLERN", .ear = "EAR_LEARNING_PHASE" },
-.tag       = { .loc = "SLURM_EOETAG", .ear = "EAR_ENERGY_TAG" },
+.p_state   = { .loc = "SLURM_EOPSTA", .ear = "EAR_P_STATE",          .tes = "SLURM_ETPSTA" },
+.learning  = { .loc = "SLURM_EOLERN", .ear = "EAR_LEARNING_PHASE",   .tes = "SLURM_ETLERN" },
+.tag       = { .loc = "SLURM_EOETAG", .ear = "EAR_ENERGY_TAG",       .tes = "SLURM_ETETAG" },
 .path_usdb = { .loc = "SLURM_EOUSDB", .ear = "EAR_USER_DB_PATHNAME", .tes = "SLURM_ETUSDB" },
 .path_trac = { .loc = "SLURM_EOTRAC", .ear = "EAR_PATH_TRACE",       .tes = "SLURM_ETTRAC" },
-.mpi_dist  = { .loc = "SLURM_EOMPID", .rem = "SLURM_ERMPID" },
-.name_app  = { .loc = "", .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME" },
-.user      = { .loc = "", .rem = "SLURM_ERUSER",        .ear = "" },
-.group     = { .loc = "", .rem = "SLURM_ERGRUP",        .ear = "" },
-.account   = { .loc = "", .rem = "SLURM_JOB_ACCOUNT",   .ear = "" },
-.path_temp = { .loc = "", .rem = "SLURM_ERTEMP",        .ear = "EAR_TMP" },
-.path_inst = { .loc = "", .rem = "SLURM_ERINST",        .ear = "" },
-.node_list = { .loc = "", .rem = "SLURM_STEP_NODELIST", .ear = "" },
-.context   = { .loc = "", .rem = "SLURM_ERCNTX",        .ear = "" },
-.ld_prel   = { .loc = "", .rem = "", .ear = "LD_PRELOAD" },
-.ld_libr   = { .loc = "", .rem = "", .ear = "" },
-.node_num  = { .loc = "SLURM_NNODES", .rem = "",        .ear = "" }
+.mpi_dist  = { .loc = "SLURM_EOMPID", .rem = "SLURM_ERMPID", },
+.perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY" },
+.eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN" },
+.name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME" },
+.user      = { .rem = "SLURM_ERUSER",        .ear = "" },
+.group     = { .rem = "SLURM_ERGRUP",        .ear = "" },
+.account   = { .rem = "SLURM_JOB_ACCOUNT",   .ear = "" },
+.path_temp = { .rem = "SLURM_ERTEMP",        .ear = "EAR_TMP",       .tes = "SLURM_ETTEMP" },
+.path_inst = { .rem = "SLURM_ERINST",        .ear = "" },
+.node_list = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
+.context   = { .rem = "SLURM_ERCNTX",        .ear = "" },
+.ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD",    .tes = "SLURM_ETPREL" },
+.ld_libr   = { .rem = "",                    .ear = "" },
+.node_num  = { .loc = "SLURM_NNODES",        .ear = "" }
 };
 
 /*

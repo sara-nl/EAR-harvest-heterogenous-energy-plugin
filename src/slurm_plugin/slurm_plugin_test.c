@@ -38,11 +38,6 @@ char buffer1[SZ_PATH];
 char buffer2[SZ_PATH];
 
 typedef struct test_s {
-	char *comp_libr;
-	char *comp_plug;
-	char *comp_moni;
-	char *comp_test;
-	char *comp_verb;
 	char *policy;
 	char *policy_th;
 	char *perf_pen;
@@ -54,17 +49,30 @@ typedef struct test_s {
 	char *path_usdb;
 	char *path_trac;
 	char *path_temp;
-	char *name_app;
 	char *verbose;
+	char *mpi_dist;
 } test_t;
 
-#define TEST_FREQ	"2400000"
+#define TF1	"2600000"
+#define TF2	"2400000"
+#define TF3	"2100000"
+#define TP1	"1"
+#define TP2	"3"
+#define TP3	"5"
+#define TA1	"memory-intensive"
 
-test_t test1 = { .comp_libr = "ON", .verbose = "2" };
-test_t test2 = { .comp_libr = "ON", .verbose = "3", .policy = "MONITORING_ONLY",        .frequency = TEST_FREQ };
-test_t test3 = { .comp_libr = "ON", .verbose = "4", .policy = "MIN_TIME_TO_SOLUTION",   .frequency = TEST_FREQ };
-test_t test4 = { .comp_libr = "ON", .verbose = "2", .policy = "MIN_ENERGY_TO_SOLUTION", .frequency = TEST_FREQ };
-test_t test5 = { .comp_libr = "ON", .path_trac = "/tmp", .path_usdb = "/tmp" };
+test_t test1 = { .learning = TP1, .p_state = TP1,                     .frequency = TF1 };
+test_t test2 = { .learning = TP2, .p_state = TP2,                     .frequency = TF2 };
+test_t test3 = { .learning = TP3, .p_state = TP3,                     .frequency = TF3 };
+test_t test4 = { .verbose = "3",  .policy = "MONITORING_ONLY",        .frequency = TF2 };
+test_t test5 = { .verbose = "4",  .policy = "MIN_TIME_TO_SOLUTION",   .frequency = TF2 };
+test_t test6 = { .verbose = "2",  .policy = "MIN_ENERGY_TO_SOLUTION", .frequency = TF3 };
+test_t test7 = { .policy_th = "0.2", .policy = "MIN_TIME_TO_SOLUTION"                  };
+test_t test8 = { .policy_th = "0.3", .policy = "MIN_TIME_TO_SOLUTION"                  };
+test_t test9 = { .path_trac = "/tmptr", .path_usdb = "/tmpus",   .path_temp = "/tmpte" };
+test_t test10 = { .mpi_dist = "openmpi"                                                };
+test_t test11 = { .tag = TA1                                                           };
+
 
 static void fake_build(spank_t sp)
 {
@@ -79,7 +87,6 @@ static void fake_build(spank_t sp)
 	setenv_agnostic(sp, Var.path_usdb.ear, fake, 1);
 	setenv_agnostic(sp, Var.path_trac.ear, fake, 1);
 	setenv_agnostic(sp, Var.path_temp.ear, fake, 1);
-	setenv_agnostic(sp, Var.name_app.ear, fake, 1);
 	setenv_agnostic(sp, Var.verbose.ear, fake, 1);
 }
 
@@ -96,15 +103,11 @@ static int fake_test(spank_t sp)
 	if (isenv_agnostic(sp, Var.path_usdb.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.path_trac.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.path_temp.ear, fake)) return ESPANK_ERROR;
-	if (isenv_agnostic(sp, Var.name_app.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.verbose.ear, fake)) return ESPANK_ERROR;
 }
 
 static void option_build(spank_t sp, test_t *test)
 {
-	if (test->comp_libr != NULL) {
-		_opt_ear (0, test->comp_libr, 0);
-	}
 	if (test->verbose != NULL) {
 		_opt_ear_verbose(0, test->verbose, 0);
 		setenv_agnostic(sp, Var.verbose.tes, test->verbose, 1);
@@ -125,13 +128,22 @@ static void option_build(spank_t sp, test_t *test)
  		_opt_ear_traces (0, test->path_trac, 0);
 		setenv_agnostic(sp, Var.path_trac.tes, test->path_trac, 1);
 	}
-
-/*
- * _opt_ear_learning (0, "1", 0);
- * _opt_ear_threshold (0, "0.10", 0);
- * _opt_ear_tag (0, "", 0);
- * _opt_ear_mpi_dist (0, "openmpi", 0);
- *  */
+	if (test->learning != NULL) {
+		_opt_ear_learning (0, test->learning, 0);
+		setenv_agnostic(sp, Var.learning.tes, test->learning, 1);
+	}
+	if (test->policy_th != NULL) {
+		_opt_ear_threshold (0, test->policy_th, 0);
+		setenv_agnostic(sp, Var.policy_th.tes, test->policy_th, 1);
+	}
+	if (test->tag != NULL) {
+		_opt_ear_tag (0, test->tag, 0);
+		setenv_agnostic(sp, Var.tag.tes, test->tag, 1);
+	}
+	if (test->mpi_dist != NULL) {
+		_opt_ear_mpi_dist (0, test->mpi_dist, 0);
+		setenv_agnostic(sp, Var.mpi_dist.tes, test->mpi_dist, 1);
+	}
 }
 
 static int option_result(spank_t sp, test_t *test)
@@ -144,16 +156,32 @@ static int option_result(spank_t sp, test_t *test)
 	}
 	if (test->policy != NULL) {
 		if (!isenv_agnostic(sp, Var.policy.tes, test->policy)) return ESPANK_ERROR;
-        }
-        if (test->frequency != NULL) {
+	}
+	if (test->frequency != NULL) {
 		if (!isenv_agnostic(sp, Var.frequency.tes, test->frequency)) return ESPANK_ERROR;
-        }
-        if (test->path_usdb != NULL) {
+	}
+	if (test->path_usdb != NULL) {
 		if (!isenv_agnostic(sp, Var.path_usdb.tes, test->path_usdb)) return ESPANK_ERROR;
-        }
-        if (test->path_trac != NULL) {
+	}
+	if (test->path_trac != NULL) {
 		if (!isenv_agnostic(sp, Var.path_trac.tes, test->path_trac)) return ESPANK_ERROR;
-        }
+	}
+	if (test->learning != NULL) {
+		if (!isenv_agnostic(sp, Var.learning.tes, test->learning)) return ESPANK_ERROR;
+	}
+	if (test->policy_th != NULL) {
+		if (!isenv_agnostic(sp, Var.policy_th.tes, test->policy_th)) return ESPANK_ERROR;
+	}
+	if (test->tag != NULL) {
+		if (!isenv_agnostic(sp, Var.tag.tes, test->tag)) return ESPANK_ERROR;
+	}
+	if (test->mpi_dist != NULL)
+	{
+		getenv_agnostic(sp, buffer1, SZ_PATH);
+		if (strstr(buffer1, OMPI_C_LIB_PATH) == NULL) {
+			return ESPANK_ERROR;
+		}
+	}
 
 	return ESPANK_SUCCESS;
 }
@@ -177,6 +205,12 @@ void plug_test_build(spank_t sp)
 		case 3: option_build(sp, &test3); break;
 		case 4: option_build(sp, &test4); break;
 		case 5: option_build(sp, &test5); break;
+		case 6: option_build(sp, &test6); break;
+		case 7: option_build(sp, &test7); break;
+		case 8: option_build(sp, &test8); break;
+		case 9: option_build(sp, &test9); break;
+		case 10: option_build(sp, &test10); break;
+		case 11: option_build(sp, &test11); break;
 		default: return;
 	}
 }
@@ -202,6 +236,12 @@ void plug_test_result(spank_t sp)
 		case 3: result = option_result(sp, &test3); break;
 		case 4: result = option_result(sp, &test4); break;
 		case 5: result = option_result(sp, &test5); break;
+		case 6: result = option_result(sp, &test6); break;
+		case 7: result = option_result(sp, &test7); break;
+		case 8: result = option_result(sp, &test8); break;
+		case 9: result = option_result(sp, &test9); break;
+		case 10: result = option_result(sp, &test10); break;
+		case 11: result = option_result(sp, &test11); break;
 		default: return;
 	}
 
