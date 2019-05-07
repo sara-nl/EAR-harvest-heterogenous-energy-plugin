@@ -65,7 +65,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				// Library == 1: enable
 				// Library == 0: nothing
 				// Library == whatever: enable (bug protection)
-				if (!isenv_agnostic(sp, Var.comp_libr.loc, "0")) {
+				if (!isenv_agnostic(sp, Var.comp_libr.cmp, "0")) {
 					plug_component_setenabled(sp, Component.library, 1);
 				}
 			// If disabled by default or de administrator have misswritten
@@ -73,7 +73,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				// Library == 1: nothing
 				// Library == 0: disable
 				// Library == whatever: disable (bug protection)
-				if (!isenv_agnostic(sp, Var.comp_libr.loc, "1")) {
+				if (!isenv_agnostic(sp, Var.comp_libr.cmp, "1")) {
 					plug_component_setenabled(sp, Component.library, 0);
 				}
 			}
@@ -234,28 +234,28 @@ int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
 
 int plug_clean_components(spank_t sp)
 {
-	int e;
+	int test;
 
-        plug_component_setenabled(sp, Component.plugin, 0);
-        plug_component_setenabled(sp, Component.library, 0);
-        plug_component_setenabled(sp, Component.monitor, 0);
-        plug_component_setenabled(sp, Component.test, 0);
+	plug_component_setenabled(sp, Component.plugin, 0);
+	plug_component_setenabled(sp, Component.library, 0);
+	plug_component_setenabled(sp, Component.monitor, 0);
+	plug_component_setenabled(sp, Component.test, 0);
 
-        /*
+	/*
 	 * Components
-	*/
-        if ((e = plug_component_isenabled(sp, Var.comp_test.loc))) {
-                plug_component_setenabled(sp, Component.test, e);
-        }
-        if (e || !isenv_agnostic(sp, Var.comp_plug.loc, "0")) {
-                plug_component_setenabled(sp, Component.plugin, 1);
-        }
-        if (e || isenv_agnostic(sp, Var.comp_libr.loc, "1")) {
-                plug_component_setenabled(sp, Component.library, 1);
-        }
-        if (isenv_agnostic(sp, Var.comp_moni.loc, "1")) {
-                plug_component_setenabled(sp, Component.monitor, 1);
-        }
+	 */
+	if (valenv_agnostic(sp, Var.comp_test.cmp, &test)) {
+			plug_component_setenabled(sp, Component.test, e);
+	}
+	if (test || !isenv_agnostic(sp, Var.comp_plug.cmp, "0")) {
+			plug_component_setenabled(sp, Component.plugin, 1);
+	}
+	if (test || isenv_agnostic(sp, Var.comp_libr.cmp, "1")) {
+			plug_component_setenabled(sp, Component.library, 1);
+	}
+	if (isenv_agnostic(sp, Var.comp_moni.cmp, "1")) {
+			plug_component_setenabled(sp, Component.monitor, 1);
+	}
 
 	return ESPANK_SUCCESS;
 }
@@ -267,19 +267,19 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Components
 	 */
-        unsetenv_agnostic(sp, Var.verbose.ear);
-        unsetenv_agnostic(sp, Var.policy.ear);
-        unsetenv_agnostic(sp, Var.policy_th.ear);
-        unsetenv_agnostic(sp, Var.perf_pen.ear);
-        unsetenv_agnostic(sp, Var.eff_gain.ear);
-        unsetenv_agnostic(sp, Var.frequency.ear);
-        unsetenv_agnostic(sp, Var.p_state.ear);
-        unsetenv_agnostic(sp, Var.learning.ear);
-        unsetenv_agnostic(sp, Var.tag.ear);
-        unsetenv_agnostic(sp, Var.path_usdb.ear);
-        unsetenv_agnostic(sp, Var.path_trac.ear);
-        unsetenv_agnostic(sp, Var.path_temp.ear);
-        unsetenv_agnostic(sp, Var.name_app.ear);
+	unsetenv_agnostic(sp, Var.verbose.ear);
+	unsetenv_agnostic(sp, Var.policy.ear);
+	unsetenv_agnostic(sp, Var.policy_th.ear);
+	unsetenv_agnostic(sp, Var.perf_pen.ear);
+	unsetenv_agnostic(sp, Var.eff_gain.ear);
+	unsetenv_agnostic(sp, Var.frequency.ear);
+	unsetenv_agnostic(sp, Var.p_state.ear);
+	unsetenv_agnostic(sp, Var.learning.ear);
+	unsetenv_agnostic(sp, Var.tag.ear);
+	unsetenv_agnostic(sp, Var.path_usdb.ear);
+	unsetenv_agnostic(sp, Var.path_trac.ear);
+	unsetenv_agnostic(sp, Var.path_temp.ear);
+	unsetenv_agnostic(sp, Var.name_app.ear);
 
 	/*
 	 * User information
@@ -340,14 +340,14 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Options
 	 */
-        repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
-        repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
-        repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
-	repenv_agnostic(sp, Var.frequency.loc,  Var.frequency.ear);
+	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
+	repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
+	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
+	repenv_agnostic(sp, Var.frequency.loc, Var.frequency.ear);
 	repenv_agnostic(sp, Var.learning.loc,  Var.learning.ear);
-        repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
-        repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
-        repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
+	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
+	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
+	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
 	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
 
 	/*
@@ -366,7 +366,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 
 	getenv_agnostic(sp, Var.mpi_dist.rem, buffer, SZ_PATH);
 	sd->job.mpi = atoi(buffer);
-slurm_error("MPI %d", sd->job.mpi);
+
 	if (isenv_agnostic(sp, Var.context.rem, "SRUN")) {
 		sd->subject.context_local = Context.srun;
 	} else if (isenv_agnostic(sp, Var.context.rem, "SBATCH")) {
@@ -431,14 +431,12 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	 */
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, SZ_PATH);
 
-slurm_error("MPO %d", sd->job.mpi);
 	// Appending libraries to LD_PRELOAD
 	if (sd->job.mpi) {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH);
 	} else {
 		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH);
 	}
-slurm_error("MPO '%s'", buffer);
 
 	setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
 	

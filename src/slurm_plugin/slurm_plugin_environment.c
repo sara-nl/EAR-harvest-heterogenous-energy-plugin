@@ -266,6 +266,15 @@ int exenv_agnostic(spank_t sp, char *var)
 	}
 }
 
+int valenv_agnostic(spank_t sp, char *var, int *val)
+{
+	*val = 0;
+	if (getenv_agnostic(sp, comp, buffer, SZ_PATH)) {
+		*val = atoi(buffer);
+	}
+	return *val;
+}
+
 void printenv_agnostic(spank_t sp, char *var)
 {
 	if (!getenv_agnostic(sp, var, buffer, SZ_PATH)) {
@@ -286,10 +295,7 @@ int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled)
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp)
 {
-	if (getenv_agnostic(sp, comp, buffer, SZ_PATH) && atoi(buffer) > 0) {
-		return atoi(buffer);
-	}
-	return 0;
+	return valenv_agnostic(sp, comp);
 }
 
 /*

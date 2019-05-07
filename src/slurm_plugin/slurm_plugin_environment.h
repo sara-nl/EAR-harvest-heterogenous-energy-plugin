@@ -109,11 +109,11 @@ struct variables_s {
 }
 	Var __attribute__((weak)) =
 {
-.comp_libr = { .loc = "SLURM_COMP_LIBRARY" },
-.comp_plug = { .loc = "SLURM_COMP_PLUGIN"  },
-.comp_moni = { .loc = "SLURM_COMP_MONITOR" },
-.comp_test = { .loc = "SLURM_COMP_TEST"    },
-.comp_verb = { .loc = "SLURM_COMP_VERBOSE" },
+.comp_libr = { .cmp = "SLURM_COMP_LIBRARY" },
+.comp_plug = { .cmp = "SLURM_COMP_PLUGIN"  },
+.comp_moni = { .cmp = "SLURM_COMP_MONITOR" },
+.comp_test = { .cmp = "SLURM_COMP_TEST"    },
+.comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
 .verbose   = { .loc = "SLURM_EOVERB", .ear = "EAR_VERBOSE"          },
 .policy    = { .loc = "SLURM_EOPOLI", .ear = "EAR_POWER_POLICY"     },
 .policy_th = { .loc = "SLURM_EOPOTH", .ear = "EAR_POWER_POLICY_TH"  },
@@ -155,6 +155,8 @@ int repenv_agnostic(spank_t sp, char *var_old, char *var_new);
 int apenv_agnostic(char *dst, char *src, int len);
 
 int exenv_agnostic(spank_t sp, char *var);
+
+int valenv_agnostic(spank_t sp, char *var, int *val);
 
 void printenv_agnostic(spank_t sp, char *var);
 

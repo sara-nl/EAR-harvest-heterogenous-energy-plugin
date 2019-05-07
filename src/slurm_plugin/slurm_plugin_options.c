@@ -118,9 +118,9 @@ int _opt_ear (int val, const char *optarg, int remote)
 		strtoup(buffer);
 
 		if (strcmp(buffer, "ON") == 0) {
-			setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+			setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 		} else if (strcmp(buffer, "OFF") == 0) {
-			setenv_agnostic(NULL, Var.comp_libr.loc, "0", 1);
+			setenv_agnostic(NULL, Var.comp_libr.cmp, "0", 1);
 		} else {
 			plug_verbose(NULL, 2, "Invalid enabling value '%s'", buffer);
 			return ESPANK_BAD_ARG;
@@ -147,7 +147,7 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 
 		snprintf(buffer, 4, "%d", ioptarg);
 		setenv_agnostic(NULL, Var.learning.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -172,7 +172,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 		}
 
 		setenv_agnostic(NULL, Var.policy.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -193,7 +193,7 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
 		loptarg = (ulong) atol(optarg);
 		snprintf(buffer, 16, "%lu", loptarg);
 		setenv_agnostic(NULL, Var.frequency.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
     }
 
     return ESPANK_SUCCESS;
@@ -216,7 +216,7 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 		snprintf(buffer, 8, "%0.2f", foptarg);
 		setenv_agnostic(NULL, Var.policy_th.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -233,7 +233,7 @@ int _opt_ear_user_db (int val, const char *optarg, int remote)
 		}
 
 		setenv_agnostic(NULL, Var.path_usdb.loc, optarg, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -257,7 +257,7 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 		snprintf(buffer, 4, "%d", ioptarg);
 
 		setenv_agnostic(NULL, Var.verbose.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -274,7 +274,7 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 		}
 
 		setenv_agnostic(NULL, Var.path_trac.loc, optarg, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -299,7 +299,7 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 			setenv_agnostic(NULL, Var.mpi_dist.loc, "0", 1);
 		}
 
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -316,7 +316,7 @@ int _opt_ear_tag(int val, const char *optarg, int remote)
 		}
 
 		setenv_agnostic(NULL, Var.tag.loc, optarg, 1);
-		setenv_agnostic(NULL, Var.comp_libr.loc, "1", 1);
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 	return ESPANK_SUCCESS;
 }
