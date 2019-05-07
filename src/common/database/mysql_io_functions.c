@@ -96,7 +96,7 @@
 
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
-#define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
+#define EAR_WARNING_QUERY       "INSERT INTO Global_energy (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
                                 "GlobEnergyConsumedT2, GlobEnergyLimit, GlobEnergyPeriodT1, GlobEnergyPeriodT2, GlobEnergyPolicy) "\
                                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
@@ -2086,11 +2086,11 @@ int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
     bind[2].buffer = (char *)&warning->inc_th;
     bind[3].buffer = (char *)&warning->new_p_state;
     bind[4].buffer = (char *)&warning->energy_t1;
-    bind[4].buffer = (char *)&warning->energy_t2;
-    bind[4].buffer = (char *)&warning->energy_limit;
-    bind[4].buffer = (char *)&warning->energy_p1;
-    bind[4].buffer = (char *)&warning->energy_p2;
-    bind[4].buffer = (char *)&warning->policy;
+    bind[5].buffer = (char *)&warning->energy_t2;
+    bind[6].buffer = (char *)&warning->energy_limit;
+    bind[7].buffer = (char *)&warning->energy_p1;
+    bind[8].buffer = (char *)&warning->energy_p2;
+    bind[9].buffer = (char *)&warning->policy;
     
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
