@@ -176,8 +176,9 @@ static int option_result(spank_t sp, test_t *test)
 	if (test->mpi_dist != NULL)
 	{
 		option_compare(sp, Var.ld_prel.ear, OMPI_C_LIB_PATH);
-		getenv_agnostic(sp, Var.ld_prel.ear, buffer1, SZ_PATH);
-		if (strstr(buffer1, OMPI_C_LIB_PATH) == NULL) {
+		int r = getenv_agnostic(sp, Var.ld_prel.ear, buffer1, SZ_PATH);
+	slurm_error("MPIIII '%s' %d", buffer1, r);	
+	if (strstr(buffer1, OMPI_C_LIB_PATH) == NULL) {
 			return ESPANK_ERROR;
 		}
 	}
@@ -216,6 +217,8 @@ void plug_test_build(spank_t sp)
 
 void plug_test_result(spank_t sp)
 {
+        plug_verbose(sp, 2, "function plug_test_result");
+
 	int result;
 	int test;
 

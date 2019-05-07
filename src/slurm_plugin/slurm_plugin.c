@@ -134,6 +134,8 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	plug_rcom_eard_job_start(sp, &sd);
 
 	//
+slurm_error("ctx '%d-%d'", sd.subject.context_local, Context.srun);
+printenv_agnostic(sp, Component.library);
 	if (sd.subject.context_local == Context.srun)
 	{
 		if (plug_component_isenabled(sp, Component.library))

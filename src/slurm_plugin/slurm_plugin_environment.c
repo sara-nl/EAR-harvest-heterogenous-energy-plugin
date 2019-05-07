@@ -125,7 +125,7 @@ static int isenv_remote(spank_t sp, char *var, char *val)
 	}
 
     if (getenv_remote(sp, var, buffer, sizeof(buffer))) {
-        return (strcmp(buffer, val) == 0);
+        return (strncmp(buffer, val, strlen(val)) == 0);
     }
 
     return 0;
