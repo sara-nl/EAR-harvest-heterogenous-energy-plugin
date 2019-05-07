@@ -177,8 +177,7 @@ static int option_result(spank_t sp, test_t *test)
 	{
 		option_compare(sp, Var.ld_prel.ear, OMPI_C_LIB_PATH);
 		int r = getenv_agnostic(sp, Var.ld_prel.ear, buffer1, SZ_PATH);
-	slurm_error("MPIIII '%s' %d", buffer1, r);	
-	if (strstr(buffer1, OMPI_C_LIB_PATH) == NULL) {
+		if (strstr(buffer1, OMPI_C_LIB_PATH) == NULL) {
 			return ESPANK_ERROR;
 		}
 	}

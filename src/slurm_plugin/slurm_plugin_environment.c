@@ -269,7 +269,7 @@ int exenv_agnostic(spank_t sp, char *var)
 int valenv_agnostic(spank_t sp, char *var, int *val)
 {
 	*val = 0;
-	if (getenv_agnostic(sp, comp, buffer, SZ_PATH)) {
+	if (getenv_agnostic(sp, var, buffer, SZ_PATH)) {
 		*val = atoi(buffer);
 	}
 	return *val;
@@ -295,7 +295,8 @@ int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled)
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp)
 {
-	return valenv_agnostic(sp, comp);
+	int var;
+	return valenv_agnostic(sp, comp, &var);
 }
 
 /*

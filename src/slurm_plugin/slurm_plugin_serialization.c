@@ -245,7 +245,7 @@ int plug_clean_components(spank_t sp)
 	 * Components
 	 */
 	if (valenv_agnostic(sp, Var.comp_test.cmp, &test)) {
-			plug_component_setenabled(sp, Component.test, e);
+			plug_component_setenabled(sp, Component.test, test);
 	}
 	if (test || !isenv_agnostic(sp, Var.comp_plug.cmp, "0")) {
 			plug_component_setenabled(sp, Component.plugin, 1);
