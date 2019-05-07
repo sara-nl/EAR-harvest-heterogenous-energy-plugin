@@ -96,7 +96,9 @@
 
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
-#define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)"
+#define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
+                                "GlobEnergyConsumedT2, GlobEnergyLimit, GlobEnergyPeriodT1, GlobEnergyPeriodT2, GlobEnergyPolicy) "\
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
@@ -2058,22 +2060,38 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
 
 int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
 {
+    int i;
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
     if (mysql_stmt_prepare(statement, EAR_WARNING_QUERY, strlen(EAR_WARNING_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[4];
+    MYSQL_BIND bind[10];
     memset(bind, 0, sizeof(bind));
 
     bind[0].buffer_type = bind[2].buffer_type = MYSQL_TYPE_DOUBLE;
     bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONGLONG;
     bind[1].is_unsigned = 1;
 
+    for (i = 4; i < 9; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].is_unsigned = 1;
+    } 
+    bind[9].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[9].buffer_length = strlen(warning->policy);
+
     bind[0].buffer = (char *)&warning->energy_percent;
     bind[1].buffer = (char *)&warning->level;
     bind[2].buffer = (char *)&warning->inc_th;
     bind[3].buffer = (char *)&warning->new_p_state;
+    bind[4].buffer = (char *)&warning->energy_t1;
+    bind[4].buffer = (char *)&warning->energy_t2;
+    bind[4].buffer = (char *)&warning->energy_limit;
+    bind[4].buffer = (char *)&warning->energy_p1;
+    bind[4].buffer = (char *)&warning->energy_p2;
+    bind[4].buffer = (char *)&warning->policy;
+    
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 

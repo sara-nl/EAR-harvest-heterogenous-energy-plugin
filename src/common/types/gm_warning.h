@@ -41,6 +41,12 @@ typedef struct gm_warning
     ulong new_p_state;
     double energy_percent;
     double inc_th;
+    ulong energy_t1;
+    ulong energy_t2;
+    ulong energy_limit;
+    ulong energy_p1;
+    ulong energy_p2;
+    char policy[64];
 } gm_warning_t;
 
 
