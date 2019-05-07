@@ -284,12 +284,18 @@ node_id VARCHAR(256), \
 PRIMARY KEY (id))");
     run_query(connection, query);
 
-    sprintf(query, "CREATE TABLE IF NOT EXISTS Warnings ( \
+    sprintf(query, "CREATE TABLE IF NOT EXISTS Global_energy ( \
 energy_percent FLOAT, \
 warning_level INT UNSIGNED NOT NULL, \
 time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, \
 inc_th FLOAT, \
 p_state INT, \
+GlobEnergyConsumedT1 INT UNSIGNED, \
+GlobEnergyConsumedT2 INT UNSIGNED, \
+GlobEnergyLimit INT UNSIGNED, \
+GlobEnergyPeriodT2 INT UNSIGNED, \
+GlobEnergyPeriodT2 INT UNSIGNED, \
+GlobEnergyPolicy VARCHAR(64), \
 PRIMARY KEY (time))");
     run_query(connection, query);
                             
