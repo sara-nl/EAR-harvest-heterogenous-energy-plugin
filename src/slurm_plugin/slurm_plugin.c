@@ -361,11 +361,10 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	//
 	if (spank_context() == S_CTX_REMOTE)
   	{
-		if (remote_eard_report_start(sp) == ESPANK_SUCCESS)
-		{
-			if (isenv_remote(sp, "SLURM_EAR_LIBRARY", "1") && isenv_remote(sp, "SLURM_EAR_LAST_CONTEXT", "SRUN")) {
-				remote_read_shared_data_set_environment(sp);
-			}
+		remote_eard_report_start(sp);
+		
+		if (isenv_remote(sp, "SLURM_EAR_LIBRARY", "1") && isenv_remote(sp, "SLURM_EAR_LAST_CONTEXT", "SRUN")) {
+			remote_read_shared_data_set_environment(sp);
 		}
 	}
 	
