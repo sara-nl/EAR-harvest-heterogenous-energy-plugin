@@ -8,7 +8,7 @@ DEPS = dynais.o \
 
 ######## RULES
 
-all: dynais.a
+all: dynais.a main
 
 dynais.a: $(DEPS)
 	$(AR) rvs $@ $(OBJS)
