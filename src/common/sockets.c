@@ -474,6 +474,7 @@ state_t sockets_nonblock_clean(int fd)
 state_t sockets_header_clean(packet_header_t *header)
 {
 	memset((void *) header, 0, sizeof(packet_header_t));
+	state_return(EAR_SUCCESS);
 }
 
 state_t sockets_header_update(packet_header_t *header)
@@ -483,6 +484,7 @@ state_t sockets_header_update(packet_header_t *header)
 	}
 
 	header->timestamp = time(NULL);
+	state_return(EAR_SUCCESS);
 }
 
 /*

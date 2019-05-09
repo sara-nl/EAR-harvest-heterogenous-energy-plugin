@@ -236,12 +236,12 @@ int scan_application_fd(FILE *fd, application_t *app, char is_extended)
  *
  */
 
-int print_application_fd_binary(int fd,application_t *app)
+void print_application_fd_binary(int fd,application_t *app)
 {
 	write(fd,app,sizeof(application_t));
 }
 
-int read_application_fd_binary(int fd,application_t *app)
+void read_application_fd_binary(int fd,application_t *app)
 {
 	read(fd,app,sizeof(application_t));
 }

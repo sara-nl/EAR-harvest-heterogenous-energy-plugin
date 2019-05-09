@@ -34,10 +34,10 @@
 #include <stdio.h>
 #include <string.h>
 
-int time_enabled __attribute__((weak)) = 0;
-static struct tm *tm_log;
-static time_t time_log;
-static char s_log[64];
+int time_enabled 	__attribute__ ((weak, unused)) = 0;
+struct tm *tm_log	__attribute__ ((weak, unused));
+time_t time_log		__attribute__ ((weak, unused));
+char s_log[64]		__attribute__ ((weak, unused));
 
 #define TIMESTAMP_SET_EN(en) time_enabled = en;
 

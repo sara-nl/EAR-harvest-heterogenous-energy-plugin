@@ -144,8 +144,8 @@ int append_loop_text_file(char *path, loop_t *loop,job_t *job)
 	close(fd);
 
 	if (ret < 0) return EAR_ERROR;
-	return EAR_SUCCESS;
 	#endif
 	
+	return EAR_SUCCESS;
 }
 
