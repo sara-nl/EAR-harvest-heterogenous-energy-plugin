@@ -47,11 +47,12 @@ int file_lock(int fd)
 int file_lock_create(char *lock_file_name)
 {
 	int fd = open(lock_file_name, O_WRONLY | O_CREAT, S_IWUSR);
-	if (fd<0) return fd;
+	if (fd < 0) return fd;
 	lock.l_start = 0;
 	lock.l_whence = SEEK_SET;
 	lock.l_len = 0;
 	lock.l_pid = getpid();
+	return fd;
 }
 
 int file_lock_master(char *lock_file_name)

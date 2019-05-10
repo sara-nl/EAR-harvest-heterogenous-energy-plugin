@@ -84,9 +84,9 @@ int scan_application_fd(FILE *fd, application_t *app, char is_extended);
 
 #define create_ID(id,sid)	(id*100+sid)
 
-int read_application_fd_binary(int fd,application_t *app);
+void read_application_fd_binary(int fd,application_t *app);
 
-int print_application_fd_binary(int fd,application_t *app);
+void print_application_fd_binary(int fd,application_t *app);
 
 /*
  *

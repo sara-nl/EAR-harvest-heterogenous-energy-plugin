@@ -225,7 +225,7 @@ void dynais_core_0(ushort sample, ushort size, ushort level)
 	// New end-new loop
 	res_end = ((old_width[l] != cur_width[l]) && old_width[l] != 0);
 
-    i = (index + cur_width[l]) % _window;
+	i = (index + cur_width[l]) % _window;
 	k = index;
 
 	if (res_new)
@@ -240,7 +240,7 @@ void dynais_core_0(ushort sample, ushort size, ushort level)
 		}
 		#endif
 		#ifdef DYN_CORE_N
-        old_sizes[l] = (unsigned short) mask02 - size;
+		old_sizes[l] = (unsigned short) mask02 - size;
 		#else
 		old_sizes[l] = cur_width[l];
 		#endif
@@ -269,5 +269,6 @@ void dynais_core_0(ushort sample, ushort size, ushort level)
 	index = index - 1;
 	
 	cur_index[level] = index;
-	cur_resul[level] = resul;
+	// Linea causante de problemas, investigar de donde ha salido	
+	// cur_resul[level] = resul;
 }

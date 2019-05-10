@@ -96,7 +96,9 @@
 
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
-#define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)"
+#define EAR_WARNING_QUERY       "INSERT INTO Global_energy (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
+                                "GlobEnergyConsumedT2, GlobEnergyLimit, GlobEnergyPeriodT1, GlobEnergyPeriodT2, GlobEnergyPolicy) "\
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
@@ -335,7 +337,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
             verbose(VMYSQL, "error reading offset, setting to default (1)");
             autoincrement_offset = 1;
         }
-        verbose(VMYSQL, "autoincrement_offset set to %d\n", autoincrement_offset);
+        verbose(VMYSQL, "autoincrement_offset set to %ld\n", autoincrement_offset);
     }
 
     //inserting all powersignatures (always present)
@@ -687,9 +689,9 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         if (is_mpi)
         {
             if (is_learning)
-                sprintf(sig_query, "SELECT * FROM Learning_signatures WHERE id=%d", sig_id);
+                sprintf(sig_query, "SELECT * FROM Learning_signatures WHERE id=%ld", sig_id);
             else
-                sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
+                sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%ld", sig_id);
             int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
             if (num_sigs > 0) {
                 signature_copy(&app_aux->signature, sig_aux);
@@ -699,7 +701,8 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         }
         else app_aux->is_mpi = 0;
 
-        sprintf(pow_sig_query, "SELECT * FROM Power_signatures WHERE id=%d", pow_sig_id);
+        sprintf(pow_sig_query, "SELECT * FROM Power_signatures WHERE id=%lu", pow_sig_id);
+	state_return(EAR_SUCCESS);
         int num_pow_sigs = mysql_retrieve_power_signatures(connection, pow_sig_query, &pow_sig_aux);
         if (num_pow_sigs > 0)
         {
@@ -916,7 +919,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     status = mysql_stmt_fetch(statement);
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
-        sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
+        sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%lu", sig_id);
         int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
         signature_copy(&loop_aux->signature, sig_aux);
         free(sig_aux);
@@ -1758,7 +1761,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     else
         bind = calloc(6, sizeof(MYSQL_BIND));
 
-    memset(bind, 0, sizeof(bind));
+    memset(bind, 0, sizeof(MYSQL_BIND));
 
     //integer types
     int i;
@@ -2058,22 +2061,38 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
 
 int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
 {
+    int i;
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
     if (mysql_stmt_prepare(statement, EAR_WARNING_QUERY, strlen(EAR_WARNING_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[4];
+    MYSQL_BIND bind[10];
     memset(bind, 0, sizeof(bind));
 
     bind[0].buffer_type = bind[2].buffer_type = MYSQL_TYPE_DOUBLE;
     bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONGLONG;
     bind[1].is_unsigned = 1;
 
+    for (i = 4; i < 9; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].is_unsigned = 1;
+    } 
+    bind[9].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[9].buffer_length = strlen(warning->policy);
+
     bind[0].buffer = (char *)&warning->energy_percent;
     bind[1].buffer = (char *)&warning->level;
     bind[2].buffer = (char *)&warning->inc_th;
     bind[3].buffer = (char *)&warning->new_p_state;
+    bind[4].buffer = (char *)&warning->energy_t1;
+    bind[5].buffer = (char *)&warning->energy_t2;
+    bind[6].buffer = (char *)&warning->energy_limit;
+    bind[7].buffer = (char *)&warning->energy_p1;
+    bind[8].buffer = (char *)&warning->energy_p2;
+    bind[9].buffer = (char *)&warning->policy;
+    
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 

@@ -28,5 +28,4 @@ ifdef CHOWN_GRP
 endif
 	@ (cd $($*_PATH) && chmod $($*_PERM) $($*_BINS))
 
-
 -include .extra

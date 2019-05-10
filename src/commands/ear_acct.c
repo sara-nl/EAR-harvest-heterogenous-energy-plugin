@@ -47,6 +47,7 @@
 cluster_conf_t my_conf;
 #endif
 
+
 int full_length = 0;
 int verbose = 0;
 int query_filters = 0;
@@ -287,6 +288,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     uint current_step_id = -1;
     uint current_is_mpi = 0;
     uint current_apps = 0;
+    uint wrong_power = 0;
 
     int i = 0;
     double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy, avg_VPI, gflops_watt, max_dc_power;
@@ -419,29 +421,32 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 {
-                    if (!is_sbatch)
+                    if (avg_power < MAX_SIG_POWER && avg_power > MIN_SIG_POWER)
                     {
-                        if (avx)
-                            dprintf(fd, line_format,
-                                current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
-    
+                        if (!is_sbatch)
+                        {
+                            if (avx)
+                                dprintf(fd, line_format,
+                                    current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
+        
+                            else
+                                dprintf(fd, line_format,
+                                    current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
+                        }
                         else
-                            dprintf(fd, line_format,
-                                current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
-                    }
-                    else
-                    {
-                        if (avx)
-                            dprintf(fd, sbatch_line_format,
-                                current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
+                        {
+                            if (avx)
+                                dprintf(fd, sbatch_line_format,
+                                    current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
     
-                        else
-                            dprintf(fd, sbatch_line_format,
-                                current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
+                            else
+                                dprintf(fd, sbatch_line_format,
+                                    current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
+                        }
                     }
                 }
                 else
@@ -454,28 +459,33 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_power /= current_apps;
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 {
-                    if (!is_sbatch)
+                    if (avg_power < MAX_SIG_POWER && avg_power > MIN_SIG_POWER)
                     {
-                        if (avx)
-                            dprintf(fd, mpi_line_format,
-                                current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL", max_dc_power);
+                        if (!is_sbatch)
+                        {
+                            if (avx)
+                                dprintf(fd, mpi_line_format,
+                                    current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL", max_dc_power);
+                            else
+                                dprintf(fd, mpi_line_format,
+                                    current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", max_dc_power);
+                        }
                         else
-                            dprintf(fd, mpi_line_format,
-                                current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", max_dc_power);
+                        {
+                            if (avx)
+                                dprintf(fd, mpi_sbatch_line_format,
+                                    current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL", max_dc_power);
+                            else
+                                dprintf(fd, mpi_sbatch_line_format,
+                                    current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
+                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", max_dc_power);
+                        }
                     }
                     else
-                    {
-                        if (avx)
-                            dprintf(fd, mpi_sbatch_line_format,
-                                current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL", max_dc_power);
-                        else
-                            dprintf(fd, mpi_sbatch_line_format,
-                                current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", max_dc_power);
-                    }
+                        wrong_power++;
                 }
                 else
                     missing_apps++;
@@ -521,30 +531,33 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 				avg_VPI = -1;
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
             {
-                if (!is_sbatch)
+                if (avg_power < MAX_SIG_POWER & avg_power > MIN_SIG_POWER)
                 {
-                    if (avx)
-                        dprintf(fd, line_format,
-                            current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
+                    if (!is_sbatch)
+                    {
+                        if (avx)
+                            dprintf(fd, line_format,
+                                current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
+                        else
+                            dprintf(fd, line_format,
+                                current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
+                    }
                     else
-                        dprintf(fd, line_format,
-                            current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
-
+                    {
+                        if (avx)
+                            dprintf(fd, sbatch_line_format,
+                                current_job_id, "sbatch", apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
+                        else
+                            dprintf(fd, sbatch_line_format,
+                                current_job_id, "sbatch", apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
+                                avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
+                    }
                 }
                 else
-                {
-                    if (avx)
-                        dprintf(fd, sbatch_line_format,
-                            current_job_id, "sbatch", apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, avg_VPI, max_dc_power);
-                    else
-                        dprintf(fd, sbatch_line_format,
-                            current_job_id, "sbatch", apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt, max_dc_power);
-
-                }
+                    wrong_power++;
             }
             else
                 missing_apps++;
@@ -586,6 +599,9 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     }
     if (missing_apps > 0 && fd==STDOUT_FILENO)
         printf("\nSome jobs are not being shown because either their avg. frequency, time or total energy were 0. To see those jobs run with -l option.\n");
+
+    if (wrong_power > 0 && fd==STDOUT_FILENO)
+        printf("\nSome jobs are not being shown because their average power was outside the allowed bounds (between %.1fW and %.1fW). To see those jobs run with -l option.\n", MIN_SIG_POWER, MAX_SIG_POWER);
 
     if (avx)
         printf("\nA -1.0 in the VPI column means an absolute 0 in that field. This is done to distinguish from very low values.\n");

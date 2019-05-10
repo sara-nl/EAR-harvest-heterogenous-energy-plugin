@@ -56,7 +56,7 @@ char tprintf_obuf[STR_SIZE_BUFFER];
 	tprintf_format();
 
 /** **/
-int tprintf_init(FILE *stream, int mode, char *format);
+int tprintf_init(int fd, int mode, char *format);
 
 /** **/
 int tprintf_format();

@@ -260,6 +260,7 @@ int _set_ld_preload(spank_t sp)
 	plug_verbose(sp, 2, "function _set_ld_preload");
 	
 	char *ear_root_dir = NULL;
+	char *ld_preload = NULL;
 
 	buffer1[0] = '\0';
 	buffer2[0] = '\0';
@@ -269,17 +270,24 @@ int _set_ld_preload(spank_t sp)
 		plug_verbose(sp, 2, "Error, wrong environment for setting LD_PRELOAD");
 		return ESPANK_ERROR;
 	}
-	appendenv(buffer1, ear_root_dir, sizeof(buffer1));
-
+	
 	// Appending libraries to LD_PRELOAD
 	if (isenv_local("SLURM_EAR_MPI_DIST", "openmpi")) {
-		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, OMPI_C_LIB_PATH);
+		snprintf(buffer2, sizeof(buffer2), "%s/%s", ear_root_dir, OMPI_C_LIB_PATH);
 	} else {
-		snprintf(buffer2, sizeof(buffer2), "%s/%s", buffer1, IMPI_C_LIB_PATH);
+		snprintf(buffer2, sizeof(buffer2), "%s/%s", ear_root_dir, IMPI_C_LIB_PATH);
 	}
 
 	//
-	setenv_local("SLURM_EAR_LD_PRELOAD", buffer2, 1);
+	if (getenv_local("LD_PRELOAD", &ld_preload))
+	{
+		snprintf(buffer1, sizeof(buffer2), "%s:%s", buffer2, ld_preload);
+	} else {
+		strcpy(buffer1, buffer2);
+	}
+	
+	//
+	setenv_local("SLURM_EAR_LD_PRELOAD", buffer1, 1);
 
 	plug_verbose(sp, 2, "updated LD_PRELOAD envar '%s'", buffer2);
 
@@ -353,11 +361,10 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	//
 	if (spank_context() == S_CTX_REMOTE)
   	{
-		if (remote_eard_report_start(sp) == ESPANK_SUCCESS)
-		{
-			if (isenv_remote(sp, "SLURM_EAR_LIBRARY", "1") && isenv_remote(sp, "SLURM_EAR_LAST_CONTEXT", "SRUN")) {
-				remote_read_shared_data_set_environment(sp);
-			}
+		remote_eard_report_start(sp);
+		
+		if (isenv_remote(sp, "SLURM_EAR_LIBRARY", "1") && isenv_remote(sp, "SLURM_EAR_LAST_CONTEXT", "SRUN")) {
+			remote_read_shared_data_set_environment(sp);
 		}
 	}
 	

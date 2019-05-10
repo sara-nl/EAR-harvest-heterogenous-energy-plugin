@@ -60,7 +60,7 @@ double project_power(signature_t *sign, coefficient_t *coeff)
 static projection_t *projections;
 static int proj_pstates=0;
 
-uint projection_create(uint p_states)
+void projection_create(uint p_states)
 {
 	// Projections allocation
 	projections = (projection_t *) malloc(sizeof(projection_t) * p_states);

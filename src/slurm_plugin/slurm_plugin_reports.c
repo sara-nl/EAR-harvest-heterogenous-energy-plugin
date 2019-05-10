@@ -64,6 +64,39 @@ int remote_read_shared_data_set_environment(spank_t sp)
 
 	settings_conf_t *conf_sett = NULL;
 
+	//
+	#define replace2(name) \
+                unsetenv_remote(sp, "EAR_" name); \
+                replenv_remote(sp, "SLURM_EAR_" name, "EAR_" name); \
+                unsetenv_remote(sp, "SLURM_EAR_" name); \
+
+        replace2("LIBRARY");
+        replace2("LEARNING_PHASE");
+        replace2("POWER_POLICY");
+        replace2("POWER_POLICY_TH");
+        replace2("P_STATE");
+        replace2("FREQUENCY");
+        replace2("MIN_PERFORMANCE_EFFICIENCY_GAIN");
+        replace2("PERFORMANCE_PENALTY");
+        replace2("TRACE_PATH");
+        replace2("MPI_DIST");
+        replace2("USER_DB_PATHNAME");
+        replace2("ENERGY_TAG");
+        replace2("APP_NAME");
+        replace2("TMP");
+        replace2("VERBOSE");
+
+        replenv_remote(sp, "SLURM_EAR_LD_PRELOAD", "LD_PRELOAD");
+        unsetenv_remote(sp, "SLURM_EAR_LD_PRELOAD"); 
+	
+	// Final library tweaks
+        if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
+                setenv_remote(sp, "EAR_APP_NAME", buffer2, 1);
+        }
+        if (getenv_remote(sp, "SLURM_EAR_PATH_TEMP", buffer2, sizeof(buffer2)) == 1) {
+                setenv_remote(sp, "EAR_TMP", buffer2, 1);
+        }
+
 	// Getting TMP path
 	getenv_remote(sp, "SLURM_EAR_PATH_TEMP", buffer1, sizeof(buffer1));
 
@@ -89,16 +122,16 @@ int remote_read_shared_data_set_environment(spank_t sp)
 
 	// Variable SLURM_EAR_ENERGY_TAG, unset
 	if (conf_sett->user_type != ENERGY_TAG) {
-		unsetenv_remote(sp, "SLURM_EAR_ENERGY_TAG");
+		unsetenv_remote(sp, "EAR_ENERGY_TAG");
 	}
 
 	// Variable SLURM_EAR_P_STATE
 	snprintf(buffer2, 16, "%u", conf_sett->def_p_state);
-	setenv_remote(sp, "SLURM_EAR_P_STATE", buffer2, 1);
+	setenv_remote(sp, "EAR_P_STATE", buffer2, 1);
 
 	// Variable SLURM_EAR_FREQUENCY
 	snprintf(buffer2, 16, "%lu", conf_sett->def_freq);
-	setenv_remote(sp, "SLURM_EAR_FREQUENCY", buffer2, 1);
+	setenv_remote(sp, "EAR_FREQUENCY", buffer2, 1);
 
 	// Variable SLURM_EAR_POWER_POLICY, overwrite
 	if(policy_id_to_name(conf_sett->policy, buffer2) == EAR_ERROR)
@@ -108,51 +141,19 @@ int remote_read_shared_data_set_environment(spank_t sp)
 		plug_error(sp, "invalid policy returned");
 		return (ESPANK_ERROR);
 	}
-	setenv_remote(sp, "SLURM_EAR_POWER_POLICY", buffer2, 1);
+	setenv_remote(sp, "EAR_POWER_POLICY", buffer2, 1);
 
 	// Variable SLURM_EAR_POWER_POLICY_TH, overwrite
 	snprintf(buffer2, 8, "%0.2f", conf_sett->th);
-	setenv_remote(sp, "SLURM_EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
-	setenv_remote(sp, "SLURM_EAR_PERFORMANCE_PENALTY", buffer2, 1);
+	setenv_remote(sp, "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN", buffer2, 1);
+	setenv_remote(sp, "EAR_PERFORMANCE_PENALTY", buffer2, 1);
 
 	// Variable EAR_LEARNING and SLURM_EAR_P_STATE
 	if(!conf_sett->learning) {
-		unsetenv_remote(sp, "SLURM_EAR_P_STATE");
-		unsetenv_remote(sp, "SLURM_EAR_LEARNING_PHASE");
+		unsetenv_remote(sp, "EAR_P_STATE");
+		unsetenv_remote(sp, "EAR_LEARNING_PHASE");
 	}
 
-	// Final library tweaks
-	if (getenv_remote(sp, "SLURM_JOB_NAME", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remote(sp, "SLURM_EAR_APP_NAME", buffer2, 1);
-	}
-	if (getenv_remote(sp, "SLURM_EAR_PATH_TEMP", buffer2, sizeof(buffer2)) == 1) {
-		setenv_remote(sp, "SLURM_EAR_TMP", buffer2, 1);
-	}
-
-	#define replace2(name) \
-		unsetenv_remote(sp, "EAR_" name); \
-		replenv_remote(sp, "SLURM_EAR_" name, "EAR_" name); \
-		unsetenv_remote(sp, "SLURM_EAR_" name); \
-
-        replace2("LIBRARY");
-        replace2("LEARNING_PHASE");
-        replace2("POWER_POLICY");
-        replace2("POWER_POLICY_TH");
-        replace2("P_STATE");
-        replace2("FREQUENCY");
-        replace2("MIN_PERFORMANCE_EFFICIENCY_GAIN");
-        replace2("PERFORMANCE_PENALTY");
-        replace2("TRACE_PATH");
-        replace2("MPI_DIST");
-        replace2("USER_DB_PATHNAME");
-        replace2("ENERGY_TAG");
-        replace2("APP_NAME");
-        replace2("TMP");
-	replace2("VERBOSE");
-
-	replenv_remote(sp, "SLURM_EAR_LD_PRELOAD", "LD_PRELOAD");
-	unsetenv_remote(sp, "SLURM_EAR_LD_PRELOAD"); \
-	
 	// Closing shared memory
 	dettach_settings_conf_shared_area();
 

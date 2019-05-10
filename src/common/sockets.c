@@ -230,18 +230,22 @@ static state_t _send(socket_t *socket, ssize_t bytes_expc, char *buffer)
 {
 	ssize_t bytes_left = bytes_expc;
 	ssize_t bytes_sent = 0;
+	int flags;
+
+	// Better to return error than receive a signal
+	flags = MSG_NOSIGNAL;
 
 	// In the near future, it will be better to include a non-blocking
 	// implementation with a controlled retry system
 	while(bytes_left > 0)
 	{
 		if (socket->protocol == TCP) {
-			bytes_sent = send(socket->fd, buffer + bytes_sent, bytes_left, 0);
+			bytes_sent = send(socket->fd, buffer + bytes_sent, bytes_left, flags);
 		} else {
-			bytes_sent = sendto(socket->fd, buffer + bytes_sent, bytes_left, 0,
+			bytes_sent = sendto(socket->fd, buffer + bytes_sent, bytes_left, flags,
 				socket->info->ai_addr, socket->info->ai_addrlen);
 		}
-
+		
 		if (bytes_sent < 0)
 		{
 			debug("fd '%d', %ld to add to %ld/%ld (errno: %d, strerrno: %s)",
@@ -470,6 +474,7 @@ state_t sockets_nonblock_clean(int fd)
 state_t sockets_header_clean(packet_header_t *header)
 {
 	memset((void *) header, 0, sizeof(packet_header_t));
+	state_return(EAR_SUCCESS);
 }
 
 state_t sockets_header_update(packet_header_t *header)
@@ -479,6 +484,7 @@ state_t sockets_header_update(packet_header_t *header)
 	}
 
 	header->timestamp = time(NULL);
+	state_return(EAR_SUCCESS);
 }
 
 /*

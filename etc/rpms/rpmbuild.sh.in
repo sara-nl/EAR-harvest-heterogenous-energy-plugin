@@ -1,0 +1,12 @@
+#!/bin/bash
+
+export EAR_INSTALL_PATH="@prefix@"
+
+#
+ln -s SPECS/ear.spec .
+
+#
+rpmbuild -bb ear.spec
+
+#
+rm ear.spec

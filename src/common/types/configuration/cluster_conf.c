@@ -639,7 +639,7 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 			p = is->db_ips[is->ranges[k].db_ip];
 
 			if (!found_server && p != NULL &&
-				((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a) == 0))))
+				((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a)) == 0)))
 			{
 				found_server = 1;
 			}
@@ -649,7 +649,7 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 				p = is->backup_ips[is->ranges[k].sec_ip];
 
 				if (p != NULL &&
-					((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a) == 0))))
+					((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a)) == 0)))
 				{
 					strcpy(mirror_of, is->db_ips[is->ranges[k].db_ip]);
 					found_mirror = 1;

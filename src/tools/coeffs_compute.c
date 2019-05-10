@@ -27,33 +27,27 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <cpufreq.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
-#include <cpufreq.h>
-
 #include <common/config.h>
-#include <common/output/verbose.h>
-#include <common/types/application.h>
-#include <common/types/configuration/cluster_conf.h>
-#include <common/types/signature.h>
-#include <common/types/coefficient.h>
-#include <common/types/projection.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <common/database/db_helper.h>
+#include <common/types/signature.h>
+#include <common/types/projection.h>
+#include <common/types/application.h>
+#include <common/types/coefficient.h>
+#include <common/types/configuration/cluster_conf.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
@@ -234,7 +228,8 @@ void init_list_coeffs(uint ref, uint i, uint f, double A, double B, double C, do
 
 void usage(char *app)
 {
-    verbose(0, "Usage: %s coefficients_path min_freq [nodename]", app);
+    verbose(0, "Usage: %s isle.path min.freq node.name", app);
+    verbose(0, "  Computes a coefficients file for a given node.");
     exit(1);
 }
 
@@ -289,7 +284,7 @@ int main(int argc, char *argv[])
     cluster_conf_t my_conf;
 	my_node_conf_t * my_node;
     if (get_ear_conf_path(ear_path)==EAR_ERROR){
-            printf("Error getting ear.conf path\n");
+            verbose(0, "Error getting ear.conf path");
             exit(0);
     }
     read_cluster_conf(ear_path,&my_conf);
@@ -313,10 +308,10 @@ int main(int argc, char *argv[])
         }   
         free(tmp_apps);
     }else{
-        printf("Warning, DB has reported %d jobs for node %s\n",ret,nodename);
-    }   
+        verbose(0, "Warning, DB has reported %d jobs for node %s",ret,nodename);
+    }
 
-    printf("Total apps:%d, expected %d\n", total_apps,num_apps);
+    verbose(0, "Total apps:%d, expected %d", total_apps,num_apps);
     MALLOC(samples_per_app, uint, num_apps);
    
     for (i = 0; i < num_apps; i++) {
@@ -326,7 +321,7 @@ int main(int argc, char *argv[])
  
     for (i = 0; i < num_apps; i++)
     {
-		printf("APP SIGNATURE %lu\n", apps[i].signature.def_f);
+        verbose(0, "APP SIGNATURE %lu", apps[i].signature.def_f);
         if (apps[i].signature.def_f >= min_freq) {
 
             if ((index = app_exists(app_list, filtered_apps, &apps[i])) >= 0) {

@@ -55,7 +55,7 @@ double project_power(signature_t *sign, coefficient_t *coeff);
 // Inherited
 /** Allocates memory to contain the projections for the p_states given by
 *   parameter */
-uint projection_create(uint p_states);
+void projection_create(uint p_states);
 
 /** Sets the values of the performance projection i to the ones given by parameter */
 void projection_set(int i, double TP, double PP);

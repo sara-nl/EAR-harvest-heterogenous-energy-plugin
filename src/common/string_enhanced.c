@@ -39,7 +39,7 @@ static const char *sym_vis = STR_SYMBOL_VIS;
 static unsigned int format[STR_MAX_COLUMNS];
 static unsigned int columns;
 static unsigned int mode;
-static FILE *stream;
+static int fd;
 
 /*
  *
@@ -85,7 +85,7 @@ static void tprintf_color_close(char **oput)
  *
  */
 
-int tprintf_init(FILE *_stream, int _mode, char *_format)
+int tprintf_init(int _fd, int _mode, char *_format)
 {
 	int len = strlen(_format);
     char *tok;
@@ -96,9 +96,9 @@ int tprintf_init(FILE *_stream, int _mode, char *_format)
 	}
 
 	//
+	fd   = _fd;
+	mode = _mode;
 	columns = 0;
-	stream  = _stream;
-	mode    = _mode;
 
 	// Getting the format
 	strcpy(tprintf_ibuf, _format);
@@ -193,7 +193,7 @@ int tprintf_format()
 
 	p3[0] = '\n';
 	p3[1] = '\0';
-    fprintf(stream, "%s", tprintf_obuf);
+    dprintf(fd, "%s", tprintf_obuf);
 
 	return 0;
 }

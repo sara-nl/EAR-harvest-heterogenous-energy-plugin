@@ -50,7 +50,7 @@ void process_update_pid(process_data_t *prodata)
 	prodata->pid = getpid();
 }
 
-int process_exists(const process_data_t *prodata, pid_t *pid)
+int process_exists(const process_data_t *prodata, char *bin_name, pid_t *pid)
 {
 	int value = 0;
 	state_t state;
@@ -65,7 +65,23 @@ int process_exists(const process_data_t *prodata, pid_t *pid)
 	//
 	value = !((kill(*pid, 0) < 0) && (errno == ESRCH));
 
-	return value;
+	if (value)
+	{
+		char *buffer1 = malloc(SZ_PATH);
+		char *buffer2 = malloc(SZ_PATH);
+		char *p;
+
+		sprintf(buffer1, "/proc/%d/cmdline", *pid);
+		file_read(buffer1, buffer2, SZ_PATH);
+		p = strstr(buffer2, bin_name);
+
+		free(buffer1);
+		free(buffer2);
+
+		return (p != NULL);
+	}
+
+	return 0;
 }
 
 state_t process_pid_file_save(const process_data_t *prodata)
@@ -101,4 +117,5 @@ state_t process_pid_file_load(const process_data_t *prodata, pid_t *pid)
 state_t process_pid_file_clean(process_data_t *prodata)
 {
 	file_clean(prodata->path_pid);
+	state_return(EAR_SUCCESS);
 }

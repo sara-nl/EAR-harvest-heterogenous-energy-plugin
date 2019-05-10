@@ -58,7 +58,7 @@ int error_enabled	__attribute__((weak)) = 1;
 
 // Log
 #if SHOW_LOGS
-#define log(...)		syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__);
+#define log(...) 		syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__);
 #define log_open(package)	openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
 #define log_close()		closelog();
 #else
