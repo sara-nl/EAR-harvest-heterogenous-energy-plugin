@@ -11,7 +11,7 @@ papi_OBJS = flops.o \
 
 ######## RULES
 
-all: $(papi_OBJS) basic_test
+all: $(papi_OBJS)
 
 generics.o: generics.c generics.h
 	$(CC) $(CFLAGS) -c $<

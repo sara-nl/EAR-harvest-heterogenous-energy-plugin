@@ -117,4 +117,5 @@ state_t process_pid_file_load(const process_data_t *prodata, pid_t *pid)
 state_t process_pid_file_clean(process_data_t *prodata)
 {
 	file_clean(prodata->path_pid);
+	state_return(EAR_SUCCESS);
 }

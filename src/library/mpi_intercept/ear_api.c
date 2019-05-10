@@ -824,7 +824,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
 
-		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON \n",__FILE__);
+		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) PAPI_get_real_usec(),

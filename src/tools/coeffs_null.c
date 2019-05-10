@@ -38,6 +38,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
+#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <common/types/coefficient.h>
 

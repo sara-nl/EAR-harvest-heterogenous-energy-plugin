@@ -165,7 +165,8 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
     }
 	verbose(VCCONF,"max_sig_power %.0lf min_sig_power %.0lf error_power %.0lf max_temp %lu",my_node_conf->max_sig_power,my_node_conf->min_sig_power,my_node_conf->max_error_power,my_node_conf->max_temp);
 }
-int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
+
+void print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 {
     int coef_len;
     int part1,part2;
@@ -181,9 +182,9 @@ int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
         write(fd,(char *)&coef_len,sizeof(int));
     }
     write(fd,(char *)myconf+part1+sizeof(char *),part2);
-    return 0;
 }
-int read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
+
+void read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 {
     int coef_len;
     int part1,part2;

@@ -127,8 +127,8 @@ void print_node_conf(node_conf_t *node_conf);
 /** prints in the stderr the specific node configuration */
 void print_my_node_conf(my_node_conf_t *my_node_conf);
 
-int print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
-int read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
+void print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
+void read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
 
 /** Given a  node and policy, returns the policy configuration for that cluser,node,policy */
 policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id);
