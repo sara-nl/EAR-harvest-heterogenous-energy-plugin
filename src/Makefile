@@ -26,6 +26,8 @@ ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
 
+COMPONENTS = common control database_cache metrics daemon commands tests library tools global_manager slurm_plugin
+
 ######## RULES
 
 .PHONY: check
@@ -37,14 +39,24 @@ check:
 
 install: install.components
 
+clean: clean.components
+
+######## ALIASES
+
 etc.install: etc.install.components;
 
 devel.install: devel.install.components;
 
+eard.install: daemon.install;
+
+eardbd.install: database_cache.install;
+
+eargmd.install: global_manager.install;
+
+earplug.install: slurm_plugin.install;
+
 %.install:
 	@ $(MAKE) -C $* install || exit
-
-clean: clean.components
 
 ######## SUBFOLDERS
 
@@ -56,18 +68,10 @@ clean: clean.components
 		$(MAKE) -C $${i} $* || exit;                 \
 	done
 
-######## ALIASES
-
-eard.install: daemon.install;
-
-eardbd.install: database_cache.install;
-
-eargmd.install: global_manager.install;
-
-earplug.install: slurm_plugin.install;
-
 ######## DEPENDENCIES
 
 depend: depend.components
 
 depend-clean: depend-clean.components
+
+#include $(SRCDIR)/Makefile.pre

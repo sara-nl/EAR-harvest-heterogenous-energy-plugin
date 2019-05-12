@@ -64,25 +64,13 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		MPICC=mpicc
 	fi
 
-	#
-	# BUILD TYPE
-	#
+	if echo "$CC" | grep -q "icc"; then
+        CC_FLAGS=-static-intel
+    fi
 
-	AC_ARG_VAR([BUILD_TYPE],[Defines the type of compilation: release (def), release-lrz, development or debug])
-
-    if test "x$BUILD_TYPE" = "xdevelopment"; then
-    	BUILD_TYPE=0
-	elif test "x$BUILD_TYPE" = "xdebug"; then
-		BUILD_TYPE=1
-	elif test "x$BUILD_TYPE" = "xrelease"; then
-		BUILD_TYPE=2
-	elif test "x$BUILD_TYPE" = "xrelease-lrz"; then
-		BUILD_TYPE=3
-	else
-		BUILD_TYPE=2
+	if echo "$MPICC" | grep -q "mpiicc"; then	
+		MPICC_FLAGS=-static-intel
 	fi
-
-	AC_SUBST(BUILD_TYPE)
 
 	#
 	# DATABASE
@@ -113,6 +101,6 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
     # INSTALLATION USER/GROUP
     #
 	AC_ARG_VAR([USER],[Sets the owner user of your installed files])
--	AC_ARG_VAR([GROUP],[Sets the owner group of your installed files])
+	AC_ARG_VAR([GROUP],[Sets the owner group of your installed files])
 
 ])

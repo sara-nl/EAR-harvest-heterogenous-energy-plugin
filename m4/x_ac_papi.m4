@@ -15,34 +15,14 @@
 #    This macro must be placed after AC_PROG_CC and before AC_PROG_LIBTOOL.
 ##*****************************************************************************
 
-AC_DEFUN([X_AC_PAPI],
+AC_DEFUN([X_AC_PAPI_FIND_ROOT_DIR],
 [
-    _x_ac_papi_dirs_root="/usr /usr/local /opt/papi"
-    _x_ac_papi_dirs_libs="lib64 lib"
-    _x_ac_papi_gcc_libs="-lpapi"
-    _x_ac_papi_gcc_ldflags=
-    _x_ac_papi_dir_bin=
-    _x_ac_papi_dir_lib=
-
-    AC_ARG_WITH(
-        [papi],
-        AS_HELP_STRING(--with-papi=PATH,Specify path to PAPI installation),
-        [
-			_x_ac_papi_dirs_root="$withval"
-			_x_ac_papi_custom="yes"
-		]
-    )
-
-    AC_CACHE_CHECK(
-        [for PAPI root directory],
-        [_cv_papi_dir_root],
-        [
-            for d in $_x_ac_papi_dirs_root; do
-                test -d "$d" || continue
-                test -d "$d/include" || continue
-                test -f "$d/include/papi.h" || continue
-                    for dir_lib in $_x_ac_papi_dirs_libs;
-                    do
+	for d in $_x_ac_papi_dirs_root; do
+		test -d "$d" || continue
+		test -d "$d/include" || continue
+		test -f "$d/include/papi.h" || continue
+		for dir_lib in $_x_ac_papi_dirs_libs;
+		do
                         # Testing if the library folder exists
                         test -d $d/$dir_lib || continue
 
@@ -50,9 +30,9 @@ AC_DEFUN([X_AC_PAPI],
                         if test -d "$d/$dir_lib"; then
                             _x_ac_papi_dir_lib="$d/$dir_lib"
 
-							if test "x$_x_ac_papi_custom" = "xyes"; then
-                            	_x_ac_papi_gcc_ldflags=-L$_x_ac_papi_dir_lib
-							fi
+                            if test "x$_x_ac_papi_custom" = "xyes"; then
+                                _x_ac_papi_gcc_ldflags=-L$_x_ac_papi_dir_lib
+                            fi
                         fi
 
                         X_AC_VAR_BACKUP([],[$_x_ac_papi_gcc_ldflags],[$_x_ac_papi_gcc_libs])
@@ -73,9 +53,42 @@ AC_DEFUN([X_AC_PAPI],
                         fi
 
                         test -n "$_cv_papi_dir_root" && break
-                    done
-                test -n "$_cv_papi_dir_root" && break
-            done
+		done
+		test -n "$_cv_papi_dir_root" && break
+	done
+])
+
+AC_DEFUN([X_AC_PAPI],
+[
+	X_AC_FIND_LIBRARY([])
+	_x_ac_papi_dirs_root="/usr /usr/local /opt/papi"
+    _x_ac_papi_dirs_libs="lib64 lib"
+    _x_ac_papi_gcc_libs="-lpapi"
+    _x_ac_papi_gcc_ldflags=
+    _x_ac_papi_dir_bin=
+    _x_ac_papi_dir_lib=
+
+    AC_ARG_WITH(
+        [papi],
+        AS_HELP_STRING(--with-papi=PATH,Specify path to PAPI installation),
+        [
+			_x_ac_papi_dirs_root="$withval"
+			_x_ac_papi_custom="yes"
+		]
+    )
+
+    AC_CACHE_CHECK(
+        [for PAPI root directory],
+        [_cv_papi_dir_root],
+        [
+			X_AC_PAPI_FIND_ROOT_DIR([])
+			
+    		if test -z "$_cv_papi_dir_root"; then
+				_x_ac_papi_dirs_root="${_x_ac_ld_dirs_root}"
+				_x_ac_papi_custom="yes"
+				
+				X_AC_PAPI_FIND_ROOT_DIR([])
+			fi
         ]
     )
 
