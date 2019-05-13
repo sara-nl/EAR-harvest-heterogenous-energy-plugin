@@ -15,6 +15,51 @@
 #    This macro must be placed after AC_PROG_CC and before AC_PROG_LIBTOOL.
 ##*****************************************************************************
 
+AC_DEFUN([X_AC_SLURM_FIND_ROOT_DIR],
+[
+	for d in $_x_ac_slurm_dirs_root; do
+		test -d "$d" || continue
+		test -d "$d/include" || continue
+		test -d "$d/include/slurm" || continue
+		test -f "$d/include/slurm/slurm.h" || continue
+		test -f "$d/include/slurm/spank.h" || continue
+		for dir_lib in $_x_ac_slurm_dirs_libs;
+		do
+			# Testing if the library folder exists
+			test -d $d/$dir_lib || continue
+
+			# If exists, then its path and LDFLAGS are saved
+			if test -d "$d/$dir_lib"; then
+				_x_ac_slurm_dir_lib="$d/$dir_lib"
+
+				if test "x$_x_ac_slurm_custom" = "xyes"; then
+					_x_ac_slurm_gcc_ldflags=-L$_x_ac_slurm_dir_lib
+				fi
+			fi
+
+			X_AC_VAR_BACKUP([],[$_x_ac_slurm_gcc_ldflags],[$_x_ac_slurm_gcc_libs])
+			#
+			# AC_LANG_CALL(prologue, function) creates a source file
+			# and calls to the function.
+			# AC_LINK_IFELSE(input, action-if-true) runs the compiler
+			# and linker using LDFLAGS and LIBS.
+			#
+			AC_LINK_IFELSE(
+				[AC_LANG_CALL([], slurm_ping)],
+				[slurm_ping=yes]
+			)
+			X_AC_VAR_UNBACKUP
+
+			if test "x$slurm_ping" = "xyes"; then
+				AS_VAR_SET(_cv_slurm_dir_root, $d)
+			fi
+
+			test -n "$_cv_slurm_dir_root" && break
+		done
+		test -n "$_cv_slurm_dir_root" && break
+	done
+])
+
 AC_DEFUN([X_AC_SLURM],
 [
     _x_ac_slurm_dirs_root="/usr /usr/local /opt/slurm"
@@ -37,47 +82,14 @@ AC_DEFUN([X_AC_SLURM],
         [for SLURM root directory],
         [_cv_slurm_dir_root],
         [
-            for d in $_x_ac_slurm_dirs_root; do
-                test -d "$d" || continue
-                test -d "$d/include" || continue
-                test -d "$d/include/slurm" || continue
-                test -f "$d/include/slurm/slurm.h" || continue
-                test -f "$d/include/slurm/spank.h" || continue
-                    for dir_lib in $_x_ac_slurm_dirs_libs;
-                    do
-                        # Testing if the library folder exists
-                        test -d $d/$dir_lib || continue
+			X_AC_SLURM_FIND_ROOT_DIR([])
 
-                        # If exists, then its path and LDFLAGS are saved
-                        if test -d "$d/$dir_lib"; then
-                            _x_ac_slurm_dir_lib="$d/$dir_lib"
+    		if test -z "$_cv_slurm_dir_root"; then
+				_x_ac_slurm_dirs_root="${_ax_ld_dirs_root}"
+				_x_ac_slurm_custom="yes"
 
-							if test "x$_x_ac_slurm_custom" = "xyes"; then
-                            	_x_ac_slurm_gcc_ldflags=-L$_x_ac_slurm_dir_lib
-							fi
-                        fi
-
-                        X_AC_VAR_BACKUP([],[$_x_ac_slurm_gcc_ldflags],[$_x_ac_slurm_gcc_libs])
-                        #
-                        # AC_LANG_CALL(prologue, function) creates a source file
-                        # and calls to the function.
-                        # AC_LINK_IFELSE(input, action-if-true) runs the compiler
-                        # and linker using LDFLAGS and LIBS.
-                        #
-                        AC_LINK_IFELSE(
-                            [AC_LANG_CALL([], slurm_ping)],
-                            [slurm_ping=yes]
-                        )
-                        X_AC_VAR_UNBACKUP
-
-                        if test "x$slurm_ping" = "xyes"; then
-                            AS_VAR_SET(_cv_slurm_dir_root, $d)
-                        fi
-
-                        test -n "$_cv_slurm_dir_root" && break
-                    done
-                test -n "$_cv_slurm_dir_root" && break
-            done
+				X_AC_SLURM_FIND_ROOT_DIR([])
+			fi
         ]
     )
 

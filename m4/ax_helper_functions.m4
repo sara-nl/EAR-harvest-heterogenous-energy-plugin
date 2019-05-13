@@ -19,3 +19,11 @@ AC_DEFUN([X_AC_VAR_PRINT], [
     echo $LDFLAGS
     echo $LIBS
 ])
+
+AC_DEFUN([X_AC_GET_LD_LIBRARY_PATHS], [
+	LIST_LD=`echo $LD_LIBRARY_PATH | tr ':' ' '`
+	_ax_ld_dirs_root=
+	for p in ${LIST_LD}; do
+		_ax_ld_dirs_root="${_x_ac_ld_dirs_root} `echo $(cd ${p}/..; pwd)`"
+	done
+])

@@ -83,24 +83,28 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 
 	AS_IF([test -z "$enable_database" || test "x$enable_database" = "xmysql"],
 	[
-			DB_MYSQL=1
-			DB_FILES=0
+		DB_MYSQL=1
+		DB_FILES=0
 	])
 	AS_IF([test "x$enable_database" = "xfiles"],
     [
-            DB_MYSQL=0
-            DB_FILES=1
+		DB_MYSQL=0
+		DB_FILES=1
     ])
 	AS_IF([test "x$enable_database" = "xboth"],
     [
-            DB_MYSQL=1
-            DB_FILES=1
+		DB_MYSQL=1
+		DB_FILES=1
     ])
 
     #
-    # INSTALLATION USER/GROUP
+    # Installation user/group
     #
 	AC_ARG_VAR([USER],[Sets the owner user of your installed files])
 	AC_ARG_VAR([GROUP],[Sets the owner group of your installed files])
 
+	#
+	# Other calls
+	#
+	X_AC_GET_LD_LIBRARY_PATHS([])
 ])
