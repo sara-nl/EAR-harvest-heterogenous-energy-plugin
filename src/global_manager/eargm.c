@@ -63,6 +63,7 @@
 *	EAR Global Manager constants
 */
 
+#define GRACE_PERIOD 100
 #define NO_PROBLEM 	3
 #define WARNING_3	2
 #define WARNING_2	1
@@ -326,25 +327,87 @@ void fill_periods(ulong energy)
 	}
 }
 
-void send_mail(uint level, double energy)
+void process_status(pid_t pid_process_created,int process_created_status)
 {
-	char buff[128];
-	char command[1024];
-	char mail_filename[128];
-	int fd;
-	sprintf(buff,"Detected WARNING level %u, %lfi %% of energy from the total energy limit\n",level,energy);
-	sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.tmp_dir);
-	fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-	if (fd<0){
-		error("Warning mail file cannot be created at %s (%s)",mail_filename,strerror(errno));
-		return;
-	}
-	write(fd,buff,strlen(buff));
-	close(fd);
-	sprintf(command,"mail -s \"Energy limit warning\" %s < %s",my_cluster_conf.eargm.mail,mail_filename);
-	if (strcmp(my_cluster_conf.eargm.mail,"nomail")) system(command);
-	else { verbose(VGM,"%s",command); }
+  char buffer[256];
+  int st;
+  if (WIFEXITED(process_created_status))
+  {
+    st=WEXITSTATUS(process_created_status);
+    if (st==0) return;
+    error("Process %d terminates with exit status %d",pid_process_created,st);
+  }else{
+    error("Process %d terminates with signal %d",pid_process_created,WTERMSIG(process_created_status));
+  }
+}
+
+
+int execute_action(ulong e_t1,ulong e_t2,ulong e_limit,uint t2,uint t1,char *units)
+{
+  int ret;
+  char *my_command=getenv("EAR_WARNING_COMMAND");
+  if (my_command!=NULL){
+    ret=fork();
+    if (ret==0){
+      char command_to_execute[512];
+      sprintf(command_to_execute,"%s %u %u %u %u %u %s",my_command,e_t1,e_t2,e_limit,t2,t1,units);
+      verbose(0,"Executing %s",command_to_execute);
+      ret=system(command_to_execute);
+      if (WIFSIGNALED(ret)){
+        error("Command %s terminates with signal %d",command_to_execute,WTERMSIG(ret));
+      }else if (WIFEXITED(ret) && WEXITSTATUS(ret)){
+        error("Command %s terminates with exit status  %d",command_to_execute,WEXITSTATUS(ret));
+      }
+      exit(0);
+    }else if (ret<0){
+      error("eargm child to execute command can not be forked %s",strerror(errno));
+      return 0;
+    }else return 1;
+  }else{
+    debug("eargm warning command not defined");
+    return 0;
+  }
+  return 1;
+}
+
+
+int send_mail(uint level, double energy)
+{
 	
+	char buff[128];
+  char command[1024];
+  char mail_filename[128];
+  int fd,ret;
+  ret=fork();
+  if (ret==0){
+    sprintf(buff,"Detected WARNING level %u, %lfi %% of energy from the total energy limit\n",level,energy);
+    sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.tmp_dir);
+    fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+    if (fd<0){
+      error("Warning mail file cannot be created at %s (%s)",mail_filename,strerror(errno));
+      exit(1);
+    }   
+    write(fd,buff,strlen(buff));
+    close(fd);
+    sprintf(command,"mailx -s \"Energy limit warning\" %s < %s",my_cluster_conf.eargm.mail,mail_filename);
+    if (strcmp(my_cluster_conf.eargm.mail,"nomail")){ 
+      /* Sending mail */
+      ret=system(command);
+      if (WIFSIGNALED(ret)){
+        error("Command: %s terminates with signal %d",command,WTERMSIG(ret));
+      }else if (WIFEXITED(ret) && WEXITSTATUS(ret)){
+        error("Command: %s terminates with exit status  %d",command,WEXITSTATUS(ret));
+      }
+    }else {
+      /* Mail is not sent, we just print the command hen debugging */
+      debug("%s",command);
+    }
+    exit(0);
+  }else if (ret<0){
+    error("eargm child to send mail can not be forked %s",strerror(errno));
+    return 0;
+  }
+  return 1;
 }
 
 /*
@@ -431,7 +494,28 @@ void report_status(gm_warning_t *my_warning)
 	#endif
 }
 
-
+void set_gm_grace_period_values(gm_warning_t *my_warning)
+{
+	if (my_warning==NULL) return;
+	my_warning->level=GRACE_PERIOD;
+	my_warning->new_p_state=GRACE_PERIOD;
+	my_warning->inc_th=0.0;
+}
+void set_gm_status(gm_warning_t *my_warning,ulong et1,ulong et2,ulong ebudget,uint t1,uint t2,double perc,uint policy)
+{
+	if (my_warning==NULL) return;
+	my_warning->energy_percent=perc;
+  my_warning->energy_t1=et1;
+  my_warning->energy_t2=et2;
+  my_warning->energy_limit=ebudget;
+  my_warning->energy_p1=t1;
+  my_warning->energy_p2=t1;
+	switch(policy){
+		case MAXENERGY:strcpy(my_warning->policy,"EnergyBudget");break;
+		case MAXPOWER:strcpy(my_warning->policy,"PowerBudgbet");break;
+		default:strcpy(my_warning->policy,"Error");
+	}
+}
 
 
 /*
@@ -466,6 +550,7 @@ void main(int argc,char *argv[])
 	sigset_t set;
 	int ret;
 	ulong result,result2;
+	uint process_created=0;
 	gm_warning_t my_warning;
     if (argc > 2) usage(argv[0]);
 	if (argc==2) parse_args(argv);
@@ -563,6 +648,20 @@ void main(int argc,char *argv[])
 	while(1){
 		// Waiting a for period_t1
 		sigsuspend(&set);
+	 if (process_created){
+      pid_t pid_process_created;
+      int process_created_status; 
+      do{ 
+        /* Processing processes created */
+        if ((pid_process_created=waitpid(-1,&process_created_status,WNOHANG))>0){ 
+          process_status(pid_process_created,process_created_status);
+          process_created--;
+        }else if (pid_process_created<0){
+          warning("Waitpid returns <0 and process_created pendings to release");
+          process_created=0;
+        }   
+      }while(pid_process_created>0);
+    }   
 		// ALARM RECEIVED
 		if (t1_expired){
 			t1_expired=0;
@@ -604,8 +703,11 @@ void main(int argc,char *argv[])
 				}
 			}
 			#endif
+			uint current_level=defcon(total_energy_t2,energy_t1,total_nodes);
+			set_gm_status(&my_warning,energy_t1,total_energy_t2,energy_budget,period_t1,period_t2,perc_energy,policy);
+			
 			if (!in_action){
-			switch(defcon(total_energy_t2,energy_t1,total_nodes)){
+			switch(current_level){
 			case NO_PROBLEM:
 				verbose(VGM," Safe area. energy budget %.2lf%% \n",perc_energy);
 				break;
@@ -622,10 +724,8 @@ void main(int argc,char *argv[])
 					my_warning.inc_th=0;
 				}
 				my_warning.energy_percent=perc_energy;
-				send_mail(WARNING_3,perc_energy);
-				#if DB_MYSQL	
-				db_insert_gm_warning(&my_warning);
-				#endif
+				process_created+=send_mail(WARNING_3,perc_energy);
+				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
 				report_status(&my_warning);
 				break;
 			case WARNING_2:
@@ -641,10 +741,8 @@ void main(int argc,char *argv[])
 					my_warning.inc_th=0;my_warning.new_p_state=0;
 				}
 				my_warning.energy_percent=perc_energy;
-				send_mail(WARNING_2,perc_energy);
-				#if DB_MYSQL	
-				db_insert_gm_warning(&my_warning);
-				#endif
+				process_created+=send_mail(WARNING_2,perc_energy);
+				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
 				report_status(&my_warning);
 				break;
 			case PANIC:
@@ -660,15 +758,19 @@ void main(int argc,char *argv[])
 					my_warning.inc_th=0;my_warning.new_p_state=0;
 				}
 				my_warning.energy_percent=perc_energy;
-				send_mail(PANIC,perc_energy);
-				#if DB_MYSQL	
-				db_insert_gm_warning(&my_warning);
-				#endif
+				process_created+=send_mail(PANIC,perc_energy);
+				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
 				report_status(&my_warning);
 				break;
 			}
-			}else in_action--;
+			}else{ 
+				in_action--;
+				set_gm_grace_period_values(&my_warning);
+			}
 		}// ALARM
+		#if DB_MYSQL
+		db_insert_gm_warning(&my_warning);
+		#endif
 		if (must_refill){
 			must_refill=0;
     		aggregate_samples=period_t2/period_t1;
