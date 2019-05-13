@@ -15,9 +15,53 @@
 #    This macro must be placed after AC_PROG_CC and before AC_PROG_LIBTOOL.
 ##*****************************************************************************
 
+AC_DEFUN([X_AC_PAPI_FIND_ROOT_DIR],
+[
+	for d in $_x_ac_papi_dirs_root; do
+		test -d "$d" || continue
+		test -d "$d/include" || continue
+		test -f "$d/include/papi.h" || continue
+		for dir_lib in $_x_ac_papi_dirs_libs;
+		do
+			# Testing if the library folder exists
+			test -d $d/$dir_lib || continue
+
+			# If exists, then its path and LDFLAGS are saved
+			if test -d "$d/$dir_lib"; then
+				_x_ac_papi_dir_lib="$d/$dir_lib"
+
+				if test "x$_x_ac_papi_custom" = "xyes"; then
+					_x_ac_papi_gcc_ldflags=-L$_x_ac_papi_dir_lib
+				fi
+			fi
+
+			X_AC_VAR_BACKUP([],[$_x_ac_papi_gcc_ldflags],[$_x_ac_papi_gcc_libs])
+			#
+			# AC_LANG_CALL(prologue, function) creates a source file
+			# and calls to the function.
+			# AC_LINK_IFELSE(input, action-if-true) runs the compiler
+			# and linker using LDFLAGS and LIBS.
+			#
+			AC_LINK_IFELSE(
+				[AC_LANG_CALL([], PAPI_get_real_usec)],
+				[PAPI_get_real_usec=yes]
+			)
+			X_AC_VAR_UNBACKUP
+
+			if test "x$PAPI_get_real_usec" = "xyes"; then
+				AS_VAR_SET(_cv_papi_dir_root, $d)
+			fi
+
+			test -n "$_cv_papi_dir_root" && break
+		done
+		test -n "$_cv_papi_dir_root" && break
+	done
+])
+
 AC_DEFUN([X_AC_PAPI],
 [
-    _x_ac_papi_dirs_root="/usr /usr/local /opt/papi"
+	X_AC_FIND_LIBRARY([])
+	_x_ac_papi_dirs_root="/usr /usr/local /opt/papi"
     _x_ac_papi_dirs_libs="lib64 lib"
     _x_ac_papi_gcc_libs="-lpapi"
     _x_ac_papi_gcc_ldflags=
@@ -37,45 +81,14 @@ AC_DEFUN([X_AC_PAPI],
         [for PAPI root directory],
         [_cv_papi_dir_root],
         [
-            for d in $_x_ac_papi_dirs_root; do
-                test -d "$d" || continue
-                test -d "$d/include" || continue
-                test -f "$d/include/papi.h" || continue
-                    for dir_lib in $_x_ac_papi_dirs_libs;
-                    do
-                        # Testing if the library folder exists
-                        test -d $d/$dir_lib || continue
-
-                        # If exists, then its path and LDFLAGS are saved
-                        if test -d "$d/$dir_lib"; then
-                            _x_ac_papi_dir_lib="$d/$dir_lib"
-
-							if test "x$_x_ac_papi_custom" = "xyes"; then
-                            	_x_ac_papi_gcc_ldflags=-L$_x_ac_papi_dir_lib
-							fi
-                        fi
-
-                        X_AC_VAR_BACKUP([],[$_x_ac_papi_gcc_ldflags],[$_x_ac_papi_gcc_libs])
-                        #
-                        # AC_LANG_CALL(prologue, function) creates a source file
-                        # and calls to the function.
-                        # AC_LINK_IFELSE(input, action-if-true) runs the compiler
-                        # and linker using LDFLAGS and LIBS.
-                        #
-                        AC_LINK_IFELSE(
-                            [AC_LANG_CALL([], PAPI_get_real_usec)],
-                            [PAPI_get_real_usec=yes]
-                        )
-                        X_AC_VAR_UNBACKUP
-
-                        if test "x$PAPI_get_real_usec" = "xyes"; then
-                            AS_VAR_SET(_cv_papi_dir_root, $d)
-                        fi
-
-                        test -n "$_cv_papi_dir_root" && break
-                    done
-                test -n "$_cv_papi_dir_root" && break
-            done
+			X_AC_PAPI_FIND_ROOT_DIR([])
+			
+    		if test -z "$_cv_papi_dir_root"; then
+				_x_ac_papi_dirs_root="${_ax_ld_dirs_root}"
+				_x_ac_papi_custom="yes"
+				
+				X_AC_PAPI_FIND_ROOT_DIR([])
+			fi
         ]
     )
 
