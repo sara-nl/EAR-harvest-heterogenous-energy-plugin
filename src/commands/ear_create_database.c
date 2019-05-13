@@ -334,6 +334,7 @@ id INT unsigned NOT NULL AUTO_INCREMENT,\
 start_time INT,\
 end_time INT,\
 DC_energy INT unsigned, \
+eardbd_host VARCHAR(64), \
 PRIMARY KEY(id))");
     run_query(connection, query);
 
