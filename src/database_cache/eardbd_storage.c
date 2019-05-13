@@ -44,7 +44,8 @@ extern char input_buffer[SZ_BUFF_BIG];
 extern char extra_buffer[SZ_BUFF_BIG];
 
 // Mirroring
-extern int master_iam; // Master is who speaks
+extern char master_host[SZ_NAME_MEDIUM]; 
+extern int master_iam;
 extern int server_iam;
 extern int mirror_iam;
 
@@ -176,7 +177,7 @@ static void reset_aggregations()
 	{
 		memcpy (p, &q, sizeof(periodic_aggregation_t));
     } else {
-        init_periodic_aggregation(p);
+        init_periodic_aggregation(p, master_host);
     }
 
     sam_index[i_aggrs] = 0;

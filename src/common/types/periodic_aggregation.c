@@ -30,9 +30,10 @@
 #include <string.h>
 #include <common/types/periodic_aggregation.h>
 
-void init_periodic_aggregation(peraggr_t *aggr)
+void init_periodic_aggregation(peraggr_t *aggr, char *hostname)
 {
 	memset(aggr, 0, sizeof(peraggr_t));
+	memcpy(aggr->eardbd_host, hostname, sizeof(aggr->eardbd_host));
 }
 
 void add_periodic_aggregation(peraggr_t *aggr, ulong DC_energy, time_t start_time, time_t end_time)

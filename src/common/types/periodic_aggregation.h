@@ -39,13 +39,13 @@ typedef struct periodic_aggregation {
 	time_t end_time;
 	uint n_samples;
 	uint id_isle;
-    char eardbd_host[64];
+	char eardbd_host[64];
 } periodic_aggregation_t;
 
 typedef periodic_aggregation_t peraggr_t;
 
 // Functions
-void init_periodic_aggregation(peraggr_t *aggr);
+void init_periodic_aggregation(peraggr_t *aggr, char *hostname);
 void add_periodic_aggregation(peraggr_t *aggr, ulong DC_energy, time_t start_time, time_t end_time);
 
 

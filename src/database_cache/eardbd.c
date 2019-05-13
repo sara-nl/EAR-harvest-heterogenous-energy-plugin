@@ -72,7 +72,7 @@ long fd_hosts[FD_SETSIZE];
 //	be just a mirror, the mirror is the master.
 
 // Mirroring
-static char master_host[SZ_NAME_MEDIUM]; // This node name
+char master_host[SZ_NAME_MEDIUM]; // This node name
 static char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
 static int server_port;
 static int mirror_port;
