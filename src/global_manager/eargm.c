@@ -42,6 +42,7 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <common/states.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
