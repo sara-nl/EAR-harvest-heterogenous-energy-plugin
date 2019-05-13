@@ -44,7 +44,7 @@
 #define EAR_TYPE_LOOP           2
 
 //number of arguments inserted into periodic_metrics
-#define PERIODIC_AGGREGATION_ARGS   3
+#define PERIODIC_AGGREGATION_ARGS   4
 #define EAR_EVENTS_ARGS             6
 #define POWER_SIGNATURE_ARGS        9
 #define APPLICATION_ARGS            5

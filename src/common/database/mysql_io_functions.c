@@ -92,7 +92,7 @@
 #define PERIODIC_METRIC_QUERY_SIMPLE    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
                                         "VALUES (?, ?, ?, ?, ?, ?)"
 
-#define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)"
+#define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time, eardbd_host) VALUES (?, ?, ?, ?)"
 
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
@@ -1812,7 +1812,7 @@ int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t 
 
     if (mysql_stmt_prepare(statement, PERIODIC_AGGREGATION_QUERY, strlen(PERIODIC_AGGREGATION_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[3];
+    MYSQL_BIND bind[4];
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -1822,10 +1822,15 @@ int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t 
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
     }
 
+    //varchar types
+    bind[3].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[3].buffer_length = strlen(per_agg->eardbd_host);
+
     //storage variable assignation
     bind[0].buffer = (char *)&per_agg->DC_energy;
     bind[1].buffer = (char *)&per_agg->start_time;
     bind[2].buffer = (char *)&per_agg->end_time;
+    bind[3].buffer = (char *)&per_agg->eardbd_host;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -1917,7 +1922,7 @@ int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggrega
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
-    char *params = ", (?, ?, ?)";
+    char *params = ", (?, ?, ?, ?)";
     char *query = malloc(strlen(PERIODIC_AGGREGATION_QUERY)+(num_aggs-1)*strlen(params)+1);
     strcpy(query, PERIODIC_AGGREGATION_QUERY);
 
@@ -1940,11 +1945,15 @@ int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggrega
         {
             bind[j+offset].buffer_type = MYSQL_TYPE_LONGLONG;
         }
+        //varchar types
+        bind[PERIODIC_AGGREGATION_ARGS - 1 + offset].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[PERIODIC_AGGREGATION_ARGS - 1 + offset].buffer_length = strlen(per_aggs[i].eardbd_host);
 
         //storage variable assignation
         bind[0+offset].buffer = (char *)&per_aggs[i].DC_energy;
         bind[1+offset].buffer = (char *)&per_aggs[i].start_time;
         bind[2+offset].buffer = (char *)&per_aggs[i].end_time;
+        bind[3+offset].buffer = (char *)&per_aggs[i].eardbd_host;
     }
 
     if (mysql_stmt_bind_param(statement, bind))

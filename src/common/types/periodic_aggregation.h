@@ -39,6 +39,7 @@ typedef struct periodic_aggregation {
 	time_t end_time;
 	uint n_samples;
 	uint id_isle;
+    char eardbd_host[64];
 } periodic_aggregation_t;
 
 typedef periodic_aggregation_t peraggr_t;
