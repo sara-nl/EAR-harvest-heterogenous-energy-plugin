@@ -45,6 +45,7 @@ extern char extra_buffer[SZ_BUFF_BIG];
 
 // Mirroring
 extern char master_host[SZ_NAME_MEDIUM]; 
+extern char master_alia[SZ_NAME_MEDIUM]; 
 extern int master_iam;
 extern int server_iam;
 extern int mirror_iam;
@@ -177,7 +178,7 @@ static void reset_aggregations()
 	{
 		memcpy (p, &q, sizeof(periodic_aggregation_t));
     } else {
-        init_periodic_aggregation(p, master_host);
+        init_periodic_aggregation(p, master_alia);
     }
 
     sam_index[i_aggrs] = 0;

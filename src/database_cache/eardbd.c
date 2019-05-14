@@ -73,7 +73,8 @@ long fd_hosts[FD_SETSIZE];
 
 // Mirroring
 char master_host[SZ_NAME_MEDIUM]; // This node name
-static char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
+char master_alia[SZ_NAME_MEDIUM];
+char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
 static int server_port;
 static int mirror_port;
 static int synchr_port;
@@ -154,6 +155,7 @@ int verbosity = 0;
 static void init_general_configuration(int argc, char **argv, cluster_conf_t *conf_clus)
 {
 	int mode;
+	char *p;
 
 	// Cleaning 0 (who am I? Ok I'm the server, which is also the master for now)
 	mirror_iam = 0;
@@ -167,7 +169,15 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	others_pid = 0;
 
 	log_open("eardbd");
+
+	// Getting host name and host alias
 	gethostname(master_host, SZ_NAME_MEDIUM);
+	gethostname(master_alia, SZ_NAME_MEDIUM);
+	
+	// Finding a possible short form
+	if ((p = strchr(master_alia, '.')) != NULL) {
+		p[0] = '\0';
+	}
 
 	// Configuration
 	#if !OFFLINE
