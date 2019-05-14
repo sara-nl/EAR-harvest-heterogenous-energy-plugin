@@ -141,7 +141,7 @@ int find_empty_context()
 
 int find_context_for_job(job_id id,job_id sid)
 {
-	int i,pos=-1;
+	int i=0,pos=-1;
 	debug("find_context_for_job %u %u",id,sid);
 	while ((i<MAX_NESTED_LEVELS) && (pos<0)){
 		if ((current_ear_app[i]!=NULL)&& (current_ear_app[i]->app.job.id==id) && (current_ear_app[i]->app.job.step_id==sid)){
@@ -696,6 +696,7 @@ void powermon_end_job(job_id jid,job_id sid)
 		pcontext=ccontext;
 		/*check_context("powermon_end_job: and not current context");*/
 		/* jid,sid can finish in a different order than expected */
+		debug("powermon_end_job %u %u",jid,sid);
 		cc=find_context_for_job(jid,sid);
 		if (cc<0){
 			error("powermon_end_job %u,%u and no context created for it",jid,sid);
