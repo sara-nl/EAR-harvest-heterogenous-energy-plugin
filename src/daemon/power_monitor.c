@@ -66,7 +66,8 @@
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
 #endif
-
+static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
+static energy_handler_t my_eh;
 
 nm_t my_nm_id;
 nm_data_t nm_init,nm_end,nm_diff,last_nm;
@@ -99,6 +100,8 @@ static int sig_reported=0;
 
 periodic_metric_t current_sample;
 double last_power_reported=0;
+
+
 
 /****************** CONTEXT MANAGEMENT ********************/
 #define MAX_NESTED_LEVELS 16384
@@ -392,7 +395,7 @@ void job_init_powermon_app(application_t *new_app,uint from_mpi)
 	current_ear_app[ccontext]->app.power_sig.min_DC_power=500;
 	current_ear_app[ccontext]->app.power_sig.def_f=dyn_conf->def_freq;
 	// Initialize energy
-	read_enegy_data(&c_energy);
+	read_enegy_data(my_eh,&c_energy);
 	copy_energy_data(&current_ear_app[ccontext]->energy_init,&c_energy);
 	aperf_job_avg_frequency_init_all_cpus();
 }
@@ -410,7 +413,7 @@ void job_end_powermon_app()
 		current_ear_app[ccontext]->app.job.end_time=current_ear_app[ccontext]->app.job.start_time+1;
 	}
 	// Get the energy
-	read_enegy_data(&c_energy);
+	read_enegy_data(my_eh,&c_energy);
 	compute_power(&current_ear_app[ccontext]->energy_init,&c_energy,&app_power);
 	
   current_ear_app[ccontext]->app.power_sig.DC_power=app_power.avg_dc;
@@ -577,7 +580,6 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 *
 */
 // That functions controls the mpi init/end of jobs . These functions are called by eard when application executes mpi_init/mpi_finalized and contacts eard
-static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void powermon_mpi_init(application_t * appID)
 {
@@ -922,8 +924,8 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 	#endif
   if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>my_node_conf->max_error_power)){
     	warning("Resetting IPMI interface since power is %.2lf",my_current_power->avg_dc);
-    	node_energy_dispose();
-      node_energy_init();
+    	node_energy_dispose(my_eh);
+      node_energy_init(&my_eh);
     }
 
 	#if DB_MYSQL
@@ -1046,7 +1048,7 @@ void *eard_power_monitoring(void *noinfo)
 	memset((void *)&default_app,0,sizeof(powermon_app_t));
 	
 	verbose(VJOBPMON," power monitoring thread created");
-	if (init_power_ponitoring()!=EAR_SUCCESS) {
+	if (init_power_ponitoring(&my_eh)!=EAR_SUCCESS) {
 		error("Error in init_power_ponitoring");
 	}
 	// current_sample is the current powermonitoring period
@@ -1055,7 +1057,9 @@ void *eard_power_monitoring(void *noinfo)
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
-	read_enegy_data(&e_begin);
+	
+
+	read_enegy_data(my_eh,&e_begin);
 	/* Update with the curent node conf */
 	powermon_init_nm();
 	if (start_compute_node_metrics(&my_nm_id,&nm_init)!=EAR_SUCCESS){
@@ -1076,7 +1080,7 @@ void *eard_power_monitoring(void *noinfo)
 		sleep(f_monitoring);
 		
 		// Get time and Energy
-		read_enegy_data(&e_end);
+		read_enegy_data(my_eh,&e_end);
 
 		// Get node metrics
 		end_compute_node_metrics(&my_nm_id,&nm_end);

@@ -42,6 +42,7 @@
 #include <pthread.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <common/states.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
@@ -509,7 +510,7 @@ void set_gm_status(gm_warning_t *my_warning,ulong et1,ulong et2,ulong ebudget,ui
   my_warning->energy_t2=et2;
   my_warning->energy_limit=ebudget;
   my_warning->energy_p1=t1;
-  my_warning->energy_p2=t1;
+  my_warning->energy_p2=t2;
 	switch(policy){
 		case MAXENERGY:strcpy(my_warning->policy,"EnergyBudget");break;
 		case MAXPOWER:strcpy(my_warning->policy,"PowerBudgbet");break;

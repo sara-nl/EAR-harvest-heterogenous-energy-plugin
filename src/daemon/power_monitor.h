@@ -130,4 +130,7 @@ powermon_app_t *get_powermon_app();
 
 void powermon_get_status(status_t *my_status);
 
+uint node_energy_lock(uint *tries);
+void node_energy_unlock();
+
 #endif
