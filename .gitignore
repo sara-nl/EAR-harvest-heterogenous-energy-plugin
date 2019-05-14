@@ -12,7 +12,7 @@
 *config.log
 *config.status
 *cpu_property.out
-configure
+/configure
 
 # IDE
 cmake*
