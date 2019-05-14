@@ -199,12 +199,13 @@ void clean_contexts_diff_than(job_id id)
 
 int select_last_context()
 {
-	int i,pos=-1;
-	for (i=0;i<MAX_NESTED_LEVELS;i++){
+	int i=0,pos=-1;
+	while ((i<MAX_NESTED_LEVELS) && (pos<0)){
 		if (current_ear_app[i]!=NULL) pos=i;
+		else i++;
 	}
 	if (pos>=0){	
-		debug("select_last_context selects context %d (%d,%d)",pos,current_ear_app[i]->app.job.id,current_ear_app[i]->app.job.step_id);
+		debug("select_last_context selects context %d (%d,%d)",pos,current_ear_app[pos]->app.job.id,current_ear_app[pos]->app.job.step_id);
 	}else{
 		debug("select_last_context no contexts actives");
 	}
