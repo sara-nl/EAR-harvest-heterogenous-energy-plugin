@@ -42,6 +42,7 @@
 
 #include <common/config.h>
 #include <common/sockets.h>
+#define SHOW_DEBUGS
 #include <common/output/debug.h>
 #include <common/output/error.h>
 #include <common/output/verbose.h>
@@ -127,6 +128,7 @@ void init_contexts()
 int find_empty_context()
 {
 	int i=0,pos=-1;
+	debug("find_empty_context ");
 	/* No more contexts supported */
 	if (num_contexts==MAX_NESTED_LEVELS) return -1;
 	while ((i<MAX_NESTED_LEVELS) && (pos<0)){
@@ -140,25 +142,26 @@ int find_empty_context()
 int find_context_for_job(job_id id,job_id sid)
 {
 	int i,pos=-1;
+	debug("find_context_for_job %u %u",id,sid);
 	while ((i<MAX_NESTED_LEVELS) && (pos<0)){
 		if ((current_ear_app[i]!=NULL)&& (current_ear_app[i]->app.job.id==id) && (current_ear_app[i]->app.job.step_id==sid)){
 			pos=i;
 		}else i++;
 	}
 	if (pos>=0){
-		verbose(VJOBPMON,"find_context_for_job %d,%d found at pos %d",id,sid,pos);
+		debug("find_context_for_job %d,%d found at pos %d",id,sid,pos);
 	}else{
-		verbose(VJOBPMON,"find_context_for_job %d,%d not found",id,sid);
+		debug("find_context_for_job %d,%d not found",id,sid);
 	}
 	return pos;
 }
 /* This function is called at job or step end */
 void end_context(int cc)
 {
-  verbose(VJOBPMON,"end_context %d",cc);
+  debug("end_context %d",cc);
   check_context("end_context: invalid job context");
 	if (current_ear_app[cc]!=NULL){
-  	free(current_ear_app[cc]->governor.governor);
+  	if (current_ear_app[cc]->governor.governor!=NULL) free(current_ear_app[cc]->governor.governor);
   	free(current_ear_app[cc]);
   	current_ear_app[cc]=NULL;
 		num_contexts--;
@@ -168,24 +171,28 @@ void end_context(int cc)
 void clean_job_contexts(job_id id)
 {
 	int i,cleaned=0;
-	verbose(VJOBPMON,"clean_job_contexts for job %d",id);
+	debug("clean_job_contexts for job %d",id);
 	for (i=0;i<MAX_NESTED_LEVELS;i++){
 		if (current_ear_app[i]!=NULL){
-			if ((current_ear_app[i]!=NULL) && (current_ear_app[i]->app.job.id==id)){ 
+			 if (current_ear_app[i]->app.job.id==id){ 
 				cleaned++;
 				end_context(i);
 			}
 		}
 	}
-	verbose(VJOBPMON,"%d contexts cleaned",cleaned);
+	debug("%d contexts cleaned",cleaned);
 }
 /* This function is called to remove contexts belonging to jobs different than new one */
 void clean_contexts_diff_than(job_id id)
 {
 	int i;
+	debug("clean_contexts_diff_than %u",id);
 	for (i=0;i<MAX_NESTED_LEVELS;i++){
 		if (current_ear_app[i]!=NULL){
-			if ((current_ear_app[i]!=NULL) && (current_ear_app[i]->app.job.id!=id)) end_context(i);
+			if (current_ear_app[i]->app.job.id!=id){ 
+				debug("Clearning context %d from job %u",i,current_ear_app[i]->app.job.id);
+				end_context(i);
+			}
 		}
 	}
 }
@@ -197,9 +204,9 @@ int select_last_context()
 		if (current_ear_app[i]!=NULL) pos=i;
 	}
 	if (pos>=0){	
-		verbose(VJOBPMON,"select_last_context selects context %d (%d,%d)",pos,current_ear_app[i]->app.job.id,current_ear_app[i]->app.job.step_id);
+		debug("select_last_context selects context %d (%d,%d)",pos,current_ear_app[i]->app.job.id,current_ear_app[i]->app.job.step_id);
 	}else{
-		verbose(VJOBPMON,"select_last_context no contexts actives");
+		debug("select_last_context no contexts actives");
 	}
 	return pos;
 }
@@ -207,6 +214,7 @@ int select_last_context()
 
 int new_context(job_id id,job_id sid)
 {
+	debug("new_context for %u %u",id,sid);
   if (num_contexts==MAX_NESTED_LEVELS){
     error("Panic: Maximum number of levels reached in new_job %d",ccontext);
     return EAR_ERROR;
@@ -223,11 +231,11 @@ int new_context(job_id id,job_id sid)
     return EAR_ERROR;
   }
   memset(current_ear_app[ccontext],0,sizeof(powermon_app_t));
-  verbose(VJOBPMON+1,"New context created %d",ccontext);
-	if (sid==NULL_SID){
-		current_batch=ccontext;
-	}
-	if (num_contexts>0){
+	/* This info will be overwritten later */
+	current_ear_app[ccontext]->app.job.id=id;
+	current_ear_app[ccontext]->app.job.step_id=sid;
+  debug("New context created %d",ccontext);
+	if ((sid==NULL_SID) &&  (num_contexts>0)){
 			/* This case means some messages have been lost, we must clean them */
 			clean_contexts_diff_than(id);
 	}

@@ -376,6 +376,10 @@ void ear_init()
 		update_configuration();	
 	}else{
 		debug("Shared memory not present");
+#if USE_LOCK_FILES
+    debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+    file_unlock_master(fd_master_lock,fd_lock_filename);
+#endif
 		notify_eard_connection(0);
 		my_id=1;
 	}	
