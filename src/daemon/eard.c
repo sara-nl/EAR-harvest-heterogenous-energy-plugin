@@ -79,6 +79,7 @@
 pthread_t app_eard_api_th;
 #endif
 
+static energy_handler_t my_eh;
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
@@ -407,7 +408,7 @@ void eard_exit(uint restart)
 
 	verbose(VCONF,"Releasing node resources");
 	// More disposes
-	node_energy_dispose();
+	node_energy_dispose(my_eh);
 	dispose_uncores();
 	aperf_dispose();
     // Database cache daemon disconnect
@@ -519,12 +520,12 @@ int eard_node_energy(int must_read)
 			connect_service(node_energy_req,&req.req_data.app);
 			break;
         case READ_DC_ENERGY:
-			read_dc_energy(&ack);
+						read_dc_energy_try(my_eh,&ack);
             write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
             break;
 		case DATA_SIZE_ENERGY_NODE:
-			ack=(unsigned long)count_energy_data_length();
-            write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
+					ack=(unsigned long)count_energy_data_length(my_eh);
+          write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
 			break;
 		case ENERGY_FREQ:
 			ack=(ulong)energy_freq;
@@ -1350,10 +1351,10 @@ void main(int argc,char *argv[])
 	start_rapl_metrics();
 	#endif
 	// We initilize energy_node
-	if (node_energy_init()<0){
+	if (node_energy_init(&my_eh)<0){
 		warning("node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 	}
-	energy_freq=node_energy_frequency();
+	energy_freq=node_energy_frequency(my_eh);
 	verbose(VCONF,"eard suggested time between for power performance accuracy us %lu usec.\n",energy_freq);
 	
 

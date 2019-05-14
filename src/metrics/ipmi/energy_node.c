@@ -39,6 +39,7 @@
 #include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <metrics/custom/hardware_info.h>
+#include <metrics/ipmi/energy_node.h>
 #include <metrics/ipmi/energy_node/ibm.h>
 #include <metrics/ipmi/energy_node/lenovo_nm.h>
 #include <metrics/ipmi/energy_node/lenovo_sd650.h>
@@ -57,7 +58,7 @@ struct node_energy_op
 	int (*count_energy_data_length)();
 	int (*read_dc_energy) (ulong *energy);
 	int (*read_dc_energy_time) (ulong *energy,ulong *time);
-	int (*read_dc_energy_and_time) (ulong *energy_j,ulong *energy_mj,ulong *time_s,ulong *time_ms);
+	int (*read_dc_energy_and_time) (long *energy_j,ulong *energy_mj,ulong *time_s,ulong *time_ms);
 	int (*read_ac_energy) (ulong *energy);
 	int (*node_energy_dispose) ();
 } node_energy_ops;
@@ -242,7 +243,7 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
 
 
 
-int node_energy_init()
+int node_energy_init(energy_handler_t *eh)
 {
 	int cpu_model;
 	int ret;
@@ -329,13 +330,13 @@ int node_energy_init()
 	ear_energy_node_connected=1;
     return ear_energy_node_status;
 }
-int count_energy_data_length()
+int count_energy_data_length(energy_handler_t eh)
 {
 	debug("count_energy_data_length");
 	if (node_energy_ops.count_energy_data_length!=NULL) return node_energy_ops.count_energy_data_length();
 	else return 0;
 }
-int read_dc_energy(unsigned long *energy)
+int read_dc_energy(energy_handler_t eh,unsigned long *energy)
 {
 	debug("read_dc_energy");
 	if (node_energy_ops.read_dc_energy!=NULL) return node_energy_ops.read_dc_energy(energy);
@@ -344,34 +345,69 @@ int read_dc_energy(unsigned long *energy)
 		return -1;
 	}
 }
+int read_dc_energy_try(energy_handler_t eh,ulong *energy)
+{
+	int tries=0;
+	int ret;
+	*energy=0;
+	do{
+		ret=read_dc_energy(eh,energy);
+		tries++;
+	}while((ret==EAR_BUSY) && (tries<MAX_NODE_ENERGY_LOCK_TRIES));
+	return ret;
+}
 
-int read_dc_energy_time(ulong *energy,ulong *time_ms)
+int read_dc_energy_time(energy_handler_t eh,ulong *energy,ulong *time_ms)
 {
     debug("read_dc_energy_time");
     if (node_energy_ops.read_dc_energy_time!=NULL) return node_energy_ops.read_dc_energy_time(energy,time_ms);
     else{
         *energy=0;
-		*time_ms=0;
+				*time_ms=0;
         return -1;
     }
 }
 
-int read_dc_energy_time_debug(ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
+int read_dc_energy_time_try(energy_handler_t eh,ulong *energy,ulong *time_ms)
+{
+	int tries=0;
+	int ret;
+	*energy=0;*time_ms=0;
+	do{
+		ret=read_dc_energy_time(eh,energy,time_ms);
+		tries++;
+	}while((ret==EAR_BUSY) && (tries<MAX_NODE_ENERGY_LOCK_TRIES));
+	return ret;
+}
+
+int read_dc_energy_time_debug(energy_handler_t eh,ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
 {
     debug("read_dc_energy_time_debug");
     if (node_energy_ops.read_dc_energy_and_time!=NULL) return node_energy_ops.read_dc_energy_and_time(energy_j,energy_mj,time_sec,time_ms);
     else{
         *energy_j=0;
         *energy_mj=0;
-		*time_sec=0;
+				*time_sec=0;
         *time_ms=0;
         return -1;
     }
 
 }
 
+int read_dc_energy_time_debug_try(energy_handler_t eh,ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
+{
+	int tries=0;
+	int ret;
+  *energy_j=0; *energy_mj=0; *time_sec=0; *time_ms=0;
+	do{
+		ret=read_dc_energy_time_debug(eh,energy_j,energy_mj,time_sec,time_ms);
+		tries++;
+	}while((ret==EAR_BUSY) && (tries<MAX_NODE_ENERGY_LOCK_TRIES));
+	return ret;
+}
 
-int read_ac_energy(unsigned long *energy)
+
+int read_ac_energy(energy_handler_t eh,unsigned long *energy)
 {
 	debug("read_ac_energy");
 	if (node_energy_ops.read_ac_energy!=NULL) return node_energy_ops.read_ac_energy(energy);
@@ -380,7 +416,7 @@ int read_ac_energy(unsigned long *energy)
 		return -1;
 	}
 }
-int node_energy_dispose()
+int node_energy_dispose(energy_handler_t eh)
 {
 	debug("node_energy_dispose");
 	ear_energy_node_connected=0;
@@ -388,7 +424,7 @@ int node_energy_dispose()
 	else return -1;
 }
 
-unsigned long node_energy_frequency()
+unsigned long node_energy_frequency(energy_handler_t eh)
 {
 	unsigned long init, end,min_interval;
 	struct timeval begin_time,end_time;
