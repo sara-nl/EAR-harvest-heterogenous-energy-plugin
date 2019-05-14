@@ -40,10 +40,10 @@ announce:
 	  echo "====================================";
 
 install: announce
-	@ mkdir -p $(gen_FOLDERS) 
+	@ mkdir -m 0775 -p $(gen_FOLDERS) 
 
 etc.install: announce conf.finstall modl.finstall serv.finstall slur.finstall;
-	@ mkdir -p $(etc_FOLDERS) 
+	@ mkdir -m 0775 -p $(etc_FOLDERS) 
 
 devel.install: ;
 

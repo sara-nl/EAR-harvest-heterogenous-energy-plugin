@@ -101,7 +101,11 @@ AC_DEFUN([X_AC_FREEIPMI],
         if test "x$_x_ac_freeipmi_custom" = "xyes"; then
         	FREEIPMI_LIBDIR=$_x_ac_freeipmi_dir_lib
         	FREEIPMI_CPPFLAGS="-I$FREEIPMI_DIR/include"
-        	FREEIPMI_LDFLAGS="$_x_ac_freeipmi_gcc_ldflags -Wl,-rpath,$_x_ac_freeipmi_dir_lib"
+        	FREEIPMI_LDFLAGS="$_x_ac_freeipmi_gcc_ldflags"
+
+			if test "x$enable_rpath" != "xno"; then
+				FREEIPMI_LDFLAGS="$FREEIPMI_LDFLAGS -Wl,-rpath,$_x_ac_freeipmi_dir_lib"
+			fi
 		fi
 
         echo checking for FreeIPMI compiler link... yes
