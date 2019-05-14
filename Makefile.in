@@ -94,6 +94,9 @@ etc.install: ;
 	@ $(MAKE) -C 'etc' etc.install || exit
 	@ $(MAKE) -C 'src' etc.install || exit
 
+rpm.install: install;
+	@ $(MAKE) -C 'etc' rpm.install || exit
+
 scripts.install: ;
 	@ $(MAKE) -C 'etc' scripts.install || exit
 

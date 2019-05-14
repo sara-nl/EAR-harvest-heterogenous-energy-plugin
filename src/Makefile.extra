@@ -7,7 +7,7 @@ rclean:
 	rm -f *.o *.a *.so
 
 %.ginstall:
-	@ (mkdir -p $($*_PATH))
+	@ (mkdir -m 0755 -p $($*_PATH))
 	@ (cp $($*_BINS) $($*_PATH))
 ifdef CHOWN_USR
 	@ (cd $($*_PATH) && chown $(CHOWN_USR) $($*_BINS))

@@ -60,7 +60,6 @@ AC_DEFUN([X_AC_PAPI_FIND_ROOT_DIR],
 
 AC_DEFUN([X_AC_PAPI],
 [
-	X_AC_FIND_LIBRARY([])
 	_x_ac_papi_dirs_root="/usr /usr/local /opt/papi"
     _x_ac_papi_dirs_libs="lib64 lib"
     _x_ac_papi_gcc_libs="-lpapi"
@@ -101,7 +100,11 @@ AC_DEFUN([X_AC_PAPI],
 		if test "x$_x_ac_papi_custom" = "xyes"; then
         	PAPI_LIBDIR=$_x_ac_papi_dir_lib
         	PAPI_CPPFLAGS="-I$PAPI_DIR/include"
-        	PAPI_LDFLAGS="$_x_ac_papi_gcc_ldflags -Wl,-rpath,$_x_ac_papi_dir_lib"
+        	PAPI_LDFLAGS="$_x_ac_papi_gcc_ldflags"
+
+			if test "x$enable_rpath" != "xno"; then
+        		PAPI_LDFLAGS="$PAPI_LDFLAGS -Wl,-rpath,$_x_ac_papi_dir_lib"
+			fi
 		fi
         
 		echo checking for PAPI compiler link... yes

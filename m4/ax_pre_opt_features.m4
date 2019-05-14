@@ -53,6 +53,13 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 
 	AC_SUBST(TMP)
 
+    #
+    # Disable RPATH
+    #
+    AC_ARG_ENABLE([rpath],
+        AS_HELP_STRING([--disable-rpath], [Disables RPATH/RUNPATH from the compiled binaries])
+    )
+
 	#
 	# MPI
 	#
@@ -69,14 +76,22 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
     fi
 
 	if echo "$MPICC" | grep -q "mpiicc"; then	
-		MPICC_FLAGS=-static-intel
+		MPICC_FLAGS="-static-intel"
+		if test "x$enable_rpath" = "xno"; then
+			MPICC_FLAGS="$MPICC_FLAGS -norpath"
+		fi
 	fi
+
+	dnl Getting full path
+	MPICC="`which $MPICC`"
+	CC="`which $CC`"
 
 	#
 	# DATABASE
 	#
     AC_ARG_ENABLE([database],
-        AS_HELP_STRING([--enable-database=TYPE], [Stores the execution data in the selected database type: mysql (def) or files]))
+		AS_HELP_STRING([--enable-database=TYPE], [Stores the execution data in the selected database type: mysql (def) or files])
+	)
 
 	DB_MYSQL=0
 	DB_FILES=0
