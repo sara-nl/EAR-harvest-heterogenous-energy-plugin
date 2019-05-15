@@ -702,7 +702,6 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         else app_aux->is_mpi = 0;
 
         sprintf(pow_sig_query, "SELECT * FROM Power_signatures WHERE id=%lu", pow_sig_id);
-	state_return(EAR_SUCCESS);
         int num_pow_sigs = mysql_retrieve_power_signatures(connection, pow_sig_query, &pow_sig_aux);
         if (num_pow_sigs > 0)
         {
