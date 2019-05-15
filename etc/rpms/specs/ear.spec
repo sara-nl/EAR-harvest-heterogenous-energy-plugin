@@ -32,6 +32,7 @@ mkdir	-p  %{buildroot}/usr/etc/systemd
 mkdir	-p  %{buildroot}/usr/etc/slurm
 cp		-p  ${EAR_SOURCE_PATH}/etc/module/ear.in %{buildroot}/usr/etc/module/
 cp		-p  ${EAR_SOURCE_PATH}/etc/conf/ear.conf.in %{buildroot}/usr/etc/conf/
+cp		-p  ${EAR_SOURCE_PATH}/etc/conf/ear.conf.full.in %{buildroot}/usr/etc/conf/
 cp      -p  ${EAR_SOURCE_PATH}/etc/systemd/eard.service.in %{buildroot}/usr/etc/systemd/
 cp      -p  ${EAR_SOURCE_PATH}/etc/systemd/eardbd.service.in %{buildroot}/usr/etc/systemd/
 cp      -p  ${EAR_SOURCE_PATH}/etc/systemd/eargmd.service.in %{buildroot}/usr/etc/systemd/
@@ -59,6 +60,7 @@ rm		-f ${RPM_INSTALL_PREFIX}/config.status
 rm		-f ${RPM_INSTALL_PREFIX}/configure
 rm		-f ${RPM_INSTALL_PREFIX}/etc/module/ear.in
 rm		-f ${RPM_INSTALL_PREFIX}/etc/conf/ear.conf.in
+rm		-f ${RPM_INSTALL_PREFIX}/etc/conf/ear.conf.full.in
 rm		-f ${RPM_INSTALL_PREFIX}/etc/systemd/eard.service.in
 rm		-f ${RPM_INSTALL_PREFIX}/etc/systemd/eardbd.service.in
 rm		-f ${RPM_INSTALL_PREFIX}/etc/systemd/eargmd.service.in

@@ -11,6 +11,7 @@ fi
 
 AC_CONFIG_FILES([
 	etc/conf/ear.conf
+	etc/conf/ear.conf.full
 	etc/module/ear
 	etc/systemd/eard.service
 	etc/systemd/eardbd.service
