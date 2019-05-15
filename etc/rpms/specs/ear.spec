@@ -1,9 +1,9 @@
-#
+# Var definitions
 %define name		ear
 %define release		1
 %define version		1.0
 
-#
+# Information
 Summary:	EAR package
 Group:		System
 Packager:	EAR Team
@@ -21,7 +21,7 @@ Prefix:		/usr
 EAR RPM package includes the daemons, configuration files
 and tools required to make EAR works in your cluster.
 
-# 
+# RPMBuild context
 %prep
 mkdir	-p	%{buildroot}/usr
 cp		-rp	${EAR_INSTALL_PATH}/* %{buildroot}/usr/
@@ -39,17 +39,19 @@ cp      -p  ${EAR_SOURCE_PATH}/etc/slurm/ear.plugstack.conf.in %{buildroot}/usr/
 cp		-p  ${EAR_SOURCE_PATH}/etc/rpms/configure/configure %{buildroot}/usr/
 exit
 
-#
+# RPMBuild context
 %files
 %attr(-, -, -) /usr/*
 
+# RPMBuild context
 %clean
 rm -rf %{_topdir}/BUILD
-#rm -rf %{_topdir}/BUILDROOT
+rm -rf %{_topdir}/BUILDROOT
 rm -rf %{_topdir}/SOURCES
 rm -rf %{_topdir}/SPECS 
 rm -rf %{_topdir}/SRPMS
 
+# RPM context
 %post
 (cd ${RPM_INSTALL_PREFIX} && ./configure --prefix=${RPM_INSTALL_PREFIX})
 rm		-f ${RPM_INSTALL_PREFIX}/config.log
