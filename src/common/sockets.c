@@ -40,7 +40,6 @@
 #include <common/output/debug.h>
 
 static pthread_mutex_t lock_send = PTHREAD_MUTEX_INITIALIZER;
-static char output_buffer[SZ_BUFF_BIG];
 
 state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_addr)
 {
@@ -276,6 +275,7 @@ static state_t _send(socket_t *socket, ssize_t bytes_expc, char *buffer)
 
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 {
+	static char output_buffer[SZ_BUFF_BIG];
 	packet_header_t *output_header;
 	char *output_content;
 	state_t state;
@@ -289,8 +289,6 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "passing parameter can't be NULL");
 	}
 
-	pthread_mutex_lock(&lock_send);
-	{
 	// Output
 	output_header = PACKET_HEADER(output_buffer);
 	output_content = PACKET_CONTENT(output_buffer);
@@ -299,10 +297,12 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	memcpy(output_header, header, sizeof(packet_header_t));
 	memcpy(output_content, content, header->content_size);
 
-	// Sending
-	state = _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
-	
-	pthread_mutex_unlock(&lock_send);
+	pthread_mutex_lock(&lock_send);
+	{
+		// Sending
+		state = _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
+		
+		pthread_mutex_unlock(&lock_send);
 	}
 
 	return state;
