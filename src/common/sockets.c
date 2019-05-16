@@ -406,6 +406,10 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 		state_return(state);
 	}
 
+	if (header->content_size > size_buffer) {
+		state_return(EAR_NO_RESOURCES);
+	}
+
 	// Receiving the content
 	state = _receive(fd, header->content_size, buffer, block);
 

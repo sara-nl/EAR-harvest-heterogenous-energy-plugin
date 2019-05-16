@@ -177,11 +177,11 @@ static void reset_aggregations()
 	if (sam_index[i_aggrs] < sam_inmax[i_aggrs] && q.n_samples > 0)
 	{
 		memcpy (p, &q, sizeof(periodic_aggregation_t));
-    } else {
-        init_periodic_aggregation(p, master_alia);
-    }
+	} else {
+		init_periodic_aggregation(p, master_alia);
+	}
 
-    sam_index[i_aggrs] = 0;
+	sam_index[i_aggrs] = 0;
 }
 
 static void reset_index(int index)
@@ -491,7 +491,8 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	index = storage_index_extract(type, &name);
 
 	if (verbosity) {
-		verbose_xaxxw("received from host '%s' an object of type: '%s'", header->host_src, name);
+		verbose_xaxxw("received from host '%s' an object of type: '%s' (t: '%d', i: '%d')",
+			header->host_src, name, type, index);
 	}
 
 	//TODO:
@@ -575,7 +576,7 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 			veteran = 1;
 		}
 	}
-
+	
 	// Metrics
 	if (index == -1) {
 		return;
