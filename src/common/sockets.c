@@ -275,7 +275,7 @@ static state_t _send(socket_t *socket, ssize_t bytes_expc, char *buffer)
 
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 {
-	static char output_buffer[SZ_BUFF_BIG];
+	char output_buffer[SZ_BUFF_BIG];
 	packet_header_t *output_header;
 	char *output_content;
 	state_t state;
