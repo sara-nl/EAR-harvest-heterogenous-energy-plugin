@@ -824,6 +824,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		unsigned short ear_event_s;
 		unsigned short ear_size;
 		unsigned short ear_level;
+		ear_level=0;
 
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
