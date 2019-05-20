@@ -1,101 +1,100 @@
 # EAR Configuration File
-
-# MariaDB
-
+#---------------------------------------------------------------------------------------------------
+# MariaDB (MySQL)
+#---------------------------------------------------------------------------------------------------
 MariaDBIp=192.168.1.1
 MariaDBUser=root
 MariaDBPassw=password
+# User and password for usermode querys.
 MariaDBCommandsUser=root
 MariaDBCommandsPassw=password
+MariaDBDatabase=EAR
 MariaDBPort=1100
-
-# EAR Global Manager (EARGMD)
-
-# Period T1 and Period T2 are specified in seconds T1 (ex. must be less than T2,
-#  ex. 10min and 1 month)
-GlobalManagerPeriodT1=90
-GlobalManagerPeriodT2=259200
-# -=Joules k=KiloJoules M=MegaJoules
-GlobalManagerUnits=K
-GlobalManagerEnergyLimit=550000
-GlobalManagerHost=node1001
-GlobalManagerPolicy=MaxEnergy
-GlobalManagerPort=50000
-# Two modes are supported 0=manual and 1=automatic
-GlobalManagerMode=0
-
+# Extended node information saves also the average frequency and temperature.
+ReportNodeDetail=1
+# Extended signature information saves also the hardware counters.
+reportSIGDetail=1
+#---------------------------------------------------------------------------------------------------
 # EAR Daemon (EARD)
+#---------------------------------------------------------------------------------------------------
 # In seconds
 NodeDaemonPowermonFreq=60
 NodeDaemonPort=5000
 NodeForceFrequencies=1
-
+#---------------------------------------------------------------------------------------------------
 # EAR Database Manager (EARDBD)
+#---------------------------------------------------------------------------------------------------
 DBDaemonPortTCP=4711
 DBDaemonPortSecTCP=4712
 DBDaemonSyncPort=4713
 # In seconds
 DBDaemonAggregationTime=60
 DBDaemonInsertionTime=30
-# Memory size expressed in MB. It is per process, it means if there is a server
-#  and a mirror it would allocate the double of that value.
+# Memory size expressed in MB per process (server and/or mirror) to cache the values.
 DBDaemonMemorySize=120
-
-#This section specifies the granularity of information reported to the DB
-# Extended node information includes average frequency and temperature
-ReportNodeDetail=1
-#Extended signature include hardware counters
-reportSIGDetail=1
-
+#---------------------------------------------------------------------------------------------------
 # EAR Library (EARL)
-
+#---------------------------------------------------------------------------------------------------
 CoefficientsDir=@sysconfdir@/ear/coeffs
 # Default power policy values
 DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
 SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION,SUPERMUC
-# P_STATES must be specified in the following order: MIN_ENERGY_TO_SOLUTION,
-#  MIN_TIME_TO_SOLUTION MONITORING_ONLY, AND SUPERMUC
+# P_STATES must be specified in the following order: MIN_ENERGY, MIN_TIME, MONITORING and SUPERMUC.
 DefaultPstates=1,4,4,3
-
+#---------------------------------------------------------------------------------------------------
+# EAR Global Manager (EARGMD)
+#---------------------------------------------------------------------------------------------------
+GlobalManagerHost=node1001
+# Period T1 and T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
+GlobalManagerPeriodT1=90
+GlobalManagerPeriodT2=259200
+# '-' are Joules, 'K' KiloJoules and 'M' MegaJoules.
+GlobalManagerUnits=K
+GlobalManagerEnergyLimit=550000
+GlobalManagerPolicy=MaxEnergy
+GlobalManagerPort=50000
+# Two modes are supported '0=manual' and '1=automatic'.
+GlobalManagerMode=0
+#---------------------------------------------------------------------------------------------------
 # Common configuration
-
+#---------------------------------------------------------------------------------------------------
 TmpDir=@localstatedir@
 EtcDir=@sysconfdir@
 DataBasePathName=@sysconfdir@/ear/dbs/dbs.
-
+#---------------------------------------------------------------------------------------------------
 # Authorized Users
-
-# Authorized users,accounts and groups are allowed to change policies,
-#  thresholds, frequencies etc they are supposed to be admins
+#---------------------------------------------------------------------------------------------------
+# Authorized users,accounts and groups are allowed to change policies, thresholds, frequencies etc,
+# they are supposed to be admins
 AuthorizedUsers=usr1,usr2
 AuthorizedAccounts=acc1,acc2,acc3
 AuthorizedGroups=grp1,grp2
-
+#---------------------------------------------------------------------------------------------------
 # Energy Tags
-
-# Privileged users,accounts and groups are allowed to use EnergyTags. The
-#  "allowed" TAGs are defined by row together with the priviledged
-#  user/group/account.
+#---------------------------------------------------------------------------------------------------
+# Privileged users,accounts and groups are allowed to use EnergyTags. The "allowed" TAGs are defined
+# by row together with the priviledged user/group/account.
 EnergyTag=cpu-intensive pstate=1
 EnergyTag=memory-intensive pstate=4 users=usr1,usr2 groups=grp1,grp2 accounts=acc1,acc2
-
+#---------------------------------------------------------------------------------------------------
 # Node List
-
-# Grouped by hardware characteristics, different lists must reflect different
-#  power characteristics.
-# In this example the nodes are clustered by its type of CPU. From node1001 to
-#  node1080 for 24 cores nodes and from node1101 to node1180 for 18 cores nodes.
+#---------------------------------------------------------------------------------------------------
+# Grouped by hardware characteristics, different lists must reflect different power characteristics.
+# In this example the nodes are clustered by its type of CPU. From node1001 to node1080 for 24 cores
+# nodes and from node1101 to node1180 for 18 cores nodes.
 NodeName=node10[01-80] CPUs=24
 NodeName=node11[01-80] CPUs=18
-
+#---------------------------------------------------------------------------------------------------
 # Node Isles
-
-# It is mandatory to specify all the nodes in the cluster, grouped by islands.
-# More than one line per island must be supported to hold nodes with different
-#  names or for pointing to different EARDBDs through its IPs or hostnames.
-# In the following example the nodes are clustered in two different islands,
-#  but the Island 1 have two types of EARDBDs configurations.
-#  min_power and max_power are used to identify potential invalid power computations. They must reflect valid values
-#  error_power reflects invalid values not reported to the DB
-#  node temperature > max_temp and node power> max_power generates warning messages in syslog
+#---------------------------------------------------------------------------------------------------
+# It is mandatory to specify all the nodes in the cluster, grouped by islands. More than one line
+# per island must be supported to hold nodes with different names or for pointing to different
+# EARDBDs through its IPs or hostnames.
+# In the following example the nodes are clustered in two different islands, but the Island 1 have
+# two types of EARDBDs configurations. min_power and max_power are used to identify potential
+# invalid power computations. They must reflect valid values error_power reflects invalid values not
+# reported to the DB node temperature > max_temp and node power> max_power generates warning
+# messages in syslog.
 Island=0 Nodes=node10[01-80] DBIP=node1081 DBSECIP=node1082 min_power=50 max_power=800 error_power=1000 max_temp=120
+Island=1 Nodes=node11[01-40] DBIP=node1181 DBSECIP=node1182
+Island=1 Nodes=node11[41-80] DBIP=node1183 DBSECIP=node1184

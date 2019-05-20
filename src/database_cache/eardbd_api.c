@@ -38,7 +38,6 @@
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
 
-static packet_header_t header;
 static socket_t server_sock;
 static socket_t mirror_sock;
 static int enabled_server;
@@ -56,6 +55,7 @@ int eardbd_is_initialized()
 
 static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 {
+	packet_header_t header;
 	edb_state_t state;
 
 	// If not initialized

@@ -35,7 +35,7 @@ eardbd: $(eard_SRCS) $(eard_HDRS) $(eard_OBJS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eard_SRCS) $(eard_OBJS) $(LDFLAGS)
 
 eardbd_monitor: eardbd_monitor.c $(eard_OBJS)
-	$(CC) $(CFLAGS) -o $@ $< eardbd_api.o $(eard_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< eardbd_api.o $(eard_OBJS) -lpthread
 
 ######## OPTIONS
 
