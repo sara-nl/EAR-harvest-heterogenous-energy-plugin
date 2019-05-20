@@ -429,14 +429,22 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * LD_PRELOAD
 	 */
-	#if !EAR_CORE	
-	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, SZ_PATH);
+	#if !EAR_CORE
+	char ext[64];
+
+	if(getenv_agnostic(sp, Var.version.rem, ext, 64)) {
+		snprintf(ext, 64, "%s.so", ext);
+	} else {
+		snprintf(ext, 64, "so");
+	}
+
+	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, 64);
 
 	// Appending libraries to LD_PRELOAD
 	if (sd->job.mpi) {
-		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH);
+		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH, ext);
 	} else {
-		snprintf(buffer, SZ_PATH, "%s/%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH);
+		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH, ext);
 	}
 
 	setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);

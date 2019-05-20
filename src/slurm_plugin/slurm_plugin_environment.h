@@ -124,8 +124,8 @@ struct variables_s {
 .path_usdb = { .loc = "SLURM_EOUSDB", .ear = "EAR_USER_DB_PATHNAME" },
 .path_trac = { .loc = "SLURM_EOTRAC", .ear = "EAR_PATH_TRACE"       },
 .mpi_dist  = { .loc = "SLURM_EOMPID", .rem = "SLURM_ERMPID"         },
-.perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                     },
-.eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"         },
+.perf_pen  = {        .ear = "EAR_PERFORMANCE_PENALTY"              },
+.eff_gain  = {        .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"  },
 .name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME"  },
 .user      = { .rem = "SLURM_ERUSER",        .ear = "" },
 .group     = { .rem = "SLURM_ERGRUP",        .ear = "" },
@@ -136,7 +136,8 @@ struct variables_s {
 .context   = { .rem = "SLURM_ERCNTX",        .ear = "" },
 .ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"    },
 .ld_libr   = { .rem = "",                    .ear = "" },
-.node_num  = { .loc = "SLURM_NNODES",        .ear = "" }
+.node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
+.version   = { .rem = "SLURM_EAR_VERSION",   .ear = "" }
 };
 
 /*
