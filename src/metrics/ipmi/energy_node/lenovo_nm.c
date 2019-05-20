@@ -38,21 +38,25 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/resource.h>
+#include <pthread.h>
 #include <freeipmi/freeipmi.h>
+
+#include <common/config.h>
 #include <common/states.h>
 #include <common/output/debug.h>
 #include <common/output/verbose.h>
+#include <common/output/error.h>
 #include <metrics/custom/hardware_info.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
-#define FUNCVERB(function)                               \
-debug( "ear_daemon(lenovo_nm) " function "\n");
+#define FUNCVERB(function)   debug( "ear_daemon(lenovo_nm) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
 static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
+static pthread_mutex_t node_energy_lock_nm = PTHREAD_MUTEX_INITIALIZER;
 
 /* Specific functions for CPU XX PLATFORM YY */
 /* Grants access to ipmi device */
@@ -186,6 +190,7 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
 	// RAW CMD
 	do
 	{ 	
+		if (pthread_mutex_trylock(&node_energy_lock_nm)) return EAR_BUSY;
 		rs_len = ipmi_cmd_raw (ipmi_ctx,
                               bytes_rq[0],
                               bytes_rq[1],
@@ -193,6 +198,7 @@ int lenovo_act_read_dc_energy(unsigned long *energy)
                               send_len - 2,
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS); 
+		pthread_mutex_unlock(&node_energy_lock_nm);
 		tries++;
 
 	}while((rs_len<0) && (tries<3));

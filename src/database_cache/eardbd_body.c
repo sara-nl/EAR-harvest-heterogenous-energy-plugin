@@ -55,13 +55,17 @@ extern int fd_cli;
 extern int fd_min;
 extern int fd_max;
 
-// Mirroring
+// PID
 extern process_data_t proc_data_srv;
 extern process_data_t proc_data_mir;
 extern pid_t server_pid;
 extern pid_t mirror_pid;
 extern pid_t others_pid;
-extern int master_iam; // Master is who speaks
+
+// Mirroring
+extern char master_host[SZ_NAME_MEDIUM];
+extern char master_alia[SZ_NAME_MEDIUM];
+extern int master_iam;
 extern int server_iam;
 extern int mirror_iam;
 extern int server_too;
@@ -141,7 +145,7 @@ static void body_alarm(struct timeval *timeout_slct)
 					// Initializing the new element
 					q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-					init_periodic_aggregation(q);
+					init_periodic_aggregation(q, master_alia);
 				}
 			}
 

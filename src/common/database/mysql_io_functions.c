@@ -92,11 +92,13 @@
 #define PERIODIC_METRIC_QUERY_SIMPLE    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
                                         "VALUES (?, ?, ?, ?, ?, ?)"
 
-#define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time) VALUES (?, ?, ?)"
+#define PERIODIC_AGGREGATION_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time, eardbd_host) VALUES (?, ?, ?, ?)"
 
 #define EAR_EVENT_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
-#define EAR_WARNING_QUERY       "INSERT INTO Warnings (energy_percent, warning_level, inc_th, p_state) VALUES (?, ?, ?, ?)"
+#define EAR_WARNING_QUERY       "INSERT INTO Global_energy (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
+                                "GlobEnergyConsumedT2, GlobEnergyLimit, GlobEnergyPeriodT1, GlobEnergyPeriodT2, GlobEnergyPolicy) "\
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
@@ -335,7 +337,7 @@ int mysql_batch_insert_applications(MYSQL *connection, application_t *app, int n
             verbose(VMYSQL, "error reading offset, setting to default (1)");
             autoincrement_offset = 1;
         }
-        verbose(VMYSQL, "autoincrement_offset set to %d\n", autoincrement_offset);
+        verbose(VMYSQL, "autoincrement_offset set to %ld\n", autoincrement_offset);
     }
 
     //inserting all powersignatures (always present)
@@ -687,9 +689,9 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         if (is_mpi)
         {
             if (is_learning)
-                sprintf(sig_query, "SELECT * FROM Learning_signatures WHERE id=%d", sig_id);
+                sprintf(sig_query, "SELECT * FROM Learning_signatures WHERE id=%ld", sig_id);
             else
-                sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
+                sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%ld", sig_id);
             int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
             if (num_sigs > 0) {
                 signature_copy(&app_aux->signature, sig_aux);
@@ -699,7 +701,7 @@ int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **
         }
         else app_aux->is_mpi = 0;
 
-        sprintf(pow_sig_query, "SELECT * FROM Power_signatures WHERE id=%d", pow_sig_id);
+        sprintf(pow_sig_query, "SELECT * FROM Power_signatures WHERE id=%lu", pow_sig_id);
         int num_pow_sigs = mysql_retrieve_power_signatures(connection, pow_sig_query, &pow_sig_aux);
         if (num_pow_sigs > 0)
         {
@@ -916,7 +918,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     status = mysql_stmt_fetch(statement);
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
-        sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%d", sig_id);
+        sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%lu", sig_id);
         int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
         signature_copy(&loop_aux->signature, sig_aux);
         free(sig_aux);
@@ -1758,7 +1760,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     else
         bind = calloc(6, sizeof(MYSQL_BIND));
 
-    memset(bind, 0, sizeof(bind));
+    memset(bind, 0, sizeof(MYSQL_BIND));
 
     //integer types
     int i;
@@ -1809,7 +1811,7 @@ int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t 
 
     if (mysql_stmt_prepare(statement, PERIODIC_AGGREGATION_QUERY, strlen(PERIODIC_AGGREGATION_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[3];
+    MYSQL_BIND bind[4];
     memset(bind, 0, sizeof(bind));
 
     //integer types
@@ -1819,10 +1821,15 @@ int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t 
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
     }
 
+    //varchar types
+    bind[3].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[3].buffer_length = strlen(per_agg->eardbd_host);
+
     //storage variable assignation
     bind[0].buffer = (char *)&per_agg->DC_energy;
     bind[1].buffer = (char *)&per_agg->start_time;
     bind[2].buffer = (char *)&per_agg->end_time;
+    bind[3].buffer = (char *)&per_agg->eardbd_host;
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 
@@ -1914,7 +1921,7 @@ int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggrega
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
-    char *params = ", (?, ?, ?)";
+    char *params = ", (?, ?, ?, ?)";
     char *query = malloc(strlen(PERIODIC_AGGREGATION_QUERY)+(num_aggs-1)*strlen(params)+1);
     strcpy(query, PERIODIC_AGGREGATION_QUERY);
 
@@ -1937,11 +1944,15 @@ int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggrega
         {
             bind[j+offset].buffer_type = MYSQL_TYPE_LONGLONG;
         }
+        //varchar types
+        bind[PERIODIC_AGGREGATION_ARGS - 1 + offset].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[PERIODIC_AGGREGATION_ARGS - 1 + offset].buffer_length = strlen(per_aggs[i].eardbd_host);
 
         //storage variable assignation
         bind[0+offset].buffer = (char *)&per_aggs[i].DC_energy;
         bind[1+offset].buffer = (char *)&per_aggs[i].start_time;
         bind[2+offset].buffer = (char *)&per_aggs[i].end_time;
+        bind[3+offset].buffer = (char *)&per_aggs[i].eardbd_host;
     }
 
     if (mysql_stmt_bind_param(statement, bind))
@@ -2058,22 +2069,38 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
 
 int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
 {
+    int i;
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement) return EAR_MYSQL_ERROR;
 
     if (mysql_stmt_prepare(statement, EAR_WARNING_QUERY, strlen(EAR_WARNING_QUERY))) return mysql_statement_error(statement);
 
-    MYSQL_BIND bind[4];
+    MYSQL_BIND bind[10];
     memset(bind, 0, sizeof(bind));
 
     bind[0].buffer_type = bind[2].buffer_type = MYSQL_TYPE_DOUBLE;
     bind[1].buffer_type = bind[3].buffer_type = MYSQL_TYPE_LONGLONG;
     bind[1].is_unsigned = 1;
 
+    for (i = 4; i < 9; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].is_unsigned = 1;
+    } 
+    bind[9].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[9].buffer_length = strlen(warning->policy);
+
     bind[0].buffer = (char *)&warning->energy_percent;
     bind[1].buffer = (char *)&warning->level;
     bind[2].buffer = (char *)&warning->inc_th;
     bind[3].buffer = (char *)&warning->new_p_state;
+    bind[4].buffer = (char *)&warning->energy_t1;
+    bind[5].buffer = (char *)&warning->energy_t2;
+    bind[6].buffer = (char *)&warning->energy_limit;
+    bind[7].buffer = (char *)&warning->energy_p1;
+    bind[8].buffer = (char *)&warning->energy_p2;
+    bind[9].buffer = (char *)&warning->policy;
+    
 
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
 

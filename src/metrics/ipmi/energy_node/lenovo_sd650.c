@@ -35,10 +35,10 @@
 #include <string.h>
 #include <unistd.h>
 #include <endian.h>
-#include <assert.h>
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <freeipmi/freeipmi.h>
+#include <pthread.h>
 
 #include <common/config.h>
 #include <common/states.h>
@@ -49,13 +49,13 @@
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
-#define FUNCVERB(function)                               \
-debug( "ear_daemon(lenovo_wct) " function "\n");
+#define FUNCVERB(function)    debug( "ear_daemon(lenovo_wct) " function "\n");
 
 static ipmi_ctx_t ipmi_ctx = NULL;
 static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
+static pthread_mutex_t energy_node_lock = PTHREAD_MUTEX_INITIALIZER;
 
 
 /* Specific functions for CPU XX PLATFORM YY */
@@ -182,6 +182,7 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
     FUNCVERB("lenovo_read_dc_energy");
     // RAW CMD
     *energy=0;
+		if (pthread_mutex_trylock(&energy_node_lock)) return EAR_BUSY;
     #define RAW_SIZE 14
     if ((rs_len = ipmi_cmd_raw (ipmi_ctx,
                               bytes_rq[0],
@@ -192,9 +193,15 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
         error("lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
+				pthread_mutex_unlock(&energy_node_lock);
         return EAR_ERROR;
     }
-    assert(rs_len>=(RAW_SIZE+2));
+		pthread_mutex_unlock(&energy_node_lock);
+    if (rs_len<(RAW_SIZE+2)){
+      error("lenovo_read_dc_energy ipmi_cmd_raw returns not valid answer %d",rs_len);
+      return EAR_ERROR;
+    }   
+
     /*
     ipmitool raw 0x3a 0x32 4 2 0 0 0
     COMMENT: Add 2 bytes to this format
@@ -254,6 +261,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
 	#if DEBUG_WCT
     memset(raw_out,0,RAW_SIZE);
 	#endif
+		if (pthread_mutex_trylock(&energy_node_lock)) return EAR_BUSY;
     if ((rs_len = ipmi_cmd_raw (ipmi_ctx,
                               bytes_rq[0],
                               bytes_rq[1],
@@ -263,9 +271,15 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
         error("lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
+				pthread_mutex_unlock(&energy_node_lock);
         return EAR_ERROR;
     }
-    assert(rs_len>=(RAW_SIZE+2));
+		pthread_mutex_unlock(&energy_node_lock);
+		if (rs_len!=(RAW_SIZE+2)){
+      error("lenovo_read_dc_energy ipmi_cmd_raw returns not valid answer %d",rs_len);
+      return EAR_ERROR;
+    }   
+
     /*
     ipmitool raw 0x3a 0x32 4 2 0 0 0
     COMMENT: Add 2 bytes to this format

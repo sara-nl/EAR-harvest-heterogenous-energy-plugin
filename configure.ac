@@ -1,8 +1,8 @@
 # INCLUDES
 m4_include([m4/ax_compare_version.m4])
+m4_include([m4/ax_helper_functions.m4])
 m4_include([m4/ax_post_opt_features.m4])
 m4_include([m4/ax_pre_opt_features.m4])
-m4_include([m4/x_ac_backup.m4])
 m4_include([m4/x_ac_cpupower.m4])
 m4_include([m4/x_ac_freeipmi.m4])
 m4_include([m4/x_ac_mysql.m4])
@@ -179,4 +179,5 @@ AC_CONFIG_FILES([Makefile
                  src/common/config/config_install.h
                  etc/conf/ear.conf])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
+AC_CONFIG_FILES([etc/rpms/rpmbuild.sh], [chmod +x etc/rpms/rpmbuild.sh])
 AC_OUTPUT

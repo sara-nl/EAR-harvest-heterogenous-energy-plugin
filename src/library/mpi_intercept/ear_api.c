@@ -376,6 +376,10 @@ void ear_init()
 		update_configuration();	
 	}else{
 		debug("Shared memory not present");
+#if USE_LOCK_FILES
+    debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+    file_unlock_master(fd_master_lock,fd_lock_filename);
+#endif
 		notify_eard_connection(0);
 		my_id=1;
 	}	
@@ -824,7 +828,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
 
-		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON \n",__FILE__);
+		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) PAPI_get_real_usec(),

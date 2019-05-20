@@ -30,7 +30,6 @@ DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
 CHOWN_USR    = @USER@
 CHOWN_GRP    = @GROUP@
 CONSTANTS    = -DSEC_KEY=10001
-DEBUG        =
 
 ######## VARS
 
@@ -65,7 +64,6 @@ export DB_LDFLAGS
 export CHOWN_USR
 export CHOWN_GRP
 export CONSTANTS
-export DEBUG
 
 ######## RULES
 
@@ -83,6 +81,11 @@ install:
 	@ $(MAKE) -C 'etc' install || exit
 	@ $(MAKE) -C 'src' install || exit
 
+clean:
+	@ $(MAKE) -C 'src' clean || exit
+
+########
+
 devel.install: install;
 	@ $(MAKE) -C 'etc' devel.install || exit
 	@ $(MAKE) -C 'src' devel.install || exit
@@ -90,6 +93,9 @@ devel.install: install;
 etc.install: ;
 	@ $(MAKE) -C 'etc' etc.install || exit
 	@ $(MAKE) -C 'src' etc.install || exit
+
+rpm.install: install;
+	@ $(MAKE) -C 'etc' rpm.install || exit
 
 scripts.install: ;
 	@ $(MAKE) -C 'etc' scripts.install || exit
@@ -100,8 +106,7 @@ doc.install: ;
 %.install: ;
 	@ $(MAKE) -C src $*.install || exit
 
-clean:
-	@ $(MAKE) -C 'src' clean || exit
+########
 
 depend:
 	@ $(MAKE) -C 'src' depend || exit

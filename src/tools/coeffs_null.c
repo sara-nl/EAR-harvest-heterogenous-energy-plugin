@@ -38,6 +38,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <linux/limits.h>
+#include <common/output/error.h>
+#include <common/output/verbose.h>
 #include <common/types/coefficient.h>
 
 static coefficient_t *coeffs;
@@ -61,29 +63,29 @@ int main(int argc, char *argv[])
 
     if (argc<4)
 	{ 
-        printf("Usage: %s name max_freq min_min \n",argv[0]);
-		printf("%s creates a coefficient file for a given range of frequencies with null values\n",argv[0]);
+		verbose(0, "Usage: %s file.name max.freq min.freq", argv[0]);
+		verbose(0, "  Creates a coeffs file for the given range of frequencies with null values.");
         exit(1);
     }
 
-	maxf=atol(argv[2]);
-	minf=atol(argv[3]);
-	sprintf(buffer,"coeffs.%s.default",argv[1]);
-	printf("Creating null coeffs file name=%s range %u ..%u\n",buffer,maxf,minf);
+	maxf = atol(argv[2]);
+	minf = atol(argv[3]);
+	
+	sprintf(buffer,"coeffs.%s.default", argv[1]);
+	verbose(0, "Creating null coeffs file '%s' with range '%lu-%lu' KHz", buffer, maxf, minf);
 
     fd=open(buffer,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     if (fd<0)
 	{
-		sprintf(buffer,"Invalid coeffs path %s (%s)\n",buffer,strerror(errno));
-		printf(buffer);
+		error("invalid coeffs path %s (%s)", buffer, strerror(errno));
 		exit(1);
     }
 	nump=((maxf-minf)/100000)+1;
-	printf("Generating coeffs for %d x %d pstates\n",nump,nump);
+	verbose(0, "Generating coeffs for %dx%d P_STATEs",nump,nump);
     coeffs=(coefficient_t*)calloc(sizeof(coefficient_t),nump*nump);
     if (coeffs==NULL) 
 	{
-		printf("Not enough memory\n");
+		error("not enough memory");
 		exit(1);
     }
 	for (i=0;i<nump;i++)

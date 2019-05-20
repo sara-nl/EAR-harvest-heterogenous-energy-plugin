@@ -98,4 +98,6 @@
 /* MegaBytes allocated for caching the node metrics. */
 #define DEF_DBD_ALLOC_MBS					120
 
+#define MAX_NODE_ENERGY_LOCK_TRIES 1000
+
 #endif //EAR_CONFIG_DEF_H

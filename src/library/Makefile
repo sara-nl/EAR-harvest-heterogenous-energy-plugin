@@ -13,14 +13,14 @@ ifdef MPICC
 libs_BINS += libear.so
 libs_PATH  = $(DESTDIR)/lib
 impi_OBJS  = all.impi.components libear.so
-libs_PERM  = 0666
+libs_PERM  = 0755
 endif
 
 ifdef OMPICC
 libs_BINS += libear_ompi.so
 libs_PATH  = $(DESTDIR)/lib
 ompi_OBJS  = all.ompi.components libear_ompi.so
-libs_PERM  = 0666
+libs_PERM  = 0755
 endif
 
 ######## FILES

@@ -34,12 +34,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 #include <sys/types.h>
 #include <common/sockets.h>
 #include <common/output/debug.h>
 
-static char output_buffer[SZ_BUFF_BIG];
-static state_t s;
+static pthread_mutex_t lock_send = PTHREAD_MUTEX_INITIALIZER;
 
 state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_addr)
 {
@@ -275,6 +275,7 @@ static state_t _send(socket_t *socket, ssize_t bytes_expc, char *buffer)
 
 state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 {
+	char output_buffer[SZ_BUFF_BIG];
 	packet_header_t *output_header;
 	char *output_content;
 	state_t state;
@@ -294,10 +295,17 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 
 	// Copy process
 	memcpy(output_header, header, sizeof(packet_header_t));
-	memcpy (output_content, content, header->content_size);
+	memcpy(output_content, content, header->content_size);
 
-	// Sending
-	return _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
+	pthread_mutex_lock(&lock_send);
+	{
+		// Sending
+		state = _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
+		
+		pthread_mutex_unlock(&lock_send);
+	}
+
+	return state;
 }
 
 // Receive:
@@ -398,6 +406,10 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 		state_return(state);
 	}
 
+	if (header->content_size > size_buffer) {
+		state_return(EAR_NO_RESOURCES);
+	}
+
 	// Receiving the content
 	state = _receive(fd, header->content_size, buffer, block);
 
@@ -474,6 +486,7 @@ state_t sockets_nonblock_clean(int fd)
 state_t sockets_header_clean(packet_header_t *header)
 {
 	memset((void *) header, 0, sizeof(packet_header_t));
+	state_return(EAR_SUCCESS);
 }
 
 state_t sockets_header_update(packet_header_t *header)
@@ -483,6 +496,7 @@ state_t sockets_header_update(packet_header_t *header)
 	}
 
 	header->timestamp = time(NULL);
+	state_return(EAR_SUCCESS);
 }
 
 /*
