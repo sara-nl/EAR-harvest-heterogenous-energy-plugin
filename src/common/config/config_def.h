@@ -98,6 +98,10 @@
 /* MegaBytes allocated for caching the node metrics. */
 #define DEF_DBD_ALLOC_MBS					120
 
-#define MAX_NODE_ENERGY_LOCK_TRIES 1000
+#define MAX_NODE_ENERGY_LOCK_TRIES      1000
+
+/* Number of max tries  */
+#define MAX_SOCKET_COMM_TRIES           10000000
 
 #endif //EAR_CONFIG_DEF_H
+

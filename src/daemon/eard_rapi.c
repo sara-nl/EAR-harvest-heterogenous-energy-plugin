@@ -76,6 +76,73 @@ int send_command(request_t *command)
 	return (ret==sizeof(ulong)); // Should we return ack ?
 }
 
+/*
+There is at least one byte available in the send buffer →send succeeds and returns the number of bytes accepted (possibly fewer than you asked for).
+The send buffer is completely full at the time you call send.
+→if the socket is blocking, send blocks
+→if the socket is non-blocking, send fails with EWOULDBLOCK/EAGAIN
+An error occurred (e.g. user pulled network cable, connection reset by peer) →send fails with another error
+*/
+int send_non_block_command(request_t *command)
+{
+    ulong ack; 
+    int ret; 
+	int tries=0;
+	uint to_send,sended=0;
+	uint to_recv,received=0;
+	uint must_abort=0;
+    debug("Sending command %u",command->req);
+	to_send=sizeof(request_t);
+	do
+	{
+		ret=send(eards_sfd, (char *)command+sended,to_send, MSG_DONTWAIT);
+		if (ret>0){
+			sended+=ret;
+			to_send-=ret;
+		}else if (ret<0){
+			if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
+			else{	
+				must_abort=1;
+      	error("Error sending command to eard %s,%d",strerror(errno),errno);
+    	}
+  	}else if (ret==0){
+			warning("send returns 0 bytes");
+			must_abort=1;
+		}
+	}while((tries<MAX_SOCKET_COMM_TRIES) && (to_send>0) && (must_abort==0));
+	if (tries>=MAX_SOCKET_COMM_TRIES) debug("tries reached in recv %d",tries);
+	/* If there are bytes left to send, we return a 0 */
+	if (to_send){ 
+		debug("return non blocking command with 0");
+		return 0;
+	}
+	tries=0;
+	to_recv=sizeof(ulong);
+	do
+	{
+		ret=recv(eards_sfd, (char *)&ack+received,to_recv, MSG_DONTWAIT);
+		if (ret>0){
+			received+=ret;
+			to_recv-=ret;
+		}else if (ret<0){
+			if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
+			else{
+				must_abort=1;
+				error("Error receiving ack from eard %s,%d",strerror(errno),errno);
+  		}
+		}else if (ret==0){
+			debug("recv returns 0 bytes");
+			must_abort=1;
+		}
+	}while((tries<MAX_SOCKET_COMM_TRIES) && (to_recv>0) && (must_abort==0));
+
+	if (tries>=MAX_SOCKET_COMM_TRIES){
+		debug("Max tries reached in recv");
+	}
+	debug("send_non_block returns with %d",!to_recv);
+    return (!to_recv); // Should we return ack ?
+}
+
 //specifically sends and reads the ack of a status command
 int send_status(request_t *command, status_t **status)
 {
@@ -276,12 +343,13 @@ int eards_new_job(application_t *new_job)
 	request_t command;
 	command.node_dist = 0;
 
+    debug("eards_new_job");
 	command.req=EAR_RC_NEW_JOB;
     command.node_dist = 0;
     command.time_code = time(NULL);
 	copy_application(&command.my_req.new_job,new_job);
-	verbose(VMSG,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
-	return send_command(&command);
+	debug(VMSG,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
+	return send_non_block_command(&command);
 }
 
 int eards_end_job(job_id jid,job_id sid)
@@ -289,14 +357,15 @@ int eards_end_job(job_id jid,job_id sid)
     request_t command;
 	command.node_dist = 0;
 
+    debug("eards_end_job");
     command.req=EAR_RC_END_JOB;
     command.node_dist = 0;
     command.time_code = time(NULL);
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
 //	command.my_req.end_job.status=status;
-	verbose(VMSG,"command %u job_id %d step_id %d \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
-	return send_command(&command);
+	debug(VMSG,"command %u job_id %d step_id %d \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+	return send_non_block_command(&command);
 }
 
 int eards_set_max_freq(unsigned long freq)
