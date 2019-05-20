@@ -9,15 +9,21 @@ export LDFLAGS
 
 ########
 
+ifdef VERSION
+ext = ${VERSION}.so
+else
+ext = so
+endif
+
 ifdef MPICC
-libs_BINS += libear.so
+libs_BINS += libear.$(ext)
 libs_PATH  = $(DESTDIR)/lib
 impi_OBJS  = all.impi.components libear.so
 libs_PERM  = 0755
 endif
 
 ifdef OMPICC
-libs_BINS += libear_ompi.so
+libs_BINS += libear_ompi.$(ext)
 libs_PATH  = $(DESTDIR)/lib
 ompi_OBJS  = all.ompi.components libear_ompi.so
 libs_PERM  = 0755
@@ -58,11 +64,11 @@ MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
 all: all.gnrc.components $(impi_OBJS) $(ompi_OBJS)
 
 %.ompi.so: $(xmpi_OBJS) $(comm_OBJS)
-	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(xmpi_OBJS) $(MPIC_OBJS) \
+	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.$(ext) $(xmpi_OBJS) $(MPIC_OBJS) \
 	$(MPIF_OBJS) $(comm_OBJS) $(LDFLAGS)
 
 %.so: $(xmpi_OBJS) $(comm_OBJS)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(xmpi_OBJS) $(MPIC_OBJS) \
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.$(ext) $(xmpi_OBJS) $(MPIC_OBJS) \
 	$(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS

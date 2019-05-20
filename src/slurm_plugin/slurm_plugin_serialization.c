@@ -429,6 +429,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * LD_PRELOAD
 	 */
+	#if !EAR_CORE	
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, SZ_PATH);
 
 	// Appending libraries to LD_PRELOAD
@@ -439,6 +440,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	}
 
 	setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
-	
+	#endif	
+
 	return ESPANK_SUCCESS;
 }

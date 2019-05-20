@@ -30,6 +30,7 @@ DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
 CHOWN_USR    = @USER@
 CHOWN_GRP    = @GROUP@
 CONSTANTS    = -DSEC_KEY=10001
+VERSION      =
 
 ######## VARS
 
@@ -64,6 +65,7 @@ export DB_LDFLAGS
 export CHOWN_USR
 export CHOWN_GRP
 export CONSTANTS
+export VERSION
 
 ######## RULES
 
