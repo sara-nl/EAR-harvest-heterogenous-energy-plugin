@@ -72,6 +72,9 @@
 #define ALL_NODES   "select SUM(DC_energy), node_id FROM Periodic_metrics WHERE start_time >= %d " \
                     " AND end_time <= %d GROUP BY node_id "
 
+#define ALL_ISLANDS "SELECT SUM(DC_energy), eardbd_host FROM Periodic_aggregations WHERE start_time >= %d "\
+                    " AND end_time <= %d GROUP BY eardbd_host"
+
 #define ALL_TAGS    "SELECT TRUNCATE(SUM(DC_power*time), 0) as energy, Jobs.e_tag FROM " \
                     "Power_signatures INNER JOIN Applications ON id=Applications.power_signature_id " \
                     "INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id " \
@@ -84,6 +87,7 @@
 char *node_name = NULL;
 char *user_name = NULL;
 char *etag = NULL;
+char *eardbd_host = NULL;
 int verbose = 0;
 unsigned long long avg_pow = 0;
 time_t global_start_time = 0;
@@ -99,6 +103,7 @@ void usage(char *app)
             "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
             "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
             "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
+            "\t-i eardbd_name|all \t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
             "\t-h                \t shows this message.");
 	exit(1);
 }
@@ -139,6 +144,13 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
     else if (etag != NULL)
     {
         sprintf(query, ETAG_QUERY, etag);
+    }
+    else if (eardbd_host != NULL)
+    {
+        strcpy(query, AGGR_QUERY);
+        strcat(query, " AND eardbd_host='");
+        strcat(query, eardbd_host);
+        strcat(query, "'");
     }
 #if AGGREGATED
     else strcpy(query, AGGR_QUERY);
@@ -215,6 +227,17 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
             strcat(query, " AND node_id='");
             strcat(query, node_name);
             strcat(query, "'");
+        }
+        else if (eardbd_host != NULL)
+        {
+            if (strcmp(eardbd_host, "all"))
+            {
+                strcpy(query, AGGR_TIME);
+                strcat(query, " AND eardbd_host='");
+                strcat(query, eardbd_host);
+                strcat(query, "'");
+            }
+            else strcpy(query, AGGR_TIME);
         }
         else
             strcpy(query, MET_TIME);
@@ -355,6 +378,7 @@ void main(int argc,char *argv[])
     char all_users = 0;
     char all_nodes = 0;
     char all_tags = 0;
+    char all_eardbds = 0;
     struct tm tinfo = {0};
 
     if (get_ear_conf_path(path_name) == EAR_ERROR)
@@ -394,7 +418,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    while ((opt = getopt(argc, argv, "t:vhn:u:s:e:")) != -1)
+    while ((opt = getopt(argc, argv, "t:vhn:u:s:e:i:")) != -1)
     {
         switch(opt)
         {
@@ -410,6 +434,11 @@ void main(int argc,char *argv[])
                 node_name = optarg;
                 if (!strcmp(node_name, "all"))
                     all_nodes=1;
+                break;
+            case 'i':
+                eardbd_host = optarg;
+                if (!strcmp(eardbd_host, "all"))
+                    all_eardbds=1;
                 break;
             case 'u':
                 user_name = optarg;
@@ -446,7 +475,7 @@ void main(int argc,char *argv[])
         }
     }
 
-    if (!all_users && !all_nodes && !all_tags)
+    if (!all_users && !all_nodes && !all_tags && !all_eardbds)
     {
         unsigned long long result = get_sum(connection, start_time, end_time, divisor);
         compute_pow(connection, start_time, end_time, result);
@@ -470,7 +499,7 @@ void main(int argc,char *argv[])
                     verbose(0, "Error when reading time info from database, could not compute average power."); //error
             }
             else if (avg_pow > 0) {
-                verbose(0, "Average power during the period: %lu W", avg_pow);
+                verbose(0, "Average power during the reported period: %lu W", avg_pow);
             }
         }    
     }
@@ -483,6 +512,8 @@ void main(int argc,char *argv[])
     }
     else if (all_tags)
         print_all(connection, start_time, end_time, ALL_TAGS);
+    else if (all_eardbds)
+        print_all(connection, start_time, end_time, ALL_ISLANDS);
     
     mysql_close(connection);
     free_cluster_conf(&my_conf);
