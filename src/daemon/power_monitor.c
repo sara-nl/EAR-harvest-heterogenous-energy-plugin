@@ -1046,7 +1046,6 @@ void *eard_power_monitoring(void *noinfo)
 	ulong avg_f;
 	energy_data_t e_begin;
 	energy_data_t e_end;	
-	time_t t_begin,t_end; 
 	double t_diff;
 	power_data_t my_current_power;
 
@@ -1108,7 +1107,6 @@ void *eard_power_monitoring(void *noinfo)
 		// Set values for next iteration
 		copy_energy_data(&e_begin,&e_end);
 		
-		t_begin=t_end;
 	}
 	if (dispose_node_metrics(&my_nm_id)!=EAR_SUCCESS){
 		error("dispose_node_metrics ");
