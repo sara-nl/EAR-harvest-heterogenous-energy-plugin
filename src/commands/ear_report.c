@@ -79,7 +79,9 @@
                     "Power_signatures INNER JOIN Applications ON id=Applications.power_signature_id " \
                     "INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id " \
                     "WHERE start_time >= %d AND end_time <= %d GROUP BY Jobs.e_tag ORDER BY energy"
-//grouped by query:
+
+#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
+//#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc limit 5"
 
 //SELECT TRUNCATE(SUM(DC_power*time),0) as energy, Jobs.user_id FROM Power_signatures INNER JOIN Applications ON id=Applications.power_signature_id INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id WHERE start_time >= 0 AND end_time <= 5555555555555 GROUP BY Jobs.user_id ORDER BY energy;
 
@@ -98,13 +100,14 @@ void usage(char *app)
     verbose(0, "%s is a tool that reports energy consumption data", app);
 	verbose(0, "Usage: %s [options]", app);
     verbose(0, "Options are as follows:\n"\
-            "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
-            "\t-e end_time       \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
-            "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
-            "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
-            "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
-            "\t-i eardbd_name|all \t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
-            "\t-h                \t shows this message.");
+        "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
+        "\t-e end_time       \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
+        "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
+        "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
+        "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
+        "\t-i eardbd_name|all \t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
+        "\t-g [seconds]      \t shows the contents of MySQL's Global_energy table. The default option will show the records for the two previous T2 periods of EARGM. \n\t\t\t\t\tYou can specify the amount of seconds from now that you want the records to be shown\n."
+        "\t-h                \t shows this message.");
 	exit(1);
 }
 
@@ -311,13 +314,19 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
 
 }
 
-void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
+#define GLOBAL_ENERGY_TYPE  1
+#define PER_METRIC_TYPE     2
+
+void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query, char type)
 {
     char query[512];
     int i;
     char all_nodes = 0;
 
-    sprintf(query, inc_query, start_time, end_time);
+    if (type == GLOBAL_ENERGY_TYPE)
+        sprintf(query, inc_query, end_time);
+    else
+        sprintf(query, inc_query, start_time, end_time);
 
     if (verbose) {
         verbose(0, "query: %s", query);
@@ -339,30 +348,60 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query)
     int num_fields = mysql_num_fields(result);
 
     MYSQL_ROW row;
-    if (!strcmp(inc_query, ALL_USERS)) {
-        verbose(0, "%15s %15s", "Energy (J)", "User");
-    } else if (!strcmp(inc_query, ALL_TAGS)) {
-        verbose(0, "%15s %15s", "Energy (J)", "Energy tag");
-    } else if (global_end_time > 0) {
-        verbose(0, "%15s %15s %15s", "Energy (J)", "Node", "Avg. Power");
-        all_nodes = 1;
-    }
-    else {
-        verbose(0, "%15s %15s", "Energy (J)", "Node");
-    }
-
-
-    while ((row = mysql_fetch_row(result))!= NULL) 
-    { 
-        for(i = 0; i < num_fields; i++) {
-            verbosen(0, "%15s ", row[i] ? row[i] : "NULL");
+    if (type == GLOBAL_ENERGY_TYPE)
+    {
+        int has_records = 0;
+        while ((row = mysql_fetch_row(result))!= NULL) 
+        { 
+            if (!has_records)
+            {
+                printf("%20s %12s %20s %12s %12s %12s %12s %12s %12s %12s %12s\n",
+                     "Energy%", "Warning lvl", "Timestamp", "INC th", "p_state", "ENERGY T1", "ENERGY T2",
+                     "TIME T1", "TIME T2", "LIMIT", "POLICY");
+                has_records = 1;
+            }
+            for(i = 0; i < num_fields; i++) {
+                if (i == 0 || i == 2)
+                    printf("%20s ", row[i] ? row[i] : "NULL");
+                else
+                    printf("%12s ", row[i] ? row[i] : "NULL");
+            }
+            printf("\n");
+    	}
+        if (!has_records)
+        {
+            char buff[64];
+            time_t s_time = time(NULL) - end_time;
+            strtok(ctime_r(&s_time, buff), "\n");
+            printf("There are no global energy records in the period starting %s and ending now\n", buff);
         }
-          
-        if (row[0] && all_nodes) { //when getting energy we compute the avg_power
-            verbosen(0, "%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
-	}
+    }
+    else
+    {
+        if (!strcmp(inc_query, ALL_USERS)) {
+            verbose(0, "%15s %15s", "Energy (J)", "User");
+        } else if (!strcmp(inc_query, ALL_TAGS)) {
+            verbose(0, "%15s %15s", "Energy (J)", "Energy tag");
+        } else if (global_end_time > 0) {
+            verbose(0, "%15s %15s %15s", "Energy (J)", "Node", "Avg. Power");
+            all_nodes = 1;
+        }
+        else {
+            verbose(0, "%15s %15s", "Energy (J)", "Node");
+        }
 
-        verbose(0, " ");
+
+        while ((row = mysql_fetch_row(result))!= NULL) 
+        { 
+            for(i = 0; i < num_fields; i++) {
+                verbosen(0, "%15s ", row[i] ? row[i] : "NULL");
+            }
+          
+            if (row[0] && all_nodes) { //when getting energy we compute the avg_power
+                verbosen(0, "%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+    	}
+            verbose(0, " ");
+        }
     }
     mysql_free_result(result);
 }
@@ -373,6 +412,7 @@ void main(int argc,char *argv[])
     cluster_conf_t my_conf;
     time_t start_time = 0;
     time_t end_time = time(NULL);
+    time_t time_period = 0;
     int divisor = 1;
     int opt;
     char all_users = 0;
@@ -409,7 +449,8 @@ void main(int argc,char *argv[])
     if (strlen(my_conf.database.user_commands) < 1) 
         verbose(0, "Warning: commands' user is not defined in ear.conf");
 
-    if (!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands, my_conf.database.pass_commands, my_conf.database.database, my_conf.database.port, NULL, 0))
+    if (!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands, my_conf.database.pass_commands,
+                            my_conf.database.database, my_conf.database.port, NULL, 0))
     {
         verbose(0, "Error connecting to the database (%d): %s",
                 mysql_errno(connection), mysql_error(connection)); //error
@@ -418,7 +459,7 @@ void main(int argc,char *argv[])
         exit(1);
     }
 
-    while ((opt = getopt(argc, argv, "t:vhn:u:s:e:i:")) != -1)
+    while ((opt = getopt(argc, argv, "t:vhn:u:s:e:i:g")) != -1)
     {
         switch(opt)
         {
@@ -449,6 +490,15 @@ void main(int argc,char *argv[])
                 etag = optarg;
                 if (!strcmp(etag, "all"))
                     all_tags=1;
+                break;
+            case 'g':
+                time_period = my_conf.eargm.t2*2;
+                if (optind < argc && strchr(argv[optind], '-') == NULL)
+                    time_period = atoi(argv[optind]);
+                print_all(connection, start_time, time_period, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
+                mysql_close(connection);
+                free_cluster_conf(&my_conf);
+                exit(0);
                 break;
             case 'e':
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
@@ -504,16 +554,16 @@ void main(int argc,char *argv[])
         }    
     }
     else if (all_users)
-        print_all(connection, start_time, end_time, ALL_USERS);
+        print_all(connection, start_time, end_time, ALL_USERS, PER_METRIC_TYPE);
     else if (all_nodes)
     {
         compute_pow(connection, start_time, end_time, 0);
-        print_all(connection, start_time, end_time, ALL_NODES);
+        print_all(connection, start_time, end_time, ALL_NODES, PER_METRIC_TYPE);
     }
     else if (all_tags)
-        print_all(connection, start_time, end_time, ALL_TAGS);
+        print_all(connection, start_time, end_time, ALL_TAGS, PER_METRIC_TYPE);
     else if (all_eardbds)
-        print_all(connection, start_time, end_time, ALL_ISLANDS);
+        print_all(connection, start_time, end_time, ALL_ISLANDS, PER_METRIC_TYPE);
     
     mysql_close(connection);
     free_cluster_conf(&my_conf);
