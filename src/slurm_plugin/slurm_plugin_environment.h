@@ -33,7 +33,7 @@
 // Verbosity
 #define plug_verbose(sp, level, ...) \
         if (plug_verbosity_test(sp, level) == 1) { \
-                slurm_error("EARPLUG, " __VA_ARGS__); \
+                slurm_verbose("EARPLUG, " __VA_ARGS__); \
         }
 #define plug_error(sp, ...) \
         if (plug_verbosity_test(sp, 1) == 1) { \
