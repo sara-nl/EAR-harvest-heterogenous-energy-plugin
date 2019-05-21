@@ -50,7 +50,7 @@ typedef struct test_s {
 	char *path_trac;
 	char *path_temp;
 	char *verbose;
-	char *mpi_dist;
+	char *version;
 } test_t;
 
 #define TF1	"2600000"
@@ -70,8 +70,8 @@ test_t test6 = { .verbose = "2",  .policy = "MIN_ENERGY_TO_SOLUTION", .frequency
 test_t test7 = { .policy_th = "0.2", .policy = "MIN_TIME_TO_SOLUTION"                  };
 test_t test8 = { .policy_th = "0.3", .policy = "MIN_TIME_TO_SOLUTION"                  };
 test_t test9 = { .path_trac = "/tmptr", .path_usdb = "/tmpus",   .path_temp = "/tmpte" };
-test_t test10 = { .mpi_dist = "openmpi"                                                };
-test_t test11 = { .tag = TA1                                                           };
+test_t test10 = { .tag = TA1                                                           };
+test_t test11 = { .version = "peplugin"                                                };
 
 
 static void fake_build(spank_t sp)
@@ -132,8 +132,8 @@ static void option_build(spank_t sp, test_t *test)
 	if (test->tag != NULL) {
 		_opt_ear_tag (0, test->tag, 0);
 	}
-	if (test->mpi_dist != NULL) {
-		_opt_ear_mpi_dist (0, test->mpi_dist, 0);
+	if (test->version != NULL) {
+		setenv_agnostic(sp, Var.version.loc, test->version);
 	}
 }
 
@@ -173,11 +173,15 @@ static int option_result(spank_t sp, test_t *test)
 	if (test->tag != NULL) {
 		if (!option_compare(sp, Var.tag.ear, test->tag)) return ESPANK_ERROR;
 	}
-	if (test->mpi_dist != NULL)
+	if (test->version != NULL)
 	{
-		option_compare(sp, Var.ld_prel.ear, OMPI_C_LIB_PATH);
-		int r = getenv_agnostic(sp, Var.ld_prel.ear, buffer1, SZ_PATH);
-		if (strstr(buffer1, OMPI_C_LIB_PATH) == NULL) {
+		if (!getenv_agnostic(sp, Var.ld_prel.ear, buffer1, SZ_PATH)) {
+			return ESPANK_ERROR;
+		}
+		if (!getenv_agnostic(sp, Var.version.loc, buffer2, SZ_PATH)) {
+			return ESPANK_ERROR;
+		}
+		if (strstr(buffer1, buffer2) == NULL) {
 			return ESPANK_ERROR;
 		}
 	}
@@ -208,7 +212,7 @@ void plug_test_build(spank_t sp)
 		case 7: option_build(sp, &test7); break;
 		case 8: option_build(sp, &test8); break;
 		case 9: option_build(sp, &test9); break;
-		case 10: option_build(sp, &test10); break;
+		case 11: option_build(sp, &test10); break;
 		case 11: option_build(sp, &test11); break;
 		default: return;
 	}
@@ -241,7 +245,7 @@ void plug_test_result(spank_t sp)
 		case 7: result = option_result(sp, &test7); break;
 		case 8: result = option_result(sp, &test8); break;
 		case 9: result = option_result(sp, &test9); break;
-		case 10: result = option_result(sp, &test10); break;
+		case 11: result = option_result(sp, &test10); break;
 		case 11: result = option_result(sp, &test11); break;
 		default: return;
 	}

@@ -41,10 +41,8 @@
 // File paths
 #define EAR_DAEMON_PATH     ""
 #define EAR_CONF_FILE		""
-#define IMPI_C_LIB_PATH		"lib/libear"
-#define OMPI_C_LIB_PATH		"lib/libear_ompi"
-#define IMPI_F_LIB_PATH		""
-#define OMPI_F_LIB_PATH		""
+#define MPI_C_LIB_PATH		"lib/libear"
+#define MPI_F_LIB_PATH		""
 
 // Database
 #define DB_FILES			@DB_FILES@
