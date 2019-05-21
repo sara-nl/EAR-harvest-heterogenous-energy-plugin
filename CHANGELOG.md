@@ -1,8 +1,9 @@
 ## Unreleased
-### Added
-- lock to avoid simultaneous ipmi access
+- eard_api non-blocking calls
+- Working in a dynamic loading for power/energy policies
 
 ### Changed
+- lock to avoid simultaneous ipmi access
 - assert removed from ipmi functions. replaced by condition+error message
 - support for dynamic management of multiple contexts
 - eardbd host name included in aggregated metrics

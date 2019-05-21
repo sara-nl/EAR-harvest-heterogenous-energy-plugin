@@ -27,27 +27,26 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
-
-/**
-*    \file monitoring.h
-*    \brief This file implements the policy API for the monitoring_only policy
-*
-*/
-
-#ifndef _MONITORING_H
-#define _MONITORING_H
+#include <common/config.h>
 #include <common/types/projection.h>
 #include <common/types/signature.h>
 
+typedef struct policy
+{
+	void (*init)(uint num_pstates);
+	void (*new_loop)();
+	void (*end_loop)();
+	ulong (*policy)(signature_t *sig,int *ready);
+	ulong (*policy_ok)(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
+	ulong (*default_conf)(ulong user_freq);
+}policy_t;
 
-void monitoring_init();
-void monitoring_new_loop();
-void monitoring_end_loop();
-ulong monitoring_policy(signature_t *sig,int *ready);
-ulong monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
-ulong monitoring_default_conf(ulong f);
 
-
-#else
-#endif
+int load_policy(policy_t *my_policy,char *policy_name);

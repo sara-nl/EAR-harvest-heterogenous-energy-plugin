@@ -38,6 +38,7 @@ xmpi_OBJS = \
     models/min_energy.o \
     models/monitoring.o \
     models/supermucng.o \
+    models/dyn_policies.o \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
