@@ -31,7 +31,7 @@
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
-#define SRUN_OPTIONS	10
+#define SRUN_OPTIONS	9
 
 static char buffer[SZ_PATH];
 
@@ -56,11 +56,6 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  "Specifies the file to save the user applications metrics summary" \
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
 	  1, 0, (spank_opt_cb_f) _opt_ear_user_db
-	},
-	{ "ear-mpi-dist", "dist",
-	  "Selects the MPI distribution for compatibility of your application" \
-	  "{dist=intel|openmpi}",
-	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
 	},
 	{ "ear-verbose", "value", "Specifies the level of the verbosity\n" \
 	  "{value=[0..5]}; default is 0",
@@ -274,31 +269,6 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 		}
 
 		setenv_agnostic(NULL, Var.path_trac.loc, optarg, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
-	}
-
-	return ESPANK_SUCCESS;
-}
-
-int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
-{
-	plug_verbose(NULL, 2, "function _opt_mpi_dist");
-
-	if (!remote)
-	{
-		if (optarg == NULL) {
-			return ESPANK_BAD_ARG;
-		}
-
-		strncpy(buffer, optarg, 32);
-		strtoup(buffer);
-		
-		if (strcmp(buffer, "OPENMPI") == 0) {
-			setenv_agnostic(NULL, Var.mpi_dist.loc, "1", 1);
-		} else {
-			setenv_agnostic(NULL, Var.mpi_dist.loc, "0", 1);
-		}
-
 		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
 	}
 

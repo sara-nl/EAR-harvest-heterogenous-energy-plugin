@@ -349,7 +349,6 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
 	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
 	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
-	repenv_agnostic(sp, Var.mpi_dist.loc,  Var.mpi_dist.rem);
 
 	/*
 	 * User
@@ -365,9 +364,6 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
   	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
-	getenv_agnostic(sp, Var.mpi_dist.rem, buffer, SZ_PATH);
-	sd->job.mpi = atoi(buffer);
-
 	if (isenv_agnostic(sp, Var.context.rem, "SRUN")) {
 		sd->subject.context_local = Context.srun;
 	} else if (isenv_agnostic(sp, Var.context.rem, "SBATCH")) {
@@ -381,7 +377,6 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.group.rem);
 	unsetenv_agnostic(sp, Var.path_temp.rem);
 	unsetenv_agnostic(sp, Var.path_inst.rem);
-	unsetenv_agnostic(sp, Var.mpi_dist.rem);
 	unsetenv_agnostic(sp, Var.context.rem);
 
 	return ESPANK_SUCCESS;
@@ -434,20 +429,17 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	char ext1[64];
 	char ext2[64];
 
-	if(getenv_agnostic(sp, Var.version.rem, ext1, 64)) {
+	if(getenv_agnostic(sp, Var.version.loc, ext1, 64)) {
 		snprintf(ext2, 64, "%s.so", ext1);
 	} else {
 		snprintf(ext2, 64, "so");
 	}
 
+	// Appending libraries to LD_PRELOAD
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, 64);
 
-	// Appending libraries to LD_PRELOAD
-	if (sd->job.mpi) {
-		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH, ext2);
-	} else {
-		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH, ext2);
-	}
+	//
+	snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, MPI_C_LIB_PATH, ext2);
 
 	if (file_is_regular(buffer)) {
 		setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
