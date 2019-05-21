@@ -713,6 +713,7 @@ void main(int argc,char *argv[])
 			switch(current_level){
 			case NO_PROBLEM:
 				verbose(VGM," Safe area. energy budget %.2lf%% \n",perc_energy);
+				my_warning.level=NO_PROBLEM;my_warning.inc_th=0;my_warning.new_p_state=0;
 				break;
 			case WARNING_3:
 				in_action+=my_cluster_conf.eargm.grace_periods;
