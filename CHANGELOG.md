@@ -10,4 +10,5 @@
 - eargm reporting gloabl status every T1 period
 - ereport now has a filter for eadbds/islands
 - eard_rapi new_job and end_job calls are now non-blocking
+- ereport now has an option to report Global_energy records
 
