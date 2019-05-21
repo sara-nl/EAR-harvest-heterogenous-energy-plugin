@@ -171,8 +171,10 @@ static void my_signals_function(int s)
 	}
 	if (s==SIGHUP){
 		verbose(VCONF,"Reloading EAR configuration");
+		ppolicy=my_cluster_conf.eargm.policy;
 		free_cluster_conf(&my_cluster_conf);
 		// Reading the configuration
+			
     	if (read_cluster_conf(my_ear_conf_path,&my_cluster_conf)!=EAR_SUCCESS){
         	error(" Error reading cluster configuration\n");
     	}

@@ -66,4 +66,7 @@
 // #define EAR_TRACER_MPI 1
 #define IN_MPI_TIME 						0
 
+// Maximum number of tries when doing non-blocking communications
+#define MAX_SOCKET_COMM_TRIES 	10000000
+
 #endif //EAR_CONFIG_DEV_H

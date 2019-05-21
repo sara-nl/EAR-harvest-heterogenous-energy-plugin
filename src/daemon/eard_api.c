@@ -65,6 +65,76 @@ static ulong energy_size;
 static ulong rapl_size;
 static ulong freq_size;
 
+#define USE_NON_BLOCKING_IO 1
+
+int my_read(int fd,char *buff,int size)
+{
+#if USE_NON_BLOCKING_IO
+  ulong ack; 
+  int ret; 
+  int tries=0;
+  uint to_recv,received=0;
+  uint must_abort=0;
+  to_recv=size;
+  do
+  {
+    ret=read(fd, buff+received,to_recv);
+    if (ret>0){
+      received+=ret;
+      to_recv-=ret;
+    }else if (ret<0){
+      if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
+      else{
+        must_abort=1;
+        error("Error receiving data from eard %s,%d",strerror(errno),errno);
+      }
+    }else if (ret==0){
+      must_abort=1;
+    }
+  }while((tries<MAX_SOCKET_COMM_TRIES) && (to_recv>0) && (must_abort==0));
+	if (ret<0) return ret;
+	return received;
+
+#else
+  return read(fd,buff,size);
+#endif
+}
+
+int my_write(int fd,char *buff,int size)
+{
+#if USE_NON_BLOCKING_IO
+  ulong ack;
+  int ret;
+  int tries=0;
+  uint to_send,sended=0;
+  uint must_abort=0;
+  to_send=size;
+  do
+  {
+    ret=write(fd, buff+sended,size);
+    if (ret>0){
+      sended+=ret;
+      to_send-=ret;
+    }else if (ret<0){
+      if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
+      else{
+        must_abort=1;
+        error("Error sending command to eard %s,%d",strerror(errno),errno);
+      }
+    }else if (ret==0){
+      must_abort=1;
+    }
+  }while((tries<MAX_SOCKET_COMM_TRIES) && (to_send>0) && (must_abort==0));
+  /* If there are bytes left to send, we return a 0 */
+	if (ret<0) return ret;
+	return sended;
+
+#else
+  return write(fd,buff,size);
+#endif
+}
+
+
 void signal_handler(int s)
 {
 	verbose(VAPI,"EARD has been disconnected");
@@ -199,6 +269,14 @@ int eards_connect(application_t *my_app)
 				return EAR_ERROR;
 			}
 		}
+      #if USE_NON_BLOCKING_IO
+      ret=fcntl(ear_fd_req[i], F_SETFL, O_NONBLOCK);
+      if (ret<0){
+        error("Setting O_NONBLOCK for eard communicator %s",strerror(errno));
+        return EAR_ERROR;
+      }
+      #endif
+
 
 		switch(i)
 		{
@@ -239,6 +317,13 @@ int eards_connect(application_t *my_app)
 				ear_fd_req[i]=-1;
 				return EAR_ERROR;
 			}
+			#if USE_NON_BLOCKING_IO
+      ret=fcntl(ear_fd_ack[i], F_SETFL, O_NONBLOCK);
+      if (ret<0){
+        error("Setting O_NONBLOCK for eard communicator %s",strerror(errno));
+        return EAR_ERROR;
+      }
+      #endif	
 			verbose(VAPI, "ack communicator %s [%d] connected", nodename, i);
 		}
 	}
@@ -258,7 +343,7 @@ void eards_disconnect()
 	debug( "Disconnecting");
 	if (!app_connected) return;
     if (ear_fd_req[0] >= 0) {
-		warning_api(write(ear_fd_req[0], &req,sizeof(req)), sizeof(req),
+		warning_api(my_write(ear_fd_req[0], (char *)&req,sizeof(req)), sizeof(req),
 				"witting req in ear_daemon_client_disconnect");
 	}
 
@@ -289,11 +374,11 @@ ulong eards_write_app_signature(application_t *app_signature)
 	if (ear_fd_req[com_fd] >= 0)
 	{
 		debug( "writing request...");
-		if (warning_api(write(ear_fd_req[com_fd], &req, sizeof(req)), sizeof(req),
+		if (warning_api(my_write(ear_fd_req[com_fd], (char *)&req, sizeof(req)), sizeof(req),
 			"ERROR writing request for app signature")) return EAR_ERROR;
         
 		debug( "reading ack...");
-		if (warning_api(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[com_fd], (char *)&ack, sizeof(ulong)),sizeof(ulong),
         		"ERROR reading ack for app signature")) return EAR_ERROR;
 	}else{
 		debug( "writting application signature (DB) service unavailable");
@@ -319,11 +404,11 @@ ulong eards_write_event(ear_event_t *event)
     if (ear_fd_req[com_fd] >= 0)
     {
         debug( "writing request...");
-        if (warning_api(write(ear_fd_req[com_fd], &req, sizeof(req)), sizeof(req),
+        if (warning_api(write(ear_fd_req[com_fd], (char *)&req, sizeof(req)), sizeof(req),
             "ERROR writing request for event")) return EAR_ERROR;
 
         debug( "reading ack...");
-        if (warning_api(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
+        if (warning_api(my_read(ear_fd_ack[com_fd], (char *)&ack, sizeof(ulong)),sizeof(ulong),
                 "ERROR reading ack event")) return EAR_ERROR;
     }else{
         debug( "eards_write_event service not available");
@@ -351,11 +436,11 @@ ulong eards_write_loop_signature(loop_t *loop_signature)
     if (ear_fd_req[com_fd] >= 0)
     {
         debug( "writing request...");
-        if (warning_api(write(ear_fd_req[com_fd], &req, sizeof(req)), sizeof(req),
+        if (warning_api(my_write(ear_fd_req[com_fd], (char *)&req, sizeof(req)), sizeof(req),
             "ERROR writing request for loop signature")) return EAR_ERROR;
 
         debug( "reading ack...");
-        if (warning_api(read(ear_fd_ack[com_fd], &ack, sizeof(ulong)),sizeof(ulong),
+        if (warning_api(my_read(ear_fd_ack[com_fd], (char *)&ack, sizeof(ulong)),sizeof(ulong),
                 "ERROR reading ack for loop signature")) return EAR_ERROR;
     }else{
         debug( "writting loop signature (DB) service unavailable");
@@ -380,9 +465,9 @@ ulong eards_get_data_size_frequency()
 
     if (ear_fd_req[com_fd] >= 0)
 	{
-		if (warning_api(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
 			"ERROR writing request for frequency data size")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[com_fd],&ack, sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[com_fd],(char *)&ack, sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for frequency data size ")) return EAR_ERROR;
 	}
     else{
@@ -401,9 +486,9 @@ void eards_begin_compute_turbo_freq()
 	req.sec=create_sec_tag();
     if (ear_fd_req[freq_req]>=0)
 	{
-		if (warning_api(write(ear_fd_req[freq_req],&req,sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req,sizeof(req)) , sizeof(req),
 			"ERROR writing request for starting frequency ")) return ;
-		if (warning_api(read(ear_fd_ack[freq_req],&ack, sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack, sizeof(ulong)) , sizeof(ulong),
 			 "ERROR reading ack for starting frequency ")) return ;
 		return;
    }   
@@ -423,9 +508,9 @@ ulong eards_end_compute_turbo_freq()
 	req.sec=create_sec_tag();
 	if (ear_fd_req[freq_req] >= 0)
 	{
-		if (warning_api(write(ear_fd_req[freq_req],&req, sizeof(req)) ,sizeof(req),
+		if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)) ,sizeof(req),
 			 "ERROR writing request for finishing frequency")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[freq_req],&ack, sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack, sizeof(ulong)) , sizeof(ulong),
 				"ERROR reading ack for finishing frequency ")) return EAR_ERROR;
 
 		verbose(VAPI, "TURBO freq computed as  %lu",  ack);
@@ -446,9 +531,9 @@ void eards_begin_app_compute_turbo_freq()
 
 	if (ear_fd_req[freq_req]>=0)
 	{
-		if (warning_api(write(ear_fd_req[freq_req],&req, sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)) , sizeof(req),
 			"ERROR writing request for starting frequency for app")) return;
-		if (warning_api(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for starting frequency")) return;
 		return;
    }
@@ -466,9 +551,9 @@ ulong eards_end_app_compute_turbo_freq()
 
 	if (ear_fd_req[freq_req]>=0)
 	{
-		if (warning_api(write(ear_fd_req[freq_req],&req,sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for finishing frequency for app")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR writing ack for finishing frequency for app ")) return EAR_ERROR;
 
 		verbose(VAPI, "TURBO freq computed as  %lu", ack);
@@ -490,9 +575,9 @@ void eards_set_turbo()
 
 	if (ear_fd_req[freq_req]>=0)
 	{
-		if (warning_api(write(ear_fd_req[freq_req],&req,sizeof(req)),sizeof(req),
+		if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req,sizeof(req)),sizeof(req),
 			 "ERROR writing request for setting turbo")) return;
-		if (warning_api(read(ear_fd_ack[freq_req],&ack,sizeof(ulong)),sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack,sizeof(ulong)),sizeof(ulong),
 			 "ERROR reading ack for setting turbo ")) return;
 		verbose(VAPI+1, "turbo activated");
 		return;
@@ -514,10 +599,10 @@ ulong eards_change_freq(ulong newfreq)
 
 	if (ear_fd_req[freq_req] >= 0)
 	{
-		if (warning_api(write(ear_fd_req[freq_req],&req, sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)) , sizeof(req),
 			 "ERROR writing request for changing frequency")) return EAR_ERROR;
 
-		if (warning_api(read(ear_fd_ack[freq_req], &real_freq, sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[freq_req], (char *)&real_freq, sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for changing frequency ")) return EAR_ERROR;
 
 		verbose(VAPI+1, "Frequency_changed to %lu",  real_freq);
@@ -543,9 +628,9 @@ ulong eards_get_data_size_uncore()
 	req.sec=create_sec_tag();
 
 	if (ear_fd_req[com_fd] >= 0) {
-		if (warning_api(write(ear_fd_req[com_fd],&req, sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req, sizeof(req)) , sizeof(req),
 			 "ERROR writing request for uncore data size ")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[com_fd],&ack, sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[com_fd],(char *)&ack, sizeof(ulong)) , sizeof(ulong),
 			 "ERROR reading ack for uncore data size ")) return EAR_ERROR;
 	} else {
 		debug( "ear_daemon_client_get_data_size_uncore service not provided");
@@ -568,9 +653,9 @@ int eards_reset_uncore()
 
 	if (ear_fd_req[uncore_req] >= 0)
 	{
-		if (warning_api(write(ear_fd_req[uncore_req],&req,sizeof(req)), sizeof(req),
+		if (warning_api(my_write(ear_fd_req[uncore_req],(char *)&req,sizeof(req)), sizeof(req),
 			 "ERROR writing request for resetting uncores ")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[uncore_req],&ack,sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[uncore_req],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			 "ERROR reading ack for resetting uncores ")) return EAR_ERROR;
 		debug( "RESET ACK Uncore counters received from daemon ");
 	    return EAR_SUCCESS;
@@ -591,9 +676,9 @@ int eards_start_uncore()
 
 	if (ear_fd_req[uncore_req]>=0)
 	{
-		if (warning_api(write(ear_fd_req[uncore_req],&req, sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[uncore_req],(char *)&req, sizeof(req)) , sizeof(req),
 			 "ERROR writing request for starting uncores ")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[uncore_req],&ack,sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[uncore_req],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			 "ERROR reading ack for starting uncores ")) return EAR_ERROR;
 		debug( "START ACK Uncore counters received from daemon ");
 		return EAR_SUCCESS;
@@ -617,9 +702,9 @@ int eards_stop_uncore(unsigned long long *values)
     if (ear_fd_req[uncore_req]>=0)
     {
         /* There is not request for uncore...only answer */
-        if (warning_api(write(ear_fd_req[uncore_req], &req, sizeof(req)) , sizeof(req),
+        if (warning_api(my_write(ear_fd_req[uncore_req], (char *)&req, sizeof(req)) , sizeof(req),
             "ERROR writing request for reading uncores ")) return EAR_ERROR;
-        if (warning_api(read(ear_fd_ack[uncore_req],values,uncore_size) , uncore_size, 
+        if (warning_api(my_read(ear_fd_ack[uncore_req],(char *)values,uncore_size) , uncore_size, 
              "ERROR reading ack for reading uncores ")){ 
             return EAR_ERROR;
         } else {
@@ -649,9 +734,9 @@ int eards_read_uncore(unsigned long long *values)
 	if (ear_fd_req[uncore_req]>=0)
 	{
 		/* There is not request for uncore...only answer */
-		if (warning_api(write(ear_fd_req[uncore_req], &req, sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[uncore_req], (char *)&req, sizeof(req)) , sizeof(req),
 			"ERROR writing request for reading uncores ")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[uncore_req],values,uncore_size) , uncore_size, 
+		if (warning_api(my_read(ear_fd_ack[uncore_req],(char *)values,uncore_size) , uncore_size, 
 			 "ERROR reading ack for reading uncores ")){ 
 			return EAR_ERROR;
 		} else {
@@ -680,9 +765,9 @@ ulong eards_get_data_size_rapl() // size in bytes
 
     if (ear_fd_req[com_fd] >= 0)
 	{
-        if (warning_api(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+        if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for RAPL data size ")) return EAR_ERROR;
-        if (warning_api(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
+        if (warning_api(my_read(ear_fd_ack[com_fd],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for RAPL data size ")) return EAR_ERROR;
     } else {
 		debug( "ear_daemon_client_get_data_size_rapl service not provided");
@@ -704,9 +789,9 @@ int eards_reset_rapl()
 
 	if (ear_fd_req[rapl_req]>=0)
 	{
-		if (warning_api(write(ear_fd_req[rapl_req],&req,sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[rapl_req],(char *)&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for resetting RAPL counters ")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[rapl_req],&ack, sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[rapl_req],(char *)&ack, sizeof(ulong)) , sizeof(ulong),
 			 "ERROR reading ack for resetting RAPL counters ")) return EAR_ERROR;
 		debug( "RESET ACK rapl counters received from daemon ");
 		return ack;
@@ -727,9 +812,9 @@ int eards_start_rapl()
 
     if (ear_fd_req[rapl_req]>=0)
 	{
-		if (warning_api(write(ear_fd_req[rapl_req],&req,sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[rapl_req],(char *)&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for starting RAPL counters ")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[rapl_req],&ack,sizeof(ulong)) , sizeof(ulong),
+		if (warning_api(my_read(ear_fd_ack[rapl_req],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			 "ERROR reading ack for starting RAPL counters ")) return EAR_ERROR;
 		debug( "START ACK rapl counters received from daemon ");
 		return EAR_SUCCESS;
@@ -753,9 +838,9 @@ int eards_read_rapl(unsigned long long *values)
 	if (ear_fd_req[rapl_req]>=0)
 	{
 		// There is not request for uncore...only answer
-		if (warning_api(write(ear_fd_req[rapl_req],&req,sizeof(req)) , sizeof(req),
+		if (warning_api(my_write(ear_fd_req[rapl_req],(char *)&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for stopping RAPL counters ")) return EAR_ERROR;
-		if (warning_api(read(ear_fd_ack[rapl_req],values,rapl_size) , rapl_size,
+		if (warning_api(my_read(ear_fd_ack[rapl_req],(char *)values,rapl_size) , rapl_size,
 			 "ERROR reading ack for stopping RAPL counters "))
 		{ 
 			return EAR_ERROR;
@@ -785,9 +870,9 @@ ulong eards_node_energy_data_size()
 
     if (ear_fd_req[com_fd]>=0)
 	{
-        if (warning_api(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+        if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
 			 "ERROR writing request for IPMI data size ")) return EAR_ERROR;
-        if (warning_api(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
+        if (warning_api(my_read(ear_fd_ack[com_fd],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			 "ERROR reading ack for IPMI data size ")) return EAR_ERROR;
     } else {
 		debug( "ear_daemon_client_node_energy_data_size service not provided");
@@ -810,9 +895,9 @@ int eards_node_dc_energy(ulong *energy)
 
 	if (ear_fd_req[com_fd]>=0)
 	{
-        if (warning_api(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+        if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
 			"ERROR writing request for IPMI data size ")) return EAR_ERROR;
-        if (warning_api(read(ear_fd_ack[com_fd],energy,sizeof(ulong)) , sizeof(ulong),
+        if (warning_api(my_read(ear_fd_ack[com_fd],(char *)energy,sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for IPMI data size ")) return EAR_ERROR;
     } else
 	{
@@ -834,9 +919,9 @@ ulong eards_node_energy_frequency()
 	req.sec=create_sec_tag();
     if (ear_fd_req[com_fd]>=0)
     {
-        if (warning_api(write(ear_fd_req[com_fd],&req,sizeof(req)) , sizeof(req),
+        if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
              "ERROR writing request for energy freq of update ")) return EAR_ERROR;
-        if (warning_api(read(ear_fd_ack[com_fd],&ack,sizeof(ulong)) , sizeof(ulong),
+        if (warning_api(my_read(ear_fd_ack[com_fd],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
             "ERROR reading ack for energy freq of update ")) return ack;
     } else
     {
