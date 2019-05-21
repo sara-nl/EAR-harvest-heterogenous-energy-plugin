@@ -106,6 +106,7 @@ struct variables_s {
 	varnames_t ld_prel;
 	varnames_t ld_libr;
 	varnames_t node_num;
+	varnames_t version;
 }
 	Var __attribute__((weak)) =
 {

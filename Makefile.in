@@ -2,6 +2,7 @@ CC           = @CC@
 CC_FLAGS     = @CC_FLAGS@
 MPICC        = @MPICC@
 MPICC_FLAGS  = @MPICC_FLAGS@
+MPI_VERSION  =
 OMPICC       = @OMPICC@
 OMPICC_FLAGS = @OMPICC_FLAGS@
 ROOTDIR      = $(shell pwd)
@@ -38,8 +39,7 @@ export CC
 export CC_FLAGS
 export MPICC
 export MPICC_FLAGS
-export OMPICC
-export OMPICC_FLAGS
+export MPI_VERSION
 export ROOTDIR
 export SRCDIR
 export DESTDIR
@@ -65,7 +65,6 @@ export DB_LDFLAGS
 export CHOWN_USR
 export CHOWN_GRP
 export CONSTANTS
-export VERSION
 
 ######## RULES
 

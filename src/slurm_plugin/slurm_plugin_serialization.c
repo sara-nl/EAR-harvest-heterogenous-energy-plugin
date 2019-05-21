@@ -29,6 +29,7 @@
 
 #include <pwd.h>
 #include <grp.h>
+#include <common/file.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
@@ -430,24 +431,27 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	 * LD_PRELOAD
 	 */
 	#if !EAR_CORE
-	char ext[64];
+	char ext1[64];
+	char ext2[64];
 
-	if(getenv_agnostic(sp, Var.version.rem, ext, 64)) {
-		snprintf(ext, 64, "%s.so", ext);
+	if(getenv_agnostic(sp, Var.version.rem, ext1, 64)) {
+		snprintf(ext2, 64, "%s.so", ext1);
 	} else {
-		snprintf(ext, 64, "so");
+		snprintf(ext2, 64, "so");
 	}
 
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, 64);
 
 	// Appending libraries to LD_PRELOAD
 	if (sd->job.mpi) {
-		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH, ext);
+		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, OMPI_C_LIB_PATH, ext2);
 	} else {
-		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH, ext);
+		snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, IMPI_C_LIB_PATH, ext2);
 	}
 
-	setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
+	if (file_is_regular(buffer)) {
+		setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
+	}
 	#endif	
 
 	return ESPANK_SUCCESS;
