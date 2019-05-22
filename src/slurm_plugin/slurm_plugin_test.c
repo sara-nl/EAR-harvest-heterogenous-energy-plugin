@@ -55,6 +55,7 @@ typedef struct test_s {
 #define TF1	"2600000"
 #define TF2	"2400000"
 #define TF3	"2100000"
+#define TF4	"2155555"
 #define TP1	"1"
 #define TP2	"3"
 #define TP3	"5"
@@ -66,11 +67,12 @@ test_t test3 = { .learning = TP3, .p_state = TP3,                     .frequency
 test_t test4 = { .verbose = "3",  .policy = "MONITORING_ONLY",        .frequency = TF2 };
 test_t test5 = { .verbose = "4",  .policy = "MIN_TIME_TO_SOLUTION",   .frequency = TF2 };
 test_t test6 = { .verbose = "2",  .policy = "MIN_ENERGY_TO_SOLUTION", .frequency = TF3 };
-test_t test7 = { .policy_th = "0.2", .policy = "MIN_TIME_TO_SOLUTION"                  };
-test_t test8 = { .policy_th = "0.3", .policy = "MIN_TIME_TO_SOLUTION"                  };
-test_t test9 = { .path_trac = "/tmptr", .path_usdb = "/tmpus",   .path_temp = "/tmpte" };
-test_t test10 = { .tag = TA1                                                           };
-
+test_t test7 = { .verbose = "1",  .policy = "MONITORING_ONLY",        .frequency = TF4 };
+test_t test8 = { .policy_th = "0.2", .policy = "MIN_TIME_TO_SOLUTION"                  };
+test_t test9 = { .policy_th = "0.3", .policy = "MIN_TIME_TO_SOLUTION"                  };
+test_t test10 = { .path_trac = "/tmptr", .path_usdb = "/tmpus",  .path_temp = "/tmpte" };
+test_t test11 = { .tag = "invalid"                                                     };
+test_t test12 = { .tag = TA1                                                           };
 
 static void fake_build(spank_t sp)
 {
@@ -132,6 +134,37 @@ static void option_build(spank_t sp, test_t *test)
 	}
 }
 
+void plug_test_build(spank_t sp)
+{
+	plug_verbose(sp, 2, "function plug_test_build");
+
+	int test;
+
+	//
+	test = plug_component_isenabled(sp, Component.test);
+
+	// Simulating sbatch variables inheritance
+	fake_build(sp);
+
+	// Simulating option variables
+	switch (test) {
+		case 1: option_build(sp, &test1); break;
+		case 2: option_build(sp, &test2); break;
+		case 3: option_build(sp, &test3); break;
+		case 4: option_build(sp, &test4); break;
+		case 5: option_build(sp, &test5); break;
+		case 6: option_build(sp, &test6); break;
+		case 7: option_build(sp, &test7); break;
+		case 8: option_build(sp, &test8); break;
+		case 9: option_build(sp, &test9); break;
+		case 10: option_build(sp, &test10); break;
+		case 11: option_build(sp, &test11); break;
+		case 12: option_build(sp, &test12); break;
+		case 13: option_build(sp, &test13); break;
+		default: return;
+	}
+}
+
 static int option_compare(spank_t sp, char *var, char *res)
 {
 	if (plug_verbosity_test(sp, 3))
@@ -172,37 +205,21 @@ static int option_result(spank_t sp, test_t *test)
 	return ESPANK_SUCCESS;
 }
 
-void plug_test_build(spank_t sp)
+void option_result_custom(spank_t sp, test_t *test, int num)
 {
-	plug_verbose(sp, 2, "function plug_test_build");
-
-	int test;
-
-	//
-	test = plug_component_isenabled(sp, Component.test);
-	
-	// Simulating sbatch variables inheritance
-	fake_build(sp);
-
-	// Simulating option variables
 	switch (test) {
-		case 1: option_build(sp, &test1); break;
-		case 2: option_build(sp, &test2); break;
-		case 3: option_build(sp, &test3); break;
-		case 4: option_build(sp, &test4); break;
-		case 5: option_build(sp, &test5); break;
-		case 6: option_build(sp, &test6); break;
-		case 7: option_build(sp, &test7); break;
-		case 8: option_build(sp, &test8); break;
-		case 9: option_build(sp, &test9); break;
-		case 10: option_build(sp, &test10); break;
-		default: return;
+		case 11:
+			if (!getenv_agnostic(sp, Var.tag.ear, buffer1, SZ_PATH)) {
+				return ESPANK_SUCCESS;
+			}
+			break;
 	}
+	return ESPANK_ERROR;
 }
 
 void plug_test_result(spank_t sp)
 {
-        plug_verbose(sp, 2, "function plug_test_result");
+	plug_verbose(sp, 2, "function plug_test_result");
 
 	int result;
 	int test;
@@ -218,16 +235,19 @@ void plug_test_result(spank_t sp)
 
 	//
 	switch (test) {
-		case 1: result = option_result(sp, &test1); break;
-		case 2: result = option_result(sp, &test2); break;
-		case 3: result = option_result(sp, &test3); break;
-		case 4: result = option_result(sp, &test4); break;
-		case 5: result = option_result(sp, &test5); break;
-		case 6: result = option_result(sp, &test6); break;
-		case 7: result = option_result(sp, &test7); break;
-		case 8: result = option_result(sp, &test8); break;
-		case 9: result = option_result(sp, &test9); break;
+		case 1:  result = option_result(sp, &test1); break;
+		case 2:  result = option_result(sp, &test2); break;
+		case 3:  result = option_result(sp, &test3); break;
+		case 4:  result = option_result(sp, &test4); break;
+		case 5:  result = option_result(sp, &test5); break;
+		case 6:  result = option_result(sp, &test6); break;
+		case 7:  result = option_result(sp, &test7); break;
+		case 8:  result = option_result(sp, &test8); break;
+		case 9:  result = option_result(sp, &test9); break;
 		case 10: result = option_result(sp, &test10); break;
+		case 11: result = option_result_custom(sp, &test11, 11); break;
+		case 12: result = option_result(sp, &test12); break;
+		case 13: result = option_result(sp, &test13); break;
 		default: return;
 	}
 
