@@ -105,8 +105,8 @@ void usage(char *app)
         "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
         "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
         "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
-        "\t-i eardbd_name|all \t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
-        "\t-g [seconds]      \t shows the contents of MySQL's Global_energy table. The default option will show the records for the two previous T2 periods of EARGM. \n\t\t\t\t\tYou can specify the amount of seconds from now that you want the records to be shown\n."
+        "\t-i eardbd_name|all\t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
+        "\t-g                \t shows the contents of EAR's database Global_energy table. The default option will show the records for the two previous T2 periods of EARGM.\n"
         "\t-h                \t shows this message.\n");
 	exit(1);
 }
@@ -366,6 +366,9 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
                 else
                     printf("%12s ", row[i] ? row[i] : "NULL");
             }
+            if (row[0] && all_nodes) { //when getting energy we compute the avg_power
+                printf("%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+            }
             printf("\n");
     	}
         if (!has_records)
@@ -383,7 +386,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
         } else if (!strcmp(inc_query, ALL_TAGS)) {
             printf( "%15s %15s\n", "Energy (J)", "Energy tag");
         } else if (global_end_time > 0) {
-            printf( "%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power");
+                printf( "%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power");
             all_nodes = 1;
         }
         else {
@@ -564,7 +567,10 @@ void main(int argc,char *argv[])
     else if (all_tags)
         print_all(connection, start_time, end_time, ALL_TAGS, PER_METRIC_TYPE);
     else if (all_eardbds)
+    {
+        compute_pow(connection, start_time, end_time, 0);
         print_all(connection, start_time, end_time, ALL_ISLANDS, PER_METRIC_TYPE);
+    }
     
     mysql_close(connection);
     free_cluster_conf(&my_conf);
