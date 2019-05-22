@@ -27,13 +27,16 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <dirent.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
-#define SRUN_OPTIONS	9
+#define SRUN_OPTIONS	10
 
 static char buffer[SZ_PATH];
+static char mpi_opt[SZ_PATH];
+static char mpi_dst[SZ_PATH];
 
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
@@ -57,6 +60,9 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
 	  1, 0, (spank_opt_cb_f) _opt_ear_user_db
 	},
+	{ "ear-mpi-dist", "dist", mpi_opt,
+	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
+	},
 	{ "ear-verbose", "value", "Specifies the level of the verbosity\n" \
 	  "{value=[0..5]}; default is 0",
 	  1, 0, (spank_opt_cb_f) _opt_ear_verbose
@@ -73,12 +79,74 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	}
 };
 
-int _opt_register(spank_t sp)
+static int _opt_register_mpi(spank_t sp, int ac, char **av)
+{
+        plug_verbose(sp, 2, "function _opt_dir");
+        struct dirent *file;
+        DIR *dir;
+	
+	char *tok1;
+	char *tok2;
+	char *tok3;
+	char *p;
+        int i;
+	int l;
+	int d;
+	
+	// Filing a default option string
+	l = sprintf(mpi_dst, "default,");
+	p = &mpi_dst[l];
+	
+        for (i = 0, d = 0; i < ac; ++i)
+        {
+                if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
+                {
+			sprintf(buffer, "%s/lib/", &av[i][7]);
+                        dir = opendir(buffer);
+
+                        if (dir)
+                        {
+			while ((file = readdir(dir)) != NULL)
+			{
+				if (strstr(file->d_name, "libear.") != NULL)
+				{
+					tok1 = strtok(file->d_name, ".");
+					tok2 = strtok(NULL, ".");
+					tok3 = strtok(NULL, ".");
+
+					if (tok3 != NULL) { 
+                                       		l  = sprintf(p, "%s,", tok2);
+						p  = &p[l];
+						d += 1;
+					}
+				}
+			}
+		
+			closedir(dir);
+                        }
+                }
+        }
+
+	// Cleaning the last comma	
+	p = &p[-1];
+	*p = '\0';
+	
+	// Filling the option string with distribution options
+	sprintf(mpi_opt, "Selects the MPI distribution for compatibility of your application {dist=%s}", mpi_dst);
+        
+	return ESPANK_SUCCESS;
+}
+
+int _opt_register(spank_t sp, int ac, char **av)
 {
 	spank_err_t s;
 	int length;
 	int i;
 
+	//
+	_opt_register_mpi(sp, ac, av);
+
+	//
 	length = SRUN_OPTIONS - !exenv_agnostic(sp, "EAR_GUI");
 
 	for (i = 0; i < length; ++i)
@@ -273,6 +341,25 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 	}
 
 	return ESPANK_SUCCESS;
+}
+
+int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
+{
+	plug_verbose(NULL, 2, "function _opt_mpi_dist");
+
+	if (!remote)
+	{
+		if (optarg == NULL) {
+			return (ESPANK_BAD_ARG);
+		}
+
+		if (strcmp(optarg, "default") != 0) {
+			setenv_agnostic(NULL, Var.version.loc, optarg, 1);
+		}
+		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+	}
+
+	return (ESPANK_SUCCESS);
 }
 
 int _opt_ear_tag(int val, const char *optarg, int remote)

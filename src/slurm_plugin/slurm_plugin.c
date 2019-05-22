@@ -47,7 +47,7 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
 
-	_opt_register(sp);
+	_opt_register(sp, ac, av);
 
 	return ESPANK_SUCCESS;
 }
