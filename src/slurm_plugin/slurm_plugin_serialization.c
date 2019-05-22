@@ -418,9 +418,11 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	if (getenv_agnostic(sp, Var.name_app.rem, buffer, sizeof(buffer)) == 1) {
 		setenv_agnostic(sp, Var.name_app.ear, buffer, 1);
 	}
-	if (getenv_agnostic(sp, Var.path_temp.rem, buffer, sizeof(buffer)) == 1) {
-		setenv_agnostic(sp, Var.path_temp.ear, buffer, 1);
-	}
+
+	/*
+	 * EAR_ETC
+	 */
+	setenv_agnostic(sp, Var.path_temp.ear, sd->pack.path_temp, 1);
 
 	/*
 	 * LD_PRELOAD
