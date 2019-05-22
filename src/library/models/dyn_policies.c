@@ -44,7 +44,7 @@
 #include <library/models/dyn_policies.h>
 
 
-void set_policy_monitoring(policy_t *pol)
+void set_policy_monitoring(policy_dyn_t *pol)
 {
       pol->init=monitoring_init;
       pol->new_loop=monitoring_new_loop;
@@ -53,6 +53,7 @@ void set_policy_monitoring(policy_t *pol)
       pol->policy_ok=monitoring_policy_ok;
       pol->default_conf=monitoring_default_conf;
 }
+
 
 void *check_symbol(void * handler,char *sym_name)
 {
@@ -66,7 +67,7 @@ void *check_symbol(void * handler,char *sym_name)
 	return f;
 }
 
-void copy_policy_ops(policy_t *dest,policy_t *src)
+void copy_policy_ops(policy_dyn_t *dest,policy_dyn_t *src)
 {
 	dest->init=src->init;
 	dest->new_loop=src->new_loop;
@@ -76,10 +77,10 @@ void copy_policy_ops(policy_t *dest,policy_t *src)
 	dest->default_conf=src->default_conf;
 }
 
-int load_policy(policy_t *my_policy,char *policy_name)
+int load_policy(policy_dyn_t *my_policy,char *policy_name)
 {
 	void    *policy_file;
-	policy_t tmp_policy;
+	policy_dyn_t tmp_policy;
 	char *last_error;
 	set_policy_monitoring(my_policy);
 	/* Check file is ok */
@@ -90,13 +91,13 @@ int load_policy(policy_t *my_policy,char *policy_name)
 	}
 	/* Check symbols */
 	*(void **) (&tmp_policy.init)=check_symbol(policy_file,"init");
+	if (tmp_policy.init==NULL) return EAR_ERROR;
 	*(void **) (&tmp_policy.new_loop)=check_symbol(policy_file,"new_loop");
 	*(void **) (&tmp_policy.end_loop)=check_symbol(policy_file,"end_loop");
 	*(void **) (&tmp_policy.policy)=check_symbol(policy_file,"policy");
 	*(void **) (&tmp_policy.policy_ok)=check_symbol(policy_file,"policy_ok");
 	*(void **) (&tmp_policy.default_conf)=check_symbol(policy_file,"default_conf");
-	if ((tmp_policy.init==NULL) || (tmp_policy.new_loop==NULL)||(tmp_policy.end_loop==NULL)||(tmp_policy.policy==NULL)||(tmp_policy.policy_ok==NULL)||(tmp_policy.default_conf==NULL)) return EAR_ERROR;
-	else copy_policy_ops(my_policy,&tmp_policy);
+	copy_policy_ops(my_policy,&tmp_policy);
 	return EAR_SUCCESS;
 }
 	
