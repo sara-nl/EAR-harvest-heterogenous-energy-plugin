@@ -106,7 +106,7 @@ void usage(char *app)
         "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
         "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
         "\t-i eardbd_name|all\t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
-        "\t-g                \t shows the contents of EAR's database Global_energy table. The default option will show the records for the two previous T2 periods of EARGM.\n"
+        "\t-g                \t shows the contents of EAR's database Global_energy table. The default option will show the records for the two previous T2 periods of EARGM.\n\t\t\t\t\t This option can only be modified with -s, not -e\n"
         "\t-h                \t shows this message.\n");
 	exit(1);
 }
@@ -324,7 +324,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
     char all_nodes = 0;
 
     if (type == GLOBAL_ENERGY_TYPE)
-        sprintf(query, inc_query, end_time);
+        sprintf(query, inc_query, end_time-start_time);
     else
         sprintf(query, inc_query, start_time, end_time);
 
@@ -499,7 +499,10 @@ void main(int argc,char *argv[])
                 time_period = my_conf.eargm.t2*2;
                 if (optind < argc && strchr(argv[optind], '-') == NULL)
                     time_period = atoi(argv[optind]);
-                print_all(connection, start_time, time_period, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
+                if (start_time > 0)
+                    print_all(connection, start_time, end_time, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
+                else
+                    print_all(connection, start_time, time_period, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
                 mysql_close(connection);
                 free_cluster_conf(&my_conf);
                 exit(0);
