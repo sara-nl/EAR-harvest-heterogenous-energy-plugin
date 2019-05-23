@@ -26,8 +26,6 @@ ifdef SLURM_BASE
 	COMPONENTS += slurm_plugin
 endif
 
-COMPONENTS = common control database_cache metrics daemon commands tests library tools global_manager slurm_plugin
-
 ######## RULES
 
 .PHONY: check
