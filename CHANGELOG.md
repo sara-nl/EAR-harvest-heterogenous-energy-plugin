@@ -13,4 +13,5 @@
 - ereport now has a filter for eadbds/islands
 - eard_rapi new_job and end_job calls are now non-blocking
 - ereport now has an option to report Global_energy records
+- ereport -i "all" option now also reports avg power
 

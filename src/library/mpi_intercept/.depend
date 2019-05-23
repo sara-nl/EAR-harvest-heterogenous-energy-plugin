@@ -1,21 +1,24 @@
 freq_synchro.o: freq_synchro.c ../../common/config.h \
  ../../common/config/config_def.h ../../common/config/config_dev.h \
  ../../common/config/config_install.h ../../common/output/verbose.h \
- ../../common/output/output_conf.h ../../library/common/externs.h \
+ ../../common/output/output_conf.h ../../common/output/debug.h \
+ ../../common/output/error.h ../../library/common/externs.h \
  ../../common/types/application.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
  ../../common/types/power_signature.h ../../common/types/loop.h \
  ../../daemon/shared_configuration.h \
- ../../common/types/configuration/cluster_conf.h \
+ ../../common/types/configuration/cluster_conf.h ../../common/states.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/states.h \
- ../../common/types/coefficient.h
-process_MPI.o: process_MPI.c ../../library/mpi_intercept/ear_api.h \
+ ../../common/string_enhanced.h ../../common/types/coefficient.h
+process_MPI.o: process_MPI.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h \
+ ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
  ../../library/mpi_intercept/MPI_calls_coded.h
-MPI_intercept.o: MPI_intercept.c MPI_interface.h
 MPI_interceptF.o: MPI_interceptF.c MPI_interfaceF.h
+MPI_intercept.o: MPI_intercept.c MPI_interface.h
 MPI_interface.o: MPI_interface.c process_MPI.h \
  ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
  MPI_interface.h

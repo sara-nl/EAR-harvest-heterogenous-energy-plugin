@@ -27,19 +27,20 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_SLURM_PLUGIN_OPTIONS_H
-#define EAR_SLURM_PLUGIN_OPTIONS_H
+#ifndef EAR_SLURM_PLUGIN_REPORTS_H
+#define EAR_SLURM_PLUGIN_REPORTS_H
 
-int _opt_register(spank_t sp, int ac, char **av);
-int _opt_ear (int val, const char *optarg, int remote);
-int _opt_ear_learning (int val, const char *optarg, int remote);
-int _opt_ear_policy (int val, const char *optarg, int remote);
-int _opt_ear_frequency (int val, const char *optarg, int remote);
-int _opt_ear_threshold (int val, const char *optarg, int remote);
-int _opt_ear_user_db (int val, const char *optarg, int remote);
-int _opt_ear_verbose (int val, const char *optarg, int remote);
-int _opt_ear_traces (int val, const char *optarg, int remote);
-int _opt_ear_mpi_dist (int val, const char *optarg, int remote);
-int _opt_ear_tag (int val, const char *optarg, int remote);
+#include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_environment.h>
 
-#endif //EAR_SLURM_PLUGIN_OPTIONS_H
+int plug_shared_readservs(spank_t sp, plug_serialization_t *sd);
+int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd);
+int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd);
+
+int plug_rcom_eard_job_start(spank_t sp, plug_serialization_t *sd);
+int plug_rcom_eard_job_finish(spank_t sp, plug_serialization_t *sd);
+
+int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd);
+int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd);
+
+#endif //EAR_SLURM_PLUGIN_REPORTS_H

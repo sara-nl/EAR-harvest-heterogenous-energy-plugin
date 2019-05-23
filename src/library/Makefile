@@ -9,17 +9,16 @@ export LDFLAGS
 
 ########
 
-ifdef MPICC
-libs_BINS += libear.so
-libs_PATH  = $(DESTDIR)/lib
-impi_OBJS  = all.impi.components libear.so
-libs_PERM  = 0755
+ifdef MPI_VERSION
+ext = ${MPI_VERSION}.so
+else
+ext = so
 endif
 
-ifdef OMPICC
-libs_BINS += libear_ompi.so
+ifdef MPICC
+libs_BINS += libear.$(ext)
 libs_PATH  = $(DESTDIR)/lib
-ompi_OBJS  = all.ompi.components libear_ompi.so
+libs_OBJS  = all.components libear.so
 libs_PERM  = 0755
 endif
 
@@ -31,7 +30,7 @@ comm_OBJS = $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/daemon/shared_configuration.o \
     $(SRCDIR)/common/libcommon.a
 
-xmpi_OBJS = \
+mpix_OBJS = \
     metrics/metrics.o \
     models/models.o \
     models/min_time.o \
@@ -48,22 +47,18 @@ xmpi_OBJS = \
     dynais/dynais.a
 #    models/dyn_policies.o \
 
-MPIC_OBJS = mpi_intercept/MPI_intercept.o \
+mpic_OBJS = mpi_intercept/MPI_intercept.o \
     mpi_intercept/MPI_interface.o
 	
-MPIF_OBJS = mpi_intercept/MPI_interceptF.o \
+mpif_OBJS = mpi_intercept/MPI_interceptF.o \
     mpi_intercept/MPI_interfaceF.o
 
 ######## RULES
 
-all: all.gnrc.components $(impi_OBJS) $(ompi_OBJS)
+all: all.components $(libs_OBJS)
 
-%.ompi.so: $(xmpi_OBJS) $(comm_OBJS)
-	$(OMPICC) $(OMPICC_FLAGS) $(CFLAGS) -o $*_ompi.so $(xmpi_OBJS) $(MPIC_OBJS) \
-	$(MPIF_OBJS) $(comm_OBJS) $(LDFLAGS)
-
-%.so: $(xmpi_OBJS) $(comm_OBJS)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.so $(xmpi_OBJS) $(MPIC_OBJS) \
+%.so: $(mpix_OBJS) $(comm_OBJS)
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.$(ext) $(mpix_OBJS) $(mpic_OBJS) \
 	$(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
@@ -72,29 +67,22 @@ install: libs.ginstall;
 
 %.install: ;
 
-clean: clean.gnrc.components clean.impi.components rclean;
+clean: clean.components rclean;
 
 ######## SUBFOLDERS
 
-%.gnrc.components:
+%.components:
 	@ $(MAKE) -C 'dynais' $* || exit
 	@ $(MAKE) -C 'metrics' $* || exit
 	@ $(MAKE) -C 'models' $* || exit
-
-%.impi.components:
 	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'states' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'tracer' $* MPICC='$(MPICC)' || exit
 
-%.ompi.components:
-	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(OMPICC)' || exit
-	@ $(MAKE) -B -C 'states' $* MPICC='$(OMPICC)' || exit
-	@ $(MAKE) -B -C 'tracer' $* MPICC='$(OMPICC)' || exit
-
 ######## DEPENDENCIES
 
-depend: depend.gnrc.components depend.impi.components;
+depend: depend.components;
 
-depend-clean: depend-clean.gnrc.components depend-clean.impi.components
+depend-clean: depend-clean.components;
 
 include $(SRCDIR)/Makefile.extra

@@ -27,19 +27,47 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_SLURM_PLUGIN_OPTIONS_H
-#define EAR_SLURM_PLUGIN_OPTIONS_H
+#include <slurm_plugin/slurm_plugin_rcom.h>
 
-int _opt_register(spank_t sp, int ac, char **av);
-int _opt_ear (int val, const char *optarg, int remote);
-int _opt_ear_learning (int val, const char *optarg, int remote);
-int _opt_ear_policy (int val, const char *optarg, int remote);
-int _opt_ear_frequency (int val, const char *optarg, int remote);
-int _opt_ear_threshold (int val, const char *optarg, int remote);
-int _opt_ear_user_db (int val, const char *optarg, int remote);
-int _opt_ear_verbose (int val, const char *optarg, int remote);
-int _opt_ear_traces (int val, const char *optarg, int remote);
-int _opt_ear_mpi_dist (int val, const char *optarg, int remote);
-int _opt_ear_tag (int val, const char *optarg, int remote);
+// Buffers
+static char buffer[SZ_PATH];
 
-#endif //EAR_SLURM_PLUGIN_OPTIONS_H
+static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
+{
+	int port = sd->pack.eard.servs.eard.port;
+	char *node;
+
+	while ((node = slurm_hostlist_shift(sd->pack.eard.hostlist)) != NULL)
+	{
+		plug_verbose(sp, 2, "connecting to EARD: '%s:%d'", node, port);
+
+		if (eards_remote_connect(node, port) < 0) {
+			plug_error(sp, "while connecting with EAR daemon");
+			continue;
+		}
+
+		if (new_job) {
+			eards_new_job(&sd->job.app);
+		} else {
+			eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
+		}
+
+		eards_remote_disconnect();
+		free(node);
+	}
+
+	return ESPANK_SUCCESS;
+}
+
+
+int plug_rcom_eard_job_start(spank_t sp, plug_serialization_t *sd)
+{
+	plug_verbose(sp, 2, "function plug_rcom_eard_job_start");
+	return plug_rcom_eard(sp, sd, 1);
+}
+
+int plug_rcom_eard_job_finish(spank_t sp, plug_serialization_t *sd)
+{
+	plug_verbose(sp, 2, "function plug_rcom_eard_job_finish");
+	return plug_rcom_eard(sp, sd, 0);
+}

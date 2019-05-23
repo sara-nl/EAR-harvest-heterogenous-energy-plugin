@@ -1,8 +1,8 @@
 generics.o: generics.c ../../common/output/debug.h \
  ../../common/output/verbose.h ../../common/output/output_conf.h \
  ../../metrics/papi/generics.h
-stalls.o: stalls.c ../../metrics/papi/generics.h \
- ../../metrics/papi/stalls.h ../../common/output/verbose.h \
+instructions.o: instructions.c ../../metrics/papi/generics.h \
+ ../../metrics/papi/instructions.h ../../common/output/verbose.h \
  ../../common/output/output_conf.h
 flops.o: flops.c ../../common/config.h ../../common/config/config_def.h \
  ../../common/config/config_dev.h ../../common/config/config_install.h \
@@ -12,8 +12,8 @@ flops.o: flops.c ../../common/config.h ../../common/config/config_def.h \
  ../../metrics/common/syscall.h ../../metrics/papi/flops.h \
  ../../common/environment.h ../../common/output/verbose.h \
  ../../common/output/output_conf.h ../../common/output/error.h
-instructions.o: instructions.c ../../metrics/papi/generics.h \
- ../../metrics/papi/instructions.h ../../common/output/verbose.h \
+stalls.o: stalls.c ../../metrics/papi/generics.h \
+ ../../metrics/papi/stalls.h ../../common/output/verbose.h \
  ../../common/output/output_conf.h
 cache.o: cache.c ../../metrics/papi/cache.h ../../metrics/papi/generics.h \
  ../../metrics/custom/hardware_info.h ../../common/file.h \
