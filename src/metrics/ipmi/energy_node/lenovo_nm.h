@@ -31,19 +31,20 @@
 
 #ifndef _LENOVO_AIR_COOLING_H_
 #define _LENOVO_AIR_COOLING_H_
+#include <freeipmi/freeipmi.h>
 /** Specific functions for CPU XX PLATFORM YY
 *   Grants access to ipmi device */
-int lenovo_act_node_energy_init();
-int lenovo_act_count_energy_data_length();
-int lenovo_act_read_dc_energy(unsigned long *energy);
-int lenovo_act_read_dc_energy_time(ulong *energy,ulong *ms);
-int lenovo_act_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms);
+int lenovo_act_node_energy_init(ipmi_ctx_t *ipmi_ctx);
+int lenovo_act_count_energy_data_length(ipmi_ctx_t ipmi_ctx);
+int lenovo_act_read_dc_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy);
+int lenovo_act_read_dc_energy_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *ms);
+int lenovo_act_read_dc_energy_and_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms);
 
 /** AC energy is not yet supported */
-int lenovo_act_read_ac_energy(unsigned long *energy);
+int lenovo_act_read_ac_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy);
 
 /** Release access to ipmi device */
-int lenovo_act_node_energy_dispose();
+int lenovo_act_node_energy_dispose(ipmi_ctx_t *ipmi_ctx);
 
 
 #else

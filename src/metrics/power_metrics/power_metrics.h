@@ -67,10 +67,10 @@ typedef struct power_data{
 int init_power_ponitoring(energy_handler_t *eh);
 
 /** Ends power monitoring */
-void end_power_monitoring(energy_handler_t eh);
+void end_power_monitoring(energy_handler_t *eh);
 
 /** Energy is returned in mili Joules */
-int read_enegy_data(energy_handler_t eh,energy_data_t *acc_energy);
+int read_enegy_data(energy_handler_t *eh,energy_data_t *acc_energy);
 
 /** Computes the difference between two energy measurements */
 int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff);

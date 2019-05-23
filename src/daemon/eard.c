@@ -79,7 +79,7 @@
 pthread_t app_eard_api_th;
 #endif
 
-static energy_handler_t my_eh;
+static energy_handler_t main_eh;
 unsigned int power_mon_freq=POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
@@ -302,7 +302,7 @@ void connect_service(int req,application_t *new_app)
                 eard_close_comm();
             }
             // We must modify the client api to send more information
-			powermon_mpi_init(new_app);
+					powermon_mpi_init(&main_eh,new_app);
 
         	debug("sending ack for service %d",req);
         	if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
@@ -408,7 +408,9 @@ void eard_exit(uint restart)
 
 	verbose(VCONF,"Releasing node resources");
 	// More disposes
-	node_energy_dispose(my_eh);
+	if (node_energy_dispose(&main_eh)!=EAR_SUCCESS){
+		error("Error disposing energy for eard");
+	}
 	dispose_uncores();
 	aperf_dispose();
     // Database cache daemon disconnect
@@ -495,7 +497,7 @@ void eard_close_comm()
 	close(ear_ping_fd);
 
 	// We must send the app signature to the powermonitoring thread
-	powermon_mpi_finalize();
+	powermon_mpi_finalize(&main_eh);
 
 	application_id = -1;
 	ear_ping_fd = -1;
@@ -520,11 +522,11 @@ int eard_node_energy(int must_read)
 			connect_service(node_energy_req,&req.req_data.app);
 			break;
         case READ_DC_ENERGY:
-						read_dc_energy_try(my_eh,&ack);
+						read_dc_energy_try(&main_eh,&ack);
             write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
             break;
 		case DATA_SIZE_ENERGY_NODE:
-					ack=(unsigned long)count_energy_data_length(my_eh);
+					ack=(unsigned long)count_energy_data_length(&main_eh);
           write(ear_fd_ack[node_energy_req],&ack,sizeof(unsigned long));
 			break;
 		case ENERGY_FREQ:
@@ -1351,10 +1353,10 @@ void main(int argc,char *argv[])
 	start_rapl_metrics();
 	#endif
 	// We initilize energy_node
-	if (node_energy_init(&my_eh)<0){
+	if (node_energy_init(&main_eh)!=EAR_SUCCESS){
 		warning("node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 	}
-	energy_freq=node_energy_frequency(my_eh);
+	energy_freq=node_energy_frequency(&main_eh);
 	verbose(VCONF,"eard suggested time between for power performance accuracy us %lu usec.\n",energy_freq);
 	
 

@@ -49,6 +49,7 @@
 
 static char app_to_eard[MAX_PATH_SIZE];
 static char eard_to_app[MAX_PATH_SIZE];
+static char *TH_NAME="No-EARL_API";
 
 static int fd_app_to_eard=-1;
 static int fd_eard_to_app=-1;
@@ -67,7 +68,7 @@ static int numfds_req;
 
 extern cluster_conf_t my_cluster_conf;
 extern int eard_must_exit;
-static energy_handler_t my_eh;
+static energy_handler_t my_eh_app_api;
 
 /*********************************************************/
 /***************** PRIVATE FUNCTIONS in this module ******/
@@ -334,7 +335,9 @@ void ear_energy(int fd_out)
 	debug("ear_energy command\n");
 	energy_mj=0;time_ms=0;
 
-	read_dc_energy_time_try(my_eh,&energy_mj,&time_ms);
+	if (read_dc_energy_time_try(&my_eh_app_api,&energy_mj,&time_ms)!=EAR_SUCCESS){
+		error("Error reading energy in %s thread",TH_NAME);
+	}
 
 	#if 0
 	/* Create connection */
@@ -381,7 +384,9 @@ void ear_energy_debug(int fd_out)
                 data.my_data.my_energy.os_time_ms=tspec.tv_nsec/1000000;
         }
 				energy_j=0;energy_mj=0;time_sec=0;time_ms=0;
-        read_dc_energy_time_debug_try(my_eh,&energy_j,&energy_mj,&time_sec,&time_ms);
+        if (read_dc_energy_time_debug_try(&my_eh_app_api,&energy_j,&energy_mj,&time_sec,&time_ms)!=EAR_SUCCESS){
+					error("Error reading energy in %s thread",TH_NAME);
+				}
 
 		#if 0
         /* Create connection */
@@ -478,10 +483,15 @@ void *eard_non_earl_api_service(void *noinfo)
 	int max_fd,i;
 
 	app_api_set_sigterm();
+	if (pthread_setname_np(pthread_self(),TH_NAME)) error("Setting name for %s thread %s",TH_NAME,strerror(errno));
+	if (node_energy_init(&my_eh_app_api)!=EAR_SUCCESS){
+		error("Error initializing node_energy_init in No-EARL_API thread");
+		pthread_exit(0);
+	}
 
 	/* Create connections */
 	if (create_app_connection(my_cluster_conf.tmp_dir)!= EAR_SUCCESS){ 
-		verbose(0,"Error creating files for non-EARL requests\n");
+		error("Error creating files for non-EARL requests\n");
 		pthread_exit(0);
 	}
 	FD_ZERO(&rfds);
@@ -491,8 +501,6 @@ void *eard_non_earl_api_service(void *noinfo)
     numfds_req=max_fd+1;
 	rfds_basic=rfds;
 
-	/* Initializing energy */
-	node_energy_init(&my_eh);
 	/* Wait for messages */
 	verbose(0,"Waiting for non-earl requestst\n");
 	while ((eard_must_exit==0) && (numfds_ready=select(numfds_req,&rfds,NULL,NULL,NULL))>=0){
@@ -510,7 +518,7 @@ void *eard_non_earl_api_service(void *noinfo)
 		rfds=rfds_basic;	
 	}
 	/* Close and remove files , never reached if thread is killed */
-	node_energy_dispose(my_eh);
+	node_energy_dispose(&my_eh_app_api);
 	dispose_app_connection();
 	pthread_exit(0);
 }

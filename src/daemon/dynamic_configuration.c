@@ -40,6 +40,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <linux/limits.h>
+
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -70,6 +71,9 @@ static uint num_f;
 int last_command = -1;
 int last_dist = -1;
 int last_command_time = -1;
+
+static char *TH_NAME="RemoteAPI";
+static energy_handler_t my_eh_rapi;
 
 void print_f_list(uint p_states,ulong *freql)
 {
@@ -146,7 +150,7 @@ int dynconf_inc_th(uint p_id,ulong th)
 		}
 	}
 	powermon_inc_th(p_id,dth);
-    return EAR_SUCCESS;
+  return EAR_SUCCESS;
 
 }
 
@@ -333,10 +337,10 @@ void process_remote_requests(int clientfd)
 		case EAR_RC_NEW_JOB:
 			verbose(VRAPI,"*******************************************\n");
 			verbose(VRAPI,"new_job command received %d\n",command.my_req.new_job.job.id);
-			powermon_new_job(&command.my_req.new_job,0);		
+			powermon_new_job(&my_eh_rapi,&command.my_req.new_job,0);		
 			break;
 		case EAR_RC_END_JOB:
-			powermon_end_job(command.my_req.end_job.jid,command.my_req.end_job.sid);
+			powermon_end_job(&my_eh_rapi,command.my_req.end_job.jid,command.my_req.end_job.sid);
 			verbose(VRAPI,"end_job command received %d\n",command.my_req.end_job.jid);
 			verbose(VRAPI,"*******************************************\n");
 			break;
@@ -399,9 +403,12 @@ void * eard_dynamic_configuration(void *tmp)
 	my_tmp=(char *)tmp;
 	int change=0;
 	
-	verbose(VRAPI,"eard_dynamic_configuration thread created\n");
+	verbose(VRAPI,"RemoteAPI thread created\n");
 
 	DC_set_sigusr1();
+	if (pthread_setname_np(pthread_self(),TH_NAME)) error("Setting name for %s thread %s",TH_NAME,strerror(errno));
+
+	if (node_energy_init(&my_eh_rapi)!=EAR_SUCCESS) error("Error initializing energy node in %s thread",TH_NAME);
 
 	num_f=frequency_get_num_pstates();
 	f_list=frequency_get_freq_rank_list();

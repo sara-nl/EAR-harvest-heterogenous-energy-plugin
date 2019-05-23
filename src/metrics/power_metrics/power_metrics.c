@@ -65,7 +65,7 @@ int pm_get_data_size_rapl()
 		//return eards_get_data_size_rapl();
 	}
 }     
-void pm_disconnect(energy_handler_t my_eh)
+void pm_disconnect(energy_handler_t *my_eh)
 {
 	if (rootp){
 		node_energy_dispose(my_eh);
@@ -113,7 +113,7 @@ int pm_read_rapl(rapl_data_t *rm)
 		//return eards_read_rapl(rm);
 	}
 }            
-int pm_node_dc_energy(energy_handler_t my_eh,node_data_t *dc)
+int pm_node_dc_energy(energy_handler_t *my_eh,node_data_t *dc)
 {
 	if (rootp){
 		return read_dc_energy_try(my_eh,dc);
@@ -123,7 +123,7 @@ int pm_node_dc_energy(energy_handler_t my_eh,node_data_t *dc)
 		//return eards_node_dc_energy(dc);
 	}
 }
-int pm_node_ac_energy(energy_handler_t my_eh,node_data_t *ac)
+int pm_node_ac_energy(energy_handler_t *my_eh,node_data_t *ac)
 {
 	if (rootp){
 		return read_ac_energy(my_eh,ac);
@@ -259,7 +259,7 @@ int init_power_ponitoring(energy_handler_t *my_eh)
 	power_mon_connected=1;
 	return POWER_MON_OK;
 }
-void end_power_monitoring(energy_handler_t my_eh)
+void end_power_monitoring(energy_handler_t *my_eh)
 {
 	if (power_mon_connected) pm_disconnect(my_eh);
 	power_mon_connected=0;
@@ -274,7 +274,7 @@ void null_energy_data(energy_data_t *acc_energy)
 }
 
 
-int read_enegy_data(energy_handler_t my_eh,energy_data_t *acc_energy)
+int read_enegy_data(energy_handler_t *my_eh,energy_data_t *acc_energy)
 {
 	node_data_t ac=0,dc=0;
 	

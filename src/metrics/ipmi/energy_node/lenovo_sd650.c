@@ -49,40 +49,41 @@
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
-#define FUNCVERB(function)    debug( "ear_daemon(lenovo_wct) " function "\n");
 
+#if 0
 static ipmi_ctx_t ipmi_ctx = NULL;
+#endif
 static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
-static pthread_mutex_t energy_node_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t sd650_energy_node_lock = PTHREAD_MUTEX_INITIALIZER;
 
 
 /* Specific functions for CPU XX PLATFORM YY */
 /* Grants access to ipmi device */
-int lenovo_wct_node_energy_init()
+int lenovo_wct_node_energy_init(ipmi_ctx_t *ipmi_ctx)
 {
 	uid_t uid;
 	int ret=0;
 	unsigned int workaround_flags = 0;
-	FUNCVERB("lenovo_SD650");
+	debug("lenovo_SD650");
+	pthread_mutex_lock(&sd650_energy_node_lock);
 	//Creating the context
-	if (!(ipmi_ctx = ipmi_ctx_create ())){
-        error("lenovo_SD650:Error in ipmi_ctx_create %s\n",strerror(errno));
+	if (!(*ipmi_ctx = ipmi_ctx_create ())){
+    error("lenovo_SD650:Error in ipmi_ctx_create %s",strerror(errno));
+		pthread_mutex_unlock(&sd650_energy_node_lock);
 		return EAR_ERROR;
 	}
 	// Checking for root
 	uid = getuid ();
 	if (uid != 0){ 
-		error("lenovo_SD650: No root permissions\n");
-		// Close context
-		ipmi_ctx_close (ipmi_ctx);
-		// delete context
-		ipmi_ctx_destroy (ipmi_ctx);
+		lenovo_wct_node_energy_dispose(ipmi_ctx);
+		pthread_mutex_unlock(&sd650_energy_node_lock);
+		error("lenovo_SD650: No root permissions");
 		return EAR_ERROR;
 	}
 	// inband context
-	if ((ret = ipmi_ctx_find_inband (ipmi_ctx, 
+	if ((ret = ipmi_ctx_find_inband (*ipmi_ctx, 
 					NULL, // driver_type
 					0, //disable_auto_probe
 					0, // driver_address
@@ -90,19 +91,15 @@ int lenovo_wct_node_energy_init()
 					NULL, // driver_device
                     workaround_flags,
                     IPMI_FLAGS_DEFAULT)) < 0) {
-		error("lenovo_SD650: %s\n",strerror(errno));
-		// Close context
-		ipmi_ctx_close (ipmi_ctx);
-		// delete context
-		ipmi_ctx_destroy (ipmi_ctx);
+		error("lenovo_SD650: %s",ipmi_ctx_errormsg(*ipmi_ctx));
+		lenovo_wct_node_energy_dispose(ipmi_ctx);
+		pthread_mutex_unlock(&sd650_energy_node_lock);
 		return EAR_ERROR;	
 	}
 	if (ret==0){
-		error("lenovo_SD650: Not inband device found\n");
-		// Close context
-		ipmi_ctx_close (ipmi_ctx);
-		// delete context
-		ipmi_ctx_destroy (ipmi_ctx);
+		lenovo_wct_node_energy_dispose(ipmi_ctx);
+		pthread_mutex_unlock(&sd650_energy_node_lock);
+		error("lenovo_SD650: Not inband device found");
 		return EAR_ERROR;	
 	}
 	// This part is hardcoded since we are not supporting other commands rather than reading DC energy
@@ -110,20 +107,16 @@ int lenovo_wct_node_energy_init()
 	send_len=8;
 	if (!(bytes_rq = calloc (send_len, sizeof (uint8_t))))
 	{
-		error("lenovo_SD650: Allocating memory for request %s\n",strerror(errno));
-        // Close context
-        ipmi_ctx_close (ipmi_ctx);
-        // delete context
-        ipmi_ctx_destroy (ipmi_ctx);
+		error("lenovo_SD650: Allocating memory for request %s",strerror(errno));
+		lenovo_wct_node_energy_dispose(ipmi_ctx);
+		pthread_mutex_unlock(&sd650_energy_node_lock);
 		return EAR_ERROR;
 	}
 	if (!(bytes_rs = calloc (IPMI_RAW_MAX_ARGS, sizeof (uint8_t))))
 	{
-		error("lenovo_SD650: Allocating memory for recv data %s\n",strerror(errno));
-		// Close context
-		ipmi_ctx_close (ipmi_ctx);
-		// delete context
-		ipmi_ctx_destroy (ipmi_ctx);
+		error("lenovo_SD650: Allocating memory for recv data %s",strerror(errno));
+		lenovo_wct_node_energy_dispose(ipmi_ctx);
+		pthread_mutex_unlock(&sd650_energy_node_lock);
 		return EAR_ERROR;
 	}	
 	// Robert Wolford provided command: ipmitool raw 0x3a 0x32 4 1 0 0 0 --> low frequency command
@@ -160,29 +153,29 @@ int lenovo_wct_node_energy_init()
 
 #endif
 
-
+	pthread_mutex_unlock(&sd650_energy_node_lock);
 	return EAR_SUCCESS;	
 		
 }
-int lenovo_wct_count_energy_data_length()
+int lenovo_wct_count_energy_data_length(ipmi_ctx_t ipmi_ctx)
 {
-	FUNCVERB("lenovo_count_energy_data_length");
+	debug("lenovo_count_energy_data_length");
 	return sizeof(unsigned long);
 }
-int lenovo_wct_read_dc_energy(unsigned long *energy)
+int lenovo_wct_read_dc_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy)
 {
     uint32_t my_energy=0;
     uint16_t my_energy_mj=0;
 
     int rs_len;
     if (ipmi_ctx==NULL){
-        error("lenovo_fast/accurate meter: IPMI context not initiallized\n");
+        error("lenovo_fast/accurate meter: IPMI context not initiallized");
         return EAR_ERROR;
     }
-    FUNCVERB("lenovo_read_dc_energy");
+    debug("lenovo_read_dc_energy");
     // RAW CMD
     *energy=0;
-		if (pthread_mutex_trylock(&energy_node_lock)) return EAR_BUSY;
+		if (pthread_mutex_trylock(&sd650_energy_node_lock)) return EAR_BUSY;
     #define RAW_SIZE 14
     if ((rs_len = ipmi_cmd_raw (ipmi_ctx,
                               bytes_rq[0],
@@ -192,12 +185,12 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        error("lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
-				pthread_mutex_unlock(&energy_node_lock);
+				pthread_mutex_unlock(&sd650_energy_node_lock);
+        error("lenovo_fast/accurate meter: ipmi_cmd_raw fails %s",ipmi_ctx_errormsg(ipmi_ctx));
         return EAR_ERROR;
     }
-		pthread_mutex_unlock(&energy_node_lock);
     if (rs_len<(RAW_SIZE+2)){
+			pthread_mutex_unlock(&sd650_energy_node_lock);
       error("lenovo_read_dc_energy ipmi_cmd_raw returns not valid answer %d",rs_len);
       return EAR_ERROR;
     }   
@@ -224,21 +217,22 @@ int lenovo_wct_read_dc_energy(unsigned long *energy)
     // returns mJ (multiply by 1.000)
     *energy=(ulong)my_energy*1000+(ulong)my_energy_mj;
 
+		pthread_mutex_unlock(&sd650_energy_node_lock);
     return EAR_SUCCESS;;
 }
 
 /* AC energy is not yet supported */
-int lenovo_wct_read_ac_energy(unsigned long *energy)
+int lenovo_wct_read_ac_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy)
 {
 	*energy=0;
 	return EAR_SUCCESS;
 }
 #if DEBUG_WCT
 /** Energy and time is returned in a single ipmi command */
-int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,uint8_t *raw_out,ulong *seconds,ulong *ms)
+int lenovo_wct_read_dc_energy_and_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *energy_mj,uint8_t *raw_out,ulong *seconds,ulong *ms)
 #else
 /** Energy and time is returned in a single ipmi command */
-int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms)
+int lenovo_wct_read_dc_energy_and_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms)
 #endif
 {
     uint32_t my_energy=0;
@@ -248,10 +242,10 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
 
     int rs_len;
     if (ipmi_ctx==NULL){
-        error("lenovo_fast/accurate meter: IPMI context not initiallized\n");
+        error("lenovo_fast/accurate meter: IPMI context not initiallized");
         return EAR_ERROR;
     }
-    FUNCVERB("lenovo_read_dc_energy");
+    debug("lenovo_read_dc_energy");
     // RAW CMD
     *energy=0;
     *energy_mj=0;
@@ -261,7 +255,7 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
 	#if DEBUG_WCT
     memset(raw_out,0,RAW_SIZE);
 	#endif
-		if (pthread_mutex_trylock(&energy_node_lock)) return EAR_BUSY;
+		if (pthread_mutex_trylock(&sd650_energy_node_lock)) return EAR_BUSY;
     if ((rs_len = ipmi_cmd_raw (ipmi_ctx,
                               bytes_rq[0],
                               bytes_rq[1],
@@ -270,12 +264,12 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS)) < 0)
     {
-        error("lenovo_fast/accurate meter: ipmi_cmd_raw fails\n");
-				pthread_mutex_unlock(&energy_node_lock);
+				pthread_mutex_unlock(&sd650_energy_node_lock);
+        error("lenovo_fast/accurate meter: ipmi_cmd_raw fails %s",ipmi_ctx_errormsg(ipmi_ctx));
         return EAR_ERROR;
     }
-		pthread_mutex_unlock(&energy_node_lock);
 		if (rs_len!=(RAW_SIZE+2)){
+			pthread_mutex_unlock(&sd650_energy_node_lock);
       error("lenovo_read_dc_energy ipmi_cmd_raw returns not valid answer %d",rs_len);
       return EAR_ERROR;
     }   
@@ -326,14 +320,15 @@ int lenovo_wct_read_dc_energy_and_time(ulong *energy,ulong *energy_mj,ulong *sec
     *seconds=(ulong)my_seconds;
     *ms=(ulong)my_ms;
 
+		pthread_mutex_unlock(&sd650_energy_node_lock);
     return EAR_SUCCESS;;
 }
 
-int lenovo_wct_read_dc_energy_time(ulong *energy_mj,ulong *ms)
+int lenovo_wct_read_dc_energy_time(ipmi_ctx_t ipmi_ctx,ulong *energy_mj,ulong *ms)
 {
 	ulong ej,emj,ts,tms;
 	int ret;
-	ret=lenovo_wct_read_dc_energy_and_time(&ej,&emj,&ts,&tms);
+	ret=lenovo_wct_read_dc_energy_and_time(ipmi_ctx,&ej,&emj,&ts,&tms);
 	*energy_mj=ej*1000+emj;
 	*ms=ts*1000+tms;
 	return ret;
@@ -341,17 +336,18 @@ int lenovo_wct_read_dc_energy_time(ulong *energy_mj,ulong *ms)
 
 
 /* Release access to ipmi device */
-int lenovo_wct_node_energy_dispose()
+int lenovo_wct_node_energy_dispose(ipmi_ctx_t *ipmi_ctx)
 {
-	FUNCVERB("lenovo_node_energy_dispose");
-	if (ipmi_ctx==NULL){ 
-		verbose(0,"lenovo_water_cooling: IPMI context not initiallized\n");
+	debug("lenovo_node_energy_dispose");
+	if (*ipmi_ctx==NULL){ 
+		error("lenovo_water_cooling: IPMI context not initiallized");
 		return EAR_ERROR;
 	}
 	// // Close context
-	ipmi_ctx_close (ipmi_ctx);
+	ipmi_ctx_close (*ipmi_ctx);
 	// delete context
-	ipmi_ctx_destroy (ipmi_ctx);
+	ipmi_ctx_destroy (*ipmi_ctx);
+	*ipmi_ctx=NULL;
 	return EAR_SUCCESS;
 }
 

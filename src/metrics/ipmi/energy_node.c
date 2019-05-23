@@ -35,6 +35,8 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <freeipmi/freeipmi.h>
+#include <pthread.h>
+
 #include <common/config.h>
 #include <common/output/debug.h>
 #include <common/output/verbose.h>
@@ -44,9 +46,11 @@
 #include <metrics/ipmi/energy_node/lenovo_nm.h>
 #include <metrics/ipmi/energy_node/lenovo_sd650.h>
 
-
+#if 0
 static int ear_energy_node_connected=0;
 static int ear_energy_node_status=0;
+#endif
+static pthread_mutex_t generic_energy_node_lock = PTHREAD_MUTEX_INITIALIZER;
 
 #define NODE_MANAGER	0
 #define SD650_HFR			1
@@ -54,22 +58,22 @@ static int ear_energy_node_status=0;
 static int energy_interface=NODE_MANAGER;
 struct node_energy_op
 {
-	int (*node_energy_init) ();
-	int (*count_energy_data_length)();
-	int (*read_dc_energy) (ulong *energy);
-	int (*read_dc_energy_time) (ulong *energy,ulong *time);
-	int (*read_dc_energy_and_time) (long *energy_j,ulong *energy_mj,ulong *time_s,ulong *time_ms);
-	int (*read_ac_energy) (ulong *energy);
-	int (*node_energy_dispose) ();
+	int (*node_energy_init) (ipmi_ctx_t *ctx);
+	int (*count_energy_data_length)(ipmi_ctx_t ctx);
+	int (*read_dc_energy) (ipmi_ctx_t ctx,ulong *energy);
+	int (*read_dc_energy_time) (ipmi_ctx_t ctx,ulong *energy,ulong *time);
+	int (*read_dc_energy_and_time) (ipmi_ctx_t ctx,ulong *energy_j,ulong *energy_mj,ulong *time_s,ulong *time_ms);
+	int (*read_ac_energy) (ipmi_ctx_t ctx,ulong *energy);
+	int (*node_energy_dispose) (ipmi_ctx_t *ctx);
 } node_energy_ops;
 
 // FRU data for Product name
 #define IPMI_FRU_CUSTOM_FIELDS 64
-uint8_t areabuf[IPMI_FRU_AREA_SIZE_MAX+1];
-unsigned int area_type = 0;
-unsigned int area_length = 0;
-char my_p_manufacturer_name[IPMI_FRU_AREA_STRING_MAX+1];
-char my_p_name[IPMI_FRU_AREA_STRING_MAX+1];
+static uint8_t areabuf[IPMI_FRU_AREA_SIZE_MAX+1];
+static unsigned int area_type = 0;
+static unsigned int area_length = 0;
+static char my_p_manufacturer_name[IPMI_FRU_AREA_STRING_MAX+1];
+static char my_p_name[IPMI_FRU_AREA_STRING_MAX+1];
 // End FRU data
 
 // This functios checks the product name using ipmi interface
@@ -248,9 +252,10 @@ int node_energy_init(energy_handler_t *eh)
 	int cpu_model;
 	int ret;
 
-	if (ear_energy_node_connected) return ear_energy_node_status;
+	if (eh->ear_energy_node_connected) return eh->ear_energy_node_status;
 
     debug("node_energy_init");
+	pthread_mutex_lock(&generic_energy_node_lock);
 	if ((ret=ipmi_get_product_name(my_p_manufacturer_name,my_p_name))<0){
 		node_energy_ops.node_energy_init=NULL;
 		node_energy_ops.count_energy_data_length=NULL;
@@ -258,6 +263,8 @@ int node_energy_init(energy_handler_t *eh)
 		node_energy_ops.read_dc_energy_time=NULL;
 		node_energy_ops.read_ac_energy=NULL;
 		node_energy_ops.node_energy_dispose=NULL;
+		pthread_mutex_unlock(&generic_energy_node_lock);
+		
 		return -1;
 	}
 	
@@ -326,26 +333,27 @@ int node_energy_init(energy_handler_t *eh)
 	default:
 		break;
 	}
-	ear_energy_node_status=node_energy_ops.node_energy_init();
-	ear_energy_node_connected=1;
-    return ear_energy_node_status;
+	eh->ear_energy_node_status=node_energy_ops.node_energy_init(&eh->ctx);
+	eh->ear_energy_node_connected=1;
+	pthread_mutex_unlock(&generic_energy_node_lock);
+  return eh->ear_energy_node_status;
 }
-int count_energy_data_length(energy_handler_t eh)
+int count_energy_data_length(energy_handler_t *eh)
 {
 	debug("count_energy_data_length");
-	if (node_energy_ops.count_energy_data_length!=NULL) return node_energy_ops.count_energy_data_length();
+	if (node_energy_ops.count_energy_data_length!=NULL) return node_energy_ops.count_energy_data_length(eh->ctx);
 	else return 0;
 }
-int read_dc_energy(energy_handler_t eh,unsigned long *energy)
+int read_dc_energy(energy_handler_t *eh,unsigned long *energy)
 {
 	debug("read_dc_energy");
-	if (node_energy_ops.read_dc_energy!=NULL) return node_energy_ops.read_dc_energy(energy);
+	if (node_energy_ops.read_dc_energy!=NULL) return node_energy_ops.read_dc_energy(eh->ctx,energy);
 	else{	
 		*energy=0;
 		return -1;
 	}
 }
-int read_dc_energy_try(energy_handler_t eh,ulong *energy)
+int read_dc_energy_try(energy_handler_t *eh,ulong *energy)
 {
 	int tries=0;
 	int ret;
@@ -357,10 +365,10 @@ int read_dc_energy_try(energy_handler_t eh,ulong *energy)
 	return ret;
 }
 
-int read_dc_energy_time(energy_handler_t eh,ulong *energy,ulong *time_ms)
+int read_dc_energy_time(energy_handler_t *eh,ulong *energy,ulong *time_ms)
 {
     debug("read_dc_energy_time");
-    if (node_energy_ops.read_dc_energy_time!=NULL) return node_energy_ops.read_dc_energy_time(energy,time_ms);
+    if (node_energy_ops.read_dc_energy_time!=NULL) return node_energy_ops.read_dc_energy_time(eh->ctx,energy,time_ms);
     else{
         *energy=0;
 				*time_ms=0;
@@ -368,7 +376,7 @@ int read_dc_energy_time(energy_handler_t eh,ulong *energy,ulong *time_ms)
     }
 }
 
-int read_dc_energy_time_try(energy_handler_t eh,ulong *energy,ulong *time_ms)
+int read_dc_energy_time_try(energy_handler_t *eh,ulong *energy,ulong *time_ms)
 {
 	int tries=0;
 	int ret;
@@ -380,10 +388,10 @@ int read_dc_energy_time_try(energy_handler_t eh,ulong *energy,ulong *time_ms)
 	return ret;
 }
 
-int read_dc_energy_time_debug(energy_handler_t eh,ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
+int read_dc_energy_time_debug(energy_handler_t *eh,ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
 {
     debug("read_dc_energy_time_debug");
-    if (node_energy_ops.read_dc_energy_and_time!=NULL) return node_energy_ops.read_dc_energy_and_time(energy_j,energy_mj,time_sec,time_ms);
+    if (node_energy_ops.read_dc_energy_and_time!=NULL) return node_energy_ops.read_dc_energy_and_time(eh->ctx,energy_j,energy_mj,time_sec,time_ms);
     else{
         *energy_j=0;
         *energy_mj=0;
@@ -394,7 +402,7 @@ int read_dc_energy_time_debug(energy_handler_t eh,ulong *energy_j,ulong *energy_
 
 }
 
-int read_dc_energy_time_debug_try(energy_handler_t eh,ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
+int read_dc_energy_time_debug_try(energy_handler_t *eh,ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms)
 {
 	int tries=0;
 	int ret;
@@ -407,24 +415,24 @@ int read_dc_energy_time_debug_try(energy_handler_t eh,ulong *energy_j,ulong *ene
 }
 
 
-int read_ac_energy(energy_handler_t eh,unsigned long *energy)
+int read_ac_energy(energy_handler_t *eh,unsigned long *energy)
 {
 	debug("read_ac_energy");
-	if (node_energy_ops.read_ac_energy!=NULL) return node_energy_ops.read_ac_energy(energy);
+	if (node_energy_ops.read_ac_energy!=NULL) return node_energy_ops.read_ac_energy(eh->ctx,energy);
 	else{
 		*energy=0;
 		return -1;
 	}
 }
-int node_energy_dispose(energy_handler_t eh)
+int node_energy_dispose(energy_handler_t *eh)
 {
 	debug("node_energy_dispose");
-	ear_energy_node_connected=0;
-	if (node_energy_ops.node_energy_dispose!=NULL) return node_energy_ops.node_energy_dispose();
+	eh->ear_energy_node_connected=0;
+	if (node_energy_ops.node_energy_dispose!=NULL) return node_energy_ops.node_energy_dispose(&eh->ctx);
 	else return -1;
 }
 
-unsigned long node_energy_frequency(energy_handler_t eh)
+unsigned long node_energy_frequency(energy_handler_t *eh)
 {
 	unsigned long init, end,min_interval;
 	struct timeval begin_time,end_time;
@@ -433,10 +441,10 @@ unsigned long node_energy_frequency(energy_handler_t eh)
 
 	if (node_energy_ops.read_dc_energy != NULL)
 	{
-		node_energy_ops.read_dc_energy(&init);
+		node_energy_ops.read_dc_energy(eh->ctx,&init);
 
 		do {
-			node_energy_ops.read_dc_energy(&end);
+			node_energy_ops.read_dc_energy(eh->ctx,&end);
 			intents++;
 		} while((init == end) && (intents < 5000));
 
@@ -446,7 +454,7 @@ unsigned long node_energy_frequency(energy_handler_t eh)
 		init = end;
 
 		do{
-			node_energy_ops.read_dc_energy(&end);
+			node_energy_ops.read_dc_energy(eh->ctx,&end);
 		} while(init == end);
 
 		gettimeofday(&end_time,NULL);

@@ -38,7 +38,6 @@ xmpi_OBJS = \
     models/min_energy.o \
     models/monitoring.o \
     models/supermucng.o \
-    models/dyn_policies.o \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
@@ -47,6 +46,7 @@ xmpi_OBJS = \
     mpi_intercept/freq_synchro.o \
     mpi_intercept/process_MPI.o \
     dynais/dynais.a
+#    models/dyn_policies.o \
 
 MPIC_OBJS = mpi_intercept/MPI_intercept.o \
     mpi_intercept/MPI_interface.o

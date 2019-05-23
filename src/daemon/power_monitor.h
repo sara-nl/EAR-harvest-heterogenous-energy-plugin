@@ -46,6 +46,7 @@
 
 #include <daemon/eard_conf_rapi.h>
 #include <common/types/application.h>
+#include <metrics/ipmi/energy_node.h>
 #include <metrics/power_metrics/power_metrics.h>
 #include <daemon/node_metrics.h>
 
@@ -68,20 +69,20 @@ void *eard_power_monitoring(void *frequency_monitoring);
 /**  It must be called when EARLib contacts with EARD 
 */
 
-void powermon_mpi_init(application_t *j);
+void powermon_mpi_init(energy_handler_t *eh,application_t *j);
 
 /**  It must be called when EARLib disconnects from EARD 
 */
-void powermon_mpi_finalize();
+void powermon_mpi_finalize(energy_handler_t *eh);
 
 /** It must be called at when job starts 
 */
 
-void powermon_new_job(application_t *j,uint from_mpi);
+void powermon_new_job(energy_handler_t *eh,application_t *j,uint from_mpi);
 
 /** It must be called at when job ends
 */
-void powermon_end_job(job_id jid,job_id sid);
+void powermon_end_job(energy_handler_t *eh,job_id jid,job_id sid);
 
 /** It must be called at when sbatch starts*/
 void powermon_new_sbatch(application_t *j);
