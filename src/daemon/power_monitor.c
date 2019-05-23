@@ -935,8 +935,8 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 	#endif
   if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>my_node_conf->max_error_power)){
     	warning("Resetting IPMI interface since power is %.2lf",my_current_power->avg_dc);
-    	node_energy_dispose(&my_eh_pm);
-      node_energy_init(&my_eh_pm);
+      if (node_energy_dispose(&my_eh_pm)!=EAR_SUCCESS) error("Error resetting IPMI interface:node_energy_dispose");
+      if (node_energy_init(&my_eh_pm)!=EAR_SUCCESS) error("Error resetting IPMI interface:node_energy_init");
     }
 
 	#if DB_MYSQL
