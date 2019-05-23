@@ -108,9 +108,9 @@ void metrics_print()
 {
 	float gtime;
 	float itime;
-	float alloc;
+	//float alloc;
+	//float block;
 	float prcnt;
-	float block;
 	int n;
 	int i;
 
@@ -136,8 +136,8 @@ void metrics_print()
 
 		itime = ((float) difftime(ins_time2[i], ins_time1[i]));
 		gtime = ((float) difftime(glb_time2[i], glb_time1[i]));
-		alloc = ((float) (typ_sizof[i] * sam_inmax[i]) / 1000000.0);
-		block = ((float) (sam_recvd[i] * typ_sizof[i]) / 1000000.0);
+		//alloc = ((float) (typ_sizof[i] * sam_inmax[i]) / 1000000.0);
+		//block = ((float) (sam_recvd[i] * typ_sizof[i]) / 1000000.0);
 		prcnt = 0.0f;
 
 		if (sam_inmax[i] > 0.0f) {
@@ -225,8 +225,6 @@ void reset_all()
 
 static void insert_apps_mpi()
 {
-	int r;
-
 	if (typ_prcnt[i_appsm] == 0 || sam_index[i_appsm] <= 0) {
 		return;
 	}
@@ -243,8 +241,6 @@ static void insert_apps_mpi()
 
 static void insert_apps_non_mpi()
 {
-	time_t time_start;
-
 	if (typ_prcnt[i_appsn] == 0 || sam_index[i_appsn] <= 0) {
 		return;
 	}
@@ -256,8 +252,6 @@ static void insert_apps_non_mpi()
 
 static void insert_apps_learning()
 {
-	time_t time_start;
-
 	if (typ_prcnt[i_appsl] == 0 || sam_index[i_appsl] <= 0) {
 		return;
 	}
@@ -269,8 +263,6 @@ static void insert_apps_learning()
 
 static void insert_loops()
 {
-	time_t time_start;
-
 	if (typ_prcnt[i_loops] == 0 || sam_index[i_loops] <= 0) {
 		return;
 	}
@@ -282,8 +274,6 @@ static void insert_loops()
 
 static void insert_energy()
 {
-	time_t time_start;
-
 	if (typ_prcnt[i_enrgy] == 0 || sam_index[i_enrgy] <= 0) {
 		return;
 	}
@@ -295,8 +285,6 @@ static void insert_energy()
 
 static void insert_aggregations()
 {
-	time_t time_start;
-
 	if (typ_prcnt[i_aggrs] == 0 || sam_index[i_aggrs] <= 0) {
 		return;
 	}
@@ -308,8 +296,6 @@ static void insert_aggregations()
 
 static void insert_events()
 {
-	time_t time_start;
-
 	if (typ_prcnt[i_evnts] == 0 || sam_index[i_evnts] <= 0) {
 		return;
 	}
@@ -481,7 +467,6 @@ static int storage_index_extract(int type, char **name)
 
 void storage_sample_receive(int fd, packet_header_t *header, char *content)
 {
-	time_t aux;
 	char *name;
 	int index;
 	int type;

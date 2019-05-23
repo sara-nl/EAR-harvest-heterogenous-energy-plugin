@@ -29,9 +29,6 @@
 
 #include <slurm_plugin/slurm_plugin_rcom.h>
 
-// Buffers
-static char buffer[SZ_PATH];
-
 static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 {
 	int port = sd->pack.eard.servs.eard.port;

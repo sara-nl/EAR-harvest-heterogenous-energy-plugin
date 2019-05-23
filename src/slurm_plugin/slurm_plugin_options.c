@@ -85,7 +85,6 @@ static int _opt_register_mpi(spank_t sp, int ac, char **av)
         struct dirent *file;
         DIR *dir;
 	
-	char *tok1;
 	char *tok2;
 	char *tok3;
 	char *p;
@@ -110,7 +109,7 @@ static int _opt_register_mpi(spank_t sp, int ac, char **av)
 			{
 				if (strstr(file->d_name, "libear.") != NULL)
 				{
-					tok1 = strtok(file->d_name, ".");
+					strtok(file->d_name, ".");
 					tok2 = strtok(NULL, ".");
 					tok3 = strtok(NULL, ".");
 
