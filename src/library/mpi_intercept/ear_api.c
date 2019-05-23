@@ -367,8 +367,10 @@ void ear_init()
 		return;
 	}
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
+	debug("system_conf_path %s",system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
+	debug("resched_conf_path %s",resched_conf_path);
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
 	/* Updating configuration */
