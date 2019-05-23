@@ -160,7 +160,6 @@ void plug_test_build(spank_t sp)
 		case 10: option_build(sp, &test10); break;
 		case 11: option_build(sp, &test11); break;
 		case 12: option_build(sp, &test12); break;
-		case 13: option_build(sp, &test13); break;
 		default: return;
 	}
 }
@@ -205,9 +204,13 @@ static int option_result(spank_t sp, test_t *test)
 	return ESPANK_SUCCESS;
 }
 
-void option_result_custom(spank_t sp, test_t *test, int num)
+int option_result_custom(spank_t sp, test_t *test, int num)
 {
-	switch (test) {
+	switch (num) {
+		case 7:
+			if (!isenv_agnostic(sp, Var.frequency.ear, test->frequency)) {
+				return ESPANK_SUCCESS;
+			}
 		case 11:
 			if (!getenv_agnostic(sp, Var.tag.ear, buffer1, SZ_PATH)) {
 				return ESPANK_SUCCESS;
@@ -241,13 +244,12 @@ void plug_test_result(spank_t sp)
 		case 4:  result = option_result(sp, &test4); break;
 		case 5:  result = option_result(sp, &test5); break;
 		case 6:  result = option_result(sp, &test6); break;
-		case 7:  result = option_result(sp, &test7); break;
+		case 7:  result = option_result_custom(sp, &test7, 7); break;
 		case 8:  result = option_result(sp, &test8); break;
 		case 9:  result = option_result(sp, &test9); break;
 		case 10: result = option_result(sp, &test10); break;
 		case 11: result = option_result_custom(sp, &test11, 11); break;
 		case 12: result = option_result(sp, &test12); break;
-		case 13: result = option_result(sp, &test13); break;
 		default: return;
 	}
 
