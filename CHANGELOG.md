@@ -2,6 +2,7 @@
 - eard_api non-blocking calls
 - Working in a dynamic loading for power/energy policies
 - new ereport with options -i (filter by island) and -g (show global manager records)
+- new IPMI interface thread-safe. Each EARD thread creates a new energy_handler_t
 
 ### Changed
 - lock to avoid simultaneous ipmi access
