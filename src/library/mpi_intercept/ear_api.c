@@ -60,7 +60,7 @@
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
-#include <metrics/metrics.h>
+#include <metrics/metrics_earl.h>
 
 
 // Statics
