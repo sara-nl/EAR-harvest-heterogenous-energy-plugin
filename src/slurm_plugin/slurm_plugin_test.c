@@ -104,6 +104,7 @@ static int fake_test(spank_t sp)
 	if (isenv_agnostic(sp, Var.path_trac.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.path_temp.ear, fake)) return ESPANK_ERROR;
 	if (isenv_agnostic(sp, Var.verbose.ear, fake)) return ESPANK_ERROR;
+	return ESPANK_SUCCESS;
 }
 
 static void option_build(spank_t sp, test_t *test)
