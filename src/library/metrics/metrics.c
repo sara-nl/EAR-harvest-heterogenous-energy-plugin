@@ -38,7 +38,7 @@
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
-#include <metrics/metrics.h>
+#include <metrics/metrics_earl.h>
 #if 0
 #include <metrics/papi/flops.h>
 #include <metrics/papi/cache.h>

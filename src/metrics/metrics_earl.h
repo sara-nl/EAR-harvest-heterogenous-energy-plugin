@@ -30,17 +30,11 @@
 #ifndef _METRICS_H_
 #define _METRICS_H_
 
-#include <metrics/papi/cache.h>
-#include <metrics/papi/energy_cpu.h>
 #include <metrics/papi/flops.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
-#include <metrics/papi/stalls.h>
-#include <metrics/custom/bandwidth.h>
 #include <metrics/custom/frequency.h>
 #include <metrics/custom/hardware_info.h>
-#include <metrics/ipmi/energy_node.h>
-#include <metrics/power_metrics/power_metrics.h>
 
 #else
 #endif
