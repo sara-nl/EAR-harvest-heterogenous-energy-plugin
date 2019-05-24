@@ -51,6 +51,10 @@
 #include <daemon/eard_api.h>
 #include <control/frequency.h>
 #include <metrics/custom/hardware_info.h>
+#if USE_POLICY_PLUGIN
+#include <library/models/dyn_policies.h>
+policy_dyn_t power_policy;
+#endif
 
 static int use_default=1;
 
@@ -82,6 +86,18 @@ static int model_nominal=1;
 
 void init_policy_functions()
 {
+		#if USE_POLICY_PLUGIN
+		char *policy_plugin_name;
+		policy_plugin_name=getenv("SLURM_EAR_POWER_POLICY");
+		if (policy_plugin_name!=NULL){
+			debug("Loading policy %s",policy_plugin_name);
+			if (load_policy(&power_policy,policy_plugin_name)!=EAR_SUCCESS){
+				error("Power policy loaded %s with error",policy_plugin_name);
+			}else{
+				debug("Power policy loaded %s succesfully",policy_plugin_name);
+			}
+		}
+		#endif
     switch(power_model_policy)
     {
         case MIN_ENERGY_TO_SOLUTION:

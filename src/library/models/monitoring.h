@@ -37,8 +37,15 @@
 
 #ifndef _MONITORING_H
 #define _MONITORING_H
+#include <common/config.h>
 #include <common/types/projection.h>
 #include <common/types/signature.h>
+
+#include <common/types/application.h>/* defines application */
+#include <daemon/shared_configuration.h> /* defines settings_conf */
+#include <library/mpi_intercept/MPI_calls_coded.h> /* defines list of mpi calls */
+#include <library/mpi_intercept/MPI_types.h> /* defines list of mpi calls */
+
 
 
 void monitoring_init();
@@ -47,6 +54,19 @@ void monitoring_end_loop();
 ulong monitoring_policy(signature_t *sig,int *ready);
 ulong monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
 ulong monitoring_default_conf(ulong f);
+
+/*
+ * These functions are included to be used by the policy plugin mechanism
+ */
+
+int dyn_monitoring_init(application_t *app,settings_conf_t *conf,uint pstates);
+int dyn_monitoring_end();
+int dyn_monitoring_new_loop(uint loop_id);
+int dyn_monitoring_end_loop(uint loop_id);
+int dyn_monitoring_policy(settings_conf_t *conf,uint loop_id,signature_t *sig,ulong *new_freq);
+int dyn_monitoring_policy_ok(uint loop_id, signature_t *curr_sig, signature_t *last_sig);
+int dyn_monitoring_default_conf(ulong *f);
+
 
 
 #else

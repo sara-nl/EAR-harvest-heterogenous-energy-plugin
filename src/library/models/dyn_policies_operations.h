@@ -34,7 +34,8 @@
 #include <common/types/application.h>			/* defines application */
 #include <common/types/signature.h>				/* defines signature */
 #include <daemon/shared_configuration.h> 	/* defines settings_conf */
-#include <library/mpi_intercept/MPI_calls_coded.h> /* defines list of mpi calls */
+#include <library/mpi_intercept/MPI_calls_coded.h> 	/* defines list of mpi calls */
+#include <library/mpi_intercept/MPI_types.h> 			/* defines list of mpi calls */
 
 typedef struct policy_dyn
 {
@@ -42,7 +43,7 @@ typedef struct policy_dyn
   int (*end)();
   int (*new_loop)(uint loop_id);
   int (*end_loop)(uint loop_id);
-  int (*apply)(settings_conf_t *conf,uint loop_id,signature_t *sig);
+  int (*apply)(settings_conf_t *conf,uint loop_id,signature_t *sig,ulong *new_freq);
   int (*is_ok)(uint loop_id, signature_t *curr_sig, signature_t *last_sig);
   int (*default_conf)(ulong *f);
   int (*new_mpi_call)(mpi_call call_type, p2i buf, p2i dest);
