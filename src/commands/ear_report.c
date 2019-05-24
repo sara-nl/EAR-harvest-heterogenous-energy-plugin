@@ -80,7 +80,10 @@
                     "INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id " \
                     "WHERE start_time >= %d AND end_time <= %d GROUP BY Jobs.e_tag ORDER BY energy"
 
-#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
+//#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
+#define GLOB_ENERGY "SELECT energy_percent,warning_level,time,inc_th,p_state,GlobEnergyConsumedT1, " \
+                    "GlobEnergyConsumedT2,GlobEnergyLimit,GlobEnergyPeriodT1,GlobEnergyPeriodT2,GlobEnergyPolicy " \
+                    "FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
 //#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc limit 5"
 
 //SELECT TRUNCATE(SUM(DC_power*time),0) as energy, Jobs.user_id FROM Power_signatures INNER JOIN Applications ON id=Applications.power_signature_id INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id WHERE start_time >= 0 AND end_time <= 5555555555555 GROUP BY Jobs.user_id ORDER BY energy;
@@ -357,7 +360,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
             {
                 printf("%20s %12s %20s %12s %12s %12s %12s %12s %12s %12s %12s\n",
                      "Energy%", "Warning lvl", "Timestamp", "INC th", "p_state", "ENERGY T1", "ENERGY T2",
-                     "TIME T1", "TIME T2", "LIMIT", "POLICY");
+                     "LIMIT", "TIME T1", "TIME T2", "POLICY");
                 has_records = 1;
             }
             for(i = 0; i < num_fields; i++) {
