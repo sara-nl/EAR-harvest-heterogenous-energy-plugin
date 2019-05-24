@@ -87,22 +87,22 @@ int dyn_monitoring_end()
 {
 	return EAR_SUCCESS;
 }
-int dyn_monitoring_new_loop(uint loop_id)
+int dyn_monitoring_new_loop(loop_id_t *loop_id)
 {
 	return EAR_SUCCESS;
 }
-int dyn_monitoring_end_loop(uint loop_id)
+int dyn_monitoring_end_loop(loop_id_t *loop_id)
 {
 	return EAR_SUCCESS;
 }
-int dyn_monitoring_policy(settings_conf_t *conf,uint loop_id,signature_t *sig,ulong *new_freq)
+int dyn_monitoring_policy(settings_conf_t *conf,signature_t *sig,ulong *new_freq)
 {
 	int ret;
 	*new_freq=monitoring_policy(sig,&ret);
 	if (ret==1) return EAR_SUCCESS;
 	else EAR_NOT_READY;
 }
-int dyn_monitoring_policy_ok(uint loop_id, signature_t *curr_sig, signature_t *last_sig)
+int dyn_monitoring_policy_ok(signature_t *curr_sig, signature_t *last_sig)
 {
 	return 1;
 }

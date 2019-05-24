@@ -61,10 +61,10 @@ ulong monitoring_default_conf(ulong f);
 
 int dyn_monitoring_init(application_t *app,settings_conf_t *conf,uint pstates);
 int dyn_monitoring_end();
-int dyn_monitoring_new_loop(uint loop_id);
-int dyn_monitoring_end_loop(uint loop_id);
-int dyn_monitoring_policy(settings_conf_t *conf,uint loop_id,signature_t *sig,ulong *new_freq);
-int dyn_monitoring_policy_ok(uint loop_id, signature_t *curr_sig, signature_t *last_sig);
+int dyn_monitoring_new_loop(loop_id_t *loop_id);
+int dyn_monitoring_end_loop(loop_id_t *loop_id);
+int dyn_monitoring_policy(settings_conf_t *conf,signature_t *sig,ulong *new_freq);
+int dyn_monitoring_policy_ok(signature_t *curr_sig, signature_t *last_sig);
 int dyn_monitoring_default_conf(ulong *f);
 
 

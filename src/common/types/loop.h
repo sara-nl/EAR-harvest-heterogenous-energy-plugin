@@ -45,7 +45,7 @@ typedef struct loop_id
 typedef struct loop
 {
     loop_id_t id;
-	ulong jid,step_id;
+		ulong jid,step_id;
     char node_id[GENERIC_NAME];
     ulong total_iterations;
     signature_t signature;
@@ -57,16 +57,16 @@ typedef struct loop
 // MANAGEMENT
 
 /** Create a new loop_id_t based on dynais information. */
-loop_id_t *create_loop_id(ulong event, ulong size, ulong level);
+int create_loop_id(loop_id_t *id,ulong event, ulong size, ulong level);
 
 /** Initalizes the loop given by parameter. */
-void loop_init(loop_t *loop, job_t *job);
+int loop_init(loop_t *loop, job_t *job,ulong event, ulong size, ulong level);
 
 /** Given a new loop detected by dynais returns either a new loop_id (if it is 
 *   really a new loop never detected) or the pointer to the already existing 
 *   information. If it is a new loop, memory is allocated for this loop. 
 *   Memory for N signatures is reserved. */
-loop_t *new_loop(loop_id_t *loop);
+int new_loop(loop_t *l,loop_id_t *lid);
 
 /** Add values for a new computed signature. */
 void add_loop_signature(loop_t *loop,  signature_t *sig);
