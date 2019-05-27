@@ -265,6 +265,10 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_deserialize_local");
 
+	// Silence
+	VERB_SET_EN(0);
+	ERROR_SET_EN(0);
+
 	/*
 	 * Components
 	 */
@@ -337,6 +341,10 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_deserialize_remote");
+
+	// Silence
+	VERB_SET_EN(0);
+	ERROR_SET_EN(0);
 
 	/*
 	 * Options
