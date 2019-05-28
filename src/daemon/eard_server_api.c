@@ -165,7 +165,11 @@ int read_command(int s,request_t *command)
 		verbose(VCONNECT,"Read command continue , pending %d",pending);
 		ret=read(s,(char*)command+done,pending);
 		//ret=recv(s,(char*)command+done,pending, MSG_DONTWAIT);
-		if (ret<0) error("read_command error errno %s",strerror(errno));
+		if (ret<0) 
+        {
+            command->req=NO_COMMAND;
+            error("read_command error errno %s",strerror(errno));
+        }
 		pending-=ret;
 		done+=ret;
 	}
