@@ -66,6 +66,7 @@ int dyn_monitoring_end_loop(loop_id_t *loop_id);
 int dyn_monitoring_policy(settings_conf_t *conf,signature_t *sig,ulong *new_freq);
 int dyn_monitoring_policy_ok(signature_t *curr_sig, signature_t *last_sig);
 int dyn_monitoring_default_conf(ulong *f);
+int dyn_monitoring_max_tries();
 
 
 

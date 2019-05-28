@@ -112,3 +112,8 @@ int dyn_monitoring_default_conf(ulong *f)
 }
 
 
+int dyn_monitoring_max_tries()
+{
+	return 0;
+}
+

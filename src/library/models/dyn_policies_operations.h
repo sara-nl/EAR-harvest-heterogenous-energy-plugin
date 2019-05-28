@@ -50,6 +50,7 @@ typedef struct policy_dyn
   int (*new_mpi_call)(mpi_call call_type, p2i buf, p2i dest);
   int (*end_mpi_call)(mpi_call call_type);
   int (*reconfigure)(settings_conf_t *conf);
+  int (*max_tries)();
 }policy_dyn_t;
 
 

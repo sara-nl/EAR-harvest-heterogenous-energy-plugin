@@ -71,6 +71,7 @@ void set_policy_monitoring(policy_dyn_t *pol)
 			pol->new_mpi_call=NULL;
 			pol->end_mpi_call=NULL;
 			pol->reconfigure=NULL;
+			pol->max_tries=dyn_monitoring_max_tries;
 }
 
 
@@ -99,6 +100,7 @@ void copy_policy_ops(policy_dyn_t *dest,policy_dyn_t *src)
 	dest->new_mpi_call=src->new_mpi_call;
 	dest->end_mpi_call=src->end_mpi_call;
 	dest->reconfigure=src->reconfigure;
+	dest->max_tries=src->max_tries;
 }
 
 int load_policy(policy_dyn_t *my_policy,char *policy_name)

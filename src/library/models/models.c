@@ -97,6 +97,9 @@ void init_policy_functions()
 			}else{
 				debug("Power policy loaded %s succesfully",policy_plugin_name);
 			}
+		}else{
+			debug("SLURM_EAR_POWER_POLICY not defined, setting dyn_policy_power to dyn_monitoring");
+			set_policy_monitoring(&power_policy);
 		}
 		#endif
     switch(power_model_policy)
@@ -568,6 +571,13 @@ ulong policy_get_default_freq()
 int policy_max_tries()
 {
   #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.max_tries!=NULL){
+		ret=power_policy.max_tries();
+		#if PENDING
+		return ret;
+		#endif
+	}
   #endif
         switch (power_model_policy)
         {

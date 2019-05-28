@@ -52,6 +52,8 @@
 *  Input: num of pstates 
 * current application and current configuration
 */
+
+/** We need a way to register a new policy **/
 int  policy_init(application_t *app,settings_conf_t *conf,uint pstates);
 
 /** Called at application end
