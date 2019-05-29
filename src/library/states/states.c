@@ -35,9 +35,12 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+#include <common/output/debug.h>
+#include <common/output/error.h>
 #include <common/math_operations.h>
 #include <common/types/log.h>
 #include <common/types/application.h>
@@ -103,13 +106,13 @@ ulong select_near_freq(ulong avg)
 	return near;
 }
 
-void states_end_job(int my_id, FILE *ear_fd, char *app_name)
+void states_end_job(int my_id,  char *app_name)
 {
-	verbose(2, "EAR(%s) Ends execution. \n", app_name);
+	verbose(2, "EAR(%s) Ends execution. ", app_name);
 	end_log();
 }
 
-void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
+void states_begin_job(int my_id,  char *app_name)
 {
 	char *verbose, *loop_time, *who;
 	ulong	architecture_min_perf_accuracy_time;
@@ -125,13 +128,11 @@ void states_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	//init_application(&last_signature);
 	if (my_id) return;
 
-	loop_init(&loop,&loop_signature.job);	
-
+	/* LOOP WAS CREATED HERE BEFORE */
 
 	perf_accuracy_min_time = get_ear_performance_accuracy();
 	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
-	//verbose(0, "min_hw %lu min_env %lu", architecture_min_perf_accuracy_time, perf_accuracy_min_time);
 	
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
@@ -144,12 +145,16 @@ int states_my_state()
 	return EAR_STATE;
 }
 
-void states_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
+void states_begin_period(int my_id, ulong event, ulong size,ulong level)
 {
 	int i;
 	EAR_STATE = TEST_LOOP;
 	tries_current_loop=0;
 	tries_current_loop_same_freq=0;
+
+	if (loop_init(&loop,&loop_signature.job,event,size,level)!=EAR_SUCCESS){
+		error("Error creating loop");
+	}
 
 	policy_new_loop();
 	comp_N_begin = metrics_time();
@@ -186,7 +191,7 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 {
 	if (!equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH*2) || !equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH*2)){
 		dynais_enabled=DYNAIS_ENABLED;
-		verbose(1,"Dynais ON \n");
+		verbose(1,"Dynais ON ");
 	}
 }
 
@@ -204,12 +209,12 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
     	dynais_enabled=DYNAIS_DISABLED;
     	#endif
 	#if EAR_PERFORMANCE_TESTS
-    	verbose(1,"Warning: Dynais is consuming too much time, DYNAIS=%d,overhead=%lf",dynais_enabled, dynais_overhead_perc);
+    	debug("Warning: Dynais is consuming too much time, DYNAIS=%d,overhead=%lf",dynais_enabled, dynais_overhead_perc);
 	#endif
     	log_report_dynais_off(application.job.id,application.job.step_id);
     }
 	if (dynais_enabled==DYNAIS_DISABLED){
-    	verbose(1,"DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+    	debug("DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
     	loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
 	}
     last_first_event=event;
@@ -233,7 +238,7 @@ static void print_loop_signature(char *title, signature_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
-	verbose(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	debug("(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
@@ -271,13 +276,13 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	if (resched_conf->force_rescheduling){
 		traces_reconfiguration(ear_my_rank, my_id);
 		resched_conf->force_rescheduling=0;
-		verbose(DYN_VERBOSE,"EAR: rescheduling forced by eard: max freq %lu def_freq %lu def_th %lf\n",system_conf->max_freq,system_conf->def_freq,system_conf->th);
+		debug("EAR: rescheduling forced by eard: max freq %lu def_freq %lu def_th %lf",system_conf->max_freq,system_conf->def_freq,system_conf->th);
 		if (EAR_STATE==SIGNATURE_STABLE){ 
 
 			// We set the default number of iterations to the default for this loop
 			perf_count_period=loop_perf_count_period;
 			// If the loop was already evaluated, we force the rescheduling
-			verbose(DYN_VERBOSE,"EAR state forced to be EVALUATING_SIGNATURE because of power capping policies\n");
+			debug("EAR state forced to be EVALUATING_SIGNATURE because of power capping policies");
 			EAR_STATE = EVALUATING_SIGNATURE;
 			traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			// Should we reset these controls?
@@ -285,13 +290,13 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			tries_current_loop=0;
 		}
 		else if (EAR_STATE==PROJECTION_ERROR){	
-			verbose(DYN_VERBOSE,"EAR state forced to be FIRST_ITERATION because of power capping policies\n");
+			debug("EAR state forced to be FIRST_ITERATION because of power capping policies");
 			EAR_STATE=FIRST_ITERATION;
 		}else if (EAR_STATE==RECOMPUTING_N){	
-			verbose(DYN_VERBOSE,"EAR state forced to be SIGNATURE_HAS_CHANGED because of power capping policies\n");
+			debug("EAR state forced to be SIGNATURE_HAS_CHANGED because of power capping policies");
 			EAR_STATE=SIGNATURE_HAS_CHANGED;
 		}else{
-			verbose(DYN_VERBOSE,"EAR state not changed\n");
+			debug("EAR state not changed");
 		}
 	}
 	}
@@ -303,7 +308,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 			if (comp_N_time>(perf_accuracy_min_time*0.1)){
-				verbose(2,"Going to FIRST_ITERATION after %d iterations\n",iterations);
+				debug("Going to FIRST_ITERATION after %d iterations",iterations);
 				comp_N_begin=comp_N_end;
 				EAR_STATE=FIRST_ITERATION;
 				traces_start();
@@ -364,7 +369,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
 			if (comp_N_time == 0) {
-				verbose(0, "EAR(%s):PANIC comp_N_time must be >0\n", ear_app_name);
+				error( "EAR(%s):PANIC comp_N_time must be >0", ear_app_name);
 			}
 
 			// We include a dynamic configurarion of DPD behaviour
@@ -386,7 +391,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* Included to accelerate the signature computation */
 			if ((iterations%perf_count_period_10p)==0){
 				if (time_ready_signature(perf_accuracy_min_time)){	
-					verbose(2,"period update fom %u to %u\n",perf_count_period,iterations - 1);
+					debug("period update fom %u to %u",perf_count_period,iterations - 1);
 					perf_count_period=iterations - 1;
 					if (perf_count_period==0) perf_count_period=1;
 				}
@@ -406,11 +411,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                 double time_from_mpi_init;
                 time(&curr_time);    
                 time_from_mpi_init=difftime(curr_time,application.job.start_time);
-                verbose(2,"Number of seconds since the application start_time at which signature is computed %lf\n",time_from_mpi_init);
+                debug("Number of seconds since the application start_time at which signature is computed %lf",time_from_mpi_init);
 				#if MEASURE_DYNAIS_OV
 				double time_since_start_loop;
 				time_since_start_loop=difftime(curr_time,start_loop_time);
-				verbose(1,"time to compute signature %lf, first_iter_time %llu Niters %u \n",time_since_start_loop,comp_N_time,perf_count_period);
+				debug("time to compute signature %lf, first_iter_time %llu Niters %u ",time_since_start_loop,comp_N_time,perf_count_period);
 				#endif
             }
             /* END */
@@ -419,7 +424,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			#if EAR_OVERHEAD_CONTROL
 			check_periodic_mode=0;
 			#if EAR_PERFORMANCE_TESTS
-			verbose(1,"Switching check periodic mode to %d\n",check_periodic_mode);
+			debug("Switching check periodic mode to %d",check_periodic_mode);
 			#endif
 			#endif
 
@@ -444,7 +449,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ear_iteration_in_mpi=ear_iteration_in_mpi/N_iter;
 			IN_MPI_SEC=(double)ear_iteration_in_mpi/1000000.0;
 			IN_MPI_PERC=IN_MPI_SEC/TIME;
-			verbose(1,"IN_MPI %s:%s: usec %llu time %.3lf perc %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
+			debug("IN_MPI %s:%s: usec %llu time %.3lf perc %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
 			ear_iteration_in_mpi=0;
 			#endif
 
@@ -488,7 +493,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			signature_copy(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
 			verbose(1,"EAR(%s)at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
-			verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %u in %s)\n",
+			verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %u in %s)",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
@@ -527,7 +532,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ear_iteration_in_mpi=ear_iteration_in_mpi/N_iter;
             IN_MPI_SEC=(double)ear_iteration_in_mpi/1000000.0;
             IN_MPI_PERC=IN_MPI_SEC/TIME;
-            verbose(1,"IN_MPI %s:%s: %llu %.3lf %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
+            debug("IN_MPI %s:%s: %llu %.3lf %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
 			ear_iteration_in_mpi=0;
             #endif
 
@@ -539,7 +544,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_frequency(ear_my_rank, my_id, policy_freq);
 			traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 			verbose(1,"EAR(%s)at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
-			verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %u in %s)\n",
+			verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %u in %s)",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 			/* END VERBOSE */
 
@@ -586,11 +591,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				/* When collecting traces, we maintain the period */
 				if (traces_are_on()==0)	perf_count_period = perf_count_period * 2;
 				tries_current_loop=0;
-				verbose(1,"Policy ok");
+				debug("Policy ok");
 			}else{
-				verbose(1,"Policy NOT ok");
+				debug("Policy NOT ok");
 			}
-			verbose(2,"EAR(%s): CurrentSig (Time %2.3lf Power %3.2lf Energy %.2lf) LastSig (Time %2.3lf Power %3.2lf Energy %.2lf) \n",
+			debug("EAR(%s): CurrentSig (Time %2.3lf Power %3.2lf Energy %.2lf) LastSig (Time %2.3lf Power %3.2lf Energy %.2lf) ",
 			ear_app_name, TIME, POWER, ENERGY, l_sig->time,l_sig->DC_power, (l_sig->time*l_sig->DC_power));
 
 			if (pok) return;

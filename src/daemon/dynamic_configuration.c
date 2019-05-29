@@ -382,6 +382,7 @@ void process_remote_requests(int clientfd)
 			break;
 		default:
 			error("Invalid remote command\n");
+            req = NO_COMMAND;
 	}	
 	send_answer(clientfd,&ack);
 #if USE_NEW_PROP

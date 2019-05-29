@@ -38,20 +38,40 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/debug.h>
+#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <library/common/externs.h>
 #include <library/models/monitoring.h>
+#include <library/models/dyn_policies_operations.h>
 #include <library/models/dyn_policies.h>
 
+/*
+ *   int (*init)(application_t *app,settings_conf_t *conf,uint pstates);
+ *   int (*end)();
+ *   int (*new_loop)(uint loop_id);
+ *   int (*end_loop)(uint loop_id);
+ *   int (*apply)(settings_conf_t *conf,uint loop_id,signature_t *sig);
+ *   int (*is_ok)(uint loop_id, signature_t *curr_sig, signature_t *last_sig);
+ *   int (*default_conf)(ulong *f);
+ *   int (*new_mpi_call)(mpi_call call_type, p2i buf, p2i dest);
+ *   int (*end_mpi_call)(mpi_call call_type);
+ *   int (*reconfigure)(settings_conf_t *conf);
+ */
 
 void set_policy_monitoring(policy_dyn_t *pol)
 {
-      pol->init=monitoring_init;
-      pol->new_loop=monitoring_new_loop;
-      pol->end_loop=monitoring_end_loop;
-      pol->policy=monitoring_policy;
-      pol->policy_ok=monitoring_policy_ok;
-      pol->default_conf=monitoring_default_conf;
+			if (pol==NULL) return;
+      pol->init=dyn_monitoring_init;
+			pol->end=dyn_monitoring_end;
+      pol->new_loop=dyn_monitoring_new_loop;
+      pol->end_loop=dyn_monitoring_end_loop;
+      pol->apply=dyn_monitoring_policy;
+      pol->is_ok=dyn_monitoring_policy_ok;
+      pol->default_conf=dyn_monitoring_default_conf;
+			pol->new_mpi_call=NULL;
+			pol->end_mpi_call=NULL;
+			pol->reconfigure=NULL;
+			pol->max_tries=dyn_monitoring_max_tries;
 }
 
 
@@ -69,12 +89,18 @@ void *check_symbol(void * handler,char *sym_name)
 
 void copy_policy_ops(policy_dyn_t *dest,policy_dyn_t *src)
 {
+	if ((dest==NULL) || (src==NULL)) return;
 	dest->init=src->init;
+	dest->end=src->end;
 	dest->new_loop=src->new_loop;
 	dest->end_loop=src->end_loop;
-	dest->policy=src->policy;
-	dest->policy_ok=src->policy_ok;
+	dest->apply=src->apply;
+	dest->is_ok=src->is_ok;
 	dest->default_conf=src->default_conf;
+	dest->new_mpi_call=src->new_mpi_call;
+	dest->end_mpi_call=src->end_mpi_call;
+	dest->reconfigure=src->reconfigure;
+	dest->max_tries=src->max_tries;
 }
 
 int load_policy(policy_dyn_t *my_policy,char *policy_name)
@@ -82,6 +108,10 @@ int load_policy(policy_dyn_t *my_policy,char *policy_name)
 	void    *policy_file;
 	policy_dyn_t tmp_policy;
 	char *last_error;
+	if (my_policy==NULL){
+		error("load_policy and my_policy is NULL");
+		return EAR_ERROR;
+	}
 	set_policy_monitoring(my_policy);
 	/* Check file is ok */
 	policy_file=dlopen(policy_name,RTLD_LOCAL | RTLD_LAZY);
@@ -92,13 +122,15 @@ int load_policy(policy_dyn_t *my_policy,char *policy_name)
 	/* Check symbols */
 	*(void **) (&tmp_policy.init)=check_symbol(policy_file,"init");
 	if (tmp_policy.init==NULL) return EAR_ERROR;
+	*(void **) (&tmp_policy.end)=check_symbol(policy_file,"end");
 	*(void **) (&tmp_policy.new_loop)=check_symbol(policy_file,"new_loop");
 	*(void **) (&tmp_policy.end_loop)=check_symbol(policy_file,"end_loop");
-	*(void **) (&tmp_policy.policy)=check_symbol(policy_file,"policy");
-	*(void **) (&tmp_policy.policy_ok)=check_symbol(policy_file,"policy_ok");
+	*(void **) (&tmp_policy.apply)=check_symbol(policy_file,"apply");
+	*(void **) (&tmp_policy.is_ok)=check_symbol(policy_file,"is_ok");
 	*(void **) (&tmp_policy.default_conf)=check_symbol(policy_file,"default_conf");
+	*(void **) (&tmp_policy.new_mpi_call)=check_symbol(policy_file,"new_mpi_call");
+	*(void **) (&tmp_policy.end_mpi_call)=check_symbol(policy_file,"end_mpi_call");
+	*(void **) (&tmp_policy.reconfigure)=check_symbol(policy_file,"reconfigure");
 	copy_policy_ops(my_policy,&tmp_policy);
 	return EAR_SUCCESS;
 }
-	
-

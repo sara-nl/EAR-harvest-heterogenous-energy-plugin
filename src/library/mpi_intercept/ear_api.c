@@ -458,7 +458,7 @@ void ear_init()
 	memcpy(&loop_signature, &application, sizeof(application_t));
 
 	// States
-	states_begin_job(my_id, NULL, ear_app_name);
+	states_begin_job(my_id,  ear_app_name);
 	states_periodic_begin_job(my_id, NULL, ear_app_name);
 
 	if (ear_periodic_mode==PERIODIC_MODE_ON){
@@ -565,7 +565,7 @@ void ear_finalize()
 			if (in_loop) {
 				states_end_period(ear_iterations);
 			}
-			states_end_job(my_id, NULL, ear_app_name);
+			states_end_job(my_id,  ear_app_name);
 			break;
 		case PERIODIC_MODE_ON:
 			states_periodic_end_period(ear_iterations);
@@ -752,7 +752,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case NEW_LOOP:
 				debug("NEW_LOOP event %u level %hu size %hu\n",ear_event_l,ear_level,ear_size);
 				ear_iterations=0;
-				states_begin_period(my_id, NULL, ear_event_l, (uint)ear_size);
+				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				ear_loop_size=(uint)ear_size;
 				ear_loop_level=(uint)ear_level;
 				in_loop=1;
@@ -774,7 +774,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				ear_loop_size=(uint)ear_size;
 				ear_loop_level=(uint)ear_level;
-				states_begin_period(my_id, NULL, ear_event_l, (uint)ear_size);
+				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				break;
 			case NEW_ITERATION:
 				ear_iterations++;
@@ -858,7 +858,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				debug("NEW_LOOP event %u level %hu size %hu\n", ear_event_l, ear_level, ear_size);
 				ear_iterations=0;
 				//TODO
-				states_begin_period(my_id, NULL, ear_event_l, (uint) ear_size);
+				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				ear_loop_size=(uint)ear_size;
 				in_loop=1;
 				mpi_calls_per_loop=1;
@@ -875,7 +875,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
 				ear_loop_size=(uint)ear_size;
-				states_begin_period(my_id, NULL, ear_event_l, (uint)ear_size);
+				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				break;
 			case NEW_ITERATION:
 				ear_iterations++;

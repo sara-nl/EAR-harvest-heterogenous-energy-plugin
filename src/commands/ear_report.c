@@ -319,6 +319,30 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
 
 #define GLOBAL_ENERGY_TYPE  1
 #define PER_METRIC_TYPE     2
+void print_warning_level(int warn_level)
+{
+    switch(warn_level)
+    {
+        case 100:
+            printf("%12s ", "GRACE PERIOD");
+            break;
+        case 3:
+            printf("%12s ", "NO PROBLEM");
+            break;
+        case 2:
+            printf("%12s ", "WARNING 2");
+            break;
+        case 1:
+            printf("%12s ", "WARNING 1");
+            break;
+        case 0:
+            printf("%12s ", "PANIC");
+            break;
+        default:
+            printf("%12s ", "UNKNOWN");
+            break;
+    }
+}
 
 void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query, char type)
 {
@@ -366,6 +390,8 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
             for(i = 0; i < num_fields; i++) {
                 if (i == 0 || i == 2)
                     printf("%20s ", row[i] ? row[i] : "NULL");
+                else if (i == 1)
+                    print_warning_level(atoi(row[i]));  
                 else
                     printf("%12s ", row[i] ? row[i] : "NULL");
             }

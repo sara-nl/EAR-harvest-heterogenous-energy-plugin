@@ -36,6 +36,10 @@
 #include <common/math_operations.h>
 #endif
 #include <library/mpi_intercept/ear_api.h>
+#if USE_POLICY_PLUGIN
+#include <library/models/dyn_policies_operations.h>
+extern policy_dyn_t power_policy;
+#endif
 
 #if IN_MPI_TIME
 static unsigned long long ear_in_mpi=0;
@@ -54,9 +58,21 @@ void before_mpi(mpi_call call_type, p2i buf, p2i dest) {
 	#if IN_MPI_TIME
 	begin_in_mpi=PAPI_get_real_usec();
 	#endif
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.new_mpi_call!=NULL){
+		if (power_policy.new_mpi_call(call_type,buf,dest)!=EAR_SUCCESS) error("Error in power_policy.new_mpi_call %d",ret);
+	}
+  #endif
 }
 
 void after_mpi(mpi_call call_type){
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.end_mpi_call!=NULL){
+		if (power_policy.end_mpi_call(call_type)!=EAR_SUCCESS) error("Error in power_policy.end_mpi_call %d",ret);
+	}
+  #endif
 	#if IN_MPI_TIME
 	end_mpi_time=PAPI_get_real_usec();
 	if (end_mpi_time>begin_in_mpi){ 

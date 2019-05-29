@@ -34,10 +34,20 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <common/config.h>
+#include <common/states.h>
 #include <common/types/application.h>
 #include <common/types/projection.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
+
+
+#include <common/types/signature.h>/* defines signature */
+#include <daemon/shared_configuration.h> /* defines settings_conf */
+#include <library/mpi_intercept/MPI_calls_coded.h> /* defines list of mpi calls */
+#include <library/mpi_intercept/MPI_types.h> /* defines list of mpi calls */
+
+
 
 void monitoring_init()
 {
@@ -63,5 +73,47 @@ ulong monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_
 ulong monitoring_default_conf(ulong f)
 {
 	return f;
+}
+
+
+/*
+ * To be used by the pplugin
+ */
+int dyn_monitoring_init(application_t *app,settings_conf_t *conf,uint pstates)
+{
+	return EAR_SUCCESS;
+}
+int dyn_monitoring_end()
+{
+	return EAR_SUCCESS;
+}
+int dyn_monitoring_new_loop(loop_id_t *loop_id)
+{
+	return EAR_SUCCESS;
+}
+int dyn_monitoring_end_loop(loop_id_t *loop_id)
+{
+	return EAR_SUCCESS;
+}
+int dyn_monitoring_policy(settings_conf_t *conf,signature_t *sig,ulong *new_freq)
+{
+	int ret;
+	*new_freq=monitoring_policy(sig,&ret);
+	if (ret==1) return EAR_SUCCESS;
+	else EAR_NOT_READY;
+}
+int dyn_monitoring_policy_ok(signature_t *curr_sig, signature_t *last_sig)
+{
+	return 1;
+}
+int dyn_monitoring_default_conf(ulong *f)
+{
+	return EAR_SUCCESS;
+}
+
+
+int dyn_monitoring_max_tries()
+{
+	return 0;
 }
 

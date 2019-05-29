@@ -47,29 +47,36 @@
 #define OPTIONS O_WRONLY | O_CREAT | O_TRUNC | O_APPEND
 
 
-loop_id_t *create_loop_id(ulong event, ulong size, ulong level)
+int create_loop_id(loop_id_t *lid,ulong event, ulong size, ulong level)
 {
-    loop_id_t *loop_id = malloc(sizeof(loop_id_t));
-    loop_id->event = event;
-    loop_id->size = size;
-    loop_id->level = level;
-
-    return loop_id;
+	if (lid!=NULL){
+    lid->event = event;
+    lid->size = size;
+    lid->level = level;
+		return EAR_SUCCESS;
+	}else return EAR_ERROR;
 }
 
-loop_t *create_loop(loop_id_t loop_id)
+int create_loop(loop_t *l)
 {
-    loop_t *loop = calloc(1, sizeof(loop));
-    loop->id = loop_id;
-    return loop;
+	if (l!=NULL)
+	{
+		l->jid=0;
+		l->step_id=0;
+		l->total_iterations=0;
+		memset(&l->signature,0,sizeof(signature_t));
+	}else return EAR_ERROR;
 }
 
-void loop_init(loop_t *loop, job_t *job)
+int loop_init(loop_t *loop, job_t *job,ulong event, ulong size, ulong level)
 {
-    memset(loop, 0, sizeof(loop_t));
-    loop->jid = job->id;
+	int ret;
+	if ((ret=create_loop(loop))!=EAR_SUCCESS) return ret;
+	if ((ret=create_loop_id(&loop->id,event,size,level))!=EAR_SUCCESS) return ret;
+  loop->jid = job->id;
 	loop->step_id=job->step_id;
 	gethostname(loop->node_id,sizeof(loop->node_id));
+	return EAR_SUCCESS;
 }
 
 

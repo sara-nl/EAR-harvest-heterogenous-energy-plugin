@@ -429,7 +429,7 @@ int node_energy_dispose(energy_handler_t *eh)
 	debug("node_energy_dispose");
 	eh->ear_energy_node_connected=0;
 	if (node_energy_ops.node_energy_dispose!=NULL) return node_energy_ops.node_energy_dispose(&eh->ctx);
-	else return -1;
+	else return EAR_ERROR;
 }
 
 unsigned long node_energy_frequency(energy_handler_t *eh)

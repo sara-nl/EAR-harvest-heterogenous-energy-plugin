@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/debug.h>
@@ -51,6 +52,10 @@
 #include <daemon/eard_api.h>
 #include <control/frequency.h>
 #include <metrics/custom/hardware_info.h>
+#if USE_POLICY_PLUGIN
+#include <library/models/dyn_policies.h>
+policy_dyn_t power_policy;
+#endif
 
 static int use_default=1;
 
@@ -82,6 +87,21 @@ static int model_nominal=1;
 
 void init_policy_functions()
 {
+		#if USE_POLICY_PLUGIN
+		char *policy_plugin_name;
+		policy_plugin_name=getenv("SLURM_EAR_POWER_POLICY");
+		if (policy_plugin_name!=NULL){
+			debug("Loading policy %s",policy_plugin_name);
+			if (load_policy(&power_policy,policy_plugin_name)!=EAR_SUCCESS){
+				error("Power policy loaded %s with error",policy_plugin_name);
+			}else{
+				debug("Power policy loaded %s succesfully",policy_plugin_name);
+			}
+		}else{
+			debug("SLURM_EAR_POWER_POLICY not defined, setting dyn_policy_power to dyn_monitoring");
+			set_policy_monitoring(&power_policy);
+		}
+		#endif
     switch(power_model_policy)
     {
         case MIN_ENERGY_TO_SOLUTION:
@@ -150,13 +170,13 @@ int policy_global_configuration(int p_state)
 void policy_global_reconfiguration()
 {
 	if (system_conf!=NULL){
-	verbose(DYN_VERBOSE,"policy_global_reconfiguration policy %d max %lu def %lu th %.2lf\n",
+	debug("earl: policy_global_reconfiguration policy %d max %lu def %lu th %.2lf",
 	power_model_policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:
 	    // We filter initial configuration
 	    if (system_conf->max_freq<EAR_default_frequency){
-	        verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+	        debug("earl: max freq set to %lu because of power capping policies",system_conf->max_freq);
 			EAR_default_frequency=system_conf->max_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 	    }
@@ -166,14 +186,14 @@ void policy_global_reconfiguration()
     case SUPERMUC:
     #endif
 		if (system_conf->def_freq!=EAR_default_frequency){
-	        verbose(DYN_VERBOSE,"EAR def freq set to %lu because of power capping policies \n",system_conf->def_freq);
+	        debug("EAR def freq set to %lu because of power capping policies",system_conf->def_freq);
 			EAR_default_frequency=system_conf->def_freq;
 	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
 		}
 		break;
 	case MONITORING_ONLY:
 		if (system_conf->max_freq<ear_frequency){
-			verbose(DYN_VERBOSE,"EAR max freq set to %lu because of power capping policies \n",system_conf->max_freq);
+			debug("earl: max freq set to %lu because of power capping policies",system_conf->max_freq);
 			EAR_default_frequency=system_conf->max_freq;
 			EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);	
 		}
@@ -186,10 +206,16 @@ void policy_global_reconfiguration()
 		break;
 	}
     if (performance_gain<system_conf->th){
-        	verbose(DYN_VERBOSE,"EAR min perf. efficiency th set to %lf because of power capping policies \n",system_conf->th);
+        	debug("earl: min perf. efficiency th set to %lf because of power capping policies",system_conf->th);
         	performance_gain=system_conf->th;
     }
 	}
+	#if USE_POLICY_PLUGIN
+	if (power_policy.reconfigure!=NULL){
+		int ret=power_policy.reconfigure(system_conf);
+		if (ret!=EAR_SUCCESS)	error("Error in policy reconfiguration %d",ret);
+	}
+	#endif
 }
 
 // This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
@@ -246,7 +272,7 @@ void init_power_policy()
 	int min_p_state=0;
 	unsigned long def_freq;
 
-	verbose(2,"EAR(%s): EAR_init_power_policy\n",__FILE__);
+	debug("init_power_policy");
 	
 	power_model_policy = get_ear_power_policy();
 
@@ -281,13 +307,13 @@ void init_power_policy()
 
 	if (def_freq != EAR_default_frequency)
 	{
-		verbose(0,"ear: warning max freq is limited by the system, using %u as default\n",
-					def_freq);
+		warning("ear: warning max freq is limited by the system, using %u as default", def_freq);
 
 		EAR_default_frequency = def_freq;
 	}
 	policy_id_to_name(power_model_policy,application.job.policy);
 	init_policy_functions();
+
 }
 
 void init_coeff_data(coefficient_t *c_m,coefficient_t *c_sm)
@@ -306,14 +332,14 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	int i, ref;
 	char *use_def;
 
-	debug( "EAR(%s): EAR_Init_power_models p_states=%u\n", __FILE__, p_states);
+	debug( "init_power_models p_states=%u", p_states);
 
 	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
 	if (use_def!=NULL) use_default=atoi(use_def);
     #if EAR_LIB_SYNC 
     if (my_master_rank==0) {
     #endif
-	verbose(1,"Using average coefficients=%d\n",use_default);
+	debug("Using average coefficients=%d",use_default);
 	#if EAR_LIB_SYNC 
 	}
 	#endif
@@ -333,7 +359,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
 
 	if (coefficients == NULL) {
-		verbose(0, "EAR: Error allocating memory for p_states coefficients\n");
+		error("earl: Error allocating memory for p_states coefficients\n");
 		exit(1);
 	}
 
@@ -341,7 +367,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	{
 		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * p_states);
 		if (coefficients[i] == NULL) {
-			verbose(0,"EAR: Error allocating memory for p_states coefficients fn %d\n",i);
+			error("earl: Error allocating memory for p_states coefficients fn %d\n",i);
 			exit(1);
 		}
 
@@ -387,15 +413,23 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 				init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
 			}else{ 
 				if (coefficients_sm[ccoeff].available){
-					verbose(0,"Error: invalid coefficients for ref %lu or proj %lu\n",coefficients_sm[ccoeff].pstate_ref,
-					coefficients_sm[ccoeff].pstate);
+					error("Error: invalid coefficients for ref %lu or proj %lu",coefficients_sm[ccoeff].pstate_ref,coefficients_sm[ccoeff].pstate);
 				}
 			}
 		}
 	}else{
-		verbose(1,"NO coefficients found");
+		warning("NO coefficients found");
 	}
 	app_policy.init(p_states);
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.init!=NULL){
+		ret=power_policy.init(&application,system_conf,p_states);
+		if (ret!=EAR_SUCCESS){
+			error("Error in power policy init %d",ret);
+		}
+	}
+  #endif
 }
 
 
@@ -403,6 +437,15 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.is_ok!=NULL){
+		ret=power_policy.is_ok(curr_sig,last_sig);
+		if (ret!=EAR_SUCCESS){
+			error("Error in power policy is_ok %d",ret);
+		}
+	}
+  #endif
 	return app_policy.policy_ok(proj, curr_sig,last_sig);
 }
 
@@ -414,12 +457,21 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int
 	unsigned long optimal_freq, max_freq;
 
 	if (whole_app) return ear_frequency;
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.apply!=NULL){
+		ret=power_policy.apply(system_conf,MY_SIGNATURE,&optimal_freq);
+		if (ret!=EAR_SUCCESS){
+			error("Error in power policy apply %d",ret);
+			*ready=0;
+		}else *ready=1;
+	}
+  #endif
 	optimal_freq = app_policy.policy(MY_SIGNATURE,ready);
 
 	if (optimal_freq != ear_frequency)
 	{
-		debug("EAR(%s):: Changing Frequency to %u at the beggining of iteration\n",
-				  __FILE__,optimal_freq);
+		debug("earl: Changing Frequency to %u at the beggining of iteration",optimal_freq);
 
 		ear_frequency = max_freq = eards_change_freq(optimal_freq);
 
@@ -427,7 +479,7 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int
 			optimal_freq = max_freq;
 		}
 	} else {
-		debug("EAR(%s):: %u selected, no changes are required\n",__FILE__,optimal_freq);
+		debug("earl: %u selected, no changes are required",optimal_freq);
 	}
 
 	return optimal_freq;
@@ -440,31 +492,93 @@ void force_global_frequency(ulong new_f)
 	eards_change_freq(ear_frequency);
 }
 
-void policy_new_loop()
+void policy_new_loop(loop_id_t *lid)
 {
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.new_loop!=NULL){
+		ret=power_policy.new_loop(lid);
+		if (ret!=EAR_SUCCESS){
+			error("Error in power policy new_loop %d",ret);
+		}
+	}
+  #endif
 	app_policy.new_loop();
 }
 
-void policy_end_loop()
+void policy_end_loop(loop_id_t *lid)
 {
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.end_loop!=NULL){
+		ret=power_policy.end_loop(lid);
+		if (ret!=EAR_SUCCESS){
+			error("Error in power policy end_loop %d",ret);
+		}
+	}
+  #endif
     app_policy.end_loop();
 }
 
 ulong policy_default_configuration()
 {
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.default_conf!=NULL){
+		ulong f;
+		f=user_selected_freq;
+		ret=power_policy.default_conf(&f);
+		if (ret!=EAR_SUCCESS){
+			error("Error in power policy default_conf %d",ret);
+		}else{
+			#if PENDING
+			ear_frequency=f;
+			eards_change_freq(ear_frequency);
+			return ear_frequency;
+			#endif
+		}
+	}
+  #endif
 	ear_frequency=app_policy.default_conf(user_selected_freq);
-	verbose(0,"Going to default frequency %lu\n",ear_frequency);
+	verbose(1,"earl:Going to default frequency %lu",ear_frequency);
 	eards_change_freq(ear_frequency);
 	return ear_frequency;
 }
 
 ulong policy_get_default_freq()
 {
+  #if USE_POLICY_PLUGIN
+  int ret;
+  if (power_policy.default_conf!=NULL){
+    ulong f;
+    f=user_selected_freq;
+    ret=power_policy.default_conf(&f);
+    if (ret!=EAR_SUCCESS){
+      error("Error in power policy default_conf %d",ret);
+    }else{
+      #if PENDING
+      ear_frequency=f;
+      eards_change_freq(ear_frequency);
+      return ear_frequency;
+      #endif
+    }
+  }
+
+  #endif
 	return app_policy.default_conf(user_selected_freq);
 }
 
 int policy_max_tries()
 {
+  #if USE_POLICY_PLUGIN
+	int ret;
+	if (power_policy.max_tries!=NULL){
+		ret=power_policy.max_tries();
+		#if PENDING
+		return ret;
+		#endif
+	}
+  #endif
         switch (power_model_policy)
         {
             case MIN_TIME_TO_SOLUTION:
