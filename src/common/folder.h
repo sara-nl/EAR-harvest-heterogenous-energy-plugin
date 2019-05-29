@@ -1,0 +1,6 @@
+#ifndef EAR_PRIVATE_FOLDER_H
+#define EAR_PRIVATE_FOLDER_H
+
+
+
+#endif //EAR_PRIVATE_FOLDER_H

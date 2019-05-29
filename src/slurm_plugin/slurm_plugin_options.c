@@ -81,55 +81,52 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 
 static int _opt_register_mpi(spank_t sp, int ac, char **av)
 {
-        plug_verbose(sp, 2, "function _opt_dir");
-	
-        struct dirent *file;
-        int i, pc, qc;
+	plug_verbose(sp, 2, "function _opt_dir");
+
+	struct dirent *file;
+	int i, pc, qc;
 	char *p, *q;
-        DIR *dir;
-	
+	DIR *dir;
+
 	// Filing a default option string
 	pc = sprintf(mpi_dst, "default,");
-	p  = &mpi_dst[pc];
-	
-        for (i = 0; i < ac; ++i)
-        {
-                if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
-                {
-			sprintf(buffer, "%s/lib/", &av[i][7]);
-                        dir = opendir(buffer);
+	p = &mpi_dst[pc];
 
-                        if (dir)
-                        {
+	for (i = 0; i < ac; ++i)
+	{
+		if ((strlen(av[i]) > 7) && (strncmp("prefix=", av[i], 7) == 0))
+		{
+			sprintf(buffer, "%s/lib/", &av[i][7]);
+			dir = opendir(buffer);
+
+			if (dir)
+			{
 			while ((file = readdir(dir)) != NULL)
 			{
 				if (strstr(file->d_name, "libear.") != NULL)
 				{
-					q  = &file->d_name[7];
+					q = &file->d_name[7];
 					qc = strlen(q);
 
-					slurm_error("%s", &q[qc-3]);
-					if(qc > 2 && strcmp(&q[qc-3], ".so") == 0)
-					{
-						q[qc-3] = '\0';
-                                       		pc = sprintf(p, "%s,", q);
-						p  = &p[pc];
+					if (qc > 2 && strcmp(&q[qc - 3], ".so") == 0) {
+						q[qc - 3] = '\0';
+						pc = sprintf(p, "%s,", q);
+						p = &p[pc];
 					}
 				}
 			}
-		
 			closedir(dir);
-                        }
-                }
-        }
+			}
+		}
+	}
 
 	// Cleaning the last comma	
 	p = &p[-1];
 	*p = '\0';
-	
+
 	// Filling the option string with distribution options
 	sprintf(mpi_opt, "Selects the MPI distribution for compatibility of your application {dist=%s}", mpi_dst);
-        
+
 	return ESPANK_SUCCESS;
 }
 
