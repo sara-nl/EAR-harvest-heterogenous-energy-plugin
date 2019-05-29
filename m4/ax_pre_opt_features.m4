@@ -18,53 +18,55 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	AC_ARG_VAR([COEFFS],[Defines the coefficients store directory (default: EPREFIX/etc)])
 
 	if test "x$prefix" = "xNONE";then
-    	prefix=/usr/local
+		prefix=/usr/local
 	fi
 	if test "x$exec_prefix" = "xNONE"; then
-    	exec_prefix=$prefix
+		exec_prefix=$prefix
 	fi
 	if test "x$libdir" = "x\${exec_prefix}/lib"; then
-    	libdir=$exec_prefix/lib
+		libdir=$exec_prefix/lib
 	fi
 	if test "x$bindir" = "x\${exec_prefix}/bin"; then
-    	bindir=$exec_prefix/bin
+		bindir=$exec_prefix/bin
 	fi
 	if test "x$sbindir" = "x\${exec_prefix}/sbin"; then
-    	sbindir=$exec_prefix/sbin
+		sbindir=$exec_prefix/sbin
 	fi
 	if test -n "$ETC"; then
 		sysconfdir=$ETC	
 	fi
 	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$sysconfdir" = "x\${prefix}/etc"; then
-    	sysconfdir=$prefix/etc
+		sysconfdir=$prefix/etc
 	fi
 	if test -n "$TMP"; then
 		localstatedir=$TMP
 	fi
 	if test "x$localstatedir" = "x\${prefix}/var"; then
-        localstatedir=/var/ear
-    fi
+        	localstatedir=/var/ear
+	fi
 	if test -n "$DOC"; then
 		docdir=$DOC
 	fi
 	if test "x$docdir" = "x\${datarootdir}/doc/\${PACKAGE_TARNAME}"; then
-        docdir=/share/doc/ear
-    fi
+		docdir=/share/doc/ear
+	fi
 
 	AC_SUBST(TMP)
 
-    #
-    # Disable RPATH
-    #
-    AC_ARG_ENABLE([rpath],
-        AS_HELP_STRING([--disable-rpath], [Disables RPATH/RUNPATH from the compiled binaries])
-    )
+	#
+	# Disable RPATH
+	#
+	AC_ARG_ENABLE([rpath],
+		AS_HELP_STRING([--disable-rpath], [Disables RPATH/RUNPATH from the compiled binaries])
+	)
 
 	#
 	# MPI
 	#
-	AC_ARG_VAR([MPICC],[Defines the Intel MPI compiler])
-	AC_ARG_VAR([OMPICC],[Defines the Open MPI compiler])
+	AC_ARG_VAR([CC_FLAGS],[Adds parameters to C compiler])
+	AC_ARG_VAR([MPICC],[Defines the MPI compiler])
+	AC_ARG_VAR([MPICC_FLAGS],[Appends parameters to MPI compiler])
+	AC_ARG_VAR([MPI_VERSION],[Adds a suffix to the EAR library referring the MPI version used to compile])
 
 	# !I && !O
 	if test -z "$MPICC" && test -z "$OMPICC"; then
@@ -72,8 +74,8 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	fi
 
 	if echo "$CC" | grep -q "icc"; then
-        CC_FLAGS=-static-intel
-    fi
+        	CC_FLAGS=-static-intel
+	fi
 
 	if echo "$MPICC" | grep -q "mpiicc"; then	
 		MPICC_FLAGS="-static-intel"
@@ -89,7 +91,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	#
 	# DATABASE
 	#
-    AC_ARG_ENABLE([database],
+	AC_ARG_ENABLE([database],
 		AS_HELP_STRING([--enable-database=TYPE], [Stores the execution data in the selected database type: mysql (def) or files])
 	)
 
