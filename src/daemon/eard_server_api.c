@@ -129,7 +129,7 @@ int wait_for_client(int s,struct sockaddr_in *client)
 	int client_addr_size;
 
     client_addr_size = sizeof(struct sockaddr_in);
-    new_sock = accept(s, (struct sockaddr *) &client, &client_addr_size);
+    new_sock = accept(s, (struct sockaddr *) client, &client_addr_size);
     if (new_sock < 0){ 
 		error("accept for eards socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
