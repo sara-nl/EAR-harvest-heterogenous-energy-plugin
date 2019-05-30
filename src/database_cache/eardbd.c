@@ -74,6 +74,7 @@ long fd_hosts[FD_SETSIZE];
 // Mirroring
 char master_host[SZ_NAME_MEDIUM]; // This node name
 char master_alia[SZ_NAME_MEDIUM];
+char master_name[SZ_NAME_MEDIUM];
 char server_host[SZ_NAME_MEDIUM]; // If i'm mirror, which is the server?
 static int server_port;
 static int mirror_port;
@@ -538,6 +539,10 @@ static void init_process_configuration(int argc, char **argv, cluster_conf_t *co
 	if (dreaming) {
 		return;
 	}
+
+	// Setting master name
+	if (server_iam) sprintf(master_name, "%s-s", master_alia);
+	else sprintf(master_name, "%s-m", master_alia);
 
 	// Types allocation counting
 	for (i = 0; i < EARDBD_TYPES; ++i) {

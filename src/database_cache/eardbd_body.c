@@ -65,6 +65,7 @@ extern pid_t others_pid;
 // Mirroring
 extern char master_host[SZ_NAME_MEDIUM];
 extern char master_alia[SZ_NAME_MEDIUM];
+extern char master_name[SZ_NAME_MEDIUM];
 extern int master_iam;
 extern int server_iam;
 extern int mirror_iam;
@@ -145,7 +146,7 @@ static void body_alarm(struct timeval *timeout_slct)
 					// Initializing the new element
 					q = (peraggr_t *) &p[sam_index[i_aggrs]];
 
-					init_periodic_aggregation(q, master_alia);
+					init_periodic_aggregation(q, master_name);
 				}
 			}
 
