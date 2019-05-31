@@ -168,6 +168,7 @@ void log_report_dynais_off(job_id job,job_id sid)
     new_event.event=DYNAIS_OFF;
     new_event.jid=job;
     new_event.step_id=sid;
+    new_event.freq=0; //0 as it is not relevant and better than an uninitialised value
     report_new_event(&new_event);
 #endif
 }
