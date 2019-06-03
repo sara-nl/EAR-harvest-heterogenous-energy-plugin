@@ -105,10 +105,10 @@ void usage(char *app)
     printf( "Options are as follows:\n"\
         "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
         "\t-e end_time       \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
-        "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
-        "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
-        "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
-        "\t-i eardbd_name|all\t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
+        "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
+        "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
+        "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
+        "\t-i eardbd_name|all\t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
         "\t-g                \t shows the contents of EAR's database Global_energy table. The default option will show the records for the two previous T2 periods of EARGM.\n\t\t\t\t\t This option can only be modified with -s, not -e\n"
         "\t-h                \t shows this message.\n");
 	exit(1);
