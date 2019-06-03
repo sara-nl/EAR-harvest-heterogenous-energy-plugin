@@ -237,10 +237,9 @@ static void body_connections()
 						if (sync_fd_exists(ip, &fd_old))
 						{
 							//log("multiple connections from host '%s', disconnecting previous", extra_buffer);
-
 							if (verbosity) {
 								verbose_xaxxw("disconnecting from host '%s' (host was previously connected)",
-										  extra_buffer);
+									extra_buffer);
 							}
 
 							sync_fd_disconnect(fd_old);
@@ -254,7 +253,7 @@ static void body_connections()
 					{
 						if (verbosity) {
 							verbose_xaxxw("disconnecting from host '%s' (maximum connections reached)",
-									  extra_buffer);
+								extra_buffer);
 						}
 
 						sync_fd_disconnect(fd_old);
@@ -280,8 +279,6 @@ static void body_connections()
 				}
 				else
 				{
-					
-
 					if (state_is(s, EAR_SOCK_DISCONNECTED)) {
 						soc_discn += 1;
 					} if (state_is(s, EAR_SOCK_TIMEOUT)) {

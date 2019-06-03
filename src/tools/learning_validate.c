@@ -55,17 +55,31 @@ static application_t *apps;
 static int n_apps;
 
 //
-static int diff_apps;
-static int diff_freq;
-static int diff_060s;
-static int diff_120s;
-static int diff_400w; // A node oscillates bw 100-400W with no GPU
-static int diff_100w; // 
-static int diff_000g; // (3,400,000,000) * 2 * 8 * 8 = 435 GB/s max BW
-static int diff_450g; // (DDR4@3.4GHz OC) * (dual) * (8 bytes) * (8 channels)
-static double diff_exfr;
+static int diff_wapps;
+static int diff_w060s;
+static int diff_w120s;
+static int diff_w400w; // A node oscillates bw 100-400W with no GPU
+static int diff_w100w; // 
+static int diff_w000g; // (3,400,000,000) * 2 * 8 * 8 = 435 GB/s max BW
+static int diff_w450g; // (DDR4@3.4GHz OC) * (dual) * (8 bytes) * (8 channels)
+static int diff_m060s;
+static int diff_m120s;
+static int diff_m400w; // A node oscillates bw 100-400W with no GPU
+static int diff_m100w; //
+static int diff_m000g; // (3,400,000,000) * 2 * 8 * 8 = 435 GB/s max BW
+static int diff_m450g; // (DDR4@3.4GHz OC) * (dual) * (8 bytes) * (8 channels)
 static ulong max_freq;
 static ulong min_freq;
+
+//
+double wtim;
+double wpow;
+double wgbs;
+double mtim;
+double mpow;
+double mgbs;
+char *name;
+ulong freq;
 
 /*
  *
@@ -78,35 +92,33 @@ static void print_header()
 	// If not general the header is printed
 	if (!opt_g)
 	{
-		tprintf_init(fdout, STR_MODE_COL, "10 10 10 100");
+		tprintf_init(fdout, STR_MODE_COL, "10 10 10 10 100");
 
-		tprintf("Time||Power||Bandwidth|||Application");
-		tprintf("----||-----||---------|||-----------");
+		tprintf("Nodename||Time||Power||Bandwidth|||Application");
+		tprintf("--------||----||-----||---------|||-----------");
 
 		return;
 	}
 
 	// If general
-	tprintf_init(fdout, STR_MODE_COL, "10 7 8 8 9 9 9 10 10 10");
+	tprintf_init(fdout, STR_MODE_COL, "10 7 8 10 10 13 13 13 12 12 12");
 
 	// If header
 	if (opt_h) {
-		tprintf("Nodename|||#Apps||#Execs||#Times|||#Freqs||Max||Min|||W. tim.||W. pow.||W. gbs.");
-		tprintf("--------|||-----||------||------|||------||---||---|||-------||-------||-------");
+		tprintf("Nodename|||#Apps||#Execs|||F. Max||F. Min|||Time warns.||Pow. warns.||GBS. warns.|||Time mean||Pow. mean||GBS. mean.");
+		tprintf("--------|||-----||------|||------||------|||-----------||-----------||-----------|||---------||---------||----------");
 	}
 }
 
-static void print_individual(application_t *app)
+static void print_individual()
 {
-    char *col_time;
-    char *col_powe;
-    char *col_bwth;
-	int warn_time;
-    int warn_powe;
-	int warn_bwth;
-    double time;
-    double powe;
-    double bwth;
+    char *col_wtim;
+    char *col_wpow;
+    char *col_wgbs;
+	int warn_wtim;
+    int warn_wpow;
+	int warn_wgbs;
+
     ulong freq;
     char *name;
 
@@ -114,38 +126,37 @@ static void print_individual(application_t *app)
 		return;
 	}
 
-	//
-	name = app->job.app_id;
-	freq = app->job.def_f;
-	time = app->signature.time;
-	powe = app->signature.DC_power;
-	bwth = app->signature.GBS;
-
 	// Warnings
-	warn_time = (time > 120.0) | (time < 060.0);
-	warn_powe = (powe > 400.0) | (powe < 100.0);
-	warn_bwth = (bwth > 450.0) | (bwth < 000.0);
+	warn_wtim = (wtim > 120.0) | (wtim < 060.0);
+	warn_wpow = (wpow > 400.0) | (wpow < 100.0);
+	warn_wgbs = (wgbs > 450.0) | (wgbs < 000.0);
 
 	// 
-    col_time = (warn_time == 0) ? "": STR_RED;
-    col_powe = (warn_powe == 0) ? "": STR_RED;
-    col_bwth = (warn_bwth == 0) ? "": STR_RED;
+    col_wtim = (warn_wtim == 0) ? "": STR_RED;
+    col_wpow = (warn_wpow == 0) ? "": STR_RED;
+    col_wgbs = (warn_wgbs == 0) ? "": STR_RED;
     
-    if (warn_time || warn_powe || warn_bwth)	{
-        tprintf("%s%0.2lf||%s%0.2lf||%s%0.2lf|||%s",
-			col_time, time, col_powe, powe, col_bwth, bwth, name);
+    if (warn_wtim || warn_wpow || warn_wgbs)	{
+        tprintf("%s|||%s%0.2lf||%s%0.2lf||%s%0.2lf|||%s",
+			buffer_nodename, col_wtim, wtim, col_wpow, wpow, col_wgbs, wgbs, name);
     }
 }
 
 static void print_summary()
 {
-	int warn_bwth;
-	int warn_powe;
-	int warn_time;
-	char *col_bwth;
-	char *col_powe;
-	char *col_time;
-
+	char *col_mtim;
+	char *col_mgbs;
+	char *col_mpow;
+	char *col_wtim;
+	char *col_wgbs;
+	char *col_wpow;
+	int warn_wtim;
+	int warn_wgbs;
+	int warn_wpow;
+	int warn_mtim;
+	int warn_mgbs;
+	int warn_mpow;
+	
 	if (!opt_g) {
 		return;
 	}
@@ -156,36 +167,41 @@ static void print_summary()
 
 	if (n_apps == 0)
 	{
-		tprintf("%s|||-||-||-|||-||-||-|||-||-||-",
+		tprintf("%s|||-||-|||-||-|||-||-||-|||-||-||-",
             buffer_nodename);
 		return;
 	}
 
 	//
-	warn_bwth = diff_450g + diff_000g;
-	warn_powe = diff_400w + diff_100w;
-	warn_time = diff_120s + diff_060s;
+	warn_wgbs = diff_w450g + diff_w000g;
+	warn_wpow = diff_w400w + diff_w100w;
+	warn_wtim = diff_w120s + diff_w060s;
+	warn_mgbs = diff_m450g + diff_m000g;
+	warn_mpow = diff_m400w + diff_m100w;
+	warn_mtim = diff_m120s + diff_m060s;
+	col_wtim = (warn_wtim == 0) ? "": STR_RED;
+	col_wpow = (warn_wpow == 0) ? "": STR_RED;
+	col_wgbs = (warn_wgbs == 0) ? "": STR_RED;
+	col_mtim = (warn_mtim == 0) ? "": STR_RED;
+	col_mpow = (warn_mpow == 0) ? "": STR_RED;
+	col_mgbs = (warn_mgbs == 0) ? "": STR_RED;
 
-	//
-	col_time = (warn_time == 0) ? "": STR_RED;
-	col_powe = (warn_powe == 0) ? "": STR_RED;
-	col_bwth = (warn_bwth == 0) ? "": STR_RED;
-
+	
 	// Table
-	tprintf("%s|||%d||%d||%0.2lf|||%d||%lu||%lu|||%s%d||%s%d||%s%d",
-			buffer_nodename, diff_apps, n_apps, diff_exfr,
-			diff_freq, max_freq, min_freq,
-			col_time, warn_time, col_powe, warn_powe, col_bwth, warn_bwth
+	tprintf("%s|||%d||%d|||%d||%lu||%lu|||%s%d||%s%d||%s%d|||%s%0.2f||%s%0.2f||%s%0.2f",
+			buffer_nodename, diff_wapps, n_apps,
+			max_freq, min_freq,
+			col_wtim, warn_wtim,
+			col_wpow, warn_wpow,
+			col_wgbs, warn_wgbs,
+			col_mtim, mtim,
+			col_mpow, mpow,
+			col_mgbs, mgbs
 	);
 }
 
 static void analyze()
 {
-	char *name;
-	ulong freq;
-	double time;
-	double powe;
-	double bwth;
 	int found_name;
 	int found_freq;
 	int a, i;
@@ -203,33 +219,48 @@ static void analyze()
 	{
 		name = apps[a].job.app_id;
 		freq = apps[a].job.def_f;
-		time = apps[a].signature.time;
-		powe = apps[a].signature.DC_power;
-		bwth = apps[a].signature.GBS;
+
+		// Saved for warnings
+		wtim = apps[a].signature.time;
+		wpow = apps[a].signature.DC_power;
+		wgbs = apps[a].signature.GBS;
+
+		// Means
+		mtim += wtim;
+		mpow += wpow;
+		mgbs += wgbs;
 
 		found_name = 0;
 		found_freq = 0;
 
-		for (i = 0; i < a; i++) {
+		for (i = 0; i < a; i++)
+		{
 			found_name = found_name | (strcmp(name, apps[i].job.app_id) == 0);
 			found_freq = found_freq | (freq == apps[i].job.def_f);
 		}
 
-		diff_apps += !found_name;
-		diff_freq += !found_freq;
-		diff_060s += (time < 060.0);
-		diff_120s += (time > 120.0);
-		diff_100w += (powe < 100.0);
-		diff_400w += (powe > 400.0);
-		diff_450g += (bwth > 450.0);
-		diff_000g += (bwth < 000.0);
+		diff_wapps += !found_name;
+		diff_w060s += (wtim < 060.0);
+		diff_w120s += (wtim > 120.0);
+		diff_w100w += (wpow < 100.0);
+		diff_w400w += (wpow > 400.0);
+		diff_w450g += (wgbs > 450.0);
+		diff_w000g += (wgbs < 000.0);
 		min_freq   = min_freq * (freq >= min_freq) + freq * (freq < min_freq);
 		max_freq   = max_freq * (freq <= max_freq) + freq * (freq > max_freq);
 		
-		print_individual(&apps[a]);
+		print_individual();
 	}
 
-	diff_exfr = (double) n_apps / (double) diff_freq;
+	mtim /= (double) n_apps;
+	mpow /= (double) n_apps;
+	mgbs /= (double) n_apps;
+	diff_m060s += (mtim < 060.0);
+	diff_m120s += (mtim > 120.0);
+	diff_m100w += (mpow < 100.0);
+	diff_m400w += (mpow > 400.0);
+	diff_m450g += (mgbs > 450.0);
+	diff_m000g += (mgbs < 000.0);
 }
 
 /*
