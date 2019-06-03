@@ -68,6 +68,7 @@ void usage(char *app)
 "\t\t-c\tspecifies the file where the output will be stored in CSV format. [default: no file]\n" \
 "\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
+"\t\t-x\tshows the last EAR events. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
 "\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" \
 "", app);
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
@@ -657,6 +658,128 @@ void add_int_list_filter(char *query, char *addition, char *value)
     query_filters ++;
 }
 
+#define ENERGY_POLICY_NEW_FREQ	0
+#define GLOBAL_ENERGY_POLICY	1
+#define ENERGY_POLICY_FAILS		2
+#define DYNAIS_OFF				3
+
+void print_event_type(int type)
+{
+    switch(type)
+    {
+        case 0:
+            printf("%15s ", "NEW FREQ");
+            break;
+        case 1:
+            printf("%15s ", "GLOBAL POLICY");
+            break;
+        case 2:
+            printf("%15s ", "POLICY FAILS");
+            break;
+        case 3:
+            printf("%15s ", "DYNAIS OFF");
+            break;
+        default:
+            if (verbose)
+                printf("%12s(%d) ","UNKNOWN", type);
+            else
+                printf("%15s ", "UNKNOWN CODE");
+            break;
+    }
+}
+
+#define EVENTS_QUERY "SELECT id, FROM_UNIXTIME(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
+
+void read_events(char *user, int job_id, int limit, int step_id, char *job_ids) 
+{
+    char query[512];
+    char subquery[128];
+    int num_apps = 0;
+    int i;
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
+        exit(1);
+    }
+    if (strlen(my_conf.database.user_commands) < 1) 
+        verbose(0, "Warning: commands' user is not defined in ear.conf");
+
+    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands, my_conf.database.pass_commands, my_conf.database.database, my_conf.database.port, NULL, 0))
+    {
+        verbose(0, "Error connecting to the database(%d):%s", mysql_errno(connection), mysql_error(connection)); //error
+        mysql_close(connection);
+        exit(1);
+    }
+    strcpy(query, EVENTS_QUERY);
+
+    if (job_id >= 0)
+        add_int_filter(query, "job_id", job_id);
+    else if (strlen(job_ids) > 0)
+        add_int_list_filter(query, "job_id", job_ids);
+    if (step_id >= 0)
+        add_int_filter(query, "step_id", step_id);
+    if (user != NULL)
+        add_string_filter(query, "node_id", user);
+
+    if (limit > 0)
+    {
+        sprintf(subquery, " ORDER BY timestamp desc LIMIT %d", limit);
+        strcat(query, subquery);
+    }
+
+    if (verbose) printf("QUERY: %s\n", query);
+  
+    if (mysql_query(connection, query))
+    {
+        printf( "MYSQL error: %s\n", mysql_error(connection));
+        return;
+    }
+    MYSQL_RES *result = mysql_store_result(connection);
+  
+    if (result == NULL) 
+    {
+        printf( "MYSQL error\n");
+        return;
+    }
+
+    int num_fields = mysql_num_fields(result);
+
+    MYSQL_ROW row;
+    int has_records = 0;
+    while ((row = mysql_fetch_row(result))!= NULL) 
+    { 
+        if (!has_records)
+        {
+            printf("%12s %20s %15s %8s %8s %20s %12s\n",
+               "Event ID", "Timestamp", "Event type", "Job id", "Step id", "Freq.", "node_id");
+            has_records = 1;
+        }
+        for(i = 0; i < num_fields; i++) {
+            if (i == 2)
+               print_event_type(atoi(row[i]));  
+            else if (i == 1)
+               printf("%20s ", row[i] ? row[i] : "NULL");
+            else if (i == 4 || i == 3)
+               printf("%8s ", row[i] ? row[i] : "NULL");
+            else if (i == 5)
+               printf("%20s ", row[i] ? row[i] : "NULL");
+            else
+               printf("%12s ", row[i] ? row[i] : "NULL");
+        }
+        printf("\n");
+    }
+    if (!has_records)
+    {
+        char buff[64];
+        printf("There are no events with the specified properties.\n\n");
+    }
+
+
+    mysql_close(connection);
+}
+
 
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
@@ -803,6 +926,7 @@ void main(int argc, char *argv[])
     int user_id = -1;
     int step_id = -1;
     int limit = 20;
+    char is_events = 0;
     int opt;
     char path_name[256];
     char *file_name = NULL;
@@ -832,7 +956,7 @@ void main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmalc:h")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmalc:hx::")) != -1) 
     {
         switch (opt)
         {
@@ -855,6 +979,23 @@ void main(int argc, char *argv[])
                     token = strtok(NULL, ".");
                     if (token != NULL) step_id = atoi(token);
                 }
+                break;
+            case 'x':
+                is_events = 1;
+                if (optind < argc && strchr(argv[optind], '-') == NULL)
+                {
+                    if (strchr(argv[optind], ','))
+                    {
+                        strcpy(job_ids, argv[optind]);
+                    }
+                    else
+                    {
+                        job_id = atoi(strtok(argv[optind], "."));
+                        token = strtok(NULL, ".");
+                        if (token != NULL) step_id = atoi(token);
+                    }
+                }
+                else if (verbose) printf("No argument for -x\n");
                 break;
             case 'f':
                 file_name = optarg;
@@ -887,6 +1028,7 @@ void main(int argc, char *argv[])
     if (verbose) printf("Limit set to %d\n", limit);
 
     if (file_name != NULL) read_from_files(file_name, user, job_id, limit, step_id);
+    else if (is_events) read_events(user, job_id, limit, step_id, job_ids);
     else read_from_database(user, job_id, limit, step_id, e_tag, job_ids); 
 
     free_cluster_conf(&my_conf);
