@@ -64,6 +64,7 @@ static edb_state_t _send(uint content_type, char *content, ssize_t content_size)
 	}
 
 	//
+	sockets_header_clean(&header);
 	sockets_header_update(&header);
 	header.content_type = content_type;
 	header.content_size = content_size;
