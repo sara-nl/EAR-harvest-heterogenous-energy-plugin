@@ -1993,6 +1993,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
     }
+    bind[1].buffer_type = MYSQL_TYPE_LONG;
     bind[5].buffer_type = MYSQL_TYPE_VARCHAR;
     bind[5].buffer_length = strlen(ear_ev->node_id);
 
@@ -2043,6 +2044,7 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
         }
+	bind[offset+1].buffer_type = MYSQL_TYPE_LONG;
         bind[offset+5].buffer_type = MYSQL_TYPE_VARCHAR;
         bind[offset+5].buffer_length = strlen(ear_ev[i].node_id);
 
