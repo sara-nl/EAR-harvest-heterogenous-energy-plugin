@@ -94,8 +94,8 @@ static void print_header()
 	{
 		tprintf_init(fdout, STR_MODE_COL, "10 10 10 10 100");
 
-		tprintf("Nodename||Time||Power||Bandwidth|||Application");
-		tprintf("--------||----||-----||---------|||-----------");
+		tprintf("Nodename|||Time||Power||Bandwidth|||Application");
+		tprintf("--------|||----||-----||---------|||-----------");
 
 		return;
 	}
@@ -112,15 +112,14 @@ static void print_header()
 
 static void print_individual()
 {
-    char *col_wtim;
-    char *col_wpow;
-    char *col_wgbs;
+	char *col_wtim;
+	char *col_wpow;
+	char *col_wgbs;
 	int warn_wtim;
-    int warn_wpow;
+	int warn_wpow;
 	int warn_wgbs;
-
-    ulong freq;
-    char *name;
+	ulong freq;
+	//char *name;
 
 	if (opt_g) {
 		return;
@@ -132,14 +131,14 @@ static void print_individual()
 	warn_wgbs = (wgbs > 450.0) | (wgbs < 000.0);
 
 	// 
-    col_wtim = (warn_wtim == 0) ? "": STR_RED;
-    col_wpow = (warn_wpow == 0) ? "": STR_RED;
-    col_wgbs = (warn_wgbs == 0) ? "": STR_RED;
+	col_wtim = (warn_wtim == 0) ? "": STR_RED;
+	col_wpow = (warn_wpow == 0) ? "": STR_RED;
+	col_wgbs = (warn_wgbs == 0) ? "": STR_RED;
     
-    if (warn_wtim || warn_wpow || warn_wgbs)	{
-        tprintf("%s|||%s%0.2lf||%s%0.2lf||%s%0.2lf|||%s",
+	if (warn_wtim || warn_wpow || warn_wgbs) {
+		tprintf("%s|||%s%0.2lf||%s%0.2lf||%s%0.2lf|||%s",
 			buffer_nodename, col_wtim, wtim, col_wpow, wpow, col_wgbs, wgbs, name);
-    }
+	}
 }
 
 static void print_summary()
@@ -186,9 +185,8 @@ static void print_summary()
 	col_mpow = (warn_mpow == 0) ? "": STR_RED;
 	col_mgbs = (warn_mgbs == 0) ? "": STR_RED;
 
-	
 	// Table
-	tprintf("%s|||%d||%d|||%d||%lu||%lu|||%s%d||%s%d||%s%d|||%s%0.2f||%s%0.2f||%s%0.2f",
+	tprintf("%s|||%d||%d|||%lu||%lu|||%s%d||%s%d||%s%d|||%s%0.2f||%s%0.2f||%s%0.2f",
 			buffer_nodename, diff_wapps, n_apps,
 			max_freq, min_freq,
 			col_wtim, warn_wtim,
