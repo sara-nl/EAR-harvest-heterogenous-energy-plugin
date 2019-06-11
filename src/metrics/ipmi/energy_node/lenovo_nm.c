@@ -43,9 +43,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
-#include <common/output/error.h>
 #include <metrics/custom/hardware_info.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)

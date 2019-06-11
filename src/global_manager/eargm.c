@@ -46,8 +46,6 @@
 #include <common/states.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <common/types/daemon_log.h>
 #include <common/database/db_helper.h>
 #include <common/types/generic.h>

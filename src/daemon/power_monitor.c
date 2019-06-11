@@ -43,8 +43,6 @@
 #include <common/config.h>
 #include <common/sockets.h>
 #define SHOW_DEBUGS
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>

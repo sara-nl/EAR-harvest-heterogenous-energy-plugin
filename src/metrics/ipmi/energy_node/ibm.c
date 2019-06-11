@@ -40,7 +40,6 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <freeipmi/freeipmi.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <metrics/custom/hardware_info.h>
 

@@ -39,9 +39,7 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
-#include <common/output/error.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <daemon/eard_api.h>

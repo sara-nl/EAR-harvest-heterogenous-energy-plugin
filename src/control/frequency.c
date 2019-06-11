@@ -41,7 +41,6 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
-#include <common/output/error.h>
 #include <control/frequency.h>
 #include <metrics/custom/hardware_info.h>
 

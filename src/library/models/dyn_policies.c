@@ -37,8 +37,6 @@
 
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <library/common/externs.h>
 #include <library/models/monitoring.h>

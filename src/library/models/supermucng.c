@@ -39,7 +39,6 @@
 //#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
-#include <common/output/debug.h>
 #include <common/types/log.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>

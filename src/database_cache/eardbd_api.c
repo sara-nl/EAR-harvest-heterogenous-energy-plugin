@@ -33,7 +33,6 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>

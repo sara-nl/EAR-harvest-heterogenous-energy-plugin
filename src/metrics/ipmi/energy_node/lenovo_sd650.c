@@ -42,8 +42,6 @@
 
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <metrics/custom/hardware_info.h>
 

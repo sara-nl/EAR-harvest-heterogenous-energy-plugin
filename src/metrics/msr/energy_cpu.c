@@ -35,8 +35,6 @@
 #include <string.h>
 
 #include <common/states.h>
-#include <common/output/error.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
 
 #include <metrics/common/msr.h>

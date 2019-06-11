@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <pthread.h>
 #include <common/sizes.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <database_cache/eardbd_api.h>
 

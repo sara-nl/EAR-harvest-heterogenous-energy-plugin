@@ -34,7 +34,6 @@
 #include <papi.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>

@@ -33,7 +33,6 @@
 #include <getopt.h>
 #include <common/sizes.h>
 #include <common/states.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>

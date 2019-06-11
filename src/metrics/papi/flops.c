@@ -40,7 +40,6 @@
 #include <metrics/papi/flops.h>
 #include <common/environment.h>
 #include <common/output/verbose.h>
-#include <common/output/error.h>
 
 #define FLOPS_SETS		2
 #define FLOPS_EVS		4

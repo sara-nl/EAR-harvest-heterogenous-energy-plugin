@@ -41,8 +41,6 @@
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <daemon/eard_rapi.h>
 #include <daemon/eard_conf_rapi.h>
 #include <daemon/eard_server_api.h>

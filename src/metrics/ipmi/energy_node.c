@@ -38,7 +38,6 @@
 #include <pthread.h>
 
 #include <common/config.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/ipmi/energy_node.h>

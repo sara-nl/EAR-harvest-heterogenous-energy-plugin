@@ -33,8 +33,6 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
-#include <common/output/error.h>
-#include <common/output/debug.h>
 #include <common/types/generic.h>
 #include <daemon/eard_checkpoint.h>
 

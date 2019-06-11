@@ -34,7 +34,6 @@
 #include <slurm/slurm.h>
 #include <common/sizes.h>
 #include <common/config.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>

@@ -39,8 +39,6 @@
 #define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <library/common/externs.h>
 
 #if EAR_LIB_SYNC

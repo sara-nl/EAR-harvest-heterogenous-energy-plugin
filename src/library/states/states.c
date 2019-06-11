@@ -39,8 +39,6 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <common/math_operations.h>
 #include <common/types/log.h>
 #include <common/types/application.h>

@@ -37,8 +37,6 @@
 #include <netinet/in.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
-#include <common/output/error.h>
-#include <common/output/debug.h>
 #include <common/sizes.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/environment.h>

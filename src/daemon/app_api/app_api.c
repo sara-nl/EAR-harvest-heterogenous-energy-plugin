@@ -41,7 +41,6 @@
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
 //#define SHOW_DEBUGS 1
-#include <common/output/debug.h>
 #include <daemon/app_api/app_conf_api.h>
 
 static int fd_app_to_eard=-1;

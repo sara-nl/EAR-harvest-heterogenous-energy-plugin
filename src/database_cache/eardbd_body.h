@@ -29,8 +29,6 @@
 #ifndef EAR_EARDBD_BODY_H
 #define EAR_EARDBD_BODY_H
 
-#include <common/output/error.h>
-#include <common/output/debug.h>
 #include <common/output/verbose.h>
 
 #define line "---------------------------------------------------------------"

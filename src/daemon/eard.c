@@ -45,8 +45,6 @@
 #include <common/types/log.h>
 #include <common/types/daemon_log.h>
 #include <common/types/loop.h>
-#include <common/output/debug.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <common/environment.h>
 #include <common/types/generic.h>

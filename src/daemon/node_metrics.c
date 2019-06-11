@@ -32,8 +32,6 @@
 
 #include <common/config.h>
 #include <common/output/verbose.h>
-#include <common/output/error.h>
-#include <common/output/debug.h>
 #include <common/states.h>
 #include <daemon/node_metrics.h>
 #include <metrics/custom/frequency.h>

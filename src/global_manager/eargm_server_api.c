@@ -43,7 +43,6 @@
 #include <linux/limits.h>
 #include <common/states.h>
 #include <common/config.h>
-#include <common/output/error.h>
 #include <common/output/verbose.h>
 #include <global_manager/eargm_rapi.h>
 #include <global_manager/eargm_conf_api.h>
