@@ -53,7 +53,7 @@ int create_loop_id(loop_id_t *lid,ulong event, ulong size, ulong level)
     lid->event = event;
     lid->size = size;
     lid->level = level;
-		return EAR_SUCCESS;
+	return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
 
@@ -65,6 +65,7 @@ int create_loop(loop_t *l)
 		l->step_id=0;
 		l->total_iterations=0;
 		memset(&l->signature,0,sizeof(signature_t));
+		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
 
