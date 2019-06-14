@@ -270,7 +270,6 @@ double get_global_th()
 
 void init_power_policy()
 {
-	int min_p_state=0;
 	unsigned long def_freq;
 
 	debug("init_power_policy");
@@ -325,11 +324,7 @@ void init_coeff_data(coefficient_t *c_m,coefficient_t *c_sm)
 
 void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 {
-	char coeff_file[128];
-	char coeff_default_file[128];
-	char coeff_file_fn[128];
 	char nodename[128];
-	int begin_pstate, end_pstate;
 	int i, ref;
 	char *use_def;
 
@@ -347,7 +342,6 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 	// Initializations
 	// We start t nominal by default
-	begin_pstate = model_nominal;
 	ear_models_pstates = p_states;
 
 	// Coefficient file
@@ -386,10 +380,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	projection_reset(p_states);
 
 	// Coefficient pointers allocation and reading
-	int size, state;
 
-	if (ear_use_turbo) begin_pstate = 0;
-	end_pstate = p_states;
 
 	char coeffs_path[GENERIC_NAME];
 	if (use_default){

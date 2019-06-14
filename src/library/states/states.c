@@ -112,7 +112,6 @@ void states_end_job(int my_id,  char *app_name)
 
 void states_begin_job(int my_id,  char *app_name)
 {
-	char *verbose, *loop_time, *who;
 	ulong	architecture_min_perf_accuracy_time;
 	int i;
 
@@ -262,7 +261,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	ulong global_f=0;
 	int pok;
 	int curr_pstate,def_pstate;
-	signature_t *c_sig,*l_sig;
+	signature_t *l_sig;
 	ulong policy_def_freq;
 
 	prev_f = ear_frequency;
@@ -410,11 +409,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                 time(&curr_time);    
                 time_from_mpi_init=difftime(curr_time,application.job.start_time);
                 debug("Number of seconds since the application start_time at which signature is computed %lf",time_from_mpi_init);
-				#if MEASURE_DYNAIS_OV
-				double time_since_start_loop;
-				time_since_start_loop=difftime(curr_time,start_loop_time);
-				debug("time to compute signature %lf, first_iter_time %llu Niters %u ",time_since_start_loop,comp_N_time,perf_count_period);
-				#endif
+								#if MEASURE_DYNAIS_OV
+								double time_since_start_loop;
+								time_since_start_loop=difftime(curr_time,start_loop_time);
+								debug("time to compute signature %lf, first_iter_time %llu Niters %u ",time_since_start_loop,comp_N_time,perf_count_period);
+								#endif
             }
             /* END */
 

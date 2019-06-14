@@ -115,12 +115,12 @@ ulong min_time_policy(signature_t *sig,int *ready)
     int i,min_pstate;
     unsigned int ref,try_next;
     double freq_gain,perf_gain;
-    double power_proj,time_proj,cpi_proj,energy_proj,best_solution,energy_ref;
-    double power_ref,cpi_ref,time_ref,time_current;
+    double power_proj,time_proj;
+    double power_ref,time_ref,time_current;
     ulong best_pstate;
     my_app=sig;
 
-	*ready=1;
+		*ready=1;
 
     if (ear_use_turbo) min_pstate=0;
     else min_pstate=get_global_min_pstate();
@@ -145,17 +145,12 @@ ulong min_time_policy(signature_t *sig,int *ready)
         {
                 power_ref=project_power(my_app,&coefficients[ref][EAR_default_pstate]);
                 time_ref=project_time(my_app,&coefficients[ref][EAR_default_pstate]);
-                energy_ref=power_ref*time_ref;
-                best_solution=energy_ref;
                 best_pstate=EAR_default_frequency;
         }
         else
         {
                 time_ref=my_app->time;
                 power_ref=my_app->DC_power;
-                cpi_ref=my_app->CPI;
-                energy_ref=power_ref*time_ref;
-                best_solution=energy_ref;
                 best_pstate=ear_frequency;
         }
     }
@@ -165,9 +160,6 @@ ulong min_time_policy(signature_t *sig,int *ready)
     { // we are running at default frequency , signature is our reference
             time_ref=my_app->time;
             power_ref=my_app->DC_power;
-            cpi_ref=my_app->CPI;
-            energy_ref=power_ref*time_ref;
-            best_solution=energy_ref;
             best_pstate=ear_frequency;
     }
 
@@ -195,8 +187,8 @@ ulong min_time_policy(signature_t *sig,int *ready)
 					debug("Comparing %u with %u",best_pstate,i);
 				}
 				#endif
-                power_proj=project_power(my_app,&coefficients[ref][i]);
-                time_proj=project_time(my_app,&coefficients[ref][i]);
+        power_proj=project_power(my_app,&coefficients[ref][i]);
+        time_proj=project_time(my_app,&coefficients[ref][i]);
 				projection_set(i,time_proj,power_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
@@ -229,7 +221,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 			}
 		}	
 	}else{/* Use models is set to 0 */
-        ulong prev_pstate,curr_pstate,next_pstate;
+        ulong prev_pstate,curr_pstate;
         signature_t *prev_sig;
         debug("We are not using models \n");
         /* We must not use models , we will check one by one*/
@@ -272,7 +264,6 @@ ulong min_time_policy(signature_t *sig,int *ready)
 
 ulong min_time_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
-	double energy_proj, energy_real;
 
 	if (curr_sig->def_f==last_sig->def_f) return 1;
 

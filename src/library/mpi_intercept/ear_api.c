@@ -267,7 +267,6 @@ static void get_job_identification()
 
 static void get_app_name(char *my_name)
 {
-	int defined = 0;
 	char *app_name;
 
 	app_name = get_ear_app_name();
@@ -281,7 +280,6 @@ static void get_app_name(char *my_name)
 		}
 		set_ear_app_name(my_name);
 	} else {
-		defined = 1;
 		strcpy(my_name, app_name);
 	}
 }
@@ -325,10 +323,7 @@ void update_configuration()
 
 void ear_init()
 {
-	unsigned long ear_current_freq;
 	char *summary_pathname;
-	char *freq;
-	int size;
 #if EAR_PERFORMANCE_TESTS
 	char *ear_only_load;
 	ear_only_load=getenv("EAR_ONLY_LOAD");
@@ -438,7 +433,6 @@ void ear_init()
 		}
 	}
 
-	ear_current_freq = frequency_get_cpu_freq(0);
 
 	// Policies
 	init_power_policy();
@@ -508,8 +502,6 @@ void ear_init()
 
 void ear_finalize()
 {
-	char summary_fullpath[BUFFSIZE];
-	char node_name[BUFFSIZE];
 
 #if EAR_PERFORMANCE_TESTS
 	if (only_load) return;
@@ -603,7 +595,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	if (!ear_whole_app)
 	{
 		unsigned long  ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
-		unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
+		//unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
 
 	    traces_mpi_call(ear_my_rank, my_id,
                         (ulong) PAPI_get_real_usec(),
@@ -689,9 +681,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 {
-	char men[128];
 	short ear_status;
-	int ret;
 
 	if (my_id) {
 		return;
@@ -700,7 +690,6 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 	if (!ear_whole_app)
 	{
 		// Create the event for DynAIS
-		unsigned long  trace_data[5];
 		unsigned long  ear_event_l;
 		unsigned short ear_event_s;
 		unsigned short ear_size;
@@ -809,8 +798,6 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 {
 	short ear_status;
-	int ret;
-	char men[128];
 
 	if (my_id) {
 		return;
@@ -820,15 +807,13 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 	if (!ear_whole_app)
 	{
 		// Create the event for DynAIS: we will report anyway
-		unsigned long  trace_data[5];
 		unsigned long  ear_event_l;
-		unsigned short ear_event_s;
 		unsigned short ear_size;
 		unsigned short ear_level;
 		ear_level=0;
 
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
-		ear_event_s = dynais_sample_convert(ear_event_l);
+		//ear_event_s = dynais_sample_convert(ear_event_l);
 
 		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 

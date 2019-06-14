@@ -104,7 +104,6 @@ static void go_next_me(int curr_pstate,int *ready,ulong *best_pstate)
 static int is_better_min_energy(signature_t * curr_sig,signature_t *prev_sig)
 {
 	double curr_energy,pre_energy;
-	double max_time;
 	curr_energy=curr_sig->time*curr_sig->DC_power;
 	pre_energy=prev_sig->time*prev_sig->DC_power;
 	if (curr_energy>pre_energy){ 
@@ -121,10 +120,9 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 {
 	signature_t *my_app;
 	int i,min_pstate;
-	unsigned int ref,try_next;
-	double freq_gain,perf_gain;
+	unsigned int ref;
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
-	double power_ref,time_ref,time_current;
+	double power_ref,time_ref;
 	ulong best_pstate;
 	my_app=sig;
 	debug("min_energy_policy starts \n");
@@ -202,7 +200,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 		}
 	}
 	}else{ /* Use models is set to 0 */
-		ulong prev_pstate,curr_pstate,next_pstate;
+		ulong prev_pstate,curr_pstate;
 		signature_t *prev_sig;
 		debug("We are not using models \n");
 		/* We must not use models , we will check one by one*/

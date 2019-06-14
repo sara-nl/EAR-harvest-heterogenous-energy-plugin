@@ -134,9 +134,11 @@ static ulong metrics_avg_frequency[2]; // MHz
 static long long metrics_instructions[2];
 static long long metrics_cycles[2];
 static long long metrics_usecs[2]; // uS
+#if CACHE_METRICS
 static long long metrics_l1[2];
 static long long metrics_l2[2];
 static long long metrics_l3[2];
+#endif
 
 static int NI=0;
 
@@ -172,7 +174,7 @@ static void metrics_global_stop()
 	metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
 
 	// Accum calls
-	#if 0
+	#if CACHE_METRICS
 	get_cache_metrics(&metrics_l1[APP], &metrics_l2[APP], &metrics_l3[APP]);
 	#endif
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
@@ -208,7 +210,7 @@ static void metrics_partial_start()
 	}
 
 	start_basic_metrics();
-	#if 0
+	#if CACHE_METRICS
 	start_cache_metrics();
 	#endif
 	start_flops_metrics();
@@ -285,7 +287,7 @@ static int metrics_partial_stop(uint where)
 
 
 	// Local metrics
-	#if 0
+	#if CACHE_METRICS
 	stop_cache_metrics(&metrics_l1[LOO], &metrics_l2[LOO], &metrics_l3[LOO]);
 	#endif
 	stop_basic_metrics(&metrics_cycles[LOO], &metrics_instructions[LOO]);
@@ -301,14 +303,13 @@ static void metrics_reset()
 
 	reset_basic_metrics();
 	reset_flops_metrics();
-	#if 0
+	#if CACHE_METRICS
 	reset_cache_metrics();
 	#endif
 }
 
 ull metrics_vec_inst(signature_t *metrics)
 {
-	int i;
 	ull VI=0;
     if (metrics->FLOPS[3]>0) VI = metrics->FLOPS[3] / metrics_flops_weights[3];
     if (metrics->FLOPS[7]>0) VI = VI + (metrics->FLOPS[7] / metrics_flops_weights[7]);
@@ -317,7 +318,7 @@ ull metrics_vec_inst(signature_t *metrics)
 
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
 {
-	double time_s, cas_counter, aux,cas_counter_acum;
+	double time_s, cas_counter, aux;
 	int i, s;
 
 	// If global is 1, it means that the global application metrics are required
@@ -412,7 +413,7 @@ int metrics_init()
 
 	// Local metrics initialization
 	init_basic_metrics();
-	#if 0
+	#if CACHE_METRICS
 	init_cache_metrics();
 	#endif
 	papi_flops_supported = init_flops_metrics();
