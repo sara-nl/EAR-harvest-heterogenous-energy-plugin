@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/math_operations.h>
+#include <common/states.h>
 #if USE_MSR_RAPL
 #include <metrics/msr/energy_cpu.h>
 #else
@@ -81,10 +82,8 @@ int pm_start_rapl()
 #else
 		return start_rapl_metrics();
 #endif
-	}else{
-		return EAR_ERROR;
-		//return eards_start_rapl();
 	}
+	return EAR_ERROR;
 }            
 int pm_stop_rapl(rapl_data_t *rm)
 {
@@ -95,18 +94,16 @@ int pm_stop_rapl(rapl_data_t *rm)
 #else
 		return stop_rapl_metrics(rm);
 #endif
-	}else{
-		return EAR_ERROR;
-		//return eards_read_rapl(rm);
 	}
+	return EAR_ERROR;
 }            
 int pm_read_rapl(rapl_data_t *rm)
 {
 	if (rootp){
 #if USE_MSR_RAPL
-		return read_rapl_msr(rm);
+		return read_rapl_msr((unsigned long long *)rm);
 #else
-		return read_rapl_metrics(rm);
+		return read_rapl_metrics((unsigned long long *)rm);
 #endif
 	}else{
 		return EAR_ERROR;
@@ -348,9 +345,20 @@ void print_energy_data(energy_data_t *e)
 
 int print_energy_data_fd_binary(int fd, energy_data_t *ed)
 {
-	write(fd,ed,sizeof(energy_data_t));
+	int ret;
+	state_t s;
+	ret=write(fd,ed,sizeof(energy_data_t));
+	if (ret==sizeof(energy_data_t)) s=EAR_SUCCESS;
+	else s=EAR_ERROR;
+	return s;
+	
 }
 int read_energy_data_fd_binary(int fd, energy_data_t *ed)
 {
+	int ret;
+	state_t s;
 	read(fd,ed,sizeof(energy_data_t));
+	if (ret==sizeof(energy_data_t)) s=EAR_SUCCESS;
+	else s=EAR_ERROR;
+	return s;
 }
