@@ -47,7 +47,7 @@ void usage(char *app)
 	exit(0);
 }
   
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
     char passw[256], query[256];
     int num_days;

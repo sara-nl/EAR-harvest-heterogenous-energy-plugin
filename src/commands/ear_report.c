@@ -298,7 +298,7 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
         if (verbose)
         {
             printf( "original  \t start_time: %d\t end_time: %d\n\n", start_time, end_time);
-            printf( "from query\t start_time: %d\t end_time: %d\n\n", global_start_time, global_end_time);
+            printf( "from query\t start_time: %ld\t end_time: %ld\n\n", global_start_time, global_end_time);
             printf( "from query\t start_time: %s\t end_time: %s\n\n",
                     ctime_r(&global_start_time, sbuff), ctime_r(&global_end_time, ebuff));
             printf( "result: %llu\n", result);
@@ -308,8 +308,8 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
     
         if (verbose)
         {
-            printf( "avg_pow after computation: %lu\n", avg_pow);
-            printf( "end-start: %d\n", global_end_time-global_start_time);
+            printf( "avg_pow after computation: %llu\n", avg_pow);
+            printf( "end-start: %ld\n", global_end_time-global_start_time);
         }
 
         mysql_stmt_close(statement);
@@ -396,7 +396,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
                     printf("%12s ", row[i] ? row[i] : "NULL");
             }
             if (row[0] && all_nodes) { //when getting energy we compute the avg_power
-                printf("%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+                printf("%15lld", (atoll(row[0]) /(global_end_time - global_start_time)));
             }
             printf("\n");
     	}
@@ -430,7 +430,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
             }
           
             if (row[0] && all_nodes) { //when getting energy we compute the avg_power
-                printf("%15d", (atoll(row[0]) /(global_end_time - global_start_time)));
+                printf("%15lld", (atoll(row[0]) /(global_end_time - global_start_time)));
     	}
             printf("\n");
         }
@@ -438,7 +438,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
     mysql_free_result(result);
 }
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
     char path_name[256];
     cluster_conf_t my_conf;
@@ -585,7 +585,7 @@ void main(int argc,char *argv[])
                     printf( "Error when reading time info from database, could not compute average power."); //error
             }
             else if (avg_pow > 0) {
-                printf( "Average power during the reported period: %lu W\n", avg_pow);
+                printf( "Average power during the reported period: %llu W\n", avg_pow);
             }
         }    
     }

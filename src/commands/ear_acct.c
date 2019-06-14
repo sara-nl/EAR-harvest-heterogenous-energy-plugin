@@ -81,12 +81,10 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
     int i, num_nodes;
 	char **nodes;
 
-    char nodelist_file_path[256], *nodelog_file_path, *env;
+    char nodelist_file_path[256], *nodelog_file_path;
     char line_buf[256];
     FILE *nodelist_file, *node_file;
     
-    
-    char *token;
     
     strcpy(nodelist_file_path, EAR_INSTALL_PATH);
     strcat(nodelist_file_path, "/etc/sysconf/nodelist.conf");
@@ -159,7 +157,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
         {
             if (apps[jobs_counter]->job.id == job_id && apps[jobs_counter]->job.step_id == step_id)
             {
-                if (verbose) printf("Found job_id %d in file %s\n", apps[jobs_counter]->job.id, nodelog_file_path);
+                if (verbose) printf("Found job_id %ld in file %s\n", apps[jobs_counter]->job.id, nodelog_file_path);
                 jobs_counter++;
                 break;
             }
@@ -189,7 +187,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
     for (i = 0; i < jobs_counter; i++)
     {
         avg_f = (double) apps[i]->signature.avg_f/1000000;
-        printf("%s \t%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n", 
+        printf("%ld \t%s \t%.2lf \t\t%.2lf \t\t\t%.2lf \t\t%.2lf\n", 
                 apps[i]->job.id, apps[i]->node_id, apps[i]->signature.time, apps[i]->signature. DC_power, 
 		apps[i]->signature.DC_power * apps[i]->signature.time, avg_f);
         avg_frequency += avg_f;
@@ -247,14 +245,14 @@ void print_full_apps(application_t *apps, int num_apps)
             compute_vpi(&vpi, &apps[i].signature);
             if (apps[i].job.step_id != 4294967294)
             {
-                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
+                printf("%8lu-%-3lu\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
                     apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
             }
             else
             {
-                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
+                printf("%8lu-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
                     apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
@@ -265,14 +263,14 @@ void print_full_apps(application_t *apps, int num_apps)
             avg_f = (double) apps[i].power_sig.avg_f/1000000;
             if (apps[i].job.step_id != 4294967294)
             {
-                printf("%8u-%-3u\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
+                printf("%8lu-%-3lu\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
                     apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL", apps[i].power_sig.max_DC_power);
             }
             else
             {
-                printf("%8u-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
+                printf("%8lu-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-20s %-7s %-10.2lf\n",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
                     apps[i].power_sig.time * apps[i].power_sig.DC_power, buff, "NO-EARL", apps[i].power_sig.max_DC_power);
@@ -292,7 +290,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     uint wrong_power = 0;
 
     int i = 0;
-    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy, avg_VPI, gflops_watt, max_dc_power;
+    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, avg_VPI, gflops_watt, max_dc_power;
     avg_frequency = 0;
     avg_time = 0;
     avg_power = 0;
@@ -532,7 +530,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 				avg_VPI = -1;
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
             {
-                if (avg_power < MAX_SIG_POWER & avg_power > MIN_SIG_POWER)
+                if ((avg_power < MAX_SIG_POWER) && (avg_power > MIN_SIG_POWER))
                 {
                     if (!is_sbatch)
                     {
@@ -694,7 +692,6 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 {
     char query[512];
     char subquery[128];
-    int num_apps = 0;
     int i;
     MYSQL *connection = mysql_init(NULL);
 
@@ -772,7 +769,6 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
     }
     if (!has_records)
     {
-        char buff[64];
         printf("There are no events with the specified properties.\n\n");
     }
 
@@ -784,7 +780,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
 #if DB_MYSQL
-int read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag, char *job_ids) 
+void read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag, char *job_ids) 
 {
     int num_apps = 0;
     MYSQL *connection = mysql_init(NULL);
@@ -807,8 +803,6 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     char subquery[256];
     char query[512];
     
-    char is_learning = 0;
-     
     if (verbose) {
         verbose(0, "Preparing query statement");
     }
@@ -869,16 +863,9 @@ int read_from_database(char *user, int job_id, int limit, int step_id, char *e_t
     {
         printf("No jobs found.\n");
         mysql_close(connection);
-        return -1;
+        return;
     }
 
-    double avg_time, avg_power, total_energy, avg_f, avg_frequency, avg_GBS, avg_CPI, curr_energy;
-    avg_frequency = 0;
-    avg_time = 0;
-    avg_power = 0;
-    total_energy = 0;
-    avg_CPI = 0;
-    avg_GBS = 0;
 
     int i = 0;    
     if (limit == 20 && strlen(csv_path) < 1)
@@ -915,15 +902,13 @@ void read_from_files(char *path, char *user, int job_id, int limit, int step_id)
 {
     application_t *apps;
     int num_apps = read_application_text_file(path, &apps, 0);
-    int i = 0;
     if (full_length) print_full_apps(apps, num_apps);
     else print_short_apps(apps, num_apps, STDOUT_FILENO);
 }
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
     int job_id = -1;
-    int user_id = -1;
     int step_id = -1;
     int limit = 20;
     char is_events = 0;

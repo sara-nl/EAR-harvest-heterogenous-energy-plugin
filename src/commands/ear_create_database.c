@@ -384,7 +384,7 @@ PRIMARY KEY (id))");
 }
 
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
     int c;
     char passw[256];
@@ -445,9 +445,6 @@ void main(int argc,char *argv[])
 
     signature_detail = my_cluster.database.report_sig_detail;
 		db_node_detail= my_cluster.database.report_node_detail;
-
-    char user_commands[USER];
-    char pass_commands[USER];
 
     if (!print_out)
     {
