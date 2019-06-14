@@ -66,13 +66,10 @@ void dynais_core_0(ushort sample, ushort size, ushort level)
 	unsigned short *accu;
 	#endif
 
-	  signed short resul;
+	//  signed short resul;
 	unsigned short index;
-	unsigned short width = 0;
-	unsigned short mask;
 	unsigned short i, k;
 
-	width = old_width[level];
 	index = cur_index[level];
 
 	samp = circ_samps[level];
@@ -200,7 +197,7 @@ void dynais_core_0(ushort sample, ushort size, ushort level)
 		cur_width[l] = (ushort) mask00;
 
 		// New loop again
-		res_inl = cur_width[l] > 0 & (cur_zeros > cur_width[l]);
+		res_inl = (cur_width[l] > 0) & (cur_zeros > cur_width[l]);
 	}
 
 	// New no loop
@@ -255,7 +252,7 @@ void dynais_core_0(ushort sample, ushort size, ushort level)
 
 	// Level result
 	cur_resul[l] = 0;
-	cur_resul[l] -= !res_inl & res_end;	// -1 = end lopp
+	cur_resul[l] -= (!res_inl) & res_end;	// -1 = end lopp
 	cur_resul[l] += res_inl;				// 1 = in loop
 	cur_resul[l] += res_ite;				// 2 = new iteration
 	cur_resul[l] += res_new;				// 3 = new loop

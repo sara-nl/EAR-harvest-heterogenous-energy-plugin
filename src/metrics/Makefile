@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -shared -O2
+CFLAGS = $(CC_FLAGS) -fPIC -shared -O2
 
 ######## INSTALLATION
 
@@ -37,7 +37,7 @@ libmetrics.a: $(metrics_OBJS)
 	$(AR) rvs $@ $(metrics_OBJS)
 
 libmetrics.so: $(metrics_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o $@ $(metrics_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(metrics_OBJS)
 
 ######## OPTIONS
 

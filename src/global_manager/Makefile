@@ -1,4 +1,4 @@
-CFLAGS  = -I$(SRCDIR)
+CFLAGS  = $(CC_FLAGS) -I$(SRCDIR)
 LDFLAGS = $(DB_LDFLAGS) -lpthread
 
 ######## INSTALLATION
@@ -21,7 +21,7 @@ eard_OBJS = eargm_rapi.o \
 all: $(eard_OBJS) $(eard_BINS) all.others
 
 eargmd: eargm.c $(comm_BINS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(comm_BINS) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(comm_BINS) $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -fPIC -c $<

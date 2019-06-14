@@ -1,4 +1,4 @@
-CFLAGS  = -I$(SRCDIR) $(CONSTANTS)
+CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) $(CONSTANTS)
 LDFLAGS = $(DB_LDFLAGS) -lm
 
 ######## INSTALLATION
@@ -32,7 +32,7 @@ eardbd_api.o: eardbd_api.c eardbd_api.h $(eard_OBJS)
 	$(CC) $(CFLAGS) -c $<
 
 eardbd: $(eard_SRCS) $(eard_HDRS) $(eard_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eard_SRCS) $(eard_OBJS) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o $@ $(eard_SRCS) $(eard_OBJS) $(LDFLAGS)
 
 eardbd_monitor: eardbd_monitor.c $(eard_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< eardbd_api.o $(eard_OBJS) -lpthread

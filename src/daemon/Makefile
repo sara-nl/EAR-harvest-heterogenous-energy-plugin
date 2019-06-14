@@ -1,5 +1,5 @@
-CFLAGS    = -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
-LDFLAGS   = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -lm -pthread
+CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
+LDFLAGS = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -lm -pthread
 
 ######## INSTALLATION
 
@@ -31,7 +31,7 @@ eard_OBJS += \
 all: all.components $(eard_BINS) $(oths_BINS) all.others
 
 eard: eard.c $(eard_OBJS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(eard_OBJS) $(LDFLAGS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(eard_OBJS) $(LDFLAGS)
 
 power_monitor.o: power_monitor.c power_monitor.h 
 	$(CC) $(CFLAGS) $(CPUF_CFLAGS) -c $<
