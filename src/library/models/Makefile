@@ -5,14 +5,14 @@ OBJS = models.o \
        min_energy.o \
        monitoring.o \
        supermucng.c \
-			dyn_policies.c
+       dyn_policies.c
 
 ########
 
 all: $(OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 

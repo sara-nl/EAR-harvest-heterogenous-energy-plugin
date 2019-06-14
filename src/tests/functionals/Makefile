@@ -1,4 +1,4 @@
-CFLAGS = -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) $(IPMI_CFLAGS)
 
 ######## FILES
 
@@ -9,7 +9,7 @@ BINS = ear_conf
 all: $(BINS)
 
 ear_conf: ear_conf.c $(SRCDIR)/common/libcommon.a
-	$(CC) $(CC_FLAGS) $(CFLAGS) -o ear_conf $^
+	$(CC) $(CFLAGS) -o ear_conf $^
 
 ######## OPTIONS
 

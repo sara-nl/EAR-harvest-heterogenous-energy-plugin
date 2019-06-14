@@ -1,6 +1,6 @@
-CFLAGS  = -I$(SRCDIR)
+CFLAGS  = $(CC_FLAGS) -I$(SRCDIR)
 LDFLAGS =
-CCC     = $(CC) $(CC_FLAGS) $(CFLAGS)
+CCC     = $(CC) $(CFLAGS)
 
 ######## INSTALLATION
 

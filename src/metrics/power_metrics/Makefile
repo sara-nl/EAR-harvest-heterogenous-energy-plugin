@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
+CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
 ######## INSTALLATION
 
@@ -32,7 +32,7 @@ libpowermetrics.a: $(OBJS) $(libs_OBJS) $(COMMON_OBJS)
 	$(AR) rcs $@ $(OBJS) $(libs_OBJS) $(COMMON_OBJS)
 
 libpowermetrics.so: $(OBJS) $(libs_OBJS) $(COMMON_OBJS)
-	$(CC) $(CC_FLAGS) -shared -o $@ $(OBJS) $(libs_OBJS) $(COMMON_OBJS)
+	$(CC) $(CFLAGS) -shared -o $@ $(OBJS) $(libs_OBJS) $(COMMON_OBJS)
 
 ######## OPTIONS
 
