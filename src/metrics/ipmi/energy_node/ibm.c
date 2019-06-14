@@ -42,6 +42,7 @@
 #include <freeipmi/freeipmi.h>
 #include <common/output/verbose.h>
 #include <metrics/custom/hardware_info.h>
+#include <metrics/ipmi/energy_node/ibm.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
