@@ -141,16 +141,16 @@ int find_empty_context()
 int find_context_for_job(job_id id,job_id sid)
 {
 	int i=0,pos=-1;
-	debug("find_context_for_job %u %u",id,sid);
+	debug("find_context_for_job %lu %lu",id,sid);
 	while ((i<MAX_NESTED_LEVELS) && (pos<0)){
 		if ((current_ear_app[i]!=NULL)&& (current_ear_app[i]->app.job.id==id) && (current_ear_app[i]->app.job.step_id==sid)){
 			pos=i;
 		}else i++;
 	}
 	if (pos>=0){
-		debug("find_context_for_job %d,%d found at pos %d",id,sid,pos);
+		debug("find_context_for_job %lu,%lu found at pos %d",id,sid,pos);
 	}else{
-		debug("find_context_for_job %d,%d not found",id,sid);
+		debug("find_context_for_job %lu,%lu not found",id,sid);
 	}
 	return pos;
 }
@@ -170,7 +170,7 @@ void end_context(int cc)
 void clean_job_contexts(job_id id)
 {
 	int i,cleaned=0;
-	debug("clean_job_contexts for job %d",id);
+	debug("clean_job_contexts for job %lu",id);
 	for (i=0;i<MAX_NESTED_LEVELS;i++){
 		if (current_ear_app[i]!=NULL){
 			 if (current_ear_app[i]->app.job.id==id){ 
@@ -185,11 +185,11 @@ void clean_job_contexts(job_id id)
 void clean_contexts_diff_than(job_id id)
 {
 	int i;
-	debug("clean_contexts_diff_than %u",id);
+	debug("clean_contexts_diff_than %lu",id);
 	for (i=0;i<MAX_NESTED_LEVELS;i++){
 		if (current_ear_app[i]!=NULL){
 			if (current_ear_app[i]->app.job.id!=id){ 
-				debug("Clearning context %d from job %u",i,current_ear_app[i]->app.job.id);
+				debug("Clearning context %d from job %lu",i,current_ear_app[i]->app.job.id);
 				end_context(i);
 			}
 		}
@@ -204,7 +204,7 @@ int select_last_context()
 		else i++;
 	}
 	if (pos>=0){	
-		debug("select_last_context selects context %d (%d,%d)",pos,current_ear_app[pos]->app.job.id,current_ear_app[pos]->app.job.step_id);
+		debug("select_last_context selects context %d (%lu,%lu)",pos,current_ear_app[pos]->app.job.id,current_ear_app[pos]->app.job.step_id);
 	}else{
 		debug("select_last_context no contexts actives");
 	}
@@ -214,7 +214,7 @@ int select_last_context()
 
 int new_context(job_id id,job_id sid)
 {
-	debug("new_context for %u %u",id,sid);
+	debug("new_context for %lu %lu",id,sid);
   if (num_contexts==MAX_NESTED_LEVELS){
     error("Panic: Maximum number of levels reached in new_job %d",ccontext);
     return EAR_ERROR;
@@ -280,11 +280,11 @@ void reset_shared_memory()
 		policy_conf_t *my_policy;
     my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
     dyn_conf->user_type=NORMAL;
-	dyn_conf->learning=0;
+		dyn_conf->learning=0;
     dyn_conf->lib_enabled=1;
     dyn_conf->policy=my_cluster_conf.default_policy;
     dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
-	dyn_conf->def_p_state=my_policy->p_state;
+		dyn_conf->def_p_state=my_policy->p_state;
     dyn_conf->th=my_policy->th;
 }
 
@@ -595,7 +595,7 @@ void powermon_mpi_init(energy_handler_t *eh,application_t * appID)
 		error("powermon_mpi_init: NULL appID");
 		return;
 	}
-	verbose(VJOBPMON+1,"powermon_mpi_init job_id %d step_id %d (is_mpi %u)",appID->job.id,appID->job.step_id,appID->is_mpi);
+	verbose(VJOBPMON+1,"powermon_mpi_init job_id %lu step_id %lu (is_mpi %u)",appID->job.id,appID->job.step_id,appID->is_mpi);
 	// As special case, we will detect if not job init has been specified
 	if ((ccontext<0) || ((ccontext>=0) &&  (!current_ear_app[ccontext]->job_created))){	// If the job is nt submitted through slurm, new_job would not be submitted 
 		powermon_new_job(eh,appID,1);
@@ -609,7 +609,7 @@ void powermon_mpi_init(energy_handler_t *eh,application_t * appID)
 void powermon_mpi_finalize(energy_handler_t *eh)
 {
 	check_context("powermon_mpi_finalize and not job context created");
-	verbose(VJOBPMON+1,"powermon_mpi_finalize %d[%d]",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
+	verbose(VJOBPMON+1,"powermon_mpi_finalize (%lu,%lu)",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
 	end_mpi(&current_ear_app[ccontext]->app.job);
 	if (!current_ear_app[ccontext]->job_created){  // If the job is not submitted through slurm, end_job would not be submitted 
 		powermon_end_job(eh,current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
@@ -639,7 +639,7 @@ void powermon_new_job(energy_handler_t *eh,application_t* appID,uint from_mpi)
 	policy_conf_t *my_policy;
 	ulong f;
 	uint user_type;
-	verbose(VJOBPMON,"powermon_new_job (%u,%u)",appID->job.id,appID->job.step_id);
+	verbose(VJOBPMON,"powermon_new_job (%lu,%lu)",appID->job.id,appID->job.step_id);
 	if (new_context(appID->job.id,appID->job.step_id)!=EAR_SUCCESS){
 		error("Maximum number of contexts reached, no more concurrent jobs supported");
 		return;
@@ -677,7 +677,7 @@ void powermon_new_job(energy_handler_t *eh,application_t* appID,uint from_mpi)
 	new_job_for_period(&current_sample,appID->job.id,appID->job.step_id);
   pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);	
-	verbose(VJOBPMON+1,"Job created jid %u sid %u is_mpi %d",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id,current_ear_app[ccontext]->app.is_mpi);
+	verbose(VJOBPMON+1,"Job created (%lu,%lu) is_mpi %d",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id,current_ear_app[ccontext]->app.is_mpi);
 	verbose(VJOBPMON+1,"*******************");
 	sig_reported=0;
 
@@ -696,18 +696,18 @@ void powermon_end_job(energy_handler_t *eh,job_id jid,job_id sid)
 		pcontext=ccontext;
 		/*check_context("powermon_end_job: and not current context");*/
 		/* jid,sid can finish in a different order than expected */
-		debug("powermon_end_job %u %u",jid,sid);
+		debug("powermon_end_job %lu %lu",jid,sid);
 		cc=find_context_for_job(jid,sid);
 		if (cc<0){
-			error("powermon_end_job %u,%u and no context created for it",jid,sid);
+			error("powermon_end_job %lu,%lu and no context created for it",jid,sid);
 			return;
 		}
 		if (cc!=ccontext){
-			warning("End job (%d,%d) is not current context selected=%d current=%d",jid,sid,cc,ccontext);
+			warning("End job (%lu,%lu) is not current context selected=%d current=%d",jid,sid,cc,ccontext);
 		}
 		/* We set ccontex to the specific one */
 		ccontext=cc;
-		verbose(VJOBPMON,"powermon_end_job %u[%u]",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
+		verbose(VJOBPMON,"powermon_end_job (%lu,%lu)",current_ear_app[ccontext]->app.job.id,current_ear_app[ccontext]->app.job.step_id);
     while (pthread_mutex_trylock(&app_lock));
     idleNode=1;
     job_end_powermon_app(eh);
@@ -888,7 +888,7 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 		mpi=0;
 		maxpower=minpower=0;
 	}
-	verbose(VNODEPMON,"ID %u MPI=%u  Current power %.1lf max %.1lf min %.1lf",
+	verbose(VNODEPMON,"ID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf",
 	jid,mpi,my_current_power->avg_dc,maxpower,minpower);
 	verbose_node_metrics(&my_nm_id,nm);
 
@@ -1148,6 +1148,7 @@ int print_powermon_app_fd_binary(int fd,powermon_app_t *app)
 	print_application_fd_binary(fd,&app->app);
 	write(fd,&app->job_created,sizeof(uint));
 	print_energy_data_fd_binary(fd,&app->energy_init);
+	return EAR_SUCCESS;
 		
 }
 int read_powermon_app_fd_binary(int fd,powermon_app_t *app)
@@ -1155,6 +1156,7 @@ int read_powermon_app_fd_binary(int fd,powermon_app_t *app)
 	read_application_fd_binary(fd,&app->app);
 	read(fd,&app->job_created,sizeof(uint));
 	read_energy_data_fd_binary(fd,&app->energy_init);
+	return EAR_SUCCESS;
 }
 
 void print_powermon_app(powermon_app_t *app)

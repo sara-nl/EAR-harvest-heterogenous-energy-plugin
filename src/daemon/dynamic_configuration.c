@@ -139,7 +139,7 @@ ulong max_dyn_freq()
 int dynconf_inc_th(uint p_id,ulong th)
 {
 	double dth;
-	verbose(VCONF,"Increasing th by  %u",th);
+	verbose(VCONF,"Increasing th by  %lu",th);
 	dth=(double)th/100.0;
 	if (dyn_conf->policy==p_id){
 		if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
@@ -155,7 +155,7 @@ int dynconf_inc_th(uint p_id,ulong th)
 
 int dynconf_max_freq(ulong max_freq)
 {
-	verbose(VCONF,"Setting max freq to %u",max_freq);
+	verbose(VCONF,"Setting max freq to %lu",max_freq);
 	if (is_valid_freq(max_freq, num_f,f_list)){
 		dyn_conf->max_freq=max_freq;
 		resched_conf->force_rescheduling=1;
@@ -175,7 +175,7 @@ int dynconf_max_freq(ulong max_freq)
 
 int dynconf_def_freq(uint p_id,ulong def)
 {
-	verbose(VCONF,"Setting default freq for pid %u to %u",p_id,def);
+	verbose(VCONF,"Setting default freq for pid %u to %lu",p_id,def);
     if (is_valid_freq(def,num_f,f_list)){
 		if (dyn_conf->policy==p_id){
         	dyn_conf->def_freq=def;
@@ -201,7 +201,7 @@ int dynconf_def_freq(uint p_id,ulong def)
 
 int dynconf_set_freq(ulong freq)
 {
-	verbose(VCONF,"Setting freq to %u",freq);
+	verbose(VCONF,"Setting freq to %lu",freq);
 	if (is_valid_freq(freq,num_f,f_list)){
 		dyn_conf->max_freq=freq;
 		dyn_conf->def_freq=freq;
@@ -270,10 +270,12 @@ int dynconf_red_pstates(uint p_states)
 		my_node_conf->policies[i].p_state=my_node_conf->policies[i].p_state+p_states;
 	}
 	powermon_new_max_freq(new_max_freq);	
+	return EAR_SUCCESS;
 }
 int dynconf_set_th(ulong p_id,ulong th)
 {
 	double dth;
+	int s;
 	dth=(double)th/100.0;
 	if ((dth > 0 ) && (dth <=1.0 )){
 		if (dyn_conf->policy==p_id){
@@ -281,8 +283,9 @@ int dynconf_set_th(ulong p_id,ulong th)
 			resched_conf->force_rescheduling=1;	
 		}
 		powermon_set_th(p_id,dth);
-		return EAR_SUCCESS;
-	}else return EAR_ERROR;
+		s=EAR_SUCCESS;
+	}else s=EAR_ERROR;
+	return s;
 }
 
 /* This function will propagate the status command and will return the list of node failures */
@@ -316,7 +319,7 @@ void process_remote_requests(int clientfd)
 	if (req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB){
     	if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time)
     	{
-        	verbose(VRAPI+1, "Recieved repeating command: %d", req);
+        	verbose(VRAPI+1, "Recieved repeating command: %u", req);
         	ack=EAR_IGNORE;
 	    	send_answer(clientfd,&ack);
         	if ((command.node_dist>0) && (command.node_dist != last_dist))
@@ -334,12 +337,12 @@ void process_remote_requests(int clientfd)
 	switch (req){
 		case EAR_RC_NEW_JOB:
 			verbose(VRAPI,"*******************************************\n");
-			verbose(VRAPI,"new_job command received %d\n",command.my_req.new_job.job.id);
+			verbose(VRAPI,"new_job command received %lu\n",command.my_req.new_job.job.id);
 			powermon_new_job(&my_eh_rapi,&command.my_req.new_job,0);		
 			break;
 		case EAR_RC_END_JOB:
 			powermon_end_job(&my_eh_rapi,command.my_req.end_job.jid,command.my_req.end_job.sid);
-			verbose(VRAPI,"end_job command received %d\n",command.my_req.end_job.jid);
+			verbose(VRAPI,"end_job command received %lu\n",command.my_req.end_job.jid);
 			verbose(VRAPI,"*******************************************\n");
 			break;
 		case EAR_RC_MAX_FREQ:

@@ -282,6 +282,7 @@ int ear_connect()
 int ear_disconnect()
 {
 	close_connection();
+	return EAR_SUCCESS;
 }
 
 

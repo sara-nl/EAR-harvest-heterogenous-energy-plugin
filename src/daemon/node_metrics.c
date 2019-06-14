@@ -63,7 +63,7 @@ unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
 ulong get_nm_cpufreq(nm_t *id,nm_data_t *nm)
 {
 	if ((id==NULL) || (nm==NULL) || (id->con!=NM_CONNECTED))  return 0;
-	nm->avg_cpu_freq;
+	return nm->avg_cpu_freq;
 }
 
 int init_node_metrics(nm_t *id,uint sockets, uint cpus_per_socket,uint cores_model,ulong def_freq)

@@ -32,7 +32,7 @@
 #include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
 	cluster_conf_t my_cluster;
 	char ear_path[256];
@@ -46,5 +46,6 @@ void main(int argc,char *argv[])
 	}
 	read_cluster_conf(ear_path,&my_cluster);
 	print_cluster_conf(&my_cluster);
-    free_cluster_conf(&my_cluster);
+  free_cluster_conf(&my_cluster);
+	return 0;
 }

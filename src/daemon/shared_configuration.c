@@ -52,24 +52,31 @@ static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_coeffs_default,fd_serv
  */
 int  get_settings_conf_path(char *tmp,char *path)
 {
+	if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
 	sprintf(path,"%s/.ear_settings_conf",tmp);
-	
+	return EAR_SUCCESS;	
 }
 /** This functions creates the name of the file mapping the shared memory for the resched flag, it is placed at TMP 
  */
 int  get_resched_path(char *tmp,char *path)
 {
+	if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
 	sprintf(path,"%s/.ear_resched",tmp);
+	return EAR_SUCCESS;	
 }
 
 int get_coeffs_path(char *tmp,char *path)
 {
+	if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
 	sprintf(path,"%s/.ear_coeffs",tmp);
+	return EAR_SUCCESS;	
 }
 
 int get_coeffs_default_path(char *tmp,char *path)
 {
-    sprintf(path,"%s/.ear_coeffs_default",tmp);
+	if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
+  sprintf(path,"%s/.ear_coeffs_default",tmp);
+	return EAR_SUCCESS;	
 }
 
 
@@ -279,23 +286,28 @@ void dettach_coeffs_default_shared_area()
 /**** SERVICES **********/
 int get_services_conf_path(char *tmp,char *path)
 {
+		if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
     sprintf(path,"%s/.ear_services_conf",tmp);
+		return EAR_SUCCESS;
 }
 
 services_conf_t * create_services_conf_shared_area(char * path)
 {
 	services_conf_t my_services;
-    return (services_conf_t *)create_shared_area(path,(char *)&my_services,sizeof(services_conf_t),&fd_services,1);
+	if (path==NULL) return NULL;
+  return (services_conf_t *)create_shared_area(path,(char *)&my_services,sizeof(services_conf_t),&fd_services,1);
 }
 
 services_conf_t * attach_services_conf_shared_area(char * path)
 {
-    return (services_conf_t *)attach_shared_area(path,sizeof(services_conf_t),O_RDONLY,&fd_services,NULL);
+	if (path==NULL) return NULL;
+  return (services_conf_t *)attach_shared_area(path,sizeof(services_conf_t),O_RDONLY,&fd_services,NULL);
 }
 
 void services_conf_shared_area_dispose(char * path)
 {
-    dispose_shared_area(path,fd_services);
+	if (path==NULL) return;
+  dispose_shared_area(path,fd_services);
 }
 
 void dettach_services_conf_shared_area()
@@ -306,18 +318,23 @@ void dettach_services_conf_shared_area()
 /*************** FREQUENCIES ****************/
 int get_frequencies_path(char *tmp,char *path)
 {
+	if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
 	sprintf(path,"%s/.ear_frequencies",tmp);
+	return EAR_SUCCESS;
 }
 ulong *create_frequencies_shared_area(char * path,ulong *f,int size)
 {
+	if ((path==NULL)|| (f==NULL)) return NULL;
 	return (ulong *)create_shared_area(path,(char *)f,size,&fd_freq,0);
 }
 ulong *attach_frequencies_shared_area(char * path,int *size)
 {
+	if ((path==NULL) || (size==NULL)) return NULL;
 	return (ulong *)attach_shared_area(path,0,O_RDONLY,&fd_freq,size);
 }
 void frequencies_shared_area_dispose(char * path)
 {
+	if (path==NULL) return;
 	dispose_shared_area(path,fd_freq);
 }
 void dettach_frequencies_shared_area()

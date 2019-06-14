@@ -165,7 +165,7 @@ int send_status(request_t *command, status_t **status)
         return EAR_ERROR;
 	}
     if (ack < 1){
-        error("Number of status expected is not valid: %d", ack);
+        error("Number of status expected is not valid: %lu", ack);
         return EAR_ERROR;
     }
 	debug("Waiting for %d ack bytes\n",ack);
@@ -244,7 +244,8 @@ int eards_remote_connect(char *nodename,uint port)
     memset(&timeout, 0, sizeof(struct timeval));
     timeout.tv_sec = 0;
     timeout.tv_usec = 5000;
-    int optlen, valopt, sysret;
+    socklen_t  optlen;
+		int valopt, sysret;
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
         sfd = socket(rp->ai_family, rp->ai_socktype,

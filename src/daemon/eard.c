@@ -266,13 +266,13 @@ void connect_service(int req,application_t *new_app)
     // Creates 1 pipe (per node) to send acks.
     if (connect)
     {
-		verbose(VEARD+1,"Connected new job job_id=%d step_id=%d\n",new_job->id,new_job->step_id);
-        sprintf(ear_commack, "%s/.ear_comm.ack_%d.%lu", ear_tmp, req, pid);
+		verbose(VEARD+1,"Connected new job job_id=%lu step_id=%lu\n",new_job->id,new_job->step_id);
+        sprintf(ear_commack, "%s/.ear_comm.ack_%d.%d", ear_tmp, req, pid);
         application_id = pid;
 
         // ear_commack will be used to send ack's or values (depending on the
         // requests) from eard to the library
-        verbose(VEARD+1, "Creating ack comm %s pid=%lu", ear_commack,pid);
+        verbose(VEARD+1, "Creating ack comm %s pid=%d", ear_commack,pid);
 
         if (mknod(ear_commack, S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH,0) < 0)
         {
@@ -288,10 +288,10 @@ void connect_service(int req,application_t *new_app)
         if (req == 0)
         {
             // We open ping connection  for writting
-            sprintf(ear_ping, "%s/.ear_comm.ping.%lu", ear_tmp, pid);
+            sprintf(ear_ping, "%s/.ear_comm.ping.%d", ear_tmp, pid);
 
-            debug("application %lu connected", pid);
-            debug("opening ping conn for %lu", pid);
+            debug("application %d connected", pid);
+            debug("opening ping conn for %d", pid);
             ear_ping_fd = open(ear_ping,O_WRONLY);
 
             if (ear_ping_fd < 0)
@@ -304,7 +304,7 @@ void connect_service(int req,application_t *new_app)
 
         	debug("sending ack for service %d",req);
         	if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
-        	    warning("WARNING while writting for ping conn for %lu", pid);
+        	    warning("WARNING while writting for ping conn for %d", pid);
         	}
 
         	debug("connecting service %s", ear_commack);
@@ -314,9 +314,9 @@ void connect_service(int req,application_t *new_app)
         	}
     	}else{
         	// eard only suppports one application connected, the second one will block
-        	verbose(VEARD+1,"Process pid %lu rejected as master", pid);
+        	verbose(VEARD+1,"Process pid %d rejected as master", pid);
     	}
-    	verbose(VEARD+1, "Process pid %lu selected as master", pid);
+    	verbose(VEARD+1, "Process pid %d selected as master", pid);
     	verbose(VEARD+1, "service %d connected", req);
 	}
 }
@@ -1140,7 +1140,7 @@ int read_coefficients()
 *
 */
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
 	struct timeval *my_to;
 	struct timeval tv;
@@ -1475,4 +1475,5 @@ void main(int argc,char *argv[])
 	verbose(VCONF,"END EARD\n");
 	eard_close_comm();	
 	eard_exit(0);
+	return 0;
 }

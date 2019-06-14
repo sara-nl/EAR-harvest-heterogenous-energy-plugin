@@ -124,7 +124,8 @@ int create_server_socket(uint port)
 int wait_for_client(int s,struct sockaddr_in *client)
 {
 	int new_sock;
-	int client_addr_size;
+	socklen_t client_addr_size;
+
 
     client_addr_size = sizeof(struct sockaddr_in);
     new_sock = accept(s, (struct sockaddr *) client, &client_addr_size);
@@ -174,7 +175,7 @@ int read_command(int s,request_t *command)
 	return command->req;
 }
 
-void send_answer(int s,ulong *ack)
+void send_answer(int s,long *ack)
 {
 	int ret;
 	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) error("Error sending the answer");

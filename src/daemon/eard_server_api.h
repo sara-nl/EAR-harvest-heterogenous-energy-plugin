@@ -44,7 +44,7 @@ int wait_for_client(int sockfd,struct sockaddr_in *client);
 void close_server_socket(int sock);
 
 int read_command(int s,request_t *command);
-void send_answer(int s,ulong *ack);
+void send_answer(int s,long *ack);
 void propagate_req(request_t *command, uint port);
 int propagate_status(request_t *command, uint port, status_t **status);
 
