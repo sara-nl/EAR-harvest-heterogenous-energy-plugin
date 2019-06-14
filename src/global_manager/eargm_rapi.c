@@ -68,20 +68,19 @@ static int send_command(eargm_request_t *command)
 // based on getaddrinfo  man page
 int eargm_connect(char *nodename,uint use_port)
 {
-    int client_sock ;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
-	char port_number[50]; 	// that size needs to be validated
-    int sfd, s, j;
+		char port_number[50]; 	// that size needs to be validated
+    int sfd, s;
 
-	if (eargm_remote_connected) return eargm_sfd;
+		if (eargm_remote_connected) return eargm_sfd;
    	memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
-	sprintf(port_number,"%u",use_port);
+		sprintf(port_number,"%u",use_port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
 		#if DEBUG

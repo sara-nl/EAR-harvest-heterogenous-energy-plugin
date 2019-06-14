@@ -53,17 +53,13 @@ struct sockaddr_in eargm_remote_client;
 // 2000 and 65535
 #define EARGM_EXTERNAL_CONNEXIONS 1
 
-static  int sfd;
 // based on getaddrinfo man pages
 int create_server_socket(uint use_port)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len;
-    ssize_t nread;
-	char buff[50]; // This must be checked
+		char buff[50]; // This must be checked
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
@@ -74,7 +70,7 @@ int create_server_socket(uint use_port)
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
 
-	sprintf(buff,"%u",use_port);
+		sprintf(buff,"%u",use_port);
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {

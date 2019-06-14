@@ -160,7 +160,6 @@ void update_eargm_configuration(cluster_conf_t *conf)
 
 static void my_signals_function(int s)
 {
-	uint punits;
 	uint ppolicy;
 	if (s==SIGALRM){
 		alarm(period_t1);
@@ -312,7 +311,6 @@ void fill_periods(ulong energy)
 
 void process_status(pid_t pid_process_created,int process_created_status)
 {
-  char buffer[256];
   int st;
   if (WIFEXITED(process_created_status))
   {
@@ -359,7 +357,7 @@ int send_mail(uint level, double energy)
 	
 	char buff[128];
   char command[1024];
-  char mail_filename[128];
+  char mail_filename[512];
   int fd,ret;
   ret=fork();
   if (ret==0){
@@ -456,7 +454,6 @@ void *eargm_server_api(void *p)
 */
 ulong eargm_increase_th_all_nodes(int level)
 {
-	int i,rc;
 	ulong th;
 	th=th_level[level];
 	increase_th_all_nodes(th, policy, my_cluster_conf);
@@ -464,8 +461,7 @@ ulong eargm_increase_th_all_nodes(int level)
 }
 ulong eargm_reduce_frequencies_all_nodes(int level)
 {
-    int i,rc;
-    ulong ps;
+  ulong ps;
 	ps=pstate_level[level];
 	red_def_max_pstate_all_nodes(ps,my_cluster_conf);
 	return ps;
@@ -534,7 +530,7 @@ int main(int argc,char *argv[])
 {
 	sigset_t set;
 	int ret;
-	ulong result,result2;
+	ulong result;
 	uint process_created=0;
 	gm_warning_t my_warning;
     if (argc > 2) usage(argv[0]);
@@ -594,14 +590,14 @@ int main(int argc,char *argv[])
 	catch_signals();
 
 	/* This thread accepts external commands */
-    if (ret=pthread_create(&eargm_server_api_th, NULL, eargm_server_api, NULL)){
+    if ((ret=pthread_create(&eargm_server_api_th, NULL, eargm_server_api, NULL))){
         errno=ret;
 		error("error creating eargm_server for external api %s\n",strerror(errno));
     }
 
 	
     time_t start_time, end_time;
-	double perc_energy,perc_time;
+	double perc_energy;
    	
 	
 	sigfillset(&set);
