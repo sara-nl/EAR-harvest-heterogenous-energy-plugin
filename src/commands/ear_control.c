@@ -73,11 +73,7 @@ void fill_ip(char *buff, ip_table_t *table)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
-    int sfd, s;
-    int ip1, ip2;
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len;
-    ssize_t nread;
+    int s;
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
@@ -108,7 +104,7 @@ void fill_ip(char *buff, ip_table_t *table)
 
 int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 {
-    int i, j, k, rc; 
+    int i, j, k; 
     char node_name[256];
     int num_ips = 0;
     my_node_conf_t *aux_node_conf;
@@ -213,8 +209,6 @@ void usage(char *app)
 void check_ip(status_t status, ip_table_t *ips, int num_ips)
 {
     int i, j;
-    struct sockaddr_in temp;
-    temp.sin_addr.s_addr = status.ip;
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
 		{
@@ -287,9 +281,8 @@ void process_single_status(int num_status, status_t *status, char *node_name)
 }
 
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
-    int optidx = 0;
     int c = 0;
     char path_name[128];
     status_t *status;
@@ -314,7 +307,6 @@ void main(int argc, char *argv[])
 
     while (1)
     {
-        int option_optidx = optidx ? optidx : 1;
         int option_idx = 0;
         static struct option long_options[] = {
             {"set-freq",     	required_argument, 0, 0},
@@ -366,7 +358,7 @@ void main(int argc, char *argv[])
 				}
                 if (arg > 100)
                 {
-                    printf("Indicated threshold increase above theoretical maximum (100%)\n");
+                    printf("Indicated threshold increase above theoretical maximum (100%%)\n");
                     break;
                 }
                 increase_th_all_nodes(arg, arg2, my_cluster_conf);
@@ -390,7 +382,7 @@ void main(int argc, char *argv[])
                 arg = atoi(optarg);
                 if (arg > 100)
                 {
-                    printf("Indicated threshold increase above theoretical maximum (100%)\n");
+                    printf("Indicated threshold increase above theoretical maximum (100%%)\n");
                     break;
                 }
                 if (optind+1 > argc)
