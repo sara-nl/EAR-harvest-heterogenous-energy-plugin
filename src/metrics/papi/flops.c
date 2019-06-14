@@ -141,16 +141,16 @@ int init_flops_metrics()
 				if ((retval=PAPI_add_named_event(event_sets[sets],FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N))!=PAPI_OK){
 					error("FP_METRICS: PAPI_add_named_event %s.%s",FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N,PAPI_strerror(retval));
 				}
-				verbose(VMETRICS,"FP_METRICS: PAPI_DP_OPS added to set %d",sets);
+				debug("FP_METRICS: PAPI_DP_OPS added to set %d",sets);
 				break;
 				}
 		}
 		
     }
 	if (flops_supported) {
-		verbose(VMETRICS, "FP_METRICS:Computation of Flops initialized");
+		debug( "FP_METRICS:Computation of Flops initialized");
 	} else {
-		verbose(VMETRICS, "FP_METRICS: Computation of Flops not supported");
+		debug( "FP_METRICS: Computation of Flops not supported");
 	}
 	return flops_supported;
 }
@@ -211,9 +211,9 @@ void print_gflops(long long total_inst,unsigned long total_time,uint total_cores
 	for (sets=0;sets<FLOPS_SETS;sets++)
         {
 		if (sets==SP_OPS){
-			verbose(VMETRICS,"SP FOPS:");
+			debug("SP FOPS:");
 		}else{
-			verbose(VMETRICS,"DP FOPS");
+			debug("DP FOPS");
 		}
 		for (ev=0;ev<FLOPS_EVS;ev++){
 			total=total+(weights[sets][ev]*acum_values[sets][ev]);
@@ -221,13 +221,13 @@ void print_gflops(long long total_inst,unsigned long total_time,uint total_cores
 		if (total>0){
 
 		for (ev=0;ev<FLOPS_EVS;ev++){
-			verbose(VMETRICS,"[%d]=%llu x %d (%lf %%), ", ev, acum_values[sets][ev], weights[sets][ev],
+			debug("[%d]=%llu x %d (%lf %%), ", ev, acum_values[sets][ev], weights[sets][ev],
 			(double)(weights[sets][ev]*acum_values[sets][ev]*100)/(double)total);
 		}
 		}
 	}
-	verbose(VMETRICS,"GFlops per process = %.3lf ", (double)(total)/(double)(total_time*1000));
-	verbose(VMETRICS,"GFlops per node    = %.3lf ", (double)(total*total_cores)/(double)(total_time*1000));
+	debug("GFlops per process = %.3lf ", (double)(total)/(double)(total_time*1000));
+	debug("GFlops per node    = %.3lf ", (double)(total*total_cores)/(double)(total_time*1000));
 	
 }
 double gflops(unsigned long total_time,uint total_cores)

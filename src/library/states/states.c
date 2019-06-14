@@ -106,7 +106,7 @@ ulong select_near_freq(ulong avg)
 
 void states_end_job(int my_id,  char *app_name)
 {
-	verbose(2, "EAR(%s) Ends execution. ", app_name);
+	debug("EAR(%s) Ends execution. ", app_name);
 	end_log();
 }
 
@@ -189,7 +189,7 @@ static void check_dynais_on(signature_t *A, signature_t *B)
 {
 	if (!equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH*2) || !equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH*2)){
 		dynais_enabled=DYNAIS_ENABLED;
-		verbose(1,"Dynais ON ");
+		debug("Dynais ON ");
 	}
 }
 
@@ -559,10 +559,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (global_synchro){
 				global_f=global_frequency_selection_synchro();
                 if ((global_f) && (global_f!=policy_freq)){
-                	verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
+                	debug("Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
                     policy_freq=select_near_freq(global_f);
                     force_global_frequency(policy_freq);
-                    verbose(0,"Selecting with common frequency %lu",policy_freq);
+                    verbose(1,"Selecting new global frequency %lu",policy_freq);
 					tries_current_loop=0;
 					EAR_STATE = EVALUATING_SIGNATURE;
                     return;
@@ -573,7 +573,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			//pok=policy_ok(PP, &loop_signature.signature, &last_signature.signature);
 			l_sig=&signatures[def_pstate].signature;
 			if (sig_ready[def_pstate]==0){
-				verbose(DYN_VERBOSE,"Signature at default freq not available, assuming policy ok");
+				debug("Signature at default freq not available, assuming policy ok");
 				/* If default is not available, that means a dynamic configuration has been decided, we assume we are ok */
 				if (sig_ready[curr_pstate]==0){
             		memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));

@@ -55,7 +55,7 @@
 #include <metrics/custom/bandwidth/uncores_pci.h>
 
 #define FUNCVERB(function)                               \
-    debug( "EAR_DAEMON(UNCORES) " function "\n");
+    debug( "uncore: " function "\n");
 
 struct uncore_op
 {

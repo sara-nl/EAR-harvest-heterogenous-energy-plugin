@@ -135,7 +135,7 @@ int my_write(int fd,char *buff,int size)
 
 void signal_handler(int s)
 {
-	verbose(VAPI,"EARD has been disconnected");
+	debug("EARD has been disconnected");
 	app_connected=0;
 }
 void signal_catcher()
@@ -159,10 +159,8 @@ void signal_catcher()
 // If this approach is selected, we will substitute the function call by the key
 ulong create_sec_tag()
 {
-#if 1
     // You make define a constant at makefile time called SEC_KEY to use that option
     return (ulong)SEC_KEY;
-#endif
 }
 
 
@@ -170,7 +168,7 @@ uint warning_api(int return_value, int expected, char *msg)
 {
 	if (return_value!=expected){ 
 		app_connected=0;
-		warning(0, "eards: %s", msg);
+		warning("eards: %s", msg);
 	}
 	if (return_value<0){ 
 		app_connected=0;
@@ -220,7 +218,7 @@ int eards_connect(application_t *my_app)
 
 	// We create a single ID
 	my_id=create_ID(my_app->job.id,my_app->job.step_id);
-	verbose(VAPI,"Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
+	debug("Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		debug( "ear_client connecting with service %d", i);
@@ -322,12 +320,12 @@ int eards_connect(application_t *my_app)
         return EAR_ERROR;
       }
       #endif	
-			verbose(VAPI, "ack communicator %s [%d] connected", nodename, i);
+			debug("ack communicator %s [%d] connected", nodename, i);
 		}
 	}
 	app_connected=1;
 	signal_catcher();
-	verbose(VAPI, "Connected");
+	debug("Connected");
 	return EAR_SUCCESS;
 
 }
@@ -511,7 +509,7 @@ ulong eards_end_compute_turbo_freq()
 		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack, sizeof(ulong)) , sizeof(ulong),
 				"ERROR reading ack for finishing frequency ")) return EAR_ERROR;
 
-		verbose(VAPI, "TURBO freq computed as  %lu",  ack);
+		debug("TURBO freq computed as  %lu",  ack);
 	} else {
 		debug( "ear_daemon_client_end_compute_turbo_freq service not provided");
 	}
@@ -554,7 +552,7 @@ ulong eards_end_app_compute_turbo_freq()
 		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack,sizeof(ulong)) , sizeof(ulong),
 			"ERROR writing ack for finishing frequency for app ")) return EAR_ERROR;
 
-		verbose(VAPI, "TURBO freq computed as  %lu", ack);
+		debug("TURBO freq computed as  %lu", ack);
 	} else {
 		debug( "ear_daemon_client_end_app_compute_turbo_freq service not provided");
 	}
@@ -577,7 +575,7 @@ void eards_set_turbo()
 			 "ERROR writing request for setting turbo")) return;
 		if (warning_api(my_read(ear_fd_ack[freq_req],(char *)&ack,sizeof(ulong)),sizeof(ulong),
 			 "ERROR reading ack for setting turbo ")) return;
-		verbose(VAPI+1, "turbo activated");
+		debug("turbo activated");
 		return;
 	}   
 	debug( "turbo not provided");
@@ -603,7 +601,7 @@ ulong eards_change_freq(ulong newfreq)
 		if (warning_api(my_read(ear_fd_ack[freq_req], (char *)&real_freq, sizeof(ulong)) , sizeof(ulong),
 			"ERROR reading ack for changing frequency ")) return EAR_ERROR;
 
-		verbose(VAPI+1, "Frequency_changed to %lu",  real_freq);
+		debug("Frequency_changed to %lu",  real_freq);
 	} else {
 		real_freq = 0;
 		debug( "change_freq service not provided");

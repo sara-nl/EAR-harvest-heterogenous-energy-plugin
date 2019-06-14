@@ -66,7 +66,7 @@ static ulong global_f;
 void states_periodic_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
 	if (my_id) return;
-	verbose(1, "EAR(%s) Ends execution. \n", app_name);
+	debug("EAR(%s) Ends execution. \n", app_name);
 	end_log();
 }
 
@@ -82,8 +82,6 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
 
 void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
-	verbose(4, "EAR(%s): ________BEGIN_PERIOD: Computing N for period %lu size %u_____BEGIN_____\n",
-					ear_app_name, event, size);
 
 	policy_new_loop();
 	traces_new_period(ear_my_rank, my_id, event);
@@ -113,7 +111,7 @@ static void print_loop_signature(char *title, signature_t *loop)
 {
 	float avg_f = (float) loop->avg_f / 1000000.0;
 
-	verbose(2, "(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+	debug("(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
                 title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
 }
 
@@ -149,7 +147,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	if (resched_conf->force_rescheduling)
 	{
 		traces_reconfiguration(ear_my_rank, my_id);
-		verbose(0,"EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
+		debug("EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
 					system_conf->max_freq, system_conf->th);
 
 		// We set the default number of iterations to the default for this loop

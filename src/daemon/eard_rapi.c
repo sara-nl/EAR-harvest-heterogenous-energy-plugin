@@ -54,7 +54,7 @@ int send_command(request_t *command)
 {
 	ulong ack;
 	int ret;
-	verbose(VMSG,"Sending command %u\n",command->req);
+	debug("Sending command %u\n",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
 			error("Error sending command %s\n",strerror(errno));
@@ -168,7 +168,7 @@ int send_status(request_t *command, status_t **status)
         error("Number of status expected is not valid: %d", ack);
         return EAR_ERROR;
     }
-	verbose(VMSG,"Waiting for %d ack bytes\n",ack);
+	debug("Waiting for %d ack bytes\n",ack);
     return_status = calloc(ack, sizeof(status_t));
 	if (return_status==NULL){
 		error("Not enough memory at send_status");
@@ -275,23 +275,23 @@ int eards_remote_connect(char *nodename,uint port)
                 sysret = getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
                 if (sysret)
                 {
-                    verbose(VCONNECT, "Error geting sockopt\n");
+                    debug("Error geting sockopt\n");
                     close(sfd);
                     continue;
                 }
                 else if (optlen != sizeof(int))
                 {
-                    verbose(VCONNECT, "Error with getsockopt\n");
+                    debug("Error with getsockopt\n");
                     close(sfd);
                     continue;
                 }
                 else if (valopt)
                 {
-                    verbose(VCONNECT, "Error opening connection %s",nodename);
+                    debug("Error opening connection %s",nodename);
                     close(sfd);
                     continue;
                 }
-                else verbose(VCONNECT+1, "Connected\n");
+                else debug("Connected\n");
             }
             else
             {
@@ -317,11 +317,11 @@ int eards_remote_connect(char *nodename,uint port)
     
     if (read(sfd, &conection_ok, sizeof(char)) > 0)
     {
-        verbose(VCONNECT+1, "Handshake with server completed.");
+        debug("Handshake with server completed.");
     }
     else
     {
-        verbose(VCONNECT, "Couldn't complete handshake with server, closing conection.");
+        debug("Couldn't complete handshake with server, closing conection.");
         close(sfd);
         return EAR_ERROR;
     }
@@ -346,7 +346,7 @@ int eards_new_job(application_t *new_job)
     command.node_dist = 0;
     command.time_code = time(NULL);
 	copy_application(&command.my_req.new_job,new_job);
-	debug(VMSG,"command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
+	debug("command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_non_block_command(&command);
 }
 
@@ -362,7 +362,7 @@ int eards_end_job(job_id jid,job_id sid)
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
 //	command.my_req.end_job.status=status;
-	debug(VMSG,"command %u job_id %d step_id %d \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+	debug("command %u job_id %d step_id %d \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
 	return send_non_block_command(&command);
 }
 
@@ -470,7 +470,7 @@ void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
-	verbose(VMSG,"Sending old_increase_th_all_nodes \n");
+	debug("Sending old_increase_th_all_nodes \n");
 
     for (i=0;i < my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -489,9 +489,9 @@ void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
                 }
     	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
-	    		    verbose(VCONNECT,"Error connecting with node %s", node_name);
+	    		    debug("Error connecting with node %s", node_name);
             	}else{
-	        		verbose(VMSG+2,"Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
+	        		debug("Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
 		        	if (!eards_inc_th(th)) debug("Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
         		}
@@ -504,7 +504,7 @@ void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
-	verbose(VMSG,"Sending old_red_max_freq_all_nodes\n");
+	debug("Sending old_red_max_freq_all_nodes\n");
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {
@@ -522,10 +522,10 @@ void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
                 }
     	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
-	    		    verbose(VCONNECT,"Error connecting with node %s", node_name);
+	    		    debug("Error connecting with node %s", node_name);
             	}else{
     
-                	verbose(VMSG+2,"Reducing  the frequency in node %s by %lu\n", node_name,ps);
+                debug("Reducing  the frequency in node %s by %lu\n", node_name,ps);
 		        	if (!eards_red_max_and_def_freq(ps)) debug("Error reducing the max freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
@@ -538,7 +538,7 @@ void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc; 
     char node_name[256];
-	verbose(VMSG,"Sengind old_ping_all_nodes\n");
+	debug("Sengind old_ping_all_nodes\n");
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {   
@@ -559,7 +559,7 @@ void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
                     error("Error connecting with node %s", node_name);
                 }else{
 
-                    verbose(VMSG,"Node %s ping!\n", node_name);
+                    debug("Node %s ping!\n", node_name);
                     if (!eards_ping()) error("Error doing ping for node %s", node_name);
                     eards_remote_disconnect();
                 }
@@ -653,7 +653,7 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
     memset(num_status, 0, sizeof(num_status));
     temp_status = calloc(NUM_PROPS, sizeof(status_t*));
 
-	verbose(VCONNECT+1,"correct_status for ip %d with distance %d\n",ips[target_idx],command->node_dist);
+		debug("correct_status for ip %d with distance %d\n",ips[target_idx],command->node_dist);
     if (command->node_dist > total_ips)
     {
         final_status = calloc(1, sizeof(status_t));
@@ -730,7 +730,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
 {
     status_t *final_status, *status1 = NULL, *status2 = NULL;
     int total_status, num_status1 = 0, num_status2 = 0;
-	verbose(VCONNECT+1,"correct_status for ip %d with distance %d\n",target_ip,command->node_dist);
+		debug("correct_status for ip %d with distance %d\n",target_ip,command->node_dist);
     if (command->node_dist < 1) {
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = target_ip;
@@ -760,37 +760,37 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        verbose(VCONNECT, "Error connecting to node: %s\n", nextip1);
+        debug("Error connecting to node: %s\n", nextip1);
         num_status1 = correct_status(ntohl(ip1), command, port, &status1);
     }
     else
     {
-		verbose(VCONNECT+1,"connection ok, sending status requests %s\n",nextip1);
+		debug("connection ok, sending status requests %s\n",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
-            verbose(VCONNECT, "Error propagating command to node %s\n", nextip1);
+            debug("Error propagating command to node %s\n", nextip1);
             eards_remote_disconnect();
             num_status1 = correct_status(ntohl(ip1), command, port, &status1);
         }
         else eards_remote_disconnect();
     }
 
-	verbose(VCONNECT+1,"Correcting second node\n");
+	debug("Correcting second node\n");
 
     command->node_dist = actual_dist;
     //connect to second subnode
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        verbose(VCONNECT, "Error connecting to node: %s\n", nextip2);
+        debug("Error connecting to node: %s\n", nextip2);
         num_status2 = correct_status(ntohl(ip2), command, port, &status2);
     }
     else
     {
-		verbose(VCONNECT+1,"connection ok, sending status requests %s\n",nextip2);
+		debug("connection ok, sending status requests %s\n",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
-            verbose(VCONNECT, "Error propagating command to node %s\n", nextip2);
+            debug("Error propagating command to node %s\n", nextip2);
             eards_remote_disconnect();
             num_status2 = correct_status(ntohl(ip2), command, port, &status2);
         }
@@ -806,7 +806,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     *status = final_status;
     free(status1);
     free(status2);
-	verbose(VCONNECT+1,"correct_status ends return value=%d\n",total_status + 1);
+		debug("correct_status ends return value=%d\n",total_status + 1);
     return total_status + 1;
 }
 #endif
@@ -879,14 +879,14 @@ void correct_error(uint target_ip, request_t *command, uint port)
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        verbose(VCONNECT, "Error connecting to node: %s\n", nextip1);
+        debug("Error connecting to node: %s\n", nextip1);
         correct_error(ntohl(ip1), command, port);
     }
     else
     {
         if (!send_command(command))
         {
-            verbose(VCONNECT, "Error propagating command to node %s\n", nextip1);
+            debug("Error propagating command to node %s\n", nextip1);
             eards_remote_disconnect();
             correct_error(ntohl(ip1), command, port);
         }
@@ -898,14 +898,14 @@ void correct_error(uint target_ip, request_t *command, uint port)
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        verbose(VCONNECT, "Error connecting to node: %s\n", nextip2);
+        debug("Error connecting to node: %s\n", nextip2);
         correct_error(ntohl(ip2), command, port);
     }
     else
     {
         if (!send_command(command))
         {
-            verbose(VCONNECT, "Error propagating command to node %s\n", nextip2);
+            debug("Error propagating command to node %s\n", nextip2);
             eards_remote_disconnect();
             correct_error(ntohl(ip2), command, port);
         }
@@ -936,7 +936,7 @@ int correct_status_starter(char *host_name, request_t *command, uint port, statu
 
    	s = getaddrinfo(host_name, NULL, &hints, &result);
     if (s != 0) {
-		verbose(VCONNECT,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		debug("getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
 		return EAR_ERROR;
     }
 
@@ -973,7 +973,7 @@ void correct_error_starter(char *host_name, request_t *command, uint port)
 
    	s = getaddrinfo(host_name, NULL, &hints, &result);
     if (s != 0) {
-		verbose(VCONNECT,"getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		debug("getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
 		return;
     }
 
@@ -1009,13 +1009,13 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
             
             rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
             if (rc<0){
-                verbose(VCONNECT,"Error connecting with node %s, trying to correct it", next_ip);
+                debug("Error connecting with node %s, trying to correct it", next_ip);
                 correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
             }
             else{
-                verbose(VCONNECT+1,"Node %s with distance %d contacted!\n", next_ip, command.node_dist);
+                debug("Node %s with distance %d contacted!\n", next_ip, command.node_dist);
                 if (!send_command(&command)) {
-                    verbose(VCONNECT,"Error sending command to node %s, trying to correct it", next_ip);
+                    debug("Error sending command to node %s, trying to correct it", next_ip);
                     correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
                 }
                 eards_remote_disconnect();
@@ -1035,7 +1035,7 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
     int i, j, k, rc; 
     char node_name[256];
     time_t ctime = time(NULL);
-	verbose(VCONNECT+1,"send_command_all %d\n",command.req);
+	debug("send_command_all %d\n",command.req);
     command.time_code = ctime;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -1067,13 +1067,13 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
-                verbose(VCONNECT,"Error connecting with node %s, trying to correct it", node_name);
+                debug("Error connecting with node %s, trying to correct it", node_name);
                 correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
             }
             else{
-                verbose(VCONNECT+1,"Node %s with distance %d contacted!\n", node_name, command.node_dist);
+                debug("Node %s with distance %d contacted!\n", node_name, command.node_dist);
                 if (!send_command(&command)) {
-                    verbose(VCONNECT,"Error sending command to node %s, trying to correct it", node_name);
+                    debug("Error sending command to node %s, trying to correct it", node_name);
                     correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
                 }
                 eards_remote_disconnect();
@@ -1108,13 +1108,13 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
             
             rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
             if (rc<0){
-                verbose(VCONNECT,"Error connecting with node %s, trying to correct it", next_ip);
+                debug("Error connecting with node %s, trying to correct it", next_ip);
                 num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
             }
             else{
-                verbose(VCONNECT+1,"Node %s with distance %d contacted!\n", next_ip, command.node_dist);
+                debug("Node %s with distance %d contacted!\n", next_ip, command.node_dist);
                 if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
-                    verbose(VCONNECT,"Error sending command to node %s, trying to correct it", next_ip);
+                    debug("Error sending command to node %s, trying to correct it", next_ip);
                     num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
                 }
                 eards_remote_disconnect();
@@ -1179,13 +1179,13 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 
             rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
             if (rc<0){
-                verbose(VCONNECT,"Error connecting with node %s, trying to correct it", node_name);
+                debug("Error connecting with node %s, trying to correct it", node_name);
                 num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
             }
             else{
-                verbose(VCONNECT+1,"Node %s with distance %d contacted with status!", node_name, command.node_dist);
+                debug("Node %s with distance %d contacted with status!", node_name, command.node_dist);
                 if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
-                    verbose(VCONNECT,"Error doing status for node %s, trying to correct it", node_name);
+                    debug("Error doing status for node %s, trying to correct it", node_name);
                     num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
                 }
                 eards_remote_disconnect();
@@ -1226,10 +1226,10 @@ void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
                 }
     	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
         	    if (rc<0){
-	    		    verbose(VCONNECT,"Error connecting with node %s", node_name);
+	    		    debug("Error connecting with node %s", node_name);
             	}else{
-                	verbose(VCONNECT+1,"Reducing  the default and maximumfrequency in node %s by %lu\n", node_name,ps);
-		        	if (!eards_red_max_and_def_freq(ps)) verbose(VCONNECT,"Error reducing the default freq for node %s", node_name);
+                	debug("Reducing  the default and maximumfrequency in node %s by %lu\n", node_name,ps);
+		        	if (!eards_red_max_and_def_freq(ps)) debug("Error reducing the default freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
 	        }
@@ -1263,10 +1263,10 @@ void old_reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf
 
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    verbose(VCONNECT,"Error connecting with node %s",node_name);
+                    debug("Error connecting with node %s",node_name);
                 }else{
-                	verbose(VCONNECT+1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
-                	if (!eards_set_freq(freq)) verbose(VCONNECT,"Error reducing the freq for node %s", node_name);
+                	debug("Setting  the frequency in node %s to %lu\n", node_name, freq);
+                	if (!eards_set_freq(freq)) debug("Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
@@ -1298,10 +1298,10 @@ void old_set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    verbose(VCONNECT,"Error connecting with node %s",node_name);
+                    debug("Error connecting with node %s",node_name);
                 }else{
-                	verbose(VCONNECT+1,"Setting  the frequency in node %s to %lu\n", node_name, freq);
-                	if (!eards_set_def_freq(freq)) verbose(VCONNECT,"Error setting the freq for node %s", node_name);
+                	debug("Setting  the frequency in node %s to %lu\n", node_name, freq);
+                	if (!eards_set_def_freq(freq)) debug("Error setting the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
@@ -1333,10 +1333,10 @@ void old_restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
 
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    verbose(VCONNECT,"Error connecting with node %s",node_name);
+                    debug("Error connecting with node %s",node_name);
                 }else{
-                	verbose(VCONNECT+1,"Restoring the configuartion in node %s\n", node_name);
-                	if (!eards_restore_conf()) verbose(VCONNECT,"Error restoring the configuration for node %s", node_name);
+                	debug("Restoring the configuartion in node %s\n", node_name);
+                	if (!eards_restore_conf()) debug("Error restoring the configuration for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
             }
