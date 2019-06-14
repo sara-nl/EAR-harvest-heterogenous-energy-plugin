@@ -12,7 +12,7 @@ cluster_conf_t conf_clus;
 my_node_conf_t conf_node;
 application_t app;
 
-void *send_applications()
+void *send_applications(void *p)
 {
 	application_t app;
 	edb_state_t s;
@@ -34,7 +34,7 @@ void *send_applications()
 	pthread_exit(NULL);
 }
 
-void *send_periodics()
+void *send_periodics(void *p)
 {
 	periodic_metric_t per;
 	edb_state_t s;
@@ -53,7 +53,7 @@ void *send_periodics()
 	pthread_exit(NULL);
 }
 
-void *send_events()
+void *send_events(void *p)
 {
 	ear_event_t eve;
 	edb_state_t s;
