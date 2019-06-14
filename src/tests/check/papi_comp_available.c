@@ -33,7 +33,6 @@
 
 int main(int argc, char *argv[])
 {
-    const PAPI_component_info_t *info;
     int state = PAPI_library_init(PAPI_VER_CURRENT);
     assert(state == PAPI_VER_CURRENT);
 

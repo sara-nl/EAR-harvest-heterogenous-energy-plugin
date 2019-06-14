@@ -41,7 +41,7 @@ extern ulong eard_max_pstate;
 
 void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {
-	char checkpoint_file[GENERIC_NAME];
+	char checkpoint_file[MAX_PATH_SIZE*2];
 	mode_t old_mask;
 	int fd;
 	if (eard_dyn_conf==NULL)	return;
@@ -64,7 +64,7 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 }
 void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {
-	char checkpoint_file[GENERIC_NAME];
+	char checkpoint_file[MAX_PATH_SIZE*2];
 	int fd;
 	if (eard_dyn_conf==NULL)	return;
 	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->tmp_dir,".eard_check");

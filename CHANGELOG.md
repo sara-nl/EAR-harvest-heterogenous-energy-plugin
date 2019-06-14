@@ -1,5 +1,6 @@
 ## Unreleased
 - eargm message warning fixed
+- daemon warnings fixed with -Wall and gcc 8
 - verbose messages converted to debug or error
 - error.h and debug.h included in verbose.h
 - minor change fixed in wait_for_cient function. Argument for accept was incorrect.

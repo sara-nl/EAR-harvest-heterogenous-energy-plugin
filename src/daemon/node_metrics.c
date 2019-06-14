@@ -169,7 +169,7 @@ int print_node_metrics(nm_t *id,nm_data_t *nm)
 		return EAR_ERROR;
 	}
 	printf("node_metrics avg_cpu_freq %lu ",nm->avg_cpu_freq);
-	for (i=0;i<id->nsockets;i++) printf("uncore_freq[%d]=%llu ",i,nm->uncore_freq[i]);
+	for (i=0;i<id->nsockets;i++) printf("uncore_freq[%d]=%llu ",i,(long long unsigned int)nm->uncore_freq[i]);
 	for (i=0;i<id->nsockets;i++) printf("temp[%d]=%llu ",i,nm->temp[i]);
 	return EAR_SUCCESS;
 }
@@ -177,7 +177,7 @@ int print_node_metrics(nm_t *id,nm_data_t *nm)
 int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 {
 	int i;
-	char msg[1024],buff[128];
+	char msg[1024];
 	uint64_t uncore_total=0;
 	unsigned long long temp_total=0;
 	if ((nm==NULL) || (id==NULL) || (id->con!=NM_CONNECTED)){
@@ -191,7 +191,7 @@ int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 	for (i=0;i<id->nsockets;i++){
 		temp_total+=nm->temp[i];
 	}
-	sprintf(msg," avg_cpu_freq %.2lf uncore_freq=%llu temp=%llu",(double)nm->avg_cpu_freq/(double)1000000,uncore_total,temp_total);
+	sprintf(msg," avg_cpu_freq %.2lf uncore_freq=%llu temp=%llu",(double)nm->avg_cpu_freq/(double)1000000,(long long unsigned int)uncore_total,temp_total);
 	verbose(VNODEPMON,msg);
 	return EAR_SUCCESS;
 }

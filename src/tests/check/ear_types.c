@@ -34,7 +34,7 @@
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
 
-int main(int argc,char argv[])
+int main(int argc,char *argv[])
 {
 	printf("Application size if %lu\n",sizeof(application_t));
 	printf("Periodic metric size is %lu\n",sizeof(periodic_metric_t));

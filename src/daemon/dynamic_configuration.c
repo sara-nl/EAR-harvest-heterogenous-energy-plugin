@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <netdb.h>
 #include <sys/socket.h>
@@ -246,7 +247,7 @@ int dyncon_restore_conf()
 int dynconf_red_pstates(uint p_states)
 {
 	// Reduces p_states both the maximum and the default
-	ulong max,def,i;
+	ulong i;
 	uint def_pstate,max_pstate;
 	ulong new_def_freq,new_max_freq;
 	def_pstate=frequency_freq_to_pstate(dyn_conf->def_freq);
@@ -403,7 +404,6 @@ void process_remote_requests(int clientfd)
 void * eard_dynamic_configuration(void *tmp)
 {
 	my_tmp=(char *)tmp;
-	int change=0;
 	
 	verbose(VRAPI,"RemoteAPI thread created\n");
 

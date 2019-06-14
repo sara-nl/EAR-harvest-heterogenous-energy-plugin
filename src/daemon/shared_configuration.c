@@ -45,7 +45,7 @@
 #include <daemon/shared_configuration.h>
 
 static int fd;
-static int fd_cluster,fd_settings,fd_resched,fd_coeffs,fd_coeffs_default,fd_services,fd_freq;
+static int fd_settings,fd_resched,fd_coeffs,fd_services,fd_freq;
 
 /** These functions created path names, just to avoid problems if changing the path name in the future */
 /** This functions creates the name of the file mapping the shared memory for the dynamic power settings, it is placed at TMP 
@@ -126,12 +126,11 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int 
 
 void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd,int *s)
 {
-    int ret;
     void * my_shared_region=NULL;
-	char buff[256];
-	int flags;
-	int size;
-	strcpy(buff,path);
+		char buff[256];
+		int flags;
+		int size;
+		strcpy(buff,path);
     fd=open(buff,perm);
     if (fd<0){
         error("error attaching to sharing memory (%s)\n",strerror(errno));

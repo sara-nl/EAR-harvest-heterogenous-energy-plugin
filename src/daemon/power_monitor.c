@@ -36,6 +36,7 @@
 #include <float.h>
 #include <errno.h>
 #include <signal.h>
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -290,7 +291,7 @@ void reset_shared_memory()
 
 void clean_job_environment(int id,int step_id)
 {
-	char ear_ping[MAX_PATH_SIZE],fd_lock_filename[MAX_PATH_SIZE],ear_commack[MAX_PATH_SIZE];
+	char ear_ping[MAX_PATH_SIZE*2],fd_lock_filename[MAX_PATH_SIZE*2],ear_commack[MAX_PATH_SIZE*2];
 	uint pid=create_ID(id,step_id);
 
 	if (ear_ping_fd>=0){
@@ -412,9 +413,7 @@ void job_init_powermon_app(energy_handler_t *ceh,application_t *new_app,uint fro
 void job_end_powermon_app(energy_handler_t *ceh)
 {
 	energy_data_t c_energy;
-	node_data_t app_total;
 	power_data_t app_power;
-	double exec_time;
 	check_context("job_end_powermon_app");
 	time(&current_ear_app[ccontext]->app.job.end_time);
 	if (current_ear_app[ccontext]->app.job.end_time==current_ear_app[ccontext]->app.job.start_time){	
@@ -456,8 +455,9 @@ void report_powermon_app(powermon_app_t *app)
     if (my_cluster_conf.eard.use_mysql)
     {
 		if (!my_cluster_conf.eard.use_eardbd) {
-			if (!db_insert_application(&app->app))
+			if (!db_insert_application(&app->app)){
 				debug( "Application signature correctly written");
+			}
 		}
 		else {
 			edb_state_t state = eardbd_send_application(&app->app);
@@ -629,7 +629,6 @@ void powermon_mpi_finalize(energy_handler_t *eh)
 void powermon_new_job(energy_handler_t *eh,application_t* appID,uint from_mpi)
 {
     // New application connected
-	int p_id;
 	if (appID==NULL){
 		error("powermon_new_job: NULL appID");
 		return;
@@ -690,7 +689,6 @@ void powermon_end_job(energy_handler_t *eh,job_id jid,job_id sid)
 {
     // Application disconnected
     powermon_app_t summary;
-    char buffer[128];
 		int cc,pcontext;
 		/* Saving ccontext index */
 		pcontext=ccontext;
@@ -797,7 +795,6 @@ void powermon_new_max_freq(ulong maxf)
 
 void powermon_new_def_freq(uint p_id,ulong def)
 {
-	int nump;
 	uint ps;
 	uint cpolicy;
 	ps=frequency_freq_to_pstate(def);
@@ -928,7 +925,7 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
 	}
 	if (current_sample.temp>my_node_conf->max_temp){
-		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %llu degress (max %lu)\n",nodename,current_sample.temp,my_node_conf->max_temp);
+		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %lu degress (max %lu)\n",nodename,current_sample.temp,my_node_conf->max_temp);
 	}
 	#endif
   if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc>my_node_conf->max_error_power)){
@@ -972,7 +969,7 @@ void update_historic_info(power_data_t *my_current_power,nm_data_t *nm)
 
 void create_powermon_out()
 {
-	char output_name[MAX_PATH_SIZE];
+	char output_name[MAX_PATH_SIZE*4];
 	char *header="job_id;begin_time;end_time;mpi_init_time;mpi_finalize_time;avg_dc_power;max_dc_power;min_dc_power\n";
 	mode_t my_mask;
 	// We are using EAR_TMP but this info will go to the DB
@@ -1042,10 +1039,8 @@ void powermon_init_nm()
 // frequency_monitoring will be expressed in usecs
 void *eard_power_monitoring(void *noinfo)
 {
-	ulong avg_f;
 	energy_data_t e_begin;
 	energy_data_t e_end;	
-	double t_diff;
 	power_data_t my_current_power;
 
 	PM_set_sigusr1();

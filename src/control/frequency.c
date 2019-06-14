@@ -324,7 +324,7 @@ void frequency_set_ondemand_governor_all_cpus()
 // Privileged function
 void frequency_set_userspace_governor_all_cpus()
 {
-	int i,status;
+	int i;
 
 	for (i = 0; i < num_cpus; i++) {
 		cpufreq_modify_policy_governor(i, "userspace");

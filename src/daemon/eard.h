@@ -39,8 +39,6 @@ static void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster
 static void init_frequency_list();
 static int is_valid_sec_tag(ulong tag);
 static void set_global_eard_variables();
-static void eard_lock(char *tmp_dir);
-static void eard_unlock();
 static int read_coefficients();
 static void signal_catcher();
 static void Usage(char *app);

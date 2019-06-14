@@ -52,7 +52,6 @@
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
 
-static int sfd;
 
 int *ips;
 int total_ips = -1;
@@ -64,10 +63,7 @@ int create_server_socket(uint port)
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     int sfd, s;
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len;
-    ssize_t nread;
-	char buff[50]; // This must be checked
+		char buff[50]; // This must be checked
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
@@ -78,7 +74,7 @@ int create_server_socket(uint port)
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
 
-	sprintf(buff,"%d",port);
+		sprintf(buff,"%d",port);
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
@@ -190,11 +186,8 @@ int init_ips(cluster_conf_t *my_conf)
     strtok(buff,".");
     ret = get_range_ips(my_conf, buff, &ips);
     if (ret < 1) return EAR_ERROR;
-/*#if USE_EXT
-    strcat(buff, NW_EXT);
-#endif*/
     if (strlen(my_conf->net_ext) > 0)
-        strcat(buff, my_conf->net_ext);
+    strcat(buff, my_conf->net_ext);
     temp_ip = get_ip(buff, my_conf);
     for (i = 0; i < ret; i++)
     {
@@ -211,11 +204,6 @@ int init_ips(cluster_conf_t *my_conf)
         return EAR_ERROR;
     }
     total_ips = ret;
-    for (i = 0; i < total_ips; i++)
-    {
-        struct sockaddr_in temp;
-        temp.sin_addr.s_addr = ips[i];
-    }
     return EAR_SUCCESS;
   
 }
@@ -243,8 +231,8 @@ void propagate_req(request_t *command, uint port)
     struct sockaddr_in temp;
 
     int i, rc;
-    unsigned int ip1, ip2, current_dist;
-	char next_ip[50]; 
+    unsigned int  current_dist;
+		char next_ip[50]; 
 
     current_dist = command->node_dist;
 
@@ -380,10 +368,10 @@ int propagate_status(request_t *command, uint port, status_t **status)
 {
     status_t **temp_status, *final_status;
     int num_status[NUM_PROPS];
-    int rc, i, j;
+    int rc, i;
     struct sockaddr_in temp;
-    unsigned int ip1, current_dist;
-	char next_ip[50], nextip2[50]; 
+    unsigned int  current_dist;
+		char next_ip[50]; 
     temp_status = calloc(NUM_PROPS, sizeof(status_t *));
     memset(num_status, 0, sizeof(num_status));
 

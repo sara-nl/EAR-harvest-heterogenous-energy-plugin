@@ -129,12 +129,12 @@ unsigned long eard_max_freq;
 int eard_max_pstate;
 int num_uncore_counters;
 
-char ear_ping[MAX_PATH_SIZE];
+char ear_ping[MAX_PATH_SIZE*2];
 char ear_tmp[MAX_PATH_SIZE];
 char nodename[MAX_PATH_SIZE];
 int ear_ping_fd=-1;
 int eard_lockf;
-char eard_lock_file[MAX_PATH_SIZE];
+char eard_lock_file[MAX_PATH_SIZE*2];
 int application_id=-1;
 
 ulong energy_freq;
@@ -204,9 +204,9 @@ void  create_tmp(char *tmp_dir)
 	}
 }
 
+#if 0
 void eard_lock(char *tmp_dir)
 {
-	int ret;
 	sprintf(eard_lock_file, "%s/%s.eard_lock", tmp_dir, nodename);
 
 	if ((eard_lockf=open(eard_lock_file,O_WRONLY|O_CREAT|O_EXCL,S_IRUSR|S_IWUSR))<0)
@@ -227,11 +227,12 @@ void eard_unlock()
 	verbose(VEARD,"removing file %s\n",eard_lock_file);
 	if (unlink(eard_lock_file)<0) error("Error when removing lock file %s:%s\n",eard_lock_file,strerror(errno));
 }
+#endif
 
 // Creates a pipe to receive requests for applications. eard creates 1 pipe (per node) and service to receive requests
 void create_connector(char *ear_tmp,char *nodename,int i)
 {
-	char ear_commreq[MAX_PATH_SIZE];
+	char ear_commreq[MAX_PATH_SIZE*2];
 	sprintf(ear_commreq,"%s/.ear_comm.req_%d",ear_tmp,i);
 	// ear_comreq files will be used to send requests from the library to the eard
 	if (mknod(ear_commreq,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
@@ -244,7 +245,7 @@ void create_connector(char *ear_tmp,char *nodename,int i)
 
 void connect_service(int req,application_t *new_app)
 {
-    char ear_commack[MAX_PATH_SIZE];
+    char ear_commack[MAX_PATH_SIZE*2];
     unsigned long ack;
     int connect=1;
     int alive;
@@ -389,7 +390,6 @@ void eard_restart()
 */
 void eard_exit(uint restart)
 {
-	char ear_commreq[MAX_PATH_SIZE];
 	int i;
 
 	verbose(VCONF, "Exiting");
@@ -426,12 +426,6 @@ void eard_exit(uint restart)
 	{
 		close(ear_fd_req[i]);
 
-		//sprintf(ear_commreq, "%s/.ear_comm.req_%d", ear_tmp, i);
-		//verbose(2, "removing file %s", ear_commreq);
-
-		//if (unlink(ear_commreq) < 0) {
-		//	verbose(0, "error when removing com file %s (%s)", ear_commreq, strerror(errno));
-		//}
 	}
 	/* Releasing shared memory */
 	settings_conf_shared_area_dispose(dyn_conf_path);
@@ -459,8 +453,7 @@ void eard_exit(uint restart)
 // HIGHLIGHT: LIBRARY DISPOSE (2/2)
 void eard_close_comm()
 {
-	unsigned long long values[RAPL_EVS];
-	char ear_commack[MAX_PATH_SIZE];
+	char ear_commack[MAX_PATH_SIZE*2];
 	int dis_pid = application_id;
 	int i;
 
@@ -542,7 +535,7 @@ int eard_node_energy(int must_read)
 int eard_system(int must_read)
 {
 	unsigned long ack;
-	 int ret1, ret2, size;
+	 int ret1;
 
 	if (must_read)
 	{
@@ -932,7 +925,6 @@ void signal_handler(int sig)
 void signal_catcher()
 {
 	struct sigaction action;
-	sigset_t set;
 	int signal;
 	sigset_t eard_mask;
 
@@ -1082,7 +1074,6 @@ int coeffs_per_island_default_exist(char *filename)
 int read_coefficients_default()
 {
     char my_coefficients_file[GENERIC_NAME];
-    int state,i;
     int file_size=0;
     file_size=coeffs_per_node_default_exist(my_coefficients_file);
     if (file_size == EAR_OPEN_ERROR){
@@ -1097,7 +1088,7 @@ int read_coefficients_default()
     int entries=file_size/sizeof(coefficient_t);
     verbose(VCONF,"%d default coefficients found",entries);
     my_coefficients_default=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
-    state=coeff_file_read_no_alloc(my_coefficients_file, my_coefficients_default,file_size);
+    coeff_file_read_no_alloc(my_coefficients_file, my_coefficients_default,file_size);
     return file_size;
 }
 
@@ -1105,7 +1096,6 @@ int read_coefficients_default()
 int read_coefficients()
 {
 	char my_coefficients_file[GENERIC_NAME];
-	int state,i;
 	int file_size=0;
 	file_size=coeffs_per_node_exist(my_coefficients_file);
 	if (file_size == EAR_OPEN_ERROR){
@@ -1120,10 +1110,10 @@ int read_coefficients()
             }
 		}
 	}
-    int entries=file_size/sizeof(coefficient_t);
-    verbose(VCONF,"%d coefficients found",entries);
-    my_coefficients=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
-    state=coeff_file_read_no_alloc(my_coefficients_file, my_coefficients,file_size);
+  int entries=file_size/sizeof(coefficient_t);
+  verbose(VCONF,"%d coefficients found",entries);
+  my_coefficients=(coefficient_t *)calloc(entries,sizeof(coefficient_t));
+  coeff_file_read_no_alloc(my_coefficients_file, my_coefficients,file_size);
 	return file_size;
 }
 
@@ -1145,8 +1135,7 @@ int main(int argc,char *argv[])
 	struct timeval *my_to;
 	struct timeval tv;
 
-	char ear_commreq[MAX_PATH_SIZE];
-	char *my_ear_tmp;
+	char ear_commreq[MAX_PATH_SIZE*2];
 
 	unsigned long ear_node_freq;
 	int cpu_model;
@@ -1160,7 +1149,6 @@ int main(int argc,char *argv[])
 	int max_fd = -1;
 	int ret;
 	int i;
-	char *shortnode;
 
 	// Usage
 	if (argc > 2) {
@@ -1410,18 +1398,18 @@ int main(int argc,char *argv[])
 	#endif
 
 	#if POWERMON_THREAD
-	if (ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL)){
+	if ((ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL))){
 		errno=ret;
 		error("error creating power_monitoring thread %s\n",strerror(errno));
 	}
 	#endif
 	#if EXTERNAL_COMMANDS_THREAD
-	if (ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp)){
+	if ((ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp))){
 		error("error creating dynamic_configuration thread \n");
 	}
 	#endif
 	#if APP_API_THREAD
-	if (ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL)){
+	if ((ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL))){
 		error("error creating server thread for non-earl api\n");
 	}
 	#endif

@@ -30,6 +30,8 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
+
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -46,11 +48,9 @@
 #define close_app_connection()
 
 static char app_to_eard[MAX_PATH_SIZE];
-static char eard_to_app[MAX_PATH_SIZE];
 static char *TH_NAME="No-EARL_API";
 
 static int fd_app_to_eard=-1;
-static int fd_eard_to_app=-1;
 
 #define MAX_FDS 100
 #define MAX_TRIES 100
@@ -75,18 +75,12 @@ static energy_handler_t my_eh_app_api;
 static void app_api_set_sigterm()
 {
     sigset_t set;
-    struct  sigaction sa;
     sigfillset(&set);
     pthread_sigmask(SIG_SETMASK,&set,NULL); 
 
 }
 
 
-static int connect_with_app()
-{
-    if (fd_eard_to_app>=0) return EAR_SUCCESS;
-    else return EAR_ERROR;
-}
 
 static int send_app_answer(int fd_out,app_recv_t *data)
 {
@@ -110,7 +104,6 @@ int create_app_connection(char *root)
 		apps_eard[i].pid=-1;
 	}
     sprintf(app_to_eard,"%s/.app_to_eard",root);
-    /*sprintf(eard_to_app,"%s/.eard_to_app",root);*/
 	old_mask=umask(0);
 	// app_to_eard is used to send requests from app to eard
     if (mknod(app_to_eard,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
@@ -118,22 +111,11 @@ int create_app_connection(char *root)
 			return EAR_ERROR;
         }
     }
-	#if 0
-	if (mknod(eard_to_app,S_IFIFO|S_IRUSR|S_IRGRP|S_IWUSR|S_IWGRP|S_IROTH|S_IWOTH,0)<0){
-        if (errno!=EEXIST){
-            return EAR_ERROR;
-        }
-    }
-	#endif
 	umask(old_mask);
 	fd_app_to_eard=open(app_to_eard,O_RDWR);
 	if (fd_app_to_eard<0){
 		return EAR_ERROR;
 	}
-	#if 0
-	fd_eard_to_app=open(eard_to_app,O_RDWR);
-	if (fd_eard_to_app<0)	return EAR_ERROR;
-	#endif
 	return EAR_SUCCESS;
 }
 
@@ -324,7 +306,6 @@ void dispose_app_connection()
 /** Returns the energy in mJ and the time in ms  */
 void ear_energy(int fd_out)
 {
-	int fd_ack;
 	app_recv_t data;
 	ulong energy_mj,time_ms;
 	
@@ -337,13 +318,6 @@ void ear_energy(int fd_out)
 		error("Error reading energy in %s thread",TH_NAME);
 	}
 
-	#if 0
-	/* Create connection */
-	if (connect_with_app()!=EAR_SUCCESS){
-		verbose(0,"Error connecting with NON-EARL application \n");
-		return;
-	}
-	#endif
 
 	/* Prepare the answer */
 	data.ret=EAR_SUCCESS;
@@ -351,10 +325,6 @@ void ear_energy(int fd_out)
 	data.my_data.my_energy.time_ms=time_ms;
 
 	send_app_answer(fd_out,&data);
-	#if 0
-	/* Close the connection with app */
-	close_app_connection();	
-	#endif
 
 	
 	return;
@@ -363,12 +333,11 @@ void ear_energy(int fd_out)
 
 void ear_energy_debug(int fd_out)
 {
-        int fd_ack;
         app_recv_t data;
         ulong energy_j,energy_mj,time_sec,time_ms;
         struct timespec tspec;
 
-        memset(&data.my_data.my_energy,sizeof(data.my_data.my_energy),0);
+        memset(&data.my_data.my_energy,0,sizeof(data.my_data.my_energy));
 
         /* Execute specific request */
         data.ret=EAR_SUCCESS;
@@ -386,15 +355,6 @@ void ear_energy_debug(int fd_out)
 					error("Error reading energy in %s thread",TH_NAME);
 				}
 
-		#if 0
-        /* Create connection */
-        if (connect_with_app()!=EAR_SUCCESS){
-                verbose(0,"Error connecting with NON-EARL application \n");
-                return;
-        }
-		#endif
-
-
         /* Prepare the answer */
         data.my_data.my_energy.energy_j=energy_j;
         data.my_data.my_energy.energy_mj=energy_mj;
@@ -402,11 +362,6 @@ void ear_energy_debug(int fd_out)
         data.my_data.my_energy.time_ms=time_ms;
 
         send_app_answer(fd_out,&data);
-
-		#if 0
-        /* Close the connection with app */
-        close_app_connection();
-		#endif
 
 
         return;

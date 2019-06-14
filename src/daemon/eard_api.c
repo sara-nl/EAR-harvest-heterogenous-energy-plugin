@@ -68,7 +68,6 @@ static ulong freq_size;
 int my_read(int fd,char *buff,int size)
 {
 #if USE_NON_BLOCKING_IO
-  ulong ack; 
   int ret; 
   int tries=0;
   uint to_recv,received=0;
@@ -101,7 +100,6 @@ int my_read(int fd,char *buff,int size)
 int my_write(int fd,char *buff,int size)
 {
 #if USE_NON_BLOCKING_IO
-  ulong ack;
   int ret;
   int tries=0;
   uint to_send,sended=0;
@@ -664,9 +662,8 @@ int eards_start_uncore()
 {
 	struct daemon_req req;
 	ulong ack;
-	int ret;
 	if (!app_connected) return EAR_SUCCESS;
-    req.req_service=START_UNCORE;
+  req.req_service=START_UNCORE;
 	req.sec=create_sec_tag();
 	debug( "start uncore");
 
@@ -685,9 +682,7 @@ int eards_start_uncore()
 int eards_stop_uncore(unsigned long long *values)
 {
     struct daemon_req req;
-    unsigned long long cas_client=0;
     ulong ack;
-    int i;
 
     if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
 
@@ -717,9 +712,7 @@ int eards_stop_uncore(unsigned long long *values)
 int eards_read_uncore(unsigned long long *values)
 {
 	struct daemon_req req;
-	unsigned long long cas_client=0;
 	ulong ack;
-	int i;
 
 	if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
 
@@ -800,7 +793,6 @@ int eards_start_rapl()
 {
 	struct daemon_req req;
 	ulong ack;
-	int ret;
 	if (!app_connected) return EAR_SUCCESS;
 	req.req_service=START_RAPL;
 	req.sec=create_sec_tag();
@@ -823,8 +815,6 @@ int eards_read_rapl(unsigned long long *values)
 {
 	struct daemon_req req;
 	ulong ack;
-	unsigned long long acum_energy=0;
-	int i;
 	if (!app_connected){ values[0]=0;return EAR_SUCCESS;}
 
 	req.req_service=READ_RAPL;

@@ -216,28 +216,27 @@ int set_socket_block(int sfd, char blocking)
 // based on getaddrinfo  man page
 int eards_remote_connect(char *nodename,uint port)
 {
-    int client_sock;
     struct addrinfo hints;
     struct addrinfo *result, *rp;
-	char port_number[50]; 	// that size needs to be validated
-    int sfd, s, j, res;
+		char port_number[50]; 	// that size needs to be validated
+    int sfd, s;
     fd_set set;
 
-	if (eards_remote_connected){ 
-		debug("Connection already done!\n");
-		return eards_sfd;
-	}
+		if (eards_remote_connected){ 
+			debug("Connection already done!\n");
+			return eards_sfd;
+		}
    	memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
-	sprintf(port_number,"%d",port);
+		sprintf(port_number,"%d",port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
-		debug("getaddrinfo fail for %s and %s\n",nodename,port_number);
-		return EAR_ERROR;
+			debug("getaddrinfo fail for %s and %s\n",nodename,port_number);
+			return EAR_ERROR;
     }
 
     struct timeval timeout;
@@ -574,7 +573,7 @@ void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
     request_t command;
     command.req=EAR_RC_INC_TH;
     command.my_req.ear_conf.th=th;
-    command.my_req.ear_conf.p_id;
+    command.my_req.ear_conf.p_id=p_id;
     send_command_all(command, my_cluster_conf);
 }
 
@@ -583,7 +582,7 @@ void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
     request_t command;
     command.req=EAR_RC_NEW_TH;
     command.my_req.ear_conf.th=th;
-    command.my_req.ear_conf.p_id;
+    command.my_req.ear_conf.p_id=p_id;
     send_command_all(command, my_cluster_conf);
 }
 
@@ -649,8 +648,8 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
     int num_status[NUM_PROPS];
     int rc, i;
     struct sockaddr_in temp;
-    unsigned int ip1, current_dist;
-	char next_ip[50], nextip2[50]; 
+    unsigned int  current_dist;
+		char next_ip[50]; 
     memset(num_status, 0, sizeof(num_status));
     temp_status = calloc(NUM_PROPS, sizeof(status_t*));
 
@@ -819,8 +818,8 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
     struct sockaddr_in temp;
 
     int i, rc;
-    unsigned int ip1, ip2, current_dist;
-	char next_ip[50]; 
+    unsigned int  current_dist;
+		char next_ip[50]; 
 
     current_dist = command->node_dist;
 
@@ -993,7 +992,7 @@ void correct_error_starter(char *host_name, request_t *command, uint port)
 #if USE_NEW_PROP
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 {
-    int i, j, k, rc, total_ranges;
+    int i, j,  rc, total_ranges;
     int **ips, *ip_counts;
     struct sockaddr_in temp;
     char next_ip[256];
@@ -1087,7 +1086,7 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 #if USE_NEW_PROP
 int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 {
-    int i, j, k, rc, total_ranges, num_all_status = 0, num_temp_status;
+    int i, j,  rc, total_ranges, num_all_status = 0, num_temp_status;
     int **ips, *ip_counts;
     struct sockaddr_in temp;
     status_t *temp_status, *all_status = NULL;
