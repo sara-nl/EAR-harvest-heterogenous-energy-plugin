@@ -107,8 +107,7 @@ int run_query_int_result(char *query)
         num_fields = mysql_num_fields(result);
         while ((row = mysql_fetch_row(result)))
         {
-            unsigned long *lengths;
-            lengths = mysql_fetch_lengths(result);
+            mysql_fetch_lengths(result);
             for(i = 0; i < num_fields; i++)
                 num_indexes = atoi(row[i]);
         }
@@ -1054,32 +1053,41 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
 
     char query[512];
     if (is_learning && node_name != NULL)
-//        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
+    {
+/*        sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
                         "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
-                        "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
+                        "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name); */
         sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications WHERE (job_id > %d AND node_id='%s') OR "\
                         "(job_id = %d AND step_id > %d AND node_id = '%s') ORDER BY job_id LIMIT %d", 
                         current_job_id, node_name, current_job_id, current_step_id, node_name, max_apps);
+    }
     else if (is_learning && node_name == NULL)
+    {
         sprintf(query,  "SELECT Learning_applications.* FROM Learning_applications INNER JOIN "\
                         "Learning_jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Learning_jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
+    }
     else if (!is_learning && node_name != NULL)
-//        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
+    {
+/*        sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
-                        "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name);
+                        "job_id > %d AND node_id='%s' GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id, node_name); */
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN Signatures ON signature_id = Signatures.id WHERE (job_id > %d AND node_id='%s') OR "\
                         "(job_id = %d AND step_id > %d AND node_id = '%s') AND  "\
                         " time > 60 AND DC_power > 100 AND DC_power < 1000 ORDER BY job_id LIMIT %d", 
                         current_job_id, node_name, current_job_id, current_step_id, node_name, max_apps);
+    }
     else
+    {
         sprintf(query,  "SELECT Applications.* FROM Applications INNER JOIN "\
                         "Jobs ON job_id = id where job_id < (SELECT max(id) FROM (SELECT (id) FROM "\
                         "Jobs WHERE id > %d ORDER BY id asc limit %u) as t1)+1 and "\
                         "job_id > %d GROUP BY job_id, step_id", current_job_id, max_apps, current_job_id);
+    }
+
 
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
    

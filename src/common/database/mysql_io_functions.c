@@ -850,13 +850,12 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     loop_t *loop_aux = calloc(1, sizeof(loop_t));
     loop_t *loops_aux;
     int status = 0;
-    int num_loops, num_jobs, i;
+    int num_loops, i;
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
     MYSQL_BIND bind[8];
-    unsigned long job_id, step_id, sig_id;
-    int num_apps;
+    unsigned long sig_id;
     memset(bind, 0, sizeof(bind));
 
 
@@ -910,7 +909,6 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     }
 
     loops_aux = (loop_t*) calloc(num_loops, sizeof(loop_t));
-    char job_query[128];
     char sig_query[128];
     signature_t *sig_aux;
     //fetching and storing of jobs
@@ -919,7 +917,7 @@ int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops)
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
         sprintf(sig_query, "SELECT * FROM Signatures WHERE id=%lu", sig_id);
-        int num_sigs = mysql_retrieve_signatures(connection, sig_query, &sig_aux);
+        mysql_retrieve_signatures(connection, sig_query, &sig_aux);
         signature_copy(&loop_aux->signature, sig_aux);
         free(sig_aux);
 
@@ -1534,7 +1532,6 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
         return mysql_statement_error(statement);
     }
 
-    int total_signatures;
     num_signatures = mysql_stmt_num_rows(statement);
 
     if (num_signatures < 1)
@@ -1751,7 +1748,6 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     MYSQL_BIND *bind;
     if (!statement) return EAR_MYSQL_ERROR;
-		uint num_params;
 
     if (mysql_stmt_prepare(statement, PERIODIC_METRIC_QUERY, strlen(PERIODIC_METRIC_QUERY))) return mysql_statement_error(statement);
 
