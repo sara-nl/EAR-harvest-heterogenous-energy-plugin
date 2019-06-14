@@ -1,3 +1,5 @@
+#CC = icc -Werror-all
+
 ######## FILES
 
 OBJS = dynais.o \
