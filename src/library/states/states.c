@@ -490,8 +490,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			signature_copy(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
-			verbose(1,"EAR(%s)at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
-			verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %u in %s)",
+			verbose(1,"EAR(%s)at %lu: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
+			verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %lu in %s)",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
@@ -541,8 +541,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
 			traces_frequency(ear_my_rank, my_id, policy_freq);
 			traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
-			verbose(1,"EAR(%s)at %u: LoopID=%u, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
-			verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %u in %s)",
+			verbose(1,"EAR(%s)at %lu: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
+			verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %lu in %s)",
 			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
 			/* END VERBOSE */
 

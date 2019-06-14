@@ -130,9 +130,9 @@ static void print_local_data()
 	#endif
 	verbose(1, "--------------------------------");
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
-	verbose(1, "Node/job id/step_id: '%s'/'%u'/'%u'", application.node_id, application.job.id,application.job.step_id);
+	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
-	verbose(1, "P_STATE/frequency (turbo): %u/%u (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
+	verbose(1, "P_STATE/frequency (turbo): %u/%lu (%d)", EAR_default_pstate, application.job.def_f, ear_use_turbo);
 	verbose(1, "Tasks/nodes/ppn: %u/%d/%d", my_size, num_nodes, ppnode);
 	verbose(1, "Policy (learning): %s (%d)", application.job.policy, ear_whole_app);
 	verbose(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());

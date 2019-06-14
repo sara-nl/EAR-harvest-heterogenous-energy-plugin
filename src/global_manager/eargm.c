@@ -473,7 +473,7 @@ ulong eargm_reduce_frequencies_all_nodes(int level)
 void report_status(gm_warning_t *my_warning)
 {
     #if SYSLOG_MSG
-    syslog(LOG_DAEMON|LOG_ERR,"Warning level %d: p_state %u energy/power perc %.3lf inc_th %.2lf \n",my_warning->level,my_warning->new_p_state,my_warning->energy_percent,my_warning->inc_th);
+    syslog(LOG_DAEMON|LOG_ERR,"Warning level %lu: p_state %lu energy/power perc %.3lf inc_th %.2lf \n",my_warning->level,my_warning->new_p_state,my_warning->energy_percent,my_warning->inc_th);
 	#endif
 }
 
@@ -530,7 +530,7 @@ void parse_args(char *argv[])
 
 #define GM_DEBUG 1
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
 	sigset_t set;
 	int ret;
@@ -570,10 +570,10 @@ void main(int argc,char *argv[])
 
 	switch (policy){
 		case MAXENERGY:
-			verbose(VGM,"MAXENERGY policy configured with limit %u %s\n",energy_budget,unit_name);
+			verbose(VGM,"MAXENERGY policy configured with limit %lu %s\n",energy_budget,unit_name);
 			break;
 		case MAXPOWER:
-			verbose(VGM,"MAXPOWER policy configured with limit %u %s\n",power_budget,unit_name);
+			verbose(VGM,"MAXPOWER policy configured with limit %lu %s\n",power_budget,unit_name);
 			break;
 	}	
 	
@@ -664,30 +664,14 @@ void main(int argc,char *argv[])
 	    	}else{ 
 				if (result < 0) exit(1);
 			}
-			verbose(VGM,"Energy consumed in last %lu seconds %lu %s. Avg power %u %s\n",period_t1,result,unit_energy,result/period_t1,unit_power);
+			verbose(VGM,"Energy consumed in last %u seconds %lu %s. Avg power %lu %s\n",period_t1,result,unit_energy,(unsigned long)(result/period_t1),unit_power);
 			
 	
 			new_energy_sample(result);
-			#if 0
-			/* we can use this approach for some debugging purposses, uncomment this code and comment total_energy_t2=compute_energy_t2() */
-			start_time=end_time-period_t2result2 = db_select_acum_energy( start_time, end_time, divisor, use_aggregation);
-			total_energy_t2=result2;
-			#endif
 			energy_t1=result;
 			total_energy_t2=compute_energy_t2();	
 			perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
 
-			#if 0
-			perc_energy=((double)total_energy_t2/(double)energy_budget)*(double)100;
-			perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
-			verbose(0,"Percentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)\n",perc_energy,total_energy_t2,energy_budget);
-		
-			if (perc_time<100.0){	
-				if (perc_energy>perc_time){
-					verbose(0,"WARNING %.2lf%% of energy vs %.2lf%% of time!!\n",perc_energy,perc_time);
-				}
-			}
-			#endif
 			uint current_level=defcon(total_energy_t2,energy_t1,total_nodes);
 			set_gm_status(&my_warning,energy_t1,total_energy_t2,energy_budget,period_t1,period_t2,perc_energy,policy);
 			
@@ -777,8 +761,7 @@ void main(int argc,char *argv[])
 
 
     
-
-    exit(1);
+		return 0;
 }
 
 

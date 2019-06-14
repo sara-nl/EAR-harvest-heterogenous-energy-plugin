@@ -100,7 +100,7 @@ int dyn_monitoring_policy(settings_conf_t *conf,signature_t *sig,ulong *new_freq
 	int ret;
 	*new_freq=monitoring_policy(sig,&ret);
 	if (ret==1) return EAR_SUCCESS;
-	else EAR_NOT_READY;
+	else return EAR_NOT_READY;
 }
 int dyn_monitoring_policy_ok(signature_t *curr_sig, signature_t *last_sig)
 {

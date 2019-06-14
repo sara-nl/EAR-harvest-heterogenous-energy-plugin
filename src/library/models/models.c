@@ -162,7 +162,8 @@ int policy_global_configuration(int p_state)
 		return frequency_freq_to_pstate(system_conf->def_freq);
 	#endif
 	}
-	}else return p_state;
+	}
+	return p_state;
 }
 
 // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
@@ -264,6 +265,7 @@ double get_global_th()
 		case MONITORING_ONLY:
 			return 0.0;
 	}
+	return 0.0;
 }
 
 void init_power_policy()
@@ -306,7 +308,7 @@ void init_power_policy()
 
 	if (def_freq != EAR_default_frequency)
 	{
-		warning("ear: warning max freq is limited by the system, using %u as default", def_freq);
+		warning("ear: warning max freq is limited by the system, using %lu as default", def_freq);
 
 		EAR_default_frequency = def_freq;
 	}
@@ -592,5 +594,5 @@ int policy_max_tries()
             case MONITORING_ONLY:
                         return 0;
         }
-
+	return 0;
 }
