@@ -45,8 +45,6 @@
 #include <library/models/models.h>
 #include <library/common/externs.h>
 
-#define MIN_ENERGY_VERBOSE		0
-#define NO_MODELS_ME_VERB		2
 
 //
 static uint me_policy_pstates;
@@ -100,7 +98,7 @@ static void go_next_me(int curr_pstate,int *ready,ulong *best_pstate)
 		*ready=1;
 		*best_pstate=frequency_pstate_to_freq(curr_pstate);
 	}
-	verbose(NO_MODELS_ME_VERB,"Current %d next %u\n",curr_pstate,*best_pstate);
+	debug("Current %d next %u\n",curr_pstate,*best_pstate);
 }
 
 static int is_better_min_energy(signature_t * curr_sig,signature_t *prev_sig)
@@ -110,10 +108,10 @@ static int is_better_min_energy(signature_t * curr_sig,signature_t *prev_sig)
 	curr_energy=curr_sig->time*curr_sig->DC_power;
 	pre_energy=prev_sig->time*prev_sig->DC_power;
 	if (curr_energy>pre_energy){ 
-		verbose(NO_MODELS_ME_VERB,"Curr energy %lf prev energy %lf\n",curr_energy,pre_energy);
+		debug("Curr energy %lf prev energy %lf\n",curr_energy,pre_energy);
 		return 0;
 	}
-	verbose(NO_MODELS_ME_VERB,"Time %lf max %lf\n",curr_sig->time,time_max);
+	debug("Time %lf max %lf\n",curr_sig->time,time_max);
 	if (curr_sig->time<time_max) return 1;
 	return 0;
 }
@@ -129,9 +127,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	double power_ref,time_ref,time_current;
 	ulong best_pstate;
 	my_app=sig;
-	#if MIN_ENERGY_VERBOSE
-	verbose(1,"min_energy_policy starts \n");
-	#endif
+	debug("min_energy_policy starts \n");
 	if (ear_use_turbo) min_pstate=0;
 	else min_pstate=get_global_min_pstate();
 
@@ -185,7 +181,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * performance_penalty);
 
-	verbose(DYN_VERBOSE,"MIN_ENERGY: From %d to %d\n",min_pstate,me_policy_pstates);
+	debug("min_energy: From %d to %d\n",min_pstate,me_policy_pstates);
 
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	for (i = min_pstate; i < me_policy_pstates;i++)
@@ -197,9 +193,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 				time_proj=project_time(my_app,&coefficients[ref][i]);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
-			#if MIN_ENERGY_VERBOSE
-			verbose(1,"pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
-			#endif
+			debug("pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
 					best_pstate = coefficients[ref][i].pstate;
@@ -210,7 +204,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	}else{ /* Use models is set to 0 */
 		ulong prev_pstate,curr_pstate,next_pstate;
 		signature_t *prev_sig;
-		verbose(NO_MODELS_ME_VERB,"We are not using models \n");
+		debug("We are not using models \n");
 		/* We must not use models , we will check one by one*/
 		/* If we are not running at default freq, we must check if we must follow */
 		if (sig_ready[EAR_default_pstate]==0){
@@ -234,20 +228,18 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 				go_next_me(curr_pstate,ready,&best_pstate);
 			}
 		}
-		verbose(NO_MODELS_ME_VERB,"Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
+		debug("Curr freq %u next freq %u ready=%d\n",ear_frequency,best_pstate,*ready);
 		
 	}
 
 	// Just in case the bestPstate was the frequency at which the application was running
 	if (best_pstate>system_conf->max_freq){ 
 		log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-		verbose(1,"EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
+		debug("EAR frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
 		best_pstate,system_conf->max_freq);
 		best_pstate=system_conf->max_freq;
 	}
-	#if MIN_ENERGY_VERBOSE
-	verbose(1,"min_energy_policy ends ---> %lu\n",best_pstate);
-	#endif
+	debug("min_energy_policy ends ---> %lu\n",best_pstate);
 	return best_pstate;
 }
 
@@ -269,11 +261,6 @@ ulong  min_energy_default_conf(ulong f)
 {
     // Just in case the bestPstate was the frequency at which the application was running
     if (f>system_conf->max_freq){
-#if 0
-        log_report_global_policy_freq(application.job.id,application.job.step_id,system_conf->max_freq);
-        verbose(1,"EAR (default conf) frequency selection updated because of power capping policies (selected %lu --> %lu)\n",
-        f,system_conf->max_freq);
-#endif
 		return system_conf->max_freq;
     } else return f;
 }

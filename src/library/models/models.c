@@ -403,7 +403,7 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 	}
 	if (num_coeffs>0){
 		num_coeffs=num_coeffs/sizeof(coefficient_t);
-		verbose(2,"%d coefficients found",num_coeffs);
+		debug("%d coefficients found",num_coeffs);
 		int ccoeff;
 		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
 			ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);	
@@ -539,7 +539,7 @@ ulong policy_default_configuration()
 	}
   #endif
 	ear_frequency=app_policy.default_conf(user_selected_freq);
-	verbose(1,"earl:Going to default frequency %lu",ear_frequency);
+	debug("Going to default frequency %lu",ear_frequency);
 	eards_change_freq(ear_frequency);
 	return ear_frequency;
 }

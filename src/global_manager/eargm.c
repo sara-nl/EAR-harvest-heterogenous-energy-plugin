@@ -201,24 +201,6 @@ static void my_signals_function(int s)
 	}
 }
 
-void print_time(char *msg,time_t *t)
-{
-	char buff[128];
-	struct tm *tmp;
-
-    tmp = localtime(t);
-    if (tmp == NULL) {
-		error("eargmd:localtime %s\n",strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-   if (strftime(buff, sizeof(buff), "%x - %I:%M:%S%p", tmp) == 0) {
-        error( "eargmd: strftime returned 0");
-        exit(EXIT_FAILURE);
-    }
-
-   verbose(VGM+1,"time %u: %s %s", *t,msg,buff);
-}
 static void catch_signals()
 {
     sigset_t set;
@@ -323,7 +305,7 @@ void fill_periods(ulong energy)
 		verbose(VGM,"Initializing T2 period with %lu %s, each sample with %lu %s",energy,unit_name,e_persample,unit_name);
 		break;
 	case MAXPOWER:
-		verbose(VGM,"AVG power in last %d seconds %u %s\n",period_t1,e_persample/period_t1,unit_name);
+		verbose(VGM,"AVG power in last %d seconds %lu %s\n",period_t1,e_persample/period_t1,unit_name);
 		break;
 	}
 }
@@ -351,7 +333,7 @@ int execute_action(ulong e_t1,ulong e_t2,ulong e_limit,uint t2,uint t1,char *uni
     ret=fork();
     if (ret==0){
       char command_to_execute[512];
-      sprintf(command_to_execute,"%s %u %u %u %u %u %s",my_command,e_t1,e_t2,e_limit,t2,t1,units);
+      sprintf(command_to_execute,"%s %lu %lu %lu %u %u %s",my_command,e_t1,e_t2,e_limit,t2,t1,units);
       verbose(0,"Executing %s",command_to_execute);
       ret=system(command_to_execute);
       if (WIFSIGNALED(ret)){
@@ -422,17 +404,17 @@ void process_remote_requests(int clientfd)
     eargm_request_t command;
     uint req;
     ulong ack=EAR_SUCCESS;
-    verbose(VGM+1,"connection received\n");
+    debug("connection received\n");
     req=read_command(clientfd,&command);
     switch (req){
         case EARGM_NEW_JOB:
 			// Computes the total number of nodes in use
-            verbose(VGM,"new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            debug("new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
 			total_nodes+=command.num_nodes;
             break;
         case EARGM_END_JOB:
 			// Computes the total number of nodes in use
-            verbose(VGM,"end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            debug("end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
 			total_nodes-=command.num_nodes;
             break;
         default:
@@ -447,14 +429,14 @@ void *eargm_server_api(void *p)
 	int eargm_fd,eargm_client;
 	struct sockaddr_in eargm_con_client;
 
-    verbose(VGM+1,"Creating scoket for remote commands,using port %u",my_port);
+    debug("Creating scoket for remote commands,using port %u",my_port);
     eargm_fd=create_server_socket(my_port);
     if (eargm_fd<0){
         error("Error creating socket\n");
         pthread_exit(0);
     }
     do{
-        verbose(VGM+1,"waiting for remote commands port=%u\n",my_port);
+        debug("waiting for remote commands port=%u\n",my_port);
         eargm_client=wait_for_client(eargm_fd,&eargm_con_client);
         if (eargm_client<0){
             error(" wait_for_client returns error\n");
