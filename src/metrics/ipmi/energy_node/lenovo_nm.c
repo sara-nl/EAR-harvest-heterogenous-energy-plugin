@@ -175,7 +175,8 @@ int lenovo_act_read_dc_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy)
 {
 	unsigned long *energyp;
 	int rs_len;
-	int tries=0;
+	//int tries=0;
+
 	if (ipmi_ctx==NULL){ 
 		error("lenovo_NM: IPMI context not initiallized");
 		return EAR_ERROR;
@@ -190,7 +191,7 @@ int lenovo_act_read_dc_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy)
                               send_len - 2,
                               bytes_rs,
                               IPMI_RAW_MAX_ARGS); 
-  if (rs_len<0)
+	if (rs_len<0)
 	{
 		error("lenovo_NM: ipmi_cmd_raw fails %s",ipmi_ctx_errormsg(ipmi_ctx));
 		pthread_mutex_unlock(&node_energy_lock_nm);

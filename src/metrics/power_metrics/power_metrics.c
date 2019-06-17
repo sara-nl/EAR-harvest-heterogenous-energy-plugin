@@ -220,7 +220,7 @@ node_data_t diff_node_energy(node_data_t end,node_data_t init)
 rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init)
 {
 	rapl_data_t ret=0;
-	rapl_data_t aux;
+	
 	if (end>init){
 		ret=end-init;
 	}else{
@@ -345,20 +345,20 @@ void print_energy_data(energy_data_t *e)
 
 int print_energy_data_fd_binary(int fd, energy_data_t *ed)
 {
-	int ret;
+	ssize_t ret;
 	state_t s;
-	ret=write(fd,ed,sizeof(energy_data_t));
-	if (ret==sizeof(energy_data_t)) s=EAR_SUCCESS;
-	else s=EAR_ERROR;
+	ret = write(fd, ed, sizeof(energy_data_t));
+	if (ret == sizeof(energy_data_t)) { s = EAR_SUCCESS; }
+	else { s = EAR_ERROR; }
 	return s;
 	
 }
 int read_energy_data_fd_binary(int fd, energy_data_t *ed)
 {
-	int ret;
+	ssize_t ret;
 	state_t s;
-	read(fd,ed,sizeof(energy_data_t));
-	if (ret==sizeof(energy_data_t)) s=EAR_SUCCESS;
-	else s=EAR_ERROR;
+	ret = read(fd, ed, sizeof(energy_data_t));
+	if (ret == sizeof(energy_data_t)) { s = EAR_SUCCESS; }
+	else { s = EAR_ERROR; }
 	return s;
 }

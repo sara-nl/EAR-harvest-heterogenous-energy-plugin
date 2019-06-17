@@ -230,9 +230,9 @@ int start_rapl_metrics()
 }
 int read_rapl_metrics(unsigned long long *_values)
 {
-    unsigned long long acum_rapl = 0;
     int sets=0;
-    int  counts, ret;
+    int ret;
+
     ret = PAPI_read(event_sets[sets], (long long *) _values);
     if (ret != PAPI_OK)
     {

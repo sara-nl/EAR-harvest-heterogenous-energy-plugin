@@ -279,7 +279,7 @@ static void pci_scan_uncores()
     // and also the respective architecture uncore counters.
     IJKFOR(256, n_devs, n_funcs)
     {
-        sprintf(path, "/proc/bus/pci/%x/%0.2x.%x", i, devs[j], funcs[k]);
+        sprintf(path, "/proc/bus/pci/%x/%.2x.%x", i, devs[j], funcs[k]);
         fd = open(path, O_RDWR);
         if (fd == -1) continue;
 
@@ -344,10 +344,10 @@ int pci_count_uncores()
 // Freezes and reset all uncore counters
 int pci_reset_uncores()
 {
-    int n_cmd, n_ctl;
-    int *cmd = get_arch_reset_commands(&n_cmd);
-    char *ctl = get_arch_reset_controls(&n_ctl);
-	return write_command(ctl, cmd, n_ctl, n_cmd);
+	int n_cmd, n_ctl;
+	int *cmd = get_arch_reset_commands(&n_cmd);
+	char *ctl = get_arch_reset_controls(&n_ctl);
+	return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
 // Unfreezes all uncore counters
@@ -356,7 +356,7 @@ int pci_start_uncores()
     int n_cmd, n_ctl;
     int *cmd = get_arch_start_commands(&n_cmd);
     char *ctl = get_arch_start_controls(&n_ctl);
-    return write_command(ctl, cmd, n_ctl, n_cmd);
+    return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
 // Stop all uncore counters and also gets it's values
@@ -365,7 +365,7 @@ int pci_stop_uncores(ull *values)
     int n_cmd, n_ctl, res;
     int *cmd = get_arch_stop_commands(&n_cmd);
     char *ctl = get_arch_stop_controls(&n_ctl);
-    res = write_command(ctl, cmd, n_ctl, n_cmd);
+    res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
     pci_read_uncores(values);
     return res;
 }
@@ -376,7 +376,7 @@ int pci_read_uncores(ull *values)
     int i, j, k, res;
     int n_ctrs;
 
-    uchar *ctrs = get_arch_read_counters(&n_ctrs);
+    uchar *ctrs = (uchar *) get_arch_read_counters(&n_ctrs);
 
     for(i = k = 0; i < n_functions; i++)
     {

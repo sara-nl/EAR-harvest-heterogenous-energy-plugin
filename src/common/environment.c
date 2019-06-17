@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -258,7 +256,7 @@ double getenv_ear_performance_accuracy()
 
 int getenv_ear_local_id()
 {
-	char *my_local_id;
+	//char *my_local_id;
 	//my_local_id=getenv("SLURM_LOCALID");
 	//if (my_local_id!=NULL){ 
 	//	conf_ear_local_id=atoi(my_local_id);
@@ -513,7 +511,7 @@ int check_threads()
 
 int get_num_threads()
 {
-    int num_th;
+    //int num_th;
     if (my_omp_get_max_threads!=NULL){
         char *omp_numth=getenv("OMP_NUM_THREADS");
         // we check first for openmp

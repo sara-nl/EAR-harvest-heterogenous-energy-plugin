@@ -159,8 +159,12 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
 		return -1;
 	}
 	ready=0;
-	if (area_length){
-    	switch(area_type){
+	if (area_length)
+	{
+        char strbuf[IPMI_FRU_AREA_STRING_MAX + 1];
+        unsigned int strbuflen = IPMI_FRU_AREA_STRING_MAX;
+    	
+	switch(area_type){
     	case IPMI_FRU_AREA_TYPE_PRODUCT_INFO_AREA:
         	memset (&product_manufacturer_name, '\0', sizeof (ipmi_fru_field_t));
         	memset (&product_name, '\0', sizeof (ipmi_fru_field_t));
@@ -169,9 +173,7 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
         	memset (&product_serial_number, '\0', sizeof (ipmi_fru_field_t));
         	memset (&product_asset_tag, '\0', sizeof (ipmi_fru_field_t));
         	memset (&product_fru_file_id, '\0', sizeof (ipmi_fru_field_t));
-        	memset (&product_custom_fields[0],
-                	'\0',
-                	sizeof (ipmi_fru_field_t) * IPMI_FRU_CUSTOM_FIELDS);
+        	memset (&product_custom_fields[0], '\0', sizeof (ipmi_fru_field_t) * IPMI_FRU_CUSTOM_FIELDS);
           	if (ipmi_fru_product_info_area (fru_ctx_pn,
                                   	areabuf,
                                   	area_length,
@@ -184,15 +186,14 @@ int ipmi_get_product_name(char *my_product_manufacturer_name,char *my_product_na
                                   	&product_asset_tag,
                                   	&product_fru_file_id,
                                   	product_custom_fields,
-                                  	IPMI_FRU_CUSTOM_FIELDS) < 0){
-            	verbose(0,"ipmi_fru_product_info_area %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
-                ipmi_ctx_close (ipmi_ctx_pn);
-                ipmi_ctx_destroy (ipmi_ctx_pn);
-				return -1;
+                                  	IPMI_FRU_CUSTOM_FIELDS) < 0)
+		{
+            		verbose(0,"ipmi_fru_product_info_area %s\n",ipmi_fru_ctx_errormsg(fru_ctx_pn));
+                	ipmi_ctx_close (ipmi_ctx_pn);
+                	ipmi_ctx_destroy (ipmi_ctx_pn);
+			return -1;
         	}
            	// Here we have data , just print it 
-        	char strbuf[IPMI_FRU_AREA_STRING_MAX + 1];
-        	unsigned int strbuflen = IPMI_FRU_AREA_STRING_MAX;
         	// product_manufacturer_name
         	if (product_manufacturer_name.type_length_field_length>0){
             	memset (strbuf, '\0', IPMI_FRU_AREA_STRING_MAX + 1);

@@ -41,11 +41,13 @@ int new_service(char *service)
 {
 	char service_name[128];
 	int must_recover=0;
-    int fd,pid,ret;
+	int fd,pid;
+	
 	sprintf(service_name,"/var/run/%s.pid",service);
-    verbose(0,"Checking %s file",service_name);
-    pid=getpid();
-    if ((fd=open(service_name,O_RDWR))>=0){
+	verbose(0,"Checking %s file",service_name);
+    	pid=getpid();
+
+	if ((fd=open(service_name,O_RDWR))>=0){
     	write(fd,&pid,sizeof(int));
 		must_recover=1;
 		close(fd);

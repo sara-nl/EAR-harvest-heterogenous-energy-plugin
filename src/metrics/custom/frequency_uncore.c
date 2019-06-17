@@ -71,6 +71,7 @@ static uint _fill_architecture_bits(uint cpus_model)
 	_offctl = U_MSR_PMON_FIXED_CTL_OFF;
 	_offctr = U_MSR_PMON_FIXED_CTR_OFF;
 	_offurl = U_MSR_UNCORE_RATIO_LIMIT;
+	return EAR_SUCCESS;
 }
 
 state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model)

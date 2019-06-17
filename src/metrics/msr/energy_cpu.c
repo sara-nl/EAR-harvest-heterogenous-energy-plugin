@@ -62,9 +62,6 @@
 #define IA32_PKG_THERM_STATUS           0x1B1
 #define MSR_TEMPERATURE_TARGET          0x1A2
 
-
-static int ear_papi_energy_connected=0;
-
 #define MAX_CPUS        24
 #define MAX_PACKAGES	16
 
@@ -90,11 +87,17 @@ static int detect_packages(void) {
     hardware_gettopology(&topo);
     num_cpus = topo.sockets;
     num_cores = topo.cores*topo.sockets;
-    if (num_cpus < 1 || num_cores < 1)
-        return EAR_ERROR;
-	for(i=0;i<MAX_PACKAGES;i++) package_map[i]=-1;
+    
+	if (num_cpus < 1 || num_cores < 1) {
+        	return EAR_ERROR;
+	}
+	
+	for(i=0;i<MAX_PACKAGES;i++) {
+		package_map[i]=-1;
+	}
 
-	for(i=0;i<num_cores;i++) {
+	for(i=0;i<num_cores;i++)
+	{
 		sprintf(filename,"/sys/devices/system/cpu/cpu%d/topology/physical_package_id",i);
 		fff=fopen(filename,"r");
 		if (fff==NULL) break;
@@ -173,11 +176,9 @@ int reset_rapl_msr()
 int read_rapl_msr(unsigned long long *_values)
 {
 	unsigned long long result;
-	int fd, j;
+	int j;
 
 	for(j=0;j<NUM_SOCKETS;j++) {
-        int ret;
-
 		/* PKG reading */	    
 	    if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_PKG_ENERGY_STATUS))
 			return EAR_ERROR;
@@ -205,12 +206,11 @@ void dispose_rapl_msr()
 
 int read_temp_msr(unsigned long long *_values)
 {
-    unsigned long long result;
-	int fd, j;
+	unsigned long long result;
+	int j;
 
-	for(j=0;j<NUM_SOCKETS;j++) {
-        int ret;
-
+	for(j=0;j<NUM_SOCKETS;j++)
+	{
 		/* PKG reading */	    
 	    if (msr_read(&fd_map[j], &result, sizeof result, IA32_PKG_THERM_STATUS))
 			return EAR_ERROR;

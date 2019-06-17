@@ -54,8 +54,8 @@ uint are_equal_power_sig(power_signature_t *sig1, power_signature_t *sig2, doubl
 
 void print_power_signature_fd(int fd, power_signature_t *sig)
 {
-    /* print order: AVG.FREQ;DEF.FREQ;TIME;DC-NODE-POWER;DRAM-POWER;*/
-    int i;
+	/* print order: AVG.FREQ;DEF.FREQ;TIME;DC-NODE-POWER;DRAM-POWER;*/
+	//int i;
     
 	dprintf(fd, "%lu;%lu;", sig->avg_f, sig->def_f);
 	dprintf(fd, "%lf;", sig->time);

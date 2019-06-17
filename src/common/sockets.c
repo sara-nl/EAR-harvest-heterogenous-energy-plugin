@@ -46,7 +46,7 @@ state_t sockets_accept(int req_fd, int *cli_fd, struct sockaddr_storage *cli_add
 	struct sockaddr_storage _cli_addr;
 	struct sockaddr_storage *p = &_cli_addr;
 	socklen_t size = sizeof (struct sockaddr_storage);
-	int flags = 0;
+	//int flags = 0;
 
 	if (cli_addr != NULL) {
 		p = cli_addr;
@@ -135,7 +135,7 @@ state_t sockets_socket(socket_t *sock)
 
 state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol)
 {
-	state_t s;
+	//state_t s;
 
 	if (protocol != TCP && protocol != UDP) {
 		state_return_msg(EAR_BAD_ARGUMENT, 0, "protocol does not exist");
@@ -515,12 +515,12 @@ void sockets_get_hostname(struct sockaddr_storage *host_addr, char *buffer, int 
 
 	// IPv4
 	if (host_addr->ss_family == AF_INET) {
-		struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
+		//struct sockaddr_in *ipv4 = (struct sockaddr_in *) host_addr;
 		addrlen = INET_ADDRSTRLEN;
 	}
 	// IPv6
 	else {
-		struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
+		//struct sockaddr_in6 *ipv6 = (struct sockaddr_in6 *) host_addr;
 		addrlen = INET6_ADDRSTRLEN;
 	}
 

@@ -55,9 +55,11 @@ typedef struct ear_event{
 
 #define LOG_FILE 1
 
+#if DB_FILES
 static int fd_log=-1;
 static char my_log_buffer[1024];
 static char log_name[128];
+#endif
 static char log_nodename[GENERIC_NAME];
 
 
@@ -95,15 +97,15 @@ void init_log()
 }
 void end_log()
 {
-	time_t curr_time;
-    struct tm *current_t;
-    char s[64];
 #if LOG_FILE
 #if DB_FILES
+	time_t curr_time;
+	struct tm *current_t;
+	char s[64];
 	if (fd_log<0) return;
 	time(&curr_time);
-    current_t=localtime(&curr_time);
-    strftime(s, sizeof(s), "%c", current_t);
+	current_t=localtime(&curr_time);
+	strftime(s, sizeof(s), "%c", current_t);
 	sprintf(my_log_buffer,"----------------------	EAR log closed %s ------------------\n",s);
 	write(fd_log,my_log_buffer,strlen(my_log_buffer));
 	close(fd_log);
@@ -113,14 +115,17 @@ void end_log()
 void report_new_event(ear_event_t *event)
 {
 #if LOG_FILE
-    time_t curr_time;
-    struct tm *current_t;
-    char s[64];
+
 #if DB_FILES
-    if (fd_log<0) return;
-    time(&curr_time);
-    current_t=localtime(&curr_time);
-    strftime(s, sizeof(s), "%c", current_t);
+	time_t curr_time;
+	struct tm *current_t;
+	char s[64];
+    
+	if (fd_log<0) return;
+	time(&curr_time);
+	current_t=localtime(&curr_time);
+	strftime(s, sizeof(s), "%c", current_t);
+
 	switch(event->event){
 		case ENERGY_POLICY_NEW_FREQ:
     		sprintf(my_log_buffer,"%s : job_id %u --> Frequency changed to %lu because of energy policy\n",s,event->jid,event->freq);
@@ -138,6 +143,7 @@ void report_new_event(ear_event_t *event)
 
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
 #endif
+
 #if DB_MYSQL
 	/* we request the daemon to write the event in the DB */
 	event->timestamp=time(NULL);
@@ -145,6 +151,7 @@ void report_new_event(ear_event_t *event)
 	eards_write_event(event);
 	//db_insert_ear_event(event);
 #endif
+
 #endif
 }
 
