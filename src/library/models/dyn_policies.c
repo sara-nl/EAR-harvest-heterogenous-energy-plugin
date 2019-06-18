@@ -105,7 +105,6 @@ int load_policy(policy_dyn_t *my_policy,char *policy_name)
 {
 	void    *policy_file;
 	policy_dyn_t tmp_policy;
-	char *last_error;
 	if (my_policy==NULL){
 		error("load_policy and my_policy is NULL");
 		return EAR_ERROR;

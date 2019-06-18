@@ -167,10 +167,10 @@ static void print()
 	//
 	for (i = 0; i < coeffs_max; ++i)
 	{
-		tprintf("%lu||%lu||%d||%d||| %- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf||%- 0.3lf",
-				coeffs_accum[i].pstate_ref, coeffs_accum[i].pstate, coeffs_num[i], coeffs_accum[i].available,
-				coeffs_accum[i].A, coeffs_accum[i].B, coeffs_accum[i].C,
-				coeffs_accum[i].D, coeffs_accum[i].E, coeffs_accum[i].F);
+		tprintf("%lu||%lu||%d||%d||| %0.3lf||%0.3lf||%0.3lf||%0.3lf||%0.3lf||%0.3lf",
+			coeffs_accum[i].pstate_ref, coeffs_accum[i].pstate, coeffs_num[i], coeffs_accum[i].available,
+			coeffs_accum[i].A, coeffs_accum[i].B, coeffs_accum[i].C,
+			coeffs_accum[i].D, coeffs_accum[i].E, coeffs_accum[i].F);
 
 		#if 0
 		coeff_print(&coeffs_accum[i]);
@@ -188,10 +188,8 @@ static void write_coefficients()
 {
 	#define SZ_COEFF sizeof(coefficient_t)
 
-	coefficient_t coeff;
-	size_t r;
-    int fd;
-    int i;
+	int fd;
+	int i;
 
 	verbose(0, "-----------------------------------------------------------------------------------------------------");
 
@@ -286,7 +284,7 @@ static void read_coefficients(int argc, char *argv[], int n_nodes)
 
 static int usage(int argc, char *argv[])
 {
-	int i, c;
+	int c;
 
 	if (argc < 3)
 	{

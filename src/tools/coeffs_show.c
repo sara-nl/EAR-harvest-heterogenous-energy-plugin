@@ -43,7 +43,7 @@
 #include <common/output/verbose.h>
 #include <common/types/coefficient.h>
 
-static char buffer[SZ_PATH];
+//static char buffer[SZ_PATH];
 
 void print_coefficients(coefficient_t *avg, int n_pstates)
 {
@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
 	state_t state;
 	int n_pstates;
 	int size;
-    int i;
 
     if (argc < 2) {
         verbose(0, "Usage: %s coeffs_file",argv[0]);

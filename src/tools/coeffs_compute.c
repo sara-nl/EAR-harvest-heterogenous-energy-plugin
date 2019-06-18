@@ -235,15 +235,14 @@ void usage(char *app)
 
 int main(int argc, char *argv[])
 {
-    application_t read_app;
-    double power, cpi, tpi;
-    uint filtered_apps = 0, is_learning=1;
+	double power, cpi, tpi;
+	uint filtered_apps = 0, is_learning=1;
 	int ret;
-    uint f, pos, ref, i;
+	uint f, pos, ref, i;
 	ulong p_state_max;
 	char path_coef_file[256];
-    char coef_file[256];
-    int fd, index;
+	char coef_file[256];
+	int fd, index;
 
     if (!((argc ==3) || (argc ==4))){
         usage(argv[0]);
@@ -418,8 +417,8 @@ int main(int argc, char *argv[])
             {
                 if (ref == f)
                 {
-                    init_list_coeffs(ref, f, p_state_to_freq(f), 1, 0, 0, 1, 0, 0);
-					verbose(0, "Writting coeffs for freq=%lu projection %lu", ref, f);
+			init_list_coeffs(ref, f, p_state_to_freq(f), 1, 0, 0, 1, 0, 0);
+			verbose(0, "Writting coeffs for freq=%u projection %u", ref, f);
             		if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                 		perror("Error writting coefficients file\n");
                 		exit(1);
@@ -512,14 +511,16 @@ int main(int argc, char *argv[])
                         gsl_multifit_linear_free(wspc);
 
                         init_list_coeffs(ref, f, p_state_to_freq(f), A, B, C, D, E, F);
-						verbose(0, "Writting coeffs for freq=%lu projection %lu", ref, f);
-            			if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
+			verbose(0, "Writting coeffs for freq=%u projection %u", ref, f);
+            		
+			if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                 			perror("Error writting coefficients file\n");
                 			exit(1);
-            			}
+            		}
                     }else{
-                        verbose(0, "Writting NULL coeffs for freq=%lu projection %lu", ref, f);
-                        if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
+                        verbose(0, "Writting NULL coeffs for freq=%u projection %u", ref, f);
+                       
+			 if (write(fd, &coeffs_list[ref][f], sizeof(coefficient_t) ) != sizeof(coefficient_t) ) {
                             perror("Error writting coefficients file\n");
                             exit(1);
                         }
@@ -529,7 +530,7 @@ int main(int argc, char *argv[])
 
 
         }else{
-			verbose(0, "Writting NULL coeffs for freq=%lu projections %lu", ref, p_state_max);
+			verbose(0, "Writting NULL coeffs for freq=%u projections %lu", ref, p_state_max);
             if (write(fd, &coeffs_list[ref][0], sizeof(coefficient_t)* p_state_max) != sizeof(coefficient_t)*p_state_max ) {
             	perror("Error writting coefficients file\n");
             	exit(1);

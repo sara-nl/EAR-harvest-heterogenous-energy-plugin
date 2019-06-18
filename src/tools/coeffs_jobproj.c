@@ -82,7 +82,7 @@ static void print_similars(application_t *app)
 	application_t *apps;
     char proj_tim[COLUMNS][64];
     char proj_pow[COLUMNS][64];
-	int napps, nsets, nppns;
+	int napps, nsets;
 	int icol, iapp, finished;
 
 	//
@@ -151,8 +151,8 @@ static void mean()
 
 static void print()
 {
-	double proj_cpi[COLUMNS];
-	double proj_tpi[COLUMNS];
+	//double proj_cpi[COLUMNS];
+	//double proj_tpi[COLUMNS];
 	double proj_tim[COLUMNS];
 	double proj_pow[COLUMNS];
 	application_t *p_apps;
@@ -216,7 +216,7 @@ static void print()
 				{
 					if (p_cofs[c].pstate == f_dst[t1])
 					{
-						proj_cpi[t2] = project_cpi(p_sign, &p_cofs[c]);
+						//proj_cpi[t2] = project_cpi(p_sign, &p_cofs[c]);
 						proj_tim[t2] = project_time(p_sign, &p_cofs[c]);
 						proj_pow[t2] = project_power(p_sign, &p_cofs[c]);
 						//printf("%d %0.2lf %lu\n", t2, proj_tim[t2], p_cofs[c].pstate);
@@ -271,7 +271,6 @@ static void print()
 static void read_applications()
 {
 	application_t *apps_aux;
-	int i;
 
 	sprintf(buffer, "SELECT * FROM Applications WHERE job_id = %lu AND step_id = %lu",
 			jobp_id, step_id);

@@ -91,9 +91,7 @@ int equal(double A, double B, double th)
 
 int compare_coefficients(coefficient_t *avg, coefficient_t *per_node)
 {
-	float diff;
 	int are_equal = 1;
-	int i = 0;
 	#if 0
 	if ((!equal(avg->A, per_node->A, MAX_DIFF))|| (!equal(avg->B, per_node->B, MAX_DIFF)) || (!equal(avg->C, per_node->C, MAX_DIFF)) ||
 	(!equal(avg->D, per_node->D, MAX_DIFF)) || (!equal(avg->E, per_node->E, MAX_DIFF)) || (!equal(avg->F, per_node->F, MAX_DIFF))) are_equal=0;
@@ -137,6 +135,7 @@ double compute_diff(coefficient_t *avg, coefficient_t *per_node)
 		return ((fabs(avg->C-per_node->C)/avg->C+fabs(avg->F-per_node->F)/avg->F)/2.0);
 		break;
 	}
+	return 0.0;
 }
 
 
@@ -224,8 +223,8 @@ int main(int argc, char *argv[])
 				if (compare_coefficients(&avg[i], &per_node[j]) == IS_DIFFERENT)
 				{
 					total_warnings++;
-					verbose(0, "%s pstate_ref %u and pstate %u are different in %lf",
-							argv[2],avg[i].pstate_ref,avg[i].pstate,compute_diff(&avg[i], &per_node[j]));
+					verbose(0, "%s pstate_ref %lu and pstate %lu are different in %lf",
+						argv[2], avg[i].pstate_ref, avg[i].pstate, compute_diff(&avg[i], &per_node[j]));
 				}
 			}
 		}

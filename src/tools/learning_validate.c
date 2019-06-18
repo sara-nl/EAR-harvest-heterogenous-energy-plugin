@@ -118,7 +118,7 @@ static void print_individual()
 	int warn_wtim;
 	int warn_wpow;
 	int warn_wgbs;
-	ulong freq;
+	//ulong freq;
 	//char *name;
 
 	if (opt_g) {
@@ -306,7 +306,7 @@ static void read_applications()
 
 static void usage(int argc, char *argv[])
 {
-	int i, c;
+	int c;
 
 	if (argc < 2)
 	{

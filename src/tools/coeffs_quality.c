@@ -175,7 +175,7 @@ static void merge()
 
 static void compute()
 {
-	double cpi_sign, tpi_sign, tim_sign, pow_sign;
+	//double cpi_sign, tpi_sign, tim_sign, pow_sign;
 	int c, a, n, i;
 
 	if (n_apps == 0 || n_coeffs == 0) {
@@ -320,7 +320,7 @@ void print()
 			}
 
 			if (!opt_c) {
-				tprintf("%s||@%u|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
+				tprintf("%s||@%lu|| | T. Real||T. Proj||T. Err|| | P. Real||P. Proj||P. Err",
 					mrgd[a].job.app_id, mrgd[a].signature.def_f);
 			}
 
@@ -394,7 +394,7 @@ void print()
 		if (errs_med[i+3] > 0.0)
 		{
 			if (opt_c) {
-				verbose(0, "%s;%lu;%lu;%0.2lf;%0.2lf",
+				verbose(0, "%s;%u;%lu;%0.2lf;%0.2lf",
 					name_node, frq_base, coeffs[c].pstate, errs_med[i+1], errs_med[i+2]);
 			} else {
 				col_time = (errs_med[i+1] < 6.0) ? "": STR_YLW;
@@ -412,7 +412,7 @@ void print()
 	if (opt_s && !opt_g)
 	{
 		if (opt_c) {
-			verbose(0, "%s;%lu;%lu;%0.2lf;%0.2lf",
+			verbose(0, "%s;%u;%u;%0.2lf;%0.2lf",
 				name_node, frq_base, frq_base, errs_gen[1], errs_gen[2]);
 		} else {
 			col_time = (errs_gen[1] < 6.0) ? "": STR_YLW;
@@ -420,7 +420,7 @@ void print()
             col_time = (errs_gen[1] < 8.0) ? col_time: STR_RED;
             col_powe = (errs_gen[2] < 8.0) ? col_powe: STR_RED;
 
-			tprintf("general error||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+			tprintf("general error||%u|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
 				frq_base, col_time, errs_gen[1], col_powe, errs_gen[2]);
 		}
 	}
@@ -428,7 +428,7 @@ void print()
 	if (opt_g)
 	{
 		if (opt_c) {
-			verbose(0, "%s;%lu;%0.2lf;%0.2lf",
+			verbose(0, "%s;%u;%0.2lf;%0.2lf",
 				name_node, frq_base, errs_gen[1], errs_gen[2]);
 		} else
 		{
@@ -437,7 +437,7 @@ void print()
 			col_time = (errs_gen[1] < 8.0) ? col_time: STR_RED;
 			col_powe = (errs_gen[2] < 8.0) ? col_powe: STR_RED;
 
-			tprintf("%s||%lu|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
+			tprintf("%s||%u|| | -||-||%s%0.2lf|| | -||-||%s%0.2lf",
 				name_node, frq_base, col_time, errs_gen[1], col_powe, errs_gen[2]);
 		}
 	}
@@ -455,7 +455,6 @@ void read_applications()
 	application_t *appsl;
 	int n_appsn = 0;
 	int n_appsl = 0;
-	int i;
 
 	//
 	n_appsn = db_read_applications(&appsn, 1, 1000, name_node);

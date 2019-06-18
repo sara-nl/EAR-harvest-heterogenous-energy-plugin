@@ -31,15 +31,17 @@
 #include <unistd.h>
 #include <termios.h>
 #include <mysql/mysql.h>
+#include <common/sizes.h>
 #include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/database/db_helper.h>
 
-//#define ALL_QUERY   "DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs " \
-                    "INNER JOIN Learning_applications INNER JOIN Learning_signatures ON Learning_jobs.id=job_id " \
-                    "AND Learning_jobs.step_id=Learning_applications.step_id AND Learning_signatures.id=signature_id"
+// Multiline comments throw a warning
+//#define ALL_QUERY   "DELETE Learning_signatures, Learning_applications, Learning_jobs FROM Learning_jobs " 
+//                    "INNER JOIN Learning_applications INNER JOIN Learning_signatures ON Learning_jobs.id=job_id " 
+//                    "AND Learning_jobs.step_id=Learning_applications.step_id AND Learning_signatures.id=signature_id"
 
 #define ALL_QUERY1  "DELETE FROM Power_signatures WHERE id IN (SELECT power_signature_id from Learning_applications)"
 #define ALL_QUERY2  "DELETE FROM Learning_applications"
@@ -52,13 +54,11 @@
                     "AND Learning_jobs.step_id=Learning_applications.step_id AND Learning_signatures.id=signature_id "\
                     "WHERE node_id=\"%s\""
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
-	int num_apps, is_learning=0;
-    char passw[256];
-    int total_apps = 0;
-    char all_nodes = 0;
-	application_t *apps;
+	char passw[256];
+	char all_nodes = 0;
+	
 	if (argc < 2) {
         printf("Requires an argument, either the node_name from which to delete records or [all] to delete all records. If the root user has a password, use -p\n");
         exit(0);
@@ -89,11 +89,12 @@ void main(int argc,char *argv[])
             exit(0);
     }
     read_cluster_conf(ear_path,&my_conf);
-    char query[256];
-    if (all_nodes)
-        strcpy(query, ALL_QUERY1);
-    else
-        sprintf(query, NODE_QUERY, argv[1]);
+    char query[SZ_BUFF_BIG];
+    
+	if (all_nodes)
+		strcpy(query, ALL_QUERY1);
+	else
+		sprintf(query, NODE_QUERY, argv[1]);
 
     MYSQL *connection = mysql_init(NULL);
     
@@ -138,9 +139,12 @@ void main(int argc,char *argv[])
         exit(0);
     }
     mysql_close(connection);
-    if (all_nodes)
-        printf("Successfully deleted all records.\n");
-    else
-        printf("Successfully deleted all records for node %s.\n", argv[1]);
 
+	if (all_nodes) {
+		printf("Successfully deleted all records.\n");
+	} else {
+		printf("Successfully deleted all records for node %s.\n", argv[1]);
+	}
+
+	return 0;
 }

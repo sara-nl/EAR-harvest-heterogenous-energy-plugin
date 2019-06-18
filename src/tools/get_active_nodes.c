@@ -90,7 +90,7 @@ void show_query_result(cluster_conf_t my_conf, char *query)
     mysql_free_result(result);
 }
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
     char path_name[256];
     cluster_conf_t my_conf;
@@ -119,4 +119,6 @@ void main(int argc,char *argv[])
 
     show_query_result(my_conf, query); 
     free_cluster_conf(&my_conf);
+
+	return 0;
 }

@@ -68,7 +68,7 @@ void usage(int argc, char *argv[])
 	}
 }
 
-void main(int argc,char *argv[])
+int main(int argc,char *argv[])
 {
 	char buffer[256];
 	char *node_name = NULL;
@@ -139,4 +139,6 @@ void main(int argc,char *argv[])
 	    
 		num_apps = db_read_applications(&apps, 1, 50, node_name);
     }
+
+	return 0;
 }
