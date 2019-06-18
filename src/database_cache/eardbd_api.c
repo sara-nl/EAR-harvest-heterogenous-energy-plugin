@@ -179,8 +179,8 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 	mirror_host = "E7450";
 #endif
 
-	enabled_server = (server_host != NULL) && (strlen(server_host) > 0);
-	enabled_mirror = (mirror_host != NULL) && (strlen(mirror_host) > 0);
+	enabled_server = (server_host != NULL) && (strlen(server_host) > 0) && (server_port > 0);
+	enabled_mirror = (mirror_host != NULL) && (strlen(mirror_host) > 0) && (mirror_port > 0);
 
 	//
 	debug("server '%s:%d', enabled %d", server_host, server_port, enabled_server);

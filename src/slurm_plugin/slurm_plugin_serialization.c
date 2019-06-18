@@ -35,7 +35,7 @@
 #include <slurm_plugin/slurm_plugin_serialization.h>
 
 // Buffers
-static char buffer[SZ_PATH];
+static char buffer[SZ_BUFF_EXTRA];
 
 /*
  *
@@ -436,8 +436,10 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	 * LD_PRELOAD
 	 */
 	#if !EAR_CORE
+	char *lib_path = MPI_C_LIB_PATH;
 	char ext1[64];
 	char ext2[64];
+	int n;
 
 	if(getenv_agnostic(sp, Var.version.loc, ext1, 64)) {
 		snprintf(ext2, 64, "%s.so", ext1);
@@ -449,7 +451,8 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, 64);
 
 	//
-	snprintf(buffer, SZ_PATH, "%s/%s.%s", sd->job.user.env.ld_preload, MPI_C_LIB_PATH, ext2);
+	n = snprintf(     0,       0, "%s/%s.%s", sd->job.user.env.ld_preload, lib_path, ext2);
+	    snprintf(buffer,   n + 1, "%s/%s.%s", sd->job.user.env.ld_preload, lib_path, ext2);
 
 	if (file_is_regular(buffer)) {
 		setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);

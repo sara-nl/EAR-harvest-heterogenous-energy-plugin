@@ -192,6 +192,7 @@ static void body_alarm(struct timeval *timeout_slct)
 	}
 }
 
+#if 0
 static int body_new_connection(int fd)
 {
 	int nc;
@@ -201,6 +202,7 @@ static int body_new_connection(int fd)
 
 	return nc;
 }
+#endif
 
 static void body_connections()
 {

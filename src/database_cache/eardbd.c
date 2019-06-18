@@ -140,7 +140,6 @@ int forked;
 
 // Extras
 static float alloc;
-static int isle;
 sigset_t sigset;
 
 // Strings
@@ -317,8 +316,6 @@ static void init_time_configuration(int argc, char **argv, cluster_conf_t *conf_
 
 static int init_sockets_single(socket_t *socket, char *host, int port, int bind)
 {
-	state_t s;
-
 	sockets_clean(socket);
 
 	sockets_init(socket, host, port, TCP);
@@ -381,8 +378,6 @@ static void init_sockets(int argc, char **argv, cluster_conf_t *conf_clus)
 
 static void init_fork(int argc, char **argv, cluster_conf_t *conf_clus)
 {
-	state_t state;
-
 	// Fork
 	if (mirror_too)
 	{
@@ -459,7 +454,7 @@ static void init_signals()
 	}
 }
 
-static void init_types_single(char i, char *name, size_t size, uint percent)
+static void init_types_single(int i, char *name, size_t size, uint percent)
 {
 	float mb_single;
 	float mb_batch;

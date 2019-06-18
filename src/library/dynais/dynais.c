@@ -186,8 +186,6 @@ static short dynais_hierarchical(ushort sample, ushort size, ushort level)
 short dynais(ushort sample, ushort *size, ushort *govern_level)
 {
 	short end_loop = 0;
-	short in_loop = 0;
-	short result;
 	short reach;
 	short l, ll;
 	
