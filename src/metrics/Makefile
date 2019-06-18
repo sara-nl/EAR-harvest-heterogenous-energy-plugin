@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -fPIC -shared -O2 -g
+CFLAGS = $(CC_FLAGS) -fPIC -shared -O2 -Wextra
 
 ######## INSTALLATION
 

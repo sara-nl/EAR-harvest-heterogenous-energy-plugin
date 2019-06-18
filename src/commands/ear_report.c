@@ -81,7 +81,7 @@
                     "WHERE start_time >= %d AND end_time <= %d GROUP BY Jobs.e_tag ORDER BY energy"
 
 //#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
-#define GLOB_ENERGY "SELECT energy_percent,warning_level,time,inc_th,p_state,GlobEnergyConsumedT1, " \
+#define GLOB_ENERGY "SELECT ROUND(energy_percent, 2),warning_level,time,inc_th,p_state,GlobEnergyConsumedT1, " \
                     "GlobEnergyConsumedT2,GlobEnergyLimit,GlobEnergyPeriodT1,GlobEnergyPeriodT2,GlobEnergyPolicy " \
                     "FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
 //#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc limit 5"
@@ -123,7 +123,7 @@ long long stmt_error(MYSQL_STMT *statement)
     return -1;
 }
 
-unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)
+long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)
 {
 
     MYSQL_STMT *statement = mysql_stmt_init(connection);
@@ -186,7 +186,7 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
 
 
     //Result parameters
-    unsigned long long result = 0;
+    long long result = 0;
     MYSQL_BIND res_bind[1];
     memset(res_bind, 0, sizeof(res_bind));
     res_bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
@@ -211,7 +211,6 @@ unsigned long long get_sum(MYSQL *connection, int start_time, int end_time, unsi
     }
 
     return result;
-
 }
 
 void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long long result)
@@ -563,7 +562,7 @@ int main(int argc,char *argv[])
 
     if (!all_users && !all_nodes && !all_tags && !all_eardbds)
     {
-        unsigned long long result = get_sum(connection, start_time, end_time, divisor);
+        long long result = get_sum(connection, start_time, end_time, divisor);
         compute_pow(connection, start_time, end_time, result);
     
         if (!result) {
