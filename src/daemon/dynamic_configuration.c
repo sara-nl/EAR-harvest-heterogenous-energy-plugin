@@ -27,13 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#define _GNU_SOURCE
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
-#define _GNU_SOURCE
 #include <pthread.h>
 #include <netdb.h>
 #include <sys/socket.h>

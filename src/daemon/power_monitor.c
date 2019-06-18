@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#define _GNU_SOURCE
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +37,6 @@
 #include <float.h>
 #include <errno.h>
 #include <signal.h>
-#define _GNU_SOURCE
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>

@@ -26,12 +26,13 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+#define _GNU_SOURCE
+
+#include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <signal.h>
 #include <unistd.h>
-
-#define _GNU_SOURCE
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>

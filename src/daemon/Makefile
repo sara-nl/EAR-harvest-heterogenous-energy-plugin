@@ -18,7 +18,7 @@ eard_OBJS = \
     power_monitor.o \
     shared_configuration.o \
     app_api/app_server_api.o \
-	node_metrics.o
+    node_metrics.o
 
 eard_OBJS += \
     $(SRCDIR)/control/frequency.o \
