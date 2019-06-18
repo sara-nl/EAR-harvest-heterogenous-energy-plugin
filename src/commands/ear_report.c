@@ -81,7 +81,7 @@
                     "WHERE start_time >= %d AND end_time <= %d GROUP BY Jobs.e_tag ORDER BY energy"
 
 //#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
-#define GLOB_ENERGY "SELECT energy_percent,warning_level,time,inc_th,p_state,GlobEnergyConsumedT1, " \
+#define GLOB_ENERGY "SELECT ROUND(energy_percent, 2),warning_level,time,inc_th,p_state,GlobEnergyConsumedT1, " \
                     "GlobEnergyConsumedT2,GlobEnergyLimit,GlobEnergyPeriodT1,GlobEnergyPeriodT2,GlobEnergyPolicy " \
                     "FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
 //#define GLOB_ENERGY "SELECT * FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc limit 5"
