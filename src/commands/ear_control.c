@@ -104,12 +104,13 @@ void fill_ip(char *buff, ip_table_t *table)
 
 int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
 {
-    int i, j, k; 
+    int k;
+    unsigned int i, j;
     char node_name[256];
     int num_ips = 0;
     my_node_conf_t *aux_node_conf;
     ip_table_t *new_ips = NULL;
-    for (i=0;i< my_cluster_conf.num_islands;i++){
+    for (i = 0; i < my_cluster_conf.num_islands; i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {   
             for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)

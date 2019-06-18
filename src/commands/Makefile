@@ -1,4 +1,4 @@
-CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) -Wall
+CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) -Wall 
 LDFLAGS =
 CCC     = $(CC) $(CFLAGS)
 
