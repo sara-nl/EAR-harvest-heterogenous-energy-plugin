@@ -50,11 +50,8 @@ int get_ip(char *nodename, cluster_conf_t *conf)
     struct addrinfo hints;
     struct addrinfo *result, *rp;
     char buff[256];
-    int sfd, s;
+    int s;
     int ip1 = -1;
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len;
-    ssize_t nread;
 
     memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
@@ -68,13 +65,17 @@ int get_ip(char *nodename, cluster_conf_t *conf)
     /*#if USE_EXT
     strcat(buff, NW_EXT);
     #endif*/
-    if (strlen(conf->net_ext) > 0)
-        strcat(buff, conf->net_ext);
+
+	if (strlen(conf->net_ext) > 0) {
+        	strcat(buff, conf->net_ext);
+	}
+
    	s = getaddrinfo(buff, NULL, &hints, &result);
-    if (s != 0) {
+
+	if (s != 0) {
 		verbose(0, "getaddrinfo fails for port %s (%s)", buff, strerror(errno));
 		return EAR_ERROR;
-    }
+	}
 
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
@@ -91,7 +92,7 @@ int get_ip(char *nodename, cluster_conf_t *conf)
 int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
 {
     
-    int i, j, k, range_idx;
+    int i, j, k;
     int **aux_ips;
     int *sec_aux_ips;
     int *ip_counter;
@@ -430,7 +431,6 @@ energy_tag_t * energy_tag_exists(cluster_conf_t *my_conf,char *etag)
 /** returns the user type: NORMAL, AUTHORIZED, ENERGY_TAG */
 uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *group, char *acc,energy_tag_t **my_tag)
 {
-	uint type=NORMAL;
 	energy_tag_t *is_tag;
 	int flag;
 	*my_tag=NULL;

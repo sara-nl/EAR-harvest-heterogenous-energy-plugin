@@ -45,7 +45,7 @@
 
 char range_conf_contains_node(node_conf_t *node, char *nodename)
 {
-    char aux_name[64];
+    char aux_name[256];
     int i, j;
     for (i = 0; i < node->range_count; i++)
     {
@@ -67,7 +67,7 @@ char range_conf_contains_node(node_conf_t *node, char *nodename)
                 sprintf(aux_name, "%s0%u", node->range[i].prefix, j);
             else
                 sprintf(aux_name, "%s%u", node->range[i].prefix, j);
-            if (!strcmp(aux_name, nodename)) return 1;
+            if (!strcmp(aux_name, nodename)) { return 1; }
         }
     }
 
@@ -76,7 +76,7 @@ char range_conf_contains_node(node_conf_t *node, char *nodename)
 
 char island_range_conf_contains_node(node_island_t *node, char *nodename)
 {
-    char aux_name[64];
+    char aux_name[256];
     int i, j;
     for (i = 0; i < node->num_ranges; i++)
     {
@@ -207,7 +207,6 @@ void read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 policy_conf_t *get_my_policy_conf(my_node_conf_t *my_node,uint p_id)
 {
     policy_conf_t *my_policy=NULL;
-    uint i;
     uint nump=0;
     while((nump<my_node->num_policies) && (my_node->policies[nump].policy!=p_id)) nump++;
     if (nump<my_node->num_policies){

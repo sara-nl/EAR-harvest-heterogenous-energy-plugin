@@ -39,10 +39,12 @@ static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int 
 	for (i = 0; i < conf->num_policies; i++)
 	{
 		if (conf->power_policies[i].policy == policy)
-			if (main) conf->power_policies[i].th = atof(token);
+		{
+			if (main) { conf->power_policies[i].th = atof(token); }
 			#if LRZ_POLICY
-			else conf->power_policies[i].th2 = atof(token);
+			else { conf->power_policies[i].th2 = atof(token); }
 			#endif
+		}
 	}
 
 }
@@ -54,8 +56,6 @@ static int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 	char *token;
 	char *start;
 	char *next_token;
-	int range_start, range_end;
-	char nodename[GENERIC_NAME];
 
 	start = strtok_r(namelist, "[", &buffer_ptr);
 	token = strtok_r(NULL, ",", &buffer_ptr);
@@ -77,7 +77,7 @@ static int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 		return 1;
 	}
 	//at least one node if we reach this point
-	int node_count = 0;
+	
 	while (token != NULL)
 	{
 
@@ -148,8 +148,6 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 	char *token;
 	char *start;
 	char *next_token;
-	int range_start, range_end;
-	char nodename[GENERIC_NAME];
 
 	start = strtok_r(nodelist, "[", &buffer_ptr);
 	token = strtok_r(NULL, ",", &buffer_ptr);
@@ -204,16 +202,21 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 		token = strtok_r(NULL, ",", &buffer_ptr);
 		if (next_token != NULL) start = next_token;
 	}
-    int i;
-    for (i = island->num_ranges; i < island->num_ranges + range_count; i++)
-        island->ranges[i].db_ip = island->ranges[i].sec_ip = -1;
+
+	//
+	int i;
+
+	for (i = island->num_ranges; i < island->num_ranges + range_count; i++) {
+        	island->ranges[i].db_ip = island->ranges[i].sec_ip = -1;
+	}
+
 	island->num_ranges += range_count;
 }
 
 void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 {
 	memset(conf, 0, sizeof(cluster_conf_t));
-	char line[256],token_clean[256];
+	char line[256];
 	char *token;
 
 	//filling the default policies before starting
@@ -230,7 +233,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
             remove_chars(token, ' ');
-			int token_id;
 			conf->default_policy = policy_name_to_id(token);
 		}
 		else if (!strcmp(token, "DATABASEPATHNAME"))
@@ -492,7 +494,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				}
 				else if (!strcmp(token, "CPUS"))
 				{
-					int i;
 					num_cpus = atoi(strtok_r(NULL, "=", &secondary_ptr));
 				}
 				else if (!strcmp(token, "DEFAULTPSTATES"))
@@ -957,9 +958,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 			int i = 0;
             int idx = -1;
-			int island = 0;
-			int num_nodes = 0;
-			int num_cpus = 0;
 			//fully restore the line
 			line[strlen(line)] = '=';
 
