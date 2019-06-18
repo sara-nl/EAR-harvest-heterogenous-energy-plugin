@@ -1423,7 +1423,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
 
     int id = mysql_stmt_insert_id(statement);
 
-    my_ulonglong affected_rows = mysql_stmt_affected_rows(statement);
+    long long affected_rows = mysql_stmt_affected_rows(statement);
 
     if (affected_rows != num_sigs) 
     {
