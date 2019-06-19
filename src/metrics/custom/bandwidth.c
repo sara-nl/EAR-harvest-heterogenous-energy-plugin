@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 /*
  * Usage:
  * 1) Call init passing the processor model of clusters
