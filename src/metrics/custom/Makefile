@@ -6,7 +6,8 @@ cstm_OBJS = frequency.o \
     frequency_uncore.o \
     hardware_info.o \
     bandwidth.o \
-    bandwidth_notpriv.o
+    bandwidth_notpriv.o \
+    energy.o
 
 ######## RULES
 
@@ -29,6 +30,7 @@ clean: clean.components rclean;
 
 %.components:
 	@ $(MAKE) -C 'bandwidth' $* || exit
+	@ $(MAKE) -C 'energy'    $* || exit
 
 ######## DEPENDENCIES
 

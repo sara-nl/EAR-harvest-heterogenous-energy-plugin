@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017
+*       Copyright (C) 2017  
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,26 +15,31 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*
+*	
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*
+*	
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef EAR_SYSCALL_H
-#define EAR_SYSCALL_H
+#include <common/sizes.h>
+#include <common/states.h>
 
-#include <time.h>
-#include <sys/syscall.h>
+state_t plug_energy_init(void *c);
 
-#define SYS_TIME __NR_clock_gettime
+state_t plug_energy_dispose(void *c);
 
-void syscall_gettime(struct timespec *time);
+state_t plug_energy_getdata_length(void *c);
 
-#endif //EAR_SYSCALL_H
+state_t plug_energy_dc_read(void *c, ulong *energy);
+
+state_t plug_energy_dc_time_read(void *c, ulong *energy, ulong *ms);
+
+state_t plug_energy_dc_time_debug(void *c, ulong *energy, ulong *energy_mj, ulong *seconds, ulong *ms);
+
+state_t plug_energy_ac_read(void *c, ulong *energy);

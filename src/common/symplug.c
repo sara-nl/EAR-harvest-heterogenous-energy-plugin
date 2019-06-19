@@ -27,22 +27,24 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <dlfcn.h>
 #include <common/symplug.h>
+#include <common/includes.h>
 
-static void symplug_join(void *handle, void *calls, char *names[], uint n)
+static void symplug_join(void *handle, void *calls[], const char *names[], uint n)
 {
 	uint i;
 
 	for (i = 0; i < n; ++i) {
-		calls[i] = dlsym(handle, nam[i]);
+		calls[i] = dlsym(handle, names[i]);
 	}
 }
 
-state_t symplug_open(char *path, void *calls, char *names[], uint n)
+state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 {
-	plug->handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
+	void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
 
-	if (!plug->handle) {
+	if (!handle) {
 		return EAR_ERROR;
 	}
 

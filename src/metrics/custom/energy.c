@@ -27,7 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <metrics/custom/power.h>
+#include <common/symplug.h>
+#include <common/includes.h>
+#include <metrics/custom/energy.h>
+#include <metrics/custom/energy/finder.h>
+#include <metrics/custom/hardware_info.h>
 
 struct energy_op
 {
@@ -50,7 +54,7 @@ const char *energy_names[] = {
 		"plug_energy_ac_read",
 };
 
-state_t energy_init(energy_handler_t *eh)
+state_t energy_init(ehandler_t *eh)
 {
 	int ipmi = 0;
 	int cpu_model;
@@ -63,12 +67,12 @@ state_t energy_init(energy_handler_t *eh)
 	debug("initialized");
 
 	//
-	energy_ops.plug_energy_init           = NULL;
-	energy_ops.plug_energy_dispose        = NULL;
-	energy_ops.plug_energy_getdata_length = NULL;
-	energy_ops.plug_energy_dc_read        = NULL;
-	energy_ops.plug_energy_dc_time_read   = NULL;
-	energy_ops.plug_energy_ac_read        = NULL;
+	energy_ops.init           = NULL;
+	energy_ops.dispose        = NULL;
+	energy_ops.getdata_length = NULL;
+	energy_ops.dc_read        = NULL;
+	energy_ops.dc_time_read   = NULL;
+	energy_ops.ac_read        = NULL;
 
 	//
 	cpu_model = get_model();
@@ -94,6 +98,7 @@ state_t energy_init(energy_handler_t *eh)
 		case CPU_SKYLAKE_X:
 			if (strstr(eh->name_product, "SD530") != NULL) {
 				sprintf(eh->path_object, "./plugins/energy/ipmi.sd530.so");
+				sprintf(eh->path_object, "./energy/ipmi.lenovo.so");
 				eh->interface = 1;
 			} else if (strstr(eh->name_product, "SR650") != NULL) {
 				eh->interface = 1;
@@ -107,18 +112,19 @@ state_t energy_init(energy_handler_t *eh)
 			break;
 	}
 
-	if (eh->interface)
-	{
+	if (eh->interface) {
 		verbose(0, "Product name %s detected", eh->name_product);
 
-		symplug_open(eh->path_object, (void *) energy_ops, energy_names, energy_nops);
-	}
-	else {
+		//
+		symplug_open(eh->path_object, (void **) &energy_ops, energy_names, energy_nops);
+		
+		eh->connected = 1;
+		eh->status    = energy_ops.init(eh->context);
+	} else {
 		verbose(0, "Product name %s detected (not known. default applied)", eh->name_product);
+		eh->connected = 0;
+		eh->status    = 0;
 	}
-
-	eh->status = energy_ops.node_energy_init(&eh->c);
-	eh->connected = 1;
 
 	return eh->status;
 }

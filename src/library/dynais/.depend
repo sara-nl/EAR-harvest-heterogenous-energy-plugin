@@ -1,4 +1,0 @@
-dynais.o: dynais.c ../../library/dynais/dynais.h \
- ../../common/types/generic.h ../../library/dynais/dynais_core.h
-dynais_core.o: dynais_core.c ../../library/dynais/dynais.h \
- ../../common/types/generic.h ../../library/dynais/dynais_core.h

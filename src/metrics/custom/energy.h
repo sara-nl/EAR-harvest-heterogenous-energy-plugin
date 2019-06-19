@@ -30,6 +30,10 @@
 #ifndef EAR_ENERGY_H
 #define EAR_ENERGY_H
 
+#include <common/sizes.h>
+#include <common/states.h>
+#include <common/types/generic.h>
+
 typedef struct energy_handler {
 	char name_manufacturer[SZ_NAME_MEDIUM];
 	char name_product[SZ_NAME_MEDIUM];

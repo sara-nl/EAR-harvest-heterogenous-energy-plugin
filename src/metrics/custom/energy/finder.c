@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <pthread.h>
 #include <common/includes.h>
 #include <freeipmi/freeipmi.h>
 #include <metrics/custom/energy/finder.h>

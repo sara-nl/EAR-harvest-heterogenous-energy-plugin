@@ -32,7 +32,7 @@
 #include <freeipmi/freeipmi.h>
 #include <common/includes.h>
 #include <metrics/custom/hardware_info.h>
-#include <metrics/custom/energy/impi_lenovo.h>
+#include <metrics/custom/energy/ipmi_lenovo.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
@@ -42,7 +42,7 @@ static unsigned int send_len;
 static pthread_mutex_t node_energy_lock_nm = PTHREAD_MUTEX_INITIALIZER;
 
 state_t plug_energy_init(void *c)
-{º
+{
 	uid_t uid;
 	int ret=0;
 	int rs_len;
@@ -156,15 +156,15 @@ state_t plug_energy_dispose(void *c)
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 
 	debug("lenovo_node_energy_dispose");
-	if (*ipmi_ctx==NULL){
+	if (ipmi_ctx==NULL){
 		error("lenovo_NM: IPMI context not initiallized");
 		return EAR_ERROR;
 	}
 	// // Close context
-	ipmi_ctx_close (*ipmi_ctx);
+	ipmi_ctx_close (ipmi_ctx);
 	// delete context
-	ipmi_ctx_destroy (*ipmi_ctx);
-	*ipmi_ctx=NULL;
+	ipmi_ctx_destroy (ipmi_ctx);
+	ipmi_ctx=NULL;
 	return EAR_SUCCESS;
 }
 
