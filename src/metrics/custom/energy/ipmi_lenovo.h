@@ -36,10 +36,10 @@ state_t plug_energy_dispose(void *c);
 
 state_t plug_energy_getdata_length(void *c);
 
-state_t plug_energy_dc_read(void *c, ulong *energy);
+state_t plug_energy_dc_read(void *c, ulong *emj);
 
-state_t plug_energy_dc_time_read(void *c, ulong *energy, ulong *ms);
+state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms);
 
-state_t plug_energy_dc_time_debug(void *c, ulong *energy, ulong *energy_mj, ulong *seconds, ulong *ms);
+state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
 
-state_t plug_energy_ac_read(void *c, ulong *energy);
+state_t plug_energy_ac_read(void *c, ulong *emj);

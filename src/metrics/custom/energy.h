@@ -48,9 +48,9 @@ state_t energy_init(ehandler_t *eh);
 
 state_t energy_dispose(ehandler_t *eh);
 
-state_t energy_getdata_length(ehandler_t *eh);
+state_t energy_getdata_length(ehandler_t *eh, size_t *size);
 
-state_t energy_getdate_frequency(ehandler_t *eh);
+state_t energy_getdata_frequency(ehandler_t *eh, ulong *freq);
 
 state_t energy_dc_read(ehandler_t *eh, ulong *energy);
 

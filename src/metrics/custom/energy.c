@@ -131,59 +131,50 @@ state_t energy_init(ehandler_t *eh)
 
 state_t energy_dispose(ehandler_t *eh)
 {
+	preturn (energy_ops.dispose, eh->c);
+}
+
+state_t energy_getdata_length(ehandler_t *eh, size_t *size)
+{
+	preturn (energy_ops.getdata_length, eh->c, size);
+}
+
+state_t energy_getdate_frequency(ehandler_t *eh, ulong *freq)
+{
+	preturn (energy_ops.getdata_frequency, eh->c, freq);
+}
+
+state_t energy_dc_read(ehandler_t *eh, ulong *emj)
+{
+	preturn (energy_ops.dc_read, eh->c, emj);
+}
+
+state_t energy_dc_readtry(ehandler_t *eh, ulong *emj)
+{
 	return EAR_SUCCESS;
 }
 
-state_t energy_getdata_length(ehandler_t *eh)
+state_t energy_dc_time_read(ehandler_t *eh, ulong *emj, ulong *tms)
 {
-
-	return EAR_SUCCESS;
+	preturn (energy_ops.dc_time_read, eh->c, emj, tms);
 }
 
-state_t energy_getdate_frequency(ehandler_t *eh)
+state_t energy_dc_time_readtry(ehandler_t *eh, ulong *energy, ulong *tms)
 {
-
-	return EAR_SUCCESS;
-}
-
-state_t energy_dc_read(ehandler_t *eh, ulong *energy)
-{
-
-	return EAR_SUCCESS;
-}
-
-state_t energy_dc_readtry(ehandler_t *eh, ulong *energy)
-{
-
-	return EAR_SUCCESS;
-}
-
-state_t energy_dc_time_read(ehandler_t *eh, ulong *energy, ulong *time_ms)
-{
-
-	return EAR_SUCCESS;
-}
-
-state_t energy_dc_time_readtry(ehandler_t *eh, ulong *energy, ulong *time_ms)
-{
-
 	return EAR_SUCCESS;
 }
 
 state_t energy_dc_time_debug(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
 {
-
-	return EAR_SUCCESS;
+	preturn (energy_ops.dc_time_debug, eh->c, ej, emj, ts, tms);
 }
 
 state_t energy_dc_time_debugtry(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
 {
-
 	return EAR_SUCCESS;
 }
 
-state_t energy_ac_read(ehandler_t *eh, ulong *energy)
+state_t energy_ac_read(ehandler_t *eh, ulong *emj)
 {
-
-	return EAR_SUCCESS;
+	preturn (energy_ops.ac_read, eh->c, emj);
 }

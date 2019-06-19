@@ -168,13 +168,14 @@ state_t plug_energy_dispose(void *c)
 	return EAR_SUCCESS;
 }
 
-state_t plug_energy_getdata_length(void *c)
+state_t plug_energy_getdata_length(void *c, size_t *size)
 {
 	debug("lenovo_count_energy_data_length");
-	return sizeof(unsigned long);
+	*size = sizeof(unsigned long);
+	return EAR_SUCCESS;
 }
 
-state_t plug_energy_dc_read(void *c, ulong *energy)
+state_t plug_energy_dc_read(void *c, ulong *emj)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	unsigned long *energyp;
@@ -202,31 +203,31 @@ state_t plug_energy_dc_read(void *c, ulong *energy)
 		return EAR_ERROR;
 	}
 	energyp=(unsigned long *)&bytes_rs[rs_len-8];
-	*energy=(unsigned long)be64toh(*energyp);
+	*emj=(unsigned long)be64toh(*energyp);
 	pthread_mutex_unlock(&node_energy_lock_nm);
 	return EAR_SUCCESS;
 }
 
-state_t plug_energy_dc_time_read(void *c, ulong *energy, ulong *ms)
+state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *ms)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	int ret;
 	struct timeval t;
-	ret=plug_energy_dc_read(ipmi_ctx,energy);
+	ret=plug_energy_dc_read(ipmi_ctx, emj);
 	gettimeofday(&t, NULL);
 	*ms=t.tv_sec*1000+t.tv_usec/1000;
 	return ret;
 }
 
-state_t plug_energy_dc_time_debug(void *c, ulong *energy, ulong *energy_mj, ulong *seconds, ulong *ms)
+state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulong *ms)
 {
-	*energy=0;
-	*seconds=0;
-	return plug_energy_dc_time_read(c, energy_mj, ms);
+	*ej=0;
+	*ts=0;
+	return plug_energy_dc_time_read(c, emj, ms);
 }
 
-state_t plug_energy_ac_read(void *c, ulong *energy)
+state_t plug_energy_ac_read(void *c, ulong *emj)
 {
-	*energy=0;
+	*emj=0;
 	return EAR_SUCCESS;
 }

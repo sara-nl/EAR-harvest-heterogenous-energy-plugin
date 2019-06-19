@@ -4,8 +4,11 @@
 
 int main(int argc, char *argv)
 {
+	ulong energy;
 	ehandler_t handler;
 	energy_init(&handler);
+	energy_dc_read(&handler, &energy);
+	fprintf(stderr, "ENERGY %s MJ\n", energy);
 
 	return 0;
 }

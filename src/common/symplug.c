@@ -31,6 +31,12 @@
 #include <common/symplug.h>
 #include <common/includes.h>
 
+#define preturn(call, ...) \
+	if (call == NULL) { \
+		return EAR_SUCCESS; \
+	} \
+	return call (__VA_ARGS__);
+
 static void symplug_join(void *handle, void *calls[], const char *names[], uint n)
 {
 	uint i;
