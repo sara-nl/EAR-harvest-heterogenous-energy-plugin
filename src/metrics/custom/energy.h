@@ -30,9 +30,7 @@
 #ifndef EAR_ENERGY_H
 #define EAR_ENERGY_H
 
-#include <common/sizes.h>
-#include <common/states.h>
-#include <common/types/generic.h>
+#include <common/includes.h>
 
 typedef struct energy_handler {
 	char name_manufacturer[SZ_NAME_MEDIUM];
@@ -48,9 +46,9 @@ state_t energy_init(ehandler_t *eh);
 
 state_t energy_dispose(ehandler_t *eh);
 
-state_t energy_getdata_length(ehandler_t *eh, size_t *size);
+state_t energy_data_length_get(ehandler_t *eh, size_t *size);
 
-state_t energy_getdata_frequency(ehandler_t *eh, ulong *freq);
+state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq);
 
 state_t energy_dc_read(ehandler_t *eh, ulong *energy);
 

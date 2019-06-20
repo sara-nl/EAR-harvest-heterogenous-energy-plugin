@@ -33,6 +33,12 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 
+#define preturn(call, ...) \
+	if (call == NULL) { \
+		return EAR_SUCCESS; \
+	} \
+	return call (__VA_ARGS__);
+
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n);
 
 #endif //EAR_PRIVATE_SYMPLUG_H

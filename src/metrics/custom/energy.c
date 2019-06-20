@@ -35,23 +35,23 @@
 
 struct energy_op
 {
-	state_t (*init)           (void *c);
-	state_t (*dispose)        (void *c);
-	state_t (*getdata_length) (void *c);
-	state_t (*dc_read)        (void *c, ulong *emj);
-	state_t (*dc_time_read)   (void *c, ulong *emj, ulong *tms);
-	state_t (*dc_time_debug)  (void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
-	state_t (*ac_read)        (void *c, ulong *em);
+	state_t (*init)            (void **c);
+	state_t (*dispose)         (void **c);
+	state_t (*data_length_get) (void *c, size_t *size);
+	state_t (*dc_read)         (void *c, ulong *emj);
+	state_t (*dc_time_read)    (void *c, ulong *emj, ulong *tms);
+	state_t (*dc_time_debug)   (void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
+	state_t (*ac_read)         (void *c, ulong *em);
 } energy_ops;
 const int   energy_nops    = 7;
 const char *energy_names[] = {
-		"plug_energy_init",
-		"plug_energy_dispose",
-		"plug_energy_getdata_length",
-		"plug_energy_dc_read",
-		"plug_energy_dc_time_read",
-		"plug_energy_dc_time_debug",
-		"plug_energy_ac_read",
+	"plug_energy_init",
+	"plug_energy_dispose",
+	"plug_energy_data_length_get",
+	"plug_energy_dc_read",
+	"plug_energy_dc_time_read",
+	"plug_energy_dc_time_debug",
+	"plug_energy_ac_read",
 };
 
 state_t energy_init(ehandler_t *eh)
@@ -67,12 +67,13 @@ state_t energy_init(ehandler_t *eh)
 	debug("initialized");
 
 	//
-	energy_ops.init           = NULL;
-	energy_ops.dispose        = NULL;
-	energy_ops.getdata_length = NULL;
-	energy_ops.dc_read        = NULL;
-	energy_ops.dc_time_read   = NULL;
-	energy_ops.ac_read        = NULL;
+	energy_ops.init            = NULL;
+	energy_ops.dispose         = NULL;
+	energy_ops.data_length_get = NULL;
+	energy_ops.dc_read         = NULL;
+	energy_ops.dc_time_read    = NULL;
+	energy_ops.dc_time_debug   = NULL;
+	energy_ops.ac_read         = NULL;
 
 	//
 	cpu_model = get_model();
@@ -113,17 +114,25 @@ state_t energy_init(ehandler_t *eh)
 	}
 
 	if (eh->interface) {
-		verbose(0, "Product name %s detected", eh->name_product);
+		verbose(0, "energy: product name '%s' detected", eh->name_product);
 
 		//
-		symplug_open(eh->path_object, (void **) &energy_ops, energy_names, energy_nops);
-		
+		ret = symplug_open(eh->path_object, (void **) &energy_ops, energy_names, energy_nops);
+		debug("symplug_open() returned %d", ret);		
+
+		if (state_fail(ret)) {
+			return ret;
+		}
+
+		ret = energy_ops.init(&eh->context);
+		debug("energy_ops.init() returned %d", ret);		
+	
 		eh->connected = 1;
-		eh->status    = energy_ops.init(eh->context);
+		eh->status    = ret;
 	} else {
-		verbose(0, "Product name %s detected (not known. default applied)", eh->name_product);
+		verbose(0, "energy: product name '%s' detected (not known)", eh->name_product);
 		eh->connected = 0;
-		eh->status    = 0;
+		eh->status    = EAR_ERROR;
 	}
 
 	return eh->status;
@@ -131,22 +140,22 @@ state_t energy_init(ehandler_t *eh)
 
 state_t energy_dispose(ehandler_t *eh)
 {
-	preturn (energy_ops.dispose, eh->c);
+	preturn (energy_ops.dispose, &eh->context);
 }
 
-state_t energy_getdata_length(ehandler_t *eh, size_t *size)
+state_t energy_data_length_get(ehandler_t *eh, size_t *size)
 {
-	preturn (energy_ops.getdata_length, eh->c, size);
+	preturn (energy_ops.data_length_get, eh->context, size);
 }
 
-state_t energy_getdate_frequency(ehandler_t *eh, ulong *freq)
+state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 {
-	preturn (energy_ops.getdata_frequency, eh->c, freq);
+	return EAR_SUCCESS;
 }
 
 state_t energy_dc_read(ehandler_t *eh, ulong *emj)
 {
-	preturn (energy_ops.dc_read, eh->c, emj);
+	preturn (energy_ops.dc_read, eh->context, emj);
 }
 
 state_t energy_dc_readtry(ehandler_t *eh, ulong *emj)
@@ -156,7 +165,7 @@ state_t energy_dc_readtry(ehandler_t *eh, ulong *emj)
 
 state_t energy_dc_time_read(ehandler_t *eh, ulong *emj, ulong *tms)
 {
-	preturn (energy_ops.dc_time_read, eh->c, emj, tms);
+	preturn (energy_ops.dc_time_read, eh->context, emj, tms);
 }
 
 state_t energy_dc_time_readtry(ehandler_t *eh, ulong *energy, ulong *tms)
@@ -166,7 +175,7 @@ state_t energy_dc_time_readtry(ehandler_t *eh, ulong *energy, ulong *tms)
 
 state_t energy_dc_time_debug(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
 {
-	preturn (energy_ops.dc_time_debug, eh->c, ej, emj, ts, tms);
+	preturn (energy_ops.dc_time_debug, eh->context, ej, emj, ts, tms);
 }
 
 state_t energy_dc_time_debugtry(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
@@ -176,5 +185,5 @@ state_t energy_dc_time_debugtry(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts
 
 state_t energy_ac_read(ehandler_t *eh, ulong *emj)
 {
-	preturn (energy_ops.ac_read, eh->c, emj);
+	preturn (energy_ops.ac_read, eh->context, emj);
 }

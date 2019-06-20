@@ -30,11 +30,11 @@
 #include <common/sizes.h>
 #include <common/states.h>
 
-state_t plug_energy_init(void *c);
+state_t plug_energy_init(void **c);
 
-state_t plug_energy_dispose(void *c);
+state_t plug_energy_dispose(void **c);
 
-state_t plug_energy_getdata_length(void *c);
+state_t plug_energy_getdata_length(void *c, size_t *size);
 
 state_t plug_energy_dc_read(void *c, ulong *emj);
 

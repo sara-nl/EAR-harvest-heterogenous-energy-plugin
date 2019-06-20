@@ -184,6 +184,10 @@ int lenovo_act_read_dc_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy)
 	debug("lenovo_read_dc_energy");
 	// RAW CMD
 	if (pthread_mutex_trylock(&node_energy_lock_nm)) return EAR_BUSY;
+	
+
+        fprintf(stderr, "%p, %d, %d, %u, %d, %d\n", ipmi_ctx, bytes_rq[0], bytes_rq[1], send_len - 2, bytes_rs, IPMI_RAW_MAX_ARGS);
+
 	rs_len = ipmi_cmd_raw (ipmi_ctx,
                               bytes_rq[0],
                               bytes_rq[1],

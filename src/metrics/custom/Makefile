@@ -14,7 +14,7 @@ cstm_OBJS = frequency.o \
 all: all.components $(cstm_OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -DSHOW_DEBUGS -c $<
 
 ######## OPTIONS
 
