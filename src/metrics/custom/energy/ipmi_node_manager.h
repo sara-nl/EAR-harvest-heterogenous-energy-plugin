@@ -43,8 +43,6 @@ state_t plug_energy_dc_read(void *c, ulong *emj);
 
 state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms);
 
-state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
-
 state_t plug_energy_ac_read(void *c, ulong *emj);
 
 #endif

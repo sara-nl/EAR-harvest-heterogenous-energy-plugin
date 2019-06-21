@@ -41,77 +41,48 @@ static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
 
-state_t plug_energy_init(void **c)
+static state_t _plug_energy_init(void **c)
 {
-	uid_t uid;
+	unsigned int workaround_flags = 0;
 	int ret = 0;
 	int rs_len;
-	unsigned int workaround_flags = 0;
+	uid_t uid;
 
-	debug("lenovo_node_energy_init");
-	pthread_mutex_lock(&lock);
+	if (!user_is_root()) {
+		state_return_msg(EAR_ERROR, 0, "the user is not root");
+	}
 
 	//
 	*c = ipmi_ctx_create();
-	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) * c;
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) *c;
 
-	//Creating the context
-	if (!ipmi_ctx) {
-		pthread_mutex_unlock(&lock);
-		error("lenovo_NM:Error in ipmi_ctx_create %s", strerror(errno));
-		return EAR_ERROR;
+	// Creating the context
+	if (!ipmi_ctx)
+	{
+		state_return_msg(EAR_ERROR, 0, "creating IPMI context");
 	}
 
-	// Checking for root
-	uid = getuid();
-	if (uid != 0) {
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		error("lenovo_NM: No root permissions");
-		return EAR_ERROR;
+	// Inband context
+	if ((ret = ipmi_ctx_find_inband(ipmi_ctx, NULL, 0, 0, 0, NULL,
+			workaround_flags, IPMI_FLAGS_DEFAULT)) < 0)
+	{
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
 	}
 
-	// inband context
-	if ((ret = ipmi_ctx_find_inband(ipmi_ctx,
-									NULL, // driver_type
-									0, //disable_auto_probe
-									0, // driver_address
-									0, // register_spacing
-									NULL, // driver_device
-									workaround_flags,
-									IPMI_FLAGS_DEFAULT)) < 0) {
-		error("lenovo_NM: %s", ipmi_ctx_errormsg(ipmi_ctx));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-
-		return EAR_ERROR;
-	}
 	if (ret == 0) {
-		error("lenovo_NM: Not inband device found %s", ipmi_ctx_errormsg(ipmi_ctx));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
 	}
 
-	// This part is hardcoded since we are not supporting other commands rather than reading DC energy
 	send_len = 11;
 
 	if (!(bytes_rq = calloc(send_len, sizeof(uint8_t)))) {
-		error("lenovo_NM: Allocating memory for request %s", strerror(errno));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+		state_return_msg(EAR_ALLOC_ERROR, 0, strerror(errno));
 	}
 
 	if (!(bytes_rs = calloc(IPMI_RAW_MAX_ARGS, sizeof(uint8_t)))) {
-		error("lenovo_NM: Allocating memory for recv data %s", strerror(errno));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+		state_return_msg(EAR_ALLOC_ERROR, 0, strerror(errno));
 	}
-	// ipmitool raw 0x2e 0x82 0x66 0x4a 0 0 0 1 --> Command to get the parameter (0x20 in Lenovo) bytes_rq[6]
-	// sudo ./ipmi-raw 0x0 0x2e 0x82 0x66 0x4a 0 0 0 1
-	// byte number 8 with ipmi-raw command
+
 	bytes_rq[0] = (uint8_t) 0x00;
 	bytes_rq[1] = (uint8_t) 0x2E;
 	bytes_rq[2] = (uint8_t) 0x82;
@@ -122,117 +93,125 @@ state_t plug_energy_init(void **c)
 	bytes_rq[7] = (uint8_t) 0x00;
 	bytes_rq[8] = (uint8_t) 0x01;
 
-	// RAW CMD to get the parameter
-	if ((rs_len = ipmi_cmd_raw(ipmi_ctx,
-							   bytes_rq[0],
-							   bytes_rq[1],
-							   &bytes_rq[2],
-							   7,
-							   bytes_rs,
-							   IPMI_RAW_MAX_ARGS)) < 0) {
-		error("lenovo_NM: ipmi_cmd_raw fails when reading the parameter %s", ipmi_ctx_errormsg(ipmi_ctx));
-		//return EAR_ERROR;
+	if ((rs_len = ipmi_cmd_raw(ipmi_ctx, bytes_rq[0], bytes_rq[1], &bytes_rq[2],
+	   7, bytes_rs, IPMI_RAW_MAX_ARGS)) < 0)
+	{
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
 	}
 
 	if (bytes_rs[8] != 0x20) {
-		error("lenovo_NM warning raw argument != 0x20");
 		bytes_rs[8] = 0x20;
 	}
 
-	bytes_rq[0] = (uint8_t) 0x00;
-	bytes_rq[1] = (uint8_t) 0x2E;
-	bytes_rq[2] = (uint8_t) 0x81;
-	bytes_rq[3] = (uint8_t) 0x66;
-	bytes_rq[4] = (uint8_t) 0x4A;
-	bytes_rq[5] = (uint8_t) 0x00;
-	bytes_rq[6] = bytes_rs[8];
-	bytes_rq[7] = (uint8_t) 0x01;
-	bytes_rq[8] = (uint8_t) 0x82;
-	bytes_rq[9] = (uint8_t) 0x00;
+	bytes_rq[0]  = (uint8_t) 0x00;
+	bytes_rq[1]  = (uint8_t) 0x2E;
+	bytes_rq[2]  = (uint8_t) 0x81;
+	bytes_rq[3]  = (uint8_t) 0x66;
+	bytes_rq[4]  = (uint8_t) 0x4A;
+	bytes_rq[5]  = (uint8_t) 0x00;
+	bytes_rq[6]  =    bytes_rs[8];
+	bytes_rq[7]  = (uint8_t) 0x01;
+	bytes_rq[8]  = (uint8_t) 0x82;
+	bytes_rq[9]  = (uint8_t) 0x00;
 	bytes_rq[10] = (uint8_t) 0x08;
-	pthread_mutex_unlock(&lock);
 
 	return EAR_SUCCESS;
+}
+
+state_t plug_energy_init(void **c)
+{
+	state s;
+
+	pthread_mutex_lock(&lock);
+	s = _plug_energy_init(c);
+	pthread_mutex_unlock(&lock);
+
+	if (state_fail(s))
+	{
+		error("ipmi_node_manager returned error number '%d' ('%s')", s, intern_error_str);
+		plug_energy_dispose(c);
+	}
+
+	return s;
 }
 
 state_t plug_energy_dispose(void **c)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) *c;
 
-	debug("lenovo_node_energy_dispose");
 	if (ipmi_ctx == NULL) {
-		error("lenovo_NM: IPMI context not initiallized");
 		return EAR_ERROR;
 	}
-	// // Close context
+
 	ipmi_ctx_close(ipmi_ctx);
-	// delete context
 	ipmi_ctx_destroy(ipmi_ctx);
 	ipmi_ctx = NULL;
+
 	return EAR_SUCCESS;
 }
 
 state_t plug_energy_getdata_length(void *c, size_t *size)
 {
-	debug("lenovo_count_energy_data_length");
 	*size = sizeof(unsigned long);
+	return EAR_SUCCESS;
+}
+
+static state_t _plug_energy_dc_read(void *c, ulong *emj)
+{
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
+	ulong *emjp;
+	int rs_len;
+
+	if (ipmi_ctx == NULL) {
+		state_return_msg(EAR_ERROR, 0, "context is NULL");
+	}
+
+	rs_len = ipmi_cmd_raw(ipmi_ctx, bytes_rq[0], bytes_rq[1], &bytes_rq[2],
+		  send_len - 2, bytes_rs, IPMI_RAW_MAX_ARGS);
+
+	if (rs_len < 0) {
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
+	}
+
+	emjp = (unsigned long *) &bytes_rs[rs_len - 8];
+	*emj = (unsigned long)    be64toh(*emjp);
+
 	return EAR_SUCCESS;
 }
 
 state_t plug_energy_dc_read(void *c, ulong *emj)
 {
-	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
-	unsigned long *energyp;
-	int rs_len;
-	//int tries=0;
+	state_t s;
 
-	verbose(0, "c '%p', ipmi_ctx '%p'", c, (void *) ipmi_ctx);
-
-	if (ipmi_ctx == NULL) {
-		error("lenovo_NM: IPMI context not initiallized");
-		return EAR_ERROR;
-	}
-	debug("lenovo_read_dc_energy");
-	// RAW CMD
 	if (pthread_mutex_trylock(&lock)) {
 		return EAR_BUSY;
 	}
 
-	rs_len = ipmi_cmd_raw(ipmi_ctx,
-						  bytes_rq[0],
-						  bytes_rq[1],
-						  &bytes_rq[2],
-						  send_len - 2,
-						  bytes_rs,
-						  IPMI_RAW_MAX_ARGS);
-	if (rs_len < 0) {
-		error("lenovo_NM: ipmi_cmd_raw fails %s", ipmi_ctx_errormsg(ipmi_ctx));
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+	s = _plug_energy_dc_read(c, emj);
+	pthread_mutex_unlock(&lock);
+
+	if (state_fail(s)) {
+		error("ipmi_node_manager returned error number '%d' ('%s')", s, intern_error_str);
 	}
 
-	energyp = (unsigned long *) &bytes_rs[rs_len - 8];
-	*emj = (unsigned long) be64toh(*energyp);
-	pthread_mutex_unlock(&lock);
-	return EAR_SUCCESS;
+	return s;
 }
 
-state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *ms)
+state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 {
-	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
-	int ret;
-	struct timeval t;
-	ret = plug_energy_dc_read(ipmi_ctx, emj);
-	gettimeofday(&t, NULL);
-	*ms = t.tv_sec * 1000 + t.tv_usec / 1000;
-	return ret;
-}
+	timestamp ts1;
+	timestamp ts2;
+	state_t s;
 
-state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
-{
-	*ej = 0;
-	*ts = 0;
-	return plug_energy_dc_time_read(c, emj, tms);
+	timestamp_getprecise(&ts1);
+	s = plug_energy_dc_read(c, emj);
+	timestamp_getprecise(&ts2);
+
+	ts2 = ts2 - ts1;
+	timestamp_convert(&ts2, TIME_MSECS);
+	*tms = (ulong) ts2;
+
+	return s;
 }
 
 state_t plug_energy_ac_read(void *c, ulong *emj)

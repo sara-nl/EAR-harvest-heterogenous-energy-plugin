@@ -40,25 +40,17 @@ struct energy_op
 	state_t (*data_length_get)    (void *c, size_t *size);
 	state_t (*data_frequency_get) (void *c, ulong *freq);
 	state_t (*dc_read)            (void *c, ulong *emj);
-	state_t (*dc_readtry)         (void *c, ulong *emj);
 	state_t (*dc_time_read)       (void *c, ulong *emj, ulong *tms);
-	state_t (*dc_time_readtry)    (void *c, ulong *emj, ulong *tms);
-	state_t (*dc_time_debug)      (void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
-	state_t (*dc_time_debugtry)   (void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
 	state_t (*ac_read)            (void *c, ulong *em);
 } energy_ops;
-const int   energy_nops    = 11;
+const int   energy_nops    = 7;
 const char *energy_names[] = {
 	"plug_energy_init",
 	"plug_energy_dispose",
 	"plug_energy_data_length_get",
 	"plug_energy_data_frequency_get",
 	"plug_energy_dc_read",
-	"plug_energy_dc_readtry",
 	"plug_energy_dc_time_read",
-	"plug_energy_dc_time_readtry",
-	"plug_energy_dc_time_debug",
-	"plug_energy_dc_time_debugtry",
 	"plug_energy_ac_read",
 };
 
@@ -153,11 +145,7 @@ state_t energy_dispose(ehandler_t *eh)
 	energy_ops.data_length_get    = NULL;
 	energy_ops.data_frequency_get = NULL;
 	energy_ops.dc_read            = NULL;
-	energy_ops.dc_readtry         = NULL;
 	energy_ops.dc_time_read       = NULL;
-	energy_ops.dc_time_readtry    = NULL;
-	energy_ops.dc_time_debug      = NULL;
-	energy_ops.dc_time_debugtry   = NULL;
 	energy_ops.ac_read            = NULL;
 
 	return s;
@@ -184,29 +172,9 @@ state_t energy_dc_read(ehandler_t *eh, ulong *emj)
 	preturn (energy_ops.dc_read, eh->context, emj);
 }
 
-state_t energy_dc_readtry(ehandler_t *eh, ulong *emj)
-{
-	preturn (energy_ops.dc_readtry, eh->context, emj);
-}
-
 state_t energy_dc_time_read(ehandler_t *eh, ulong *emj, ulong *tms)
 {
 	preturn (energy_ops.dc_time_read, eh->context, emj, tms);
-}
-
-state_t energy_dc_time_readtry(ehandler_t *eh, ulong *emj, ulong *tms)
-{
-	preturn (energy_ops.dc_time_readtry, eh->context, emj, tms);
-}
-
-state_t energy_dc_time_debug(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
-{
-	preturn (energy_ops.dc_time_debug, eh->context, ej, emj, ts, tms);
-}
-
-state_t energy_dc_time_debugtry(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
-{
-	preturn (energy_ops.dc_time_debugtry, eh->context, ej, emj, ts, tms);
 }
 
 state_t energy_ac_read(ehandler_t *eh, ulong *emj)

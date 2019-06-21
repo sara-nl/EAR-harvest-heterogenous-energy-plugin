@@ -54,15 +54,7 @@ state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq);
 
 state_t energy_dc_read(ehandler_t *eh, ulong *energy);
 
-state_t energy_dc_readtry(ehandler_t *eh, ulong *energy);
-
 state_t energy_dc_time_read(ehandler_t *eh, ulong *energy, ulong *time_ms);
-
-state_t energy_dc_time_readtry(ehandler_t *eh, ulong *energy, ulong *time_ms);
-
-state_t energy_dc_time_debug(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
-
-state_t energy_dc_time_debugtry(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
 
 state_t energy_ac_read(ehandler_t *eh, ulong *energy);
 

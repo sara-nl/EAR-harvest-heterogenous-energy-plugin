@@ -3,9 +3,9 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 ######## FILES
 
 ener_OBJS = finder.o \
-    ipmi_ibm.so \
-    ipmi_lenovo_sd650.so \
     ipmi_node_manager.so
+#    ipmi_lenovo_sd650.so \
+#    ipmi_ibm.so \
 
 ######## RULES
 
