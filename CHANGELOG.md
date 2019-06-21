@@ -8,6 +8,7 @@
 - NO_COMMAND set when message failure and non-blocking calls are used
 - eargmd. Warning was not initialized for NO_PROBLEM case
 - Working in a dynamic loading for power/energy policies
+- Cleaned COORDINATE_FREQUENCIES, MEASURE_DYNAIS_OV, EAR_PERFORMANCE_TESTS and IN_MPI_TIME.
 
 ### Changed
 - new IPMI interface thread-safe. Each EARD thread creates a new energy_handler_t
