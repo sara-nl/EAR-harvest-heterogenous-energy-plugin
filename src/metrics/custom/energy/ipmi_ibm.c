@@ -176,6 +176,7 @@ state_t plug_energy_getdata_length(void *c, size_t *size)
 
 state_t plug_energy_dc_read(void *c, ulong *emj)
 {
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	unsigned long *energyp;
 	int rs_len;
 	if (ipmi_ctx == NULL) {
@@ -206,7 +207,7 @@ state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 {
 	int ret;
 	struct timeval t;
-	ret = plug_energy_dc_read(ipmi_ctx, emj);
+	ret = plug_energy_dc_read(c, emj);
 	gettimeofday(&t, NULL);
 	*tms = t.tv_sec * 1000 + t.tv_usec / 1000;
 	return ret;
@@ -216,7 +217,7 @@ state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulo
 {
 	*ej = 0;
 	*ts = 0;
-	return plug_energy_dc_time_read(ipmi_ctx, emj, tms);
+	return plug_energy_dc_time_read(c, emj, tms);
 }
 
 state_t plug_energy_ac_read(void *c, ulong *emj)

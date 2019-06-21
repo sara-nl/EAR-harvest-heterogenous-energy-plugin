@@ -32,7 +32,7 @@
 #include <freeipmi/freeipmi.h>
 #include <common/includes.h>
 #include <metrics/custom/hardware_info.h>
-#include <metrics/custom/energy/ipmi_node_manager.h>
+#include <metrics/custom/energy/ipmi_lenovo_sd650.h>
 
 #define IPMI_RAW_MAX_ARGS	1024
 #define RAW_SIZE 			14
@@ -168,6 +168,7 @@ state_t plug_energy_getdata_length(void *c, size_t *size)
 
 state_t plug_energy_dc_read(void *c, ulong *emj)
 {
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	uint32_t my_energy = 0;
 	uint16_t my_energy_mj = 0;
 	int rs_len;
@@ -228,18 +229,20 @@ state_t plug_energy_dc_read(void *c, ulong *emj)
 
 state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 {
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	ulong ej, ts;
 	int ret;
 
-	ret = lenovo_wct_read_dc_energy_and_time(ipmi_ctx, &ej, &emj, &ts, &tms);
-	*emj = ej * 1000 + emj;
-	*ms = ts * 1000 + tms;
+	ret = plug_energy_dc_time_debug(ipmi_ctx, &ej, emj, &ts, tms);
+	*emj = ej * 1000 + *emj;
+	*tms = ts * 1000 + *tms;
 
 	return ret;
 }
 
 state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
 {
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	uint32_t my_energy = 0;
 	uint16_t my_energy_mj = 0;
 	uint32_t my_seconds = 0;
@@ -256,7 +259,7 @@ state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulo
 	*ej        = 0;
 	*emj       = 0;
 	*ts        = 0;
-	*ms        = 0;
+	*tms        = 0;
 
 	if (pthread_mutex_trylock(&lock)) {
 		return EAR_BUSY;

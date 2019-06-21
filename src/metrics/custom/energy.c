@@ -139,10 +139,10 @@ state_t energy_init(ehandler_t *eh)
 
 state_t energy_dispose(ehandler_t *eh)
 {
-	state s = EAR_SUCCES;
+	state_t s = EAR_SUCCESS;
 
 	if (energy_ops.dispose != NULL) {
-		s = energy_op.dispose(&eh->context);
+		s = energy_ops.dispose(&eh->context);
 	}
 
 	energy_handler_clean(eh);
@@ -166,7 +166,7 @@ state_t energy_dispose(ehandler_t *eh)
 state_t energy_handler_clean(ehandler_t *eh)
 {
 	memset(eh, 0, sizeof(ehandler_t));
-	return EAR_SUCCES;
+	return EAR_SUCCESS;
 }
 
 state_t energy_data_length_get(ehandler_t *eh, size_t *size)
@@ -176,7 +176,7 @@ state_t energy_data_length_get(ehandler_t *eh, size_t *size)
 
 state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 {
-	preturn (energy_ops.plug_energy_data_frequency_get, eh->context, freq);
+	preturn (energy_ops.data_frequency_get, eh->context, freq);
 }
 
 state_t energy_dc_read(ehandler_t *eh, ulong *emj)
@@ -194,7 +194,7 @@ state_t energy_dc_time_read(ehandler_t *eh, ulong *emj, ulong *tms)
 	preturn (energy_ops.dc_time_read, eh->context, emj, tms);
 }
 
-state_t energy_dc_time_readtry(ehandler_t *eh, ulong *energy, ulong *tms)
+state_t energy_dc_time_readtry(ehandler_t *eh, ulong *emj, ulong *tms)
 {
 	preturn (energy_ops.dc_time_readtry, eh->context, emj, tms);
 }

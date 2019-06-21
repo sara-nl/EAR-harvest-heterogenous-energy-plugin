@@ -32,7 +32,7 @@
 #include <freeipmi/freeipmi.h>
 #include <common/includes.h>
 #include <metrics/custom/hardware_info.h>
-#include <metrics/custom/energy/ipmi_lenovo_generic.h>
+#include <metrics/custom/energy/ipmi_node_manager.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 

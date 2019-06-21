@@ -5,12 +5,36 @@
 
 int main(int argc, char *argv)
 {
-	ulong energy;
+	ulong emj1, emj2;
+	ulong tms1, tms2;
+	ulong ej;
+	ulong ts;	
+
 	ehandler_t handler;
+	
 	energy_init(&handler);
-	energy_dc_read(&handler, &energy);
+	
+	energy_dc_read(&handler, &emj1);
+	sleep(2);
+	energy_dc_read(&handler, &emj2);
+	emj2 = emj2 - emj1;
+	fprintf(stderr, "energy_dc_read %lu emj\n", emj2);
+
+	energy_dc_time_read(&handler, &emj1, &tms2);
+	sleep(2);
+	energy_dc_time_read(&handler, &emj1, &tms2);
+	emj2 = emj2 - emj1;
+	tms2 = tms2 - tms1;
+	fprintf(stderr, "energy_dc_time_read %lu emj %lu tms\n", emj2, tms2);
+
+	energy_dc_time_debug(&handler, &ej, &emj1, &ts, &tms1);
+	sleep(2);
+	energy_dc_time_debug(&handler, &ej, &emj2, &ts, &tms2);
+	emj2 = emj2 - emj1;
+	tms2 = tms2 - tms1;
+	fprintf(stderr, "energy_dc_time_read %lu emj %lu tms\n", emj2, tms2);
+		
 	energy_dispose(&handler);
-	fprintf(stderr, "ENERGY DC %lu MJ\n", energy);
 
 #if 0
 	lenovo_act_node_energy_init((ipmi_ctx_t *) &handler.context);
