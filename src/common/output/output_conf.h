@@ -35,9 +35,6 @@
 #define SHOW_ERRORS     1
 #define SHOW_LOGS       1
 
-/* LRZ_POLICY verbose level */
-#define SM_VERB 0
-
 /* EARD VERBOSE constants */
 /* Used in eard_rapi.h */
 #define VCONNECT 0

@@ -166,12 +166,6 @@ ulong min_time_policy(signature_t *sig,int *ready)
 	projection_set(EAR_default_pstate,time_ref,power_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
-	#if EAR_PERFORMANCE_TESTS
-	if (ear_frequency == EAR_default_frequency){
-		debug("min-time: def_pstate %u max_pstate %u th %.2lf best=%u (ear_freq=%lu def_freq %lu )\n",EAR_default_pstate,min_pstate,performance_gain,best_pstate,
-		ear_frequency,EAR_default_frequency);
-	}
-	#endif
 
 		try_next=1;
 		i=EAR_default_pstate-1;
@@ -182,21 +176,11 @@ ulong min_time_policy(signature_t *sig,int *ready)
 		{
 			if (coefficients[ref][i].available)
 			{
-				#if EAR_PERFORMANCE_TESTS
-				if (ear_frequency == EAR_default_frequency){
-					debug("Comparing %u with %u",best_pstate,i);
-				}
-				#endif
         power_proj=project_power(my_app,&coefficients[ref][i]);
         time_proj=project_time(my_app,&coefficients[ref][i]);
 				projection_set(i,time_proj,power_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
-				#if EAR_PERFORMANCE_TESTS
-				if (ear_frequency == EAR_default_frequency){
-					debug("Freq gain %lf Perf gain %lf\n",freq_gain,perf_gain);
-				}
-				#endif
 
 				// OK
 				if (perf_gain>=freq_gain)
@@ -210,13 +194,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 					try_next = 0;
 				}
 			} // Coefficients available
-			else{ 
-				#if EAR_PERFORMANCE_TESTS
-				if (ear_frequency == EAR_default_frequency){
-					debug("Coefficients for node %s [%d][%d] not available.... try=0\n",node_name,ref,i);
-					
-				}
-				#endif
+			else{
 				try_next=0;
 			}
 		}	

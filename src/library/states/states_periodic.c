@@ -46,7 +46,6 @@
 #include <library/states/states.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
-#include <library/mpi_intercept/freq_synchro.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 
@@ -208,24 +207,6 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);
-	                /* This function only sends selected frequency */
-   	             	if (global_synchro){
-   	                 	global_frequency_selection_send(policy_freq);
-   	             	}
-   	             	/* If global synchronizations are on, we get frequencies for the rest of the app */
-   	             	if (global_synchro){
-   	                 	global_f=global_frequency_selection_synchro();
-   	             	}
-		
-   	             	if (global_synchro){
-   	                 	verbose(1,"Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
-   	                 	if ((global_f) && (global_f!=policy_freq)){
-   	                     	policy_freq=select_near_freq(global_f);
-   	                     	force_global_frequency(policy_freq);
-   	                     	return;
-   	                 	}
-   	             	}
-
 				}
 				else{ /* Time was not enough */
 					if (loop_signature.signature.time==0){

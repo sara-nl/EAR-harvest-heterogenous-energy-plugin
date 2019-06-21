@@ -55,7 +55,6 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
-#include <library/mpi_intercept/freq_synchro.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
@@ -72,16 +71,6 @@
 static char fd_lock_filename[BUFFSIZE];
 static int fd_master_lock;
 #endif
-
-#if MEASURE_DYNAIS_OV
-static long long begin_ov, end_ov, ear_acum;
-static unsigned int calls=0;
-time_t start_loop_time;
-#endif
-#if IN_MPI_TIME
-extern long long ear_total_in_mpi;
-#endif
-
 
 // Process information
 static int my_id = 1;
@@ -105,12 +94,6 @@ uint total_mpi_calls=0;
 static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
 static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
-#if EAR_PERFORMANCE_TESTS
-long long init_start_time,init_end_time;
-static int only_load=0;
-static int use_dynais=1;
-int first_time_disabled=0;
-#endif
 #endif
 #if EAR_LIB_SYNC
 #define MASTERS_SYNC_VERBOSE 1
@@ -301,36 +284,11 @@ void update_configuration()
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
-#if EAR_PERFORMANCE_TESTS
-	char *ear_dynais_timeout,*ear_lib_period,*ear_check_every,*ear_use_dynais,*ear_dynais_size,*ear_mode;
-	ear_dynais_timeout=getenv("EAR_DYNAIS_TIMEOUT");
-	ear_lib_period=getenv("EAR_LIB_PERIOD");
-	ear_check_every=getenv("EAR_CHECK_EVERY");
-	ear_use_dynais=getenv("EAR_DYNAIS");
-	ear_dynais_size=getenv("EAR_DYNAIS_SIZE");
-	ear_mode=getenv("EAR_MODE");
-	if (ear_lib_period!=NULL) lib_period=atoi(ear_lib_period);
-	if (ear_check_every!=NULL) check_every=atoi(ear_check_every);
-	if (ear_use_dynais!=NULL) use_dynais=atoi(ear_use_dynais);
-	if (ear_dynais_size!=NULL) set_ear_dynais_window_size(atoi(ear_dynais_size));
-	if (ear_dynais_timeout!=NULL) dynais_timeout=atoi(ear_dynais_timeout);
-	if (ear_mode!=NULL)	ear_periodic_mode=atoi(ear_mode);
-	debug("EAR_PERFORMANCE_TESTS ON: dynais %d dynais_timeout %d ear_dynais_size %d \n",use_dynais,dynais_timeout,atoi(ear_dynais_size));
-	debug("EAR_PERFORMANCE_TESTS ON: lib_period %d check_every %d\n",lib_period,check_every);
-	debug("EAR_PERFORMANCE_TESTS ON: ear_mode %d (PERIODIC=%d DYNAIS=%d)\n",ear_periodic_mode,PERIODIC_MODE_ON,PERIODIC_MODE_OFF);
-#endif
 }
 
 void ear_init()
 {
 	char *summary_pathname;
-#if EAR_PERFORMANCE_TESTS
-	char *ear_only_load;
-	ear_only_load=getenv("EAR_ONLY_LOAD");
-	if (ear_only_load!=NULL) only_load=atoi(ear_only_load);
-	if (only_load) return;
-	init_start_time=PAPI_get_real_usec();
-#endif
 
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
@@ -415,7 +373,6 @@ void ear_init()
 	}else{   
 		notify_eard_connection(0);
 	}
-	configure_global_synchronization();
 	
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
@@ -484,10 +441,6 @@ void ear_init()
 	traces_mpi_init();
 	
 	// All is OK :D
-#if EAR_PERFORMANCE_TESTS
-	init_end_time=PAPI_get_real_usec();
-	debug("EAR initialized successfully : Initialization cost %llu usecs",(init_end_time-init_start_time));
-#else
 	#if EAR_LIB_SYNC
 	if (my_master_rank==0) {
 		verbose(1, "EAR initialized successfully ");
@@ -497,16 +450,10 @@ void ear_init()
 		verbose(1, "EAR initialized successfully ");
 	}
 	#endif
-#endif
 }
 
 void ear_finalize()
 {
-
-#if EAR_PERFORMANCE_TESTS
-	if (only_load) return;
-#endif
-
 	// if we are not the master, we return
 	if (my_id) {
 		return;
@@ -515,16 +462,6 @@ void ear_finalize()
 #if USE_LOCK_FILES
 	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
 	file_unlock_master(fd_master_lock,fd_lock_filename);
-#endif
-
-#if MEASURE_DYNAIS_OV
-	#if EAR_LIB_SYNC 
-    if (my_master_rank==0) {
-    #endif
-	debug("DynAIS algorithm consumes %llu usecs in %u calls", ear_acum, calls);
-	#if EAR_LIB_SYNC
-	}
-	#endif	
 #endif
 
 	// Tracing
@@ -547,9 +484,6 @@ void ear_finalize()
 	if (loop_with_signature) {
 		debug("loop ends with %d iterations detected", ear_iterations);
 	}
-	#if IN_MPI_TIME
-	debug("Total mpi time %.3lf secs",(double)ear_total_in_mpi/1000000.0);
-	#endif
 #if EAR_OVERHEAD_CONTROL
 	switch(ear_periodic_mode){
 		case PERIODIC_MODE_OFF:
@@ -582,10 +516,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
 
 void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 {
-#if EAR_PERFORMANCE_TESTS
-	if (only_load) return;
-#endif
-
 #if EAR_OVERHEAD_CONTROL
 	time_t curr_time;
 	double time_from_mpi_init;
@@ -645,14 +575,6 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 					}
 					break;
 				case DYNAIS_DISABLED:
-					#if EAR_PERFORMANCE_TESTS
-					#if MEASURE_DYNAIS_OV
-					if (first_time_disabled==0){
-						first_time_disabled=1;
-						debug("Number of Dynais calls executed before setting OFF %d\n",calls);
-					}
-					#endif
-					#endif
 					/** That case means we have computed some signature and we have decided to set dynais disabled */
 					ear_mpi_call_dynais_off(call_type,buf,dest);
 					break;
@@ -663,9 +585,6 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 				/* EAR energy policy is called periodically */
 				if ((total_mpi_calls%mpi_calls_in_period)==0){
 					ear_iterations++;
-					#if EAR_PERFORMANCE_TESTS
-					debug("New preriodic iteration %d\n",ear_iterations);
-					#endif
 					states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 				}
 				break;
@@ -708,29 +627,8 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 						(ulong) call_type);*/
 
 		mpi_calls_per_loop++;
-		// MEASURE_DYNAIS_OV flag is used to compute the time consumed by DyNAIs algorithm
-
-		#if MEASURE_DYNAIS_OV
-		begin_ov=PAPI_get_real_usec();
-		#endif
-
-		#if EAR_PERFORMANCE_TESTS
-		if (use_dynais) {
-			ear_status = dynais(ear_event_s, &ear_size, &ear_level);
-		}else{
-			check_periodic_mode = 0;
-			return;
-		}
-		#else
 		// This is key to detect periods
 		ear_status = dynais(ear_event_s, &ear_size, &ear_level);
-		#endif
-
-		#if MEASURE_DYNAIS_OV
-		end_ov=PAPI_get_real_usec();
-		calls++;
-		ear_acum=ear_acum+(end_ov-begin_ov);
-		#endif
 
 		switch (ear_status)
 		{
@@ -745,9 +643,6 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				ear_loop_level=(uint)ear_level;
 				in_loop=1;
 				mpi_calls_per_loop=1;
-				#if MEASURE_DYNAIS_OV
-				time(&start_loop_time);
-				#endif
 				break;
 			case END_NEW_LOOP:
 				debug("END_LOOP - NEW_LOOP event %u level %hu\n",ear_event_l,ear_level);
@@ -871,9 +766,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				}
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
-				#if EAR_PERFORMANCE_TESTS
-				debug("New estimated iteration\n");
-				#endif
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, (uint)ear_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;

@@ -3,9 +3,7 @@
 OBJS = models.o \
        min_time.o \
        min_energy.o \
-       monitoring.o \
-       supermucng.c \
-       dyn_policies.c
+       monitoring.o
 
 ########
 

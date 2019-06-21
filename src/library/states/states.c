@@ -47,7 +47,6 @@
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
-#include <library/mpi_intercept/freq_synchro.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 
@@ -61,17 +60,10 @@
 #define SIGNATURE_HAS_CHANGED	6
 #define TEST_LOOP		7
 
-
-#if IN_MPI_TIME
-extern long long ear_iteration_in_mpi;
-#endif
-
-
 application_t *signatures;
 uint *sig_ready;
 // static application_t last_signature;
 static projection_t *PP;
-local_loop_info_t my_local_info;
 
 static long long comp_N_begin, comp_N_end, comp_N_time;
 static uint begin_iter, N_iter;
@@ -86,9 +78,6 @@ static int current_loop_id;
 static int MAX_POLICY_TRIES;
 
 #define DYNAIS_CUTOFF	1
-#if MEASURE_DYNAIS_OV
-extern time_t start_loop_time;
-#endif
 
 #if EAR_OVERHEAD_CONTROL
 extern uint check_periodic_mode;
@@ -161,10 +150,6 @@ void states_begin_period(int my_id, ulong event, ulong size,ulong level)
         init_application(&signatures[i]);
         sig_ready[i]=0;
     }
-	#if IN_MPI_TIME
-    ear_iteration_in_mpi=0;
-    #endif
-
 }
 
 void states_end_period(uint iterations)
@@ -205,9 +190,6 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
     	#if DYNAIS_CUTOFF
     	dynais_enabled=DYNAIS_DISABLED;
     	#endif
-	#if EAR_PERFORMANCE_TESTS
-    	debug("Warning: Dynais is consuming too much time, DYNAIS=%d,overhead=%lf",dynais_enabled, dynais_overhead_perc);
-	#endif
     	log_report_dynais_off(application.job.id,application.job.step_id);
     }
 	if (dynais_enabled==DYNAIS_DISABLED){
@@ -333,10 +315,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			metrics_compute_signature_begin();
 			begin_iter = iterations;
-
-			#if IN_MPI_TIME
-			ear_iteration_in_mpi=0;
-			#endif
 			
 			// Loop printing algorithm
 			loop.id.event = event;
@@ -409,20 +387,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                 time(&curr_time);    
                 time_from_mpi_init=difftime(curr_time,application.job.start_time);
                 debug("Number of seconds since the application start_time at which signature is computed %lf",time_from_mpi_init);
-								#if MEASURE_DYNAIS_OV
-								double time_since_start_loop;
-								time_since_start_loop=difftime(curr_time,start_loop_time);
-								debug("time to compute signature %lf, first_iter_time %llu Niters %u ",time_since_start_loop,comp_N_time,perf_count_period);
-								#endif
             }
             /* END */
 
 			loop_with_signature = 1;
 			#if EAR_OVERHEAD_CONTROL
 			check_periodic_mode=0;
-			#if EAR_PERFORMANCE_TESTS
-			debug("Switching check periodic mode to %d",check_periodic_mode);
-			#endif
 			#endif
 
 			// Computing dynais overhead
@@ -442,14 +412,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			VPI=(double)VI/(double)loop_signature.signature.instructions;
 			begin_iter = iterations;
 
-			#if IN_MPI_TIME
-			ear_iteration_in_mpi=ear_iteration_in_mpi/N_iter;
-			IN_MPI_SEC=(double)ear_iteration_in_mpi/1000000.0;
-			IN_MPI_PERC=IN_MPI_SEC/TIME;
-			debug("IN_MPI %s:%s: usec %llu time %.3lf perc %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
-			ear_iteration_in_mpi=0;
-			#endif
-
 			loop_signature.signature.def_f=prev_f;
 			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
 			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
@@ -460,16 +422,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			PP = projection_get(frequency_freq_to_pstate(policy_freq));
 
-			/* This function only sends selected frequency */
-			if (global_synchro){
-				my_local_info.local_f=policy_freq;
-				my_local_info.iter_time=(ulong)(TIME*1000000);
-				my_local_info.mpi_iter_time=0;
-				#if IN_MPI_TIME
-				my_local_info.mpi_iter_time=(ulong)(IN_MPI_SEC*1000000);
-				#endif
-				global_frequency_selection_send(&my_local_info);
-			}
 			/* When the policy is ready to be evaluated, we go to the next state */
 			if (ready){
 				if (policy_freq != policy_def_freq)
@@ -525,15 +477,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			ENERGY = TIME * POWER;
 			EDP = ENERGY * TIME;
 
-            #if IN_MPI_TIME
-			ear_iteration_in_mpi=ear_iteration_in_mpi/N_iter;
-            IN_MPI_SEC=(double)ear_iteration_in_mpi/1000000.0;
-            IN_MPI_PERC=IN_MPI_SEC/TIME;
-            debug("IN_MPI %s:%s: %llu %.3lf %.3lf",ear_app_name,application.node_id,ear_iteration_in_mpi,IN_MPI_SEC,IN_MPI_PERC);
-			ear_iteration_in_mpi=0;
-            #endif
-
-
 			signature_copy(&loop.signature, &loop_signature.signature);
 			report_loop_signature(iterations,&loop,&loop_signature.job);
 			/* VERBOSE */
@@ -552,21 +495,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
             	memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
             	sig_ready[curr_pstate]=1;
 			}
-
-
-			/* If global synchronizations are on, we get frequencies for the rest of the app */
-			if (global_synchro){
-				global_f=global_frequency_selection_synchro();
-                if ((global_f) && (global_f!=policy_freq)){
-                	debug("Global synchro on: local freq %lu and global %lu",policy_freq,global_f);
-                    policy_freq=select_near_freq(global_f);
-                    force_global_frequency(policy_freq);
-                    verbose(1,"Selecting new global frequency %lu",policy_freq);
-					tries_current_loop=0;
-					EAR_STATE = EVALUATING_SIGNATURE;
-                    return;
-                }
-            }
 
 			/* We must evaluate policy decissions */
 			//pok=policy_ok(PP, &loop_signature.signature, &last_signature.signature);
