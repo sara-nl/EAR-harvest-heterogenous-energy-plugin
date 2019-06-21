@@ -51,7 +51,6 @@ char ear_app_name[PATH_MAX]; //TODO: use application.app_id
 ulong ear_frequency; 
 ulong EAR_default_frequency; 
 uint EAR_default_pstate;
-int global_synchro=0;
 
 int ear_use_turbo = USE_TURBO; 
 int ear_whole_app;

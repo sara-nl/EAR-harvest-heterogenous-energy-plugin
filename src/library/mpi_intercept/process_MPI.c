@@ -31,22 +31,12 @@
 #include <mpi.h>
 
 #include <common/config.h>
-#if IN_MPI_TIME
-#include <papi.h>
-#include <common/math_operations.h>
-#endif
 #include <library/mpi_intercept/ear_api.h>
 #if USE_POLICY_PLUGIN
 #include <library/models/dyn_policies_operations.h>
 extern policy_dyn_t power_policy;
 #endif
 
-#if IN_MPI_TIME
-static unsigned long long ear_in_mpi=0;
-static unsigned long long begin_in_mpi,end_mpi_time;
-unsigned long long ear_total_in_mpi=0;
-unsigned long long ear_iteration_in_mpi=0;
-#endif
 void before_init(){
 }
 
@@ -55,9 +45,6 @@ void after_init(){
 }
 void before_mpi(mpi_call call_type, p2i buf, p2i dest) {
 	ear_mpi_call(call_type,buf,dest);
-	#if IN_MPI_TIME
-	begin_in_mpi=PAPI_get_real_usec();
-	#endif
   #if USE_POLICY_PLUGIN
 	int ret;
 	if (power_policy.new_mpi_call!=NULL){
@@ -73,16 +60,6 @@ void after_mpi(mpi_call call_type){
 		if (power_policy.end_mpi_call(call_type)!=EAR_SUCCESS) error("Error in power_policy.end_mpi_call %d",ret);
 	}
   #endif
-	#if IN_MPI_TIME
-	end_mpi_time=PAPI_get_real_usec();
-	if (end_mpi_time>begin_in_mpi){ 
-			ear_in_mpi=end_mpi_time-begin_in_mpi;
-	}else{ 
-			ear_in_mpi= ullong_diff_overflow(begin_in_mpi,end_mpi_time);
-	}
-	ear_total_in_mpi+=ear_in_mpi;
-	ear_iteration_in_mpi+=ear_in_mpi;
-	#endif
 }
 
 void before_finalize() {
