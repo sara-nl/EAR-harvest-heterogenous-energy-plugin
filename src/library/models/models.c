@@ -51,10 +51,6 @@
 #include <daemon/eard_api.h>
 #include <control/frequency.h>
 #include <metrics/custom/hardware_info.h>
-#if USE_POLICY_PLUGIN
-#include <library/models/dyn_policies.h>
-policy_dyn_t power_policy;
-#endif
 
 static int use_default=1;
 
@@ -86,21 +82,6 @@ static int model_nominal=1;
 
 void init_policy_functions()
 {
-		#if USE_POLICY_PLUGIN
-		char *policy_plugin_name;
-		policy_plugin_name=getenv("SLURM_EAR_POWER_POLICY");
-		if (policy_plugin_name!=NULL){
-			debug("Loading policy %s",policy_plugin_name);
-			if (load_policy(&power_policy,policy_plugin_name)!=EAR_SUCCESS){
-				error("Power policy loaded %s with error",policy_plugin_name);
-			}else{
-				debug("Power policy loaded %s succesfully",policy_plugin_name);
-			}
-		}else{
-			debug("SLURM_EAR_POWER_POLICY not defined, setting dyn_policy_power to dyn_monitoring");
-			set_policy_monitoring(&power_policy);
-		}
-		#endif
     switch(power_model_policy)
     {
         case MIN_ENERGY_TO_SOLUTION:
@@ -210,12 +191,6 @@ void policy_global_reconfiguration()
         	performance_gain=system_conf->th;
     }
 	}
-	#if USE_POLICY_PLUGIN
-	if (power_policy.reconfigure!=NULL){
-		int ret=power_policy.reconfigure(system_conf);
-		if (ret!=EAR_SUCCESS)	error("Error in policy reconfiguration %d",ret);
-	}
-	#endif
 }
 
 // This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
@@ -413,15 +388,6 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 		warning("NO coefficients found");
 	}
 	app_policy.init(p_states);
-  #if USE_POLICY_PLUGIN
-	int ret;
-	if (power_policy.init!=NULL){
-		ret=power_policy.init(&application,system_conf,p_states);
-		if (ret!=EAR_SUCCESS){
-			error("Error in power policy init %d",ret);
-		}
-	}
-  #endif
 }
 
 
@@ -429,15 +395,6 @@ void init_power_models(unsigned int p_states, unsigned long *p_states_list)
 
 uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
 {
-  #if USE_POLICY_PLUGIN
-	int ret;
-	if (power_policy.is_ok!=NULL){
-		ret=power_policy.is_ok(curr_sig,last_sig);
-		if (ret!=EAR_SUCCESS){
-			error("Error in power policy is_ok %d",ret);
-		}
-	}
-  #endif
 	return app_policy.policy_ok(proj, curr_sig,last_sig);
 }
 
@@ -449,16 +406,6 @@ unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int
 	unsigned long optimal_freq, max_freq;
 
 	if (whole_app) return ear_frequency;
-  #if USE_POLICY_PLUGIN
-	int ret;
-	if (power_policy.apply!=NULL){
-		ret=power_policy.apply(system_conf,MY_SIGNATURE,&optimal_freq);
-		if (ret!=EAR_SUCCESS){
-			error("Error in power policy apply %d",ret);
-			*ready=0;
-		}else *ready=1;
-	}
-  #endif
 	optimal_freq = app_policy.policy(MY_SIGNATURE,ready);
 
 	if (optimal_freq != ear_frequency)
@@ -486,51 +433,16 @@ void force_global_frequency(ulong new_f)
 
 void policy_new_loop(loop_id_t *lid)
 {
-  #if USE_POLICY_PLUGIN
-	int ret;
-	if (power_policy.new_loop!=NULL){
-		ret=power_policy.new_loop(lid);
-		if (ret!=EAR_SUCCESS){
-			error("Error in power policy new_loop %d",ret);
-		}
-	}
-  #endif
 	app_policy.new_loop();
 }
 
 void policy_end_loop(loop_id_t *lid)
 {
-  #if USE_POLICY_PLUGIN
-	int ret;
-	if (power_policy.end_loop!=NULL){
-		ret=power_policy.end_loop(lid);
-		if (ret!=EAR_SUCCESS){
-			error("Error in power policy end_loop %d",ret);
-		}
-	}
-  #endif
     app_policy.end_loop();
 }
 
 ulong policy_default_configuration()
 {
-  #if USE_POLICY_PLUGIN
-	int ret;
-	if (power_policy.default_conf!=NULL){
-		ulong f;
-		f=user_selected_freq;
-		ret=power_policy.default_conf(&f);
-		if (ret!=EAR_SUCCESS){
-			error("Error in power policy default_conf %d",ret);
-		}else{
-			#if PENDING
-			ear_frequency=f;
-			eards_change_freq(ear_frequency);
-			return ear_frequency;
-			#endif
-		}
-	}
-  #endif
 	ear_frequency=app_policy.default_conf(user_selected_freq);
 	debug("Going to default frequency %lu",ear_frequency);
 	eards_change_freq(ear_frequency);
@@ -539,38 +451,11 @@ ulong policy_default_configuration()
 
 ulong policy_get_default_freq()
 {
-  #if USE_POLICY_PLUGIN
-  int ret;
-  if (power_policy.default_conf!=NULL){
-    ulong f;
-    f=user_selected_freq;
-    ret=power_policy.default_conf(&f);
-    if (ret!=EAR_SUCCESS){
-      error("Error in power policy default_conf %d",ret);
-    }else{
-      #if PENDING
-      ear_frequency=f;
-      eards_change_freq(ear_frequency);
-      return ear_frequency;
-      #endif
-    }
-  }
-
-  #endif
 	return app_policy.default_conf(user_selected_freq);
 }
 
 int policy_max_tries()
 {
-  #if USE_POLICY_PLUGIN
-	int ret;
-	if (power_policy.max_tries!=NULL){
-		ret=power_policy.max_tries();
-		#if PENDING
-		return ret;
-		#endif
-	}
-  #endif
         switch (power_model_policy)
         {
             case MIN_TIME_TO_SOLUTION:

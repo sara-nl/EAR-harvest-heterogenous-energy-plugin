@@ -60,6 +60,5 @@
 
 // Maximum number of tries when doing non-blocking communications
 #define MAX_SOCKET_COMM_TRIES 	10000000
-#define USE_POLICY_PLUGIN 0
 
 #endif //EAR_CONFIG_DEV_H
