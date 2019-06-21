@@ -35,22 +35,30 @@
 
 struct energy_op
 {
-	state_t (*init)            (void **c);
-	state_t (*dispose)         (void **c);
-	state_t (*data_length_get) (void *c, size_t *size);
-	state_t (*dc_read)         (void *c, ulong *emj);
-	state_t (*dc_time_read)    (void *c, ulong *emj, ulong *tms);
-	state_t (*dc_time_debug)   (void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
-	state_t (*ac_read)         (void *c, ulong *em);
+	state_t (*init)               (void **c);
+	state_t (*dispose)            (void **c);
+	state_t (*data_length_get)    (void *c, size_t *size);
+	state_t (*data_frequency_get) (void *c, ulong *freq);
+	state_t (*dc_read)            (void *c, ulong *emj);
+	state_t (*dc_readtry)         (void *c, ulong *emj);
+	state_t (*dc_time_read)       (void *c, ulong *emj, ulong *tms);
+	state_t (*dc_time_readtry)    (void *c, ulong *emj, ulong *tms);
+	state_t (*dc_time_debug)      (void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
+	state_t (*dc_time_debugtry)   (void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
+	state_t (*ac_read)            (void *c, ulong *em);
 } energy_ops;
-const int   energy_nops    = 7;
+const int   energy_nops    = 11;
 const char *energy_names[] = {
 	"plug_energy_init",
 	"plug_energy_dispose",
 	"plug_energy_data_length_get",
+	"plug_energy_data_frequency_get",
 	"plug_energy_dc_read",
+	"plug_energy_dc_readtry",
 	"plug_energy_dc_time_read",
+	"plug_energy_dc_time_readtry",
 	"plug_energy_dc_time_debug",
+	"plug_energy_dc_time_debugtry",
 	"plug_energy_ac_read",
 };
 
@@ -65,15 +73,6 @@ state_t energy_init(ehandler_t *eh)
 	}
 
 	debug("initialized");
-
-	//
-	energy_ops.init            = NULL;
-	energy_ops.dispose         = NULL;
-	energy_ops.data_length_get = NULL;
-	energy_ops.dc_read         = NULL;
-	energy_ops.dc_time_read    = NULL;
-	energy_ops.dc_time_debug   = NULL;
-	energy_ops.ac_read         = NULL;
 
 	//
 	cpu_model = get_model();
@@ -140,7 +139,34 @@ state_t energy_init(ehandler_t *eh)
 
 state_t energy_dispose(ehandler_t *eh)
 {
-	preturn (energy_ops.dispose, &eh->context);
+	state s = EAR_SUCCES;
+
+	if (energy_ops.dispose != NULL) {
+		s = energy_op.dispose(&eh->context);
+	}
+
+	energy_handler_clean(eh);
+
+	//
+	energy_ops.init               = NULL;
+	energy_ops.dispose            = NULL;
+	energy_ops.data_length_get    = NULL;
+	energy_ops.data_frequency_get = NULL;
+	energy_ops.dc_read            = NULL;
+	energy_ops.dc_readtry         = NULL;
+	energy_ops.dc_time_read       = NULL;
+	energy_ops.dc_time_readtry    = NULL;
+	energy_ops.dc_time_debug      = NULL;
+	energy_ops.dc_time_debugtry   = NULL;
+	energy_ops.ac_read            = NULL;
+
+	return s;
+}
+
+state_t energy_handler_clean(ehandler_t *eh)
+{
+	memset(eh, 0, sizeof(ehandler_t));
+	return EAR_SUCCES;
 }
 
 state_t energy_data_length_get(ehandler_t *eh, size_t *size)
@@ -150,7 +176,7 @@ state_t energy_data_length_get(ehandler_t *eh, size_t *size)
 
 state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 {
-	return EAR_SUCCESS;
+	preturn (energy_ops.plug_energy_data_frequency_get, eh->context, freq);
 }
 
 state_t energy_dc_read(ehandler_t *eh, ulong *emj)
@@ -160,7 +186,7 @@ state_t energy_dc_read(ehandler_t *eh, ulong *emj)
 
 state_t energy_dc_readtry(ehandler_t *eh, ulong *emj)
 {
-	return EAR_SUCCESS;
+	preturn (energy_ops.dc_readtry, eh->context, emj);
 }
 
 state_t energy_dc_time_read(ehandler_t *eh, ulong *emj, ulong *tms)
@@ -170,7 +196,7 @@ state_t energy_dc_time_read(ehandler_t *eh, ulong *emj, ulong *tms)
 
 state_t energy_dc_time_readtry(ehandler_t *eh, ulong *energy, ulong *tms)
 {
-	return EAR_SUCCESS;
+	preturn (energy_ops.dc_time_readtry, eh->context, emj, tms);
 }
 
 state_t energy_dc_time_debug(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
@@ -180,7 +206,7 @@ state_t energy_dc_time_debug(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, u
 
 state_t energy_dc_time_debugtry(ehandler_t *eh, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
 {
-	return EAR_SUCCESS;
+	preturn (energy_ops.dc_time_debugtry, eh->context, ej, emj, ts, tms);
 }
 
 state_t energy_ac_read(ehandler_t *eh, ulong *emj)

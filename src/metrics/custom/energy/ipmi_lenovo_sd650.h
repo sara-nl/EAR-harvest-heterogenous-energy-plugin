@@ -27,6 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#ifndef _IPMI_LENOVO_SD650_H_
+#define _IPMI_LENOVO_SD650_H__
+
 #include <common/sizes.h>
 #include <common/states.h>
 
@@ -43,3 +46,5 @@ state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms);
 state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms);
 
 state_t plug_energy_ac_read(void *c, ulong *emj);
+
+#endif
