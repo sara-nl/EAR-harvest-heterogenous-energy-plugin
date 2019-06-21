@@ -47,7 +47,6 @@
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
 #include <library/models/models.h>
-#include <library/mpi_intercept/freq_synchro.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 
@@ -65,7 +64,6 @@ application_t *signatures;
 uint *sig_ready;
 // static application_t last_signature;
 static projection_t *PP;
-local_loop_info_t my_local_info;
 
 static long long comp_N_begin, comp_N_end, comp_N_time;
 static uint begin_iter, N_iter;

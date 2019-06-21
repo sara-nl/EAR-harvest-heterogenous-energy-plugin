@@ -46,7 +46,6 @@
 #include <library/states/states.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
-#include <library/mpi_intercept/freq_synchro.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 
