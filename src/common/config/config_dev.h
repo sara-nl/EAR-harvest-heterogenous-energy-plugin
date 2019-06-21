@@ -35,9 +35,6 @@
  * the nombre of masters connected and expected. EARL is set to off in case
  * expected!=connected. */
 #define EAR_LIB_SYNC						1
-#define COORDINATE_FREQUENCIES				0
-/* When set to 1, activates the new SupermucNG policy */
-#define LRZ_POLICY							1
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
 #define USE_MSR_RAPL						1
 /** EARD threads selection, do not modify except for debug purposes **/

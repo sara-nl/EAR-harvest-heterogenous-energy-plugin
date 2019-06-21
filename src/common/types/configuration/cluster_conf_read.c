@@ -41,9 +41,6 @@ static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int 
 		if (conf->power_policies[i].policy == policy)
 		{
 			if (main) { conf->power_policies[i].th = atof(token); }
-			#if LRZ_POLICY
-			else { conf->power_policies[i].th2 = atof(token); }
-			#endif
 		}
 	}
 
@@ -135,9 +132,6 @@ static void fill_policies(cluster_conf_t *conf)
 		conf->power_policies[i].policy = i;
 		conf->power_policies[i].is_available=0;
 		conf->power_policies[i].th=0;
-		#if LRZ_POLICY
-		conf->power_policies[i].th2=0;
-		#endif
 	}
 }
 
@@ -323,18 +317,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION,1);
-			#if LRZ_POLICY
-			insert_th_policy(conf, token, SUPERMUC,1);
-			#endif
 		}
 		else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
 		{
 			token = strtok(NULL, "=");
 			insert_th_policy(conf, token, MIN_ENERGY_TO_SOLUTION,1);
-			#if LRZ_POLICY
-			insert_th_policy(conf, token, SUPERMUC,0);
-			#endif
-			
 		}
 		else if (!strcmp(token, "MINTIMEPERFORMANCEACCURACY"))
 		{
