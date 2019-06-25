@@ -3,14 +3,27 @@
 
 //gcc -I ../../ -I/hpc/opt/freeipmi/include -o main main.c energy.o hardware_info.o ../common/cpuid.o ../../common/libcommon.a energy/finder.o -ldl -L/hpc/opt/freeipmi/lib -Wl,-rpath,/hpc/opt/freeipmi/lib -lfreeipmi
 
+char extra_buffer[4096];
+
 int main(int argc, char *argv)
 {
+	cluster_conf_t conf_clus;
 	ehandler_t handler;
 	ulong emj1, emj2;
 	ulong tms1, tms2;
 	state_t s;
+
+	// Configuration
+	if (get_ear_conf_path(extra_buffer) == EAR_ERROR) {
+		fprintf(stderr, "while getting ear.conf path");
+		return 0;
+	}
+
+	fprintf(stderr, "reading '%s' configuration file", extra_buffer);
+	read_cluster_conf(extra_buffer, &conf_clus);
 	
-	s = energy_init(&handler);
+	// Reading
+	s = energy_init(&conf_clus, &handler);
 	fprintf(stderr, "init (%d)\n", s);
 	
 	s = energy_dc_time_read(&handler, &emj1, &tms1);

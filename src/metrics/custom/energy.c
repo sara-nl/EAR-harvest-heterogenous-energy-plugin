@@ -54,7 +54,7 @@ const char *energy_names[] = {
 	"plug_energy_ac_read",
 };
 
-state_t energy_init(ehandler_t *eh)
+state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 {
 	int ipmi = 0;
 	int cpu_model;
@@ -89,8 +89,8 @@ state_t energy_init(ehandler_t *eh)
 			break;
 		case CPU_SKYLAKE_X:
 			if (strstr(eh->name_product, "SD530") != NULL) {
-				sprintf(eh->path_object, "./plugins/energy/ipmi.sd530.so");
-				sprintf(eh->path_object, "./energy/ipmi.node.manager.so");
+				sprintf(eh->path_object, "%s/sbin/plugins/ipmi.node.manager.so", conf->installation.dir_inst);
+				//sprintf(eh->path_object, "./energy/ipmi.node.manager.so");
 				eh->interface = 1;
 			} else if (strstr(eh->name_product, "SR650") != NULL) {
 				eh->interface = 1;
@@ -106,6 +106,7 @@ state_t energy_init(ehandler_t *eh)
 
 	if (eh->interface) {
 		verbose(0, "energy: product name '%s' detected", eh->name_product);
+		debug("loading shared object '%s'", eh->path_object);
 
 		//
 		ret = symplug_open(eh->path_object, (void **) &energy_ops, energy_names, energy_nops);

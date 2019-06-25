@@ -42,7 +42,7 @@ typedef struct energy_handler {
 	void *context;
 } ehandler_t;
 
-state_t energy_init(ehandler_t *eh);
+state_t energy_init(cluster_conf_t *conf, ehandler_t *eh);
 
 state_t energy_dispose(ehandler_t *eh);
 

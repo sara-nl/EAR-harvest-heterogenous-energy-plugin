@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <common/sizes.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
