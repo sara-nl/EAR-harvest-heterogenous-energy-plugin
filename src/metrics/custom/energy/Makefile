@@ -2,19 +2,15 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
 ######## FILES
 
-ener_OBJS = \
-    finder.o \
+ener_OBJS = finder.o \
     ipmi_node_manager.so
-#    ipmi_lenovo_sd650.so \
-#    ipmi_ibm.so \
-
-ener_DEPS = \
-    $(SRCDIR)/common/libcommon.a
+ener_DEPS = $(SRCDIR)/common/libcommon.a
+ener_PATH = $(DESTDIR)/sbin/plugins
+eard_PERM = 0770
 
 ######## RULES
 
 all: $(ener_OBJS)
-
 
 ipmi_ibm.so: ipmi_ibm.c ipmi_ibm.h
 	$(CC) $(CFLAGS) -shared -o ipmi.ibm.so ipmi_ibm.c
@@ -30,7 +26,7 @@ ipmi_node_manager.so: ipmi_node_manager.c ipmi_node_manager.h $(ener_DEPS)
 
 ######## OPTIONS
 
-install:
+install: ener.ginstall;
 
 %.install: ;
 

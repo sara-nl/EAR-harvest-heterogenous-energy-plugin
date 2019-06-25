@@ -270,20 +270,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->earlib.check_every = atoi(token);
         }
-		else if (!strcmp(token, "TMPDIR"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-            remove_chars(token, ' ');
-			strcpy(conf->tmp_dir, token);
-		}
-		else if (!strcmp(token, "ETCDIR"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-            remove_chars(token, ' ');
-			strcpy(conf->etc_dir, token);
-		}
 		else if (!strcmp(token, "VERBOSE"))
 		{
 			token = strtok(NULL, "=");
@@ -1124,9 +1110,49 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             if (idx < 0)
     			conf->num_islands++;
 		}
+		// INSTALLATION AREA
+		else if (!strcmp(token, "TMPDIR"))
+		{
+			token = strtok(NULL, "=");
+			token = strtok(token, "\n");
+			remove_chars(token, ' ');
+			strcpy(conf->installation.dir_temp, token);
 
+			// For compatibility
+			strcpy(conf->tmp_dir, token);
+		}
+		else if (!strcmp(token, "ETCDIR"))
+		{
+			token = strtok(NULL, "=");
+			token = strtok(token, "\n");
+			remove_chars(token, ' ');
+			strcpy(conf->installation.dir_conf, token);
+
+			// For compatibility
+			strcpy(conf->etc_dir, token);
+		}
+		else if (!strcmp(token, "INSTDIR"))
+		{
+			token = strtok(NULL, "=");
+			token = strtok(token, "\n");
+			remove_chars(token, ' ');
+			strcpy(conf->installation.dir_inst, token);
+		}
+		else if (!strcmp(token, "PLUGINENERGY"))
+		{
+			token = strtok(NULL, "=");
+			token = strtok(token, "\n");
+			remove_chars(token, ' ');
+			strcpy(conf->installation.obj_ener, token);
+		}
+		else if (!strcmp(token, "PLUGINPOLICY"))
+		{
+			token = strtok(NULL, "=");
+			token = strtok(token, "\n");
+			remove_chars(token, ' ');
+			strcpy(conf->installation.obj_poli, token);
+		}
 	}
-
 }
 
 

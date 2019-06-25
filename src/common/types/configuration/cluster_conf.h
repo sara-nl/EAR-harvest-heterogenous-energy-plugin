@@ -172,6 +172,14 @@ typedef struct earlib_conf
 	uint check_every;
 } earlib_conf_t;
 
+typedef struct conf_install {
+	char dir_temp[SZ_PATH];
+	char dir_conf[SZ_PATH];
+	char dir_inst[SZ_PATH];
+	char obj_ener[SZ_PATH];
+	char obj_poli[SZ_PATH];
+} conf_install_t;
+
 typedef struct cluster_conf
 {
 	// Library & common conf
@@ -207,6 +215,8 @@ typedef struct cluster_conf
     earlib_conf_t earlib;
     communication_node_t *comm_nodes;
     uint num_comm_nodes;
+    // Jordi special area
+	conf_install_t installation;
 } cluster_conf_t;
 
 /*
