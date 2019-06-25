@@ -51,7 +51,7 @@ state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 	void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
 
 	if (!handle) {
-		return EAR_ERROR;
+		state_return_msg(EAR_ERROR, 0, "error during dlopen(), missing symbol?");
 	}
 
 	symplug_join(handle, calls, names, n);

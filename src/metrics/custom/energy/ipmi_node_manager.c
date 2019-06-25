@@ -46,9 +46,8 @@ static state_t _plug_energy_init(void **c)
 	unsigned int workaround_flags = 0;
 	int ret = 0;
 	int rs_len;
-	uid_t uid;
 
-	if (!user_is_root()) {
+	if (getuid() != 0) {
 		state_return_msg(EAR_ERROR, 0, "the user is not root");
 	}
 
@@ -120,7 +119,7 @@ static state_t _plug_energy_init(void **c)
 
 state_t plug_energy_init(void **c)
 {
-	state s;
+	state_t s;
 
 	pthread_mutex_lock(&lock);
 	s = _plug_energy_init(c);
@@ -199,17 +198,13 @@ state_t plug_energy_dc_read(void *c, ulong *emj)
 
 state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 {
-	timestamp ts1;
-	timestamp ts2;
+	timestamp ts;
 	state_t s;
 
-	timestamp_getprecise(&ts1);
 	s = plug_energy_dc_read(c, emj);
-	timestamp_getprecise(&ts2);
 
-	ts2 = ts2 - ts1;
-	timestamp_convert(&ts2, TIME_MSECS);
-	*tms = (ulong) ts2;
+	timestamp_getprecise(&ts);
+	*tms = timestamp_convert(&ts, TIME_MSECS);
 
 	return s;
 }

@@ -90,7 +90,7 @@ state_t energy_init(ehandler_t *eh)
 		case CPU_SKYLAKE_X:
 			if (strstr(eh->name_product, "SD530") != NULL) {
 				sprintf(eh->path_object, "./plugins/energy/ipmi.sd530.so");
-				sprintf(eh->path_object, "./energy/ipmi.lenovo.so");
+				sprintf(eh->path_object, "./energy/ipmi.node.manager.so");
 				eh->interface = 1;
 			} else if (strstr(eh->name_product, "SR650") != NULL) {
 				eh->interface = 1;
@@ -109,11 +109,11 @@ state_t energy_init(ehandler_t *eh)
 
 		//
 		ret = symplug_open(eh->path_object, (void **) &energy_ops, energy_names, energy_nops);
-		debug("symplug_open() returned %d", ret);		
+		debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
 
 		if (state_fail(ret)) {
 			return ret;
-		}
+		} 
 
 		ret = energy_ops.init(&eh->context);
 		debug("energy_ops.init() returned %d", ret);		

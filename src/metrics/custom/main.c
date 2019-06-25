@@ -5,35 +5,35 @@
 
 int main(int argc, char *argv)
 {
+	ehandler_t handler;
 	ulong emj1, emj2;
 	ulong tms1, tms2;
-	ulong ej;
-	ulong ts;	
-
-	ehandler_t handler;
+	state_t s;
 	
-	energy_init(&handler);
+	s = energy_init(&handler);
+	fprintf(stderr, "init (%d)\n", s);
 	
-	energy_dc_read(&handler, &emj1);
+	s = energy_dc_time_read(&handler, &emj1, &tms1);
+	fprintf(stderr, "e1 %lu _ %lu (%d)\n", emj1, tms1, s);
+	
 	sleep(2);
-	energy_dc_read(&handler, &emj2);
-	emj2 = emj2 - emj1;
-	fprintf(stderr, "energy_dc_read %lu emj\n", emj2);
+	
+	s = energy_dc_time_read(&handler, &emj2, &tms2);
+	fprintf(stderr, "e2 %lu _ %lu (%d)\n", emj2, tms2, s);
 
+	tms2 = (tms2 - tms1) / 1000;	
+	emj2 = ((emj2 - emj1) / 1000) / tms2;
+	fprintf(stderr, "time %lu S, power %lu W\n", tms2, emj2);
+
+#if 0
 	energy_dc_time_read(&handler, &emj1, &tms2);
 	sleep(2);
 	energy_dc_time_read(&handler, &emj1, &tms2);
 	emj2 = emj2 - emj1;
 	tms2 = tms2 - tms1;
 	fprintf(stderr, "energy_dc_time_read %lu emj %lu tms\n", emj2, tms2);
+#endif
 
-	energy_dc_time_debug(&handler, &ej, &emj1, &ts, &tms1);
-	sleep(2);
-	energy_dc_time_debug(&handler, &ej, &emj2, &ts, &tms2);
-	emj2 = emj2 - emj1;
-	tms2 = tms2 - tms1;
-	fprintf(stderr, "energy_dc_time_read %lu emj %lu tms\n", emj2, tms2);
-		
 	energy_dispose(&handler);
 
 #if 0
