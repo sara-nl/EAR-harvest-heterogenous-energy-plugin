@@ -35,7 +35,7 @@
 
 #define preturn(call, ...) \
 	if (call == NULL) { \
-		return EAR_SUCCESS; \
+		return EAR_UNDEFINED; \
 	} \
 	return call (__VA_ARGS__);
 

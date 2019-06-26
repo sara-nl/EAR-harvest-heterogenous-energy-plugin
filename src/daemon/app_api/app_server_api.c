@@ -26,8 +26,8 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-#define _GNU_SOURCE
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -43,7 +43,7 @@
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
-#include <metrics/ipmi/energy_node.h>
+//#include <metrics/ipmi/energy_node.h>
 #include <daemon/power_monitor.h>
 
 #define close_app_connection()
@@ -335,7 +335,7 @@ void ear_energy(int fd_out)
 void ear_energy_debug(int fd_out)
 {
         app_recv_t data;
-        ulong energy_j,energy_mj,time_sec,time_ms;
+        ulong energy_mj, time_ms;
         struct timespec tspec;
 
         memset(&data.my_data.my_energy,0,sizeof(data.my_data.my_energy));
@@ -351,7 +351,9 @@ void ear_energy_debug(int fd_out)
                 data.my_data.my_energy.os_time_sec=tspec.tv_sec;
                 data.my_data.my_energy.os_time_ms=tspec.tv_nsec/1000000;
         }
-				energy_j=0;energy_mj=0;time_sec=0;time_ms=0;
+
+	energy_mj=0;
+	time_ms=0;
 
         if (energy_dc_time_read(&my_eh_app_api, &energy_mj, &time_ms) != EAR_SUCCESS) {
         	error("Error reading energy in %s thread", TH_NAME);

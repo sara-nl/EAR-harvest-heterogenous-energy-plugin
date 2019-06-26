@@ -278,7 +278,7 @@ void connect_service(int req, application_t *new_app) {
 			}
 
 			// We must modify the client api to send more information
-			powermon_mpi_init(handler_energy, new_app);
+			powermon_mpi_init(&handler_energy, new_app);
 
 			debug("sending ack for service %d", req);
 			if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
@@ -459,7 +459,7 @@ void eard_close_comm() {
 	close(ear_ping_fd);
 
 	// We must send the app signature to the powermonitoring thread
-	powermon_mpi_finalize(handler_energy);
+	powermon_mpi_finalize(&handler_energy);
 
 	application_id = -1;
 	ear_ping_fd = -1;

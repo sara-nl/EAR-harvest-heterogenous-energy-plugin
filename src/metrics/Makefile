@@ -20,10 +20,6 @@ metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
     $(SRCDIR)/metrics/papi/flops.o \
     $(SRCDIR)/metrics/papi/instructions.o \
     $(SRCDIR)/metrics/papi/stalls.o \
-    $(SRCDIR)/metrics/ipmi/energy_node.o \
-    $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
-    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_sd650.o \
     $(SRCDIR)/metrics/custom/bandwidth.o \
     $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
     $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \

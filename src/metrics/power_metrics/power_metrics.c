@@ -44,7 +44,6 @@
 #include <metrics/papi/energy_cpu.h>
 #endif
 #include <metrics/power_metrics/power_metrics.h>
-#include <metrics/ipmi/energy_node.h>
 
 uint8_t power_mon_connected=0; 
 rapl_data_t *RAPL_metrics;
