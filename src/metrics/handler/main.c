@@ -49,14 +49,5 @@ int main(int argc, char *argv)
 
 	energy_dispose(&handler);
 
-#if 0
-	lenovo_act_node_energy_init((ipmi_ctx_t *) &handler.context);
-	lenovo_act_read_dc_energy((ipmi_ctx_t) handler.context, &energy);
-	fprintf(stderr, "LENOVO ACT %lu MJ\n", energy);
-	
-	energy_dc_read(&handler, &energy);
-	fprintf(stderr, "ENERGY DC %lu MJ\n", energy);
-#endif
-
 	return 0;
 }

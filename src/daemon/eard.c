@@ -277,10 +277,8 @@ void connect_service(int req, application_t *new_app) {
 				eard_close_comm();
 			}
 
-			#if POWERMON_THREAD
 			// We must modify the client api to send more information
-			powermon_mpi_init(NULL, new_app);
-			#endif
+			powermon_mpi_init(handler_energy, new_app);
 
 			debug("sending ack for service %d", req);
 			if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
@@ -460,10 +458,8 @@ void eard_close_comm() {
 
 	close(ear_ping_fd);
 
-	#if POWERMON_THREAD
 	// We must send the app signature to the powermonitoring thread
-	powermon_mpi_finalize(NULL);
-	#endif
+	powermon_mpi_finalize(handler_energy);
 
 	application_id = -1;
 	ear_ping_fd = -1;
@@ -1295,7 +1291,7 @@ int main(int argc, char *argv[]) {
 #endif
 	// We initilize energy_node
 	if (state_fail(energy_init(&my_cluster_conf, &handler_energy))) {
-		warning("node_energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
+		warning("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 	}
 
 	// Energy
@@ -1354,9 +1350,8 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
-#if 0
-//#if POWERMON_THREAD
-	if ((ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, (void *) &handler_energy))){
+#if POWERMON_THREAD
+	if ((ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL))){
 		errno=ret;
 		error("error creating power_monitoring thread %s\n",strerror(errno));
 	}

@@ -57,7 +57,6 @@ clean: clean.components;
 	@ $(MAKE) -C 'custom' $* || exit
 	@ $(MAKE) -C 'finder' $* || exit
 	@ $(MAKE) -C 'handler' $* || exit
-	@ $(MAKE) -C 'ipmi' $* || exit
 	@ $(MAKE) -C 'papi' $* || exit
 	@ $(MAKE) -C 'msr' $* || exit
 	@ $(MAKE) -C 'power_metrics' $* || exit

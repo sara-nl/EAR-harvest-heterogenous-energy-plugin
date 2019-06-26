@@ -69,20 +69,20 @@ void *eard_power_monitoring(void *frequency_monitoring);
 /**  It must be called when EARLib contacts with EARD 
 */
 
-void powermon_mpi_init(energy_handler_t *eh,application_t *j);
+void powermon_mpi_init(ehandler_t *eh,application_t *j);
 
 /**  It must be called when EARLib disconnects from EARD 
 */
-void powermon_mpi_finalize(energy_handler_t *eh);
+void powermon_mpi_finalize(ehandler_t *eh);
 
 /** It must be called at when job starts 
 */
 
-void powermon_new_job(energy_handler_t *eh,application_t *j,uint from_mpi);
+void powermon_new_job(ehandler_t *eh,application_t *j,uint from_mpi);
 
 /** It must be called at when job ends
 */
-void powermon_end_job(energy_handler_t *eh,job_id jid,job_id sid);
+void powermon_end_job(ehandler_t *eh,job_id jid,job_id sid);
 
 /** It must be called at when sbatch starts*/
 void powermon_new_sbatch(application_t *j);

@@ -155,6 +155,14 @@ state_t plug_energy_getdata_length(void *c, size_t *size)
 	return EAR_SUCCESS;
 }
 
+#if 0
+state_t plug_energy_data_frequency_get(void *c, ulong *freq)
+{
+	*freq = 1000000;
+	return EAR_SUCCESS;
+}
+#endif
+
 static state_t _plug_energy_dc_read(void *c, ulong *emj)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;

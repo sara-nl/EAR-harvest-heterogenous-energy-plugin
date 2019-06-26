@@ -70,6 +70,10 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		return ret;
 	}
 
+	if (conf == NULL) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0, "the conf value cannot be NULL if the plugin is not loaded");
+	}
+
 	found = (strcmp(conf->installation.obj_ener, "default") != 0);
 
 	if (found)
@@ -181,7 +185,42 @@ state_t energy_data_length_get(ehandler_t *eh, size_t *size)
 
 state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 {
-	preturn (energy_ops.data_frequency_get, eh->context, freq);
+	int intents = 0;
+	timestamp ts1;
+	timestamp ts2;
+	ulong e1;
+	ulong e2;
+
+	// Dedicated frequency
+	if (energy_ops.data_frequency_get != NULL) {
+		return energy_ops.data_frequency_get (eh->context, freq);
+	}
+
+	// Generic frequency
+	if (state_ok(plug_energy_dc_read(c, &e1)))
+	{
+		do {
+			plug_energy_dc_read(c, &e2);
+			intents++;
+		} while ((e1 == e2) && (intents < 5000));
+
+		//
+		if (intents == 5000) {
+			return 0;
+		}
+
+		timestamp_getprecise(&ts1);
+		e1 = e2;
+
+		do {
+			plug_energy_dc_read(c, &e2);
+		} while (e1 == e2);
+
+		timestamp_getprecise(&ts2);
+		*freq = (timestamp_diff(ts2, ts1, TIME_USECS) / 2) / MAX_POWER_ERROR;
+	}
+
+	return EAR_SUCCESS;
 }
 
 state_t energy_dc_read(ehandler_t *eh, ulong *emj)

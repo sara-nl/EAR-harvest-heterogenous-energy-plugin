@@ -437,7 +437,8 @@ int node_energy_dispose(energy_handler_t *eh) {
 	else return EAR_ERROR;
 }
 
-unsigned long node_energy_frequency(energy_handler_t *eh) {
+unsigned long node_energy_frequency(energy_handler_t *eh)
+{
 	unsigned long init, end, min_interval;
 	struct timeval begin_time, end_time;
 	int intents = 0;
