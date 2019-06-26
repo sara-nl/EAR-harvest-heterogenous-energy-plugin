@@ -27,55 +27,35 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
 #include <signal.h>
 #include <pthread.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/select.h>
 #include <linux/limits.h>
-#include <common/states.h>
-#include <common/config.h>
-#include <common/types/job.h>
-#include <common/types/log.h>
-#include <common/types/daemon_log.h>
-#include <common/types/loop.h>
-#include <common/output/verbose.h>
+#include <common/includes.h>
 #include <common/environment.h>
-#include <common/types/generic.h>
-#include <common/types/services.h>
-#include <common/types/configuration/cluster_conf.h>
 #include <control/frequency.h>
-
 #if USE_MSR_RAPL
 #include <metrics/msr/energy_cpu.h>
 #else
-
 #include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
-
 #endif
-
-#include <metrics/ipmi/energy_node.h>
+#include <metrics/custom/energy.h>
 #include <metrics/custom/bandwidth.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/frequency.h>
 #include <daemon/eard_conf_api.h>
+#if POWERMON_THREAD
+#endif
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
-
 #if DB_MYSQL
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
 #endif
-
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
 
@@ -299,8 +279,10 @@ void connect_service(int req, application_t *new_app) {
 				eard_close_comm();
 			}
 
+			#if POWERMON_THREAD
 			// We must modify the client api to send more information
-			powermon_mpi_init(&handler_energy, new_app);
+			powermon_mpi_init(NULL, new_app);
+			#endif
 
 			debug("sending ack for service %d", req);
 			if (write(ear_ping_fd, &ack, sizeof(ack)) != sizeof(ack)) {
@@ -480,8 +462,10 @@ void eard_close_comm() {
 
 	close(ear_ping_fd);
 
+	#if POWERMON_THREAD
 	// We must send the app signature to the powermonitoring thread
-	powermon_mpi_finalize(&handler_energy);
+	powermon_mpi_finalize(NULL);
+	#endif
 
 	application_id = -1;
 	ear_ping_fd = -1;

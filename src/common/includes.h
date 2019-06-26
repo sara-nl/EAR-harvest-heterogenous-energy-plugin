@@ -47,10 +47,7 @@
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/config.h>
-#include <common/types/log.h>
-#include <common/types/signature.h>
-#include <common/types/projection.h>
-#include <common/types/application.h>
+#include <common/types/types.h>
 #include <common/output/verbose.h>
 
 #endif //EAR_INCLUDES_H

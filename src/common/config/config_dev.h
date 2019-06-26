@@ -43,7 +43,7 @@
 #define APP_API_THREAD						1
 /* When set to 1 , creates a thread in EARD for powermonitoring, do not set to 0
  * except for debug purposes */
-#define POWERMON_THREAD						1
+#define POWERMON_THREAD						0
 /* When set to 1 , creates a thread in EARD for external commands, do not set to
  * 0 except for debug purposes */
 #define EXTERNAL_COMMANDS_THREAD 			1

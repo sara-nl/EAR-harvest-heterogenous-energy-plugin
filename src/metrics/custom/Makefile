@@ -2,12 +2,13 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) -Wno-unused-variable
 
 ######## FILES
 
-cstm_OBJS = frequency.o \
+cstm_OBJS = \
+    energy.o \
+    frequency.o \
     frequency_uncore.o \
     hardware_info.o \
     bandwidth.o \
     bandwidth_notpriv.o \
-    energy.o
 
 ######## RULES
 

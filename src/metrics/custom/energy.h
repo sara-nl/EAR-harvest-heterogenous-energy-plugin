@@ -32,7 +32,7 @@
 
 #include <common/includes.h>
 
-typedef struct energy_handler {
+typedef struct ehandler {
 	char name_manufacturer[SZ_NAME_MEDIUM];
 	char name_product[SZ_NAME_MEDIUM];
 	char path_object[SZ_PATH];
