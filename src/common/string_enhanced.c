@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <common/sizes.h>
 #include <common/colors.h>
 #include <common/string_enhanced.h>
 
@@ -43,8 +44,8 @@ static unsigned int mode;
 static int fd;
 
 // Utils
-static char *buffer1[SZ_BUFF_BIG];
-static char *buffer2[SZ_BUFF_BIG];
+static char buffer1[SZ_BUFF_BIG];
+static char buffer2[SZ_BUFF_BIG];
 
 /*
  *
@@ -216,13 +217,13 @@ void strtoup(char *string)
     }
 }
 
-int strequal(const char *string1, const char *string2)
+int strinc(const char *string1, const char *string2)
 {
 	strncpy(buffer1, string1, SZ_BUFF_BIG);
 	strncpy(buffer2, string2, SZ_BUFF_BIG);
 	strtoup(buffer1);
 	strtoup(buffer2);
-	return (strstr(buffer1, buffer2, SZ_BUFF_BIG) != NULL);
+	return (strstr(buffer1, buffer2) != NULL);
 }
 
 char* strclean(char *string, char chr)

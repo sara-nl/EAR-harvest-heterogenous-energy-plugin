@@ -33,8 +33,6 @@
 #include <common/includes.h>
 
 typedef struct ehandler {
-	char name_manufacturer[SZ_NAME_MEDIUM];
-	char name_product[SZ_NAME_MEDIUM];
 	void *context;
 } ehandler_t;
 

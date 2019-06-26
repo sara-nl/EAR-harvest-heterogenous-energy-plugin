@@ -1,7 +1,7 @@
-#include <metrics/custom/energy.h>
-#include <metrics/ipmi/energy_node/lenovo_nm.h>
+#include <metrics/handler/energy.h>
+//#include <metrics/ipmi/energy_node/lenovo_nm.h>
 
-//gcc -I ../../ -I/hpc/opt/freeipmi/include -o main main.c energy.o hardware_info.o ../common/cpuid.o ../../common/libcommon.a energy/finder.o -ldl -L/hpc/opt/freeipmi/lib -Wl,-rpath,/hpc/opt/freeipmi/lib -lfreeipmi
+//gcc -I ../../ -I/hpc/opt/freeipmi/include -o main main.c energy.o ../custom/hardware_info.o ../common/cpuid.o ../../common/libcommon.a ../finder/energy.o -ldl -L/hpc/opt/freeipmi/lib -Wl,-rpath,/hpc/opt/freeipmi/lib -lfreeipmi -lpthread
 
 char extra_buffer[4096];
 
@@ -19,7 +19,7 @@ int main(int argc, char *argv)
 		return 0;
 	}
 
-	fprintf(stderr, "reading '%s' configuration file", extra_buffer);
+	fprintf(stderr, "reading '%s' configuration file\n", extra_buffer);
 	read_cluster_conf(extra_buffer, &conf_clus);
 	
 	// Reading

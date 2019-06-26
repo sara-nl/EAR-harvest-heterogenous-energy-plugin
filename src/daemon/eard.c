@@ -41,13 +41,11 @@
 #include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
 #endif
-#include <metrics/custom/energy.h>
+#include <metrics/handler/energy.h>
 #include <metrics/custom/bandwidth.h>
 #include <metrics/custom/hardware_info.h>
 #include <metrics/custom/frequency.h>
 #include <daemon/eard_conf_api.h>
-#if POWERMON_THREAD
-#endif
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>

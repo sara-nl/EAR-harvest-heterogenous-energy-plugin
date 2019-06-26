@@ -43,7 +43,9 @@ struct energy_op
 	state_t (*dc_time_read)       (void *c, ulong *emj, ulong *tms);
 	state_t (*ac_read)            (void *c, ulong *em);
 } energy_ops;
-static char energy_object[SZ_PATH];
+static char energy_manu[SZ_NAME_MEDIUM];
+static char energy_prod[SZ_NAME_MEDIUM];
+static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
 const int   energy_nops    = 7;
 const char *energy_names[] = {
@@ -68,19 +70,18 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		return ret;
 	}
 
-	found = (strcmp(plugin_path, "default") != 0);
+	found = (strcmp(conf->installation.obj_ener, "default") != 0);
 
 	if (found)
 	{
-		sprintf(eh->path_object, "%s/sbin/plugins/ipmi.node.manager.so",
+		sprintf(energy_objc, "%s/sbin/plugins/ipmi.node.manager.so",
 				conf->installation.dir_inst);
 	}
 	else
 	{
 		// IPMI
-		found = finder_energy(eh->name_manufacturer, eh->name_product);
+		found = finder_energy(energy_manu, energy_prod);
 
-		// No IPMI
 		if (found < 0) {
 			return EAR_NOT_FOUND;
 		}
@@ -88,24 +89,27 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		//
 		cpu_model = get_model();
 
+		//
+		sprintf(energy_prod, "unkwown");
+
 		switch (cpu_model)
 		{
 			case CPU_HASWELL_X:
 			case CPU_BROADWELL_X:
-				if (strinc(eh->name_product, "NX360")) {
+				if (strinc(energy_prod, "NX360")) {
 					found = 0;
 				} else {
 					found = 0;
 				}
 				break;
 			case CPU_SKYLAKE_X:
-				if (strinc(eh->name_product, "SD530")) {
-					sprintf(eh->path_object, "%s/sbin/plugins/ipmi.node.manager.so",
+				if (strinc(energy_prod, "SD530")) {
+					sprintf(energy_objc, "%s/sbin/plugins/ipmi.node.manager.so",
 							conf->installation.dir_inst);
 					found = 1;
-				} else if (strinc(eh->name_product, "SR650")) {
+				} else if (strinc(energy_prod, "SR650")) {
 					found = 0;
-				} else if (strinc(eh->name_product, "SD650")) {
+				} else if (strinc(energy_prod, "SD650")) {
 					found = 0;
 				} else {
 					found = 0;
@@ -114,15 +118,16 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 			default:
 				break;
 		}
+		
+		verbose(0, "energy: detected product name '%s'", energy_prod);
 	}
 
 	if (found)
 	{
-		verbose(0, "energy: product name detected '%s'", eh->name_product);
-		debug("loading shared object '%s'", eh->path_object);
+		debug("loading shared object '%s'", energy_objc);
 
 		//
-		ret = symplug_open(eh->path_object, (void **) &energy_ops, energy_names, energy_nops);
+		ret = symplug_open(energy_objc, (void **) &energy_ops, energy_names, energy_nops);
 		debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
 
 		if (state_fail(ret)) {
@@ -133,7 +138,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		energy_loaded = 1;
 		ret = energy_init(conf, eh);
 	} else {
-		verbose(0, "energy: product name '%s' detected (not known)", eh->name_product);
 		ret = EAR_NOT_FOUND;
 	}
 

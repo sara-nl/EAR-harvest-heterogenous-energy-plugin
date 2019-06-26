@@ -9,6 +9,9 @@ find_OBJS = \
 
 all: $(find_OBJS)
 
+energy.o: energy.c energy.h
+	$(CC) $(CFLAGS) $(IPMI_CFLAGS) -c $<
+
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 

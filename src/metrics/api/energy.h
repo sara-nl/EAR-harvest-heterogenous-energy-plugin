@@ -32,6 +32,7 @@
 
 #include <common/sizes.h>
 #include <common/states.h>
+#include <common/types/generic.h>
 
 state_t plug_energy_init(void **c);
 

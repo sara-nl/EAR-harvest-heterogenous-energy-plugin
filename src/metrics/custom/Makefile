@@ -3,7 +3,6 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) -Wno-unused-variable
 ######## FILES
 
 cstm_OBJS = \
-    energy.o \
     frequency.o \
     frequency_uncore.o \
     hardware_info.o \
@@ -15,7 +14,7 @@ cstm_OBJS = \
 all: all.components $(cstm_OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -DSHOW_DEBUGS -c $<
+	$(CC) $(CFLAGS) -c $<
 
 ######## OPTIONS
 

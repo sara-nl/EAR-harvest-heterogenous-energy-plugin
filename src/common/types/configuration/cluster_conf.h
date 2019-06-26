@@ -174,11 +174,11 @@ typedef struct earlib_conf
 } earlib_conf_t;
 
 typedef struct conf_install {
-	char dir_temp[SZ_PATH];
-	char dir_conf[SZ_PATH];
-	char dir_inst[SZ_PATH];
-	char obj_ener[SZ_PATH];
-	char obj_poli[SZ_PATH];
+	char dir_temp[SZ_PATH_INCOMPLETE];
+	char dir_conf[SZ_PATH_INCOMPLETE];
+	char dir_inst[SZ_PATH_INCOMPLETE];
+	char obj_ener[SZ_PATH_SHORT];
+	char obj_poli[SZ_PATH_SHORT];
 } conf_install_t;
 
 typedef struct cluster_conf
