@@ -95,9 +95,12 @@ int intern_error_num;
 	intern_error_str = error_str; \
 	return state;
 
-#define state_print_error(id) \
-	verbose(0, "ERROR, state id: %d (errno: %d, strerrno: %s)", \
-		id, intern_error_num, intern_error_str)
+#define state_print_error(error, id) \
+	error("%s, state id: %d (errno: %d, strerrno: %s)", \
+		error, id, intern_error_num, intern_error_str)
+
+#define state_set_error(error_str) \
+	intern_error_str = error_str;
 
 #endif //STATES_H
 

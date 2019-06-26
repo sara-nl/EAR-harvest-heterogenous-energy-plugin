@@ -71,7 +71,8 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 	}
 
 	if (conf == NULL) {
-		state_return_msg(EAR_BAD_ARGUMENT, 0, "the conf value cannot be NULL if the plugin is not loaded");
+		state_return_msg(EAR_BAD_ARGUMENT, 0,
+		 "the conf value cannot be NULL if the plugin is not loaded");
 	}
 
 	found = (strcmp(conf->installation.obj_ener, "default") != 0);
