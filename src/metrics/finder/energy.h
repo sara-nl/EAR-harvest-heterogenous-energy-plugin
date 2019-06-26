@@ -27,35 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_ENERGY_H
-#define EAR_ENERGY_H
+#ifndef EAR_PRIVATE_FINDER_H
+#define EAR_PRIVATE_FINDER_H
 
-#include <common/includes.h>
+int finder_energy(char *name_manufacturer, char *name_product);
 
-typedef struct ehandler {
-	char name_manufacturer[SZ_NAME_MEDIUM];
-	char name_product[SZ_NAME_MEDIUM];
-	char path_object[SZ_PATH];
-	int interface;
-	int connected;
-	int status;
-	void *context;
-} ehandler_t;
-
-state_t energy_init(cluster_conf_t *conf, ehandler_t *eh);
-
-state_t energy_dispose(ehandler_t *eh);
-
-state_t energy_handler_clean(ehandler_t *eh);
-
-state_t energy_data_length_get(ehandler_t *eh, size_t *size);
-
-state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq);
-
-state_t energy_dc_read(ehandler_t *eh, ulong *energy);
-
-state_t energy_dc_time_read(ehandler_t *eh, ulong *energy, ulong *time_ms);
-
-state_t energy_ac_read(ehandler_t *eh, ulong *energy);
-
-#endif //EAR_ENERGY_H
+#endif //EAR_PRIVATE_FINDER_H

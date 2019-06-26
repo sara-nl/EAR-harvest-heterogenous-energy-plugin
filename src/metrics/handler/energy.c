@@ -29,8 +29,8 @@
 
 #include <common/symplug.h>
 #include <common/includes.h>
-#include <metrics/custom/energy.h>
-#include <metrics/custom/energy/finder.h>
+#include <metrics/finder/energy.h>
+#include <metrics/handler/energy.h>
 #include <metrics/custom/hardware_info.h>
 
 struct energy_op
@@ -43,6 +43,8 @@ struct energy_op
 	state_t (*dc_time_read)       (void *c, ulong *emj, ulong *tms);
 	state_t (*ac_read)            (void *c, ulong *em);
 } energy_ops;
+static char energy_object[SZ_PATH];
+static int  energy_loaded  = 0;
 const int   energy_nops    = 7;
 const char *energy_names[] = {
 	"plug_energy_init",
@@ -56,56 +58,67 @@ const char *energy_names[] = {
 
 state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 {
-	int ipmi = 0;
-	int cpu_model;
 	state_t ret;
+	int cpu_model;
+	int	found;
 
-	if (eh->connected) {
-		return eh->status;
+	if (energy_loaded) {
+		ret = energy_ops.init(&eh->context);
+		debug("energy_ops.init() returned %d", ret);
+		return ret;
 	}
 
-	debug("initialized");
+	found = (strcmp(plugin_path, "default") != 0);
 
-	//
-	cpu_model = get_model();
-
-	// IPMI
-	ret = finder_ipmi_get_product_name(eh->name_manufacturer, eh->name_product);
-
-	// No IPMI
-	if (ret < 0) {
-		// Test others (PAPI, msr..?)
-	}
-
-	switch (cpu_model)
+	if (found)
 	{
-		case CPU_HASWELL_X:
-		case CPU_BROADWELL_X:
-			if (strstr(eh->name_product, "nx360") != NULL) {
-				eh->interface = 1;
-			} else {
-				eh->interface = 0;
-			}
-			break;
-		case CPU_SKYLAKE_X:
-			if (strstr(eh->name_product, "SD530") != NULL) {
-				sprintf(eh->path_object, "%s/sbin/plugins/ipmi.node.manager.so", conf->installation.dir_inst);
-				//sprintf(eh->path_object, "./energy/ipmi.node.manager.so");
-				eh->interface = 1;
-			} else if (strstr(eh->name_product, "SR650") != NULL) {
-				eh->interface = 1;
-			} else if (strstr(eh->name_product, "SD650") != NULL) {
-				eh->interface = 1;
-			} else {
-				eh->interface = 0;
-			}
-			break;
-		default:
-			break;
+		sprintf(eh->path_object, "%s/sbin/plugins/ipmi.node.manager.so",
+				conf->installation.dir_inst);
+	}
+	else
+	{
+		// IPMI
+		found = finder_energy(eh->name_manufacturer, eh->name_product);
+
+		// No IPMI
+		if (found < 0) {
+			return EAR_NOT_FOUND;
+		}
+
+		//
+		cpu_model = get_model();
+
+		switch (cpu_model)
+		{
+			case CPU_HASWELL_X:
+			case CPU_BROADWELL_X:
+				if (strinc(eh->name_product, "NX360")) {
+					found = 0;
+				} else {
+					found = 0;
+				}
+				break;
+			case CPU_SKYLAKE_X:
+				if (strinc(eh->name_product, "SD530")) {
+					sprintf(eh->path_object, "%s/sbin/plugins/ipmi.node.manager.so",
+							conf->installation.dir_inst);
+					found = 1;
+				} else if (strinc(eh->name_product, "SR650")) {
+					found = 0;
+				} else if (strinc(eh->name_product, "SD650")) {
+					found = 0;
+				} else {
+					found = 0;
+				}
+				break;
+			default:
+				break;
+		}
 	}
 
-	if (eh->interface) {
-		verbose(0, "energy: product name '%s' detected", eh->name_product);
+	if (found)
+	{
+		verbose(0, "energy: product name detected '%s'", eh->name_product);
 		debug("loading shared object '%s'", eh->path_object);
 
 		//
@@ -114,20 +127,17 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 
 		if (state_fail(ret)) {
 			return ret;
-		} 
+		}
 
-		ret = energy_ops.init(&eh->context);
-		debug("energy_ops.init() returned %d", ret);		
-	
-		eh->connected = 1;
-		eh->status    = ret;
+		//
+		energy_loaded = 1;
+		ret = energy_init(conf, eh);
 	} else {
 		verbose(0, "energy: product name '%s' detected (not known)", eh->name_product);
-		eh->connected = 0;
-		eh->status    = EAR_ERROR;
+		ret = EAR_NOT_FOUND;
 	}
 
-	return eh->status;
+	return ret;
 }
 
 state_t energy_dispose(ehandler_t *eh)
@@ -140,7 +150,8 @@ state_t energy_dispose(ehandler_t *eh)
 
 	energy_handler_clean(eh);
 
-	//
+	// By now, libraries are not unloadable
+	#if 0
 	energy_ops.init               = NULL;
 	energy_ops.dispose            = NULL;
 	energy_ops.data_length_get    = NULL;
@@ -148,6 +159,7 @@ state_t energy_dispose(ehandler_t *eh)
 	energy_ops.dc_read            = NULL;
 	energy_ops.dc_time_read       = NULL;
 	energy_ops.ac_read            = NULL;
+	#endif
 
 	return s;
 }

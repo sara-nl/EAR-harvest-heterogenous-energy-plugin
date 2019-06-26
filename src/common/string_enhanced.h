@@ -70,6 +70,10 @@ char* strclean(char *string, char chr);
 /** Converts a string to upper case. */
 void strtoup(char *string);
 
+/** Compares if the string2 is included in the string 1 regardless they are
+ * upper or lowercase */
+int strinc(const char *string1, const char *string2);
+
 /** Removes characters c from string s. */
 void remove_chars(char *s, char c);
 

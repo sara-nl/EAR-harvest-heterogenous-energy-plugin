@@ -56,6 +56,7 @@
 #define EAR_SOCK_DISCONNECTED	-20
 #define EAR_SOCK_TIMEOUT		-21
 #define EAR_NO_RESOURCES		-22
+#define EAR_NOT_FOUND			-23
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1

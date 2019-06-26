@@ -9,8 +9,8 @@ dyna_BINS = libmetrics.so
 
 metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
     $(SRCDIR)/metrics/common/cpuid.o \
-    $(SRCDIR)/metrics/custom/energy.o \
-    $(SRCDIR)/metrics/custom/energy/finder.o \
+    $(SRCDIR)/metrics/finder/energy.o \
+    $(SRCDIR)/metrics/handler/energy.o \
     $(SRCDIR)/metrics/custom/frequency.o \
     $(SRCDIR)/metrics/custom/frequency_uncore.o \
     $(SRCDIR)/metrics/custom/hardware_info.o \
@@ -55,6 +55,8 @@ clean: clean.components;
 %.components:
 	@ $(MAKE) -C 'common' $* || exit
 	@ $(MAKE) -C 'custom' $* || exit
+	@ $(MAKE) -C 'finder' $* || exit
+	@ $(MAKE) -C 'handler' $* || exit
 	@ $(MAKE) -C 'ipmi' $* || exit
 	@ $(MAKE) -C 'papi' $* || exit
 	@ $(MAKE) -C 'msr' $* || exit

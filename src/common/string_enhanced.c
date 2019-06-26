@@ -34,12 +34,17 @@
 #include <common/colors.h>
 #include <common/string_enhanced.h>
 
+// tprintf
 static const char *sym = STR_SYMBOL;
 static const char *sym_vis = STR_SYMBOL_VIS;
 static unsigned int format[STR_MAX_COLUMNS];
 static unsigned int columns;
 static unsigned int mode;
 static int fd;
+
+// Utils
+static char *buffer1[SZ_BUFF_BIG];
+static char *buffer2[SZ_BUFF_BIG];
 
 /*
  *
@@ -209,6 +214,15 @@ void strtoup(char *string)
         *string = toupper((unsigned char) *string);
         string++;
     }
+}
+
+int strequal(const char *string1, const char *string2)
+{
+	strncpy(buffer1, string1, SZ_BUFF_BIG);
+	strncpy(buffer2, string2, SZ_BUFF_BIG);
+	strtoup(buffer1);
+	strtoup(buffer2);
+	return (strstr(buffer1, buffer2, SZ_BUFF_BIG) != NULL);
 }
 
 char* strclean(char *string, char chr)

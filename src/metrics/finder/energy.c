@@ -30,14 +30,14 @@
 #include <pthread.h>
 #include <common/includes.h>
 #include <freeipmi/freeipmi.h>
-#include <metrics/custom/energy/finder.h>
+#include <metrics/finder/energy.h>
 
 #define SZ_FIELDS	64
 #define SZ_AREA		IPMI_FRU_AREA_SIZE_MAX
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_product)
+static int _finder_energy(char *name_manufacturer, char *name_product)
 {
 	ipmi_fru_field_t product_custom_fields[SZ_FIELDS];
 	ipmi_fru_field_t product_serial_number;
@@ -61,7 +61,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 	// Creating the context
 	if (!(ipmi_ctx_pn = ipmi_ctx_create())) {
 		verbose(0, "error in ipmi_ctx_create for product name %s", strerror(errno));
-		return -1;
+		return 0;
 	}
 
 	// Checking for root
@@ -69,7 +69,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 	if (uid != 0) {
 		ipmi_ctx_close(ipmi_ctx_pn);
 		ipmi_ctx_destroy(ipmi_ctx_pn);
-		return -1;
+		return 0;
 	}
 
 	// Creating the inband context
@@ -86,7 +86,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 		// Close context
 		ipmi_ctx_close(ipmi_ctx_pn);
 		ipmi_ctx_destroy(ipmi_ctx_pn);
-		return -1;
+		return 0;
 	}
 
 	// Creating a fru context
@@ -95,7 +95,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 		// Close context
 		ipmi_ctx_close(ipmi_ctx_pn);
 		ipmi_ctx_destroy(ipmi_ctx_pn);
-		return -1;
+		return 0;
 	}
 
 	if (ipmi_fru_open_device_id(fru_ctx_pn, 0) < 0) {
@@ -103,7 +103,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 		// Close context
 		ipmi_ctx_close(ipmi_ctx_pn);
 		ipmi_ctx_destroy(ipmi_ctx_pn);
-		return -1;
+		return 0;
 	}
 
 	// FRU returns a list
@@ -111,7 +111,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 		verbose(0, "ipmi_fru_first %s", ipmi_fru_ctx_errormsg(fru_ctx_pn));
 		ipmi_ctx_close(ipmi_ctx_pn);
 		ipmi_ctx_destroy(ipmi_ctx_pn);
-		return -1;
+		return 0;
 	}
 
 	// We iterate until PRODUCT info is processed
@@ -122,7 +122,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 			// Close context
 			ipmi_ctx_close(ipmi_ctx_pn);
 			ipmi_ctx_destroy(ipmi_ctx_pn);
-			return -1;
+			return 0;
 		}
 
 		ready = 0;
@@ -159,7 +159,7 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 						verbose(0, "ipmi_fru_product_info_area %s", ipmi_fru_ctx_errormsg(fru_ctx_pn));
 						ipmi_ctx_close(ipmi_ctx_pn);
 						ipmi_ctx_destroy(ipmi_ctx_pn);
-						return -1;
+						return 0;
 					}
 
 					// Here we have data , just print it
@@ -212,16 +212,16 @@ static int _finder_ipmi_get_product_name(char *name_manufacturer, char *name_pro
 	ipmi_ctx_close(ipmi_ctx_pn);
 	ipmi_ctx_destroy(ipmi_ctx_pn);
 
-	return 0;
+	return 1;
 }
 
-int finder_ipmi_get_product_name(char *name_manufacturer, char *name_product)
+int finder_energy(char *name_manufacturer, char *name_product)
 {
 	int status;
 
 	// Locking
 	pthread_mutex_lock(&lock);
-	status = _finder_ipmi_get_product_name(name_manufacturer, name_product);
+	status = _finder_energy(name_manufacturer, name_product);
 	pthread_mutex_unlock(&lock);
 
 	return status;
