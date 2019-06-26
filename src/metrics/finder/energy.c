@@ -219,6 +219,9 @@ int finder_energy(char *name_manufacturer, char *name_product)
 {
 	int status;
 
+	sprintf(name_manufacturer, "unknown");
+	sprintf(name_product, "unknown");
+
 	// Locking
 	pthread_mutex_lock(&lock);
 	status = _finder_energy(name_manufacturer, name_product);

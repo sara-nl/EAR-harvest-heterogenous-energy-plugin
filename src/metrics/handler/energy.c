@@ -62,7 +62,7 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 {
 	state_t ret;
 	int cpu_model;
-	int	found;
+	int found;
 
 	if (energy_loaded) {
 		ret = energy_ops.init(&eh->context);
@@ -78,23 +78,20 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 
 	if (found)
 	{
-		sprintf(energy_objc, "%s/sbin/plugins/ipmi.node.manager.so",
-				conf->installation.dir_inst);
+		sprintf(energy_objc, "%s/sbin/plugins/%s",
+			conf->installation.dir_inst, conf->installation.obj_ener);
 	}
 	else
 	{
 		// IPMI
 		found = finder_energy(energy_manu, energy_prod);
 
-		if (found < 0) {
+		if (!found) {
 			return EAR_NOT_FOUND;
 		}
 
 		//
 		cpu_model = get_model();
-
-		//
-		sprintf(energy_prod, "unkwown");
 
 		switch (cpu_model)
 		{
@@ -125,11 +122,10 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		
 		verbose(0, "energy: detected product name '%s'", energy_prod);
 	}
+	debug("loading shared object '%s'", energy_objc);
 
 	if (found)
 	{
-		debug("loading shared object '%s'", energy_objc);
-
 		//
 		ret = symplug_open(energy_objc, (void **) &energy_ops, energy_names, energy_nops);
 		debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
@@ -190,17 +186,24 @@ state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 	timestamp ts2;
 	ulong e1;
 	ulong e2;
+	void *c;
+
+	c = (void *) eh->context;
 
 	// Dedicated frequency
 	if (energy_ops.data_frequency_get != NULL) {
-		return energy_ops.data_frequency_get (eh->context, freq);
+		return energy_ops.data_frequency_get (c, freq);
+	}
+
+	if (energy_ops.dc_read == NULL) {
+		return EAR_UNDEFINED;
 	}
 
 	// Generic frequency
-	if (state_ok(plug_energy_dc_read(c, &e1)))
+	if (state_ok(energy_ops.dc_read(eh->context, &e1)))
 	{
 		do {
-			plug_energy_dc_read(c, &e2);
+			energy_ops.dc_read(c, &e2);
 			intents++;
 		} while ((e1 == e2) && (intents < 5000));
 
@@ -213,11 +216,11 @@ state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 		e1 = e2;
 
 		do {
-			plug_energy_dc_read(c, &e2);
+			energy_ops.dc_read(c, &e2);
 		} while (e1 == e2);
 
 		timestamp_getprecise(&ts2);
-		*freq = (timestamp_diff(ts2, ts1, TIME_USECS) / 2) / MAX_POWER_ERROR;
+		*freq = (timestamp_diff(&ts2, &ts1, TIME_USECS) / 2) / MAX_POWER_ERROR;
 	}
 
 	return EAR_SUCCESS;

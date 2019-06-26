@@ -39,9 +39,9 @@
 #define _POWER_MON_H_
 
 #include <common/states.h>
-#include <metrics/ipmi/energy_node.h>
+#include <metrics/handler/energy.h>
 
-#define NUM_SOCKETS 2
+#define NUM_SOCKETS	2
 #define POWER_MON_OK	EAR_SUCCESS
 #define POWER_MON_ERROR	EAR_ERROR
 

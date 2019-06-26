@@ -3,10 +3,9 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 ######## INSTALLATION
 
 libs_BINS = libpowermetrics.a libpowermetrics.so
-libs_OBJS = $(SRCDIR)/metrics/ipmi/energy_node.o \
-    $(SRCDIR)/metrics/ipmi/energy_node/ibm.o \
-    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_nm.o \
-    $(SRCDIR)/metrics/ipmi/energy_node/lenovo_sd650.o \
+libs_OBJS = \
+    $(SRCDIR)/metrics/finder/energy.o \
+    $(SRCDIR)/metrics/handler/energy.o \
     $(SRCDIR)/metrics/custom/hardware_info.o \
     $(SRCDIR)/metrics/papi/energy_cpu.o
 libs_PATH = $(DESTDIR)/lib
