@@ -190,6 +190,8 @@ state_t plug_energy_dc_read(void *c, ulong *emj)
 {
 	state_t s;
 
+	*emj = 0;
+
 	if (pthread_mutex_trylock(&lock)) {
 		return EAR_BUSY;
 	}

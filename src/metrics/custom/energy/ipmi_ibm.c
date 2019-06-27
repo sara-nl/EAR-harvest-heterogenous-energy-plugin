@@ -34,79 +34,54 @@
 #include <metrics/api/energy.h>
 #include <metrics/custom/hardware_info.h>
 
-#define IPMI_RAW_MAX_ARGS 	1024
+#define IPMI_RAW_MAX_ARGS (1024)
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
 
-state_t plug_energy_init(void **c)
+static state_t _plug_energy_init(void **c)
 {
-	uid_t uid;
+	unsigned int workaround_flags = 0;
 	int ret = 0;
 	int rs_len;
-	unsigned int workaround_flags = 0;
-	debug("ibm_node_energy_init");
-	pthread_mutex_lock(&lock);
+
+	if (getuid() != 0) {
+		state_return_msg(EAR_ERROR, 0, "the user is not root");
+	}
 
 	//
 	*c = ipmi_ctx_create();
-	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) * c;
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) *c;
 
-	//Creating the context
+	// Creating the context
 	if (!ipmi_ctx) {
-		error("ibm_node_energy_init:Error in ipmi_ctx_create %s\n", strerror(errno));
-		return EAR_ERROR;
+		state_return_msg(EAR_ERROR, 0, "creating IPMI context");
 	}
-	
-	// Checking for root
-	uid = getuid();
-	if (uid != 0) {
-		error("ibm_node_energy_init: No root permissions\n");
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+
+	// Inband context
+	if ((ret = ipmi_ctx_find_inband(ipmi_ctx, NULL, 0, 0, 0, NULL,
+			workaround_flags, IPMI_FLAGS_DEFAULT)) < 0)
+	{
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
 	}
-	// inband context
-	if ((ret = ipmi_ctx_find_inband(ipmi_ctx,
-									NULL, // driver_type
-									0, //disable_auto_probe
-									0, // driver_address
-									0, // register_spacing
-									NULL, // driver_device
-									workaround_flags,
-									IPMI_FLAGS_DEFAULT)) < 0) {
-		error("ibm_node_energy_init: %s\n", ipmi_ctx_errormsg(ipmi_ctx));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
-	}
+
 	if (ret == 0) {
-		error("ibm_node_energy_init: Not inband device found %s", ipmi_ctx_errormsg(ipmi_ctx));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
 	}
-	// This part is hardcoded since we are not supporting other commands rather than reading DC energy
+
 	send_len = 11;
+
 	if (!(bytes_rq = calloc(send_len, sizeof(uint8_t)))) {
-		error("ibm_node_energy_init: Allocating memory for request %s\n", strerror(errno));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+		state_return_msg(EAR_ALLOC_ERROR, 0, strerror(errno));
 	}
-	// We allocate a vector for the answer
+
 	if (!(bytes_rs = calloc(IPMI_RAW_MAX_ARGS, sizeof(uint8_t)))) {
-		error("ibm_node_energy_init: Allocating memory for recv data %s\n", strerror(errno));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+		state_return_msg(EAR_ALLOC_ERROR, 0, strerror(errno));
 	}
-	// ipmitool raw 0x2e 0x82 0x4d 0x4f 0 0 0 1
-	// response data: 4d 4f 00 01 02 06 ->00<- 01 27    <-  7th byte is the parameter that you need.
-	// sudo ./ipmi-raw 0x0 0x2e 0x82 0x4d 0x4f 0 0 0 1
-	// rcvd: 82 00 4D 4F 00 01 02 09 00 00 C0 (using ipmi-raw) <- 8th byte
+
+	// First change
 	bytes_rq[0] = (uint8_t) 0x00;
 	bytes_rq[1] = (uint8_t) 0x2E;
 	bytes_rq[2] = (uint8_t) 0x82;
@@ -116,112 +91,123 @@ state_t plug_energy_init(void **c)
 	bytes_rq[6] = (uint8_t) 0x00;
 	bytes_rq[7] = (uint8_t) 0x00;
 	bytes_rq[8] = (uint8_t) 0x01;
-	// RAW CMD to get the parameter
-	if ((rs_len = ipmi_cmd_raw(ipmi_ctx,
-							   bytes_rq[0],
-							   bytes_rq[1],
-							   &bytes_rq[2],
-							   7,
-							   bytes_rs,
-							   IPMI_RAW_MAX_ARGS)) < 0) {
-		error("node_energy:ibm: ipmi_cmd_raw fails %s", ipmi_ctx_errormsg(ipmi_ctx));
-		plug_energy_dispose(c);
-		pthread_mutex_unlock(&lock);
-		return EAR_ERROR;
+
+	if ((rs_len = ipmi_cmd_raw(ipmi_ctx, bytes_rq[0], bytes_rq[1], &bytes_rq[2],
+	   7, bytes_rs, IPMI_RAW_MAX_ARGS)) < 0)
+	{
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
 	}
-	// This byte must be copied at bytes_rq[6]
-	// sudo ./ipmi-raw 0x0 0x2e 0x81 0x4d 0x4f 0x00 ->0x00<- 0x01 0x82 0x0 0x08
-	bytes_rq[0] = (uint8_t) 0x00;
-	bytes_rq[1] = (uint8_t) 0x2E;
-	bytes_rq[2] = (uint8_t) 0x81;
-	bytes_rq[3] = (uint8_t) 0x4D;
-	bytes_rq[4] = (uint8_t) 0x4F;
-	bytes_rq[5] = (uint8_t) 0x00;
-	bytes_rq[6] = bytes_rs[8];
-	bytes_rq[7] = (uint8_t) 0x01;
-	bytes_rq[8] = (uint8_t) 0x82;
-	bytes_rq[9] = (uint8_t) 0x00;
+
+	// Second change
+	bytes_rq[0]  = (uint8_t) 0x00;
+	bytes_rq[1]  = (uint8_t) 0x2E;
+	bytes_rq[2]  = (uint8_t) 0x81;
+	bytes_rq[3]  = (uint8_t) 0x4D;
+	bytes_rq[4]  = (uint8_t) 0x4F;
+	bytes_rq[5]  = (uint8_t) 0x00;
+	bytes_rq[6]  =    bytes_rs[8];
+	bytes_rq[7]  = (uint8_t) 0x01;
+	bytes_rq[8]  = (uint8_t) 0x82;
+	bytes_rq[9]  = (uint8_t) 0x00;
 	bytes_rq[10] = (uint8_t) 0x08;
 
+	return EAR_SUCCESS;
+}
+
+state_t plug_energy_init(void **c)
+{
+	state_t s;
+
+	pthread_mutex_lock(&lock);
+	s = _plug_energy_init(c);
 	pthread_mutex_unlock(&lock);
 
-	return EAR_SUCCESS;
+	if (state_fail(s))
+	{
+		error("ipmi_node_manager returned error number '%d' ('%s')", s, intern_error_str);
+		plug_energy_dispose(c);
+	}
 
+	return s;
 }
 
 state_t plug_energy_dispose(void **c)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) *c;
 
-	debug("plug_energy_dispose");
-
 	if (ipmi_ctx == NULL) {
-		error("ibm: IPMI context not initiallized\n");
-		return -1;
+		return EAR_NOT_INITIALIZED;
 	}
-	// // Close context
+
 	ipmi_ctx_close(ipmi_ctx);
-	// delete context
 	ipmi_ctx_destroy(ipmi_ctx);
 	ipmi_ctx = NULL;
-	return 0;
+
+	return EAR_SUCCESS;
 }
 
 state_t plug_energy_getdata_length(void *c, size_t *size)
 {
-	debug("ibm_count_energy_data_length");
 	*size = sizeof(unsigned long);
+	return EAR_SUCCESS;
+}
+
+static state_t _plug_energy_dc_read(void *c, ulong *emj)
+{
+	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
+	ulong *emjp;
+	int rs_len;
+
+	if (ipmi_ctx == NULL) {
+		state_return_msg(EAR_ERROR, 0, "context is NULL");
+	}
+
+	rs_len = ipmi_cmd_raw(ipmi_ctx, bytes_rq[0], bytes_rq[1], &bytes_rq[2],
+		  send_len - 2, bytes_rs, IPMI_RAW_MAX_ARGS);
+
+	if (rs_len < 0) {
+		state_return_msg(EAR_ERROR, 0, ipmi_ctx_errormsg(ipmi_ctx));
+	}
+
+	emjp = (unsigned long *) &bytes_rs[rs_len - 8];
+	*emj = (unsigned long)    be64toh(*emjp);
+
 	return EAR_SUCCESS;
 }
 
 state_t plug_energy_dc_read(void *c, ulong *emj)
 {
-	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
-	unsigned long *energyp;
-	int rs_len;
-	if (ipmi_ctx == NULL) {
-		error("ibm: IPMI context not initiallized\n");
-		return EAR_ERROR;
+	state_t s;
+
+	if (pthread_mutex_trylock(&lock)) {
+		return EAR_BUSY;
 	}
-	debug("ibm_read_dc_energy");
-	if (pthread_mutex_trylock(&lock)) return EAR_BUSY;
-	// RAW CMD
-	if ((rs_len = ipmi_cmd_raw(ipmi_ctx,
-							   bytes_rq[0],
-							   bytes_rq[1],
-							   &bytes_rq[2],
-							   send_len - 2,
-							   bytes_rs,
-							   IPMI_RAW_MAX_ARGS)) < 0) {
-		pthread_mutex_unlock(&lock);
-		error("ibm: ipmi_cmd_raw fails %s\n", ipmi_ctx_errormsg(ipmi_ctx));
-		return EAR_ERROR;
-	}
-	energyp = (unsigned long *) &bytes_rs[rs_len - 8];
-	*emj = (unsigned long) be64toh(*energyp);
+
+	s = _plug_energy_dc_read(c, emj);
 	pthread_mutex_unlock(&lock);
-	return EAR_SUCCESS;
+
+	if (state_fail(s)) {
+		error("ipmi_node_manager returned error number '%d' ('%s')", s, intern_error_str);
+	}
+
+	return s;
 }
 
 state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 {
-	int ret;
-	struct timeval t;
-	ret = plug_energy_dc_read(c, emj);
-	gettimeofday(&t, NULL);
-	*tms = t.tv_sec * 1000 + t.tv_usec / 1000;
-	return ret;
-}
+	timestamp ts;
+	state_t s;
 
-state_t plug_energy_dc_time_debug(void *c, ulong *ej, ulong *emj, ulong *ts, ulong *tms)
-{
-	*ej = 0;
-	*ts = 0;
-	return plug_energy_dc_time_read(c, emj, tms);
+	s = plug_energy_dc_read(c, emj);
+
+	timestamp_getprecise(&ts);
+	*tms = timestamp_convert(&ts, TIME_MSECS);
+
+	return s;
 }
 
 state_t plug_energy_ac_read(void *c, ulong *emj)
 {
 	*emj = 0;
-	return 0;
+	return EAR_SUCCESS;
 }
