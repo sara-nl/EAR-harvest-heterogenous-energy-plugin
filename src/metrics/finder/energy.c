@@ -55,7 +55,6 @@ static state_t _finder_energy(char *name_manufacturer, char *name_product)
 	uint             area_type        = 0;
 	uint             workaround_flags = 0;
 	uint8_t          language_code    = 0;
-	uid_t            uid              = 0;
 	int              ready            = 0;
 	int              ret              = 0;
 

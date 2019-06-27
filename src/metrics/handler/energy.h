@@ -33,6 +33,8 @@
 #include <common/includes.h>
 
 typedef struct ehandler {
+	char manufacturer[SZ_NAME_MEDIUM];
+	char product[SZ_NAME_MEDIUM];
 	void *context;
 } ehandler_t;
 
@@ -44,12 +46,12 @@ state_t energy_handler_clean(ehandler_t *eh);
 
 state_t energy_data_length_get(ehandler_t *eh, size_t *size);
 
-state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq);
+state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq_us);
 
-state_t energy_dc_read(ehandler_t *eh, ulong *energy);
+state_t energy_dc_read(ehandler_t *eh, ulong *energy_mj);
 
-state_t energy_dc_time_read(ehandler_t *eh, ulong *energy, ulong *time_ms);
+state_t energy_dc_time_read(ehandler_t *eh, ulong *energy_mj, ulong *time_ms);
 
-state_t energy_ac_read(ehandler_t *eh, ulong *energy);
+state_t energy_ac_read(ehandler_t *eh, ulong *energy_mj);
 
 #endif //EAR_ENERGY_H

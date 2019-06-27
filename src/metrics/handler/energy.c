@@ -64,9 +64,14 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 	int cpu_model;
 	int found;
 
-	if (energy_loaded) {
+	if (energy_loaded)
+	{
+		strcpy(eh->product, energy_prod);
+                strcpy(eh->manufacturer, energy_manu);
+		
 		ret = energy_ops.init(&eh->context);
 		debug("energy_ops.init() returned %d", ret);
+
 		return ret;
 	}
 
@@ -81,6 +86,8 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 	{
 		sprintf(energy_objc, "%s/sbin/plugins/%s",
 			conf->installation.dir_inst, conf->installation.obj_ener);
+		sprintf(energy_prod, "custom");
+		sprintf(energy_manu, "custom");
 	}
 	else
 	{
@@ -121,7 +128,8 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 				break;
 		}
 		
-		verbose(0, "energy: detected product name '%s'", energy_prod);
+		debug(0, "energy: detected product name '%s'", energy_prod);
+		debug(0, "energy: detected manufacturer '%s'", energy_manu);
 	}
 	debug("loading shared object '%s'", energy_objc);
 
@@ -180,7 +188,7 @@ state_t energy_data_length_get(ehandler_t *eh, size_t *size)
 	preturn (energy_ops.data_length_get, eh->context, size);
 }
 
-state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
+state_t energy_data_frequency_get(ehandler_t *eh, ulong *fus)
 {
 	int intents = 0;
 	timestamp ts1;
@@ -193,7 +201,7 @@ state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 
 	// Dedicated frequency
 	if (energy_ops.data_frequency_get != NULL) {
-		return energy_ops.data_frequency_get (c, freq);
+		return energy_ops.data_frequency_get (c, fus);
 	}
 
 	if (energy_ops.dc_read == NULL) {
@@ -221,7 +229,7 @@ state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq)
 		} while (e1 == e2);
 
 		timestamp_getprecise(&ts2);
-		*freq = (timestamp_diff(&ts2, &ts1, TIME_USECS) / 2) / MAX_POWER_ERROR;
+		*fus = (timestamp_diff(&ts2, &ts1, TIME_USECS) / 2) / MAX_POWER_ERROR;
 	}
 
 	return EAR_SUCCESS;

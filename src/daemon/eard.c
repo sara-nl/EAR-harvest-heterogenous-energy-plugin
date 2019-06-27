@@ -1294,10 +1294,12 @@ int main(int argc, char *argv[]) {
 		warning("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 	}
 
-	// Energy
-	energy_data_frequency_get(&handler_energy, &energy_freq);
-	verbose(VCONF, "eard suggested time between for power performance accuracy us %lu usec.",
-			energy_freq);
+	// Energy accuracy
+        energy_data_frequency_get(&handler_energy, &energy_freq);
+
+	verbose(VCONF, "energy: detected product '%s'", handler_energy.product);
+	verbose(VCONF, "energy: detected manufacturer '%s'", handler_energy.manufacturer);
+	verbose(VCONF, "energy: power performance accuracy %lu usec", energy_freq);
 
 	// HW initialized HERE...creating communication channels
 	verbose(VCONF + 1, "Creating comm in %s for node %s\n", ear_tmp, nodename);
