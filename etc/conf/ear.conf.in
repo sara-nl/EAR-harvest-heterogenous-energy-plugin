@@ -60,6 +60,7 @@ GlobalManagerMode=0
 #---------------------------------------------------------------------------------------------------
 TmpDir=@localstatedir@
 EtcDir=@sysconfdir@
+InstDir=@prefix@
 DataBasePathName=@sysconfdir@/ear/dbs/dbs.
 #---------------------------------------------------------------------------------------------------
 # Plugin configuration
