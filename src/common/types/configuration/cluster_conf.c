@@ -534,6 +534,7 @@ void set_default_earlib_conf(earlib_conf_t *earlibc)
 	earlibc->lib_period=PERIOD;
 	earlibc->check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 }
+
 void set_default_eargm_conf(eargm_conf_t *eargmc)
 {
 	eargmc->verbose=1;
@@ -565,8 +566,7 @@ void set_default_db_conf(db_conf_t *db_conf)
 	db_conf->report_loops=!LARGE_CLUSTER;
 }
 
-
-void set_default_island_conf(node_island_t *isl_conf,uint id)
+void set_default_island_conf(node_island_t *isl_conf, uint id)
 {
 	isl_conf->id=id;
 	isl_conf->num_ranges=0;
@@ -579,6 +579,12 @@ void set_default_island_conf(node_island_t *isl_conf,uint id)
 	isl_conf->max_sig_power=MAX_SIG_POWER;
 	isl_conf->max_error_power=MAX_ERROR_POWER;
 	isl_conf->max_temp=MAX_TEMP;
+}
+
+void set_default_conf_install(conf_install_t *inst)
+{
+	sprintf(inst->obj_ener, "default");
+	sprintf(inst->obj_poli, "default");
 }
 
 /*

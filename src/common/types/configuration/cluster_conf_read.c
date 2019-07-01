@@ -1170,6 +1170,7 @@ void set_ear_conf_default(cluster_conf_t *my_conf)
     set_default_db_conf(&my_conf->database);
 	set_default_eardbd_conf(&my_conf->db_manager);
 	set_default_earlib_conf(&my_conf->earlib);
+	set_default_conf_install(&my_conf->installation);
 }
 
 int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
