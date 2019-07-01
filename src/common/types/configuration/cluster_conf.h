@@ -162,7 +162,6 @@ typedef struct db_conf
 	uint report_loops;
 } db_conf_t;
 
-
 typedef struct earlib_conf
 {
 	char coefficients_pathname[GENERIC_NAME];

@@ -62,6 +62,10 @@ TmpDir=@localstatedir@
 EtcDir=@sysconfdir@
 DataBasePathName=@sysconfdir@/ear/dbs/dbs.
 #---------------------------------------------------------------------------------------------------
+# Plugin configuration
+#---------------------------------------------------------------------------------------------------
+PluginEnergy=default
+#---------------------------------------------------------------------------------------------------
 # Authorized Users
 #---------------------------------------------------------------------------------------------------
 # Authorized users,accounts and groups are allowed to change policies, thresholds, frequencies etc,
