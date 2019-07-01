@@ -35,6 +35,7 @@
 #include <metrics/custom/hardware_info.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
+#define RAW_SIZE 14
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t *bytes_rq = NULL;
@@ -45,7 +46,6 @@ static state_t _plug_energy_init(void **c)
 {
 	unsigned int workaround_flags = 0;
 	int ret = 0;
-	int rs_len;
 
 	if (getuid() != 0) {
 		state_return_msg(EAR_ERROR, 0, "the user is not root");

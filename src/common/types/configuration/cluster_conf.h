@@ -315,6 +315,9 @@ void set_default_earlib_conf(earlib_conf_t *earlibc);
 /** Initializes the default values for a given island id conf. This function doesn't allocate memory */
 void set_default_island_conf(node_island_t *isl_conf,uint id);
 
+/** Initializes the installation configuration values */
+void set_default_conf_install(conf_install_t *inst);
+
 // Concrete data functions
 int get_node_island(cluster_conf_t *conf, char *hostname);
 
