@@ -46,7 +46,6 @@ static state_t _plug_energy_init(void **c)
 {
 	unsigned int workaround_flags = 0;
 	int ret = 0;
-	int rs_len;
 
 	if (getuid() != 0) {
 		state_return_msg(EAR_ERROR, 0, "the user is not root");
