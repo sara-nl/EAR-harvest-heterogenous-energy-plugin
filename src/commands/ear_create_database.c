@@ -84,7 +84,7 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
 {
     char query[256];
     if (strlen(db_user_pass) > 1)
-        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY %s", db_user, db_user_pass);
+        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", db_user, db_user_pass);
     else
         sprintf(query, "CREATE USER '%s'@'%%'", db_user);
     run_query(connection, query);
