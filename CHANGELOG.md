@@ -34,3 +34,4 @@
 - ereport -g now can be used in conjunction with -s
 - new eacct -x option to see EAR events
 
+- fixed an error where edb_create would not output a correct user creation query
