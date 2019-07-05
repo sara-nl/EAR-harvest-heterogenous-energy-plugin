@@ -39,4 +39,9 @@
 #include <common/types/periodic_aggregation.h>
 #include <common/types/configuration/cluster_conf.h>
 
+#include <common/types/job.h>
+#include <common/types/loop.h>
+#include <common/types/services.h>
+#include <common/types/daemon_log.h>
+
 #endif //EAR_TYPES_H

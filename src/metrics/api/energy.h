@@ -27,33 +27,24 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#ifndef _API_ENERGY_H_
+#define _API_ENERGY_H_
 
+#include <common/states.h>
+#include <common/types/generic.h>
 
-#ifndef _LENOVO_WATER_COOLING_H_
-#define _LENOVO_WATER_COOLING_H_
+state_t plug_energy_init(void **c);
 
-#include <freeipmi/freeipmi.h>
-/** Specific functions for CPU XX PLATFORM YY
-*   Grants access to ipmi device */
-int lenovo_wct_node_energy_init(ipmi_ctx_t *ipmi_ctx);
-int lenovo_wct_count_energy_data_length(ipmi_ctx_t ipmi_ctx);
-int lenovo_wct_read_dc_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy);
+state_t plug_energy_dispose(void **c);
 
-/** AC energy is not yet supported */
-int lenovo_wct_read_ac_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy);
+state_t plug_energy_getdata_length(void *c, size_t *size);
 
-/** Release access to ipmi device */
-int lenovo_wct_node_energy_dispose(ipmi_ctx_t *ipmi_ctx);
+state_t energy_data_frequency_get(void *c, ulong *freq_us);
 
-#if DEBUG_INA226
-/** Energy and time is returned in a single ipmi command */
-int lenovo_wct_read_dc_energy_and_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *energy_mj,uint8_t *raw_out,ulong *seconds,ulong *ms);
-#else
-/** Energy and time is returned in a single ipmi command */
-int lenovo_wct_read_dc_energy_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *ms);
-int lenovo_wct_read_dc_energy_and_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *energy_mj,ulong *sec,ulong *ms);
-#endif
+state_t plug_energy_dc_read(void *c, ulong *energy_mj);
 
+state_t plug_energy_dc_time_read(void *c, ulong *energy_mj, ulong *time_ms);
 
-#else
+state_t plug_energy_ac_read(void *c, ulong *energy_mj);
+
 #endif

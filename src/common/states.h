@@ -56,6 +56,8 @@
 #define EAR_SOCK_DISCONNECTED	-20
 #define EAR_SOCK_TIMEOUT		-21
 #define EAR_NO_RESOURCES		-22
+#define EAR_NOT_FOUND			-23
+#define EAR_UNDEFINED			-24
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1
@@ -93,9 +95,11 @@ int intern_error_num;
 	intern_error_str = error_str; \
 	return state;
 
-#define state_print_error(id) \
-	verbose(0, "ERROR, state id: %d (errno: %d, strerrno: %s)", \
-		id, intern_error_num, intern_error_str)
+#define state_print_error(strerr, id) \
+	error("%s, state id: %d (errno: %d, strerrno: %s)", strerr, id, intern_error_num, intern_error_str)
+
+#define state_set_error(error_str) \
+	intern_error_str = error_str;
 
 #endif //STATES_H
 

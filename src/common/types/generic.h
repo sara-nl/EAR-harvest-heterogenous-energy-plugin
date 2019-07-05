@@ -30,6 +30,7 @@
 #ifndef _EAR_TYPES_GENERIC
 #define _EAR_TYPES_GENERIC
 
+#include <stddef.h>
 #include <stdint.h>
 #include <limits.h>
 
@@ -37,11 +38,13 @@ typedef unsigned char		uchar;
 typedef unsigned long long	ull;
 typedef unsigned long long	ullong;
 typedef   signed long long	llong;
-typedef unsigned long 		ulong;
-typedef unsigned short      ushort;
+typedef unsigned long		ulong;
+typedef unsigned short		ushort;
 typedef unsigned int		uint;
-typedef uint8_t				job_type;
-typedef ulong				job_id;
+
+// Not generic
+typedef uint8_t			job_type;
+typedef ulong			job_id;
 
 // Obsolete
 #define GENERIC_NAME 		256

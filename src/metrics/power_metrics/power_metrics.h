@@ -39,9 +39,9 @@
 #define _POWER_MON_H_
 
 #include <common/states.h>
-#include <metrics/ipmi/energy_node.h>
+#include <metrics/handler/energy.h>
 
-#define NUM_SOCKETS 2
+#define NUM_SOCKETS	2
 #define POWER_MON_OK	EAR_SUCCESS
 #define POWER_MON_ERROR	EAR_ERROR
 
@@ -64,13 +64,13 @@ typedef struct power_data{
 }power_data_t;
 
 /**  Starts power monitoring */
-int init_power_ponitoring(energy_handler_t *eh);
+int init_power_ponitoring(ehandler_t *eh);
 
 /** Ends power monitoring */
-void end_power_monitoring(energy_handler_t *eh);
+void end_power_monitoring(ehandler_t *eh);
 
 /** Energy is returned in mili Joules */
-int read_enegy_data(energy_handler_t *eh,energy_data_t *acc_energy);
+int read_enegy_data(ehandler_t *eh,energy_data_t *acc_energy);
 
 /** Computes the difference between two energy measurements */
 int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff);

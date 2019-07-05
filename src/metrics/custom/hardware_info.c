@@ -35,20 +35,6 @@
 #include <unistd.h>
 #include <metrics/custom/hardware_info.h>
 
-llong hardware_get_usec()
-{
-	struct timespec tsc;
-	llong time;
-
-	syscall_gettime(&tsc);
-	// Passing seconds to micro-seconds
-	time  = (llong) tsc.tv_sec * (llong) 1000000;
-	// Passing nano-seconds to micro-seconds
-	time += (llong) (tsc.tv_nsec / 1000);
-
-	return time;
-}
-
 static int file_is_accessible(const char *path)
 {
 	return (access(path, F_OK) == 0);

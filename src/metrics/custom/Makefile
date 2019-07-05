@@ -2,11 +2,12 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) -Wno-unused-variable
 
 ######## FILES
 
-cstm_OBJS = frequency.o \
+cstm_OBJS = \
+    frequency.o \
     frequency_uncore.o \
     hardware_info.o \
     bandwidth.o \
-    bandwidth_notpriv.o
+    bandwidth_notpriv.o \
 
 ######## RULES
 
@@ -29,6 +30,7 @@ clean: clean.components rclean;
 
 %.components:
 	@ $(MAKE) -C 'bandwidth' $* || exit
+	@ $(MAKE) -C 'energy'    $* || exit
 
 ######## DEPENDENCIES
 

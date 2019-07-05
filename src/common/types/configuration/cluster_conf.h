@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <common/sizes.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
@@ -161,7 +162,6 @@ typedef struct db_conf
 	uint report_loops;
 } db_conf_t;
 
-
 typedef struct earlib_conf
 {
 	char coefficients_pathname[GENERIC_NAME];
@@ -171,6 +171,14 @@ typedef struct earlib_conf
 	uint lib_period;
 	uint check_every;
 } earlib_conf_t;
+
+typedef struct conf_install {
+	char dir_temp[SZ_PATH_INCOMPLETE];
+	char dir_conf[SZ_PATH_INCOMPLETE];
+	char dir_inst[SZ_PATH_INCOMPLETE];
+	char obj_ener[SZ_PATH_SHORT];
+	char obj_poli[SZ_PATH_SHORT];
+} conf_install_t;
 
 typedef struct cluster_conf
 {
@@ -207,6 +215,8 @@ typedef struct cluster_conf
     earlib_conf_t earlib;
     communication_node_t *comm_nodes;
     uint num_comm_nodes;
+    // Jordi special area
+	conf_install_t installation;
 } cluster_conf_t;
 
 /*
@@ -304,6 +314,9 @@ void set_default_earlib_conf(earlib_conf_t *earlibc);
 
 /** Initializes the default values for a given island id conf. This function doesn't allocate memory */
 void set_default_island_conf(node_island_t *isl_conf,uint id);
+
+/** Initializes the installation configuration values */
+void set_default_conf_install(conf_install_t *inst);
 
 // Concrete data functions
 int get_node_island(cluster_conf_t *conf, char *hostname);

@@ -26,8 +26,8 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
-#define _GNU_SOURCE
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -43,7 +43,7 @@
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
-#include <metrics/ipmi/energy_node.h>
+//#include <metrics/ipmi/energy_node.h>
 #include <daemon/power_monitor.h>
 
 #define close_app_connection()
@@ -67,7 +67,7 @@ static int numfds_req;
 
 extern cluster_conf_t my_cluster_conf;
 extern int eard_must_exit;
-static energy_handler_t my_eh_app_api;
+static ehandler_t my_eh_app_api;
 
 /*********************************************************/
 /***************** PRIVATE FUNCTIONS in this module ******/
@@ -315,8 +315,8 @@ void ear_energy(int fd_out)
 	debug("ear_energy command\n");
 	energy_mj=0;time_ms=0;
 
-	if (read_dc_energy_time_try(&my_eh_app_api,&energy_mj,&time_ms)!=EAR_SUCCESS){
-		error("Error reading energy in %s thread",TH_NAME);
+	if (energy_dc_time_read(&my_eh_app_api, &energy_mj,&time_ms) != EAR_SUCCESS){
+		error("Error reading energy in %s thread", TH_NAME);
 	}
 
 
@@ -335,7 +335,7 @@ void ear_energy(int fd_out)
 void ear_energy_debug(int fd_out)
 {
         app_recv_t data;
-        ulong energy_j,energy_mj,time_sec,time_ms;
+        ulong energy_mj, time_ms;
         struct timespec tspec;
 
         memset(&data.my_data.my_energy,0,sizeof(data.my_data.my_energy));
@@ -351,16 +351,19 @@ void ear_energy_debug(int fd_out)
                 data.my_data.my_energy.os_time_sec=tspec.tv_sec;
                 data.my_data.my_energy.os_time_ms=tspec.tv_nsec/1000000;
         }
-				energy_j=0;energy_mj=0;time_sec=0;time_ms=0;
-        if (read_dc_energy_time_debug_try(&my_eh_app_api,&energy_j,&energy_mj,&time_sec,&time_ms)!=EAR_SUCCESS){
-					error("Error reading energy in %s thread",TH_NAME);
-				}
+
+	energy_mj=0;
+	time_ms=0;
+
+        if (energy_dc_time_read(&my_eh_app_api, &energy_mj, &time_ms) != EAR_SUCCESS) {
+        	error("Error reading energy in %s thread", TH_NAME);
+        }
 
         /* Prepare the answer */
-        data.my_data.my_energy.energy_j=energy_j;
-        data.my_data.my_energy.energy_mj=energy_mj;
-        data.my_data.my_energy.time_sec=time_sec;
-        data.my_data.my_energy.time_ms=time_ms;
+        data.my_data.my_energy.energy_j  = (energy_mj / 1000);
+        data.my_data.my_energy.energy_mj = (energy_mj);
+        data.my_data.my_energy.time_sec  = (time_ms / 1000);
+        data.my_data.my_energy.time_ms   = (time_ms);
 
         send_app_answer(fd_out,&data);
 
@@ -437,10 +440,9 @@ void *eard_non_earl_api_service(void *noinfo)
 	int max_fd,i;
 
 	app_api_set_sigterm();
-	if (pthread_setname_np(pthread_self(),TH_NAME)) error("Setting name for %s thread %s",TH_NAME,strerror(errno));
-	if (node_energy_init(&my_eh_app_api)!=EAR_SUCCESS){
-		error("Error initializing node_energy_init in No-EARL_API thread");
-		pthread_exit(0);
+
+	if (pthread_setname_np(pthread_self(),TH_NAME)) {
+		error("Setting name for %s thread %s",TH_NAME,strerror(errno));
 	}
 
 	/* Create connections */
@@ -448,6 +450,12 @@ void *eard_non_earl_api_service(void *noinfo)
 		error("Error creating files for non-EARL requests\n");
 		pthread_exit(0);
 	}
+
+	if (energy_init(&my_cluster_conf, &my_eh_app_api) != EAR_SUCCESS){
+		error("Error initializing energy_init in No-EARL_API thread");
+		pthread_exit(0);
+	}
+
 	FD_ZERO(&rfds);
 	FD_SET(fd_app_to_eard, &rfds);
 	/* fd_eard_to_app is created the last */
@@ -472,7 +480,7 @@ void *eard_non_earl_api_service(void *noinfo)
 		rfds=rfds_basic;	
 	}
 	/* Close and remove files , never reached if thread is killed */
-	node_energy_dispose(&my_eh_app_api);
+	energy_dispose(&my_eh_app_api);
 	dispose_app_connection();
 	pthread_exit(0);
 }

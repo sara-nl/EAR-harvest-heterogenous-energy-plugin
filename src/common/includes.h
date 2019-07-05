@@ -1,3 +1,4 @@
+
 /**************************************************************
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
@@ -7,7 +8,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,37 +16,38 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#ifndef EAR_INCLUDES_H
+#define EAR_INCLUDES_H
 
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/resource.h>
+#include <common/time.h>
+#include <common/user.h>
+#include <common/sizes.h>
+#include <common/states.h>
+#include <common/config.h>
+#include <common/types/types.h>
+#include <common/output/verbose.h>
 
-#ifndef _LENOVO_AIR_COOLING_H_
-#define _LENOVO_AIR_COOLING_H_
-#include <freeipmi/freeipmi.h>
-/** Specific functions for CPU XX PLATFORM YY
-*   Grants access to ipmi device */
-int lenovo_act_node_energy_init(ipmi_ctx_t *ipmi_ctx);
-int lenovo_act_count_energy_data_length(ipmi_ctx_t ipmi_ctx);
-int lenovo_act_read_dc_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy);
-int lenovo_act_read_dc_energy_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *ms);
-int lenovo_act_read_dc_energy_and_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms);
-
-/** AC energy is not yet supported */
-int lenovo_act_read_ac_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy);
-
-/** Release access to ipmi device */
-int lenovo_act_node_energy_dispose(ipmi_ctx_t *ipmi_ctx);
-
-
-#else
-#endif
+#endif //EAR_INCLUDES_H

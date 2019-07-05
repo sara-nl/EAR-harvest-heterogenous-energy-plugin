@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
 	state = file_read(argv[1], (char *) coeffs, size);
 
 	if (state_fail(state)) {
-		state_print_error(state);
+		state_print_error("", state);
 		exit(1);
 	}
 
