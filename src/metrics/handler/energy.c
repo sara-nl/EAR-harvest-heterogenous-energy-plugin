@@ -80,12 +80,12 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		 "the conf value cannot be NULL if the plugin is not loaded");
 	}
 
-	found = (strcmp(conf->installation.obj_ener, "default") != 0);
+	found = (strcmp(conf->install.obj_ener, "default") != 0);
 
 	if (found)
 	{
 		sprintf(energy_objc, "%s/sbin/plugins/%s",
-			conf->installation.dir_inst, conf->installation.obj_ener);
+			conf->install.dir_inst, conf->install.obj_ener);
 		sprintf(energy_prod, "custom");
 		sprintf(energy_manu, "custom");
 	}
@@ -114,7 +114,7 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 			case CPU_SKYLAKE_X:
 				if (strinc(energy_prod, "SD530")) {
 					sprintf(energy_objc, "%s/sbin/plugins/ipmi.node.manager.so",
-							conf->installation.dir_inst);
+							conf->install.dir_inst);
 					found = 1;
 				} else if (strinc(energy_prod, "SR650")) {
 					found = 0;

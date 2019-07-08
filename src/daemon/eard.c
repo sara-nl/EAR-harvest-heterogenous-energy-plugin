@@ -143,7 +143,7 @@ void init_frequency_list() {
 	int size = ps * sizeof(ulong);
 	frequencies = (ulong *) malloc(size);
 	memcpy(frequencies, frequency_get_freq_rank_list(), size);
-	get_frequencies_path(my_cluster_conf.tmp_dir, frequencies_path);
+	get_frequencies_path(my_cluster_conf.install.dir_temp, frequencies_path);
 	shared_frequencies = create_frequencies_shared_area(frequencies_path, frequencies, size);
 	for (i = 0; i < ps; i++) {
 		verbose(0, "shared_frequencies[%d]=%lu", i, shared_frequencies[i]);
@@ -167,7 +167,7 @@ void set_verbose_variables() {
 }
 
 void set_global_eard_variables() {
-	strcpy(ear_tmp, my_cluster_conf.tmp_dir);
+	strcpy(ear_tmp, my_cluster_conf.install.dir_temp);
 }
 
 // Lock unlock functions are used to be sure a single daemon is running per node
@@ -1148,7 +1148,7 @@ int main(int argc, char *argv[]) {
 	set_global_eard_variables();
 	create_tmp(ear_tmp);
 	if (my_cluster_conf.eard.use_log) {
-		fd_my_log = create_log(my_cluster_conf.tmp_dir, "eard");
+		fd_my_log = create_log(my_cluster_conf.install.dir_temp, "eard");
 		if (fd_my_log < 0) fd_my_log = 2;
 	}
 	set_verbose_variables();
@@ -1175,7 +1175,7 @@ int main(int argc, char *argv[]) {
 	/**** SHARED MEMORY REGIONS ****/
 	/* This area is for shared info */
 	verbose(VCONF, "creating shared memory regions");
-	get_settings_conf_path(my_cluster_conf.tmp_dir, dyn_conf_path);
+	get_settings_conf_path(my_cluster_conf.install.dir_temp, dyn_conf_path);
 	verbose(VCONF + 1, "Using %s as settings path (shared memory region)", dyn_conf_path);
 	dyn_conf = create_settings_conf_shared_area(dyn_conf_path);
 	if (dyn_conf == NULL) {
@@ -1183,7 +1183,7 @@ int main(int argc, char *argv[]) {
 		_exit(0);
 	}
 	/* This area indicates EARL must resched */
-	get_resched_path(my_cluster_conf.tmp_dir, resched_path);
+	get_resched_path(my_cluster_conf.install.dir_temp, resched_path);
 	verbose(VCONF + 1, "Using %s as resched path (shared memory region)", resched_path);
 	resched_conf = create_resched_shared_area(resched_path);
 	if (resched_conf == NULL) {
@@ -1194,7 +1194,7 @@ int main(int argc, char *argv[]) {
 	/* Coefficients */
 	coeffs_size = read_coefficients();
 	verbose(VCONF, "Coefficients loaded");
-	get_coeffs_path(my_cluster_conf.tmp_dir, coeffs_path);
+	get_coeffs_path(my_cluster_conf.install.dir_temp, coeffs_path);
 	verbose(VCONF, "Using %s as coeff path (shared memory region)", coeffs_path);
 	coeffs_conf = create_coeffs_shared_area(coeffs_path, my_coefficients, coeffs_size);
 	if (coeffs_conf == NULL) {
@@ -1204,7 +1204,7 @@ int main(int argc, char *argv[]) {
 	/* Default coefficients */
 	coeffs_default_size = read_coefficients_default();
 	verbose(VCONF, "Coefficients by default loaded");
-	get_coeffs_default_path(my_cluster_conf.tmp_dir, coeffs_default_path);
+	get_coeffs_default_path(my_cluster_conf.install.dir_temp, coeffs_default_path);
 	verbose(VCONF + 1, "Using %s as coeff by default path (shared memory region)", coeffs_default_path);
 	coeffs_default_conf = create_coeffs_default_shared_area(coeffs_default_path, my_coefficients_default,
 															coeffs_default_size);
@@ -1214,7 +1214,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	/* This area incldues services details */
-	get_services_conf_path(my_cluster_conf.tmp_dir, services_conf_path);
+	get_services_conf_path(my_cluster_conf.install.dir_temp, services_conf_path);
 	verbose(VCONF + 1, "Using %s as services_conf path (shared memory region)", services_conf_path);
 	my_services_conf = create_services_conf_shared_area(services_conf_path);
 	if (my_services_conf == NULL) {

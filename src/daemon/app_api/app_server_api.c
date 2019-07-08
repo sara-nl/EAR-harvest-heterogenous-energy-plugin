@@ -446,7 +446,7 @@ void *eard_non_earl_api_service(void *noinfo)
 	}
 
 	/* Create connections */
-	if (create_app_connection(my_cluster_conf.tmp_dir)!= EAR_SUCCESS){ 
+	if (create_app_connection(my_cluster_conf.install.dir_temp)!= EAR_SUCCESS){
 		error("Error creating files for non-EARL requests\n");
 		pthread_exit(0);
 	}
@@ -470,7 +470,7 @@ void *eard_non_earl_api_service(void *noinfo)
 			for (i=0;i<numfds_req;i++){
 				if (FD_ISSET(i,&rfds)){
 					if (i==fd_app_to_eard){
-						process_connection(my_cluster_conf.tmp_dir);
+						process_connection(my_cluster_conf.install.dir_temp);
 					}else{
 						process_request(i);	
 					}
