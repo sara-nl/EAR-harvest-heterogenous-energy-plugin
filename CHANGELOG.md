@@ -1,4 +1,5 @@
 ## Unreleased
+- The energy reading system now works through plugins. (5bf9dddcbe0d815cc9bd9a39ccc296cf1c29bfb9)
 - eargm,earlib,daemon warnings fixed with -Wall and gcc 8
 - verbose messages converted to debug or error
 - error.h and debug.h included in verbose.h
