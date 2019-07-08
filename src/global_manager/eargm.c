@@ -357,7 +357,7 @@ int send_mail(uint level, double energy)
 	
 	char buff[128];
   char command[1024];
-  char mail_filename[512];
+  char mail_filename[SZ_PATH];
   int fd,ret;
   ret=fork();
   if (ret==0){
