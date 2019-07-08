@@ -117,6 +117,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
     double power_proj,time_proj;
     double power_ref,time_ref,time_current;
     ulong best_pstate;
+		state_t st;
     my_app=sig;
 
 		*ready=1;
@@ -140,26 +141,26 @@ ulong min_time_policy(signature_t *sig,int *ready)
     // is made for the reference P_STATE in case the coefficents were available.
     if (ear_frequency != EAR_default_frequency) // Use configuration when available
     {
-        if (coefficients[ref][EAR_default_pstate].available)
+				if (projections_available(ref,EAR_default_pstate)==EAR_SUCCESS)
         {
-                power_ref=project_power(my_app,&coefficients[ref][EAR_default_pstate]);
-                time_ref=project_time(my_app,&coefficients[ref][EAR_default_pstate]);
-                best_pstate=EAR_default_frequency;
+					st=project_power(my_app,ref,EAR_default_pstate,&power_ref);
+					st=project_time(_app,ref,EAR_default_pstate,&time_ref);
+          best_pstate=EAR_default_frequency;
         }
         else
         {
-                time_ref=my_app->time;
-                power_ref=my_app->DC_power;
-                best_pstate=ear_frequency;
+          time_ref=my_app->time;
+          power_ref=my_app->DC_power;
+          best_pstate=ear_frequency;
         }
     }
     // If it is the default P_STATE selected in the environment, then a projection
     // is not needed, so the signature will be enough as a reference.
     else
     { // we are running at default frequency , signature is our reference
-            time_ref=my_app->time;
-            power_ref=my_app->DC_power;
-            best_pstate=ear_frequency;
+        time_ref=my_app->time;
+        power_ref=my_app->DC_power;
+        best_pstate=ear_frequency;
     }
 
 	projection_set(EAR_default_pstate,time_ref,power_ref);
@@ -173,10 +174,10 @@ ulong min_time_policy(signature_t *sig,int *ready)
 
 		while(try_next && (i >= min_pstate))
 		{
-			if (coefficients[ref][i].available)
+			if (projections_available(ref,i)==EAR_SUCCESS)
 			{
-        power_proj=project_power(my_app,&coefficients[ref][i]);
-        time_proj=project_time(my_app,&coefficients[ref][i]);
+				st=project_power(my_app,ref,i,&power_proj);
+				st=project_time(my_app,ref,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;

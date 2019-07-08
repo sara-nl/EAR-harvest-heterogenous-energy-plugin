@@ -123,6 +123,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
 	double power_ref,time_ref;
 	ulong best_pstate;
+	state_t st;
 	my_app=sig;
 	debug("min_energy_policy starts \n");
 	if (ear_use_turbo) min_pstate=0;

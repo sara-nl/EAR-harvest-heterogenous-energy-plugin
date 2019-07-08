@@ -38,7 +38,7 @@
 
 #include <common/config.h>
 #include <common/types/signature.h>
-#include <common/types/cluster_conf.h>
+#include <common/types/configuration/cluster_conf.h>
 // #include <common/types/coefficient.h>
 
 typedef struct projection

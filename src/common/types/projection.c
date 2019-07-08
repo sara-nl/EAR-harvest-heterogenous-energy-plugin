@@ -58,7 +58,7 @@ typedef struct model_symbols {
 static models_sym_t models_syms_fun;
 static void    *models_syms_obj = NULL;
 const int       models_funcs_n = 4;
-const char     *polsyms_nam[] = {
+const char     *models_syms_nam[] = {
   "ear_model_init",
   "ear_model_project_time",
   "ear_model_project_power",
@@ -76,14 +76,14 @@ static void models_set_symbols(void *obj, const char *nam[], void *sym[], int n)
 static state_t models_load(char *obj_path)
 {
 
-  model_syms_obj = dlopen(obj_path, RTLD_LOCAL | RTLD_LAZY);
+  models_syms_obj = dlopen(obj_path, RTLD_LOCAL | RTLD_LAZY);
 
-  if (!model_syms_obj) {
+  if (!models_syms_obj) {
     error("Error loading models plugin '%s' (%s)", obj_path, dlerror());
     return EAR_ERROR;
   }
 
-  models_set_symbols(model_syms_obj, models_syms_nam, (void **) &models_syms_fun, models_syms_n);
+  models_set_symbols(models_syms_obj, models_syms_nam, (void **) &models_syms_fun, models_funcs_n);
 
   return EAR_SUCCESS;
 }
@@ -100,8 +100,8 @@ state_t projections_init(conf_install_t *data,uint pstates)
     obj_path=basic_path;
 		debug("SLURM_EAR_POWER_MODEL not defined using default %s",obj_path);
   }
-	st=model_load(obj_path);
-  if (st==EAR_SUCCESS) return models_syms_fun->init(etc,tmp,pstates);
+	st=models_load(obj_path);
+  if (st==EAR_SUCCESS) return models_syms_fun.init(data->dir_conf,data->dir_temp,pstates);
   return st;
 }
 
@@ -110,16 +110,16 @@ state_t projections_init(conf_install_t *data,uint pstates)
 
 state_t project_time(signature_t *sign, ulong from,ulong to,double *ptime)
 {
-	freturn(models_syms_fun->project_time,sign,from,to,ptime);
+	freturn(models_syms_fun.project_time,sign,from,to,ptime);
 }
 state_t project_power(signature_t *sign, ulong from,ulong to,double *ppower)
 {
-	freturn(models_syms_fun->project_power,sign,from,to,ppower);
+	freturn(models_syms_fun.project_power,sign,from,to,ppower);
 }
 
 state_t projection_available(ulong from,ulong to)
 {
-	freturn(models_syms_fun->projection_available,from,to);
+	freturn(models_syms_fun.projection_available,from,to);
 }
 
 
