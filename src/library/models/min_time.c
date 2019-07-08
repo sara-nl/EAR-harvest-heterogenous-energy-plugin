@@ -49,7 +49,6 @@
 
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
-extern coefficient_t **coefficients;
 extern uint EAR_default_pstate;
 extern double performance_gain;
 extern application_t *signatures;

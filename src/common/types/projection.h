@@ -36,8 +36,10 @@
 #ifndef _EAR_TYPES_PROJECTION
 #define _EAR_TYPES_PROJECTION
 
+#include <common/config.h>
 #include <common/types/signature.h>
-#include <common/types/coefficient.h>
+#include <common/types/cluster_conf.h>
+// #include <common/types/coefficient.h>
 
 typedef struct projection
 {
@@ -45,12 +47,13 @@ typedef struct projection
 	double Power;
 } projection_t;
 
+state_t projections_init(conf_install_t *data,uint pstates);
+
 // Projections
-double project_cpi(signature_t *sign, coefficient_t *coeff);
 
-double project_time(signature_t *sign, coefficient_t *coeff);
+state_t project_time(signature_t *sign, ulong from,ulong to,double *ptime);
 
-double project_power(signature_t *sign, coefficient_t *coeff);
+state_t project_power(signature_t *sign, ulong from,ulong to,double *ppower);
 
 // Inherited
 /** Allocates memory to contain the projections for the p_states given by

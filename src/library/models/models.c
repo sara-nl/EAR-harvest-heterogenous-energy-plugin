@@ -69,9 +69,7 @@ double performance_penalty ;
 double performance_gain ;
 
 // Normals
-coefficient_t **coefficients;
-coefficient_t *coefficients_sm;
-int num_coeffs;
+//
 static uint reset_freq_opt = RESET_FREQ;
 static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
@@ -251,106 +249,18 @@ void init_power_policy()
 	}
 	policy_id_to_name(power_model_policy,application.job.policy);
 	init_policy_functions();
+	app_policy.init(frequency_get_num_pstates());
 
 }
 
-void init_coeff_data(coefficient_t *c_m,coefficient_t *c_sm)
+
+void init_power_models()
 {
-	memcpy(c_m,c_sm,sizeof(coefficient_t));
-}
-
-
-void init_power_models(unsigned int p_states, unsigned long *p_states_list)
-{
-	char nodename[128];
-	int i, ref;
-	char *use_def;
-
-	debug( "init_power_models p_states=%u", p_states);
-
-	use_def=getenv("USE_DEFAULT_COEFFICIENTS");
-	if (use_def!=NULL) use_default=atoi(use_def);
-    #if EAR_LIB_SYNC 
-    if (my_master_rank==0) {
-    #endif
-	debug("Using average coefficients=%d",use_default);
-	#if EAR_LIB_SYNC 
-	}
-	#endif
-
-	// Initializations
-	// We start t nominal by default
+	uint p_states;
+	p_state=frequency_get_num_pstates();
 	ear_models_pstates = p_states;
-
-	// Coefficient file
-	gethostname(nodename, sizeof(nodename));
-	strtok(nodename,".");
-
-
-
-	// Coefficient pointers allocation
-	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * p_states);
-
-	if (coefficients == NULL) {
-		error("earl: Error allocating memory for p_states coefficients\n");
-		exit(1);
-	}
-
-	for (i = 0; i < p_states; i++)
-	{
-		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * p_states);
-		if (coefficients[i] == NULL) {
-			error("earl: Error allocating memory for p_states coefficients fn %d\n",i);
-			exit(1);
-		}
-
-		for (ref = 0; ref < p_states; ref++)
-		{
-			
-			coefficients[i][ref].pstate_ref = p_states_list[i];
-			coefficients[i][ref].pstate = p_states_list[ref];
-			coefficients[i][ref].available = 0;
-		}
-	}
-
 	projection_create(p_states);
-	//
 	projection_reset(p_states);
-
-	// Coefficient pointers allocation and reading
-
-
-	char coeffs_path[GENERIC_NAME];
-	if (use_default){
-		get_coeffs_default_path(get_ear_tmp(),coeffs_path);
-	}else{
-		get_coeffs_path(get_ear_tmp(),coeffs_path);	
-	}
-	num_coeffs=0;
-	if (use_default){
-		coefficients_sm=attach_coeffs_default_shared_area(coeffs_path,&num_coeffs);
-	}else{
-		coefficients_sm=attach_coeffs_shared_area(coeffs_path,&num_coeffs);
-	}
-	if (num_coeffs>0){
-		num_coeffs=num_coeffs/sizeof(coefficient_t);
-		debug("%d coefficients found",num_coeffs);
-		int ccoeff;
-		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
-			ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);	
-			i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
-			if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){ 
-				init_coeff_data(&coefficients[ref][i],&coefficients_sm[ccoeff]);
-			}else{ 
-				if (coefficients_sm[ccoeff].available){
-					error("Error: invalid coefficients for ref %lu or proj %lu",coefficients_sm[ccoeff].pstate_ref,coefficients_sm[ccoeff].pstate);
-				}
-			}
-		}
-	}else{
-		warning("NO coefficients found");
-	}
-	app_policy.init(p_states);
 }
 
 
