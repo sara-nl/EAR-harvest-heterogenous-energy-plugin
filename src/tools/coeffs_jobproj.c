@@ -217,8 +217,8 @@ static void print()
 					if (p_cofs[c].pstate == f_dst[t1])
 					{
 						//proj_cpi[t2] = project_cpi(p_sign, &p_cofs[c]);
-						proj_tim[t2] = project_time(p_sign, &p_cofs[c]);
-						proj_pow[t2] = project_power(p_sign, &p_cofs[c]);
+						proj_tim[t2] = basic_project_time(p_sign, &p_cofs[c]);
+						proj_pow[t2] = basic_project_power(p_sign, &p_cofs[c]);
 						//printf("%d %0.2lf %lu\n", t2, proj_tim[t2], p_cofs[c].pstate);
 						t2 += 1;
 					}

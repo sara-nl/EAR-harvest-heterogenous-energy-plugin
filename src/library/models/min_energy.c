@@ -148,7 +148,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	// is made for the reference P_STATE in case the coefficents were available.
 	if (ear_frequency != EAR_default_frequency) // Use configuration when available
 	{
-		if (projecttion_available(ref,EAR_default_pstate)==EAR_SUCCESS)
+		if (projection_available(ref,EAR_default_pstate)==EAR_SUCCESS)
 		{
 				st=project_power(my_app,ref,EAR_default_pstate,&power_ref);
 				st=project_time(my_app,ref,EAR_default_pstate,&time_ref);
@@ -180,8 +180,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	for (i = min_pstate; i < me_policy_pstates;i++)
 	{
-		/* If coeffs are available */
-		if (projecttion_available(ref,i)==EAR_SUCCESS)
+		if (projection_available(ref,i)==EAR_SUCCESS)
 		{
 				st=project_power(my_app,ref,i,&power_proj);
 				st=project_time(my_app,ref,i,&time_proj);
@@ -190,7 +189,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 				debug("pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
-					best_pstate = coefficients[ref][i].pstate;
+					best_pstate = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
 			}
 		}

@@ -257,7 +257,7 @@ void init_power_policy()
 void init_power_models()
 {
 	uint p_states;
-	p_state=frequency_get_num_pstates();
+	p_states=frequency_get_num_pstates();
 	ear_models_pstates = p_states;
 	projection_create(p_states);
 	projection_reset(p_states);

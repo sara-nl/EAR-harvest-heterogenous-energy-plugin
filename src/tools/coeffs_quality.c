@@ -209,9 +209,9 @@ static void compute()
 					double *errs_b = &errs[i];	
 
 					// Error
-					prjs_b[c+0] = project_cpi(&mrgd[a].signature, &coeffs[c]);
-					prjs_b[c+1] = project_time(&mrgd[a].signature, &coeffs[c]);
-					prjs_b[c+2] = project_power(&mrgd[a].signature, &coeffs[c]);
+					prjs_b[c+0] = basic_project_cpi(&mrgd[a].signature, &coeffs[c]);
+					prjs_b[c+1] = basic_project_time(&mrgd[a].signature, &coeffs[c]);
+					prjs_b[c+2] = basic_project_power(&mrgd[a].signature, &coeffs[c]);
 
 					// Fin that application for that coefficient
 					n = find(mrgd, n_mrgd, mrgd[a].job.app_id, coeffs[c].pstate);

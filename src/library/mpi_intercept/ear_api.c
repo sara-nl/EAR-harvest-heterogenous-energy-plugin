@@ -44,7 +44,7 @@
 #include <common/environment.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
-#include <common/types/projections.h>
+#include <common/types/projection.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
@@ -290,6 +290,7 @@ void update_configuration()
 void ear_init()
 {
 	char *summary_pathname;
+	state_t st;
 
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
