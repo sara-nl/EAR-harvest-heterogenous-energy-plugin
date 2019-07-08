@@ -183,8 +183,6 @@ typedef struct conf_install {
 typedef struct cluster_conf
 {
 	// Library & common conf
-	char tmp_dir[GENERIC_NAME];
-	char etc_dir[GENERIC_NAME];
 	char DB_pathname[GENERIC_NAME];
     char net_ext[SMALL];
 	uint verbose;
@@ -215,8 +213,7 @@ typedef struct cluster_conf
     earlib_conf_t earlib;
     communication_node_t *comm_nodes;
     uint num_comm_nodes;
-    // Jordi special area
-	conf_install_t installation;
+	conf_install_t install;
 } cluster_conf_t;
 
 /*

@@ -362,7 +362,7 @@ int send_mail(uint level, double energy)
   ret=fork();
   if (ret==0){
     sprintf(buff,"Detected WARNING level %u, %lfi %% of energy from the total energy limit\n",level,energy);
-    sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.tmp_dir);
+    sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.install.dir_temp);
     fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
     if (fd<0){
       error("Warning mail file cannot be created at %s (%s)",mail_filename,strerror(errno));
@@ -552,7 +552,7 @@ int main(int argc,char *argv[])
         print_cluster_conf(&my_cluster_conf);
     }
 	if (my_cluster_conf.eargm.use_log){
-		fd_my_log=create_log(my_cluster_conf.tmp_dir,"eargmd");
+		fd_my_log=create_log(my_cluster_conf.install.dir_temp,"eargmd");
 	
 	}
   VERB_SET_FD(fd_my_log);

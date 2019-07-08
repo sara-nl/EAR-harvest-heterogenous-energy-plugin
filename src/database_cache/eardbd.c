@@ -200,7 +200,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 	// Output redirection
 	if (conf_clus->db_manager.use_log) {
-		verbose_maxxx("redirecting output to '%s'", conf_clus->tmp_dir);
+		verbose_maxxx("redirecting output to '%s'", conf_clus->install.dir_temp);
 	}
 
 	// Database
@@ -236,7 +236,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	mirror_too = atoi(argv[2]);
 
 	strcpy(server_host, argv[3]);
-	strcpy(conf_clus->tmp_dir, argv[5]);
+	strcpy(conf_clus->install.dir_temp, argv[5]);
 	#endif
 
 	// Ports
@@ -250,7 +250,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// PID protection
 	pid_t other_server_pid;
 	pid_t other_mirror_pid;
-	path_pid = conf_clus->tmp_dir;
+	path_pid = conf_clus->install.dir_temp;
 
 	// Neither server nor mirror
 	if (!server_too && !mirror_too) {
@@ -262,7 +262,7 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 
 	if (state_fail(process_pid_file_save(&proc_data_srv))) {
 		_error("while testing the temporal directory '%s' (%s)",
-			   conf_clus->tmp_dir, intern_error_str);
+			   conf_clus->install.dir_temp, intern_error_str);
 	}
 
 	process_pid_file_clean(&proc_data_srv);
@@ -621,7 +621,7 @@ static void init_output_redirection(int argc, char **argv, cluster_conf_t *conf_
 	}
 
 	if (conf_clus->db_manager.use_log) {
-		fd_output = create_log(conf_clus->tmp_dir, "eardbd");
+		fd_output = create_log(conf_clus->install.dir_temp, "eardbd");
 	}
 	if (fd_output < 0) {
 		fd_output = verb_channel;
