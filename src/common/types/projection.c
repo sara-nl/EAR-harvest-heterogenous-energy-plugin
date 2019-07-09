@@ -97,7 +97,7 @@ state_t projections_init(uint user_type,conf_install_t *data,uint pstates)
 	char basic_path[SZ_PATH_INCOMPLETE];
   char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
   if ((obj_path==NULL) || (user_type!=AUTHORIZED)){
-		sprintf(basic_path,"%s/libbasic_model.so",data->dir_inst);
+		sprintf(basic_path,"%s/libbasic_model.so",data->dir_plug);
     obj_path=basic_path;
 		debug("SLURM_EAR_POWER_MODEL not defined using default %s",obj_path);
   }
