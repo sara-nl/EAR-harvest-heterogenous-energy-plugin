@@ -1134,7 +1134,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			strcpy(conf->install.dir_inst, token);
 
 			// Plugin path
-			sprintf(conf->install.dir_plug, "%s/lib/plugin", token);
+			sprintf(conf->install.dir_plug, "%s/lib/plugins", token);
 		}
 		else if (!strcmp(token, "PLUGINENERGY"))
 		{
