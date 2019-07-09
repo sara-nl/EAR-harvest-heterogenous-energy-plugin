@@ -1118,17 +1118,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			remove_chars(token, ' ');
 			strcpy(conf->install.dir_temp, token);
 
-			// For compatibility
-			strcpy(conf->install.dir_temp, token);
 		}
 		else if (!strcmp(token, "ETCDIR"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
 			remove_chars(token, ' ');
-			strcpy(conf->install.dir_conf, token);
-
-			// For compatibility
 			strcpy(conf->install.dir_conf, token);
 		}
 		else if (!strcmp(token, "INSTDIR"))
@@ -1137,6 +1132,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(token, "\n");
 			remove_chars(token, ' ');
 			strcpy(conf->install.dir_inst, token);
+
+			// Plugin path
+			sprintf(conf->install.dir_plug, "%s/lib/plugins", token);
 		}
 		else if (!strcmp(token, "PLUGINENERGY"))
 		{

@@ -10,6 +10,8 @@ allt: tracer.o tracer_mpi.o
 
 ######## OPTIONS
 
+install: ;
+
 clean: rclean;
 
 ######## DEPENDENCIES

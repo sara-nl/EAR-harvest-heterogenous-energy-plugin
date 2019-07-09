@@ -176,6 +176,7 @@ typedef struct conf_install {
 	char dir_temp[SZ_PATH_INCOMPLETE];
 	char dir_conf[SZ_PATH_INCOMPLETE];
 	char dir_inst[SZ_PATH_INCOMPLETE];
+	char dir_plug[SZ_PATH_INCOMPLETE];
 	char obj_ener[SZ_PATH_SHORT];
 	char obj_poli[SZ_PATH_SHORT];
 } conf_install_t;

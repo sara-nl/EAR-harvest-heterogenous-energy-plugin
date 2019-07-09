@@ -32,10 +32,10 @@ coeffs_compute: coeffs_compute.c $(comm_OBJS)
 	$(CCC) -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
 
 coeffs_jobproj: coeffs_jobproj.c $(comm_OBJS)
-	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl
 
 coeffs_quality: coeffs_quality.c $(comm_OBJS)
-	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl
 
 coeffs_show: coeffs_show.c $(comm_OBJS)
 	$(CCC) -I$(SRCDIR) -o $@ $< $(comm_OBJS)

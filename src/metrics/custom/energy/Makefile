@@ -9,8 +9,8 @@ ener_BINS = \
 ener_DEPS = \
     $(SRCDIR)/metrics/api/energy.h \
     $(SRCDIR)/common/libcommon.a
-ener_PATH = $(DESTDIR)/sbin/plugins
-ener_PERM = 0777
+ener_PATH = $(DESTDIR)/lib/plugins
+ener_PERM = 0775
 
 ######## RULES
 

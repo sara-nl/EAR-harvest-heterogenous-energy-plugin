@@ -5,6 +5,8 @@ metrics.o: metrics.c metrics.h
 
 ######## OPTIONS 
 
+install: ;
+
 clean: rclean;
 
 ######## DEPENDENCIES

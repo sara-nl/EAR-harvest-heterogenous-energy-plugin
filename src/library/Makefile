@@ -1,5 +1,5 @@
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) 
-LDFLAGS = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS)
+LDFLAGS = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) -ldl
 
 ######## VARS
 
@@ -60,7 +60,7 @@ all: all.components $(libs_OBJS)
 
 ######## OPTIONS
 
-install: libs.ginstall;
+install: install.components libs.ginstall;
 
 %.install: ;
 
