@@ -395,7 +395,7 @@ void ear_init()
 
 	// Policies && models
 	init_power_policy();
-	st=projections_init(&system_conf->installation,frequency_get_num_pstates());
+	st=projections_init(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
 	if (st!=EAR_SUCCESS) error("Power model initialization error");
 	init_power_models();
 

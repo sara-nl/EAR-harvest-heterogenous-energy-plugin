@@ -14,8 +14,8 @@ all: $(OBJS) $(SO_OBJS)
 %.o: %.c %.h
 	$(CC) $(CC_FLAGS) $(CFLAGS) -c $<
 
-libbasic_model.so:basic_model.c
-	$(CC) -fPIC -O3 -I$(SRCDIR) $(CC_FLAGS) $(CFLAGS) -olibbasic_model.so -c basic_model.c
+libbasic_model.so:basic_model.o
+	$(CC) -shared -fPIC -O3 -I$(SRCDIR) $(CC_FLAGS) $(CFLAGS) -o libbasic_model.so  basic_model.o
 
 ######## OPTIONS 
 

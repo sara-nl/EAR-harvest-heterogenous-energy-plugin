@@ -47,7 +47,7 @@ typedef struct projection
 	double Power;
 } projection_t;
 
-state_t projections_init(conf_install_t *data,uint pstates);
+state_t projections_init(uint user_type,conf_install_t *data,uint pstates);
 
 // Projections
 

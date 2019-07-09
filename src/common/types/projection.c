@@ -34,6 +34,7 @@
 #include <common/config.h>
 #include <common/types/projection.h>
 #include <common/output/verbose.h>
+#include <common/types/configuration/cluster_conf.h>
 
 #define SHOW_DEBUGS 1
 
@@ -90,12 +91,12 @@ static state_t models_load(char *obj_path)
 
 
 
-state_t projections_init(conf_install_t *data,uint pstates)
+state_t projections_init(uint user_type,conf_install_t *data,uint pstates)
 {
   state_t st;
 	char basic_path[SZ_PATH_INCOMPLETE];
   char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
-  if (obj_path==NULL){
+  if ((obj_path==NULL) || (user_type!=AUTHORIZED)){
 		sprintf(basic_path,"%s/libbasic_model.so",data->dir_inst);
     obj_path=basic_path;
 		debug("SLURM_EAR_POWER_MODEL not defined using default %s",obj_path);
