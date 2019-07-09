@@ -33,6 +33,7 @@
 
 #include <common/config.h>
 #include <common/types/projection.h>
+#include <common/symplug.h>
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 
@@ -66,27 +67,9 @@ const char     *models_syms_nam[] = {
   "ear_model_projection_available",
 };
 
-static void models_set_symbols(void *obj, const char *nam[], void *sym[], int n)
-{
-  int i;
-
-  for (i = 0; i < n; ++i) {
-    sym[i] = dlsym(obj, nam[i]);
-  }
-}
 static state_t models_load(char *obj_path)
 {
-
-  models_syms_obj = dlopen(obj_path, RTLD_LOCAL | RTLD_LAZY);
-
-  if (!models_syms_obj) {
-    error("Error loading models plugin '%s' (%s)", obj_path, dlerror());
-    return EAR_ERROR;
-  }
-
-  models_set_symbols(models_syms_obj, models_syms_nam, (void **) &models_syms_fun, models_funcs_n);
-
-  return EAR_SUCCESS;
+  return symplug_open(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
 }
 
 
