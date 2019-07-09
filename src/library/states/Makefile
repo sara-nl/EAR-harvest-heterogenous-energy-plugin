@@ -15,6 +15,8 @@ allt: $(OBJS)
 
 ######## OPTIONS 
 
+install: ;
+
 clean: rclean;
 
 ######## DEPENDENCIES
