@@ -29,32 +29,83 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <dlfcn.h>
+
+#include <common/config.h>
 #include <common/types/projection.h>
+#include <common/symplug.h>
+#include <common/output/verbose.h>
+#include <common/types/configuration/cluster_conf.h>
+
+#define SHOW_DEBUGS 1
+
+#define freturn(call, ...) \
+   { \
+   if (call == NULL) { \
+       return EAR_SUCCESS; \
+   } \
+   return call (__VA_ARGS__); \
+   }
+
+typedef struct model_symbols {
+  state_t (*init)        (char *etc,char *tmp,uint pstates);
+  state_t (*project_time)     (signature_t *sign,ulong from,ulong to,double *ptime);
+  state_t (*project_power)    (signature_t *sign,ulong from,ulong to,double *ppower);
+  state_t (*projection_available)    (ulong from,ulong to);
+} models_sym_t;
+
+
+
+// Static data
+static models_sym_t models_syms_fun;
+static void    *models_syms_obj = NULL;
+const int       models_funcs_n = 4;
+const char     *models_syms_nam[] = {
+  "ear_model_init",
+  "ear_model_project_time",
+  "ear_model_project_power",
+  "ear_model_projection_available",
+};
+
+static state_t models_load(char *obj_path)
+{
+  return symplug_open(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
+}
+
+
+
+state_t projections_init(uint user_type,conf_install_t *data,uint pstates)
+{
+  state_t st;
+	char basic_path[SZ_PATH_INCOMPLETE];
+  char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
+  if ((obj_path==NULL) || (user_type!=AUTHORIZED)){
+		sprintf(basic_path,"%s/models/libbasic_model.so",data->dir_plug);
+    obj_path=basic_path;
+		debug("SLURM_EAR_POWER_MODEL not defined using default %s",obj_path);
+  }
+	st=models_load(obj_path);
+  if (st==EAR_SUCCESS) return models_syms_fun.init(data->dir_conf,data->dir_temp,pstates);
+  return st;
+}
+
 
 // Projections
-double project_cpi(signature_t *sign, coefficient_t *coeff)
+
+state_t project_time(signature_t *sign, ulong from,ulong to,double *ptime)
 {
-	return (coeff->D * sign->CPI) +
-		   (coeff->E * sign->TPI) +
-		   (coeff->F);
+	freturn(models_syms_fun.project_time,sign,from,to,ptime);
+}
+state_t project_power(signature_t *sign, ulong from,ulong to,double *ppower)
+{
+	freturn(models_syms_fun.project_power,sign,from,to,ppower);
 }
 
-double project_time(signature_t *sign, coefficient_t *coeff)
+state_t projection_available(ulong from,ulong to)
 {
-	double proj_cpi = project_cpi(sign, coeff);
-	double freq_src = (double) coeff->pstate_ref;
-	double freq_dst = (double) coeff->pstate;
-
-	return ((sign->time * proj_cpi) / sign->CPI) *
-		   (freq_src / freq_dst);
+	freturn(models_syms_fun.projection_available,from,to);
 }
 
-double project_power(signature_t *sign, coefficient_t *coeff)
-{
-	return (coeff->A * sign->DC_power) +
-		   (coeff->B * sign->TPI) +
-		   (coeff->C);
-}
 
 // Inherited
 static projection_t *projections;
@@ -93,3 +144,36 @@ void projection_reset(uint p_states)
 		projections[i].Power=0;
 	}
 }
+
+double basic_project_cpi(signature_t *sign, coefficient_t *coeff)
+{
+  return (coeff->D * sign->CPI) +
+       (coeff->E * sign->TPI) +
+       (coeff->F);
+}
+
+double basic_project_time(signature_t *sign,coefficient_t *coeff)
+{
+	double ptime=0;
+  if (coeff->available){
+      double proj_cpi = basic_project_cpi(sign, coeff);
+      double freq_src = (double) coeff->pstate_ref;
+      double freq_dst = (double) coeff->pstate;
+
+      ptime= ((sign->time * proj_cpi) / sign->CPI) *
+       (freq_src / freq_dst);
+  }
+	return ptime;
+}
+
+double basic_project_power(signature_t *sign, coefficient_t *coeff)
+{
+	double ppower=0;
+  if (coeff->available){
+      ppower= (coeff->A * sign->DC_power) +
+       (coeff->B * sign->TPI) +
+       (coeff->C);
+  }
+	return ppower;
+}
+

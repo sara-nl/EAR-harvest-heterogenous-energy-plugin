@@ -41,11 +41,11 @@ extern ulong eard_max_pstate;
 
 void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {
-	char checkpoint_file[MAX_PATH_SIZE*2];
+	char checkpoint_file[SZ_PATH];
 	mode_t old_mask;
 	int fd;
 	if (eard_dyn_conf==NULL)	return;
-	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->tmp_dir,".eard_check");
+	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->install.dir_temp,".eard_check");
 	verbose(VCHCK,"Using checkpoint file %s",checkpoint_file);
 	old_mask=umask(0);	
 	fd=open(checkpoint_file,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
@@ -64,10 +64,10 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 }
 void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {
-	char checkpoint_file[MAX_PATH_SIZE*2];
+	char checkpoint_file[SZ_PATH];
 	int fd;
 	if (eard_dyn_conf==NULL)	return;
-	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->tmp_dir,".eard_check");
+	sprintf(checkpoint_file,"%s/%s",eard_dyn_conf->cconf->install.dir_temp,".eard_check");
 	verbose(VCHCK,"Using checkpoint file %s",checkpoint_file);
     fd=open(checkpoint_file,O_RDONLY);
     if (fd<0){

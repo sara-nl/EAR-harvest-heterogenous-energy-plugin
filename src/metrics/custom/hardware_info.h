@@ -35,7 +35,6 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <metrics/common/cpuid.h>
-#include <metrics/common/syscall.h>
 
 // Linux files
 #define PATH_SYS_SYSTEM		"/sys/devices/system"
@@ -69,10 +68,6 @@ typedef struct topology {
 	int sockets;
 	int numas;
 } topology_t;
-
-/** Return the passed microseconds (usec). No state is returned because the
-  * time retrieving function has to return as fast as possible. */
-llong hardware_gettime();
 
 /** */
 state_t hardware_gettopology(topology_t *topo);

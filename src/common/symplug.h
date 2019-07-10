@@ -27,14 +27,18 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_SYSCALL_H
-#define EAR_SYSCALL_H
+#ifndef EAR_PRIVATE_SYMPLUG_H
+#define EAR_PRIVATE_SYMPLUG_H
 
-#include <time.h>
-#include <sys/syscall.h>
+#include <common/states.h>
+#include <common/types/generic.h>
 
-#define SYS_TIME __NR_clock_gettime
+#define preturn(call, ...) \
+	if (call == NULL) { \
+		return EAR_UNDEFINED; \
+	} \
+	return call (__VA_ARGS__);
 
-void syscall_gettime(struct timespec *time);
+state_t symplug_open(char *path, void *calls[], const char *names[], uint n);
 
-#endif //EAR_SYSCALL_H
+#endif //EAR_PRIVATE_SYMPLUG_H

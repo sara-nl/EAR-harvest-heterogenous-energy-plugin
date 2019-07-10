@@ -1,5 +1,5 @@
 CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
-LDFLAGS = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -lm -pthread
+LDFLAGS = $(CPUF_LDFLAGS) $(IPMI_LDFLAGS) $(DB_LDFLAGS) -lm -pthread -ldl
 
 ######## INSTALLATION
 
@@ -23,8 +23,8 @@ eard_OBJS = \
 eard_OBJS += \
     $(SRCDIR)/control/frequency.o \
     $(SRCDIR)/database_cache/eardbd_api.o \
+    $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a \
-    $(SRCDIR)/metrics/libmetrics.a
 
 ######## RULES
 

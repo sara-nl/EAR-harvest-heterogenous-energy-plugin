@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,37 +15,40 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <dlfcn.h>
+#include <common/symplug.h>
+#include <common/includes.h>
 
+static void symplug_join(void *handle, void *calls[], const char *names[], uint n)
+{
+	uint i;
 
-#ifndef _IBM_H_
-#define _IBM_H_
-#include <freeipmi/freeipmi.h>
-/** Specific functions for CPU XX PLATFORM YY 
-*   Grants access to ipmi device */
-int ibm_node_energy_init(ipmi_ctx_t *ipmi_ctx);
-int ibm_count_energy_data_length(ipmi_ctx_t ipmi_ctx);
-int ibm_read_dc_energy(ipmi_ctx_t ipmi_ctx,ulong *energy);
-int ibm_read_dc_energy_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *ms);
-int ibm_read_dc_energy_and_time(ipmi_ctx_t ipmi_ctx,ulong *energy,ulong *energy_mj,ulong *seconds,ulong *ms);
+	for (i = 0; i < n; ++i) {
+		calls[i] = dlsym(handle, names[i]);
+	}
+}
 
-/** AC energy is not yet supported */
-int ibm_read_ac_energy(ipmi_ctx_t ipmi_ctx,unsigned long *energy);
+state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
+{
+	void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
 
-/** Release access to ipmi device */
-int ibm_node_energy_dispose(ipmi_ctx_t *ipmi_ctx);
+	if (!handle) {
+		state_return_msg(EAR_ERROR, 0, "error during dlopen(), missing symbol?");
+	}
 
+	symplug_join(handle, calls, names, n);
 
-#else
-#endif
+	return EAR_SUCCESS;
+}

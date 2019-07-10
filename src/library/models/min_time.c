@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/types/generic.h>
 #include <common/types/log.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
@@ -49,7 +50,6 @@
 
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
-extern coefficient_t **coefficients;
 extern uint EAR_default_pstate;
 extern double performance_gain;
 extern application_t *signatures;
@@ -93,14 +93,14 @@ static void go_next_mt(int curr_pstate,int *ready,ulong *best_pstate,int min_pst
 
 static int is_better_min_time(signature_t * curr_sig,signature_t *prev_sig)
 {
-    double freq_gain,perf_gain;
+  double freq_gain,perf_gain;
 	int curr_freq,prev_freq;
 
 	curr_freq=curr_sig->def_f;
 	prev_freq=prev_sig->def_f;
 	debug("curr %u prev %u\n",curr_freq,prev_freq);
 	freq_gain=performance_gain*(double)((curr_freq-prev_freq)/(double)prev_freq);
-   	perf_gain=(prev_sig->time-curr_sig->time)/prev_sig->time;
+  perf_gain=(prev_sig->time-curr_sig->time)/prev_sig->time;
 	debug("Performance gain %lf Frequency gain %lf\n",perf_gain,freq_gain);
 	if (perf_gain>=freq_gain) return 1;
     return 0;
@@ -117,7 +117,8 @@ ulong min_time_policy(signature_t *sig,int *ready)
     double freq_gain,perf_gain;
     double power_proj,time_proj;
     double power_ref,time_ref,time_current;
-    ulong best_pstate;
+    ulong best_pstate,freq_ref;
+		state_t st;
     my_app=sig;
 
 		*ready=1;
@@ -138,29 +139,29 @@ ulong min_time_policy(signature_t *sig,int *ready)
     // We compute here our reference
 
     // If is not the default P_STATE selected in the environment, a projection
-    // is made for the reference P_STATE in case the coefficents were available.
+    // is made for the reference P_STATE in case the projections were available.
     if (ear_frequency != EAR_default_frequency) // Use configuration when available
     {
-        if (coefficients[ref][EAR_default_pstate].available)
+				if (projection_available(ref,EAR_default_pstate)==EAR_SUCCESS)
         {
-                power_ref=project_power(my_app,&coefficients[ref][EAR_default_pstate]);
-                time_ref=project_time(my_app,&coefficients[ref][EAR_default_pstate]);
-                best_pstate=EAR_default_frequency;
+					st=project_power(my_app,ref,EAR_default_pstate,&power_ref);
+					st=project_time(my_app,ref,EAR_default_pstate,&time_ref);
+          best_pstate=EAR_default_frequency;
         }
         else
         {
-                time_ref=my_app->time;
-                power_ref=my_app->DC_power;
-                best_pstate=ear_frequency;
+          time_ref=my_app->time;
+          power_ref=my_app->DC_power;
+          best_pstate=ear_frequency;
         }
     }
     // If it is the default P_STATE selected in the environment, then a projection
     // is not needed, so the signature will be enough as a reference.
     else
     { // we are running at default frequency , signature is our reference
-            time_ref=my_app->time;
-            power_ref=my_app->DC_power;
-            best_pstate=ear_frequency;
+        time_ref=my_app->time;
+        power_ref=my_app->DC_power;
+        best_pstate=ear_frequency;
     }
 
 	projection_set(EAR_default_pstate,time_ref,power_ref);
@@ -174,18 +175,19 @@ ulong min_time_policy(signature_t *sig,int *ready)
 
 		while(try_next && (i >= min_pstate))
 		{
-			if (coefficients[ref][i].available)
+			if (projection_available(ref,i)==EAR_SUCCESS)
 			{
-        power_proj=project_power(my_app,&coefficients[ref][i]);
-        time_proj=project_time(my_app,&coefficients[ref][i]);
+				st=project_power(my_app,ref,i,&power_proj);
+				st=project_time(my_app,ref,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
-				freq_gain=performance_gain*(double)(coefficients[ref][i].pstate-best_pstate)/(double)best_pstate;
+				freq_ref=frequency_pstate_to_freq(i);
+				freq_gain=performance_gain*(double)(freq_ref-best_pstate)/(double)best_pstate;
 				perf_gain=(time_current-time_proj)/time_current;
 
 				// OK
 				if (perf_gain>=freq_gain)
 				{
-					best_pstate=coefficients[ref][i].pstate;
+					best_pstate=freq_ref;
 					time_current = time_proj;
 					i--;
 				}
@@ -193,7 +195,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
 				{
 					try_next = 0;
 				}
-			} // Coefficients available
+			} // Projections available
 			else{
 				try_next=0;
 			}
@@ -214,7 +216,7 @@ ulong min_time_policy(signature_t *sig,int *ready)
                 	prev_pstate=curr_pstate+1;
                 	prev_sig=&signatures[prev_pstate].signature;
                 	if (is_better_min_time(my_app,prev_sig)){
-						go_next_mt(curr_pstate,ready,&best_pstate,min_pstate);
+										go_next_mt(curr_pstate,ready,&best_pstate,min_pstate);
                 	}else{
                     	*ready=1;
                     	best_pstate=frequency_pstate_to_freq(prev_pstate);

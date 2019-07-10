@@ -39,5 +39,8 @@
 #define SZ_BUFF_EXTRA		PATH_MAX * 2
 #define SZ_PATH_KERNEL		64
 #define SZ_PATH			PATH_MAX
+#define SZ_PATH_MEDIUM		2048
+#define SZ_PATH_SHORT		1024
+#define SZ_PATH_INCOMPLETE	SZ_PATH - (SZ_PATH_SHORT * 2)
 
 #endif //EAR_SIZES_H

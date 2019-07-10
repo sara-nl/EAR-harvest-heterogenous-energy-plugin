@@ -42,7 +42,7 @@
 void init_power_policy();
 
 /** Opens Coefficient db and reads coefficients */
-void init_power_models(uint p_states, ulong *p_states_list);
+void init_power_models();
 
 /** Executed when a new_loop is reported by dyanis */
 void policy_new_loop();

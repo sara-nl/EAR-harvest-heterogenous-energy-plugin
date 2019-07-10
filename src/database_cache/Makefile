@@ -6,7 +6,7 @@ LDFLAGS = $(DB_LDFLAGS) -lm
 eard_BINS = eardbd
 eard_PATH = $(DESTDIR)/sbin
 eard_PERM = 0770
-oths_BINS = eardbd_api.o eardbd_monitor
+oths_BINS = eardbd_api.o
 
 ######## FILES
 

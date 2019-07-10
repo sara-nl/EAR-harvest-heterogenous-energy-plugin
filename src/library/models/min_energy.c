@@ -53,7 +53,6 @@ static int use_models=1;
 
 // Policy
 extern double performance_penalty;
-extern coefficient_t **coefficients;
 extern application_t *signatures;
 extern uint *sig_ready;
 
@@ -124,6 +123,7 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
 	double power_ref,time_ref;
 	ulong best_pstate;
+	state_t st;
 	my_app=sig;
 	debug("min_energy_policy starts \n");
 	if (ear_use_turbo) min_pstate=0;
@@ -148,20 +148,16 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	// is made for the reference P_STATE in case the coefficents were available.
 	if (ear_frequency != EAR_default_frequency) // Use configuration when available
 	{
-		if (coefficients[ref][EAR_default_pstate].available)
+		if (projection_available(ref,EAR_default_pstate)==EAR_SUCCESS)
 		{
-				power_ref=project_power(my_app,&coefficients[ref][EAR_default_pstate]);
-				time_ref=project_time(my_app,&coefficients[ref][EAR_default_pstate]);
-				energy_ref=power_ref*time_ref;
-				best_solution=energy_ref;
+				st=project_power(my_app,ref,EAR_default_pstate,&power_ref);
+				st=project_time(my_app,ref,EAR_default_pstate,&time_ref);
 				best_pstate=EAR_default_frequency;
 		}
 		else
 		{
 				time_ref=my_app->time;
 				power_ref=my_app->DC_power;
-				energy_ref=power_ref*time_ref;
-				best_solution=energy_ref;
 				best_pstate=ear_frequency;
 		}
 	}
@@ -171,10 +167,10 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	{ // we are running at default frequency , signature is our reference
 			time_ref=my_app->time;
 			power_ref=my_app->DC_power;
-			energy_ref=power_ref*time_ref;
-			best_solution=energy_ref;
 			best_pstate=ear_frequency;
 	}
+	energy_ref=power_ref*time_ref;
+	best_solution=energy_ref;
 
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * performance_penalty);
@@ -184,17 +180,16 @@ ulong min_energy_policy(signature_t *sig,int *ready)
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	for (i = min_pstate; i < me_policy_pstates;i++)
 	{
-		/* If coeffs are available */
-		if (coefficients[ref][i].available)
+		if (projection_available(ref,i)==EAR_SUCCESS)
 		{
-				power_proj=project_power(my_app,&coefficients[ref][i]);
-				time_proj=project_time(my_app,&coefficients[ref][i]);
+				st=project_power(my_app,ref,i,&power_proj);
+				st=project_time(my_app,ref,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
-			debug("pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
+				debug("pstate=%u energy_ref %lf best_solution %lf energy_proj %lf\n",i,energy_ref,best_solution,energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
-					best_pstate = coefficients[ref][i].pstate;
+					best_pstate = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
 			}
 		}

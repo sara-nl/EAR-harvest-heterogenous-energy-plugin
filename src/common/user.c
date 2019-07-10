@@ -31,6 +31,11 @@
 #include <common/user.h>
 #include <common/output/verbose.h>
 
+int user_is_root()
+{
+	return getuid() == 0;
+}
+
 state_t user_all_ids_get(user_t *user)
 {
 	if (state_fail(user_ruid_get(&user->ruid, user->ruid_name))) return EAR_ERROR;

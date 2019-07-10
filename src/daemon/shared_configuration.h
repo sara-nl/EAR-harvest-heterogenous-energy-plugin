@@ -43,9 +43,9 @@
 #include <common/types/coefficient.h>
 
 typedef struct services_conf{
-	eard_conf_t     eard;
+		eard_conf_t     eard;
     eargm_conf_t    eargmd;
-	db_conf_t 		db;
+		db_conf_t 		db;
     eardb_conf_t 	eardbd;
 }services_conf_t;
 
@@ -63,6 +63,7 @@ typedef struct settings_conf{
 	double min_sig_power;
 	double max_sig_power;
 	uint report_loops;
+	conf_install_t 	installation;
 } settings_conf_t;
 
 typedef struct resched{

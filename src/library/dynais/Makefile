@@ -24,6 +24,8 @@ dynais_core.o: dynais_core.c dynais_core.h
 
 ######## OPTIONS
 
+install: ;
+
 clean: rclean;
 
 ######## DEPENDENCIES

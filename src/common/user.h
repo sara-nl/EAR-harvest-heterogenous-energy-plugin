@@ -49,6 +49,9 @@ typedef struct user {
 	gid_t egid;
 } user_t;
 
+/** Instantaneus root check */
+int user_is_root();
+
 /** Get complete user information */
 state_t user_all_ids_get(user_t *user);
 

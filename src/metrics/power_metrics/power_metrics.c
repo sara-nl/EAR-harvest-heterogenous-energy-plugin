@@ -44,7 +44,6 @@
 #include <metrics/papi/energy_cpu.h>
 #endif
 #include <metrics/power_metrics/power_metrics.h>
-#include <metrics/ipmi/energy_node.h>
 
 uint8_t power_mon_connected=0; 
 rapl_data_t *RAPL_metrics;
@@ -66,10 +65,10 @@ int pm_get_data_size_rapl()
 		//return eards_get_data_size_rapl();
 	}
 }     
-void pm_disconnect(energy_handler_t *my_eh)
+void pm_disconnect(ehandler_t *my_eh)
 {
 	if (rootp){
-		node_energy_dispose(my_eh);
+		energy_dispose(my_eh);
 	}else{
 		//eards_disconnect();
 	}
@@ -110,20 +109,20 @@ int pm_read_rapl(rapl_data_t *rm)
 		//return eards_read_rapl(rm);
 	}
 }            
-int pm_node_dc_energy(energy_handler_t *my_eh,node_data_t *dc)
+int pm_node_dc_energy(ehandler_t *my_eh,node_data_t *dc)
 {
 	if (rootp){
-		return read_dc_energy_try(my_eh,dc);
+		return energy_dc_read(my_eh,dc);
 	}else{
 		*dc=0;
 		return EAR_ERROR;
 		//return eards_node_dc_energy(dc);
 	}
 }
-int pm_node_ac_energy(energy_handler_t *my_eh,node_data_t *ac)
+int pm_node_ac_energy(ehandler_t *my_eh, node_data_t *ac)
 {
 	if (rootp){
-		return read_ac_energy(my_eh,ac);
+		return energy_ac_read(my_eh, ac);
 	}else{
 		//return eards_node_ac_energy(ac);
 		return 0;
@@ -131,12 +130,12 @@ int pm_node_ac_energy(energy_handler_t *my_eh,node_data_t *ac)
 }
 
 
-int pm_connect(energy_handler_t *my_eh)
+int pm_connect(ehandler_t *my_eh)
 {
 	if (pm_already_connected) return pm_connected_status;
 	if (getuid()==0)	rootp=1;
 	if (rootp){
-		pm_connected_status=node_energy_init(my_eh);
+		pm_connected_status=energy_init(NULL, my_eh);
 		if (pm_connected_status==EAR_SUCCESS){ 
 		#if USE_MSR_RAPL
 			pm_connected_status=init_rapl_msr();
@@ -232,7 +231,7 @@ rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init)
 
 // EAR_API_ERRORS are pending to be defined
 // eards API uses EAR_TMP environment variable to connect
-int init_power_ponitoring(energy_handler_t *my_eh)
+int init_power_ponitoring(ehandler_t *my_eh)
 {
 	int ret;
 	unsigned long rapl_size;
@@ -256,7 +255,7 @@ int init_power_ponitoring(energy_handler_t *my_eh)
 	power_mon_connected=1;
 	return POWER_MON_OK;
 }
-void end_power_monitoring(energy_handler_t *my_eh)
+void end_power_monitoring(ehandler_t *my_eh)
 {
 	if (power_mon_connected) pm_disconnect(my_eh);
 	power_mon_connected=0;
@@ -271,7 +270,7 @@ void null_energy_data(energy_data_t *acc_energy)
 }
 
 
-int read_enegy_data(energy_handler_t *my_eh,energy_data_t *acc_energy)
+int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 {
 	node_data_t ac=0,dc=0;
 	
