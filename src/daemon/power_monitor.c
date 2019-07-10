@@ -286,7 +286,7 @@ void reset_shared_memory()
     dyn_conf->policy=my_cluster_conf.default_policy;
     dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
 		dyn_conf->def_p_state=my_policy->p_state;
-    dyn_conf->th=my_policy->th;
+    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 
 void clean_job_environment(int id,int step_id)
@@ -502,7 +502,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 				error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 				authorized_context.p_state=1;
 				authorized_context.policy=MONITORING_ONLY;
-				authorized_context.th=0;
+				authorized_context.settings[0]=0;
 			}else{
 				copy_policy_conf(&authorized_context,my_policy);
 			}
@@ -522,7 +522,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 				else authorized_context.p_state=1;
 			} else authorized_context.p_state=1;
 			
-			authorized_context.th=0;
+			authorized_context.settings[0]=0;
 			my_policy=&authorized_context;
 		}else{
 			p_id=policy_name_to_id(appID->job.policy);
@@ -537,8 +537,8 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 					verbose(VJOBPMON+1,"Setting freq to default policy p_state %u",my_policy->p_state);
 					authorized_context.p_state=my_policy->p_state;	
 				}
-				if (appID->job.th>0) authorized_context.th=appID->job.th;
-				else authorized_context.th=my_policy->th;
+				if (appID->job.th>0) authorized_context.settings[0]=appID->job.th;
+				else authorized_context.settings[0]=my_policy->settings[0];
 				my_policy=&authorized_context;
 			}else{
 				verbose(VJOBPMON,"Authorized user is executing not defined/invalid policy using default %d",my_cluster_conf.default_policy);
@@ -547,7 +547,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 					error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 					authorized_context.p_state=1;
 					authorized_context.policy=MONITORING_ONLY;
-					authorized_context.th=0;
+					authorized_context.settings[0]=0;
 				}else{
 					print_policy_conf(my_policy);		
 					copy_policy_conf(&authorized_context,my_policy);
@@ -560,7 +560,7 @@ policy_conf_t *  configure_context(uint user_type, energy_tag_t *my_tag,applicat
 		appID->is_learning=0;
 		energy_tag_context.policy=MONITORING_ONLY;
 		energy_tag_context.p_state=my_tag->p_state;
-		energy_tag_context.th=0;
+		energy_tag_context.settings[0]=0;
 		my_policy=&energy_tag_context;
 		break;
 	}
@@ -654,7 +654,7 @@ void powermon_new_job(energy_handler_t *eh,application_t* appID,uint from_mpi)
 	if (my_tag!=NULL) print_energy_tag(my_tag);
 	/* Given a user type, application, and energy_tag, my_policy is the cofiguration for this user and application */
 	my_policy=configure_context(user_type, my_tag, appID);
-	verbose(VJOBPMON,"Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->th);
+	verbose(VJOBPMON,"Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->settings[0]);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
 	dyn_conf->id=new_app_id;
@@ -665,7 +665,7 @@ void powermon_new_job(energy_handler_t *eh,application_t* appID,uint from_mpi)
 	dyn_conf->policy=my_policy->policy;
 	dyn_conf->def_freq=f;
 	dyn_conf->def_p_state=my_policy->p_state;
-	dyn_conf->th=my_policy->th;
+    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	/* End app configuration */
 	current_node_freq=f;
 	appID->job.def_f=dyn_conf->def_freq;	
@@ -754,8 +754,8 @@ void powermon_inc_th(uint p_id,double th)
         warning("policy %u not supported, th setting has no effect",p_id);
 				return;
     }else{
-		if (((p->th+th)>0) && ((p->th+th)<=1.0)){
-        	p->th=p->th+th;
+		if (((p->settings[0]+th)>0) && ((p->settings[0]+th)<=1.0)){
+        	p->settings[0]=p->settings[0]+th;
 		}else{
 			warning("Current th + new is out of range, not changed");
 		}
@@ -771,7 +771,7 @@ void powermon_set_th(uint p_id,double th)
 		warning("policy %u not supported, th setting has no effect",p_id);
 		return;
 	}else{
-		p->th=th;
+		p->settings[0]=th;
 	}
 	save_eard_conf(&eard_dyn_conf);
 }
@@ -1121,7 +1121,7 @@ void powermon_get_status(status_t *my_status)
 	int i;
 	for (i=0;i<TOTAL_POLICIES;i++){
 		my_status->policy_conf[i].freq=frequency_pstate_to_freq(my_node_conf->policies[i].p_state);
-		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].th*100.0);
+		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].settings[0]*100.0);
 	}
 	/* Current app info */
 	if (ccontext>=0){

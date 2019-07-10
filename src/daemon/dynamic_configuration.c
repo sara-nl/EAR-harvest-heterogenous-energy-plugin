@@ -143,8 +143,8 @@ int dynconf_inc_th(uint p_id,ulong th)
 	verbose(VCONF,"Increasing th by  %lu",th);
 	dth=(double)th/100.0;
 	if (dyn_conf->policy==p_id){
-		if (((dyn_conf->th+dth) > 0 ) && ((dyn_conf->th+dth) <=1.0) ){
-    		dyn_conf->th=dyn_conf->th+dth;
+		if (((dyn_conf->settings[0]+dth) > 0 ) && ((dyn_conf->settings[0]+dth) <=1.0) ){
+    		dyn_conf->settings[0]=dyn_conf->settings[0]+dth;
     		resched_conf->force_rescheduling=1;
 		}
 	}
@@ -237,7 +237,7 @@ int dyncon_restore_conf()
 	dyn_conf->max_freq=frequency_pstate_to_freq(my_node_conf->max_pstate);
 	dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
 	dyn_conf->def_p_state=my_policy->p_state;
-	dyn_conf->th=my_policy->th;
+    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	
 	resched_conf->force_rescheduling=1;
 	
@@ -280,7 +280,8 @@ int dynconf_set_th(ulong p_id,ulong th)
 	dth=(double)th/100.0;
 	if ((dth > 0 ) && (dth <=1.0 )){
 		if (dyn_conf->policy==p_id){
-			dyn_conf->th=dth;
+            //currently the first setting is changed, we could pass the setting id by parameter later on
+			dyn_conf->settings[0]=dth;
 			resched_conf->force_rescheduling=1;	
 		}
 		powermon_set_th(p_id,dth);

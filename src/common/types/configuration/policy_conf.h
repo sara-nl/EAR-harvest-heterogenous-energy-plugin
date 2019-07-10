@@ -45,12 +45,16 @@
 #define MIN_ENERGY_TO_SOLUTION  0
 #define MIN_TIME_TO_SOLUTION    1
 #define MONITORING_ONLY         2
+#define MAX_POLICY_SETTINGS     5
 
 
 typedef struct policy_conf
 {
     uint policy; 
-    double th; 
+    char *name;
+    double settings[MAX_POLICY_SETTINGS];
+    //double th; 
+    //uint num_settings;
     uint p_state;
     char is_available; //default at 0, not available
 } policy_conf_t;
@@ -76,5 +80,7 @@ int policy_name_to_id(char *my_policy);
 /** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
 int policy_id_to_name(int policy_id,char *my_policy);
 
+/** Sets all pointers to NULL and all values to their default*/
+void init_policy_conf(policy_conf_t *p);
 
 #endif

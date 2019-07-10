@@ -40,7 +40,9 @@ static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int 
 	{
 		if (conf->power_policies[i].policy == policy)
 		{
-			if (main) { conf->power_policies[i].th = atof(token); }
+            //We assume the policies will only have one setting in this case, so we change that one
+            if (main)
+                    conf->power_policies[i].settings[0] = atof(token);
 		}
 	}
 
@@ -131,7 +133,6 @@ static void fill_policies(cluster_conf_t *conf)
 	for (i = 0; i < TOTAL_POLICIES; i++){
 		conf->power_policies[i].policy = i;
 		conf->power_policies[i].is_available=0;
-		conf->power_policies[i].th=0;
 	}
 }
 
@@ -211,9 +212,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 {
 	memset(conf, 0, sizeof(cluster_conf_t));
 	char line[256];
+    char def_policy[128];
 	char *token;
 
 	//filling the default policies before starting
+    conf->power_policies = calloc(TOTAL_POLICIES, sizeof(policy_conf_t));
 	fill_policies(conf);
 	while (fgets(line, 256, conf_file) != NULL)
 	{
@@ -227,7 +230,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
             remove_chars(token, ' ');
-			conf->default_policy = policy_name_to_id(token);
+            strcpy(def_policy, token);
 		}
 		else if (!strcmp(token, "DATABASEPATHNAME"))
 		{
@@ -313,6 +316,54 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				conf->power_policies[i].p_state = atoi(token);
 			}
 		}
+        else if (!strcmp(token, "POLICY"))
+        {
+			char *primary_ptr;
+			char *secondary_ptr;
+            char *key, *value;
+            policy_conf_t *curr_policy;
+			line[strlen(line)] = '=';
+			token = strtok_r(line, " ", &primary_ptr);
+            conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*(conf->num_policies + 1));
+            curr_policy = &conf->power_policies[conf->num_policies];
+            init_policy_conf(curr_policy);
+			while (token != NULL)
+			{
+				key = strtok_r(token, "=", &secondary_ptr);
+				strtoup(key);
+				value = strtok_r(NULL, "=", &secondary_ptr);
+                if (!strcmp(key, "POLICY"))
+                {
+                    curr_policy->name = calloc(strlen(value), sizeof(char));
+                    strcpy(curr_policy->name, value);
+                }
+                else if (!strcmp(key, "SETTINGS"))
+                {
+                    value = strtok(value, ",");
+                    int i;
+                    for (i = 0; (i < MAX_POLICY_SETTINGS) && (value != NULL); i++)
+                    {
+                        curr_policy->settings[i] = atof(value);
+                        value = strtok(NULL, ",");
+                    }
+                }
+                else if (!strcmp(key, "DEFAULTFREQ"))
+                {
+                    curr_policy->p_state = atol(value);
+                }
+                else if (!strcmp(key, "PRIVILEGED"))
+                {
+                    strtoup(value);
+                    if (!(strcmp(value, "Y") & strcmp(value, "YES")))
+                        curr_policy->is_available = 1;
+                    else
+                        curr_policy->is_available = 0;
+                }
+                                
+			    token = strtok_r(NULL, " ", &primary_ptr);
+            }
+            conf->num_policies++;
+        }
 		else if (!strcmp(token, "MINEFFICIENCYGAIN"))
 		{
 			token = strtok(NULL, "=");
@@ -521,8 +572,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 								conf->nodes[conf->num_nodes+i].special_node_conf[k].policy =
 										conf->power_policies[j].policy;
 								conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state = atoi(token);
-								conf->nodes[conf->num_nodes+i].special_node_conf[k].th =
-										conf->power_policies[j].th;
+                                
+                                memcpy(conf->nodes[conf->num_nodes+i].special_node_conf[k].settings, conf->power_policies[j].settings, 
+                                                sizeof(double)*MAX_POLICY_SETTINGS);
 								conf->nodes[conf->num_nodes+i].num_special_node_conf++;
 							}
 						}
@@ -531,7 +583,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 
 				}
-				else if (!strcmp(token, "MINEFFICIENCYGAIN"))
+/*				else if (!strcmp(token, "MINEFFICIENCYGAIN"))
 				{
 					//fetches the second half of the pair =
 					token = strtok_r(NULL, "=", &secondary_ptr);
@@ -598,7 +650,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 									get_default_pstate(conf->power_policies, conf->num_policies, MIN_TIME_TO_SOLUTION);
 						}
 					}
-				}
+				}*/
 
 				else if (!strcmp(token, "DEFCOEFFICIENTSFILE"))
 				{
@@ -1126,6 +1178,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 
 	}
+    int i;
+    conf->default_policy = 0;
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        if (!strcmp(def_policy, conf->power_policies[i].name)) {
+            conf->default_policy = i;
+            break;
+        }
+    }
+        
 
 }
 

@@ -99,15 +99,27 @@ void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src)
 {
 	memcpy((void *)dest,(void *)src,sizeof(policy_conf_t));
 }
+
 int is_valid_policy(unsigned int p_id)
 {
 	return (p_id<TOTAL_POLICIES);
 }
+
+void init_policy_conf(policy_conf_t *p)
+{
+    p->policy = -1;
+//    p->th = 0;
+    p->is_available = 0;
+    p->name = NULL;
+    memset(p->settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
+}
+
 void print_policy_conf(policy_conf_t *p) 
 {
     char buffer[64];
 		if (p==NULL) return;
     policy_id_to_name(p->policy,buffer);
-    verbosen(VCCONF,"---> policy %s th %.2lf p_state %u\n",buffer,p->th,p->p_state);
+    verbosen(VCCONF,"---> policy %s p_state %u\n",buffer,p->p_state);
+    //verbosen(VCCONF,"---> policy %s th %.2lf p_state %u\n",buffer,p->th,p->p_state);
 }
 

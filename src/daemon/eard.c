@@ -879,7 +879,7 @@ void signal_handler(int sig)
 				copy_my_node_conf(&my_original_node_conf,my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
-    			verbose(VCONF,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
+    			verbose(VCONF,"shared memory updated max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->settings[0],resched_conf->force_rescheduling);
 				save_eard_conf(&eard_dyn_conf);
 			}
 
@@ -972,7 +972,7 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
 	// Default policy is just in case
     default_policy_context.policy=MONITORING_ONLY;
     default_policy_context.p_state=EAR_MIN_P_STATE;
-    default_policy_context.th=0;
+    default_policy_context.settings[0]=0;
     my_policy=get_my_policy_conf(node,cluster->default_policy);
     if (my_policy==NULL){
         // This should not happen
@@ -981,14 +981,14 @@ void configure_new_values(settings_conf_t *dyn,resched_t *resched,cluster_conf_t
     }else{
 		default_policy_context.policy=my_policy->policy;
 		default_policy_context.p_state=my_policy->p_state;
-		default_policy_context.th=my_policy->th;
+		default_policy_context.settings[0]=my_policy->settings[0];
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
 	/* PENDING: we have to check we are not executing an application */
 	dyn->policy=cluster->default_policy;
     dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
-    dyn->th=my_policy->th;
+    memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
 	dyn->report_loops=cluster->database.report_loops;
@@ -1010,7 +1010,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	// Default policy is just in case
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
-	default_policy_context.th=0;
+	default_policy_context.settings[0]=0;
 	my_policy=get_my_policy_conf(node,cluster->default_policy);
 	if (my_policy==NULL){
 		// This should not happen
@@ -1019,7 +1019,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	}else{
 		default_policy_context.policy=my_policy->policy;
 		default_policy_context.p_state=my_policy->p_state;
-		default_policy_context.th=my_policy->th;
+		default_policy_context.settings[0]=my_policy->settings[0];
 	}
     deff=frequency_pstate_to_freq(my_policy->p_state);
     dyn->user_type=NORMAL;
@@ -1028,7 +1028,7 @@ void configure_default_values(settings_conf_t *dyn,resched_t *resched,cluster_co
 	dyn->policy=cluster->default_policy;
 	dyn->max_freq=frequency_pstate_to_freq(node->max_pstate);
     dyn->def_freq=deff;
-    dyn->th=my_policy->th;
+    memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
     dyn->report_loops=cluster->database.report_loops;
@@ -1277,7 +1277,7 @@ int main(int argc,char *argv[])
 	}
 	/* After potential recoveries, we set the info in the shared memory */
     configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
-    verbose(VCONF,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->th,resched_conf->force_rescheduling);
+    verbose(VCONF,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->settings[0],resched_conf->force_rescheduling);
 
 	// Check
 	if (argc == 2)

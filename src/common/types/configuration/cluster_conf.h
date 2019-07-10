@@ -184,7 +184,7 @@ typedef struct cluster_conf
 	eargm_conf_t 	eargm;
 	// List of policies	
 	uint num_policies;
-	policy_conf_t power_policies[TOTAL_POLICIES];
+	policy_conf_t *power_policies;
 	uint default_policy;			// selecs one of the power_policies
 	// Lis of autorized users
 	uint num_priv_users;
