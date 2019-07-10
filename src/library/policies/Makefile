@@ -1,9 +1,10 @@
 ######## FILES
 
-modl_OBJS = models.o \
-       basic_model.o 
+modl_OBJS = min_time.o \
+       min_energy.o \
+       monitoring.o 
 
-modl_BINS = basic_model.so
+modl_BINS = min_time.so min_energy.so monitoring.so
 modl_PATH = $(DESTDIR)/lib/plugins
 modl_PERM = 0775
 
@@ -14,8 +15,8 @@ all: $(modl_OBJS) $(modl_BINS)
 %.o: %.c %.h
 	$(CC) $(CC_FLAGS) $(CFLAGS) -c $<
 
-basic_model.so: basic_model.o
-	$(CC) $(CC_FLAGS) $(CFLAGS) -shared -o basic_model.so basic_model.o	
+%.so: %.o
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	
 
 ######## OPTIONS 
 

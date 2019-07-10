@@ -28,32 +28,50 @@
 */
 
 
-#include <mpi.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <common/config.h>
-#include <library/mpi_intercept/ear_api.h>
+#include <common/states.h>
+#include <common/types/application.h>
+#include <common/types/projection.h>
+#include <library/common/externs.h>
 #include <library/policies/policy.h>
 
-void before_init(){
+
+#include <common/types/signature.h>/* defines signature */
+#include <daemon/shared_configuration.h> /* defines settings_conf */
+
+state_t ear_policy_init(polctx_t *c)
+{
+}
+state_t apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
+{
+	policy_global_reconfiguration();
+	*ready=1;
+	*new_freq=c->app.def_freq;
+	return EAR_SUCCESS;
+}
+state_t ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
+{
+	*ok=1;
+	return EAR_SUCCESS;
 }
 
-void after_init(){
-	ear_init();
-}
-void before_mpi(mpi_call call_type, p2i buf, p2i dest) {
-	policy_mpi_init();
-	ear_mpi_call(call_type,buf,dest);
+
+state_t ear_policy_get_default_freq(polctx_t *c, ulong *freq_set)
+{
+	freq_set=c->app.def_freq;
+	return EAR_SUCCESS;
 }
 
-void after_mpi(mpi_call call_type){
-	policy_mpi_end();
-}
-
-void before_finalize() {
-	ear_finalize();
-}
-
-void after_finalize() {
+state_t ear_policy_max_tries(int *intents)
+{
+	*intents=0;
+	return EAR_SUCCESS;
 }
 
 

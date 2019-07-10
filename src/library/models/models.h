@@ -39,10 +39,7 @@
 
 
 /** Selects policy based on EAR_POWER_POLICY */
-void init_power_policy();
-
-/** Opens Coefficient db and reads coefficients */
-void init_power_models();
+state_t init_power_models(uint user_type,conf_install_t *data,uint pstates);
 
 /** Executed when a new_loop is reported by dyanis */
 void policy_new_loop();

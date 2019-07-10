@@ -44,8 +44,6 @@
 #include <common/environment.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
-#include <common/types/projection.h>
-#include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
 #include <library/tracer/tracer_mpi.h>
@@ -394,10 +392,8 @@ void ear_init()
 
 
 	// Policies && models
-	init_power_policy();
-	st=projections_init(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
-	if (st!=EAR_SUCCESS) error("Power model initialization error");
-	init_power_models();
+	init_power_policy(system_conf,resched_conf);
+	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
 
 
 	// Policy name is set in ear_models

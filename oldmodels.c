@@ -51,8 +51,22 @@
 
 static int use_default=1;
 
+typedef struct policy
+{
+	void (*init)(uint num_pstates);
+	void (*new_loop)();
+	void (*end_loop)();
+	ulong (*policy)(signature_t *sig,int *ready);
+	ulong (*policy_ok)(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
+	ulong (*default_conf)(ulong user_freq);
+}policy_t;
+
+policy_t app_policy;
 
 // Policy
+static int power_model_policy = MIN_ENERGY_TO_SOLUTION;
+double performance_penalty ;
+double performance_gain ;
 
 // Normals
 //
@@ -61,6 +75,56 @@ static uint ear_models_pstates = 0;
 static ulong user_selected_freq;
 static int model_nominal=1;
 
+void init_policy_functions()
+{
+    switch(power_model_policy)
+    {
+        case MIN_ENERGY_TO_SOLUTION:
+			app_policy.init=min_energy_init;
+			app_policy.new_loop=min_energy_new_loop;
+			app_policy.end_loop=min_energy_end_loop;
+			app_policy.policy=min_energy_policy;
+			app_policy.policy_ok=min_energy_policy_ok;
+			app_policy.default_conf=min_energy_default_conf;
+        break;
+        case MIN_TIME_TO_SOLUTION:
+			app_policy.init=min_time_init;
+			app_policy.new_loop=min_time_new_loop;
+			app_policy.end_loop=min_time_end_loop;
+			app_policy.policy=min_time_policy;
+			app_policy.policy_ok=min_time_policy_ok;
+			app_policy.default_conf=min_time_default_conf;
+        break;
+        case MONITORING_ONLY:
+			app_policy.init=monitoring_init;
+			app_policy.new_loop=monitoring_new_loop;
+			app_policy.end_loop=monitoring_end_loop;
+			app_policy.policy=monitoring_policy;
+			app_policy.policy_ok=monitoring_policy_ok;
+			app_policy.default_conf=monitoring_default_conf;
+        break;
+    }
+
+}
+
+// This function sets the default freq based on the policy
+/* For min energy we reconfigure only max_freq, for min time max_freq and th, and for monitoring only max_freq */
+int policy_global_configuration(int p_state)
+{
+	if (system_conf!=NULL){
+	switch (power_model_policy){
+	case MIN_ENERGY_TO_SOLUTION:
+		return frequency_freq_to_pstate(system_conf->max_freq);
+		break;
+	case MIN_TIME_TO_SOLUTION:
+		performance_penalty=system_conf->th;
+	case MONITORING_ONLY:
+		return frequency_freq_to_pstate(system_conf->def_freq);
+		break;
+	}
+	}
+	return p_state;
+}
 
 // This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
 void policy_global_reconfiguration()
@@ -157,6 +221,8 @@ void init_power_policy()
 	if (power_model_policy==MIN_ENERGY_TO_SOLUTION) performance_penalty=get_ear_power_policy_th();
 	else if (power_model_policy==MIN_TIME_TO_SOLUTION) performance_gain=get_ear_power_policy_th();
 
+	if (is_cpu_boost_enabled()) model_nominal=1;
+	else model_nominal=0;
 
 	reset_freq_opt=get_ear_reset_freq();
 
@@ -200,6 +266,14 @@ state_t init_power_models(uint user_type,conf_install_t *data,uint pstates)
 
 
 
+uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
+{
+	return app_policy.policy_ok(proj, curr_sig,last_sig);
+}
+
+
+
+// When 'evaluating signature', this function is called.
 unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int *ready)
 {
 	unsigned long optimal_freq, max_freq;
@@ -230,6 +304,15 @@ void force_global_frequency(ulong new_f)
 	eards_change_freq(ear_frequency);
 }
 
+void policy_new_loop(loop_id_t *lid)
+{
+	app_policy.new_loop();
+}
+
+void policy_end_loop(loop_id_t *lid)
+{
+    app_policy.end_loop();
+}
 
 ulong policy_default_configuration()
 {
@@ -239,3 +322,23 @@ ulong policy_default_configuration()
 	return ear_frequency;
 }
 
+ulong policy_get_default_freq()
+{
+	return app_policy.default_conf(user_selected_freq);
+}
+
+int policy_max_tries()
+{
+        switch (power_model_policy)
+        {
+            case MIN_TIME_TO_SOLUTION:
+				return 2;
+                break;
+            case MIN_ENERGY_TO_SOLUTION:
+				return 1;
+                break;
+            case MONITORING_ONLY:
+                        return 0;
+        }
+	return 0;
+}

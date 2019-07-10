@@ -44,8 +44,6 @@
 
 #include <common/types/signature.h>/* defines signature */
 #include <daemon/shared_configuration.h> /* defines settings_conf */
-#include <library/mpi_intercept/MPI_calls_coded.h> /* defines list of mpi calls */
-#include <library/mpi_intercept/MPI_types.h> /* defines list of mpi calls */
 
 
 

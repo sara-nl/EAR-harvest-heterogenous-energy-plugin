@@ -33,9 +33,7 @@ comm_OBJS = $(SRCDIR)/metrics/libmetrics.a \
 mpix_OBJS = \
     metrics/metrics.o \
     models/models.o \
-    models/min_time.o \
-    models/min_energy.o \
-    models/monitoring.o \
+		policies/policy.o \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
@@ -72,6 +70,7 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'dynais' $* || exit
 	@ $(MAKE) -C 'metrics' $* || exit
 	@ $(MAKE) -C 'models' $* || exit
+	@ $(MAKE) -C 'policies' $* || exit
 	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'states' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'tracer' $* MPICC='$(MPICC)' || exit

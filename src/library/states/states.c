@@ -46,7 +46,7 @@
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
-#include <library/models/models.h>
+#include <library/policies/policy.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 
@@ -76,6 +76,7 @@ static uint perf_count_period = 100,loop_perf_count_period,perf_count_period_10p
 static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
 static int MAX_POLICY_TRIES;
+static state_t pst;
 
 #define DYNAIS_CUTOFF	1
 
@@ -123,7 +124,7 @@ void states_begin_job(int my_id,  char *app_name)
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 	init_log();
-	MAX_POLICY_TRIES=policy_max_tries();
+	pst=_policy_max_tries(&MAX_POLICY_TRIES);
 }
 
 int states_my_state()
@@ -142,7 +143,7 @@ void states_begin_period(int my_id, ulong event, ulong size,ulong level)
 		error("Error creating loop");
 	}
 
-	policy_new_loop();
+	policy_loop_init(&loop.id);
 	comp_N_begin = metrics_time();
 	traces_new_period(ear_my_rank, my_id, event);
 	loop_with_signature = 0;
@@ -166,7 +167,7 @@ void states_end_period(uint iterations)
 	}
 
 	loop_with_signature = 0;
-	policy_end_loop();
+	policy_end_loop(&loop.id);
 }
 
 static void check_dynais_on(signature_t *A, signature_t *B)
@@ -246,9 +247,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	signature_t *l_sig;
 	ulong policy_def_freq;
 
+	pst=policy_new_iteration(&loop.id);
+
 	prev_f = ear_frequency;
 	curr_pstate=frequency_freq_to_pstate(ear_frequency);
-	policy_def_freq=policy_get_default_freq();
+	pst=policy_get_default_freq(&policy_def_freq);
 	def_pstate=frequency_freq_to_pstate(policy_def_freq);
 
 	if (system_conf!=NULL){
@@ -418,7 +421,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			sig_ready[curr_pstate]=1;
 
 			/* This function executes the energy policy */
-			policy_freq = policy_power(0, &loop_signature.signature,&ready);
+			pst=policy_apply(&loop_signature.signature,&policy_freq,&ready);
 
 			PP = projection_get(frequency_freq_to_pstate(policy_freq));
 
@@ -509,8 +512,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				return;
 			}
 			// We compare the projection with the signature and the old signature
-			PP = projection_get(frequency_freq_to_pstate(policy_freq));
-			pok=policy_ok(PP, &loop_signature.signature, l_sig);
+			pst=_policy_ok(&loop_signature.signature, l_sig,&pok);
 			if (pok)
 			{
 				/* When collecting traces, we maintain the period */
@@ -539,7 +541,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 				EAR_STATE = PROJECTION_ERROR;
 				traces_policy_state(ear_my_rank, my_id,PROJECTION_ERROR);
-				policy_freq=policy_default_configuration();
+				ps=policy_get_default_freq(&policy_freq);
 				traces_frequency(ear_my_rank, my_id, policy_freq);
 				return;
 			}
@@ -551,9 +553,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				EAR_STATE = SIGNATURE_HAS_CHANGED;
 				comp_N_begin = metrics_time();
 				policy_new_loop();
-                #if DYNAIS_CUTOFF
+        #if DYNAIS_CUTOFF
 				check_dynais_on(&loop_signature.signature, l_sig);
-                #endif
+        #endif
 			} else {
 					EAR_STATE = EVALUATING_SIGNATURE;
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
