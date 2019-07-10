@@ -5,7 +5,7 @@ LDFLAGS =
 
 plug_BINS = earplug.so
 plug_PATH = $(DESTDIR)/lib
-plug_PERM = 0666
+plug_PERM = 0775
 
 ######## FILES
 
