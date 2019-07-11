@@ -49,13 +49,13 @@ static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
 const int   energy_nops    = 7;
 const char *energy_names[] = {
-	"plug_energy_init",
-	"plug_energy_dispose",
-	"plug_energy_data_length_get",
-	"plug_energy_data_frequency_get",
-	"plug_energy_dc_read",
-	"plug_energy_dc_time_read",
-	"plug_energy_ac_read",
+	"energy_init",
+	"energy_dispose",
+	"energy_data_length_get",
+	"energy_data_frequency_get",
+	"energy_dc_read",
+	"energy_dc_time_read",
+	"energy_ac_read",
 };
 
 state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
