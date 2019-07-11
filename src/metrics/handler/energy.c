@@ -84,7 +84,7 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 
 	if (found)
 	{
-		sprintf(energy_objc, "%s/%s",
+		sprintf(energy_objc, "%s/energy/%s",
 			conf->install.dir_plug, conf->install.obj_ener);
 		sprintf(energy_prod, "custom");
 		sprintf(energy_manu, "custom");
@@ -113,7 +113,7 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 				break;
 			case CPU_SKYLAKE_X:
 				if (strinc(energy_prod, "SD530")) {
-					sprintf(energy_objc, "%s/ipmi.node.manager.so",
+					sprintf(energy_objc, "%s/energy/ipmi.node.manager.so",
 							conf->install.dir_plug);
 					found = 1;
 				} else if (strinc(energy_prod, "SR650")) {

@@ -4,7 +4,7 @@ modl_OBJS = models.o \
        basic_model.o 
 
 modl_BINS = basic_model.so
-modl_PATH = $(DESTDIR)/lib/plugins
+modl_PATH = $(DESTDIR)/lib/plugins/models
 modl_PERM = 0775
 
 ########
