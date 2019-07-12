@@ -133,6 +133,7 @@ static void fill_policies(cluster_conf_t *conf)
 	for (i = 0; i < TOTAL_POLICIES; i++){
 		conf->power_policies[i].policy = i;
 		conf->power_policies[i].is_available=0;
+        memset(conf->power_policies[i].settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
 	}
 }
 
@@ -288,7 +289,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				strclean(token, '\n');
                 int i;
                 for (i = 0; i < TOTAL_POLICIES; i++)
-                    if (conf->power_policies[i].policy == policy_name_to_id(token)) conf->power_policies[i].is_available = 1;
+                    if (conf->power_policies[i].policy == policy_name_to_id(token)) 
+                    {
+                        conf->power_policies[i].is_available = 1;
+                        strcpy(conf->power_policies[i].name, token);
+                    }
 				token = strtok(NULL, ",");
 			}
 		}
@@ -320,7 +325,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				value = strtok_r(NULL, "=", &secondary_ptr);
                 if (!strcmp(key, "POLICY"))
                 {
-                    curr_policy->name = calloc(strlen(value), sizeof(char));
                     strcpy(curr_policy->name, value);
                 }
                 else if (!strcmp(key, "SETTINGS"))
@@ -348,17 +352,28 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                                 
 			    token = strtok_r(NULL, " ", &primary_ptr);
             }
+            curr_policy->policy = conf->num_policies;
             conf->num_policies++;
         }
 		else if (!strcmp(token, "MINEFFICIENCYGAIN"))
 		{
 			token = strtok(NULL, "=");
-			insert_th_policy(conf, token, MIN_TIME_TO_SOLUTION,1);
+            int i;
+            for (i = 0; i < conf->num_policies; i++)
+            {
+                if (!strcmp(conf->power_policies[i].name, "MIN_TIME_TO_SOLUTION") || !strcmp(conf->power_policies[i].name, "min_time_to_solution"))
+                {
+        			insert_th_policy(conf, token, conf->power_policies[i].policy, 1);
+                }
+            }
 		}
 		else if (!strcmp(token, "MAXPERFORMANCEPENALTY"))
 		{
 			token = strtok(NULL, "=");
-			insert_th_policy(conf, token, MIN_ENERGY_TO_SOLUTION,1);
+            int i;
+            for (i = 0; i < conf->num_policies; i++)
+                if (!strcmp(conf->power_policies[i].name, "MIN_ENERGY_TO_SOLUTION"))
+        			insert_th_policy(conf, token, conf->power_policies[i].policy, 1);
 		}
 		else if (!strcmp(token, "MINTIMEPERFORMANCEACCURACY"))
 		{
@@ -569,7 +584,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 
 				}
-/*				else if (!strcmp(token, "MINEFFICIENCYGAIN"))
+				else if (!strcmp(token, "MINEFFICIENCYGAIN"))
 				{
 					//fetches the second half of the pair =
 					token = strtok_r(NULL, "=", &secondary_ptr);
@@ -583,7 +598,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 								MIN_TIME_TO_SOLUTION)
 							{
 								found = 1;
-								conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+								conf->nodes[conf->num_nodes+i].special_node_conf[k].settings[0] = atof(token);
 								break;
 							}
 						}
@@ -596,7 +611,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 									realloc(conf->nodes[conf->num_nodes+i].special_node_conf,
 											sizeof(policy_conf_t)*(k+1));
 							conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_TIME_TO_SOLUTION;
-							conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+							conf->nodes[conf->num_nodes+i].special_node_conf[k].settings[0] = atof(token);
+							strcpy(conf->nodes[conf->num_nodes+i].special_node_conf[k].name, "MIN_TIME_TO_SOLUTION");
 							conf->nodes[conf->num_nodes+i].num_special_node_conf++;
 							conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state =
 									get_default_pstate(conf->power_policies, conf->num_policies, MIN_TIME_TO_SOLUTION);
@@ -617,7 +633,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 								MIN_ENERGY_TO_SOLUTION)
 							{
 								found = 1;
-								conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+								conf->nodes[conf->num_nodes+i].special_node_conf[k].settings[0] = atof(token);
 								break;
 							}
 						}
@@ -630,13 +646,14 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 									realloc(conf->nodes[conf->num_nodes+i].special_node_conf,
 											sizeof(policy_conf_t)*(k+1));
 							conf->nodes[conf->num_nodes+i].special_node_conf[k].policy = MIN_ENERGY_TO_SOLUTION;
-							conf->nodes[conf->num_nodes+i].special_node_conf[k].th = atof(token);
+							conf->nodes[conf->num_nodes+i].special_node_conf[k].settings[0] = atof(token);
 							conf->nodes[conf->num_nodes+i].num_special_node_conf++;
+							strcpy(conf->nodes[conf->num_nodes+i].special_node_conf[k].name, "MIN_ENERGY_TO_SOLUTION");
 							conf->nodes[conf->num_nodes+i].special_node_conf[k].p_state =
-									get_default_pstate(conf->power_policies, conf->num_policies, MIN_TIME_TO_SOLUTION);
+									get_default_pstate(conf->power_policies, conf->num_policies, MIN_ENERGY_TO_SOLUTION);
 						}
 					}
-				}*/
+				}
 
 				else if (!strcmp(token, "DEFCOEFFICIENTSFILE"))
 				{

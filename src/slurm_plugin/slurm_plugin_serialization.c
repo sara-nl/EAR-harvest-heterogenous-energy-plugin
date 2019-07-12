@@ -414,7 +414,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 		setenv_agnostic(sp, Var.policy.ear, buffer, 1);
 	}
 
-	snprintf(buffer, 16, "%0.2f", setts->th);
+	snprintf(buffer, 16, "%0.2f", setts->settings[0]);
 	setenv_agnostic(sp, Var.eff_gain.ear, buffer, 1);
 	setenv_agnostic(sp, Var.perf_pen.ear, buffer, 1);
 

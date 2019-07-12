@@ -110,16 +110,18 @@ void init_policy_conf(policy_conf_t *p)
     p->policy = -1;
 //    p->th = 0;
     p->is_available = 0;
-    p->name = NULL;
     memset(p->settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 
 void print_policy_conf(policy_conf_t *p) 
 {
     char buffer[64];
-		if (p==NULL) return;
-    policy_id_to_name(p->policy,buffer);
-    verbosen(VCCONF,"---> policy %s p_state %u\n",buffer,p->p_state);
-    //verbosen(VCCONF,"---> policy %s th %.2lf p_state %u\n",buffer,p->th,p->p_state);
+    int i;
+	if (p==NULL) return;
+
+    verbosen(VCCONF,"---> policy %s p_state %u ", p->name ,p->p_state);
+    for (i = 0; i < MAX_POLICY_SETTINGS; i++)
+        verbosen(VCCONF, " setting%d  %.2lf ", i, p->settings[i]);
+    verbosen(VCCONF, "\n");
 }
 

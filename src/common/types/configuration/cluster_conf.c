@@ -672,3 +672,19 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 	found_mirror = (found_mirror << 1);
 	return (found_server | found_mirror);
 }
+
+
+int validate_configuration(cluster_conf_t *conf)
+{
+    if (conf->num_policies < 1) return EAR_ERROR;
+    if (conf->num_islands < 1) return EAR_ERROR;
+
+    int i;
+    for (i = 0; i < conf->num_islands; i++)
+        if (conf->islands[i].num_ips < 1 || conf->islands[i].num_backups < 1) return EAR_ERROR;
+    for (i = 0; i < conf->num_tags; i++)
+        if (conf->e_tags[i].num_users < 1 && conf->e_tags[i].num_groups < 1 && conf->e_tags[i].num_accounts < 1) return EAR_ERROR;
+
+
+    return EAR_SUCCESS;
+}

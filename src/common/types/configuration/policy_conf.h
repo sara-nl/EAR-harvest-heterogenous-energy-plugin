@@ -51,7 +51,7 @@
 typedef struct policy_conf
 {
     uint policy; 
-    char *name;
+    char name[64];
     double settings[MAX_POLICY_SETTINGS];
     //double th; 
     //uint num_settings;

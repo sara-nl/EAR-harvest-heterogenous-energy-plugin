@@ -117,7 +117,7 @@ int policy_global_configuration(int p_state)
 		return frequency_freq_to_pstate(system_conf->max_freq);
 		break;
 	case MIN_TIME_TO_SOLUTION:
-		performance_penalty=system_conf->th;
+		performance_penalty=system_conf->settings[0];
 	case MONITORING_ONLY:
 		return frequency_freq_to_pstate(system_conf->def_freq);
 		break;
@@ -131,7 +131,7 @@ void policy_global_reconfiguration()
 {
 	if (system_conf!=NULL){
 	debug("earl: policy_global_reconfiguration policy %d max %lu def %lu th %.2lf",
-	power_model_policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
+	power_model_policy,system_conf->max_freq,system_conf->def_freq,system_conf->settings[0]);
 	switch (power_model_policy){
 	case MIN_ENERGY_TO_SOLUTION:
 	    // We filter initial configuration
@@ -162,9 +162,9 @@ void policy_global_reconfiguration()
 		}
 		break;
 	}
-    if (performance_gain<system_conf->th){
-        	debug("earl: min perf. efficiency th set to %lf because of power capping policies",system_conf->th);
-        	performance_gain=system_conf->th;
+    if (performance_gain<system_conf->settings[0]){
+        	debug("earl: min perf. efficiency th set to %lf because of power capping policies",system_conf->settings[0]);
+        	performance_gain=system_conf->settings[0];
     }
 	}
 }
@@ -196,7 +196,7 @@ double get_global_th()
 	{
 		case MIN_TIME_TO_SOLUTION:
 			if (system_conf!=NULL){ 
-				return system_conf->th;
+				return system_conf->settings[0];
 			}else{ 
 				return performance_gain;
 			}
