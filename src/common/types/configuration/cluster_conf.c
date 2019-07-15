@@ -676,25 +676,30 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 /** Tries to get a short policy name*/
 void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
 {
+    //each policy could have a short name stored in the cluster_conf section and we could just return that here
     int pol = policy_name_to_id(policy, conf);
-    switch(pol)
+    if (!strcmp(policy, "MIN_ENERGY_TO_SOLUTION"))
     {
-        case MIN_ENERGY_TO_SOLUTION:
-            strcpy(buf, "ME");
-            break;
-        case MIN_TIME_TO_SOLUTION:
-            strcpy(buf, "MT");
-            break;
-        case MONITORING_ONLY:
-            strcpy(buf, "MO");
-            break;
-        case EAR_ERROR:
-            strcpy(buf, "NP");
-            break;
-        default:
-            strcpy(buf, policy);
-            break;
+        strcpy(buf, "ME");
+        return;
     }
+    else if (!strcmp(policy, "MIN_TIME_TO_SOLUTION"))
+    {
+        strcpy(buf, "MT");
+        return;
+    }
+    else if (!strcmp(policy, "MONITORING_ONLY"))
+    {
+        strcpy(buf, "MO");
+        return;
+    }
+    else if (pol == EAR_ERROR)
+    {
+        strcpy(buf, "NP");
+        return;
+    }
+    else
+        strcpy(buf, policy);
 }
 
 /** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
