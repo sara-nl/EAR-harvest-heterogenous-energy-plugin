@@ -247,7 +247,13 @@ void init_power_policy()
 
 		EAR_default_frequency = def_freq;
 	}
-	policy_id_to_name(power_model_policy,application.job.policy);
+	//policy_id_to_name(power_model_policy,application.job.policy);
+
+    if (system_conf != NULL)
+        strcpy(application.job.policy, system_conf->policy_name);
+    else
+        strcpy(application.job.policy, "NP");
+
 	init_policy_functions();
 	app_policy.init(frequency_get_num_pstates());
 

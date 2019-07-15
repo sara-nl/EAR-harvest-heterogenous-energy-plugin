@@ -474,7 +474,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
-    p_id=policy_name_to_id(appID->job.policy);
+    p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
     /* Use cluster conf function */
     if (p_id!=EAR_ERROR){
     	my_policy=get_my_policy_conf(my_node_conf,p_id);
@@ -514,7 +514,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 			authorized_context.settings[0]=0;
 			my_policy=&authorized_context;
 		}else{
-			p_id=policy_name_to_id(appID->job.policy);
+			p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
 			if (p_id!=EAR_ERROR){
       	my_policy=get_my_policy_conf(my_node_conf,p_id);
 				authorized_context.policy=p_id;
@@ -653,6 +653,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	else dyn_conf->learning=0;
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
 	dyn_conf->policy=my_policy->policy;
+    strcpy(dyn_conf->policy_name,  my_policy->name);
 	dyn_conf->def_freq=f;
 	dyn_conf->def_p_state=my_policy->p_state;
     memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
@@ -790,7 +791,7 @@ void powermon_new_def_freq(uint p_id, ulong def) {
 	uint cpolicy;
 	ps = frequency_freq_to_pstate(def);
 	if ((ccontext >= 0) && (current_ear_app[ccontext]->app.is_mpi == 0)) {
-		cpolicy = policy_name_to_id(current_ear_app[ccontext]->app.job.policy);
+		cpolicy = policy_name_to_id(current_ear_app[ccontext]->app.job.policy, &my_cluster_conf);
 		if (cpolicy == p_id) { /* If the process runs at selected policy */
 			if (def < current_node_freq) {
 				verbose(VJOBPMON, "DefFreq: Application is not mpi, automatically changing freq from %lu to %lu",

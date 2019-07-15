@@ -673,6 +673,59 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 	return (found_server | found_mirror);
 }
 
+/** Tries to get a short policy name*/
+void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
+{
+    int pol = policy_name_to_id(policy, conf);
+    switch(pol)
+    {
+        case MIN_ENERGY_TO_SOLUTION:
+            strcpy(buf, "ME");
+            break;
+        case MIN_TIME_TO_SOLUTION:
+            strcpy(buf, "MT");
+            break;
+        case MONITORING_ONLY:
+            strcpy(buf, "MO");
+            break;
+        case EAR_ERROR:
+            strcpy(buf, "NP");
+            break;
+        default:
+            strcpy(buf, policy);
+            break;
+    }
+}
+
+/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
+int policy_name_to_id(char *my_policy, cluster_conf_t *conf)
+{
+    int i;
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        if (strcmp(my_policy, conf->power_policies[i].name) == 0) return i;
+    }
+	return EAR_ERROR;
+}
+
+
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy, cluster_conf_t *conf)
+{
+    int i;
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        if (conf->power_policies[i].policy == policy_id)
+        {
+		    strcpy(my_policy, conf->power_policies[i].name);;
+            return EAR_SUCCESS;
+        }
+    }
+    strcpy(my_policy,"UNKNOWN");;
+	return EAR_ERROR;
+
+}
+
 
 int validate_configuration(cluster_conf_t *conf)
 {

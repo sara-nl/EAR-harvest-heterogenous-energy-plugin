@@ -65,20 +65,11 @@ typedef struct policy_conf
 /** Check if a given policy if is valid */
 int is_valid_policy(unsigned int p_id);
 
-/** Returns the short name for a given policy. To be used in eacct etc */
-void get_short_policy(char *buf, char *policy);
-
 /** copy dest=src */
 void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src);
 
 /** prints in the stdout policy configuration */
 void print_policy_conf(policy_conf_t *p);
-
-/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
-int policy_name_to_id(char *my_policy);
-
-/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy);
 
 /** Sets all pointers to NULL and all values to their default*/
 void init_policy_conf(policy_conf_t *p);

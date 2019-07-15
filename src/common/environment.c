@@ -63,6 +63,14 @@ int conf_ear_dynais_levels=DEFAULT_DYNAIS_LEVELS;
 int conf_ear_dynais_window_size=DEFAULT_DYNAIS_WINDOW_SIZE;
 
 
+#define USE_EAR_CONF 1
+
+#ifdef USE_EAR_CONF
+char my_ear_conf_path[GENERIC_NAME];
+cluster_conf_t my_cluster_conf;
+my_node_conf_t *my_node_conf;
+#endif
+
 
 # define __USE_GNU
 #include <dlfcn.h>
@@ -152,7 +160,7 @@ int getenv_ear_power_policy()
 	conf_ear_power_policy=DEFAULT_POWER_POLICY;
 	my_policy=getenv("EAR_POWER_POLICY");
 	if (my_policy!=NULL){
-		conf_ear_power_policy=policy_name_to_id(my_policy);
+		conf_ear_power_policy=policy_name_to_id(my_policy, &my_cluster_conf);
 		if (conf_ear_power_policy==EAR_ERROR)	conf_ear_power_policy=DEFAULT_POWER_POLICY;
 	}	
 	return conf_ear_power_policy;
@@ -397,14 +405,6 @@ int get_ear_num_nodes()
 	if (conf_ear_num_nodes==0) getenv_ear_num_nodes();
 	return conf_ear_num_nodes;
 }
-
-#define USE_EAR_CONF 1
-
-#ifdef USE_EAR_CONF
-char my_ear_conf_path[GENERIC_NAME];
-cluster_conf_t my_cluster_conf;
-my_node_conf_t *my_node_conf;
-#endif
 
 // This function reads and process environment variable It must be called before using get_ functions
 void ear_lib_environment()
