@@ -252,7 +252,11 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     do{ // At least one node is assumed
 		if ((range_id = island_range_conf_contains_node(&my_conf->islands[i], nodename)) >= 0) {
             n->island = my_conf->islands[i].id;
-            strcpy(n->db_ip, my_conf->islands[i].db_ips[my_conf->islands[i].ranges[range_id].db_ip]);
+            int num_ips = my_conf->islands[i].ranges[range_id].db_ip;
+            if (my_conf->islands[i].num_ips > num_ips && num_ips > 0)
+                strcpy(n->db_ip, my_conf->islands[i].db_ips[my_conf->islands[i].ranges[range_id].db_ip]);
+            else
+                strcpy(n->db_ip, "");
 			if ((my_conf->islands[i].ranges[range_id].sec_ip>=0) && (my_conf->islands[i].num_backups)){
             	strcpy(n->db_sec_ip, my_conf->islands[i].backup_ips[my_conf->islands[i].ranges[range_id].sec_ip]);
 			}
