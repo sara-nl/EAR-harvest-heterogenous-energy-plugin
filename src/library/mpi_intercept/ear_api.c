@@ -44,12 +44,14 @@
 #include <common/environment.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
+#include <library/common/externs.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
 #include <library/tracer/tracer_mpi.h>
 #include <library/states/states.h>
 #include <library/states/states_periodic.h>
 #include <library/models/models.h>
+#include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
@@ -402,7 +404,7 @@ void ear_init()
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
 	application.job.procs = my_size;
-	application.job.th =get_global_th();
+	application.job.th =system_conf->th;
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
@@ -503,6 +505,7 @@ void ear_finalize()
 	}
 	states_end_job(my_id, NULL, ear_app_name);
 #endif
+	policy_end();
 
 	dettach_settings_conf_shared_area();
 	dettach_resched_shared_area();

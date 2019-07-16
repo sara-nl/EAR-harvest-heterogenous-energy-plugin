@@ -952,6 +952,7 @@ void configure_new_values(settings_conf_t *dyn, resched_t *resched, cluster_conf
 	dyn->min_sig_power = node->min_sig_power;
 	dyn->max_sig_power = node->max_sig_power;
 	dyn->report_loops = cluster->database.report_loops;
+	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 	resched->force_rescheduling = 1;
 	copy_ear_lib_conf(&dyn->lib_info, &cluster->earlib);
 	f_monitoring = my_cluster_conf.eard.period_powermon;

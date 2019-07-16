@@ -42,6 +42,7 @@
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <library/models/models.h>
+#include <library/policies/policy.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/common/externs.h>
@@ -61,6 +62,7 @@ static int current_loop_id;
 static ulong perf_accuracy_min_time = 1000000;
 static uint EAR_STATE ;
 static ulong global_f;
+static loop_id_t periodic_loop;
 
 void states_periodic_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
@@ -77,15 +79,19 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
     perf_accuracy_min_time = get_ear_performance_accuracy();
     architecture_min_perf_accuracy_time=eards_node_energy_frequency();
     if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
+	periodic_loop.event=1;
+	periodic_loop.size=1;
+	periodic_loop.level=1;
 }
 
 void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
 
-	policy_new_loop();
+	policy_loop_init(&periodic_loop);
 	traces_new_period(ear_my_rank, my_id, event);
 	loop_with_signature = 0;
 	EAR_STATE=FIRST_ITERATION;
+	
 }
 
 void states_periodic_end_period(uint iterations)
@@ -102,7 +108,7 @@ void states_periodic_end_period(uint iterations)
 	}
 
 	loop_with_signature = 0;
-	policy_end_loop();
+	policy_loop_end(&periodic_loop);
 }
 
 
@@ -140,9 +146,10 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	int result;
 	uint N_iter;
 	int ready;
+	state_t st;
 
 	prev_f = ear_frequency;
-
+	st=policy_new_iteration(&periodic_loop);
 	if (resched_conf->force_rescheduling)
 	{
 		traces_reconfiguration(ear_my_rank, my_id);
@@ -187,7 +194,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
-					policy_freq = policy_power(0, &loop_signature.signature,&ready);
+					st=policy_apply(&loop_signature.signature,&policy_freq,&ready);
 					PP = projection_get(frequency_freq_to_pstate(policy_freq));
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){

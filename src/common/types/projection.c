@@ -61,10 +61,10 @@ static models_sym_t models_syms_fun;
 static void    *models_syms_obj = NULL;
 const int       models_funcs_n = 4;
 const char     *models_syms_nam[] = {
-  "ear_model_init",
-  "ear_model_project_time",
-  "ear_model_project_power",
-  "ear_model_projection_available",
+  "model_init",
+  "model_project_time",
+  "model_project_power",
+  "model_projection_available",
 };
 
 static state_t models_load(char *obj_path)

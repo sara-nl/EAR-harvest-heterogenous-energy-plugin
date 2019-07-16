@@ -36,17 +36,14 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/types/log.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
-#include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <daemon/eard_api.h>
 #include <control/frequency.h>
-#include <library/common/externs.h>
-#include <library/models/models.h>
+#include <library/policies/policy.h>
 
-#define NO_MODELS_MT_VERBOSE	2
+
 
 static uint mt_policy_pstates;
 static uint mt_reset_freq=RESET_FREQ;
@@ -56,9 +53,8 @@ extern application_t *signatures;
 extern uint *sig_ready;
 static int use_models=1;
 
-void min_time_init(uint pstates)
+state_t policy_init(polctx_t *c)
 {
-    mt_policy_pstates=pstates;
     char *env_use_models;
     env_use_models=getenv("EAR_USE_MODELS");
     if ((env_use_models!=NULL) && (atoi(env_use_models)==0)) use_models=0;

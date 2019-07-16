@@ -49,6 +49,7 @@
 #include <library/policies/policy.h>
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
+#include <common/environment.h>
 
 // static defines
 #define NO_PERIOD				0
@@ -124,7 +125,7 @@ void states_begin_job(int my_id,  char *app_name)
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 	init_log();
-	pst=_policy_max_tries(&MAX_POLICY_TRIES);
+	pst=policy_max_tries(&MAX_POLICY_TRIES);
 }
 
 int states_my_state()
@@ -167,7 +168,7 @@ void states_end_period(uint iterations)
 	}
 
 	loop_with_signature = 0;
-	policy_end_loop(&loop.id);
+	policy_loop_end(&loop.id);
 }
 
 static void check_dynais_on(signature_t *A, signature_t *B)
@@ -512,7 +513,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				return;
 			}
 			// We compare the projection with the signature and the old signature
-			pst=_policy_ok(&loop_signature.signature, l_sig,&pok);
+			pst=policy_ok(&loop_signature.signature, l_sig,&pok);
 			if (pok)
 			{
 				/* When collecting traces, we maintain the period */
@@ -541,7 +542,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 				EAR_STATE = PROJECTION_ERROR;
 				traces_policy_state(ear_my_rank, my_id,PROJECTION_ERROR);
-				ps=policy_get_default_freq(&policy_freq);
+				pst=policy_get_default_freq(&policy_freq);
 				traces_frequency(ear_my_rank, my_id, policy_freq);
 				return;
 			}
@@ -552,7 +553,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			{
 				EAR_STATE = SIGNATURE_HAS_CHANGED;
 				comp_N_begin = metrics_time();
-				policy_new_loop();
+				policy_loop_init(&loop.id);
         #if DYNAIS_CUTOFF
 				check_dynais_on(&loop_signature.signature, l_sig);
         #endif

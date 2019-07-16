@@ -30,48 +30,51 @@
 #include <dlfcn.h>
 #include <common/includes.h>
 #include <common/symplug.h>
-#include <library/models/policies/policy.h>
+#include <control/frequency.h>
+#include <library/policies/policy_ctx.h>
+#include <library/policies/policy.h>
+#include <library/common/externs.h>
+#include <common/environment.h>
+#include <daemon/eard_api.h>
 
 typedef struct policy_symbols {
 	state_t (*init)        (polctx_t *c);
 	state_t (*apply)       (polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready);
 	state_t (*get_default_freq)   (polctx_t *c, ulong *freq_set);
-	state_t (*set_default_freq)   (polctx_t *c);
 	state_t (*ok)          (polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok);
-	state_t (*max_tries)   (int *intents);
-	state_t (*end)         ();
-	state_t (*loop_init)   (loop_id_t *loop_id);
-	state_t (*loop_end)    (loop_id_t *loop_id);
-	state_t (*new_iter)    (loop_id_t *loop_id);
-	state_t (*mpi_init)    ();
-	state_t (*mpi_end)     ();
+	state_t (*max_tries)   (polctx_t *c,int *intents);
+	state_t (*end)         (polctx_t *c);
+	state_t (*loop_init)   (polctx_t *c,loop_id_t *loop_id);
+	state_t (*loop_end)    (polctx_t *c,loop_id_t *loop_id);
+	state_t (*new_iter)    (polctx_t *c,loop_id_t *loop_id);
+	state_t (*mpi_init)    (polctx_t *c);
+	state_t (*mpi_end)     (polctx_t *c);
 	state_t (*configure) (polctx_t *c);
 } polsym_t;
 
 // Static data
 static polsym_t polsyms_fun;
 static void    *polsyms_obj = NULL;
-const int       polsyms_n = 13;
+const int       polsyms_n = 12;
 const char     *polsyms_nam[] = {
-	"ear_policy_init",
-	"ear_policy_apply",
-	"ear_policy_get_default_freq",
-	"ear_policy_set_default_freq",
-	"ear_policy_ok",
-	"ear_policy_max_tries",
-	"ear_policy_end",
-	"ear_policy_loop_init",
-	"ear_policy_loop_end",
-	"ear_policy_new_iteration",
-	"ear_policy_mpi_init",
-	"ear_policy_mpi_end"
-	"ear_policy_configure",
+	"policy_init",
+	"policy_apply",
+	"policy_get_default_freq",
+	"policy_ok",
+	"policy_max_tries",
+	"policy_end",
+	"policy_loop_init",
+	"policy_loop_end",
+	"policy_new_iteration",
+	"policy_mpi_init",
+	"policy_mpi_end"
+	"policy_configure",
 };
 polctx_t my_pol_ctx;
 
 state_t policy_load(char *obj_path)
 {
-	return symplug_open(obj_path, &polsyms_fun, polsyms_nam, polsyms_n);
+	return symplug_open(obj_path, (void **)&polsyms_fun, polsyms_nam, polsyms_n);
 }
 
 state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
@@ -81,7 +84,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 
   char *obj_path = getenv("SLURM_EAR_POWER_POLICY");
   if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
-    	sprintf(basic_path,"%s/%s.so",data->dir_plug,app_settings->policy);
+    	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy);
     	obj_path=basic_path;
 	}
   debug("loading policy",obj_path);
@@ -91,15 +94,11 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	my_pol_ctx.user_selected_freq=app_settings->def_freq;
 	my_pol_ctx.reset_freq_opt=get_ear_reset_freq();
 	my_pol_ctx.ear_frequency=&ear_frequency;
-	return __policy_init();
+	my_pol_ctx.num_pstates=frequency_get_num_pstates();
+	my_pol_ctx.use_turbo=ear_use_turbo;
+	return policy_init();
 }
 
-
-#define preturn(call, ...) \
-	if (call == NULL) { \
-		return EAR_SUCCESS; \
-	} \
-	return call (__VA_ARGS__);
 
 /* Policy functions previously included in models */
 
@@ -109,7 +108,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
  *
  */
 
-state_t _policy_init()
+state_t policy_init()
 {
 	polctx_t *c=&my_pol_ctx;
 	preturn(polsyms_fun.init, c);
@@ -119,15 +118,18 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 {
 	polctx_t *c=&my_pol_ctx;
 	state_t st=EAR_ERROR;
+	*ready=1;
 	if (polsyms_fun.apply!=NULL){
+		if (!eards_connected()){
+			*freq_set=*(c->ear_frequency);
+			return EAR_SUCCESS;
+		}
 		st=polsyms_fun.apply(c, my_sig,freq_set,ready);
   	if (*freq_set != *(c->ear_frequency))
   	{
     	debug("earl: Changing Frequency to %u at the beggining of iteration",*freq_set);
-    	*(c->ear_frequency) = max_freq = eards_change_freq(*freq_set);
-    	if (max_freq != *freq_set) {
-      	*freq_set = max_freq;
-    	}
+    	*(c->ear_frequency) =  eards_change_freq(*freq_set);
+		}
   } 
 	return st;
 }
@@ -140,51 +142,65 @@ state_t policy_get_default_freq(ulong *freq_set)
 state_t policy_set_default_freq()
 {
   polctx_t *c=&my_pol_ctx;
-  preturn(polsyms_fun.set_default_freq, c);
+	state_t st;
+	if (polsyms_fun.get_default_freq!=NULL){
+  	st=polsyms_fun.get_default_freq(c,c->ear_frequency);
+  	eards_change_freq(*(c->ear_frequency));
+		return st;
+	}else{ 
+		return EAR_ERROR;
+	}
 }
 
 
 
-state_t _policy_ok(signature_t *curr,signature_t *prev,nt *ok)
+state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
 {
 	polctx_t *c=&my_pol_ctx;
 	preturn(polsyms_fun.ok, c, curr,prev,ok);
 }
 
-state_t _policy_max_tries(int *intents)
+state_t policy_max_tries(int *intents)
 { 
-	preturn(polsyms_fun.max_tries, intents);
+	polctx_t *c=&my_pol_ctx;
+	preturn(polsyms_fun.max_tries, c,intents);
 }
 
 state_t policy_end()
 {
-	preturn(polsyms_fun.end);
+	polctx_t *c=&my_pol_ctx;
+	preturn(polsyms_fun.end,c);
 }
 /** LOOPS */
 state_t policy_loop_init(loop_id_t *loop_id)
 {
-	preturn(polsyms_fun.loop_init, loop_id);
+	polctx_t *c=&my_pol_ctx;
+	preturn(polsyms_fun.loop_init,c, loop_id);
 }
 
 state_t policy_loop_end(loop_id_t *loop_id)
 {
-	preturn(polsyms_fun.loop_end, loop_id);
+	polctx_t *c=&my_pol_ctx;
+	preturn(polsyms_fun.loop_end,c, loop_id);
 }
 state_t policy_new_iteration(loop_id_t *loop_id)
 {
-	preturn(polsyms_fun.new_iter,loop_id);
+	polctx_t *c=&my_pol_ctx;
+	preturn(polsyms_fun.new_iter,c,loop_id);
 }
 
 /** MPI CALLS */
 
 state_t policy_mpi_init()
 {
-	preturn(polsyms_fun.mpi_init);
+	polctx_t *c=&my_pol_ctx;
+	preturn(polsyms_fun.mpi_init,c);
 }
 
 state_t policy_mpi_end()
 {
-	preturn(polsyms_fun.mpi_end);
+	polctx_t *c=&my_pol_ctx;
+	preturn(polsyms_fun.mpi_end,c);
 }
 
 /** GLOBAL EVENTS */
@@ -193,5 +209,12 @@ state_t policy_configure()
 {
   polctx_t *c=&my_pol_ctx;
   preturn(polsyms_fun.configure, c);
+}
+
+state_t policy_force_global_frequency(ulong new_f)
+{
+  ear_frequency=new_f;
+  eards_change_freq(ear_frequency);
+	return EAR_SUCCESS;
 }
 

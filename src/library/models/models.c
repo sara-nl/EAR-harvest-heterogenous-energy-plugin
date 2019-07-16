@@ -37,22 +37,14 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <common/types/log.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
 #include <library/common/externs.h>
 #include <library/models/models.h>
-#include <library/models/min_time.h>
-#include <library/models/min_energy.h>
-#include <library/models/monitoring.h>
-#include <daemon/eard_api.h>
-#include <control/frequency.h>
-#include <metrics/custom/hardware_info.h>
 
 static int use_default=1;
 
 
-// Policy
 
 // Normals
 //
@@ -62,130 +54,6 @@ static ulong user_selected_freq;
 static int model_nominal=1;
 
 
-// This function changes performance_gain,EAR_default_pstate and EAR_default_frequency
-void policy_global_reconfiguration()
-{
-	if (system_conf!=NULL){
-	debug("earl: policy_global_reconfiguration policy %d max %lu def %lu th %.2lf",
-	power_model_policy,system_conf->max_freq,system_conf->def_freq,system_conf->th);
-	switch (power_model_policy){
-	case MIN_ENERGY_TO_SOLUTION:
-	    // We filter initial configuration
-	    if (system_conf->max_freq<EAR_default_frequency){
-	        debug("earl: max freq set to %lu because of power capping policies",system_conf->max_freq);
-			EAR_default_frequency=system_conf->max_freq;
-	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
-	    }
-		break;
-	case MIN_TIME_TO_SOLUTION:
-		if (system_conf->def_freq!=EAR_default_frequency){
-	        debug("EAR def freq set to %lu because of power capping policies",system_conf->def_freq);
-			EAR_default_frequency=system_conf->def_freq;
-	       	EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
-		}
-		break;
-	case MONITORING_ONLY:
-		if (system_conf->max_freq<ear_frequency){
-			debug("earl: max freq set to %lu because of power capping policies",system_conf->max_freq);
-			EAR_default_frequency=system_conf->max_freq;
-			EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);	
-		}
-		if (ear_frequency<user_selected_freq){
-			if (system_conf->max_freq>=user_selected_freq){
-				EAR_default_frequency=user_selected_freq;
-				EAR_default_pstate=frequency_freq_to_pstate(EAR_default_frequency);
-			}
-		}
-		break;
-	}
-    if (performance_gain<system_conf->th){
-        	debug("earl: min perf. efficiency th set to %lf because of power capping policies",system_conf->th);
-        	performance_gain=system_conf->th;
-    }
-	}
-}
-
-// This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
-uint get_global_min_pstate()
-{
-    if (system_conf!=NULL) return frequency_freq_to_pstate(system_conf->max_freq);
-	else return model_nominal;
-}
-
-// This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
-uint get_global_def_pstate()
-{
-    if (system_conf!=NULL) return frequency_freq_to_pstate(system_conf->def_freq);
-	else return EAR_default_pstate;
-}
-
-// This function returns the pstate corresponding to the maximum frequency taking into account power capping policies
-ulong get_global_def_freq()
-{
-    if (system_conf!=NULL) return system_conf->def_freq;
-	else return EAR_default_pstate;
-}
-
-double get_global_th()
-{
-	switch (power_model_policy)
-	{
-		case MIN_TIME_TO_SOLUTION:
-			if (system_conf!=NULL){ 
-				return system_conf->th;
-			}else{ 
-				return performance_gain;
-			}
-			break;
-		case MIN_ENERGY_TO_SOLUTION:
-			return performance_penalty;
-			break;
-		case MONITORING_ONLY:
-			return 0.0;
-	}
-	return 0.0;
-}
-
-void init_power_policy()
-{
-	unsigned long def_freq;
-
-	debug("init_power_policy");
-	
-	power_model_policy = get_ear_power_policy();
-
-	if (power_model_policy==MIN_ENERGY_TO_SOLUTION) performance_penalty=get_ear_power_policy_th();
-	else if (power_model_policy==MIN_TIME_TO_SOLUTION) performance_gain=get_ear_power_policy_th();
-
-
-	reset_freq_opt=get_ear_reset_freq();
-
-	// This variable defines the first state in which a policy will start on.
-	EAR_default_pstate = get_ear_p_state();
-
-	if (EAR_default_pstate >= frequency_get_num_pstates()) {
-		EAR_default_pstate = DEFAULT_P_STATE;
-	}
-
-	EAR_default_pstate=policy_global_configuration(EAR_default_pstate);
-
-	user_selected_freq = EAR_default_frequency = frequency_pstate_to_freq(EAR_default_pstate);
-
-	
-	// IMPORTANT: here is where the environment first P_STATE is set.
-	ear_frequency = def_freq = eards_change_freq(EAR_default_frequency);
-
-	if (def_freq != EAR_default_frequency)
-	{
-		warning("ear: warning max freq is limited by the system, using %lu as default", def_freq);
-
-		EAR_default_frequency = def_freq;
-	}
-	policy_id_to_name(power_model_policy,application.job.policy);
-	init_policy_functions();
-	app_policy.init(frequency_get_num_pstates());
-
-}
 
 
 state_t init_power_models(uint user_type,conf_install_t *data,uint pstates)
@@ -198,44 +66,4 @@ state_t init_power_models(uint user_type,conf_install_t *data,uint pstates)
 }
 
 
-
-
-unsigned long policy_power(unsigned int whole_app, signature_t* MY_SIGNATURE,int *ready)
-{
-	unsigned long optimal_freq, max_freq;
-
-	if (whole_app) return ear_frequency;
-	optimal_freq = app_policy.policy(MY_SIGNATURE,ready);
-
-	if (optimal_freq != ear_frequency)
-	{
-		debug("earl: Changing Frequency to %u at the beggining of iteration",optimal_freq);
-
-		ear_frequency = max_freq = eards_change_freq(optimal_freq);
-
-		if (max_freq != optimal_freq) {
-			optimal_freq = max_freq;
-		}
-	} else {
-		debug("earl: %u selected, no changes are required",optimal_freq);
-	}
-
-	return optimal_freq;
-
-}
-
-void force_global_frequency(ulong new_f)
-{							
-	ear_frequency=new_f;
-	eards_change_freq(ear_frequency);
-}
-
-
-ulong policy_default_configuration()
-{
-	ear_frequency=app_policy.default_conf(user_selected_freq);
-	debug("Going to default frequency %lu",ear_frequency);
-	eards_change_freq(ear_frequency);
-	return ear_frequency;
-}
 

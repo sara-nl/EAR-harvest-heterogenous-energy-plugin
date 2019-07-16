@@ -51,7 +51,7 @@ static int valid_range(ulong from,ulong to)
 }
 
 /* This function loads any information needed by the energy model */
-state_t ear_model_init(char *etc,char *tmp,uint pstates)
+state_t model_init(char *etc,char *tmp,uint pstates)
 {
   char coeff_file[128];
   char coeff_default_file[128];
@@ -115,7 +115,7 @@ double default_project_cpi(signature_t *sign, coefficient_t *coeff)
 		   (coeff->F);
 }
 
-state_t ear_model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
+state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 {
 	state_t st=EAR_SUCCESS;
 	coefficient_t *coeff;
@@ -136,7 +136,7 @@ state_t ear_model_project_time(signature_t *sign,ulong from,ulong to,double *pti
 	return st;
 }
 
-state_t ear_model_project_power(signature_t *sign, ulong from,ulong to,double *ppower)
+state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppower)
 {
 	state_t st=EAR_SUCCESS;
 	coefficient_t *coeff;
@@ -154,7 +154,7 @@ state_t ear_model_project_power(signature_t *sign, ulong from,ulong to,double *p
 	return st;
 }
 
-state_t ear_model_projection_available(ulong from,ulong to)
+state_t model_projection_available(ulong from,ulong to)
 {
 	if (coefficients[from][to].available) return EAR_SUCCESS;
 	else EAR_ERROR;

@@ -36,23 +36,18 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/types/application.h>
 #include <common/types/projection.h>
-#include <library/common/externs.h>
-#include <library/policies/policy.h>
+#include <library/policies/policy_api.h>
 
 
-#include <common/types/signature.h>/* defines signature */
-#include <daemon/shared_configuration.h> /* defines settings_conf */
 
-state_t ear_policy_init(polctx_t *c)
+state_t policy_init(polctx_t *c)
 {
 }
-state_t apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
+state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
-	policy_global_reconfiguration();
 	*ready=1;
-	*new_freq=c->app.def_freq;
+	*new_freq=c->app->def_freq;
 	return EAR_SUCCESS;
 }
 state_t ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
@@ -62,13 +57,13 @@ state_t ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
 }
 
 
-state_t ear_policy_get_default_freq(polctx_t *c, ulong *freq_set)
+state_t policy_get_default_freq(polctx_t *c, ulong *freq_set)
 {
-	freq_set=c->app.def_freq;
+	*freq_set=c->app->def_freq;
 	return EAR_SUCCESS;
 }
 
-state_t ear_policy_max_tries(int *intents)
+state_t policy_max_tries(polctx_t *c,int *intents)
 {
 	*intents=0;
 	return EAR_SUCCESS;

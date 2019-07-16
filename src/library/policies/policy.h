@@ -35,28 +35,21 @@
 #include <common/types/projection.h>
 #include <daemon/shared_configuration.h>
 
-typedef struct policy_context {
-	settings_conf_t *app;
-	resched_t *reconfigure;
-	unsigned long user_selected_freq;
-	unsigned long reset_freq_opt;
-	unsigned long *ear_frequency;
-} polctx_t;
-
-state_t init_power_policy(settings_conf_t *app_settings,resched_t *resched_conf);
-state_t policy_load();
-state_t _policy_init();
-state_t policy_apply(ulong *freq_set, int *ready);
+state_t init_power_policy(settings_conf_t *app_settings,resched_t *res);
+state_t policy_init();
+state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready);
 state_t policy_get_default_freq(ulong *freq_set);
 state_t policy_set_default_freq();
-state_t _policy_ok(int *ok);
-state_t _policy_max_tries(int *intents);
+state_t policy_ok(signature_t *c_sig,signature_t *l_sig,int *ok);
+state_t policy_max_tries(int *intents);
 state_t policy_end();
 state_t policy_loop_init(loop_id_t *loop_id);
 state_t policy_loop_end(loop_id_t *loop_id);
 state_t policy_new_iteration(loop_id_t *loop_id);
 state_t policy_mpi_init();
 state_t policy_mpi_end();
+
+state_t policy_force_global_frequency(ulong new_f);
 
 /* These two functions needs to be reconsidered*/
 state_t policy_configure();

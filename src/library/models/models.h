@@ -33,51 +33,9 @@
 #define EAR_MODELS_H_
 
 #include <common/environment.h>
-#include <common/types/coefficient.h>
-#include <common/types/projection.h>
-#include <common/types/application.h>
+#include <daemon/shared_configuration.h>
 
-
-/** Selects policy based on EAR_POWER_POLICY */
 state_t init_power_models(uint user_type,conf_install_t *data,uint pstates);
 
-/** Executed when a new_loop is reported by dyanis */
-void policy_new_loop();
-/** Executed when a end_loop is reported by dyanis */
-void policy_end_loop();
-
-/** Given the computed application signature, applies the selected power policy
-*   and returns the “optimal” frequency. */
-ulong policy_power(uint whole_app, signature_t *sig,int *ready);
-
-/** Given a performance projection, the actual application signature and the last
-*   computed application signature values, returns true if policy decision has been
-*   the correct ones. */
-uint policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig);
-
-/** Executed when we have done several "tries" and the policy is not able to select the "good" freq for this app
-*/
-ulong policy_default_configuration();
-
-/** This function sets the frequency "by hand" when  using global synchronizations */
-void force_global_frequency(ulong new_f);
-
-uint get_global_def_pstate();
-
-ulong get_global_def_freq();
-
-double get_global_th();
-
-/* */
-void policy_global_reconfiguration();
-
-/* Returns the maximum tries per policy */
-int policy_max_tries();
-
-/* Returns the default freq for the current policy */
-ulong policy_get_default_freq();
-
-/** */
-uint get_global_min_pstate();
 
 #endif
