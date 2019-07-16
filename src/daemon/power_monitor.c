@@ -281,6 +281,7 @@ void reset_shared_memory()
     dyn_conf->policy=my_cluster_conf.default_policy;
     dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
     dyn_conf->def_p_state=my_policy->p_state;
+    strcpy(dyn_conf->policy_name, my_policy->name);
     memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 
@@ -477,7 +478,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
     p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
     /* Use cluster conf function */
     if (p_id!=EAR_ERROR){
-    	my_policy=get_my_policy_conf(my_node_conf,p_id);
+    	    my_policy=get_my_policy_conf(my_node_conf,p_id);
 			if (!my_policy->is_available){
 				verbose(VJOBPMON+1,"User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
 				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
@@ -485,27 +486,35 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 			copy_policy_conf(&per_job_conf,my_policy);
 			my_policy=&per_job_conf;
     }else{
-			verbose(VJOBPMON+1,"Invalid policy %s ",appID->job.policy);
-      my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
-			if (my_policy==NULL){
-				error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
-				authorized_context.p_state=1;
+		verbose(VJOBPMON+1,"Invalid policy %s ",appID->job.policy);
+        my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
+		if (my_policy==NULL){
+			error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
+		    authorized_context.p_state=1;
+            int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+            if (mo_pid != EAR_ERROR)
+                authorized_context.policy = mo_pid;
+            else
 				authorized_context.policy=MONITORING_ONLY;
-				authorized_context.settings[0]=0;
-			}else{
-				copy_policy_conf(&authorized_context,my_policy);
-			}
-			my_policy=&authorized_context;
-     }
-     if (my_policy==NULL){
-     	error("Default policy configuration returns NULL,invalid policy, check ear.conf");
-      my_policy=&default_policy_context;
-     }
-		break;
+			authorized_context.settings[0]=0;
+		}else{
+			copy_policy_conf(&authorized_context,my_policy);
+		}
+		my_policy=&authorized_context;
+    }
+    if (my_policy==NULL){
+        error("Default policy configuration returns NULL,invalid policy, check ear.conf");
+        my_policy=&default_policy_context;
+    }
+	break;
 
 	case AUTHORIZED:
 		if (appID->is_learning){
-			authorized_context.policy=MONITORING_ONLY;
+            int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+            if (mo_pid != EAR_ERROR)
+                authorized_context.policy = mo_pid;
+            else
+			    authorized_context.policy=MONITORING_ONLY;
 			if (appID->job.def_f){ 
 				if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
 				else authorized_context.p_state=1;
@@ -516,7 +525,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		}else{
 			p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
 			if (p_id!=EAR_ERROR){
-      	my_policy=get_my_policy_conf(my_node_conf,p_id);
+      	        my_policy=get_my_policy_conf(my_node_conf,p_id);
 				authorized_context.policy=p_id;
 				if (appID->job.def_f){ 
 					verbose(VJOBPMON+1,"Setting freq to NOT default policy p_state ");
@@ -528,6 +537,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 				}
 				if (appID->job.th>0) authorized_context.settings[0]=appID->job.th;
 				else authorized_context.settings[0]=my_policy->settings[0];
+                strcpy(authorized_context.name, my_policy->name);
 				my_policy=&authorized_context;
 			}else{
 				verbose(VJOBPMON,"Authorized user is executing not defined/invalid policy using default %d",my_cluster_conf.default_policy);
@@ -535,7 +545,11 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 				if (my_policy==NULL){
 					error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 					authorized_context.p_state=1;
-					authorized_context.policy=MONITORING_ONLY;
+                    int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+                    if (mo_pid != EAR_ERROR)
+                        authorized_context.policy = mo_pid;
+                    else
+					    authorized_context.policy=MONITORING_ONLY;
 					authorized_context.settings[0]=0;
 				}else{
 					print_policy_conf(my_policy);		
@@ -547,7 +561,11 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		break;
 	case ENERGY_TAG:
 		appID->is_learning=0;
-		energy_tag_context.policy=MONITORING_ONLY;
+        int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+        if (mo_pid != EAR_ERROR)
+            authorized_context.policy = mo_pid;
+        else
+		    energy_tag_context.policy=MONITORING_ONLY;
 		energy_tag_context.p_state=my_tag->p_state;
 		energy_tag_context.settings[0]=0;
 		my_policy=&energy_tag_context;
