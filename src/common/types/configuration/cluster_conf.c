@@ -255,6 +255,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             int num_ips = my_conf->islands[i].ranges[range_id].db_ip;
             if (my_conf->islands[i].num_ips > num_ips && num_ips >= 0)
                 strcpy(n->db_ip, my_conf->islands[i].db_ips[my_conf->islands[i].ranges[range_id].db_ip]);
+            else if (my_conf->islands[i].num_ips > 0)
+                strcpy(n->db_ip, my_conf->islands[i].db_ips[0]);
             else
                 strcpy(n->db_ip, "");
 			if ((my_conf->islands[i].ranges[range_id].sec_ip>=0) && (my_conf->islands[i].num_backups)){
