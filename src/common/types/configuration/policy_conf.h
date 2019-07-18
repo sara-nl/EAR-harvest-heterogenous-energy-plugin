@@ -62,9 +62,6 @@ typedef struct policy_conf
 
 #include <common/types/configuration/cluster_conf.h>
 
-/** Check if a given policy if is valid */
-int is_valid_policy(unsigned int p_id);
-
 /** copy dest=src */
 void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src);
 
