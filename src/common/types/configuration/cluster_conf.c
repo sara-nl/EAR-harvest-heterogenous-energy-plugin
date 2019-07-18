@@ -721,7 +721,7 @@ int policy_name_to_id(char *my_policy, cluster_conf_t *conf)
 
 
 /** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy, cluster_conf_t *conf)
+int policy_id_to_name(int policy_id, char *my_policy, cluster_conf_t *conf)
 {
     int i;
     for (i = 0; i < conf->num_policies; i++)
@@ -735,6 +735,15 @@ int policy_id_to_name(int policy_id,char *my_policy, cluster_conf_t *conf)
     strcpy(my_policy,"UNKNOWN");;
 	return EAR_ERROR;
 
+}
+
+int is_valid_policy(unsigned int p_id, cluster_conf_t *conf)
+{
+    int i;
+    for (i = 0; i < conf->num_policies; i++)
+        if (conf->power_policies[i].policy == p_id) return 1;
+
+    return 0;
 }
 
 

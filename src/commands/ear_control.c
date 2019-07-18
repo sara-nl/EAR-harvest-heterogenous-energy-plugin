@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
                     break;
 				}
 				arg2 = policy_name_to_id(argv[optind], &my_cluster_conf);
-				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
+				if (!is_valid_policy(arg2, &my_cluster_conf) || arg2 == EAR_ERROR)
 				{
 					printf("Invalid policy (%s).\n", argv[optind]);
                     break;
@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
                     break;
 				}
 				arg2 = policy_name_to_id(argv[optind], &my_cluster_conf);
-				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
+				if (!is_valid_policy(arg2, &my_cluster_conf) || arg2 == EAR_ERROR)
 				{
 					printf("Invalid policy (%s).\n", argv[optind]);
                     break;
@@ -392,7 +392,7 @@ int main(int argc, char *argv[])
                     break;
 				}
 				arg2 = policy_name_to_id(argv[optind], &my_cluster_conf);
-				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
+				if (!is_valid_policy(arg2, &my_cluster_conf) || arg2 == EAR_ERROR)
 				{
 					printf("Invalid policy (%s).\n", argv[optind]);
                     break;

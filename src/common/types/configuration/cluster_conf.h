@@ -274,6 +274,9 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 
 // Policy functions
 
+/** Check if a given policy if is valid */
+int is_valid_policy(unsigned int p_id, cluster_conf_t *conf);
+
 
 // Copy functions
 

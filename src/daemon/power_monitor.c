@@ -819,7 +819,7 @@ void powermon_new_def_freq(uint p_id, ulong def) {
 			}
 		}
 	}
-	if (is_valid_policy(p_id)) {
+	if (is_valid_policy(p_id, &my_cluster_conf)) {
 		verbose(VJOBPMON, "New default pstate %u for policy %u freq=%lu", ps, my_node_conf->policies[p_id].policy, def);
 		my_node_conf->policies[p_id].p_state = ps;
 	} else {
