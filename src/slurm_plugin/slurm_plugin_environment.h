@@ -106,7 +106,7 @@ struct variables_s {
 	varnames_t ld_libr;
 	varnames_t node_num;
 	varnames_t version;
-	varnames_t eargm_sec;
+	varnames_t gm_secure;
 }
 	Var __attribute__((weak)) =
 {

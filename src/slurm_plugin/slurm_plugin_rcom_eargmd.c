@@ -43,7 +43,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	sprintf(buffer, "\0");
 
 	// Pack deserialization
-	getenv_agnostic(sp, Var.gm_secured.loc, buffer, SZ_PATH);
+	getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH);
 	sd->pack.eargmd.secured = atoi(buffer);
 
 	if (!sd->pack.eargmd.enabled || sd->pack.eargmd.secured) {
@@ -67,8 +67,8 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	// Informing that this report has to be finished
 	sd->pack.eargmd.connected = 1;
 
-	// Enabling protection
-	setenv_agnostic(sp, Var.gm_secured.loc, "1", 1);
+	// Enabling protection (hypercontained)
+	setenv_agnostic(sp, Var.gm_secure.loc, "1", 1);
 
 	return ESPANK_SUCCESS;
 }
@@ -94,8 +94,8 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd)
 	}
 	eargm_disconnect();
 
-	// Disabling protection
-	setenv_agnostic(sp, Var.gm_secured.loc, "0", 1);
+	// Disabling protection (hypercontained)
+	setenv_agnostic(sp, Var.gm_secure.loc, "0", 1);
 
 	return ESPANK_SUCCESS;
 }
