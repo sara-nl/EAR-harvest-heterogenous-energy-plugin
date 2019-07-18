@@ -53,6 +53,7 @@ void init_policy_conf(policy_conf_t *p)
     p->policy = -1;
 //    p->th = 0;
     p->is_available = 0;
+		p->def_freq=(float)0;
     memset(p->settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 

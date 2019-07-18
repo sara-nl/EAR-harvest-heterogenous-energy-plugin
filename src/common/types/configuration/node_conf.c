@@ -125,7 +125,7 @@ void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
 	    strcpy(dest->coef_file,src->coef_file);
     }
 	dest->num_policies=src->num_policies;
-	for (i=0;i<TOTAL_POLICIES;i++){
+	for (i=0;i<src->num_policies;i++){
 		copy_policy_conf(&dest->policies[i],&src->policies[i]);
 	}
 	dest->max_sig_power=src->max_sig_power;
@@ -168,10 +168,11 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 
 void print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 {
+	// this function needs to be revwritten
     int coef_len;
     int part1,part2;
     part1=sizeof(uint)*2+sizeof(ulong)+NODE_PREFIX*2;
-    part2=sizeof(uint)+sizeof(policy_conf_t)*TOTAL_POLICIES+sizeof(double)*3;
+    part2=sizeof(uint)+sizeof(policy_conf_t)*myconf->num_policies+sizeof(double)*3;
     write(fd,(char *)myconf,part1);
     if (myconf->coef_file!=NULL){
         coef_len=strlen(myconf->coef_file);
@@ -186,6 +187,7 @@ void print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 
 void read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 {
+	//this function needs to be revwritten
     int coef_len;
     int part1,part2;
     part1=sizeof(uint)*2+sizeof(ulong)+NODE_PREFIX*2;

@@ -58,13 +58,13 @@ typedef struct ip_table
     char ip[IP_LENGTH];
     char name[IP_LENGTH];
     int counter;
-	uint power;
+		uint power;
     uint max_power;
     int job_id;
     int step_id;
     uint current_freq;
     uint temp;
-	eard_policy_info_t policies[TOTAL_POLICIES];
+		eard_policy_info_t policies[TOTAL_POLICIES];
 } ip_table_t;
 
 cluster_conf_t my_cluster_conf;

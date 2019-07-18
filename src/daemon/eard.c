@@ -129,12 +129,12 @@ int eard_must_exit = 0;
 topology_t node_desc;
 
 
-void update_coefficients(char *
-
-new,
-char *old
-)
+void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 {
+	uint i;
+	for (i=0;i<num_policies;i++){
+		plist[i].p_state=frequency_freq_to_pstate(plist[i].def_freq);
+	}
 }
 
 void init_frequency_list() {
@@ -836,7 +836,6 @@ void signal_handler(int sig) {
 			} else {
 				eard_dyn_conf.nconf = my_node_conf;
 				print_my_node_conf(my_node_conf);
-				update_coefficients(my_node_conf->coef_file, my_original_node_conf.coef_file);
 				copy_my_node_conf(&my_original_node_conf, my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
@@ -1135,6 +1134,7 @@ int main(int argc, char *argv[]) {
 		error(" Error reading cluster configuration\n");
 		_exit(1);
 	} else {
+		compute_default_pstates_per_policy(my_cluster_conf.num_policies, my_cluster_conf.power_policies);
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 		if (my_node_conf == NULL) {

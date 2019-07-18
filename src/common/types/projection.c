@@ -77,10 +77,13 @@ state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 	char basic_path[SZ_PATH_INCOMPLETE];
 	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
 	state_t st;
-	
 	if ((obj_path == NULL) || (user_type != AUTHORIZED))
 	{
-		sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
+		if (strcmp(data->obj_power_model,"default") || (data->obj_power_model==NULL)){
+			sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
+		}else if (data->obj_power_model!=NULL){
+			sprintf(basic_path, "%s/models/%s.so", data->dir_plug,data->obj_power_model);
+		}
 		obj_path = basic_path;
 		
 	}
