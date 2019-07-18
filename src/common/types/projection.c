@@ -83,13 +83,13 @@ state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 		sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
 		obj_path = basic_path;
 		
-		debug(0, "SLURM_EAR_POWER_MODEL not defined using default %s", obj_path);
 	}
+	debug("Using power model path  %s", obj_path);
 	
 	st = models_load(obj_path);
 	
 	if (st == EAR_SUCCESS) {
-		return models_syms_fun.init(data->dir_conf, data->dir_temp, pstates);
+		freturn(models_syms_fun.init,data->dir_conf, data->dir_temp, pstates);
 	}
 	
 	return st;

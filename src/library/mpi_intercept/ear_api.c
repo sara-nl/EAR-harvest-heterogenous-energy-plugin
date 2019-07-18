@@ -404,7 +404,7 @@ void ear_init()
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
 	application.job.procs = my_size;
-	application.job.th =system_conf->th;
+	application.job.th =system_conf->settings[0];
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));

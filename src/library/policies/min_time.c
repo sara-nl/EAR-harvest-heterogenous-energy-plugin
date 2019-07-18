@@ -95,7 +95,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// Default values
 		
-		min_eff_gain=c->app->th;
+		min_eff_gain=c->app->settings[0];
 		def_freq=c->app->def_freq;
 		def_pstate=frequency_freq_to_pstate(def_freq);
 

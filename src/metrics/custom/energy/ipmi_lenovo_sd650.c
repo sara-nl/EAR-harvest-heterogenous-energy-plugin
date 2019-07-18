@@ -42,6 +42,8 @@ static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
 
+state_t plug_energy_init(void **c);
+
 static state_t _plug_energy_init(void **c)
 {
 	unsigned int workaround_flags = 0;

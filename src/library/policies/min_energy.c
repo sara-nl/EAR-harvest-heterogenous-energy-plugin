@@ -88,7 +88,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 	// Default values
 
-		max_penalty=c->app->th;
+		max_penalty=c->app->settings[0];
 		def_freq=c->app->def_freq;
 		def_pstate=frequency_freq_to_pstate(def_freq);
 
@@ -166,7 +166,7 @@ state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *o
 	energy_last = last_sig->time*last_sig->DC_power;
 	energy_curr = curr_sig->time * curr_sig->DC_power;
 
-	if ((energy_curr<energy_last)&&(curr_sig->time<(last_sig->time*c->app->th))) *ok=1;
+	if ((energy_curr<energy_last)&&(curr_sig->time<(last_sig->time*c->app->settings[0]))) *ok=1;
 	else *ok=0;
 	return EAR_SUCCESS;
 }
