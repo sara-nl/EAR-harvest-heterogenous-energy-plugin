@@ -39,12 +39,15 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	// Disabled
 	return ESPANK_SUCCESS;
 
-	// Pack deserialization
-	getenv_agnostic(sp, "EARGMD_CONNECTED", buffer, SZ_PATH);
-	sd->pack.eargmd.connected = atoi(buffer);
+	// Cleaning buffer
+	sprintf(buffer, "\0");
 
-	if (sd->pack.eargmd.enabled && !sd->pack.eargmd.connected) {
-		return ESPANK_ERROR;
+	// Pack deserialization
+	getenv_agnostic(sp, Var.gm_secured.loc, buffer, SZ_PATH);
+	sd->pack.eargmd.secured = atoi(buffer);
+
+	if (!sd->pack.eargmd.enabled || sd->pack.eargmd.secured) {
+		return ESPANK_SUCCESS;
 	}
 
 	// Verbosity
@@ -65,7 +68,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	sd->pack.eargmd.connected = 1;
 
 	// Enabling protection
-	setenv_agnostic(sp, "EARGMD_CONNECTED", "1", 1);
+	setenv_agnostic(sp, Var.gm_secured.loc, "1", 1);
 
 	return ESPANK_SUCCESS;
 }
@@ -76,6 +79,10 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd)
 
 	// Disabled
 	return ESPANK_SUCCESS;
+
+	if (!sd->pack.eargmd.connected) {
+		return ESPANK_SUCCESS;
+	}
 
 	if (eargm_connect(sd->pack.eargmd.host, sd->pack.eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
@@ -88,7 +95,7 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd)
 	eargm_disconnect();
 
 	// Disabling protection
-	setenv_agnostic(sp, "EARGMD_CONNECTED", "0", 1);
+	setenv_agnostic(sp, Var.gm_secured.loc, "0", 1);
 
 	return ESPANK_SUCCESS;
 }

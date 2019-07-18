@@ -91,12 +91,23 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	// EARGMD connection
-	plug_rcom_eargmd_job_start(sp, &sd);
-
 	//
 	plug_serialize_remote(sp, &sd);
 	
+	return ESPANK_SUCCESS;
+}
+
+// Function order:
+// 	- Local 3
+// 	- Remote 0
+int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
+{
+	plug_verbose(sp, 2, "function slurm_spank_local_user_init");
+
+	if (plug_context_is(sp, Context.local)) {
+		plug_rcom_eargmd_job_start(sp, &sd);
+	}
+
 	return ESPANK_SUCCESS;
 }
 

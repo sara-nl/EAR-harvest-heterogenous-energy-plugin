@@ -86,6 +86,7 @@ typedef struct plug_eard {
 typedef struct plug_eargmd {
 	char host[SZ_NAME_MEDIUM];
 	uint connected;
+	uint secured;
 	uint enabled;
 	uint port;
 } plug_eargmd_t;
