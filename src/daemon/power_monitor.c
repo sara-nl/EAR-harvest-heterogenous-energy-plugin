@@ -271,16 +271,18 @@ static void PM_set_sigusr1() {
 
 }
 
-void reset_shared_memory() {
-	policy_conf_t *my_policy;
-	my_policy = get_my_policy_conf(my_node_conf, my_cluster_conf.default_policy);
-	dyn_conf->user_type = NORMAL;
-	dyn_conf->learning = 0;
-	dyn_conf->lib_enabled = 1;
-	dyn_conf->policy = my_cluster_conf.default_policy;
-	dyn_conf->def_freq = frequency_pstate_to_freq(my_policy->p_state);
-	dyn_conf->def_p_state = my_policy->p_state;
-	dyn_conf->th = my_policy->th;
+void reset_shared_memory()
+{
+    policy_conf_t *my_policy;
+    my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
+    dyn_conf->user_type=NORMAL;
+    dyn_conf->learning=0;
+    dyn_conf->lib_enabled=1;
+    dyn_conf->policy=my_cluster_conf.default_policy;
+    dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
+    dyn_conf->def_p_state=my_policy->p_state;
+    strcpy(dyn_conf->policy_name, my_policy->name);
+    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 
 void clean_job_environment(int id, int step_id) {
@@ -469,100 +471,111 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		my_policy = &default_policy_context;
 		return my_policy;
 	}
-	verbose(VJOBPMON + 1, "configuring policy for user %u policy %s freq %lu th %lf is_learning %u", user_type,
-			appID->job.policy, appID->job.def_f, appID->job.th, appID->is_learning);
-	switch (user_type) {
-		case NORMAL:
-			appID->is_learning = 0;
-			p_id = policy_name_to_id(appID->job.policy);
-			/* Use cluster conf function */
-			if (p_id != EAR_ERROR) {
-				my_policy = get_my_policy_conf(my_node_conf, p_id);
-				if (!my_policy->is_available) {
-					verbose(VJOBPMON + 1, "User type %d is not alloweb to use policy %s", user_type, appID->job.policy);
-					my_policy = get_my_policy_conf(my_node_conf, my_cluster_conf.default_policy);
+	verbose(VJOBPMON+1,"configuring policy for user %u policy %s freq %lu th %lf is_learning %u",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
+	switch (user_type){
+	case NORMAL:
+		appID->is_learning=0;
+    p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
+    /* Use cluster conf function */
+    if (p_id!=EAR_ERROR){
+    	    my_policy=get_my_policy_conf(my_node_conf,p_id);
+			if (!my_policy->is_available){
+				verbose(VJOBPMON+1,"User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
+				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
+			}
+			copy_policy_conf(&per_job_conf,my_policy);
+			my_policy=&per_job_conf;
+    }else{
+		verbose(VJOBPMON+1,"Invalid policy %s ",appID->job.policy);
+        my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
+		if (my_policy==NULL){
+			error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
+		    authorized_context.p_state=1;
+            int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+            if (mo_pid != EAR_ERROR)
+                authorized_context.policy = mo_pid;
+            else
+				authorized_context.policy=MONITORING_ONLY;
+			authorized_context.settings[0]=0;
+		}else{
+			copy_policy_conf(&authorized_context,my_policy);
+		}
+		my_policy=&authorized_context;
+    }
+    if (my_policy==NULL){
+        error("Default policy configuration returns NULL,invalid policy, check ear.conf");
+        my_policy=&default_policy_context;
+    }
+	break;
+
+	case AUTHORIZED:
+		if (appID->is_learning){
+            int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+            if (mo_pid != EAR_ERROR)
+                authorized_context.policy = mo_pid;
+            else
+			    authorized_context.policy=MONITORING_ONLY;
+			if (appID->job.def_f){ 
+				if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+				else authorized_context.p_state=1;
+			} else authorized_context.p_state=1;
+			
+			authorized_context.settings[0]=0;
+			my_policy=&authorized_context;
+		}else{
+			p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
+			if (p_id!=EAR_ERROR){
+      	        my_policy=get_my_policy_conf(my_node_conf,p_id);
+				authorized_context.policy=p_id;
+				if (appID->job.def_f){ 
+					verbose(VJOBPMON+1,"Setting freq to NOT default policy p_state ");
+					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+					else authorized_context.p_state=my_policy->p_state;
+				}else{ 
+					verbose(VJOBPMON+1,"Setting freq to default policy p_state %u",my_policy->p_state);
+					authorized_context.p_state=my_policy->p_state;	
 				}
-				copy_policy_conf(&per_job_conf, my_policy);
-				my_policy = &per_job_conf;
-			} else {
-				verbose(VJOBPMON + 1, "Invalid policy %s ", appID->job.policy);
-				my_policy = get_my_policy_conf(my_node_conf, my_cluster_conf.default_policy);
-				if (my_policy == NULL) {
+				if (appID->job.th>0) authorized_context.settings[0]=appID->job.th;
+				else authorized_context.settings[0]=my_policy->settings[0];
+                strcpy(authorized_context.name, my_policy->name);
+				my_policy=&authorized_context;
+			}else{
+				verbose(VJOBPMON,"Authorized user is executing not defined/invalid policy using default %d",my_cluster_conf.default_policy);
+				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
+				if (my_policy==NULL){
 					error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
-					authorized_context.p_state = 1;
-					authorized_context.policy = MONITORING_ONLY;
-					authorized_context.th = 0;
-				} else {
-					copy_policy_conf(&authorized_context, my_policy);
+					authorized_context.p_state=1;
+                    int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+                    if (mo_pid != EAR_ERROR)
+                        authorized_context.policy = mo_pid;
+                    else
+					    authorized_context.policy=MONITORING_ONLY;
+					authorized_context.settings[0]=0;
+				}else{
+					print_policy_conf(my_policy);		
+					copy_policy_conf(&authorized_context,my_policy);
 				}
 				my_policy = &authorized_context;
 			}
-			if (my_policy == NULL) {
-				error("Default policy configuration returns NULL,invalid policy, check ear.conf");
-				my_policy = &default_policy_context;
-			}
-			break;
-
-		case AUTHORIZED:
-			if (appID->is_learning) {
-				authorized_context.policy = MONITORING_ONLY;
-				if (appID->job.def_f) {
-					if (frequency_is_valid_frequency(appID->job.def_f))
-						authorized_context.p_state = frequency_freq_to_pstate(appID->job.def_f);
-					else authorized_context.p_state = 1;
-				} else authorized_context.p_state = 1;
-
-				authorized_context.th = 0;
-				my_policy = &authorized_context;
-			} else {
-				p_id = policy_name_to_id(appID->job.policy);
-				if (p_id != EAR_ERROR) {
-					my_policy = get_my_policy_conf(my_node_conf, p_id);
-					authorized_context.policy = p_id;
-					if (appID->job.def_f) {
-						verbose(VJOBPMON + 1, "Setting freq to NOT default policy p_state ");
-						if (frequency_is_valid_frequency(appID->job.def_f))
-							authorized_context.p_state = frequency_freq_to_pstate(appID->job.def_f);
-						else authorized_context.p_state = my_policy->p_state;
-					} else {
-						verbose(VJOBPMON + 1, "Setting freq to default policy p_state %u", my_policy->p_state);
-						authorized_context.p_state = my_policy->p_state;
-					}
-					if (appID->job.th > 0) authorized_context.th = appID->job.th;
-					else authorized_context.th = my_policy->th;
-					my_policy = &authorized_context;
-				} else {
-					verbose(VJOBPMON, "Authorized user is executing not defined/invalid policy using default %d",
-							my_cluster_conf.default_policy);
-					my_policy = get_my_policy_conf(my_node_conf, my_cluster_conf.default_policy);
-					if (my_policy == NULL) {
-						error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
-						authorized_context.p_state = 1;
-						authorized_context.policy = MONITORING_ONLY;
-						authorized_context.th = 0;
-					} else {
-						print_policy_conf(my_policy);
-						copy_policy_conf(&authorized_context, my_policy);
-					}
-					my_policy = &authorized_context;
-				}
-			}
-			break;
-		case ENERGY_TAG:
-			appID->is_learning = 0;
-			energy_tag_context.policy = MONITORING_ONLY;
-			energy_tag_context.p_state = my_tag->p_state;
-			energy_tag_context.th = 0;
-			my_policy = &energy_tag_context;
-			break;
+		}
+		break;
+	case ENERGY_TAG:
+		appID->is_learning=0;
+        int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+        if (mo_pid != EAR_ERROR)
+            authorized_context.policy = mo_pid;
+        else
+		    energy_tag_context.policy=MONITORING_ONLY;
+		energy_tag_context.p_state=my_tag->p_state;
+		energy_tag_context.settings[0]=0;
+		my_policy=&energy_tag_context;
+		break;
 	}
-	if ((!appID->is_mpi) && (!my_cluster_conf.eard.force_frequencies)) {
-		my_policy->p_state = frequency_freq_to_pstate(frequency_get_cpu_freq(0));
-		verbose(VJOBPMON,
-				"Application is not using ear and force_frequencies=off, frequencies are not changed pstate=%u",
-				my_policy->p_state);
-
-	} else {
+	if ((!appID->is_mpi) && (!my_cluster_conf.eard.force_frequencies)){
+		my_policy->p_state=frequency_freq_to_pstate(frequency_get_cpu_freq(0));
+		verbose(VJOBPMON,"Application is not using ear and force_frequencies=off, frequencies are not changed pstate=%u",my_policy->p_state);
+		
+	}else{
 		/* We have to force the frequency */
 		ulong f;
 		verbose(VJOBPMON, "Setting userspace governor pstate=%u", my_policy->p_state);
@@ -648,20 +661,20 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	verbose(VJOBPMON + 1, "New job USER type is %u", user_type);
 	if (my_tag != NULL) print_energy_tag(my_tag);
 	/* Given a user type, application, and energy_tag, my_policy is the cofiguration for this user and application */
-	my_policy = configure_context(user_type, my_tag, appID);
-	verbose(VJOBPMON, "Node configuration for policy %u p_state %d th %lf", my_policy->policy, my_policy->p_state,
-			my_policy->th);
+	my_policy=configure_context(user_type, my_tag, appID);
+	verbose(VJOBPMON,"Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->settings[0]);
 	/* Updating info in shared memory region */
-	f = frequency_pstate_to_freq(my_policy->p_state);
-	dyn_conf->id = new_app_id;
-	dyn_conf->user_type = user_type;
-	if (user_type == AUTHORIZED) dyn_conf->learning = appID->is_learning;
-	else dyn_conf->learning = 0;
-	dyn_conf->lib_enabled = (user_type != ENERGY_TAG);
-	dyn_conf->policy = my_policy->policy;
-	dyn_conf->def_freq = f;
-	dyn_conf->def_p_state = my_policy->p_state;
-	dyn_conf->th = my_policy->th;
+	f=frequency_pstate_to_freq(my_policy->p_state);
+	dyn_conf->id=new_app_id;
+	dyn_conf->user_type=user_type;
+	if (user_type==AUTHORIZED) dyn_conf->learning=appID->is_learning;
+	else dyn_conf->learning=0;
+	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
+	dyn_conf->policy=my_policy->policy;
+    strcpy(dyn_conf->policy_name,  my_policy->name);
+	dyn_conf->def_freq=f;
+	dyn_conf->def_p_state=my_policy->p_state;
+    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	/* End app configuration */
 	current_node_freq = f;
 	appID->job.def_f = dyn_conf->def_freq;
@@ -743,16 +756,17 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 * These functions are called by dynamic_configuration thread: Used to notify when a configuracion setting is changed
 *
 */
-void powermon_inc_th(uint p_id, double th) {
-	policy_conf_t *p;
-	p = get_my_policy_conf(my_node_conf, p_id);
-	if (p == NULL) {
-		warning("policy %u not supported, th setting has no effect", p_id);
-		return;
-	} else {
-		if (((p->th + th) > 0) && ((p->th + th) <= 1.0)) {
-			p->th = p->th + th;
-		} else {
+void powermon_inc_th(uint p_id,double th)
+{
+    policy_conf_t *p;
+    p=get_my_policy_conf(my_node_conf,p_id);
+    if (p==NULL){
+        warning("policy %u not supported, th setting has no effect",p_id);
+	    return;
+    }else{
+		if (((p->settings[0]+th)>0) && ((p->settings[0]+th)<=1.0)){
+        	p->settings[0]=p->settings[0]+th;
+		}else{
 			warning("Current th + new is out of range, not changed");
 		}
 	}
@@ -765,8 +779,8 @@ void powermon_set_th(uint p_id, double th) {
 	if (p == NULL) {
 		warning("policy %u not supported, th setting has no effect", p_id);
 		return;
-	} else {
-		p->th = th;
+	}else{
+		p->settings[0]=th;
 	}
 	save_eard_conf(&eard_dyn_conf);
 }
@@ -795,7 +809,7 @@ void powermon_new_def_freq(uint p_id, ulong def) {
 	uint cpolicy;
 	ps = frequency_freq_to_pstate(def);
 	if ((ccontext >= 0) && (current_ear_app[ccontext]->app.is_mpi == 0)) {
-		cpolicy = policy_name_to_id(current_ear_app[ccontext]->app.job.policy);
+		cpolicy = policy_name_to_id(current_ear_app[ccontext]->app.job.policy, &my_cluster_conf);
 		if (cpolicy == p_id) { /* If the process runs at selected policy */
 			if (def < current_node_freq) {
 				verbose(VJOBPMON, "DefFreq: Application is not mpi, automatically changing freq from %lu to %lu",
@@ -1117,9 +1131,9 @@ void *eard_power_monitoring(void *noinfo) {
 
 void powermon_get_status(status_t *my_status) {
 	int i;
-	for (i = 0; i < TOTAL_POLICIES; i++) {
-		my_status->policy_conf[i].freq = frequency_pstate_to_freq(my_node_conf->policies[i].p_state);
-		my_status->policy_conf[i].th = (uint)(my_node_conf->policies[i].th * 100.0);
+	for (i=0;i<TOTAL_POLICIES;i++){
+		my_status->policy_conf[i].freq=frequency_pstate_to_freq(my_node_conf->policies[i].p_state);
+		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].settings[0]*100.0);
 	}
 	/* Current app info */
 	if (ccontext >= 0) {

@@ -42,72 +42,35 @@
  */
 
 
-void get_short_policy(char *buf, char *policy)
-{
-    int pol = policy_name_to_id(policy);
-    switch(pol)
-    {
-        case MIN_ENERGY_TO_SOLUTION:
-            strcpy(buf, "ME");
-            break;
-        case MIN_TIME_TO_SOLUTION:
-            strcpy(buf, "MT");
-            break;
-        case MONITORING_ONLY:
-            strcpy(buf, "MO");
-            break;
-        default:
-            strcpy(buf, "NP");
-            break;
-    }
-}
-
-/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
-int policy_name_to_id(char *my_policy)
-{
-    if (my_policy!=NULL){
-        if ((strcmp(my_policy,"MIN_ENERGY_TO_SOLUTION")==0) || (strcmp(my_policy,"min_energy_to_solution")==0)) return MIN_ENERGY_TO_SOLUTION;
-        else if ((strcmp(my_policy,"MIN_TIME_TO_SOLUTION")==0) || (strcmp(my_policy,"min_time_to_solution")==0)) return MIN_TIME_TO_SOLUTION;
-        else if ((strcmp(my_policy,"MONITORING_ONLY")==0) || (strcmp(my_policy,"monitoring_only")==0)) return MONITORING_ONLY;
-    }
-	return EAR_ERROR;
-}
-
-
-/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
-int policy_id_to_name(int policy_id,char *my_policy)
-{
-	int ret=EAR_SUCCESS;
-	switch(policy_id)
-    {
-        case MIN_ENERGY_TO_SOLUTION:
-            strcpy(my_policy,"MIN_ENERGY_TO_SOLUTION");
-        	break;
-        case MIN_TIME_TO_SOLUTION:
-            strcpy(my_policy,"MIN_TIME_TO_SOLUTION");
-        	break;
-        case MONITORING_ONLY:
-            strcpy(my_policy,"MONITORING_ONLY");
-        	break;
-		default: strcpy(my_policy,"UNKNOWN");;
-    }
-	return ret;
-
-}
 
 void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src)
 {
 	memcpy((void *)dest,(void *)src,sizeof(policy_conf_t));
 }
+
+#warning change how this checks if a policy is valid or not, using cluster_conf
 int is_valid_policy(unsigned int p_id)
 {
 	return (p_id<TOTAL_POLICIES);
 }
+
+void init_policy_conf(policy_conf_t *p)
+{
+    p->policy = -1;
+//    p->th = 0;
+    p->is_available = 0;
+    memset(p->settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
+}
+
 void print_policy_conf(policy_conf_t *p) 
 {
     char buffer[64];
-		if (p==NULL) return;
-    policy_id_to_name(p->policy,buffer);
-    verbosen(VCCONF,"---> policy %s th %.2lf p_state %u\n",buffer,p->th,p->p_state);
+    int i;
+	if (p==NULL) return;
+
+    verbosen(VCCONF,"---> policy %s p_state %u ", p->name ,p->p_state);
+    for (i = 0; i < MAX_POLICY_SETTINGS; i++)
+        verbosen(VCCONF, " setting%d  %.2lf ", i, p->settings[i]);
+    verbosen(VCCONF, "\n");
 }
 

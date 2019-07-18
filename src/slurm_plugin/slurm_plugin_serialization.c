@@ -410,11 +410,14 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	snprintf(buffer, 16, "%lu", setts->def_freq);
 	setenv_agnostic(sp, Var.frequency.ear, buffer, 1);
 
-	if(policy_id_to_name(setts->policy, buffer) != EAR_ERROR) {
+	/*if(policy_id_to_name(setts->policy, buffer) != EAR_ERROR) {
 		setenv_agnostic(sp, Var.policy.ear, buffer, 1);
-	}
+	}*/
+    if (strlen(setts->policy_name) > 0) {
+        setenv_agnostic(sp, Var.policy.ear, setts->policy_name, 1);
+    }
 
-	snprintf(buffer, 16, "%0.2f", setts->th);
+	snprintf(buffer, 16, "%0.2f", setts->settings[0]);
 	setenv_agnostic(sp, Var.eff_gain.ear, buffer, 1);
 	setenv_agnostic(sp, Var.perf_pen.ear, buffer, 1);
 

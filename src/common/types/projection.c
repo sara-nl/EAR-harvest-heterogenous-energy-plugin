@@ -69,33 +69,38 @@ const char     *models_syms_nam[] = {
 
 static state_t models_load(char *obj_path)
 {
-  return symplug_open(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
+	return symplug_open(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
 }
 
-
-
-state_t projections_init(uint user_type,conf_install_t *data,uint pstates)
+state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 {
-  state_t st;
 	char basic_path[SZ_PATH_INCOMPLETE];
-  char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
-  if ((obj_path==NULL) || (user_type!=AUTHORIZED)){
-		sprintf(basic_path,"%s/models/basic_model.so",data->dir_plug);
-    obj_path=basic_path;
-		debug("SLURM_EAR_POWER_MODEL not defined using default %s",obj_path);
-  }
-	st=models_load(obj_path);
-  if (st==EAR_SUCCESS) return models_syms_fun.init(data->dir_conf,data->dir_temp,pstates);
-  return st;
+	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
+	state_t st;
+	
+	if ((obj_path == NULL) || (user_type != AUTHORIZED))
+	{
+		sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
+		obj_path = basic_path;
+		
+		debug(0, "SLURM_EAR_POWER_MODEL not defined using default %s", obj_path);
+	}
+	
+	st = models_load(obj_path);
+	
+	if (st == EAR_SUCCESS) {
+		return models_syms_fun.init(data->dir_conf, data->dir_temp, pstates);
+	}
+	
+	return st;
 }
-
 
 // Projections
-
 state_t project_time(signature_t *sign, ulong from,ulong to,double *ptime)
 {
 	freturn(models_syms_fun.project_time,sign,from,to,ptime);
 }
+
 state_t project_power(signature_t *sign, ulong from,ulong to,double *ppower)
 {
 	freturn(models_syms_fun.project_power,sign,from,to,ppower);
@@ -105,7 +110,6 @@ state_t projection_available(ulong from,ulong to)
 {
 	freturn(models_syms_fun.projection_available,from,to);
 }
-
 
 // Inherited
 static projection_t *projections;

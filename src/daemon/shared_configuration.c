@@ -201,7 +201,7 @@ void print_settings_conf(settings_conf_t *setting)
 {
 	verbose(VCONF,"settings: user_type(0=NORMAL,1=AUTH,2=ENERGY) %u learning %u lib_enabled %d policy(0=min_energy, 1=min_time,2=monitoring) %u \n",
 	setting->user_type,setting->learning,setting->lib_enabled,setting->policy);
-	verbose(VCONF,"\tmax_freq %lu def_freq %lu def_p_state %u th %.2lf\n",setting->max_freq,setting->def_freq,setting->def_p_state,setting->th);
+	verbose(VCONF,"\tmax_freq %lu def_freq %lu def_p_state %u th %.2lf\n",setting->max_freq,setting->def_freq,setting->def_p_state,setting->settings[0]);
 	print_ear_lib_conf(&setting->lib_info);	
 	verbose(VCONF,"\tmin_sig_power %.0lf",setting->min_sig_power);
 

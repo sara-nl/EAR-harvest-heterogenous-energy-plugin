@@ -222,10 +222,14 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 		strncpy(buffer, optarg, 32);
 		strtoup(buffer);
 
-		if (policy_name_to_id(buffer) < 0) {
+		/*if (policy_name_to_id(buffer) < 0) {
 			plug_verbose(NULL, 2, "Invalid policy '%s'", buffer);
 			return ESPANK_STOP;
-		}
+		}*/
+        if (strlen(buffer) < 1) {
+			plug_verbose(NULL, 2, "Invalid policy '%s'", buffer);
+			return ESPANK_STOP;
+        }
 
 		setenv_agnostic(NULL, Var.policy.loc, buffer, 1);
 		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);

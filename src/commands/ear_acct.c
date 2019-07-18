@@ -491,7 +491,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             }
             if (apps[i].job.id != current_job_id || apps[i].job.step_id != current_step_id)
             {
-                get_short_policy(curr_policy, apps[i].job.policy);
+                get_short_policy(curr_policy, apps[i].job.policy, &my_conf);
                 current_job_id = apps[i].job.id;
                 current_step_id = apps[i].job.step_id;
                 current_is_mpi = apps[i].is_mpi;

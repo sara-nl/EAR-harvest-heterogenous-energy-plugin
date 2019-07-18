@@ -252,7 +252,11 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     do{ // At least one node is assumed
 		if ((range_id = island_range_conf_contains_node(&my_conf->islands[i], nodename)) >= 0) {
             n->island = my_conf->islands[i].id;
-            strcpy(n->db_ip, my_conf->islands[i].db_ips[my_conf->islands[i].ranges[range_id].db_ip]);
+            int num_ips = my_conf->islands[i].ranges[range_id].db_ip;
+            if (my_conf->islands[i].num_ips > num_ips && num_ips >= 0)
+                strcpy(n->db_ip, my_conf->islands[i].db_ips[my_conf->islands[i].ranges[range_id].db_ip]);
+            else
+                strcpy(n->db_ip, "");
 			if ((my_conf->islands[i].ranges[range_id].sec_ip>=0) && (my_conf->islands[i].num_backups)){
             	strcpy(n->db_sec_ip, my_conf->islands[i].backup_ips[my_conf->islands[i].ranges[range_id].sec_ip]);
 			}
@@ -671,4 +675,78 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 	//	- 0011 (0x03): both
 	found_mirror = (found_mirror << 1);
 	return (found_server | found_mirror);
+}
+
+/** Tries to get a short policy name*/
+void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
+{
+    //each policy could have a short name stored in the cluster_conf section and we could just return that here
+    int pol = policy_name_to_id(policy, conf);
+    if (!strcmp(policy, "MIN_ENERGY_TO_SOLUTION"))
+    {
+        strcpy(buf, "ME");
+        return;
+    }
+    else if (!strcmp(policy, "MIN_TIME_TO_SOLUTION"))
+    {
+        strcpy(buf, "MT");
+        return;
+    }
+    else if (!strcmp(policy, "MONITORING_ONLY"))
+    {
+        strcpy(buf, "MO");
+        return;
+    }
+    else if (pol == EAR_ERROR)
+    {
+        strcpy(buf, "NP");
+        return;
+    }
+    else
+        strcpy(buf, policy);
+}
+
+/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
+int policy_name_to_id(char *my_policy, cluster_conf_t *conf)
+{
+    int i;
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        if (strcmp(my_policy, conf->power_policies[i].name) == 0) return i;
+    }
+	return EAR_ERROR;
+}
+
+
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy, cluster_conf_t *conf)
+{
+    int i;
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        if (conf->power_policies[i].policy == policy_id)
+        {
+		    strcpy(my_policy, conf->power_policies[i].name);;
+            return EAR_SUCCESS;
+        }
+    }
+    strcpy(my_policy,"UNKNOWN");;
+	return EAR_ERROR;
+
+}
+
+
+int validate_configuration(cluster_conf_t *conf)
+{
+    if (conf->num_policies < 1) return EAR_ERROR;
+    if (conf->num_islands < 1) return EAR_ERROR;
+
+    int i;
+    for (i = 0; i < conf->num_islands; i++)
+        if (conf->islands[i].num_ips < 1 || conf->islands[i].num_backups < 1) return EAR_ERROR;
+    for (i = 0; i < conf->num_tags; i++)
+        if (conf->e_tags[i].num_users < 1 && conf->e_tags[i].num_groups < 1 && conf->e_tags[i].num_accounts < 1) return EAR_ERROR;
+
+
+    return EAR_SUCCESS;
 }

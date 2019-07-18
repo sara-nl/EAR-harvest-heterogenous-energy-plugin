@@ -54,8 +54,6 @@ static ulong user_selected_freq;
 static int model_nominal=1;
 
 
-
-
 state_t init_power_models(uint user_type,conf_install_t *data,uint pstates)
 {
 	state_t st;

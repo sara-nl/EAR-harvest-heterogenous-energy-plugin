@@ -119,18 +119,17 @@ static void print_earlib_conf(earlib_conf_t *conf)
 void print_cluster_conf(cluster_conf_t *conf)
 {
 	char buffer[664];
-	policy_id_to_name(conf->default_policy,buffer);	
 	verbosen(VCCONF, "\nDIRECTORIES\n--->DB_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
 			conf->DB_pathname, conf->install.dir_temp, conf->install.dir_conf);
     if (strlen(conf->net_ext) > 1)
     {
     	verbosen(VCCONF, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %s\n--->Min_time_perf_acc: %u\n--->Network_extension: %s\n",
-	    		conf->verbose, buffer, conf->min_time_perf_acc, conf->net_ext);
+	    		conf->verbose, conf->power_policies[conf->default_policy].name, conf->min_time_perf_acc, conf->net_ext);
     }
     else
     {
     	verbosen(VCCONF, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %s\n--->Min_time_perf_acc: %u\n",
-	    		conf->verbose, buffer, conf->min_time_perf_acc);
+	    		conf->verbose, conf->power_policies[conf->default_policy].name, conf->min_time_perf_acc);
     }
 
 	int i;

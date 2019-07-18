@@ -58,7 +58,8 @@ typedef struct settings_conf{
 	ulong 	max_freq;
 	ulong	def_freq;
 	uint	def_p_state;
-	double 	th;
+	double 	settings[MAX_POLICY_SETTINGS];
+    char    policy_name[64];
 	earlib_conf_t lib_info;
 	double min_sig_power;
 	double max_sig_power;

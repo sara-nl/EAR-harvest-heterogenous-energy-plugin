@@ -191,7 +191,7 @@ typedef struct cluster_conf
 	eargm_conf_t 	eargm;
 	// List of policies	
 	uint num_policies;
-	policy_conf_t power_policies[TOTAL_POLICIES];
+	policy_conf_t *power_policies;
 	uint default_policy;			// selecs one of the power_policies
 	// Lis of autorized users
 	uint num_priv_users;
@@ -327,5 +327,16 @@ int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips);
 
 /** returns the ip of the nodename specified */
 int get_ip(char *nodename, cluster_conf_t *conf);
+
+/** Returns the short name for a given policy. To be used in eacct etc */
+void get_short_policy(char *buf, char *policy, cluster_conf_t *conf);
+
+/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
+int policy_name_to_id(char *my_policy, cluster_conf_t *conf);
+
+/** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
+int policy_id_to_name(int policy_id,char *my_policy, cluster_conf_t *conf);
+
+
 
 #endif

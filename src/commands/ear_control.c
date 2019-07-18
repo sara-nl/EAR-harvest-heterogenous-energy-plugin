@@ -163,8 +163,8 @@ void print_ips(ip_table_t *ips, int num_ips)
                             (double)ips[i].current_freq/1000000.0, ips[i].job_id, ips[i].step_id);
 		    for (j = 0; j < TOTAL_POLICIES; j++)
 		    {
-			    policy_id_to_name(j, temp);
-                get_short_policy(final, temp);
+			    policy_id_to_name(j, temp, &my_cluster_conf);
+                get_short_policy(final, temp, &my_cluster_conf);
 			    printf("  %6s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
 		    }
             printf("\n");
@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
 					printf("Missing policy argument for set-def-freq\n");
                     break;
 				}
-				arg2 = policy_name_to_id(argv[optind]);
+				arg2 = policy_name_to_id(argv[optind], &my_cluster_conf);
 				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
 				{
 					printf("Invalid policy (%s).\n", argv[optind]);
@@ -371,7 +371,7 @@ int main(int argc, char *argv[])
 					printf("Missing policy argument for set-def-freq\n");
                     break;
 				}
-				arg2 = policy_name_to_id(argv[optind]);
+				arg2 = policy_name_to_id(argv[optind], &my_cluster_conf);
 				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
 				{
 					printf("Invalid policy (%s).\n", argv[optind]);
@@ -391,7 +391,7 @@ int main(int argc, char *argv[])
 					printf("Missing policy argument for set-def-freq\n");
                     break;
 				}
-				arg2 = policy_name_to_id(argv[optind]);
+				arg2 = policy_name_to_id(argv[optind], &my_cluster_conf);
 				if (!is_valid_policy(arg2) || arg2 == EAR_ERROR)
 				{
 					printf("Invalid policy (%s).\n", argv[optind]);
