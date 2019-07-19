@@ -37,17 +37,22 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_start");
 
 	// Disabled
-	return ESPANK_SUCCESS;
-
-	// Cleaning buffer
-	sprintf(buffer, "\0");
+	//return ESPANK_SUCCESS;
 
 	// Pack deserialization
+	sprintf(buffer, "\0");
 	getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH);
 	sd->pack.eargmd.secured = atoi(buffer);
 
 	if (!sd->pack.eargmd.enabled || sd->pack.eargmd.secured) {
+		plug_verbose(sp, 3, "connection with EARGMD not enabled or secured");
 		return ESPANK_SUCCESS;
+	}
+
+	//
+	if (sd->job.n_nodes == 0) {
+		plug_error(sp, "while getting the node number '%s'", sd->job.n_nodes);
+		return ESPANK_ERROR;
 	}
 
 	// Verbosity
@@ -78,11 +83,14 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_finish");
 
 	// Disabled
-	return ESPANK_SUCCESS;
+	//return ESPANK_SUCCESS;
 
 	if (!sd->pack.eargmd.connected) {
 		return ESPANK_SUCCESS;
 	}
+
+	plug_verbose(sp, 2, "trying to disconnect EARGMD with host '%s', port '%u', and nnodes '%u'",
+                sd->pack.eargmd.host, sd->pack.eargmd.port, sd->job.n_nodes);
 
 	if (eargm_connect(sd->pack.eargmd.host, sd->pack.eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");

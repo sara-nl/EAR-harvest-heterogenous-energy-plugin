@@ -100,16 +100,29 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 // Function order:
 // 	- Local 3
 // 	- Remote 0
+#if 1
 int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_local_user_init");
 
-	if (plug_context_is(sp, Context.local)) {
-		plug_rcom_eargmd_job_start(sp, &sd);
+	// Correct
+	if (!plug_context_is(sp, Context.local)) {
+		return ESPANK_SUCCESS;
 	}
+
+	// Correct
+        if (!plug_component_isenabled(sp, Component.plugin)) {
+                return ESPANK_SUCCESS;
+        }
+
+        // 
+        plug_deserialize_local_alloc(sp, &sd);
+
+	plug_rcom_eargmd_job_start(sp, &sd);
 
 	return ESPANK_SUCCESS;
 }
+#endif
 
 // Function order:
 // 	- Local 0
@@ -129,6 +142,9 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
+	//
+	//plug_rcom_eargmd_job_start(sp, &sd);
+
 	// If no shared services, EARD contact won't work, so plugin disabled
 	plug_shared_readservs(sp, &sd);
 
@@ -137,9 +153,6 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 	// The application can be filled as an empty object if something happen
 	plug_read_application(sp, &sd);
-
-	// The node list is filled with at least the current node
-	plug_read_hostlist(sp, &sd);
 
 	// EARD/s connection/s
 	plug_rcom_eard_job_start(sp, &sd);
@@ -193,8 +206,6 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	// EARD disconnection
 	if (plug_context_is(sp, Context.remote))
 	{
-		plug_read_hostlist(sp, &sd);
-
 		plug_rcom_eard_job_finish(sp, &sd);
 	}
 

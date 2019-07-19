@@ -48,6 +48,8 @@ int plug_clean_components(spank_t sp);
 
 int plug_deserialize_local(spank_t sp, plug_serialization_t *sd);
 
+int plug_deserialize_local_alloc(spank_t sp, plug_serialization_t *sd);
+
 int plug_serialize_remote(spank_t sp, plug_serialization_t *sd);
 
 int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd);

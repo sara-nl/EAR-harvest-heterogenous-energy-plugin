@@ -206,48 +206,6 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	return ESPANK_SUCCESS;
 }
 
-int plug_read_hostlist(spank_t sp, plug_serialization_t *sd)
-{
-	plug_verbose(sp, 2, "function plug_read_hostlist");
-	hostlist_t list = NULL;
-
-	// EARD
-	sd->pack.eard.hostlist = slurm_hostlist_create(sd->subject.host);
-
-	// EARGMD
-	if (getenv_agnostic(sp, Var.node_list.rem, buffer, SZ_PATH))
-	{
-		list = slurm_hostlist_create(buffer);
-		sd->job.n_nodes = slurm_hostlist_count(list);
-
-		int n = sd->job.n_nodes;
-		char *name;
-
-		while (n > 0) {
-			name = slurm_hostlist_shift(list);
-			slurm_error("node %d: %s", n, name);
-		}
-
-		return ESPANK_SUCCESS;
-	}
-
-#if 0
-	if (sd->subject.context_local == Context.sbatch)
-	{
-		if (plug_component_isenabled(sp, Component.monitor))
-		{
-			if (getenv_agnostic(sp, Var.node_list.rem, buffer, SZ_PATH))
-			{
-				sd->pack.eard.hostlist = slurm_hostlist_create(buffer);
-				return ESPANK_SUCCESS;
-			}
-		}
-	}
-#endif
-
-	return ESPANK_SUCCESS;
-}
-
 /*
  *
  *
@@ -327,12 +285,19 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "user '%u' ('%s')", uid, sd->job.user.user);
 	plug_verbose(sp, 2, "user group '%u' ('%s')", gid, sd->job.user.group);
 
+	return ESPANK_SUCCESS;
+}
+
+int plug_deserialize_local_alloc(spank_t sp, plug_serialization_t *sd)
+{
+	plug_verbose(sp, 2, "function plug_deserialize_local_alloc");
+	
 	/*
 	 * Job
 	 */
 	getenv_agnostic(sp, Var.node_num.loc, buffer, SZ_PATH);
 	sd->job.n_nodes = atoi(buffer);
-
+	
 	return ESPANK_SUCCESS;
 }
 
