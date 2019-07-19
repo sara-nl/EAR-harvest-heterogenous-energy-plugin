@@ -27,28 +27,19 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_POLICIES_CTX_H
-#define EAR_POLICIES_CTX_H
-
+#ifndef MODEL_API_H
+#define MODEL_API_H
 #include <common/states.h>
-#include <common/types/loop.h>
-#include <common/types/application.h>
 #include <common/types/signature.h>
-#include <common/types/projection.h>
-#include <daemon/shared_configuration.h>
-#include <mpi.h>
 
-typedef struct policy_context {
-	settings_conf_t *app;
-	resched_t *reconfigure;
-	unsigned long user_selected_freq;
-	unsigned long reset_freq_opt;
-	unsigned long *ear_frequency;
-	unsigned int  num_pstates;
-	unsigned int use_turbo;
-	MPI_Comm 	master_comm;
-	int my_rank;
-	int my_master_rank;
-} polctx_t;
 
-#endif //EAR_POLICIES_H
+/* This function loads any information needed by the energy model */
+state_t model_init(char *etc,char *tmp,uint pstates);
+
+state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime);
+
+state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppower);
+
+state_t model_projection_available(ulong from,ulong to);
+#endif
+

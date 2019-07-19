@@ -41,7 +41,11 @@
 #include <library/policies/policy_api.h>
 #include <common/math_operations.h>
 
+#define no_phase -1
+#define min_time 1
+#define min_energy 2
 typedef unsigned long ulong;
+static int phase=no_phase;
 
 state_t policy_init(polctx_t *c)
 {
@@ -52,6 +56,7 @@ state_t policy_init(polctx_t *c)
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
 {
+		phase=-1;
 		if (c!=NULL){ 
 			projection_reset(c->num_pstates);
 			return EAR_SUCCESS;
@@ -77,7 +82,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
     signature_t *my_app;
     int i,min_pstate;
     unsigned int ref,try_next;
-    double freq_gain,perf_gain,min_eff_gain;
+    double freq_gain,perf_gain,min_eff_gain,max_penalty;
     double power_proj,time_proj;
     double power_ref,time_ref,time_current;
     ulong best_freq,best_pstate,freq_ref;
@@ -88,9 +93,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		*ready=1;
 
-
-		if (c==NULL) return EAR_ERROR;
-		if (c->app==NULL) return EAR_ERROR;
+		if (c==NULL) return EAR_SUCCESS;
+		if (c->app==NULL) return EAR_SUCCESS;
 
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
@@ -98,6 +102,9 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		// Default values
 		
 		min_eff_gain=c->app->settings[0];
+		max_penalty=c->app->settings[1];
+
+
 		def_freq=c->app->def_freq;
 		def_pstate=frequency_freq_to_pstate(def_freq);
 
@@ -136,13 +143,13 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		projection_set(best_pstate,time_ref,power_ref);
 
-	// ref=1 is nominal 0=turbo, we are not using it
+		// ref=1 is nominal 0=turbo, we are not using it
 
 		try_next=1;
 		i=best_pstate-1;
 		time_current=time_ref;
 
-
+		/** min_time phase **/
 		while(try_next && (i >= min_pstate))
 		{
 			if (projection_available(curr_pstate,i)==EAR_SUCCESS)
@@ -160,6 +167,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 					best_freq=freq_ref;
 					time_current = time_proj;
 					i--;
+					phase=min_time;
 				}
 				else
 				{
@@ -171,6 +179,28 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 			}
 		}	
 		*new_freq=best_freq;
+		if (phase==min_time) return EAR_SUCCESS;
+		/** min_energy phase **/
+		double time_max,energy_proj,best_solution;
+		time_max = time_ref + (time_ref * max_penalty);
+		for (i = min_pstate; i < c->num_pstates;i++)
+  	{
+    if (projection_available(curr_pstate,i)==EAR_SUCCESS)
+    {
+        st=project_power(my_app,curr_pstate,i,&power_proj);
+        st=project_time(my_app,curr_pstate,i,&time_proj);
+        projection_set(i,time_proj,power_proj);
+        energy_proj=power_proj*time_proj;
+      	if ((energy_proj < best_solution) && (time_proj < time_max))
+      	{
+          best_freq = frequency_pstate_to_freq(i);
+          best_solution = energy_proj;
+					phase=min_energy;
+      	}
+    }
+  	} /* min_energy phase */
+		*new_freq=best_freq;
+
 		return EAR_SUCCESS;
 }
 
@@ -179,21 +209,28 @@ state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *o
 {
 
 	state_t st=EAR_SUCCESS;
-
+	double energy_last,energy_curr;
 	if ((c==NULL) || (curr_sig==NULL) || (last_sig==NULL)) return EAR_ERROR;
-	
-	if (curr_sig->def_f==last_sig->def_f) *ok=1;
-
-	// Check that efficiency is enough
-	if (curr_sig->time < last_sig->time) *ok=1;
-
-	// If time is similar and it was same freq it is ok	
-	if (equal_with_th(curr_sig->time , last_sig->time,0.1) && (curr_sig->def_f == last_sig->def_f)) *ok=1;
-	
-	// If we run at a higher freq but we are slower, we are not ok	
-	if ((curr_sig->time > last_sig->time) && (curr_sig->def_f > last_sig->def_f)) *ok=0;
-
-	else *ok=0;
+	switch(phase){
+	case min_time:
+			if (curr_sig->def_f==last_sig->def_f) *ok=1;
+			// Check that efficiency is enough
+			if (curr_sig->time < last_sig->time) *ok=1;
+			// If time is similar and it was same freq it is ok	
+			if (equal_with_th(curr_sig->time , last_sig->time,0.1) && (curr_sig->def_f == last_sig->def_f)) *ok=1;
+			// If we run at a higher freq but we are slower, we are not ok	
+			if ((curr_sig->time > last_sig->time) && (curr_sig->def_f > last_sig->def_f)) *ok=0;
+			else *ok=0;
+			break;
+	case min_energy:
+		  if (curr_sig->def_f==last_sig->def_f) *ok=1;
+  		energy_last = last_sig->time*last_sig->DC_power;
+  		energy_curr = curr_sig->time * curr_sig->DC_power;
+  		if ((energy_curr<energy_last)&&(curr_sig->time<(last_sig->time*c->app->settings[0]))) *ok=1;
+  		else *ok=0;
+			break;
+	default: *ok=1;break;
+	}
 
 	return st;
 
@@ -209,7 +246,7 @@ state_t  policy_get_default_freq(polctx_t *c,ulong *f)
 	
 state_t policy_max_tries(polctx_t *c,int *intents)
 {
-  *intents=2;
+  *intents=1;
   return EAR_SUCCESS;
 }
 

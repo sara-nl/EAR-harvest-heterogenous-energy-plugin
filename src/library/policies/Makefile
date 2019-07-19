@@ -1,11 +1,16 @@
 ######## FILES
 
-modl_OBJS = min_time.o \
+modl_OBJS = policy.o \
+			 min_time.o \
        min_energy.o \
        monitoring.o \
-			 min_time_no_models.o
+			 min_time_no_models.o \
+			 min_energy_no_models.o \
+			 dummy.o \
+			 empty.o \
+			 two_phases.o
 
-modl_BINS = min_time.so min_energy.so monitoring.so min_time_no_models.so
+modl_BINS = min_time.so min_energy.so monitoring.so min_time_no_models.so min_energy_no_models.so dummy.so empty.so two_phases.so
 modl_PATH = $(DESTDIR)/lib/plugins/policies
 modl_PERM = 0775
 
@@ -13,8 +18,8 @@ modl_PERM = 0775
 
 all: $(modl_OBJS) $(modl_BINS)
 
-%.o: %.c %.h
-	$(CC) $(CC_FLAGS) $(CFLAGS) -c $<
+%.o: %.c 
+	$(MPICC) $(MPICC_FLAGS)  $(CFLAGS) -c $<
 
 %.so: %.o
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	

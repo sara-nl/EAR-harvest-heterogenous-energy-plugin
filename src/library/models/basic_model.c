@@ -30,11 +30,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/config.h>
-#include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 #include <control/frequency.h>
+
+#include <library/models/models_api.h>
 
 
 static coefficient_t **coefficients;
@@ -63,13 +64,13 @@ state_t model_init(char *etc,char *tmp,uint pstates)
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
   if (coefficients == NULL) {
-    error("Error allocating memory for p_states coefficients\n");
+		return EAR_ERROR;
   }
   for (i = 0; i < num_pstates; i++)
   {
     coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * num_pstates);
     if (coefficients[i] == NULL) {
-      error("Error allocating memory for p_states coefficients fn %d\n",i);
+			return EAR_ERROR;
     }
 
     for (ref = 0; ref < num_pstates; ref++)
@@ -94,15 +95,8 @@ state_t model_init(char *etc,char *tmp,uint pstates)
       i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
       if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
-      }else{
-        if (coefficients_sm[ccoeff].available){
-          verbose(0,"Error: invalid coefficients for ref %lu or proj %lu\n",coefficients_sm[ccoeff].pstate_ref,
-          coefficients_sm[ccoeff].pstate);
-        }
       }
     }
-  }else{
-    verbose(1,"NO coefficients found");
   }
 	basic_model_init=1;	
 	return EAR_SUCCESS;
