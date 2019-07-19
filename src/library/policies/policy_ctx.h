@@ -36,6 +36,7 @@
 #include <common/types/signature.h>
 #include <common/types/projection.h>
 #include <daemon/shared_configuration.h>
+//#include <mpi.h>
 
 typedef struct policy_context {
 	settings_conf_t *app;
@@ -45,6 +46,7 @@ typedef struct policy_context {
 	unsigned long *ear_frequency;
 	unsigned int  num_pstates;
 	unsigned int use_turbo;
+	//MPI_Comm 	master_comm;
 } polctx_t;
 
 #endif //EAR_POLICIES_H

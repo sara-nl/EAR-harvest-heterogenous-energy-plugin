@@ -2,9 +2,10 @@
 
 modl_OBJS = min_time.o \
        min_energy.o \
-       monitoring.o 
+       monitoring.o \
+			 min_time_no_models.o
 
-modl_BINS = min_time.so min_energy.so monitoring.so
+modl_BINS = min_time.so min_energy.so monitoring.so min_time_no_models.so
 modl_PATH = $(DESTDIR)/lib/plugins/policies
 modl_PERM = 0775
 
