@@ -73,6 +73,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
         // Use configuration when available
         *(c->ear_frequency) = eards_change_freq(c->app->def_freq);
     }
+	return EAR_SUCCESS;
 }
 
 
@@ -109,8 +110,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		def_pstate=frequency_freq_to_pstate(def_freq);
 
     // This is the frequency at which we were running
+	curr_freq=*(c->ear_frequency);
     curr_pstate = frequency_freq_to_pstate(curr_freq);
-		curr_freq=*(c->ear_frequency);
 		
 
 
@@ -185,7 +186,10 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		time_max = time_ref + (time_ref * max_penalty);
 		for (i = min_pstate; i < c->num_pstates;i++)
   	{
-    if (projection_available(curr_pstate,i)==EAR_SUCCESS)
+   
+
+best_solution = 0; 
+	if (projection_available(curr_pstate,i)==EAR_SUCCESS)
     {
         st=project_power(my_app,curr_pstate,i,&power_proj);
         st=project_time(my_app,curr_pstate,i,&time_proj);

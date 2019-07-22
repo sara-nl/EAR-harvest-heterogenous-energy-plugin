@@ -133,7 +133,7 @@ void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 {
 	uint i;
 	for (i=0;i<num_policies;i++){
-		plist[i].p_state=frequency_freq_to_pstate(plist[i].def_freq);
+		plist[i].p_state=frequency_freq_to_pstate(plist[i].def_freq)*1000000;
 	}
 }
 
