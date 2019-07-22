@@ -87,7 +87,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 
   char *obj_path = getenv("SLURM_EAR_POWER_POLICY");
   if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
-    	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy);
+    	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
     	obj_path=basic_path;
 	}
   debug("loading policy",obj_path);
