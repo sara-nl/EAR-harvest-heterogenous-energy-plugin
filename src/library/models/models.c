@@ -61,6 +61,7 @@ state_t init_power_models(uint user_type,conf_install_t *data,uint pstates)
 	ear_models_pstates = pstates;
 	projection_create(pstates);
 	projection_reset(pstates);
+	return EAR_SUCCESS;
 }
 
 

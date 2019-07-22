@@ -188,6 +188,7 @@ int eards_connect(application_t *my_app)
 	int tries=0,connected=0;
 	int i;
 	int my_id;
+	int ret1;
 	if (app_connected) return EAR_SUCCESS;
 
 	// These files connect EAR with EAR_COMM
@@ -242,9 +243,9 @@ int eards_connect(application_t *my_app)
 
 			// ping pipe is used just for synchronization
 			sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,my_id);
-			ret=mknod(ear_ping,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH,0);
+			ret1=mknod(ear_ping,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH,0);
 
-			if (ret < 0) {
+			if (ret1 < 0) {
 				error("ERROR while creating the ping file");
 			}
 
@@ -264,8 +265,8 @@ int eards_connect(application_t *my_app)
 			}
 		}
       #if USE_NON_BLOCKING_IO
-      ret=fcntl(ear_fd_req[i], F_SETFL, O_NONBLOCK);
-      if (ret<0){
+      ret1=fcntl(ear_fd_req[i], F_SETFL, O_NONBLOCK);
+      if (ret1<0){
         error("Setting O_NONBLOCK for eard communicator %s",strerror(errno));
         return EAR_ERROR;
       }
@@ -312,8 +313,8 @@ int eards_connect(application_t *my_app)
 				return EAR_ERROR;
 			}
 			#if USE_NON_BLOCKING_IO
-      ret=fcntl(ear_fd_ack[i], F_SETFL, O_NONBLOCK);
-      if (ret<0){
+      ret1=fcntl(ear_fd_ack[i], F_SETFL, O_NONBLOCK);
+      if (ret1<0){
         error("Setting O_NONBLOCK for eard communicator %s",strerror(errno));
         return EAR_ERROR;
       }

@@ -297,6 +297,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     total_energy = 0;
     avg_CPI = 0;
     avg_GBS = 0;
+		avg_VPI=0;
     gflops_watt = 0;
     max_dc_power = 0;
     char is_sbatch = 0;

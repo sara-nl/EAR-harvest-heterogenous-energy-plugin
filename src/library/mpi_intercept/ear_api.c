@@ -736,29 +736,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 			case NO_LOOP:
 			case IN_LOOP:
 				break;
-			case NEW_LOOP:
-				debug("NEW_LOOP event %u level %hu size %hu\n", ear_event_l, ear_level, ear_size);
-				ear_iterations=0;
-				//TODO
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
-				ear_loop_size=(uint)ear_size;
-				in_loop=1;
-				mpi_calls_per_loop=1;
-				break;
-			case END_NEW_LOOP:
-				debug("END_LOOP - NEW_LOOP event %u level %hu\n",ear_event_l,ear_level);
-				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
-				}
-
-				loop_with_signature=0;
-				traces_end_period(ear_my_rank, my_id);
-				states_end_period(ear_iterations);
-				ear_iterations=0;
-				mpi_calls_per_loop=1;
-				ear_loop_size=(uint)ear_size;
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
-				break;
 			case NEW_ITERATION:
 				ear_iterations++;
 
@@ -772,21 +749,9 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, (uint)ear_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
-			case END_LOOP:
-				debug("END_LOOP event %u\n",ear_event_l);
-				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
-				}
-				loop_with_signature=0;
-				states_end_period(ear_iterations);
-				traces_end_period(ear_my_rank, my_id);
-				ear_iterations=0;
-				in_loop=0;
-				mpi_calls_per_loop=0;
-				break;
-            default:
-                break;
-        }
+      default:
+       break;
+      }
     } //ear_whole_app
 }
 

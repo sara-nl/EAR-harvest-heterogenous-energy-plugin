@@ -157,6 +157,7 @@ void dynais_core_0(ushort sample, ushort size, ushort level)
 		zmmx26 = _mm512_mask_mov_epi16(zmmx26, mask00, zmmx08);
 		zmmx25 = _mm512_mask_mov_epi16(zmmx25, mask00, zmmx12);
 		#ifdef DYN_CORE_N
+		zmmx24 = _mm512_setzero_si512();
 		zmmx24 = _mm512_mask_mov_epi16(zmmx24, mask00, zmmx16);
 		#endif
 	}

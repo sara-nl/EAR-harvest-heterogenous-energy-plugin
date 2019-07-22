@@ -83,7 +83,7 @@ static void print_similars(application_t *app)
     char proj_tim[COLUMNS][64];
     char proj_pow[COLUMNS][64];
 	int napps, nsets;
-	int icol, iapp, finished;
+	int icol, iapp, finished=0;
 
 	//
 	sprintf(buffer, "SELECT * from Applications WHERE (node_id = '%s') \
