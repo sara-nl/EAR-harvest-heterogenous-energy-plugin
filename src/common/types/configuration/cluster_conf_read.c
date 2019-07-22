@@ -290,9 +290,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok_r(line, " ", &primary_ptr);
 			if (conf->num_policies>=TOTAL_POLICIES){
       	conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*(conf->num_policies + 1));
-      	curr_policy = &conf->power_policies[conf->num_policies];
-      	init_policy_conf(curr_policy);
 			}
+      curr_policy = &conf->power_policies[conf->num_policies];
+      init_policy_conf(curr_policy);
 			while (token != NULL)
 			{
 				key = strtok_r(token, "=", &secondary_ptr);
