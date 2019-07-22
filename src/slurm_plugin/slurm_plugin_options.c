@@ -81,43 +81,41 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 
 static int _opt_register_mpi(spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "function _opt_register_mpi");
+	plug_verbose(sp, 2, "function _opt_register_pol");
 
-	state_t s;
 	folder_t folder;
 	char *file;
-	char *p;
-	int pc;
-	int i;
+	state_t s;
+	char *pop;
+	char *pav;
+	int cop;
 
 	// Filing a default option string
-	pc = sprintf(opt_opt, "default,");
-	p = &opt_opt[pc];
+	cop = sprintf(opt_opt, "default,");
+	pop = &opt_opt[cop];
 
-	for (i = 0; i < ac; ++i)
-	{
-		if ((strlen(av[i]) > 7) && (strncmp("prefix=", av[i], 7) == 0))
-		{
-			sprintf(buffer, "%s/lib/", &av[i][7]);
-		
-			// Initilizing folder scanning
-			s = folder_open(&folder, buffer);
-			
-			if (state_fail(s)) {
-				return ESPANK_ERROR;
-			}
-			
-			while ((file = folder_getnext(&folder, "libear.", ".so")))
-			{
-				pc = sprintf(p, "%s,", file);
-				p = &p[pc];
-			}
-		}
+	if ((pav = plug_acav_get(ac, av, "prefix="))) {
+		return ESPANK_SUCCESS;
 	}
-	
-	// Cleaning the last comma	
-	p = &p[-1];
-	*p = '\0';
+
+	sprintf(buffer, "%s/lib/", pav);
+
+	// Initilizing folder scanning
+	s = folder_open(&folder, buffer);
+
+	if (state_fail(s)) {
+		return ESPANK_ERROR;
+	}
+
+	while ((file = folder_getnext(&folder, "libear.", ".so")))
+	{
+		cop = sprintf(p, "%s,", file);
+		pop = &pop[cop];
+	}
+
+	// Cleaning the last comma
+	pop = &pop[-1];
+	*pop = '\0';
 
 	// Filling the option string with distribution options
 	sprintf(opt_mpi, "Selects the MPI distribution for compatibility of your application {dist=%s}", opt_opt);
@@ -127,48 +125,47 @@ static int _opt_register_mpi(spank_t sp, int ac, char **av)
 
 static int _opt_register_pol(spank_t sp, int ac, char **av)
 {
-        plug_verbose(sp, 2, "function _opt_register_pol");
+	plug_verbose(sp, 2, "function _opt_register_pol");
 
-        state_t s;
-        folder_t folder;
-        char *file;
-        char *p;
-        int pc;
-        int i;
+	folder_t folder;
+	char *file;
+	state_t s;
+	char *pop;
+	char *pav;
+	int cop;
 
-        // Filing a default option string
-        pc = sprintf(opt_opt, "default,");
-        p = &opt_opt[pc];
+	// Filing a default option string
+	cop = sprintf(opt_opt, "default,");
+	pop = &opt_opt[cop];
 
-        for (i = 0; i < ac; ++i)
-        {
-                if ((strlen(av[i]) > 7) && (strncmp("prefix=", av[i], 7) == 0))
-                {
-                        sprintf(buffer, "%s/lib/plugins/policies/", &av[i][7]);
+	if ((pav = plug_acav_get(ac, av, "prefix="))) {
 
-                        // Initilizing folder scanning
-                        s = folder_open(&folder, buffer);
+		return ESPANK_SUCCESS;
+	}
 
-                        if (state_fail(s)) {
-                                return ESPANK_ERROR;
-                        }
+	sprintf(buffer, "%s/lib/plugins/policies/", pav);
 
-                        while ((file = folder_getnext(&folder, NULL, NULL)))
-                        {
-                                pc = sprintf(p, "%s,", file);
-                                p = &p[pc];
-                        }
-                }
-        }
-        
-        // Cleaning the last comma      
-        p = &p[-1];
-        *p = '\0';
+	// Initilizing folder scanning
+	s = folder_open(&folder, buffer);
 
-        // Filling the option string with distribution options
-        sprintf(opt_pol, "Selects an energy policy for EAR {type=%s}", opt_opt);
+	if (state_fail(s)) {
+		return ESPANK_ERROR;
+	}
 
-        return ESPANK_SUCCESS;
+	while ((file = folder_getnext(&folder, NULL, ".so")))
+	{
+		cop = sprintf(p, "%s,", file);
+		pop = &pop[cop];
+	}
+
+	// Cleaning the last comma
+	pop = &pop[-1];
+	*pop = '\0';
+
+	// Filling the option string with distribution options
+	sprintf(opt_pol, "Selects an energy policy for EAR {type=%s}", opt_opt);
+
+	return ESPANK_SUCCESS;
 }
 
 int _opt_register(spank_t sp, int ac, char **av)
