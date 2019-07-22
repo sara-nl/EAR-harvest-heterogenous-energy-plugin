@@ -43,6 +43,7 @@
 
 state_t policy_init(polctx_t *c)
 {
+	return EAR_SUCCESS;
 }
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {

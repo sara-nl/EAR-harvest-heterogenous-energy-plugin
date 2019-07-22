@@ -45,7 +45,7 @@ typedef unsigned long ulong;
 state_t policy_init(polctx_t *c)
 {
 	if (c!=NULL) return EAR_SUCCESS;
-	else EAR_ERROR;
+	else return EAR_ERROR;
 }
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *l)
@@ -64,12 +64,13 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *l)
     {
         *(c->ear_frequency) = eards_change_freq(c->app->def_freq);
     }
+	return EAR_SUCCESS;
 }
 
 
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
-	signature_t *my_app;
+	signature_t *my_app = sig;
 	int i,min_pstate;
 	unsigned int ref;
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
@@ -93,8 +94,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		def_pstate=frequency_freq_to_pstate(def_freq);
 
 		// This is the frequency at which we were running
-		curr_pstate = frequency_freq_to_pstate(curr_freq);
 		curr_freq=*(c->ear_frequency);
+		curr_pstate = frequency_freq_to_pstate(curr_freq);
 
 
 		*ready=1;

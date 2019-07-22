@@ -79,6 +79,7 @@ state_t policy_init(polctx_t *c)
 		if ((sig_list==NULL) || (sig_ready==NULL)) return EAR_ERROR;
 		memset(sig_list,0,sizeof(signature_t)*c->num_pstates);
 		memset(sig_ready,0,sizeof(unsigned int)*c->num_pstates);
+		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
 
@@ -102,6 +103,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
         // Use configuration when available
         *(c->ear_frequency) = eards_change_freq(c->app->def_freq);
     }
+	return EAR_SUCCESS;
 }
 
 
@@ -129,8 +131,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
     else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
 
     // This is the frequency at which we were running
+	curr_freq=*(c->ear_frequency);
     curr_pstate = frequency_freq_to_pstate(curr_freq);
-		curr_freq=*(c->ear_frequency);
 
 		// New signature ready
 		sig_ready[curr_pstate]=1;

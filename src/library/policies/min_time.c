@@ -58,7 +58,6 @@ state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
 		}else{
 			return EAR_ERROR;
 		}
-		
 }
 
 state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
@@ -68,6 +67,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
         // Use configuration when available
         *(c->ear_frequency) = eards_change_freq(c->app->def_freq);
     }
+	return EAR_SUCCESS;
 }
 
 
@@ -102,8 +102,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		def_pstate=frequency_freq_to_pstate(def_freq);
 
     // This is the frequency at which we were running
+    curr_freq=*(c->ear_frequency);
     curr_pstate = frequency_freq_to_pstate(curr_freq);
-		curr_freq=*(c->ear_frequency);
 		
 
 

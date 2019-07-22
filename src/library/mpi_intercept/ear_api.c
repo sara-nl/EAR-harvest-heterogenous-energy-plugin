@@ -44,7 +44,7 @@
 #include <common/environment.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
-#include <library/common/externs.h>
+#include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
 #include <library/tracer/tracer_mpi.h>
