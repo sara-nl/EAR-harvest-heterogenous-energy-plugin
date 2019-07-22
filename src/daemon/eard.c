@@ -132,10 +132,8 @@ topology_t node_desc;
 void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 {
 	uint i;
-	fprintf(stderr,"Initializing %u policies\n",num_policies);
 	for (i=0;i<num_policies;i++){
 		plist[i].p_state=frequency_freq_to_pstate((unsigned long)(plist[i].def_freq*1000000));
-		fprintf(stderr,"def pstate for policy %s is %u\n",plist[i].name,plist[i].p_state);
 	}
 }
 
@@ -952,6 +950,7 @@ void configure_new_values(settings_conf_t *dyn, resched_t *resched, cluster_conf
     memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
+	dyn->max_power_cap=node->max_power_cap;
 	dyn->report_loops=cluster->database.report_loops;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 	resched->force_rescheduling=1;
@@ -992,6 +991,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
     memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
+	dyn->max_power_cap=node->max_power_cap;
 	dyn->report_loops=cluster->database.report_loops;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 
