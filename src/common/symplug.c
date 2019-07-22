@@ -36,6 +36,7 @@ static void symplug_join(void *handle, void *calls[], const char *names[], uint 
 	uint i;
 
 	for (i = 0; i < n; ++i) {
+		fprintf(stderr, "buscando simbolo %s\n", names[i]);
 		calls[i] = dlsym(handle, names[i]);
 	}
 }

@@ -51,7 +51,7 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 	*new_freq=c->app->def_freq;
 	return EAR_SUCCESS;
 }
-state_t ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
+state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
 {
 	*ok=1;
 	return EAR_SUCCESS;

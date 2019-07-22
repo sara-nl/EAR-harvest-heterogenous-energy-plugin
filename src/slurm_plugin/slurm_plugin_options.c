@@ -153,7 +153,7 @@ static int _opt_register_pol(spank_t sp, int ac, char **av)
                                 return ESPANK_ERROR;
                         }
 
-                        while ((file = folder_getnext(&folder, NULL, NULL)))
+                        while ((file = folder_getnext(&folder, NULL, ".so")))
                         {
                                 pc = sprintf(p, "%s,", file);
                                 p = &p[pc];
@@ -262,7 +262,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 		}
 
 		strncpy(buffer, optarg, 32);
-		strtoup(buffer);
+		//strtoup(buffer);
 
 		/*if (policy_name_to_id(buffer) < 0) {
 			plug_verbose(NULL, 2, "Invalid policy '%s'", buffer);
