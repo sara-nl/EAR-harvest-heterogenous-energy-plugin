@@ -7,8 +7,9 @@ rclean:
 	rm -f *.o *.a *.so
 
 %.ginstall:
-	@ (mkdir -m 0755 -p $($*_PATH))
+ifdef REPLACE
 	@ (cd $($*_PATH) && rm -f $($*_BINS))
+endif
 	@ (cp -f $($*_BINS) $($*_PATH))
 ifdef CHOWN_USR
 	@ (cd $($*_PATH) && chown $(CHOWN_USR) $($*_BINS))
@@ -20,6 +21,9 @@ endif
 
 %.finstall:
 	@ (mkdir -p $($*_PATH))
+ifdef REPLACE
+	@ (cd $($*_PATH) && rm -f $($*_BINS))
+endif
 	@ (cd $($*_FOLD) && cp $($*_BINS) $($*_PATH))
 ifdef CHOWN_USR
 	@ (cd $($*_PATH) && chown $(CHOWN_USR) $($*_BINS))
