@@ -123,6 +123,7 @@ int create_app_connection(char *root)
 int find_first_free()
 {
 	int i;
+	i=0;
 	while ((apps_eard[i].recv==-1) && (i<MAX_FDS)) i++;
 	if (i==MAX_FDS) return -1;
 	return i;	

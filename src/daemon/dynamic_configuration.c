@@ -254,7 +254,7 @@ int dynconf_red_pstates(uint p_states) {
 
 	/* We must update my_node_info */
 
-	for (i = 0; i < TOTAL_POLICIES; i++) {
+	for (i = 0; i < my_node_conf->num_policies; i++) {
 		my_node_conf->policies[i].p_state = my_node_conf->policies[i].p_state + p_states;
 	}
 	powermon_new_max_freq(new_max_freq);
@@ -280,6 +280,8 @@ int dynconf_set_th(ulong p_id, ulong th) {
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
+	char *serial_status;
+	unsigned int serial_status_size;
 	int num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
 	unsigned long return_status = num_status;
 	if (num_status < 1) {

@@ -1,0 +1,74 @@
+log.o: log.c /usr/include/stdc-predef.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/log.h \
+ ../../common/types/generic.h ../../common/types/job.h \
+ ../../common/output/verbose.h ../../common/output/error.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
+ ../../common/output/debug.h ../../daemon/eard_api.h ../../daemon/eard_conf_api.h \
+ ../../common/types/application.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h ../../common/types/loop.h
+coefficient.o: coefficient.c /usr/include/stdc-predef.h ../../common/states.h \
+ ../../common/output/verbose.h ../../common/output/error.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
+ ../../common/output/debug.h ../../common/types/coefficient.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/types/generic.h
+gm_warning.o: gm_warning.c /usr/include/stdc-predef.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/gm_warning.h \
+ ../../common/types/generic.h
+loop.o: loop.c /usr/include/stdc-predef.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/loop.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/job.h ../../common/states.h
+power_signature.o: power_signature.c /usr/include/stdc-predef.h \
+ ../../common/types/power_signature.h ../../common/types/generic.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/math_operations.h
+daemon_log.o: daemon_log.c /usr/include/stdc-predef.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h
+projection.o: projection.c /usr/include/stdc-predef.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/projection.h \
+ ../../common/types/signature.h ../../common/types/generic.h \
+ ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
+ ../../common/states.h ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h ../../common/string_enhanced.h \
+ ../../common/types/coefficient.h ../../common/symplug.h \
+ ../../common/output/verbose.h ../../common/output/error.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
+ ../../common/output/debug.h
+periodic_metric.o: periodic_metric.c /usr/include/stdc-predef.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/math_operations.h ../../common/types/periodic_metric.h \
+ ../../common/types/generic.h
+services.o: services.c /usr/include/stdc-predef.h ../../common/output/verbose.h \
+ ../../common/output/error.h ../../common/output/timestamp.h \
+ ../../common/output/output_conf.h ../../common/output/debug.h
+job.o: job.c /usr/include/stdc-predef.h ../../common/types/job.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/types/generic.h ../../common/output/verbose.h \
+ ../../common/output/error.h ../../common/output/timestamp.h \
+ ../../common/output/output_conf.h ../../common/output/debug.h
+signature.o: signature.c /usr/include/stdc-predef.h \
+ ../../common/types/signature.h ../../common/types/generic.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/math_operations.h
+application.o: application.c /usr/include/stdc-predef.h ../../common/file.h \
+ ../../common/sizes.h ../../common/states.h ../../common/output/verbose.h \
+ ../../common/output/error.h ../../common/output/timestamp.h \
+ ../../common/output/output_conf.h ../../common/output/debug.h \
+ ../../common/types/application.h ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_install.h ../../common/types/job.h \
+ ../../common/types/generic.h ../../common/types/signature.h \
+ ../../common/types/power_signature.h
+periodic_aggregation.o: periodic_aggregation.c /usr/include/stdc-predef.h \
+ ../../common/types/periodic_aggregation.h ../../common/types/generic.h

@@ -82,11 +82,11 @@ typedef struct my_node_conf
 	char db_sec_ip[NODE_PREFIX];
 	char *coef_file;
 	uint num_policies;
-	policy_conf_t policies[TOTAL_POLICIES];
-    double min_sig_power;
-    double max_sig_power;
-    double max_error_power;
-		ulong  max_temp;
+	policy_conf_t *policies;
+  double min_sig_power;
+  double max_sig_power;
+  double max_error_power;
+	ulong  max_temp;
 	uint 	use_log;
 }my_node_conf_t;
 

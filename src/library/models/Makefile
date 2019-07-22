@@ -1,10 +1,7 @@
 ######## FILES
 
 modl_OBJS = models.o \
-       min_time.o \
-       min_energy.o \
-       monitoring.o \
-       basic_model.o \
+       basic_model.o 
 
 modl_BINS = basic_model.so
 modl_PATH = $(DESTDIR)/lib/plugins/models

@@ -61,10 +61,10 @@ static models_sym_t models_syms_fun;
 static void    *models_syms_obj = NULL;
 const int       models_funcs_n = 4;
 const char     *models_syms_nam[] = {
-  "ear_model_init",
-  "ear_model_project_time",
-  "ear_model_project_power",
-  "ear_model_projection_available",
+  "model_init",
+  "model_project_time",
+  "model_project_power",
+  "model_projection_available",
 };
 
 static state_t models_load(char *obj_path)
@@ -77,19 +77,22 @@ state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 	char basic_path[SZ_PATH_INCOMPLETE];
 	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
 	state_t st;
-	
 	if ((obj_path == NULL) || (user_type != AUTHORIZED))
 	{
-		sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
+		if (strcmp(data->obj_power_model,"default") || (data->obj_power_model==NULL)){
+			sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
+		}else if (data->obj_power_model!=NULL){
+			sprintf(basic_path, "%s/models/%s.so", data->dir_plug,data->obj_power_model);
+		}
 		obj_path = basic_path;
 		
-		debug(0, "SLURM_EAR_POWER_MODEL not defined using default %s", obj_path);
 	}
+	debug("Using power model path  %s", obj_path);
 	
 	st = models_load(obj_path);
 	
 	if (st == EAR_SUCCESS) {
-		return models_syms_fun.init(data->dir_conf, data->dir_temp, pstates);
+		freturn(models_syms_fun.init,data->dir_conf, data->dir_temp, pstates);
 	}
 	
 	return st;

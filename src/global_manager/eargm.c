@@ -531,6 +531,7 @@ int main(int argc,char *argv[])
 	sigset_t set;
 	int ret;
 	ulong result;
+	int resulti;
 	uint process_created=0;
 	gm_warning_t my_warning;
     if (argc > 2) usage(argv[0]);
@@ -658,7 +659,8 @@ int main(int argc,char *argv[])
 	    	if (!result){ 
 				verbose(VGM+1,"No results in that period of time found\n");
 	    	}else{ 
-				if (result < 0) exit(1);
+					resulti=(int)result;
+				if (resulti < 0) exit(1);
 			}
 			verbose(VGM,"Energy consumed in last %u seconds %lu %s. Avg power %lu %s\n",period_t1,result,unit_energy,(unsigned long)(result/period_t1),unit_power);
 			

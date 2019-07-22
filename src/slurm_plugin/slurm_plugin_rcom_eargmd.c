@@ -51,7 +51,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 
 	//
 	if (sd->job.n_nodes == 0) {
-		plug_error(sp, "while getting the node number '%s'", sd->job.n_nodes);
+		plug_error(sp, "while getting the node number '%u'", sd->job.n_nodes);
 		return ESPANK_ERROR;
 	}
 

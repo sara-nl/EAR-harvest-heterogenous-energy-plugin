@@ -36,84 +36,38 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/types/application.h>
 #include <common/types/projection.h>
-#include <library/common/externs.h>
-#include <library/models/models.h>
-
-
-#include <common/types/signature.h>/* defines signature */
-#include <daemon/shared_configuration.h> /* defines settings_conf */
-#include <library/mpi_intercept/MPI_calls_coded.h> /* defines list of mpi calls */
-#include <library/mpi_intercept/MPI_types.h> /* defines list of mpi calls */
+#include <library/policies/policy_api.h>
 
 
 
-void monitoring_init()
+state_t policy_init(polctx_t *c)
 {
+	return EAR_SUCCESS;
 }
-void monitoring_new_loop()
+state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
-}
-void monitoring_end_loop()
-{
-}
-ulong monitoring_policy(signature_t *sig,int *ready)
-{
-	policy_global_reconfiguration();
 	*ready=1;
-	return EAR_default_frequency;
-}
-ulong monitoring_policy_ok(projection_t *proj, signature_t *curr_sig, signature_t *last_sig)
-{
-	return 1;
-}
-
-
-ulong monitoring_default_conf(ulong f)
-{
-	return f;
-}
-
-
-/*
- * To be used by the pplugin
- */
-int dyn_monitoring_init(application_t *app,settings_conf_t *conf,uint pstates)
-{
+	*new_freq=c->app->def_freq;
 	return EAR_SUCCESS;
 }
-int dyn_monitoring_end()
+state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
 {
-	return EAR_SUCCESS;
-}
-int dyn_monitoring_new_loop(loop_id_t *loop_id)
-{
-	return EAR_SUCCESS;
-}
-int dyn_monitoring_end_loop(loop_id_t *loop_id)
-{
-	return EAR_SUCCESS;
-}
-int dyn_monitoring_policy(settings_conf_t *conf,signature_t *sig,ulong *new_freq)
-{
-	int ret;
-	*new_freq=monitoring_policy(sig,&ret);
-	if (ret==1) return EAR_SUCCESS;
-	else return EAR_NOT_READY;
-}
-int dyn_monitoring_policy_ok(signature_t *curr_sig, signature_t *last_sig)
-{
-	return 1;
-}
-int dyn_monitoring_default_conf(ulong *f)
-{
+	*ok=1;
 	return EAR_SUCCESS;
 }
 
 
-int dyn_monitoring_max_tries()
+state_t policy_get_default_freq(polctx_t *c, ulong *freq_set)
 {
-	return 0;
+	*freq_set=c->app->def_freq;
+	return EAR_SUCCESS;
 }
+
+state_t policy_max_tries(polctx_t *c,int *intents)
+{
+	*intents=0;
+	return EAR_SUCCESS;
+}
+
 

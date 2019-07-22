@@ -1131,7 +1131,9 @@ void *eard_power_monitoring(void *noinfo) {
 
 void powermon_get_status(status_t *my_status) {
 	int i;
-	for (i=0;i<TOTAL_POLICIES;i++){
+	/* Policies */
+	my_status->num_policies=my_node_conf->num_policies;
+	for (i=0;i<my_status->num_policies;i++){
 		my_status->policy_conf[i].freq=frequency_pstate_to_freq(my_node_conf->policies[i].p_state);
 		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].settings[0]*100.0);
 	}

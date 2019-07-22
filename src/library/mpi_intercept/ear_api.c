@@ -44,7 +44,6 @@
 #include <common/environment.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
-#include <common/types/projection.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
@@ -52,6 +51,7 @@
 #include <library/states/states.h>
 #include <library/states/states_periodic.h>
 #include <library/models/models.h>
+#include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
@@ -394,19 +394,18 @@ void ear_init()
 
 
 	// Policies && models
-	init_power_policy();
-	st=projections_init(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
-	if (st!=EAR_SUCCESS) error("Power model initialization error");
-	init_power_models();
+	init_power_policy(system_conf,resched_conf);
+	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
 
 
-	// Policy name is set in ear_models
+
+	strcpy(application.job.policy,system_conf->policy_name);
 	strcpy(application.job.app_id, ear_app_name);
 
 	// Passing the frequency in KHz to MHz
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
 	application.job.procs = my_size;
-	application.job.th =get_global_th();
+	application.job.th =system_conf->settings[0];
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
@@ -507,6 +506,7 @@ void ear_finalize()
 	}
 	states_end_job(my_id, NULL, ear_app_name);
 #endif
+	policy_end();
 
 	dettach_settings_conf_shared_area();
 	dettach_resched_shared_area();
@@ -737,29 +737,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 			case NO_LOOP:
 			case IN_LOOP:
 				break;
-			case NEW_LOOP:
-				debug("NEW_LOOP event %u level %hu size %hu\n", ear_event_l, ear_level, ear_size);
-				ear_iterations=0;
-				//TODO
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
-				ear_loop_size=(uint)ear_size;
-				in_loop=1;
-				mpi_calls_per_loop=1;
-				break;
-			case END_NEW_LOOP:
-				debug("END_LOOP - NEW_LOOP event %u level %hu\n",ear_event_l,ear_level);
-				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
-				}
-
-				loop_with_signature=0;
-				traces_end_period(ear_my_rank, my_id);
-				states_end_period(ear_iterations);
-				ear_iterations=0;
-				mpi_calls_per_loop=1;
-				ear_loop_size=(uint)ear_size;
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
-				break;
 			case NEW_ITERATION:
 				ear_iterations++;
 
@@ -773,21 +750,9 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, (uint)ear_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
-			case END_LOOP:
-				debug("END_LOOP event %u\n",ear_event_l);
-				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
-				}
-				loop_with_signature=0;
-				states_end_period(ear_iterations);
-				traces_end_period(ear_my_rank, my_id);
-				ear_iterations=0;
-				in_loop=0;
-				mpi_calls_per_loop=0;
-				break;
-            default:
-                break;
-        }
+      default:
+       break;
+      }
     } //ear_whole_app
 }
 

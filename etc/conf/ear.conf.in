@@ -36,11 +36,18 @@ DBDaemonMemorySize=120
 # EAR Library (EARL)
 #---------------------------------------------------------------------------------------------------
 CoefficientsDir=@sysconfdir@/ear/coeffs
-# Default power policy values
-DefaultPowerPolicy=MIN_TIME_TO_SOLUTION
-SupportedPolicies=MONITORING_ONLY,MIN_TIME_TO_SOLUTION,MIN_ENERGY_TO_SOLUTION,SUPERMUC
-# P_STATES must be specified in the following order: MIN_ENERGY, MIN_TIME, MONITORING and SUPERMUC.
-DefaultPstates=1,4,4,3
+
+#---------------------------------------------------------------------------------------------------
+# Power policies
+# ---------------------------------------------------------------------------------------------------
+# policy names must be exactly file names for policies installed in the system
+#
+DefaultPowerPolicy=min_time
+
+Policy=monitoring Settings=0 DefaultFreq=2.3 Privileged=0
+Policy=min_time Settings=0.7 DefaultFreq=2.0 Privileged=0
+Policy=min_energy Settings=0.1 DefaultFreq=2.3 Privileged=1
+
 #---------------------------------------------------------------------------------------------------
 # EAR Global Manager (EARGMD)
 #---------------------------------------------------------------------------------------------------
@@ -81,14 +88,6 @@ AuthorizedGroups=grp1,grp2
 # by row together with the priviledged user/group/account.
 EnergyTag=cpu-intensive pstate=1
 EnergyTag=memory-intensive pstate=4 users=usr1,usr2 groups=grp1,grp2 accounts=acc1,acc2
-#---------------------------------------------------------------------------------------------------
-# Node List
-#---------------------------------------------------------------------------------------------------
-# Grouped by hardware characteristics, different lists must reflect different power characteristics.
-# In this example the nodes are clustered by its type of CPU. From node1001 to node1080 for 24 cores
-# nodes and from node1101 to node1180 for 18 cores nodes.
-NodeName=node10[01-80] CPUs=24
-NodeName=node11[01-80] CPUs=18
 #---------------------------------------------------------------------------------------------------
 # Node Isles
 #---------------------------------------------------------------------------------------------------

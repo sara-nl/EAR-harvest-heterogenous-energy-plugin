@@ -35,6 +35,8 @@
 int main(int argc,char *argv[])
 {
 	cluster_conf_t my_cluster;
+	my_node_conf_t *my_node_conf;
+	char nodename[256];
 	char ear_path[256];
 	if (argc>1){
 		strcpy(ear_path,argv[1]);
@@ -46,6 +48,14 @@ int main(int argc,char *argv[])
 	}
 	read_cluster_conf(ear_path,&my_cluster);
 	print_cluster_conf(&my_cluster);
+	gethostname(nodename,sizeof(nodename));
+	strtok(nodename,".");
+  my_node_conf = get_my_node_conf(&my_cluster, nodename);
+  if (my_node_conf==NULL) {
+		fprintf(stderr,"get_my_node_conf for node %s returns NULL\n",nodename);
+	}else print_my_node_conf(my_node_conf);
+
+	
   free_cluster_conf(&my_cluster);
 	return 0;
 }
