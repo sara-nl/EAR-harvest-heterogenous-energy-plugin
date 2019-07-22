@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <dirent.h>
+#include <common/folder.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_options.h>
@@ -35,8 +35,9 @@
 #define SRUN_OPTIONS	10
 
 static char buffer[SZ_PATH];
-static char mpi_opt[SZ_PATH];
-static char mpi_dst[SZ_PATH];
+static char opt_mpi[SZ_PATH];
+static char opt_pol[SZ_PATH];
+static char opt_opt[SZ_PATH];
 
 struct spank_option spank_options_manual[SRUN_OPTIONS] =
 {
@@ -44,8 +45,7 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  1, 0, (spank_opt_cb_f) _opt_ear
 	},
 	{ 
-	  "ear-policy", "type", "Selects an energy policy for EAR\n" \
-	  "{type=MIN_ENERGY_TO_SOLUTION|MIN_TIME_TO_SOLUTION|MONITORING_ONLY}",
+	  "ear-policy", "type", opt_pol,
 	  1, 0, (spank_opt_cb_f) _opt_ear_policy
 	},
 	{ "ear-cpufreq", "frequency", "Specifies the start frequency to be used by EAR policy (in KHz)",
@@ -60,7 +60,7 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
 	  1, 0, (spank_opt_cb_f) _opt_ear_user_db
 	},
-	{ "ear-mpi-dist", "dist", mpi_opt,
+	{ "ear-mpi-dist", "dist", opt_mpi,
 	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
 	},
 	{ "ear-verbose", "value", "Specifies the level of the verbosity\n" \
@@ -81,53 +81,94 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 
 static int _opt_register_mpi(spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "function _opt_dir");
+	plug_verbose(sp, 2, "function _opt_register_mpi");
 
-	struct dirent *file;
-	int i, pc, qc;
-	char *p, *q;
-	DIR *dir;
+	state_t s;
+	folder_t folder;
+	char *file;
+	char *p;
+	int pc;
+	int i;
 
 	// Filing a default option string
-	pc = sprintf(mpi_dst, "default,");
-	p = &mpi_dst[pc];
+	pc = sprintf(opt_opt, "default,");
+	p = &opt_opt[pc];
 
 	for (i = 0; i < ac; ++i)
 	{
 		if ((strlen(av[i]) > 7) && (strncmp("prefix=", av[i], 7) == 0))
 		{
 			sprintf(buffer, "%s/lib/", &av[i][7]);
-			dir = opendir(buffer);
-
-			if (dir)
-			{
-			while ((file = readdir(dir)) != NULL)
-			{
-				if (strstr(file->d_name, "libear.") != NULL)
-				{
-					q = &file->d_name[7];
-					qc = strlen(q);
-
-					if (qc > 2 && strcmp(&q[qc - 3], ".so") == 0) {
-						q[qc - 3] = '\0';
-						pc = sprintf(p, "%s,", q);
-						p = &p[pc];
-					}
-				}
+		
+			// Initilizing folder scanning
+			s = folder_open(&folder, buffer);
+			
+			if (state_fail(s)) {
+				return ESPANK_ERROR;
 			}
-			closedir(dir);
+			
+			while ((file = folder_getnext(&folder, "libear.", ".so")))
+			{
+				pc = sprintf(p, "%s,", file);
+				p = &p[pc];
 			}
 		}
 	}
-
+	
 	// Cleaning the last comma	
 	p = &p[-1];
 	*p = '\0';
 
 	// Filling the option string with distribution options
-	sprintf(mpi_opt, "Selects the MPI distribution for compatibility of your application {dist=%s}", mpi_dst);
+	sprintf(opt_mpi, "Selects the MPI distribution for compatibility of your application {dist=%s}", opt_opt);
 
 	return ESPANK_SUCCESS;
+}
+
+static int _opt_register_pol(spank_t sp, int ac, char **av)
+{
+        plug_verbose(sp, 2, "function _opt_register_pol");
+
+        state_t s;
+        folder_t folder;
+        char *file;
+        char *p;
+        int pc;
+        int i;
+
+        // Filing a default option string
+        pc = sprintf(opt_opt, "default,");
+        p = &opt_opt[pc];
+
+        for (i = 0; i < ac; ++i)
+        {
+                if ((strlen(av[i]) > 7) && (strncmp("prefix=", av[i], 7) == 0))
+                {
+                        sprintf(buffer, "%s/lib/plugins/policies/", &av[i][7]);
+
+                        // Initilizing folder scanning
+                        s = folder_open(&folder, buffer);
+
+                        if (state_fail(s)) {
+                                return ESPANK_ERROR;
+                        }
+
+                        while ((file = folder_getnext(&folder, NULL, NULL)))
+                        {
+                                pc = sprintf(p, "%s,", file);
+                                p = &p[pc];
+                        }
+                }
+        }
+        
+        // Cleaning the last comma      
+        p = &p[-1];
+        *p = '\0';
+
+        // Filling the option string with distribution options
+        sprintf(opt_pol, "Selects an energy policy for EAR {type=%s}", opt_opt);
+
+        return ESPANK_SUCCESS;
 }
 
 int _opt_register(spank_t sp, int ac, char **av)
@@ -138,7 +179,8 @@ int _opt_register(spank_t sp, int ac, char **av)
 
 	//
 	_opt_register_mpi(sp, ac, av);
-
+	_opt_register_pol(sp, ac, av);
+	
 	//
 	length = SRUN_OPTIONS - !exenv_agnostic(sp, "EAR_GUI");
 

@@ -76,7 +76,6 @@ typedef struct plug_freqs {
 } plug_freqs_t;
 
 typedef struct plug_eard {
-	hostlist_t hostlist;
 	settings_conf_t setts;
 	services_conf_t servs;
 	plug_freqs_t freqs;
@@ -86,6 +85,7 @@ typedef struct plug_eard {
 typedef struct plug_eargmd {
 	char host[SZ_NAME_MEDIUM];
 	uint connected;
+	uint secured;
 	uint enabled;
 	uint port;
 } plug_eargmd_t;

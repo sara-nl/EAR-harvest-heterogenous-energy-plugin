@@ -32,9 +32,14 @@
 static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 {
 	int port = sd->pack.eard.servs.eard.port;
+	hostlist_t hostlist;
 	char *node;
 
-	while ((node = slurm_hostlist_shift(sd->pack.eard.hostlist)) != NULL)
+	// Hostlist get
+	hostlist = slurm_hostlist_create(sd->subject.host);
+
+	//
+	while ((node = slurm_hostlist_shift(hostlist)) != NULL)
 	{
 		plug_verbose(sp, 2, "connecting to EARD: '%s:%d'", node, port);
 
