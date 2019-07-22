@@ -36,14 +36,15 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <control/frequency.h>
+#include <common/time.h>
 #include <common/types/projection.h>
 #include <daemon/eard_api.h>
 #include <library/policies/policy_api.h>
 #include <common/math_operations.h>
 
 typedef unsigned long ulong;
-static timestamp init_mpi,end_mpi;
-static unsigned long long total_mpi;
+static timestamp cp_init_mpi;
+static unsigned long long cp_total_mpi;
 
 state_t policy_init(polctx_t *c)
 {
@@ -54,7 +55,7 @@ state_t policy_init(polctx_t *c)
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
 {
-		total_mpi=0;
+		cp_total_mpi=0;
 		if (c!=NULL){ 
 			projection_reset(c->num_pstates);
 			return EAR_SUCCESS;
@@ -71,6 +72,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
         // Use configuration when available
         *(c->ear_frequency) = eards_change_freq(c->app->def_freq);
     }
+		return EAR_SUCCESS;
 }
 
 
@@ -101,9 +103,9 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// % of MPI 
 		
-		mpi_perc=(float)total_mpi/(float)my_app->time;
-		total_mpi=0;
-		printf("Percentage of MPI per signature %f\n",total_mpi);
+		mpi_perc=(float)cp_total_mpi/(float)my_app->time;
+		cp_total_mpi=0;
+		printf("Percentage of MPI per signature %f\n",mpi_perc);
 
 		// Default values
 		
@@ -144,7 +146,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				best_pstate=curr_pstate;
     }
 
-		projection_set(best_pstate,time_ref,power_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
 
@@ -223,20 +224,16 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   return EAR_SUCCESS;
 }
 
-state_t policy_new_iter(polctx_t *c,loop_id_t *loop_id)
-{
-}
 state_t policy_mpi_init(polctx_t *c)
 {
-	timestamp_get(&init_mpi);	
+	timestamp_get(&cp_init_mpi);	
 }
 state_t policy_mpi_end(polctx_t *c)
 {
 	unsigned long long time_difff;
-	timestamp_get(&end_mpi);
-	time_difff=timestamp_diff(&end_mpi,&init_mpi,1);
-	total_mpi+=time_difff;
-	
-	
+	timestamp cp_end_mpi;
+	timestamp_get(&cp_end_mpi);
+	time_difff=timestamp_diff(&cp_end_mpi,&cp_init_mpi,1);
+	cp_total_mpi+=time_difff;
 }
 

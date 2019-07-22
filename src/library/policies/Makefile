@@ -8,9 +8,10 @@ modl_OBJS = policy.o \
 			 min_energy_no_models.o \
 			 dummy.o \
 			 empty.o \
-			 two_phases.o
+			 two_phases.o \
+			 min_time_cp.o
 
-modl_BINS = min_time.so min_energy.so monitoring.so min_time_no_models.so min_energy_no_models.so dummy.so empty.so two_phases.so
+modl_BINS = min_time.so min_energy.so monitoring.so min_time_no_models.so min_energy_no_models.so dummy.so empty.so two_phases.so min_time_cp.so
 modl_PATH = $(DESTDIR)/lib/plugins/policies
 modl_PERM = 0775
 
