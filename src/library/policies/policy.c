@@ -70,8 +70,8 @@ const char     *polsyms_nam[] = {
 	"policy_loop_end",
 	"policy_new_iteration",
 	"policy_mpi_init",
-	"policy_mpi_end"
-	"policy_configure",
+	"policy_mpi_end",
+	"policy_configure"
 };
 polctx_t my_pol_ctx;
 
