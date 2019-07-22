@@ -38,6 +38,11 @@
 #include <daemon/shared_configuration.h>
 #include <mpi.h>
 
+typedef struct mpi_ctx{
+	MPI_Comm 	master_comm;
+	MPI_Comm 	comm;
+}mpi_ctx_t;
+
 typedef struct policy_context {
 	settings_conf_t *app;
 	resched_t *reconfigure;
@@ -46,9 +51,8 @@ typedef struct policy_context {
 	unsigned long *ear_frequency;
 	unsigned int  num_pstates;
 	unsigned int use_turbo;
-	MPI_Comm 	master_comm;
-	int my_rank;
-	int my_master_rank;
+	mpi_ctx_t mpi;
+	//job_t 		*my_job
 } polctx_t;
 
 #endif //EAR_POLICIES_H

@@ -37,6 +37,9 @@
 #include <common/environment.h>
 #include <daemon/eard_api.h>
 
+// external symbols
+extern MPI_Comm masters_comm,new_world_comm;
+
 typedef struct policy_symbols {
 	state_t (*init)        (polctx_t *c);
 	state_t (*apply)       (polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready);
@@ -96,6 +99,8 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	my_pol_ctx.ear_frequency=&ear_frequency;
 	my_pol_ctx.num_pstates=frequency_get_num_pstates();
 	my_pol_ctx.use_turbo=ear_use_turbo;
+	my_pol_ctx.mpi.comm=new_world_comm;
+	my_pol_ctx.mpi.master_comm=masters_comm;
 	return policy_init();
 }
 
