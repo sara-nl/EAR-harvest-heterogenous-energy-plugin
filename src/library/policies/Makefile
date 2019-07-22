@@ -19,7 +19,7 @@ modl_PERM = 0775
 all: $(modl_OBJS) $(modl_BINS)
 
 %.o: %.c 
-	$(MPICC) $(MPICC_FLAGS)  $(CFLAGS) -c $<
+	$(MPICC) $(MPICC_FLAGS) -DSHOW_DEBUGS=1 $(CFLAGS) -c $<
 
 %.so: %.o
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	

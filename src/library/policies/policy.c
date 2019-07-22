@@ -90,7 +90,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
     	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
     	obj_path=basic_path;
 	}
-  debug("loading policy",obj_path);
+  debug("loading policy %s",obj_path);
 	policy_load(obj_path);
 	my_pol_ctx.app=app_settings;
 	my_pol_ctx.reconfigure=res;
@@ -132,7 +132,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 		st=polsyms_fun.apply(c, my_sig,freq_set,ready);
   	if (*freq_set != *(c->ear_frequency))
   	{
-    	debug("earl: Changing Frequency to %u at the beggining of iteration",*freq_set);
+    	debug("earl: Changing Frequency to %lu at the beggining of iteration",*freq_set);
     	*(c->ear_frequency) =  eards_change_freq(*freq_set);
 		}
   } 
