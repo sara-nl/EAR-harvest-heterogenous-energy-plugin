@@ -38,6 +38,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/types/log.h>
@@ -50,6 +51,8 @@
 #include <control/frequency.h>
 #include <daemon/eard_api.h>
 #include <common/environment.h>
+
+
 
 // static defines
 #define NO_PERIOD				0
@@ -259,7 +262,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	if (resched_conf->force_rescheduling){
 		traces_reconfiguration(ear_my_rank, my_id);
 		resched_conf->force_rescheduling=0;
-		debug("EAR: rescheduling forced by eard: max freq %lu def_freq %lu def_th %lf",system_conf->max_freq,system_conf->def_freq,system_conf->th);
+		debug("EAR: rescheduling forced by eard: max freq %lu def_freq %lu def_th %lf",system_conf->max_freq,system_conf->def_freq,system_conf->settings[0]);
 		if (EAR_STATE==SIGNATURE_STABLE){ 
 
 			// We set the default number of iterations to the default for this loop
@@ -424,12 +427,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* This function executes the energy policy */
 			pst=policy_apply(&loop_signature.signature,&policy_freq,&ready);
 
-			PP = projection_get(frequency_freq_to_pstate(policy_freq));
 
 			/* When the policy is ready to be evaluated, we go to the next state */
 			if (ready){
 				if (policy_freq != policy_def_freq)
 				{
+					debug("policy_freq %lu != policy_def_freq %lu",policy_freq,policy_def_freq);
 					tries_current_loop++;
 					comp_N_begin = metrics_time();
 					EAR_STATE = RECOMPUTING_N;
@@ -437,12 +440,15 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				}
 				else
 				{
+					debug("policy_freq %lu = policy_def_freq %lu",policy_freq,policy_def_freq);
 					EAR_STATE = SIGNATURE_STABLE;
 					traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 				}
 			}else{
+				debug("Not ready");
 				traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			}
+			debug("signature_copy");
 			signature_copy(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
 			verbose(1,"EAR(%s)at %lu: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
@@ -595,6 +601,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			break;
 		default: break;
 	}
+	debug("End states_end_iteration");
 }
 
 

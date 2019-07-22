@@ -55,4 +55,6 @@ typedef struct policy_context {
 	//job_t 		*my_job
 } polctx_t;
 
+void print_policy_ctx(polctx_t *p);
+
 #endif //EAR_POLICIES_H

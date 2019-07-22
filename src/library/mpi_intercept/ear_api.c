@@ -398,7 +398,8 @@ void ear_init()
 	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
 
 
-	// Policy name is set in ear_models
+
+	strcpy(application.job.policy,system_conf->policy_name);
 	strcpy(application.job.app_id, ear_app_name);
 
 	// Passing the frequency in KHz to MHz
