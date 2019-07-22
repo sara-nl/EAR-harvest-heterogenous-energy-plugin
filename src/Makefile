@@ -49,6 +49,8 @@ eard.install: daemon.install;
 
 eardbd.install: database_cache.install;
 
+earl.install: library.install;
+
 eargmd.install: global_manager.install;
 
 earplug.install: slurm_plugin.install;

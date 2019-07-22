@@ -92,6 +92,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	}
   debug("loading policy %s",obj_path);
 	policy_load(obj_path);
+	ear_frequency=app_settings->def_freq;
 	my_pol_ctx.app=app_settings;
 	my_pol_ctx.reconfigure=res;
 	my_pol_ctx.user_selected_freq=app_settings->def_freq;
@@ -126,23 +127,31 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 	*ready=1;
 	if (polsyms_fun.apply!=NULL){
 		if (!eards_connected()){
-			*freq_set=*(c->ear_frequency);
+			*ready=0;
 			return EAR_SUCCESS;
 		}
 		st=polsyms_fun.apply(c, my_sig,freq_set,ready);
   	if (*freq_set != *(c->ear_frequency))
   	{
-    	debug("earl: Changing Frequency to %lu at the beggining of iteration",*freq_set);
+    	debug("Changing Frequency to %lu at the beggining of iteration",*freq_set);
     	*(c->ear_frequency) =  eards_change_freq(*freq_set);
+			debug("Changed to %lu\n",*(c->ear_frequency));
 		}
-  } 
+  } else{
+		if (c!=NULL) *freq_set=c->app->def_freq;
+	}
 	return st;
 }
 
 state_t policy_get_default_freq(ulong *freq_set)
 {
 	polctx_t *c=&my_pol_ctx;
-	preturn(polsyms_fun.get_default_freq, c, freq_set);
+	if (polsyms_fun.get_default_freq!=NULL){
+		return polsyms_fun.get_default_freq( c, freq_set);
+	}else{
+		if (c!=NULL) *freq_set=c->app->def_freq;
+		return EAR_SUCCESS;
+	}
 }
 state_t policy_set_default_freq()
 {
@@ -162,13 +171,23 @@ state_t policy_set_default_freq()
 state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
 {
 	polctx_t *c=&my_pol_ctx;
-	preturn(polsyms_fun.ok, c, curr,prev,ok);
+	if (polsyms_fun.ok!=NULL){
+		return polsyms_fun.ok(c, curr,prev,ok);
+	}else{
+		*ok=1;
+		return EAR_SUCCESS;
+	}
 }
 
 state_t policy_max_tries(int *intents)
 { 
 	polctx_t *c=&my_pol_ctx;
-	preturn(polsyms_fun.max_tries, c,intents);
+	if (polsyms_fun.max_tries!=NULL){
+		return	polsyms_fun.max_tries( c,intents);
+	}else{
+		*intents=1;
+		return EAR_SUCCESS;
+	}
 }
 
 state_t policy_end()
@@ -223,3 +242,17 @@ state_t policy_force_global_frequency(ulong new_f)
 	return EAR_SUCCESS;
 }
 
+void print_policy_ctx(polctx_t *p)
+{
+	fprintf(stderr,"user_type %u\n",p->app->user_type);
+	fprintf(stderr,"policy_name %s\n",p->app->policy_name);
+	fprintf(stderr,"setting 0 %lf\n",p->app->settings[0]);
+	fprintf(stderr,"def_freq %lu\n",p->app->def_freq);
+	fprintf(stderr,"def_pstate %u\n",p->app->def_p_state);
+	fprintf(stderr,"reconfigure %d\n",p->reconfigure->force_rescheduling);
+	fprintf(stderr,"user_selected_freq %lu\n",p->user_selected_freq);
+	fprintf(stderr,"reset_freq_opt %lu\n",p->reset_freq_opt);
+	fprintf(stderr,"ear_frequency %lu\n",*(p->ear_frequency));
+	fprintf(stderr,"num_pstates %u\n",p->num_pstates);
+	fprintf(stderr,"use_turbo %u\n",p->use_turbo);
+}

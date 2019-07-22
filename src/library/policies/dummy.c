@@ -36,9 +36,9 @@
 #include <common/states.h>
 #include <library/policies/policy_api.h>
 
-#define SHOW_DEBUG 1
+//#define SHOW_DEBUG 1
 #if SHOW_DEBUG
-#define debug_func() printf(__FUNCTION__);
+#define debug_func() fprintf(stderr,"%s\n",__FUNCTION__);
 #define debug(...) printf(__VA_ARGS__);
 #else
 #define debug_func()
@@ -49,26 +49,32 @@
 state_t policy_init(polctx_t *c)
 {
 	debug_func();
+	print_policy_ctx(c);
 	return EAR_SUCCESS;
 }
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
 	debug_func();
+	*ready=1;
+	*new_freq=c->app->def_freq;
 	return EAR_SUCCESS;
 }
 state_t policy_get_default_freq(polctx_t *c, ulong *freq_set)
 {
 	debug_func();
+	*freq_set=c->app->def_freq;
 	return EAR_SUCCESS;
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
 {
 	debug_func();
+	*ok=1;
 	return EAR_SUCCESS;
 }
 state_t policy_max_tries(polctx_t *c,int *intents)
 {
 	debug_func();
+	*intents=1;
 	return EAR_SUCCESS;
 }
 state_t policy_end(polctx_t *c)
@@ -86,19 +92,19 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 	debug_func();
 	return EAR_SUCCESS;
 }
-state_t policy_new_iter(polctx_t *c,loop_id_t *loop_id)
+state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
 	debug_func();
 	return EAR_SUCCESS;
 }
 state_t policy_mpi_init(polctx_t *c)
 {
-	debug_func();
+	//debug_func();
 	return EAR_SUCCESS;
 }
 state_t policy_mpi_end(polctx_t *c)
 {
-	debug_func();
+	//debug_func();
 	return EAR_SUCCESS;
 }
 state_t policy_configure(polctx_t *c)
