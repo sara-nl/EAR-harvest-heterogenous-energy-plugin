@@ -48,13 +48,16 @@ static unsigned int *sig_ready;
 static void go_next_mt(int curr_pstate,int *ready,ulong *best_freq,int min_pstate)
 {
   int next_pstate;
+	fprintf(stderr,"go_next_mt: curr_pstate %d min_pstate %d\n",curr_pstate,min_pstate);
   if (curr_pstate==min_pstate){
+		fprintf(stderr,"ready\n");
     *ready=1;
     *best_freq=frequency_pstate_to_freq(curr_pstate);
   }else{
     next_pstate=curr_pstate-1;
     *ready=0;
     *best_freq=frequency_pstate_to_freq(next_pstate);
+		fprintf(stderr,"Not ready: next %d freq %lu\n",next_pstate,*best_freq);
   }
 }
 
@@ -126,7 +129,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		*ready=0;
 
 		if (c==NULL) return EAR_ERROR;
-		if (c->app!=NULL) return EAR_ERROR;
+		if (c->app==NULL) return EAR_ERROR;
 
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_freq_to_pstate(c->app->max_freq);

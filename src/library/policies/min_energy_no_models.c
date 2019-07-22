@@ -125,7 +125,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		*ready=0;
 
 		if (c==NULL) return EAR_ERROR;
-		if (c->app!=NULL) return EAR_ERROR;
+		if (c->app==NULL) return EAR_ERROR;
 
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
