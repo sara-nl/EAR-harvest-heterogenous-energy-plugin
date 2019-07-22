@@ -274,11 +274,16 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 
 
     //pending checks for policies
+    fprintf(stderr,"Initialzing %u policies for node %s,%u special policies \n",my_conf->num_policies,nodename,
+		num_spec_nodes);
+		memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
+		#if 0
     for (i = 0; i < my_conf->num_policies; i++)
     {
         char found = 0;
-        for (j = 0; j < num_spec_nodes; j++)
+        for (j = 0; j < num_spec_nodes; j++){
             if (my_conf->power_policies[i].policy == n->policies[j].policy) found = 1;
+				}
 
         if (!found)
         {
@@ -286,6 +291,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             num_spec_nodes++;
         }
     }
+		#endif
 	n->max_pstate=my_conf->eard.max_pstate;
 
 	return n;
