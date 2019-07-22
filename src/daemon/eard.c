@@ -1118,7 +1118,28 @@ int main(int argc, char *argv[]) {
 	}
 	strtok(nodename, ".");
 	verbose(VCONF, "Executed in node name %s", nodename);
+
 	/** CONFIGURATION **/
+        int node_size;
+        state_t s;
+
+        /* We initialize topology */
+        s = hardware_gettopology(&node_desc);
+        node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
+        if (state_fail(s) || node_size <= 0) {
+                error("topology information can't be initialized (%d)", s);
+                _exit(1);
+        }
+
+        /* We initialize frecuency */
+        if (frequency_init(node_size) < 0) {
+                error("frequency information can't be initialized");
+                _exit(1);
+        }
+
+
+
+
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path) == EAR_ERROR) {
 		error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
@@ -1157,25 +1178,9 @@ int main(int argc, char *argv[]) {
 	}
 	set_verbose_variables();
 
-	int node_size;
-	state_t s;
-
-	/* We initialize topology */
-	s = hardware_gettopology(&node_desc);
-	node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
-	if (state_fail(s) || node_size <= 0) {
-		error("topology information can't be initialized (%d)", s);
-		_exit(1);
-	}
-
-	/* We initialize frecuency */
-	if (frequency_init(node_size) < 0) {
-		error("frequency information can't be initialized");
-		_exit(1);
-	}
-
 	/** Shared memory is used between EARD and EARL **/
 	init_frequency_list();
+
 	/**** SHARED MEMORY REGIONS ****/
 	/* This area is for shared info */
 	verbose(VCONF, "creating shared memory regions");
