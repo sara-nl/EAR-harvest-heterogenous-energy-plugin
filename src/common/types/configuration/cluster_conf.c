@@ -275,8 +275,6 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 
 
     //pending checks for policies
-    fprintf(stderr,"Initialzing %u policies for node %s,%u special policies \n",my_conf->num_policies,nodename,
-		num_spec_nodes);
 		memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
 		#if 0
     for (i = 0; i < my_conf->num_policies; i++)
