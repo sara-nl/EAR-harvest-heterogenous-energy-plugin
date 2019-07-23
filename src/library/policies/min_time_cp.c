@@ -43,14 +43,16 @@
 #include <common/math_operations.h>
 
 typedef unsigned long ulong;
-<<<<<<< HEAD
 static timestamp cp_init_mpi;
 static unsigned long long cp_total_mpi;
-=======
-static timestamp init_mpi,end_mpi;
-static unsigned long long total_mpi;
 static unsigned long cp_iterations=0;
->>>>>>> d4bb80c92e8a0f5c38ca95750104193dfd62ea05
+
+#define SHOW_DEBUGS
+#ifdef SHOW_DEBUGS
+#define debug(...) fprintf(stderr, __VA_ARGS__); 
+#else
+#define debug(...) 
+#endif
 
 state_t policy_init(polctx_t *c)
 {
@@ -62,12 +64,8 @@ state_t policy_init(polctx_t *c)
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
 {
-<<<<<<< HEAD
 		cp_total_mpi=0;
-=======
-		total_mpi=0;
 		cp_iterations=0;
->>>>>>> d4bb80c92e8a0f5c38ca95750104193dfd62ea05
 		if (c!=NULL){ 
 			projection_reset(c->num_pstates);
 			return EAR_SUCCESS;
@@ -115,15 +113,15 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// % of MPI 
 		
-		fprintf(stderr,"total_mpi %lu cp_iterations %lu time %lf \n",total_mpi,cp_iterations,my_app->time);
-		mpi_per_iter=(double)total_mpi/(double)cp_iterations;
-		mpi_per_iter=mpi_per_iter/1000.0; // usecs
-		mpi_perc=(mpi_per_iter/my_app->time)+100.0;
-		fprintf(stderr,"Percentage of MPI per signature %lf\n",mpi_perc);
+		debug("cp_total_mpi %lu cp_iterations %lu time %lf \n",cp_total_mpi,cp_iterations,my_app->time);
+		mpi_per_iter=(double)cp_total_mpi/(double)cp_iterations;
+		mpi_per_iter=mpi_per_iter/1000000000.0; // secs
+		mpi_perc=(mpi_per_iter/my_app->time)*100.0;
+		debug("Percentage of MPI per signature %lf\n",mpi_perc);
 
 		// start again counting
 		cp_iterations=0;
-		total_mpi=0;
+		cp_total_mpi=0;
 
 		// Default values
 		
@@ -132,10 +130,10 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		def_pstate=frequency_freq_to_pstate(def_freq);
 
     // This is the frequency at which we were running
-    curr_pstate = frequency_freq_to_pstate(curr_freq);
 		curr_freq=*(c->ear_frequency);
+    curr_pstate = frequency_freq_to_pstate(curr_freq);
 		
-
+		debug(" curr_freq %lu def_freq %lu\n",curr_freq,def_freq);
 
     // If is not the default P_STATE selected in the environment, a projection
     // is made for the reference P_STATE in case the projections were available.
@@ -174,6 +172,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		while(try_next && (i >= min_pstate))
 		{
+			debug("Checking from %d to %d\n",curr_pstate,i);
 			if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 			{
 				st=project_power(my_app,curr_pstate,i,&power_proj);
@@ -242,13 +241,10 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   return EAR_SUCCESS;
 }
 
-<<<<<<< HEAD
-=======
 state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
 	cp_iterations++;
 }
->>>>>>> d4bb80c92e8a0f5c38ca95750104193dfd62ea05
 state_t policy_mpi_init(polctx_t *c)
 {
 	timestamp_get(&cp_init_mpi);	
@@ -256,15 +252,9 @@ state_t policy_mpi_init(polctx_t *c)
 state_t policy_mpi_end(polctx_t *c)
 {
 	unsigned long long time_difff;
-<<<<<<< HEAD
 	timestamp cp_end_mpi;
 	timestamp_get(&cp_end_mpi);
-	time_difff=timestamp_diff(&cp_end_mpi,&cp_init_mpi,1000000);
+	time_difff=timestamp_diff(&cp_end_mpi,&cp_init_mpi,1);
 	cp_total_mpi+=time_difff;
-=======
-	timestamp_get(&end_mpi);
-	time_difff=timestamp_diff(&end_mpi,&init_mpi,1);
-	total_mpi+=time_difff;
->>>>>>> d4bb80c92e8a0f5c38ca95750104193dfd62ea05
 }
 
