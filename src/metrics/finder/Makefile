@@ -19,6 +19,8 @@ energy.o: energy.c energy.h
 
 install: ;
 
+%.install: ;
+
 clean: rclean;
 
 ######## DEPENDENCIES

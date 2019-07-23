@@ -6,6 +6,10 @@ gen_FOLDERS = $(DESTDIR)/bin \
               $(DESTDIR)/bin/tools \
               $(DESTDIR)/include \
               $(DESTDIR)/lib \
+              $(DESTDIR)/lib/plugins \
+              $(DESTDIR)/lib/plugins/energy \
+              $(DESTDIR)/lib/plugins/models \
+              $(DESTDIR)/lib/plugins/policies \
               $(DESTDIR)/sbin
 
 etc_FOLDERS = $(ETCDIR) \
@@ -40,6 +44,7 @@ announce:
 	  echo "====================================";
 
 install: announce
+	@ mkdir -m 0775 -p $(DESTDIR) 
 	@ mkdir -m 0775 -p $(gen_FOLDERS) 
 
 etc.install: announce conf.finstall modl.finstall serv.finstall slur.finstall;
