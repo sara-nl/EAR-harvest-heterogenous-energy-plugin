@@ -1,4 +1,6 @@
 ## Unreleased
+- Merged with new policies in ear.conf
+- Power policies loaded with plugins 
 - Power models loaded with plugins (first prototype). dir_plug included to be used with plugins
 - The energy reading system now works through plugins. (5bf9dddcbe0d815cc9bd9a39ccc296cf1c29bfb9)
 - eargm,earlib,daemon warnings fixed with -Wall and gcc 8

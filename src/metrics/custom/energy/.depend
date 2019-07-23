@@ -1,0 +1,57 @@
+ipmi_ibm.o: ipmi_ibm.c /usr/include/stdc-predef.h ../../../common/includes.h \
+ ../../../common/time.h ../../../common/types/generic.h ../../../common/user.h \
+ ../../../common/sizes.h ../../../common/states.h \
+ ../../../common/types/configuration/cluster_conf.h ../../../common/config.h \
+ ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_install.h \
+ ../../../common/types/configuration/policy_conf.h \
+ ../../../common/types/configuration/node_conf.h \
+ ../../../common/string_enhanced.h ../../../common/types/types.h \
+ ../../../common/types/log.h ../../../common/types/job.h \
+ ../../../common/types/loop.h ../../../common/types/signature.h \
+ ../../../common/types/daemon_log.h ../../../common/types/application.h \
+ ../../../common/types/power_signature.h ../../../common/types/periodic_metric.h \
+ ../../../common/types/periodic_aggregation.h ../../../common/types/services.h \
+ ../../../common/output/verbose.h ../../../common/output/error.h \
+ ../../../common/output/timestamp.h ../../../common/output/output_conf.h \
+ ../../../common/output/debug.h ../../../metrics/api/energy.h \
+ ../../../metrics/custom/hardware_info.h ../../../common/file.h \
+ ../../../metrics/common/cpuid.h
+ipmi_node_manager.o: ipmi_node_manager.c /usr/include/stdc-predef.h \
+ ../../../common/includes.h ../../../common/time.h \
+ ../../../common/types/generic.h ../../../common/user.h ../../../common/sizes.h \
+ ../../../common/states.h ../../../common/types/configuration/cluster_conf.h \
+ ../../../common/config.h ../../../common/config/config_def.h \
+ ../../../common/config/config_dev.h ../../../common/config/config_install.h \
+ ../../../common/types/configuration/policy_conf.h \
+ ../../../common/types/configuration/node_conf.h \
+ ../../../common/string_enhanced.h ../../../common/types/types.h \
+ ../../../common/types/log.h ../../../common/types/job.h \
+ ../../../common/types/loop.h ../../../common/types/signature.h \
+ ../../../common/types/daemon_log.h ../../../common/types/application.h \
+ ../../../common/types/power_signature.h ../../../common/types/periodic_metric.h \
+ ../../../common/types/periodic_aggregation.h ../../../common/types/services.h \
+ ../../../common/output/verbose.h ../../../common/output/error.h \
+ ../../../common/output/timestamp.h ../../../common/output/output_conf.h \
+ ../../../common/output/debug.h ../../../metrics/api/energy.h \
+ ../../../metrics/custom/hardware_info.h ../../../common/file.h \
+ ../../../metrics/common/cpuid.h
+ipmi_lenovo_sd650.o: ipmi_lenovo_sd650.c /usr/include/stdc-predef.h \
+ ../../../common/includes.h ../../../common/time.h \
+ ../../../common/types/generic.h ../../../common/user.h ../../../common/sizes.h \
+ ../../../common/states.h ../../../common/types/configuration/cluster_conf.h \
+ ../../../common/config.h ../../../common/config/config_def.h \
+ ../../../common/config/config_dev.h ../../../common/config/config_install.h \
+ ../../../common/types/configuration/policy_conf.h \
+ ../../../common/types/configuration/node_conf.h \
+ ../../../common/string_enhanced.h ../../../common/types/types.h \
+ ../../../common/types/log.h ../../../common/types/job.h \
+ ../../../common/types/loop.h ../../../common/types/signature.h \
+ ../../../common/types/daemon_log.h ../../../common/types/application.h \
+ ../../../common/types/power_signature.h ../../../common/types/periodic_metric.h \
+ ../../../common/types/periodic_aggregation.h ../../../common/types/services.h \
+ ../../../common/output/verbose.h ../../../common/output/error.h \
+ ../../../common/output/timestamp.h ../../../common/output/output_conf.h \
+ ../../../common/output/debug.h ../../../metrics/api/energy.h \
+ ../../../metrics/custom/hardware_info.h ../../../common/file.h \
+ ../../../metrics/common/cpuid.h

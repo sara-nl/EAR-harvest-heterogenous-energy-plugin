@@ -53,6 +53,7 @@ void init_policy_conf(policy_conf_t *p)
     p->policy = -1;
 //    p->th = 0;
     p->is_available = 0;
+		p->def_freq=(float)0;
     memset(p->settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 
@@ -62,7 +63,7 @@ void print_policy_conf(policy_conf_t *p)
     int i;
 	if (p==NULL) return;
 
-    verbosen(VCCONF,"---> policy %s p_state %u ", p->name ,p->p_state);
+    verbosen(VCCONF,"---> policy %s p_state %u def_freq %.1f", p->name ,p->p_state,p->def_freq);
     for (i = 0; i < MAX_POLICY_SETTINGS; i++)
         verbosen(VCCONF, " setting%d  %.2lf ", i, p->settings[i]);
     verbosen(VCCONF, "\n");

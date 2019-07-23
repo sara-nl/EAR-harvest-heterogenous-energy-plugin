@@ -114,6 +114,8 @@ static state_t _plug_energy_init(void **c)
 	return EAR_SUCCESS;
 }
 
+state_t plug_energy_dispose(void **c);
+
 state_t plug_energy_init(void **c)
 {
 	state_t s;

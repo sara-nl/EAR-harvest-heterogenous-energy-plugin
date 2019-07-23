@@ -26,6 +26,7 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+
 #ifndef _FILE_H
 #define _FILE_H
 

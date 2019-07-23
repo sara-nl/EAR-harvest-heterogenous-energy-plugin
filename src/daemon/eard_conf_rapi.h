@@ -93,9 +93,10 @@ typedef struct eard_policy_info{
 typedef struct status{
     unsigned int     ip;
     char    ok;
-    eard_policy_info_t    policy_conf[TOTAL_POLICIES];
     status_node_info_t  node;
     app_info_t  app;
+		unsigned int num_policies;
+    eard_policy_info_t    policy_conf[TOTAL_POLICIES];
 } status_t;
 
 #define EAR_RC_NEW_JOB     0

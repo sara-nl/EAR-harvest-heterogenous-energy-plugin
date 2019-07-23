@@ -1,0 +1,5 @@
+pci.o: pci.c /usr/include/stdc-predef.h
+cpuid.o: cpuid.c /usr/include/stdc-predef.h ../../metrics/common/cpuid.h \
+ ../../common/types/generic.h
+msr.o: msr.c /usr/include/stdc-predef.h ../../common/sizes.h \
+ ../../metrics/common/msr.h ../../common/states.h ../../common/types/generic.h

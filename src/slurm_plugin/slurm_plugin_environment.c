@@ -333,3 +333,23 @@ int plug_verbosity_test(spank_t sp, int level)
 
 	return verbosity >= level;
 }
+
+/*
+ *
+ */
+
+char *plug_acav_get(int ac, char *av[], char *string)
+{
+	size_t len = sizeof(string);
+
+	for (i = 0; i < ac; ++i)
+	{
+		if ((strlen(av[i]) > len) && (strncmp(string, av[i], len) == 0))
+		{
+			sprintf(buffer, "%s", &av[i][len]);
+			return buffer;
+		}
+	}
+
+	return NULL;
+}

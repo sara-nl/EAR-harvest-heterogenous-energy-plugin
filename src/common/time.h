@@ -70,8 +70,8 @@ void timestamp_getreal(timestamp *ts);
 /* Converts timestamp_t format to ullong in the selected time units. */
 ullong timestamp_convert(timestamp *ts, ullong time_unit);
 
-/* Computes the difference between two timestamp_t values and converts to the
- * selected time units. */
+/* Computes the difference between two timestamp_t values (ts2-ts1) and converts to the
+ * selected time units. time_unit=1 means ns*/
 ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit);
 
 #endif //EAR_COMMON_TIME_H

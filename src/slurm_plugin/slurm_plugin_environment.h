@@ -33,7 +33,7 @@
 // Verbosity
 #define plug_verbose(sp, level, ...) \
         if (plug_verbosity_test(sp, level) == 1) { \
-                slurm_verbose("EARPLUG, " __VA_ARGS__); \
+                slurm_error("EARPLUG, " __VA_ARGS__); \
         }
 #define plug_error(sp, ...) \
         if (plug_verbosity_test(sp, 1) == 1) { \
@@ -106,6 +106,7 @@ struct variables_s {
 	varnames_t ld_libr;
 	varnames_t node_num;
 	varnames_t version;
+	varnames_t gm_secure;
 }
 	Var __attribute__((weak)) =
 {
@@ -123,8 +124,8 @@ struct variables_s {
 .tag       = { .loc = "SLURM_EOETAG", .ear = "EAR_ENERGY_TAG"       },
 .path_usdb = { .loc = "SLURM_EOUSDB", .ear = "EAR_USER_DB_PATHNAME" },
 .path_trac = { .loc = "SLURM_EOTRAC", .ear = "EAR_PATH_TRACE"       },
-.perf_pen  = {        .ear = "EAR_PERFORMANCE_PENALTY"              },
-.eff_gain  = {        .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"  },
+.perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                     },
+.eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"         },
 .name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME"  },
 .user      = { .rem = "SLURM_ERUSER",        .ear = "" },
 .group     = { .rem = "SLURM_ERGRUP",        .ear = "" },
@@ -136,7 +137,8 @@ struct variables_s {
 .ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"    },
 .ld_libr   = { .rem = "",                    .ear = "" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
-.version   = { .loc = "SLURM_EAR_VERSION",   .ear = "" }
+.version   = { .loc = "SLURM_EAR_VERSION",   .ear = "" },
+.gm_secure = { .loc = "SLURM_EGM_SECURED",   .ear = "" }
 };
 
 /*
@@ -161,20 +163,16 @@ int valenv_agnostic(spank_t sp, char *var, int *val);
 void printenv_agnostic(spank_t sp, char *var);
 
 /*
- * Components
+ * Others
  */
 int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled);
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp);
 
-/*
- * Context
- */
 int plug_context_is(spank_t sp, plug_context_t ctxt);
 
-/*
- * Verbosity
- */
 int plug_verbosity_test(spank_t sp, int level);
+
+char *plug_acav_get(int ac, char *av[], char *string)
 
 #endif //EAR_SLURM_PLUGIN_ENVIRONMENT_H

@@ -129,12 +129,14 @@ int eard_must_exit = 0;
 topology_t node_desc;
 
 
-void update_coefficients(char *
-
-new,
-char *old
-)
+void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 {
+	uint i;
+	fprintf(stderr,"Initializing %u policies\n",num_policies);
+	for (i=0;i<num_policies;i++){
+		plist[i].p_state=frequency_freq_to_pstate((unsigned long)(plist[i].def_freq*1000000));
+		fprintf(stderr,"def pstate for policy %s is %u\n",plist[i].name,plist[i].p_state);
+	}
 }
 
 void init_frequency_list() {
@@ -836,7 +838,6 @@ void signal_handler(int sig) {
 			} else {
 				eard_dyn_conf.nconf = my_node_conf;
 				print_my_node_conf(my_node_conf);
-				update_coefficients(my_node_conf->coef_file, my_original_node_conf.coef_file);
 				copy_my_node_conf(&my_original_node_conf, my_node_conf);
 				set_global_eard_variables();
     			configure_new_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
@@ -952,6 +953,7 @@ void configure_new_values(settings_conf_t *dyn, resched_t *resched, cluster_conf
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
 	dyn->report_loops=cluster->database.report_loops;
+	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 	resched->force_rescheduling=1;
 	copy_ear_lib_conf(&dyn->lib_info,&cluster->earlib);
 	f_monitoring=my_cluster_conf.eard.period_powermon;
@@ -1116,7 +1118,28 @@ int main(int argc, char *argv[]) {
 	}
 	strtok(nodename, ".");
 	verbose(VCONF, "Executed in node name %s", nodename);
+
 	/** CONFIGURATION **/
+        int node_size;
+        state_t s;
+
+        /* We initialize topology */
+        s = hardware_gettopology(&node_desc);
+        node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
+        if (state_fail(s) || node_size <= 0) {
+                error("topology information can't be initialized (%d)", s);
+                _exit(1);
+        }
+
+        /* We initialize frecuency */
+        if (frequency_init(node_size) < 0) {
+                error("frequency information can't be initialized");
+                _exit(1);
+        }
+
+
+
+
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path) == EAR_ERROR) {
 		error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
@@ -1134,6 +1157,7 @@ int main(int argc, char *argv[]) {
 		error(" Error reading cluster configuration\n");
 		_exit(1);
 	} else {
+		compute_default_pstates_per_policy(my_cluster_conf.num_policies, my_cluster_conf.power_policies);
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 		if (my_node_conf == NULL) {
@@ -1154,25 +1178,9 @@ int main(int argc, char *argv[]) {
 	}
 	set_verbose_variables();
 
-	int node_size;
-	state_t s;
-
-	/* We initialize topology */
-	s = hardware_gettopology(&node_desc);
-	node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
-	if (state_fail(s) || node_size <= 0) {
-		error("topology information can't be initialized (%d)", s);
-		_exit(1);
-	}
-
-	/* We initialize frecuency */
-	if (frequency_init(node_size) < 0) {
-		error("frequency information can't be initialized");
-		_exit(1);
-	}
-
 	/** Shared memory is used between EARD and EARL **/
 	init_frequency_list();
+
 	/**** SHARED MEMORY REGIONS ****/
 	/* This area is for shared info */
 	verbose(VCONF, "creating shared memory regions");

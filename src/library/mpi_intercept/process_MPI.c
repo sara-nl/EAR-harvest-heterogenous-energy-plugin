@@ -32,6 +32,7 @@
 
 #include <common/config.h>
 #include <library/mpi_intercept/ear_api.h>
+#include <library/policies/policy.h>
 
 void before_init(){
 }
@@ -40,10 +41,12 @@ void after_init(){
 	ear_init();
 }
 void before_mpi(mpi_call call_type, p2i buf, p2i dest) {
+	policy_mpi_init();
 	ear_mpi_call(call_type,buf,dest);
 }
 
 void after_mpi(mpi_call call_type){
+	policy_mpi_end();
 }
 
 void before_finalize() {
