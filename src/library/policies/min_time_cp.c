@@ -104,8 +104,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		// % of MPI 
 		
 		mpi_perc=(float)cp_total_mpi/(float)my_app->time;
+		printf("Percentage of MPI per signature %f (%f / %lf) \n",mpi_perc,cp_total_mpi,my_app->time);
 		cp_total_mpi=0;
-		printf("Percentage of MPI per signature %f\n",mpi_perc);
 
 		// Default values
 		
@@ -233,7 +233,7 @@ state_t policy_mpi_end(polctx_t *c)
 	unsigned long long time_difff;
 	timestamp cp_end_mpi;
 	timestamp_get(&cp_end_mpi);
-	time_difff=timestamp_diff(&cp_end_mpi,&cp_init_mpi,1);
+	time_difff=timestamp_diff(&cp_end_mpi,&cp_init_mpi,1000000);
 	cp_total_mpi+=time_difff;
 }
 

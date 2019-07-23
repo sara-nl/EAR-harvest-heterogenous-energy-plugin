@@ -22,8 +22,8 @@ all: $(modl_OBJS) $(modl_BINS)
 %.o: %.c 
 	$(MPICC) $(MPICC_FLAGS) -DSHOW_DEBUGS=1 $(CFLAGS) -c $<
 
-%.so: %.o
-	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	
+%.so: %.o $(SRCDIR)/common/libcommon.a
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	$(SRCDIR)/common/libcommon.a
 
 ######## OPTIONS 
 
