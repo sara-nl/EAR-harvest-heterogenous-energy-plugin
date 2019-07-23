@@ -38,14 +38,11 @@
 #include <control/frequency.h>
 #include <common/time.h>
 #include <common/types/projection.h>
+#include <common/math_operations.h>
 #include <daemon/eard_api.h>
 #include <library/policies/policy_api.h>
-#include <common/math_operations.h>
+#include <library/policies/global_comm.h>
 
-typedef unsigned long ulong;
-static timestamp cp_init_mpi;
-static unsigned long long cp_total_mpi;
-static unsigned long cp_iterations=0;
 
 #define SHOW_DEBUGS
 #ifdef SHOW_DEBUGS
@@ -54,11 +51,42 @@ static unsigned long cp_iterations=0;
 #define debug(...) 
 #endif
 
+typedef unsigned long ulong;
+typedef unsigned int uint;
+typedef struct policy_info
+{
+	double mpi_time;
+	double time;
+	ulong freq;
+	uint num_mpis;
+}policy_info_t;
+
+static policy_info_t *cp_info;
+static policy_info_t cp_my_info;
+static MPI_Request cp_req;
+static int cp_num_nodes;
+static int cp_rank;
+static uint cp_num_mpis=0;
+static uint cp_waiting=0;
+static timestamp cp_init_mpi;
+static unsigned long long cp_total_mpi;
+static ulong cp_iterations=0;
+static char cp_node[128];
+static int in_mpi_call=0;
+
 state_t policy_init(polctx_t *c)
 {
 	cp_iterations=0;
-	if (c!=NULL) return EAR_SUCCESS;
-	else return EAR_ERROR;
+	if (c==NULL) return EAR_ERROR;
+	PMPI_Comm_size(c->mpi.master_comm,&cp_num_nodes);
+	PMPI_Comm_rank(c->mpi.master_comm,&cp_rank);
+	/* Allocating memory to share info */
+	cp_info=(policy_info_t *)malloc(sizeof(policy_info_t)*cp_num_nodes);
+	if (cp_info==NULL) return EAR_ERROR;
+	memset(cp_info,0,sizeof(policy_info_t)*cp_num_nodes);
+	gethostname(cp_node,sizeof(cp_node));
+	strtok(cp_node,".");
+	return EAR_SUCCESS;
 }
 
 
@@ -66,6 +94,7 @@ state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
 {
 		cp_total_mpi=0;
 		cp_iterations=0;
+		cp_num_mpis=0;
 		if (c!=NULL){ 
 			projection_reset(c->num_pstates);
 			return EAR_SUCCESS;
@@ -73,6 +102,17 @@ state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
 			return EAR_ERROR;
 		}
 		
+}
+
+void share_with_all(MPI_Comm comm,double mpi_time,double iter_time, ulong f,uint num_mpis)
+{
+	cp_my_info.mpi_time=mpi_time;
+	cp_my_info.time=iter_time;
+	cp_my_info.freq=f;
+	cp_my_info.num_mpis=num_mpis;
+	ishare_global_info(comm,(char *)&cp_my_info,sizeof(policy_info_t),
+		(char *)cp_info,sizeof(policy_info_t),&cp_req);
+	cp_waiting=1;
 }
 
 state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
@@ -113,15 +153,15 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// % of MPI 
 		
-		debug("cp_total_mpi %lu cp_iterations %lu time %lf \n",cp_total_mpi,cp_iterations,my_app->time);
 		mpi_per_iter=(double)cp_total_mpi/(double)cp_iterations;
 		mpi_per_iter=mpi_per_iter/1000000000.0; // secs
-		mpi_perc=(mpi_per_iter/my_app->time)*100.0;
-		debug("Percentage of MPI per signature %lf\n",mpi_perc);
+
+		share_with_all(c->mpi.master_comm,mpi_per_iter,my_app->time,*(c->ear_frequency),cp_num_mpis/cp_iterations);
 
 		// start again counting
 		cp_iterations=0;
 		cp_total_mpi=0;
+		cp_num_mpis=0;
 
 		// Default values
 		
@@ -133,7 +173,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		curr_freq=*(c->ear_frequency);
     curr_pstate = frequency_freq_to_pstate(curr_freq);
 		
-		debug(" curr_freq %lu def_freq %lu\n",curr_freq,def_freq);
 
     // If is not the default P_STATE selected in the environment, a projection
     // is made for the reference P_STATE in case the projections were available.
@@ -172,7 +211,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		while(try_next && (i >= min_pstate))
 		{
-			debug("Checking from %d to %d\n",curr_pstate,i);
 			if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 			{
 				st=project_power(my_app,curr_pstate,i,&power_proj);
@@ -241,9 +279,29 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   return EAR_SUCCESS;
 }
 
+static void show_shared_info()
+{
+	int i;
+	double perc_mpi,avg_time_mpi;
+	for (i=0;i<cp_num_nodes;i++){
+		perc_mpi=(cp_info[i].mpi_time/cp_info[i].time)*100.0;
+		avg_time_mpi=cp_info[i].mpi_time/(double)cp_info[i].num_mpis;
+		debug("Node %s-%d mpi_time %.3lf iter time %.3lf freq %lu num_mpis %u\n",
+		cp_node,i,cp_info[i].mpi_time,cp_info[i].time,cp_info[i].freq,cp_info[i].num_mpis);
+		debug("Percentage mpi %.2lf total mpis avg time per mpi %.5lf\n",
+		perc_mpi,avg_time_mpi);					
+	}
+}
+
 state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
 	cp_iterations++;
+	if (cp_waiting){
+		if (is_info_ready(&cp_req)==EAR_SUCCESS){
+			cp_waiting=0;
+			show_shared_info();
+		}
+	}
 }
 state_t policy_mpi_init(polctx_t *c)
 {
@@ -256,5 +314,6 @@ state_t policy_mpi_end(polctx_t *c)
 	timestamp_get(&cp_end_mpi);
 	time_difff=timestamp_diff(&cp_end_mpi,&cp_init_mpi,1);
 	cp_total_mpi+=time_difff;
+	cp_num_mpis++;
 }
 
