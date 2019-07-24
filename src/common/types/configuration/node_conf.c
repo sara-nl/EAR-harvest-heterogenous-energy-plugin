@@ -139,12 +139,9 @@ void copy_my_node_conf(my_node_conf_t *dest,my_node_conf_t *src)
 void print_node_conf(node_conf_t *my_node_conf)
 {
     int i;
-    verbose(VCCONF,"-->cpus %u island %u def_file: %s\n", my_node_conf->cpus, my_node_conf->island, my_node_conf->coef_file);
+    verbose(VCCONF,"-->cpus %u def_file: %s\n", my_node_conf->cpus, my_node_conf->coef_file);
     for (i = 0; i < my_node_conf->range_count; i++)
         verbose(VCCONF,"---->prefix: %s\tstart: %u\tend: %u\n", my_node_conf->range[i].prefix, my_node_conf->range[i].start, my_node_conf->range[i].end);
-    for (i=0;i<my_node_conf->num_special_node_conf;i++){
-        print_policy_conf(&my_node_conf->special_node_conf[i]);
-    }   
 }
 
 void print_my_node_conf(my_node_conf_t *my_node_conf)
