@@ -66,11 +66,7 @@ typedef struct node_conf
 	node_range_t *range;
 	uint range_count;
 	uint cpus;
-	uint island;	
-	uint num_special_node_conf;
-	policy_conf_t *special_node_conf;
 	char *coef_file;
-	ulong db_ip;
 } node_conf_t;
 
 typedef struct my_node_conf
