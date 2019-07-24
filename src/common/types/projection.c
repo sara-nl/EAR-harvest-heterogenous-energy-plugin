@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <dlfcn.h>
 
 #include <common/config.h>
@@ -77,9 +78,10 @@ state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 	char basic_path[SZ_PATH_INCOMPLETE];
 	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
 	state_t st;
+
 	if ((obj_path == NULL) || (user_type != AUTHORIZED))
 	{
-		if (strcmp(data->obj_power_model,"default") || (data->obj_power_model==NULL)){
+		if ((strcmp(data->obj_power_model,"default")==0) || (data->obj_power_model==NULL)){
 			sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
 		}else if (data->obj_power_model!=NULL){
 			sprintf(basic_path, "%s/models/%s.so", data->dir_plug,data->obj_power_model);
