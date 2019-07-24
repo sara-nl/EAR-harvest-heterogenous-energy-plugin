@@ -44,12 +44,18 @@
 #include <library/policies/global_comm.h>
 
 
-#define SHOW_DEBUGS
+//#define SHOW_DEBUGS
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
 #else
 #define debug(...) 
 #endif
+
+#define MIN_TIME_TO_CHANGE_FREQ		0.001
+#define NEW_FREQ	1
+#define MIN_DIFERENCE 	10.0
+#define MIN_PERC				10.0
+#define MAX_PERC_CALLS 	0.25
 
 typedef unsigned long ulong;
 typedef unsigned int uint;
@@ -68,11 +74,16 @@ static int cp_num_nodes;
 static int cp_rank;
 static uint cp_num_mpis=0;
 static uint cp_waiting=0;
+static uint cp_mpis_per_iter=0;
 static timestamp cp_init_mpi;
 static unsigned long long cp_total_mpi;
 static ulong cp_iterations=0;
 static char cp_node[128];
 static int in_mpi_call=0;
+static int cp_unbalanced;
+static ulong cp_mpi_freq;
+static uint cp_mpis_in_this_iter=0;
+static uint cp_limit=0;
 
 state_t policy_init(polctx_t *c)
 {
@@ -95,6 +106,8 @@ state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
 		cp_total_mpi=0;
 		cp_iterations=0;
 		cp_num_mpis=0;
+		cp_mpis_per_iter=0;
+		cp_limit=0;
 		if (c!=NULL){ 
 			projection_reset(c->num_pstates);
 			return EAR_SUCCESS;
@@ -155,6 +168,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		
 		mpi_per_iter=(double)cp_total_mpi/(double)cp_iterations;
 		mpi_per_iter=mpi_per_iter/1000000000.0; // secs
+		cp_mpis_per_iter=cp_num_mpis/cp_iterations;
 
 		share_with_all(c->mpi.master_comm,mpi_per_iter,my_app->time,*(c->ear_frequency),cp_num_mpis/cp_iterations);
 
@@ -283,6 +297,7 @@ static void show_shared_info()
 {
 	int i;
 	double perc_mpi,avg_time_mpi;
+	int cp;
 	for (i=0;i<cp_num_nodes;i++){
 		perc_mpi=(cp_info[i].mpi_time/cp_info[i].time)*100.0;
 		avg_time_mpi=cp_info[i].mpi_time/(double)cp_info[i].num_mpis;
@@ -293,18 +308,50 @@ static void show_shared_info()
 	}
 }
 
+static int compute_balance()
+{
+	int i;
+	int unbalance=0;
+	int cp=0;
+	double perc_mpi,avg_time_mpi;
+	for (i=1;i<cp_num_nodes;i++){
+		if (cp_info[i].mpi_time<cp_info[cp].mpi_time) cp=i;
+	}
+	/* If my node is the critical path, I will not reduce my freq */
+	if (cp_rank==cp) return 0;
+	perc_mpi=(cp_info[cp_rank].mpi_time/cp_info[cp_rank].time)*100.0;
+	avg_time_mpi=cp_info[cp_rank].mpi_time/(double)cp_info[cp_rank].num_mpis;
+	if (perc_mpi>	MIN_PERC) unbalance=1;
+	if (avg_time_mpi<MIN_TIME_TO_CHANGE_FREQ) unbalance=0;
+	return unbalance;
+}
 state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
 	cp_iterations++;
+	cp_mpis_in_this_iter=0;
 	if (cp_waiting){
 		if (is_info_ready(&cp_req)==EAR_SUCCESS){
 			cp_waiting=0;
-			show_shared_info();
+			//show_shared_info();
+			cp_unbalanced=compute_balance();
+			if (cp_unbalanced){
+				int new_pstate=frequency_freq_to_pstate(*(c->ear_frequency));
+				new_pstate=new_pstate+NEW_FREQ;
+				cp_mpi_freq=frequency_pstate_to_freq(new_pstate);
+				cp_limit=(uint)((double)cp_info[cp_rank].num_mpis*MAX_PERC_CALLS);
+				debug("reducing freq for node %s in mpi calls max %d\n",cp_node,cp_limit);
+			}
 		}
 	}
 }
+static int changed=0;
 state_t policy_mpi_init(polctx_t *c)
 {
+	cp_mpis_in_this_iter++;
+	if ((cp_unbalanced) && (cp_mpis_in_this_iter<cp_limit)){ 
+		changed=1;
+		eards_change_freq(cp_mpi_freq);
+	}
 	timestamp_get(&cp_init_mpi);	
 }
 state_t policy_mpi_end(polctx_t *c)
@@ -315,5 +362,9 @@ state_t policy_mpi_end(polctx_t *c)
 	time_difff=timestamp_diff(&cp_end_mpi,&cp_init_mpi,1);
 	cp_total_mpi+=time_difff;
 	cp_num_mpis++;
+	if (changed){ 
+		eards_change_freq(*(c->ear_frequency));
+		changed=0;
+	}
 }
 
