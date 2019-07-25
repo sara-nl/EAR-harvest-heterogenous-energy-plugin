@@ -1,4 +1,5 @@
 ## Unreleased
+- New policies and power models included for testing
 - Merged with new policies in ear.conf
 - Power policies loaded with plugins 
 - Power models loaded with plugins (first prototype). dir_plug included to be used with plugins

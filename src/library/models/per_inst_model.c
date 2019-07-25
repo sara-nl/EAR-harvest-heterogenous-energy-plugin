@@ -29,13 +29,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <common/config.h>
 #include <common/states.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 #include <control/frequency.h>
 
 #include <library/models/models_api.h>
+
+
+#define SHOW_DEBUGS 1
+#ifdef SHOW_DEBUGS
+#define debug(...) fprintf(stderr, __VA_ARGS__); 
+#else
+#define debug(...) 
+#endif
 
 
 static coefficient_t **coefficients;
@@ -83,6 +90,8 @@ state_t model_init(char *etc,char *tmp,uint pstates)
   char coeff_file_fn[128];
   int begin_pstate, end_pstate;
   int i, ref;
+
+	debug("Using vector model\n");
 
 	num_pstates=pstates;
 
@@ -161,6 +170,8 @@ state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 	project_time(sign,from,min(MAX_FREQ_AVX2,to),&ptime_avx2);
 	project_time(sign,from,to,&ptime_basic);
 	*ptime=ptime_avx512*perc_avx512(sign)+ptime_avx2*perc_avx2(sign)+ptime_basic*perc_basic(sign);
+	debug("project_time:avx512 %.3lf avx2 %.3lf basic %.3lf\n",perc_avx512(sign),perc_avx2(sign),perc_basic(sign));
+	return EAR_SUCCESS;
 }
 
 static state_t project_power(signature_t *sign, ulong from,ulong to,double *ppower)
@@ -187,6 +198,8 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 	project_power(sign,from,min(MAX_FREQ_AVX2,to),&ppower_avx2);
 	project_power(sign,from,to,&ppower_basic);
 	*ppower=ppower_avx512*perc_avx512(sign)+ppower_avx2*perc_avx2(sign)+ppower_basic*perc_basic(sign);
+	debug("project_power:avx512 %.3lf avx2 %.3lf basic %.3lf\n",perc_avx512(sign),perc_avx2(sign),perc_basic(sign));
+	return EAR_SUCCESS;
 }
 
 state_t model_projection_available(ulong from,ulong to)
