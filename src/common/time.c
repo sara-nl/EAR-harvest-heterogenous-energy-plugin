@@ -75,12 +75,3 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 
 	return stamp;
 }
-
-int main(int argc, char *argv[])
-{
-	timestamp_t
-	ullong diff;
-
-	timestamp_getfast(&t1);
-	fus = timestamp_diff(&ts2, &ts1, TIME_USECS);
-}
