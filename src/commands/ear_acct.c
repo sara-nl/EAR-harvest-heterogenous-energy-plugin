@@ -801,6 +801,8 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
         exit(1);
     }
 
+    set_signature_simple(my_conf.database.report_sig_detail);
+
     char subquery[256];
     char query[512];
     

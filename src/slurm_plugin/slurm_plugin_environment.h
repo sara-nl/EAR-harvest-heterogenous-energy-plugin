@@ -163,20 +163,16 @@ int valenv_agnostic(spank_t sp, char *var, int *val);
 void printenv_agnostic(spank_t sp, char *var);
 
 /*
- * Components
+ * Others
  */
 int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled);
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp);
 
-/*
- * Context
- */
 int plug_context_is(spank_t sp, plug_context_t ctxt);
 
-/*
- * Verbosity
- */
 int plug_verbosity_test(spank_t sp, int level);
+
+char *plug_acav_get(int ac, char *av[], char *string)
 
 #endif //EAR_SLURM_PLUGIN_ENVIRONMENT_H

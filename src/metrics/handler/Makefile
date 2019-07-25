@@ -16,6 +16,8 @@ all: $(find_OBJS)
 
 install: ;
 
+%.install: ;
+
 clean: rclean;
 
 ######## DEPENDENCIES
