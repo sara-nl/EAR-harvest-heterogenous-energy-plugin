@@ -343,6 +343,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 			}
 		}
 	}
+	return EAR_SUCCESS;
 }
 static int changed=0;
 state_t policy_mpi_init(polctx_t *c)
@@ -353,6 +354,7 @@ state_t policy_mpi_init(polctx_t *c)
 		eards_change_freq(cp_mpi_freq);
 	}
 	timestamp_get(&cp_init_mpi);	
+	return EAR_SUCCESS;
 }
 state_t policy_mpi_end(polctx_t *c)
 {
@@ -366,5 +368,6 @@ state_t policy_mpi_end(polctx_t *c)
 		eards_change_freq(*(c->ear_frequency));
 		changed=0;
 	}
+	return EAR_SUCCESS;
 }
 

@@ -173,6 +173,6 @@ int plug_context_is(spank_t sp, plug_context_t ctxt);
 
 int plug_verbosity_test(spank_t sp, int level);
 
-char *plug_acav_get(int ac, char *av[], char *string)
+char *plug_acav_get(int ac, char *av[], char *string);
 
 #endif //EAR_SLURM_PLUGIN_ENVIRONMENT_H
