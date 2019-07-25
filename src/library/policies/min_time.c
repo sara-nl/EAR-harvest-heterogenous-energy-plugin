@@ -134,7 +134,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				best_pstate=curr_pstate;
     }
 
-		projection_set(best_pstate,time_ref,power_ref);
 
 	// ref=1 is nominal 0=turbo, we are not using it
 
