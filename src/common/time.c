@@ -76,4 +76,3 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 
 	return stamp;
 }
-

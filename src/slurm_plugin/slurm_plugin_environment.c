@@ -340,7 +340,7 @@ int plug_verbosity_test(spank_t sp, int level)
 
 char *plug_acav_get(int ac, char *av[], char *string)
 {
-	size_t len = sizeof(string);
+	size_t len = strlen(string);
 	int i;
 
 	for (i = 0; i < ac; ++i)

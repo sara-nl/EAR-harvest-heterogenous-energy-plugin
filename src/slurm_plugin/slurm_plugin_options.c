@@ -94,7 +94,7 @@ static int _opt_register_mpi(spank_t sp, int ac, char **av)
 	cop = sprintf(opt_opt, "default,");
 	pop = &opt_opt[cop];
 
-	if ((pav = plug_acav_get(ac, av, "prefix="))) {
+	if ((pav = plug_acav_get(ac, av, "prefix=")) == NULL) {
 		return ESPANK_SUCCESS;
 	}
 
@@ -102,14 +102,14 @@ static int _opt_register_mpi(spank_t sp, int ac, char **av)
 
 	// Initilizing folder scanning
 	s = folder_open(&folder, buffer);
-
+	
 	if (state_fail(s)) {
 		return ESPANK_ERROR;
 	}
 
 	while ((file = folder_getnext(&folder, "libear.", ".so")))
 	{
-		cop = sprintf(p, "%s,", file);
+		cop = sprintf(pop, "%s,", file);
 		pop = &pop[cop];
 	}
 
@@ -138,7 +138,7 @@ static int _opt_register_pol(spank_t sp, int ac, char **av)
 	cop = sprintf(opt_opt, "default,");
 	pop = &opt_opt[cop];
 
-	if ((pav = plug_acav_get(ac, av, "prefix="))) {
+	if ((pav = plug_acav_get(ac, av, "prefix=")) == NULL) {
 
 		return ESPANK_SUCCESS;
 	}
@@ -154,7 +154,7 @@ static int _opt_register_pol(spank_t sp, int ac, char **av)
 
 	while ((file = folder_getnext(&folder, NULL, ".so")))
 	{
-		cop = sprintf(p, "%s,", file);
+		cop = sprintf(pop, "%s,", file);
 		pop = &pop[cop];
 	}
 
