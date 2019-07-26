@@ -88,6 +88,33 @@ static state_t pst;
 extern uint check_periodic_mode;
 #endif
 
+
+#define SET_VARIABLES() \
+      CPI = loop_signature.signature.CPI; \
+      GBS = loop_signature.signature.GBS; \
+      POWER = loop_signature.signature.DC_power; \
+      TPI = loop_signature.signature.TPI; \
+      TIME = loop_signature.signature.time; \
+      loop_signature.signature.def_f=prev_f; \
+      VI=metrics_vec_inst(&loop_signature.signature); \
+      VPI=(double)VI/(double)loop_signature.signature.instructions; \
+      ENERGY = TIME * POWER; \
+      EDP = ENERGY * TIME;
+
+
+
+#define  REPORT_TRACES() \
+      traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI); \
+      traces_frequency(ear_my_rank, my_id, policy_freq); \
+      traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
+
+#define VERBOSE_SIG() \
+      verbose(1,"EAR(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
+      verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)", CPI, GBS, POWER, TIME, ENERGY, EDP);
+
+
+
+
 /** This funcion must be policy dependent */
 ulong select_near_freq(ulong avg)
 {
@@ -408,18 +435,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				check_dynais_off(mpi_calls_iter,period,level,event);
 			}
 			current_loop_id = event;
-			CPI = loop_signature.signature.CPI;
-			GBS = loop_signature.signature.GBS;
-			POWER = loop_signature.signature.DC_power;
-			TPI = loop_signature.signature.TPI;
-			TIME = loop_signature.signature.time;
-			ENERGY = TIME * POWER;
-			EDP = ENERGY * TIME;
-			VI=metrics_vec_inst(&loop_signature.signature);
-			VPI=(double)VI/(double)loop_signature.signature.instructions;
+
+			SET_VARIABLES();
 			begin_iter = iterations;
 
-			loop_signature.signature.def_f=prev_f;
 			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
 			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
 			sig_ready[curr_pstate]=1;
@@ -451,14 +470,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			debug("signature_copy");
 			signature_copy(&loop.signature, &loop_signature.signature);
 			/* VERBOSE */
-			verbose(1,"EAR(%s)at %lu: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period, level,iterations);
-			verbose(1,"\tAppSig-POL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(Freq selected %lu in %s)",
-			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
-
-			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
-			traces_frequency(ear_my_rank, my_id, policy_freq);
-			traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
-			report_loop_signature(iterations,&loop,&loop_signature.job);
+			VERBOSE_SIG();
+			REPORT_TRACES();
 			/* END VERBOSE */
 			break;
 		case SIGNATURE_STABLE:
@@ -475,27 +488,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			/*print_loop_signature("signature refreshed", &loop_signature.signature);*/
 
-			CPI = loop_signature.signature.CPI;
-			GBS = loop_signature.signature.GBS;
-			POWER = loop_signature.signature.DC_power;
-			TPI = loop_signature.signature.TPI;
-			TIME = loop_signature.signature.time;
-			loop_signature.signature.def_f=prev_f;
-			VI=metrics_vec_inst(&loop_signature.signature);
-			VPI=(double)VI/(double)loop_signature.signature.instructions;
+			SET_VARIABLES();
 
-			ENERGY = TIME * POWER;
-			EDP = ENERGY * TIME;
 
 			signature_copy(&loop.signature, &loop_signature.signature);
 			report_loop_signature(iterations,&loop,&loop_signature.job);
 			/* VERBOSE */
-			traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
-			traces_frequency(ear_my_rank, my_id, policy_freq);
-			traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
-			verbose(1,"EAR(%s)at %lu: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f, event, period,level, iterations);
-			verbose(1,"\tAppSig-VAL (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)(New Freq %lu in %s)",
-			CPI, GBS, POWER, TIME, ENERGY, EDP, policy_freq,application.node_id);
+			VERBOSE_SIG();
+			REPORT_TRACES();
 			/* END VERBOSE */
 
 			

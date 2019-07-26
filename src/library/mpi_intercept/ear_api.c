@@ -397,7 +397,8 @@ void ear_init()
 	init_power_policy(system_conf,resched_conf);
 	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
 
-
+	EAR_default_frequency=system_conf->def_freq;
+	EAR_default_pstate=system_conf->def_p_state;
 
 	strcpy(application.job.policy,system_conf->policy_name);
 	strcpy(application.job.app_id, ear_app_name);
@@ -406,6 +407,7 @@ void ear_init()
 	application.signature.def_f=application.job.def_f = EAR_default_frequency;
 	application.job.procs = my_size;
 	application.job.th =system_conf->settings[0];
+	
 
 	// Copying static application info into the loop info
 	memcpy(&loop_signature, &application, sizeof(application_t));
