@@ -880,6 +880,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
           token = strtok(NULL, " ");
           conf->islands[conf->num_islands].max_power_cap=(double)atoi(token);
         }
+				else if (!strcmp(token, "POWER_CAP_TYPE")){
+          token = strtok(NULL, " ");
+					strclean(token, '\n');
+          remove_chars(token, ' ');
+          strcpy(conf->islands[conf->num_islands].power_cap_type,token);
+        }
 				else if (!strcmp(token, "DBIP"))
 				{
 					token = strtok(NULL, " ");

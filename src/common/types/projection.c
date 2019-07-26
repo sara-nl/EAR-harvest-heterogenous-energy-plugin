@@ -79,6 +79,8 @@ state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
 	state_t st;
 
+	if (data->obj_power_model!=NULL) debug("obj_power_model defined with %s\n",data->obj_power_model);
+	if (data->obj_power_model== NULL) debug("obj_power_model NULL\n");
 	if ((obj_path == NULL) || (user_type != AUTHORIZED))
 	{
 		if ((strcmp(data->obj_power_model,"default")==0) || (data->obj_power_model==NULL)){

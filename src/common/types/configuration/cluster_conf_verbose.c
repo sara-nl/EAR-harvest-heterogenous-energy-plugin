@@ -73,7 +73,7 @@ void print_database_conf(db_conf_t *conf)
 static void print_islands_conf(node_island_t *conf)
 {
 	verbosen(VCCONF, "Islands configuration\n");
-	verbosen(VCCONF, "--->id: %u (min_power %.0lf, max_power %.0lf,power_cap %.1lf)\n", conf->id,conf->min_sig_power,conf->max_sig_power,conf->max_power_cap);
+	verbosen(VCCONF, "--->id: %u (min_power %.0lf, max_power %.0lf,power_cap %.1lf power_cap_type=%s)\n", conf->id,conf->min_sig_power,conf->max_sig_power,conf->max_power_cap,conf->power_cap_type);
 	verbosen(VCCONF, "--->       (power>%.0lf or temp>%lu are errors)\n", conf->max_error_power,conf->max_temp);
 	int i;
 	for (i = 0; i < conf->num_ranges; i++)
@@ -117,11 +117,15 @@ static void print_earlib_conf(earlib_conf_t *conf)
 		conf->dynais_timeout,conf->lib_period,conf->check_every);
 }
 
+
+
 void print_cluster_conf(cluster_conf_t *conf)
 {
 	char buffer[664];
 	verbosen(VCCONF, "\nDIRECTORIES\n--->DB_pathname: %s\n--->TMP_dir: %s\n--->ETC_dir: %s\n",
 			conf->DB_pathname, conf->install.dir_temp, conf->install.dir_conf);
+	verbosen(VCCONF, "\nPlugins_path: %s\n",conf->install.dir_plug);
+	verbosen(VCCONF, "PLUGINS: Energy %s power_models %s\n",conf->install.obj_ener,conf->install.obj_power_model);
     if (strlen(conf->net_ext) > 1)
     {
     	verbosen(VCCONF, "\nGLOBALS\n--->Verbose: %u\n--->Default_policy: %s\n--->Min_time_perf_acc: %u\n--->Network_extension: %s\n",

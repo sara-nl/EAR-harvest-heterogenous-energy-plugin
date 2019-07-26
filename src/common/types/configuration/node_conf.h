@@ -47,7 +47,7 @@
  * Types
  *
  */
-
+#define SHORT_NAME 64
 #define NODE_PREFIX 64
 #define GENERIC_NODE_NAME 256
 typedef struct node_range
@@ -84,6 +84,7 @@ typedef struct my_node_conf
   double max_error_power;
 	ulong  max_temp;
 	double max_power_cap;
+	char power_cap_type[SHORT_NAME];
 	uint 	use_log;
 }my_node_conf_t;
 
@@ -102,6 +103,7 @@ typedef struct node_island
     double max_error_power;
 		double max_power_cap;
 		ulong  max_temp;
+		char power_cap_type[SHORT_NAME];	
 } node_island_t;
 
 

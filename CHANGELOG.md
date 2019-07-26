@@ -1,4 +1,5 @@
 ## Unreleased
+- power_cap and power_cap_type included in island for power_capping policies
 - New policies and power models included for testing
 - Merged with new policies in ear.conf
 - Power policies loaded with plugins 

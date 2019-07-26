@@ -454,6 +454,16 @@ int eards_ping()
     command.time_code = time(NULL);
     return send_command(&command);
 }
+int eards_set_powercap(unsigned long pc)
+{
+    request_t command;
+  command.node_dist = 0;
+    command.req=EAR_RC_NEW_POWERCAP;
+    command.node_dist = 0;
+    command.time_code = time(NULL);
+    return send_command(&command);
+}
+
 
 int eards_remote_disconnect()
 {
