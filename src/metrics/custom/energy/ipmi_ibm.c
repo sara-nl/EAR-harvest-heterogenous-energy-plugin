@@ -176,6 +176,13 @@ static state_t _energy_dc_read(void *c, edata_t emj)
 	return EAR_SUCCESS;
 }
 
+state_t energy_frequency(void *c, ulong *freq)
+{
+  *freq = 1000000;
+  return EAR_SUCCESS;
+}
+
+
 state_t energy_dc_read(void *c, edata_t emj)
 {
 	state_t s;

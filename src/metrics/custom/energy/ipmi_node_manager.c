@@ -155,13 +155,11 @@ state_t energy_datasize(void *c, size_t *size)
 	return EAR_SUCCESS;
 }
 
-#if 0
 state_t energy_frequency(void *c, ulong *freq)
 {
 	*freq = 1000000;
 	return EAR_SUCCESS;
 }
-#endif
 
 static state_t _energy_dc_read(void *c, edata_t emj)
 {
