@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017
+*       Copyright (C) 2017  
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,45 +15,20 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*
+*	
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*
+*	
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef EAR_ENERGY_H
-#define EAR_ENERGY_H
+#ifndef _API_ENERGY_DATA_H_
+#define _API_ENERGY_DATA_H_
+typedef void * edata_t;
 
-#include <common/includes.h>
-#include <metrics/api/energy_data.h>
-
-typedef struct ehandler {
-	char manufacturer[SZ_NAME_MEDIUM];
-	char product[SZ_NAME_MEDIUM];
-	void *context;
-} ehandler_t;
-
-
-state_t energy_init(cluster_conf_t *conf, ehandler_t *eh);
-
-state_t energy_dispose(ehandler_t *eh);
-
-state_t energy_handler_clean(ehandler_t *eh);
-
-state_t energy_data_length_get(ehandler_t *eh, size_t *size);
-
-state_t energy_data_frequency_get(ehandler_t *eh, ulong *freq_us);
-
-state_t energy_dc_read(ehandler_t *eh, edata_t  energy_mj);
-
-state_t energy_dc_time_read(ehandler_t *eh, edata_t energy_mj, ulong *time_ms);
-
-state_t energy_ac_read(ehandler_t *eh, edata_t energy_mj);
-
-#endif //EAR_ENERGY_H
+#endif

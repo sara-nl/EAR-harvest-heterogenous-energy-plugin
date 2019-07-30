@@ -32,6 +32,7 @@
 
 #include <common/states.h>
 #include <common/types/generic.h>
+#include <metrics/api/energy_data.h>
 
 state_t energy_init(void **c);
 
@@ -41,10 +42,10 @@ state_t energy_getdata_length(void *c, size_t *size);
 
 state_t energy_data_frequency_get(void *c, ulong *freq_us);
 
-state_t energy_dc_read(void *c, ulong *energy_mj);
+state_t energy_dc_read(void *c, edata_t energy_mj);
 
-state_t energy_dc_time_read(void *c, ulong *energy_mj, ulong *time_ms);
+state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms);
 
-state_t energy_ac_read(void *c, ulong *energy_mj);
+state_t energy_ac_read(void *c, edata_t energy_mj);
 
 #endif

@@ -39,9 +39,9 @@ struct energy_op
 	state_t (*dispose)            (void **c);
 	state_t (*data_length_get)    (void *c, size_t *size);
 	state_t (*data_frequency_get) (void *c, ulong *freq);
-	state_t (*dc_read)            (void *c, ulong *emj);
-	state_t (*dc_time_read)       (void *c, ulong *emj, ulong *tms);
-	state_t (*ac_read)            (void *c, ulong *em);
+	state_t (*dc_read)            (void *c, edata_t emj);
+	state_t (*dc_time_read)       (void *c, edata_t emj, ulong *tms);
+	state_t (*ac_read)            (void *c, edata_t em);
 } energy_ops;
 static char energy_manu[SZ_NAME_MEDIUM];
 static char energy_prod[SZ_NAME_MEDIUM];
@@ -235,17 +235,17 @@ state_t energy_data_frequency_get(ehandler_t *eh, ulong *fus)
 	return EAR_SUCCESS;
 }
 
-state_t energy_dc_read(ehandler_t *eh, ulong *emj)
+state_t energy_dc_read(ehandler_t *eh, edata_t emj)
 {
 	preturn (energy_ops.dc_read, eh->context, emj);
 }
 
-state_t energy_dc_time_read(ehandler_t *eh, ulong *emj, ulong *tms)
+state_t energy_dc_time_read(ehandler_t *eh, edata_t emj, ulong *tms)
 {
 	preturn (energy_ops.dc_time_read, eh->context, emj, tms);
 }
 
-state_t energy_ac_read(ehandler_t *eh, ulong *emj)
+state_t energy_ac_read(ehandler_t *eh, edata_t emj)
 {
 	preturn (energy_ops.ac_read, eh->context, emj);
 }
