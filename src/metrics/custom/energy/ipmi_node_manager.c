@@ -149,14 +149,14 @@ state_t energy_dispose(void **c)
 	return EAR_SUCCESS;
 }
 
-state_t energy_getdata_length(void *c, size_t *size)
+state_t energy_datasize(void *c, size_t *size)
 {
 	*size = sizeof(unsigned long);
 	return EAR_SUCCESS;
 }
 
 #if 0
-state_t energy_data_frequency_get(void *c, ulong *freq)
+state_t energy_frequency(void *c, ulong *freq)
 {
 	*freq = 1000000;
 	return EAR_SUCCESS;

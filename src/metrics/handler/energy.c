@@ -51,8 +51,8 @@ const int   energy_nops    = 7;
 const char *energy_names[] = {
 	"energy_init",
 	"energy_dispose",
-	"energy_data_length_get",
-	"energy_data_frequency_get",
+	"energy_datasize",
+	"energy_frequency",
 	"energy_dc_read",
 	"energy_dc_time_read",
 	"energy_ac_read",
@@ -183,12 +183,12 @@ state_t energy_handler_clean(ehandler_t *eh)
 	return EAR_SUCCESS;
 }
 
-state_t energy_data_length_get(ehandler_t *eh, size_t *size)
+state_t energy_datasize(ehandler_t *eh, size_t *size)
 {
 	preturn (energy_ops.data_length_get, eh->context, size);
 }
 
-state_t energy_data_frequency_get(ehandler_t *eh, ulong *fus)
+state_t energy_frequency(ehandler_t *eh, ulong *fus)
 {
 	int intents = 0;
 	timestamp ts1;
