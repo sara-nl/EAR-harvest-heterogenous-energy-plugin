@@ -60,29 +60,29 @@
 #include <library/dynais/dynais_core.h>
 
 // General indexes.
-ushort _levels;
-ushort _window;
-ushort _topmos;
+extern uint _levels;
+extern uint _window;
+extern uint _topmos;
 
 // Circular buffers
-ushort *circ_samps[MAX_LEVELS];
-ushort *circ_zeros[MAX_LEVELS];
-ushort *circ_sizes[MAX_LEVELS];
-ushort *circ_indxs[MAX_LEVELS];
-ushort *circ_accus[MAX_LEVELS];
+extern uint *circ_samps[MAX_LEVELS];
+extern uint *circ_zeros[MAX_LEVELS];
+extern uint *circ_sizes[MAX_LEVELS];
+extern uint *circ_indxs[MAX_LEVELS];
+extern uint *circ_accus[MAX_LEVELS];
 
 // Current and previous data
- short cur_resul[MAX_LEVELS];
-ushort cur_width[MAX_LEVELS];
-ushort cur_index[MAX_LEVELS];
-ushort cur_fight[MAX_LEVELS];
-ushort old_sizes[MAX_LEVELS];
-ushort old_width[MAX_LEVELS];
+extern  int cur_resul[MAX_LEVELS];
+extern uint cur_width[MAX_LEVELS];
+extern uint cur_index[MAX_LEVELS];
+extern uint cur_fight[MAX_LEVELS];
+extern uint old_sizes[MAX_LEVELS];
+extern uint old_width[MAX_LEVELS];
 
 // Static replicas
-__m512i zmmx31; // Ones
-__m512i zmmx30; // 65535
-__m512i zmmx29; // Shifts
+extern __m512i zmmx31; // Ones
+extern __m512i zmmx30; //
+extern __m512i zmmx29; // Shifts
 
 //
 //
@@ -90,18 +90,18 @@ __m512i zmmx29; // Shifts
 //
 //
 
-static int dynais_alloc(ushort **c, size_t o)
+static int dynais_alloc(uint **c, size_t o)
 {
-	ushort *p;
+	uint *p;
 	int i;
 
-	o = sizeof(short) * (_window + o) * _levels;
+	o = sizeof(int) * (_window + o) * _levels;
 
-	if (posix_memalign((void *) &p, sizeof(__m512i), sizeof(short) * (_window + o) * _levels) != 0) {
+	if (posix_memalign((void *) &p, sizeof(__m512i), sizeof(int) * (_window + o) * _levels) != 0) {
 		return -1;
 	}
 
-	memset((void *) p, 0, sizeof(short) * (_window + o) * _levels);
+	memset((void *) p, 0, sizeof(int) * (_window + o) * _levels);
 
 	for (i = 0; i < _levels; ++i) {
 		c[i] = &p[i * (_window + o)];
@@ -110,21 +110,21 @@ static int dynais_alloc(ushort **c, size_t o)
 	return 0;
 }
 
-int dynais_init(ushort window, ushort levels)
+int dynais_init(uint window, uint levels)
 {
 	int i, k;
 
-	unsigned int multiple = window / 32;
-	window = 32 * (multiple + 1);
+	unsigned int multiple = window / 16;
+	window = 16 * (multiple + 1);
 
 	_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
 	_levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
 
 	if (dynais_alloc(circ_samps, 00) != 0) return -1;
 	if (dynais_alloc(circ_sizes, 00) != 0) return -1;
-	if (dynais_alloc(circ_zeros, 32) != 0) return -1;
-	if (dynais_alloc(circ_indxs, 32) != 0) return -1;
-	if (dynais_alloc(circ_accus, 32) != 0) return -1;
+	if (dynais_alloc(circ_zeros, 16) != 0) return -1;
+	if (dynais_alloc(circ_indxs, 16) != 0) return -1;
+	if (dynais_alloc(circ_accus, 16) != 0) return -1;
 
 	// Filling index array
 	for (i = 0; i < levels; ++i) {
@@ -136,11 +136,10 @@ int dynais_init(ushort window, ushort levels)
 	}
 
 	//
-	static ushort shifts_array[32] __attribute__ ((aligned (64))) =
-			{  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
-			   17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 31 };
+	static uint shifts_array[16] __attribute__ ((aligned (64))) =
+			{  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15 };
 
-	zmmx31 = _mm512_set1_epi16(1);
+	zmmx31 = _mm512_set1_epi32(1);
 	//zmmx30 = _mm512_set1_epi16(65535);
 	zmmx29 = _mm512_load_si512((__m512i *) &shifts_array);
 
@@ -163,7 +162,7 @@ int dynais_build_type()
 }
 
 // Returns the highest level.
-static short dynais_hierarchical(ushort sample, ushort size, ushort level)
+static int dynais_hierarchical(uint sample, uint size, uint level)
 {
 	if (level >= _levels) {
 		return level - 1;
@@ -183,11 +182,11 @@ static short dynais_hierarchical(ushort sample, ushort size, ushort level)
 	return level;
 }
 
-short dynais(ushort sample, ushort *size, ushort *govern_level)
+int dynais(uint sample, uint *size, uint *govern_level)
 {
-	short end_loop = 0;
-	short reach;
-	short l, ll;
+	int end_loop = 0;
+	int reach;
+	int l, ll;
 	
 	// Hierarchical algorithm call. The maximum level
 	// reached is returned. All those values were updated
@@ -259,9 +258,9 @@ short dynais(ushort sample, ushort *size, ushort *govern_level)
 	return -end_loop;
 }
 
-ushort dynais_sample_convert(ulong sample)
+uint dynais_sample_convert(ulong sample)
 {
 	uint *p = (uint *) &sample;
 	p[0] = _mm_crc32_u32(p[0], p[1]);
-	return (ushort) p[0];
+	return (uint) p[0];
 }

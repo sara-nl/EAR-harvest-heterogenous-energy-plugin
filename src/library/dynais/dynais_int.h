@@ -51,15 +51,15 @@
 // Functions
 /** Given a sample and its size, returns the state the application is in (in
 *   a loop, in an iteration, etc.). */
-short dynais(ushort sample, ushort *size, ushort *level);
+int dynais(uint sample, uint *size, uint *level);
 
-/** Converts a long sample to short sample. */
-ushort dynais_sample_convert(ulong sample);
+/** Converts a long sample to int sample. */
+uint dynais_sample_convert(ulong sample);
 
 int dynais_build_type();
 
 /** Allocates memory in preparation to use dynais. Returns 0 on success */
-int dynais_init(ushort window, ushort levels);
+int dynais_init(uint window, uint levels);
 
 /** Frees the memory previously allocated. */
 void dynais_dispose();
