@@ -67,6 +67,7 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 	if (ts2->tv_nsec < ts1->tv_nsec) {
 		ts2->tv_sec   = ts2->tv_sec - 1;
 		ts2->tv_nsec += 1000000000;
+		ts2->tv_sec=ts2->tv_sec-1;
 	}
 
 	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);
@@ -74,13 +75,4 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 	stamp /= time_unit;
 
 	return stamp;
-}
-
-int main(int argc, char *argv[])
-{
-	timestamp_t
-	ullong diff;
-
-	timestamp_getfast(&t1);
-	fus = timestamp_diff(&ts2, &ts1, TIME_USECS);
 }

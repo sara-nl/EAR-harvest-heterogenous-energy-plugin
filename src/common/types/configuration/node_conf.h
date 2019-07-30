@@ -66,11 +66,7 @@ typedef struct node_conf
 	node_range_t *range;
 	uint range_count;
 	uint cpus;
-	uint island;	
-	uint num_special_node_conf;
-	policy_conf_t *special_node_conf;
 	char *coef_file;
-	ulong db_ip;
 } node_conf_t;
 
 typedef struct my_node_conf
@@ -87,6 +83,7 @@ typedef struct my_node_conf
   double max_sig_power;
   double max_error_power;
 	ulong  max_temp;
+	double max_power_cap;
 	uint 	use_log;
 }my_node_conf_t;
 
@@ -103,6 +100,7 @@ typedef struct node_island
     double min_sig_power;
     double max_sig_power;
     double max_error_power;
+		double max_power_cap;
 		ulong  max_temp;
 } node_island_t;
 

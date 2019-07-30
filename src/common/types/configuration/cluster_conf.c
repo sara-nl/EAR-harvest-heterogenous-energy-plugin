@@ -242,9 +242,6 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
             n->cpus = my_conf->nodes[i].cpus;
             n->coef_file = my_conf->nodes[i].coef_file;
-            num_spec_nodes = my_conf->nodes[i].num_special_node_conf;
-            //n->policies = my_conf->nodes[i].special_node_conf;
-            memcpy(n->policies, my_conf->nodes[i].special_node_conf, num_spec_nodes * sizeof(policy_conf_t));
 		}
 		i++;
     }
@@ -267,6 +264,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 			n->min_sig_power=my_conf->islands[i].min_sig_power;
 			n->max_error_power=my_conf->islands[i].max_error_power;
 			n->max_temp=my_conf->islands[i].max_temp;
+			n->max_power_cap=my_conf->islands[i].max_power_cap;
 			n->use_log=my_conf->eard.use_log;
 		}
 		i++;
@@ -274,24 +272,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 
 
     //pending checks for policies
-    fprintf(stderr,"Initialzing %u policies for node %s,%u special policies \n",my_conf->num_policies,nodename,
-		num_spec_nodes);
 		memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
-		#if 0
-    for (i = 0; i < my_conf->num_policies; i++)
-    {
-        char found = 0;
-        for (j = 0; j < num_spec_nodes; j++){
-            if (my_conf->power_policies[i].policy == n->policies[j].policy) found = 1;
-				}
-
-        if (!found)
-        {
-            memcpy(&n->policies[num_spec_nodes], &my_conf->power_policies[i], sizeof(policy_conf_t));
-            num_spec_nodes++;
-        }
-    }
-		#endif
 	n->max_pstate=my_conf->eard.max_pstate;
 
 	return n;
@@ -592,6 +573,7 @@ void set_default_island_conf(node_island_t *isl_conf, uint id)
 	isl_conf->max_sig_power=MAX_SIG_POWER;
 	isl_conf->max_error_power=MAX_ERROR_POWER;
 	isl_conf->max_temp=MAX_TEMP;
+	isl_conf->max_power_cap=MAX_POWER_CAP;
 }
 
 void set_default_conf_install(conf_install_t *inst)

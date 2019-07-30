@@ -71,7 +71,7 @@ const char     *polsyms_nam[] = {
 	"policy_new_iteration",
 	"policy_mpi_init",
 	"policy_mpi_end",
-	"policy_configure",
+	"policy_configure"
 };
 polctx_t my_pol_ctx;
 
@@ -133,9 +133,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 		st=polsyms_fun.apply(c, my_sig,freq_set,ready);
   	if (*freq_set != *(c->ear_frequency))
   	{
-    	debug("Changing Frequency to %lu at the beggining of iteration",*freq_set);
     	*(c->ear_frequency) =  eards_change_freq(*freq_set);
-			debug("Changed to %lu\n",*(c->ear_frequency));
 		}
   } else{
 		if (c!=NULL) *freq_set=c->app->def_freq;

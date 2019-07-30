@@ -499,11 +499,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     remove_chars(token, ' ');
 					strcpy(coef_file, token);
 				}
-                else if (!strcmp(token, "ISLAND"))
-                {
-                    token = strtok_r(NULL, "=", &secondary_ptr);
-                    island = atoi(token);
-                }
 
 				//fetches the second half of the pair =
 				token = strtok_r(NULL, "=", &secondary_ptr);
@@ -514,13 +509,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			for (i = 0; i < num_nodes; i++)
 			{
 				conf->nodes[conf->num_nodes+i].cpus = num_cpus;
-				conf->nodes[conf->num_nodes+i].island = island;
 			}
 			if (coef_file != NULL)
 				for (i = 0; i < num_nodes; i++)
 					conf->nodes[conf->num_nodes+i].coef_file = coef_file;
-			conf->num_nodes += num_nodes;
-		}
+				conf->num_nodes += num_nodes;
+		} // NODENAME END
 
 			//EARD conf
 		else if (!strcmp(token, "NODEDAEMONVERBOSE"))
@@ -882,6 +876,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					token = strtok(NULL, " ");
 					conf->islands[conf->num_islands].max_temp=(double)atoi(token);
 				}
+				else if (!strcmp(token, "POWER_CAP")){
+          token = strtok(NULL, " ");
+          conf->islands[conf->num_islands].max_power_cap=(double)atoi(token);
+        }
 				else if (!strcmp(token, "DBIP"))
 				{
 					token = strtok(NULL, " ");
@@ -1146,8 +1144,6 @@ void free_cluster_conf(cluster_conf_t *conf)
 		free(conf->priv_acc[i]);
 	free(conf->priv_acc);
 
-	for (i = 0; i < conf->num_nodes; i++)
-		free(conf->nodes[i].special_node_conf);
 
 	char *prev_file = NULL;
 	for (i = 0; i < conf->num_nodes; i++) {

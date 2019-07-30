@@ -37,12 +37,6 @@
 #include <library/models/models_api.h>
 
 
-static coefficient_t **coefficients;
-static coefficient_t *coefficients_sm;
-static int num_coeffs;
-static uint num_pstates;
-static uint basic_model_init=0;
-
 #define SHOW_DEBUGS 1
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
@@ -50,6 +44,37 @@ static uint basic_model_init=0;
 #define debug(...) 
 #endif
 
+
+static coefficient_t **coefficients;
+static coefficient_t *coefficients_sm;
+static int num_coeffs;
+static uint num_pstates;
+static uint basic_model_init=0;
+
+
+#define MAX_FREQ_AVX512 2300000
+#define MAX_FREQ_AVX2 2900000
+unsigned long  min(unsigned long x,unsigned long y)
+{
+	if (x<y) return x;
+	return y;
+}
+	
+
+static double perc_avx512(signature_t *sign)
+{
+	return (double)(sign->FLOPS[3]+sign->FLOPS[7])/ (double)sign->instructions;	
+}
+static double perc_avx2(signature_t *sign)
+{
+	return (double)(sign->FLOPS[2]+sign->FLOPS[6])/ (double)sign->instructions;	
+}
+static double perc_basic(signature_t *sign)
+{
+	unsigned long long non_avx;
+	non_avx=sign->FLOPS[3]+sign->FLOPS[7]+sign->FLOPS[2]+sign->FLOPS[6];
+	return (double)(sign->instructions-non_avx)/(double)sign->instructions;
+}
 
 static int valid_range(ulong from,ulong to)
 {
@@ -66,7 +91,8 @@ state_t model_init(char *etc,char *tmp,uint pstates)
   int begin_pstate, end_pstate;
   int i, ref;
 
-	debug("Using basic_model\n");
+	debug("Using vector model\n");
+
 	num_pstates=pstates;
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
@@ -116,7 +142,7 @@ double default_project_cpi(signature_t *sign, coefficient_t *coeff)
 		   (coeff->F);
 }
 
-state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
+static state_t project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 {
 	state_t st=EAR_SUCCESS;
 	coefficient_t *coeff;
@@ -137,7 +163,18 @@ state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 	return st;
 }
 
-state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppower)
+state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
+{
+	double ptime_avx512,ptime_avx2,ptime_basic;
+	project_time(sign,from,min(MAX_FREQ_AVX512,to),&ptime_avx512);
+	project_time(sign,from,min(MAX_FREQ_AVX2,to),&ptime_avx2);
+	project_time(sign,from,to,&ptime_basic);
+	*ptime=ptime_avx512*perc_avx512(sign)+ptime_avx2*perc_avx2(sign)+ptime_basic*perc_basic(sign);
+	debug("project_time:avx512 %.3lf avx2 %.3lf basic %.3lf\n",perc_avx512(sign),perc_avx2(sign),perc_basic(sign));
+	return EAR_SUCCESS;
+}
+
+static state_t project_power(signature_t *sign, ulong from,ulong to,double *ppower)
 {
 	state_t st=EAR_SUCCESS;
 	coefficient_t *coeff;
@@ -153,6 +190,16 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 		}
 	}else st=EAR_ERROR;
 	return st;
+}
+state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppower)
+{
+	double ppower_avx512,ppower_avx2,ppower_basic;
+	project_power(sign,from,min(MAX_FREQ_AVX512,to),&ppower_avx512);
+	project_power(sign,from,min(MAX_FREQ_AVX2,to),&ppower_avx2);
+	project_power(sign,from,to,&ppower_basic);
+	*ppower=ppower_avx512*perc_avx512(sign)+ppower_avx2*perc_avx2(sign)+ppower_basic*perc_basic(sign);
+	debug("project_power:avx512 %.3lf avx2 %.3lf basic %.3lf\n",perc_avx512(sign),perc_avx2(sign),perc_basic(sign));
+	return EAR_SUCCESS;
 }
 
 state_t model_projection_available(ulong from,ulong to)
