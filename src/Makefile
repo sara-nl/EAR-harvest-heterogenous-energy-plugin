@@ -7,7 +7,7 @@ ifdef CPUF_BASE
 	COMPONENTS += database_cache
 	endif
 	ifdef PAPI_BASE
-		ifdef IPMI_BASE
+			ifdef IPMI_BASE
 			COMPONENTS += metrics \
                           daemon \
                           commands \

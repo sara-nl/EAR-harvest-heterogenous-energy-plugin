@@ -41,7 +41,7 @@ static uint8_t *bytes_rq = NULL;
 static uint8_t *bytes_rs = NULL;
 static unsigned int send_len;
 
-static state_t _plug_energy_init(void **c)
+static state_t _energy_init(void **c)
 {
 	unsigned int workaround_flags = 0;
 	int ret = 0;
@@ -114,26 +114,24 @@ static state_t _plug_energy_init(void **c)
 	return EAR_SUCCESS;
 }
 
-state_t plug_energy_dispose(void **c);
-
-state_t plug_energy_init(void **c)
+state_t energy_init(void **c)
 {
 	state_t s;
 
 	pthread_mutex_lock(&lock);
-	s = _plug_energy_init(c);
+	s = _energy_init(c);
 	pthread_mutex_unlock(&lock);
 
 	if (state_fail(s))
 	{
 		error("ipmi_node_manager returned error number '%d' ('%s')", s, intern_error_str);
-		plug_energy_dispose(c);
+		energy_dispose(c);
 	}
 
 	return s;
 }
 
-state_t plug_energy_dispose(void **c)
+state_t energy_dispose(void **c)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) *c;
 
@@ -148,13 +146,13 @@ state_t plug_energy_dispose(void **c)
 	return EAR_SUCCESS;
 }
 
-state_t plug_energy_getdata_length(void *c, size_t *size)
+state_t energy_datasize(void *c, size_t *size)
 {
 	*size = sizeof(unsigned long);
 	return EAR_SUCCESS;
 }
 
-static state_t _plug_energy_dc_read(void *c, ulong *emj)
+static state_t _energy_dc_read(void *c, ulong *emj)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	ulong *emjp;
@@ -177,7 +175,7 @@ static state_t _plug_energy_dc_read(void *c, ulong *emj)
 	return EAR_SUCCESS;
 }
 
-state_t plug_energy_dc_read(void *c, ulong *emj)
+state_t energy_dc_read(void *c, ulong *emj)
 {
 	state_t s;
 
@@ -185,7 +183,7 @@ state_t plug_energy_dc_read(void *c, ulong *emj)
 		return EAR_BUSY;
 	}
 
-	s = _plug_energy_dc_read(c, emj);
+	s = _energy_dc_read(c, emj);
 	pthread_mutex_unlock(&lock);
 
 	if (state_fail(s)) {
@@ -195,12 +193,12 @@ state_t plug_energy_dc_read(void *c, ulong *emj)
 	return s;
 }
 
-state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms)
+state_t energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 {
 	timestamp ts;
 	state_t s;
 
-	s = plug_energy_dc_read(c, emj);
+	s = energy_dc_read(c, emj);
 
 	timestamp_getprecise(&ts);
 	*tms = timestamp_convert(&ts, TIME_MSECS);
@@ -208,7 +206,7 @@ state_t plug_energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 	return s;
 }
 
-state_t plug_energy_ac_read(void *c, ulong *emj)
+state_t energy_ac_read(void *c, ulong *emj)
 {
 	*emj = 0;
 	return EAR_SUCCESS;

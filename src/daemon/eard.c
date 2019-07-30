@@ -488,7 +488,7 @@ int eard_node_energy(int must_read) {
 			write(ear_fd_ack[node_energy_req], &ack, sizeof(unsigned long));
 			break;
 		case DATA_SIZE_ENERGY_NODE:
-			energy_data_length_get(&handler_energy, &ack);
+			energy_datasize(&handler_energy, &ack);
 			write(ear_fd_ack[node_energy_req], &ack, sizeof(unsigned long));
 			break;
 		case ENERGY_FREQ:
@@ -1305,7 +1305,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Energy accuracy
-        energy_data_frequency_get(&handler_energy, &energy_freq);
+        energy_frequency(&handler_energy, &energy_freq);
 
 	verbose(VCONF, "energy: detected product '%s'", handler_energy.product);
 	verbose(VCONF, "energy: detected manufacturer '%s'", handler_energy.manufacturer);
