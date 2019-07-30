@@ -48,4 +48,10 @@ state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms);
 
 state_t energy_ac_read(void *c, edata_t energy_mj);
 
+/* Energy units are 1=Joules, 1000=mJ, 1000000=uJ, 1000000000nJ */
+state_t energy_units(uint *units);
+
+state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end);
+
+
 #endif
