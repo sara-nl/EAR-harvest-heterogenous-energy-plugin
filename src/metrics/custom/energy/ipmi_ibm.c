@@ -152,11 +152,12 @@ state_t energy_datasize(void *c, size_t *size)
 	return EAR_SUCCESS;
 }
 
-static state_t _energy_dc_read(void *c, ulong *emj)
+static state_t _energy_dc_read(void *c, edata_t emj)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	ulong *emjp;
 	int rs_len;
+	ulong *pemj=(ulong *)emj;
 
 	if (ipmi_ctx == NULL) {
 		state_return_msg(EAR_ERROR, 0, "context is NULL");
@@ -170,12 +171,12 @@ static state_t _energy_dc_read(void *c, ulong *emj)
 	}
 
 	emjp = (unsigned long *) &bytes_rs[rs_len - 8];
-	*emj = (unsigned long)    be64toh(*emjp);
+	*pemj=(unsigned long)    be64toh(*emjp);
 
 	return EAR_SUCCESS;
 }
 
-state_t energy_dc_read(void *c, ulong *emj)
+state_t energy_dc_read(void *c, edata_t emj)
 {
 	state_t s;
 
@@ -193,7 +194,7 @@ state_t energy_dc_read(void *c, ulong *emj)
 	return s;
 }
 
-state_t energy_dc_time_read(void *c, ulong *emj, ulong *tms)
+state_t energy_dc_time_read(void *c, edata_t emj, ulong *tms)
 {
 	timestamp ts;
 	state_t s;
@@ -206,8 +207,9 @@ state_t energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 	return s;
 }
 
-state_t energy_ac_read(void *c, ulong *emj)
+state_t energy_ac_read(void *c, edata_t emj)
 {
-	*emj = 0;
+	ulong *pemj=(ulong *)emj;
+	*pemj = 0;
 	return EAR_SUCCESS;
 }

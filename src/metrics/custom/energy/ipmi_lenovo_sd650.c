@@ -142,7 +142,7 @@ state_t energy_frequency(void *c, ulong *freq)
 }
 #endif
 
-static state_t _energy_dc_time_read(void *c, ulong *emj, ulong *tms, int get_time)
+static state_t _energy_dc_time_read(void *c, edata_t emj, ulong *tms, int get_time)
 {
 	ipmi_ctx_t ipmi_ctx = (ipmi_ctx_t) c;
 	uint16_t aux_emj = 0;
@@ -150,6 +150,7 @@ static state_t _energy_dc_time_read(void *c, ulong *emj, ulong *tms, int get_tim
 	uint32_t aux_ej = 0;
 	uint32_t aux_ts = 0;
 	int rs_len;
+	ulong *pemj=(ulong *)emj;
 
 	if (ipmi_ctx == NULL) {
 		state_return_msg(EAR_ERROR, 0, "context is NULL");
@@ -169,7 +170,7 @@ static state_t _energy_dc_time_read(void *c, ulong *emj, ulong *tms, int get_tim
 	//
 	aux_ej  = (bytes_rs[7] << 24) | (bytes_rs[6] << 16) | (bytes_rs[5] << 8) | (bytes_rs[4]);
 	aux_emj = (bytes_rs[9] << 8)  | (bytes_rs[8]);
-	*emj = (ulong) aux_ej * 1000  + (ulong) aux_emj;
+	*pemj = (ulong) aux_ej * 1000  + (ulong) aux_emj;
 
 	if (get_time) {
 	aux_ts  = bytes_rs[13] << 24 | bytes_rs[12] << 16 | bytes_rs[11] << 8 | bytes_rs[10];
@@ -180,11 +181,12 @@ static state_t _energy_dc_time_read(void *c, ulong *emj, ulong *tms, int get_tim
 	return EAR_SUCCESS;
 }
 
-state_t energy_dc_read(void *c, ulong *emj)
+state_t energy_dc_read(void *c, edata_t emj)
 {
 	state_t s;
+	ulong *pemj=(ulong *)emj;
 
-	*emj = 0;
+	*pemj = 0;
 
 	if (pthread_mutex_trylock(&lock)) {
 		return EAR_BUSY;
@@ -200,11 +202,12 @@ state_t energy_dc_read(void *c, ulong *emj)
 	return s;
 }
 
-state_t energy_dc_time_read(void *c, ulong *emj, ulong *tms)
+state_t energy_dc_time_read(void *c, edata_t emj, ulong *tms)
 {
 	state_t s;
+	ulong *pemj=(ulong *)emj;
 
-	*emj = 0;
+	*pemj = 0;
 
 	if (pthread_mutex_trylock(&lock)) {
 		return EAR_BUSY;
@@ -220,8 +223,9 @@ state_t energy_dc_time_read(void *c, ulong *emj, ulong *tms)
 	return s;
 }
 
-state_t energy_ac_read(void *c, ulong *emj)
+state_t energy_ac_read(void *c, edata_t emj)
 {
-	*emj = 0;
+	ulong *pemj=(ulong *)emj;
+	*pemj = 0;
 	return EAR_SUCCESS;
 }
