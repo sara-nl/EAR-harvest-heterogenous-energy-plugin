@@ -41,6 +41,7 @@ state_t energy_frequency(ulong *freq_us);
 /** Energy units are 1=Joules, 1000=mJ, 1000000=uJ, 1000000000nJ */
 state_t energy_units(uint *units);
 state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end);
-
+/*+ str must be a valid pointer */
+state_t energy_to_str(char *str,edata_t e);
 
 #endif

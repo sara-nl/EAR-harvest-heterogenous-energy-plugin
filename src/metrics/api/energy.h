@@ -54,5 +54,5 @@ state_t energy_units(uint *units);
 
 state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end);
 
-
+state_t energy_to_str(char *str,edata_t e);
 #endif

@@ -47,6 +47,8 @@
 
 uint8_t power_mon_connected=0; 
 rapl_data_t *RAPL_metrics;
+static uint node_units;
+static size_t node_size;
 
 #define VERBOSE(msg) printf(msg)
 
@@ -137,6 +139,8 @@ int pm_connect(ehandler_t *my_eh)
 	if (rootp){
 		pm_connected_status=energy_init(NULL, my_eh);
 		if (pm_connected_status==EAR_SUCCESS){ 
+			energy_units(my_eh,&node_units);
+			energy_datasize(my_eh,&node_size);
 		#if USE_MSR_RAPL
 			pm_connected_status=init_rapl_msr();
 		#else
@@ -160,22 +164,27 @@ int pm_connect(ehandler_t *my_eh)
 // POWER FUNCTIONS
 void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_power)
 {
-    energy_data_t e_diff;
     double t_diff;
+		unsigned long curr_node_energy;
+		rapl_data_t		dram0,dram1,cpue0,cpue1;
 
     // Compute the difference
-	//print_energy_data(e_begin);
-	//print_energy_data(e_end);
-    diff_energy_data(e_end,e_begin,&e_diff);
-	t_diff=difftime(e_end->sample_time,e_begin->sample_time);
+    dram0=diff_RAPL_energy(e_end->DRAM_energy[0],e_begin->DRAM_energy[0]);
+    dram1=diff_RAPL_energy(e_end->DRAM_energy[1],e_begin->DRAM_energy[1]);
+    cpue0=diff_RAPL_energy(e_end->CPU_energy[0],e_begin->CPU_energy[0]);
+    cpue1=diff_RAPL_energy(e_end->CPU_energy[1],e_begin->CPU_energy[1]);
+		// eh is not needed here
+		energy_accumulated(NULL,&curr_node_energy,e_begin->DC_node_energy,e_end->DC_node_energy);
+		t_diff=difftime(e_end->sample_time,e_begin->sample_time);
+		// Compute the power
     my_power->begin=e_begin->sample_time;
     my_power->end=e_end->sample_time;
     my_power->avg_ac=0;
-    my_power->avg_dc=(double)(e_diff.DC_node_energy)/(t_diff*1000);
-    my_power->avg_dram[0]=(double)(e_diff.DRAM_energy[0])/(t_diff*1000000000);
-    my_power->avg_dram[1]=(double)(e_diff.DRAM_energy[1])/(t_diff*1000000000);
-    my_power->avg_cpu[0]=(double)(e_diff.CPU_energy[0])/(t_diff*1000000000);
-    my_power->avg_cpu[1]=(double)(e_diff.CPU_energy[1])/(t_diff*1000000000);
+    my_power->avg_dc=(double)(curr_node_energy)/(t_diff*node_units);
+    my_power->avg_dram[0]=(double)(dram0)/(t_diff*1000000000);
+    my_power->avg_dram[1]=(double)(dram1)/(t_diff*1000000000);
+    my_power->avg_cpu[0]=(double)(cpue0)/(t_diff*1000000000);
+    my_power->avg_cpu[1]=(double)(cpue1)/(t_diff*1000000000);
 }
 void print_power(power_data_t *my_power)
 {
@@ -206,16 +215,6 @@ void report_periodic_power(int fd,power_data_t *my_power)
 // END POWER
 
 
-node_data_t diff_node_energy(node_data_t end,node_data_t init)
-{
-	node_data_t ret=0;
-	if (end>init){ 
-		ret=end-init;
-	} else{
-		ret=ulong_diff_overflow(init,end);
-	}
-	return ret;
-}
 rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init)
 {
 	rapl_data_t ret=0;
@@ -264,7 +263,7 @@ void end_power_monitoring(ehandler_t *my_eh)
 void null_energy_data(energy_data_t *acc_energy)
 {
 	time(&acc_energy->sample_time);
-	acc_energy->DC_node_energy=0;
+	memset((char *)acc_energy->DC_node_energy,0,node_size);
 	acc_energy->AC_node_energy=0;
 	acc_energy->DRAM_energy[0]=acc_energy->DRAM_energy[1]=acc_energy->CPU_energy[0]=acc_energy->CPU_energy[1]=0;
 }
@@ -272,7 +271,7 @@ void null_energy_data(energy_data_t *acc_energy)
 
 int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 {
-	node_data_t ac=0,dc=0;
+	node_data_t ac=0;
 	
 	time(&acc_energy->sample_time);
 	if (power_mon_connected){
@@ -281,9 +280,7 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 		pm_read_rapl(RAPL_metrics);
 		//read_rapl_msr(RAPL_metrics);
 		//pm_start_rapl();
-		pm_node_dc_energy(my_eh,&dc);
-		//pm_node_ac_energy(&ac); Not implemened yet
-		acc_energy->DC_node_energy=dc;
+		pm_node_dc_energy(my_eh,acc_energy->DC_node_energy);
 		acc_energy->AC_node_energy=ac;
 		acc_energy->DRAM_energy[0]=RAPL_metrics[0];
 		acc_energy->DRAM_energy[1]=RAPL_metrics[1];
@@ -296,35 +293,12 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 }
 
 
-int diff_energy_data(energy_data_t *end,energy_data_t *init,energy_data_t *diff)
-{
-	diff->DC_node_energy=0;diff->DRAM_energy[0]=0;diff->DRAM_energy[1]=0;diff->CPU_energy[0]=0;diff->CPU_energy[1]=0;
-	if (power_mon_connected){
-		if ((init==NULL) || (end==NULL) || (diff==NULL)) return POWER_MON_ERROR;	
-		// overflows must be considered, this is a prototype
-		diff->DC_node_energy=diff_node_energy(end->DC_node_energy,init->DC_node_energy);
-		//diff->AC_node_energy=diff_node_energy(end->AC_node_energy,init->AC_node_energy);
-		diff->AC_node_energy=0;
-		//printf("DRAM end( %#llx %#llx) init (%#llx %#llx)\n",
-		//end->DRAM_energy[0],end->DRAM_energy[1],init->DRAM_energy[0],init->DRAM_energy[1]);
-		//printf("CPU end( %#llx %#llx) init (%#llx %#llx)\n",
-		//end->CPU_energy[0],end->CPU_energy[1],init->CPU_energy[0],init->CPU_energy[1]);
-	 
-		diff->DRAM_energy[0]=diff_RAPL_energy(end->DRAM_energy[0],init->DRAM_energy[0]);
-		diff->DRAM_energy[1]=diff_RAPL_energy(end->DRAM_energy[1],init->DRAM_energy[1]);
-		diff->CPU_energy[0]=diff_RAPL_energy(end->CPU_energy[0],init->CPU_energy[0]);
-		diff->CPU_energy[1]=diff_RAPL_energy(end->CPU_energy[1],init->CPU_energy[1]);
-		return POWER_MON_OK;
-	}else{
-		return POWER_MON_ERROR;
-	}
-}
 
 void copy_energy_data(energy_data_t *dest,energy_data_t *src)
 {
 	dest->sample_time=src->sample_time;
 	dest->AC_node_energy=src->AC_node_energy;
-	dest->DC_node_energy=src->DC_node_energy;
+	memcpy(dest->DC_node_energy,src->DC_node_energy,node_size);
 	dest->DRAM_energy[0]=src->DRAM_energy[0];
 	dest->DRAM_energy[1]=src->DRAM_energy[1];
 	dest->CPU_energy[0]=src->CPU_energy[0];
@@ -334,30 +308,19 @@ void print_energy_data(energy_data_t *e)
 {
     struct tm *current_t;
     char s[64];
+		char nodee[256];
     // We format the end time into localtime and string
     current_t=localtime(&(e->sample_time));
     strftime(s, sizeof(s), "%c", current_t);
+		energy_to_str(NULL,nodee,e->DC_node_energy);	
 
-	printf("time %s DC %lu DRAM (%llu+%llu) CPU (%llu+%llu) \n",s,e->DC_node_energy,e->DRAM_energy[0],e->DRAM_energy[1],
+	printf("time %s DC %s DRAM (%llu+%llu) CPU (%llu+%llu) \n",s,nodee,e->DRAM_energy[0],e->DRAM_energy[1],
 	e->CPU_energy[0],e->CPU_energy[1]);
 }
 
-int print_energy_data_fd_binary(int fd, energy_data_t *ed)
+
+void alloc_energy_data(energy_data_t *e)
 {
-	ssize_t ret;
-	state_t s;
-	ret = write(fd, ed, sizeof(energy_data_t));
-	if (ret == sizeof(energy_data_t)) { s = EAR_SUCCESS; }
-	else { s = EAR_ERROR; }
-	return s;
-	
-}
-int read_energy_data_fd_binary(int fd, energy_data_t *ed)
-{
-	ssize_t ret;
-	state_t s;
-	ret = read(fd, ed, sizeof(energy_data_t));
-	if (ret == sizeof(energy_data_t)) { s = EAR_SUCCESS; }
-	else { s = EAR_ERROR; }
-	return s;
+	e->DC_node_energy=(edata_t*)malloc(node_size);
+	e->AC_node_energy=(edata_t*)malloc(node_size);
 }

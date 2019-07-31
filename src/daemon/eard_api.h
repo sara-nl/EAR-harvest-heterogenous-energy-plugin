@@ -112,7 +112,7 @@ ulong eards_write_event(ear_event_t *event);
 unsigned long eards_node_energy_data_size();
 /** Requests the DC energy to the node. Returns 0 on success, -1 if there's
 *   an error. */
-int eards_node_dc_energy(unsigned long *energy);
+int eards_node_dc_energy(void *energy,ulong datasize);
 /** Requests the dc energy node frequency. Returns -1 if there's an error,
 *   and 10000000 otherwise. */
 ulong eards_node_energy_frequency();

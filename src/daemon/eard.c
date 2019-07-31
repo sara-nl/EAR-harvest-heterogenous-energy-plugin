@@ -62,6 +62,8 @@ pthread_t app_eard_api_th;
 #endif
 
 static ehandler_t handler_energy;
+static ulong node_energy_datasize;
+static edata_t node_energy_data;
 unsigned int power_mon_freq = POWERMON_FREQ;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
@@ -484,8 +486,8 @@ int eard_node_energy(int must_read) {
 			connect_service(node_energy_req, &req.req_data.app);
 			break;
 		case READ_DC_ENERGY:
-			energy_dc_read(&handler_energy, &ack);
-			write(ear_fd_ack[node_energy_req], &ack, sizeof(unsigned long));
+			energy_dc_read(&handler_energy, node_energy_data);
+			write(ear_fd_ack[node_energy_req], node_energy_data, node_energy_datasize);
 			break;
 		case DATA_SIZE_ENERGY_NODE:
 			energy_datasize(&handler_energy, &ack);
@@ -1303,9 +1305,11 @@ int main(int argc, char *argv[]) {
 	if (state_fail(energy_init(&my_cluster_conf, &handler_energy))) {
 		warning("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 	}
+	energy_datasize(&handler_energy,&node_energy_datasize);
+	node_energy_data=(edata_t)malloc(node_energy_datasize);
 
 	// Energy accuracy
-        energy_frequency(&handler_energy, &energy_freq);
+  energy_frequency(&handler_energy, &energy_freq);
 
 	verbose(VCONF, "energy: detected product '%s'", handler_energy.product);
 	verbose(VCONF, "energy: detected manufacturer '%s'", handler_energy.manufacturer);

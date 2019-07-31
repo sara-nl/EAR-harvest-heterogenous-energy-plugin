@@ -46,7 +46,7 @@
 #define POWER_MON_ERROR	EAR_ERROR
 
 typedef long long rapl_data_t;
-typedef unsigned long node_data_t;
+typedef edata_t node_data_t;
 
 typedef struct energy_mon_data{
 	time_t 		sample_time;
@@ -97,8 +97,8 @@ node_data_t diff_node_energy(node_data_t end,node_data_t init);
 rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init);
 
 
-int print_energy_data_fd_binary(int fd, energy_data_t *ed);
-int read_energy_data_fd_binary(int fd, energy_data_t *ed);
 void null_energy_data(energy_data_t *acc_energy);
+
+void alloc_energy_data(energy_data_t *e);
 
 #endif

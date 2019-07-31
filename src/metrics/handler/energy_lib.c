@@ -37,17 +37,19 @@ struct energy_op
 	state_t (*frequency) (ulong *freq);
 	state_t (*units)(uint *units);
 	state_t (*accumulated)(unsigned long *e,edata_t init,edata_t end);
+  state_t (*energy_to_str)      (char *str,edata_t end);
 } energy_ops;
 static char energy_manu[SZ_NAME_MEDIUM];
 static char energy_prod[SZ_NAME_MEDIUM];
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
-const int   energy_nops    = 4;
+const int   energy_nops    = 5;
 const char *energy_names[] = {
 	"energy_datasize",
 	"energy_frequency",
 	"energy_units",
-	"energy_accumulated"
+	"energy_accumulated",
+	"energy_to_str"
 };
 
 state_t energy_init(settings_conf_t *conf)
@@ -116,5 +118,10 @@ state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
 {
 	*e=0;
 	preturn (energy_ops.accumulated,e,init,end );
+}
+
+state_t energy_to_str(char *str,edata_t e)
+{
+  preturn (energy_ops.energy_to_str,str,e );
 }
 

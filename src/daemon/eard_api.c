@@ -868,13 +868,16 @@ ulong eards_node_energy_data_size()
     energy_size=ack;
     return ack;
 }
-int eards_node_dc_energy(ulong *energy)
+int eards_node_dc_energy(void *energy,ulong datasize)
 {
     int com_fd = node_energy_req;
 	ulong ack=EAR_SUCCESS;
 	struct daemon_req req;
 
-	if (!app_connected){*energy=0;return EAR_SUCCESS;}
+	if (!app_connected){
+		memset(energy,0,datasize);
+		return EAR_SUCCESS;
+	}
 
     debug( "asking for node dc energy ");
     req.req_service=READ_DC_ENERGY;
@@ -883,9 +886,9 @@ int eards_node_dc_energy(ulong *energy)
 	if (ear_fd_req[com_fd]>=0)
 	{
         if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
-			"ERROR writing request for IPMI data size ")) return EAR_ERROR;
-        if (warning_api(my_read(ear_fd_ack[com_fd],(char *)energy,sizeof(ulong)) , sizeof(ulong),
-			"ERROR reading ack for IPMI data size ")) return EAR_ERROR;
+			"ERROR writing request for dc_node_energy ")) return EAR_ERROR;
+        if (warning_api(my_read(ear_fd_ack[com_fd],(char *)energy,datasize) , datasize,
+			"ERROR reading data for dc_node_energy ")) return EAR_ERROR;
     } else
 	{
 		debug( "ear_daemon_client_node_dc_energy service not provided");

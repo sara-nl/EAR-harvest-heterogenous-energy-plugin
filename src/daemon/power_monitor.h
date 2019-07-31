@@ -121,9 +121,6 @@ void reset_current_app();
 void copy_powermon_app(powermon_app_t *dest,powermon_app_t *src);
 
 /** */
-int print_powermon_app_fd_binary(int fd,powermon_app_t *app);
-
-int read_powermon_app_fd_binary(int fd,powermon_app_t *app);
 
 void print_powermon_app(powermon_app_t *app);
 

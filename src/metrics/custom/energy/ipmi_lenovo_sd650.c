@@ -260,3 +260,10 @@ state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
   return EAR_SUCCESS;
 }
 
+state_t energy_to_str(char *str,edata_t e)
+{
+  ulong *pe=(ulong *)e;
+  sprintf(str,"%lu",*pe);
+	return EAR_SUCCESS;
+}
+

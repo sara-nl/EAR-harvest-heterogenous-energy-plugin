@@ -61,5 +61,7 @@ state_t energy_units(ehandler_t *eh,uint *units);
 
 state_t energy_accumulated(ehandler_t *eh,unsigned long *e,edata_t init,edata_t end);
 
+state_t energy_to_str(ehandler_t *eh,char *str,edata_t e);
+
 
 #endif //EAR_ENERGY_H

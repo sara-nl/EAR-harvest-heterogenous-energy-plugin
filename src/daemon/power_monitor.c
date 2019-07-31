@@ -379,6 +379,7 @@ void form_database_paths()
 
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
 	energy_data_t c_energy;
+	alloc_energy_data(&c_energy);
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
 	copy_application(&current_ear_app[ccontext]->app, new_app);
@@ -403,6 +404,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 void job_end_powermon_app(ehandler_t *ceh) {
 	energy_data_t c_energy;
 	power_data_t app_power;
+	alloc_energy_data(&c_energy);
 	check_context("job_end_powermon_app");
 	time(&current_ear_app[ccontext]->app.job.end_time);
 	if (current_ear_app[ccontext]->app.job.end_time == current_ear_app[ccontext]->app.job.start_time) {
@@ -1152,20 +1154,6 @@ void powermon_get_status(status_t *my_status) {
 	my_status->node.max_freq = (ulong) frequency_pstate_to_freq(my_node_conf->max_pstate);
 }
 
-int print_powermon_app_fd_binary(int fd, powermon_app_t *app) {
-	print_application_fd_binary(fd, &app->app);
-	write(fd, &app->job_created, sizeof(uint));
-	print_energy_data_fd_binary(fd, &app->energy_init);
-	return EAR_SUCCESS;
-
-}
-
-int read_powermon_app_fd_binary(int fd, powermon_app_t *app) {
-	read_application_fd_binary(fd, &app->app);
-	read(fd, &app->job_created, sizeof(uint));
-	read_energy_data_fd_binary(fd, &app->energy_init);
-	return EAR_SUCCESS;
-}
 
 void print_powermon_app(powermon_app_t *app) {
 	print_application(&app->app);

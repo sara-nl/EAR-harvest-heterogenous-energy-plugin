@@ -111,6 +111,8 @@ static int bandwith_elements;
 static int flops_elements;
 static int rapl_elements;
 
+static ulong node_energy_datasize;
+
 // Registers
 #define LOO 0 // loop
 #define APP 1 // application
@@ -158,7 +160,7 @@ static void metrics_global_start()
 	//
 	eards_begin_app_compute_turbo_freq();
 	// New
-    eards_node_dc_energy(&aux_energy);
+    eards_node_dc_energy(&aux_energy,node_energy_datasize);
     aux_time = metrics_time();
     eards_read_rapl(aux_rapl);
 	eards_start_uncore();
@@ -227,7 +229,7 @@ static int metrics_partial_stop(uint where)
 	long long aux_time_stop;
 
 	// Manual IPMI accumulation
-	eards_node_dc_energy(&aux_energy_stop);
+	eards_node_dc_energy(&aux_energy_stop,node_energy_datasize);
 	if ((where==SIG_END) && (aux_energy_stop==metrics_ipmi[LOO])){ 
 		debug("EAR_NOT_READY because of energy %u\n",aux_energy);
 		return EAR_NOT_READY;
@@ -443,6 +445,8 @@ int metrics_init()
 	// Daemon metrics allocation (TODO: standarize data size)
 	rapl_size = eards_get_data_size_rapl();
 	rapl_elements = rapl_size / sizeof(long long);
+
+	node_energy_datasize=eards_node_energy_data_size();
 
 	bandwith_size = eards_get_data_size_uncore();
 	bandwith_elements = bandwith_size / sizeof(long long);
