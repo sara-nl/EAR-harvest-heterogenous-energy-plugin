@@ -33,6 +33,7 @@
 #include <common/includes.h>
 #include <metrics/api/energy.h>
 #include <metrics/custom/hardware_info.h>
+#include <common/math_operations.h>
 
 #define IPMI_RAW_MAX_ARGS (1024)
 
@@ -146,7 +147,7 @@ state_t energy_dispose(void **c)
 	return EAR_SUCCESS;
 }
 
-state_t energy_datasize(void *c, size_t *size)
+state_t energy_datasize(size_t *size)
 {
 	*size = sizeof(unsigned long);
 	return EAR_SUCCESS;
@@ -176,7 +177,7 @@ static state_t _energy_dc_read(void *c, edata_t emj)
 	return EAR_SUCCESS;
 }
 
-state_t energy_frequency(void *c, ulong *freq)
+state_t energy_frequency(ulong *freq)
 {
   *freq = 1000000;
   return EAR_SUCCESS;
@@ -220,3 +221,30 @@ state_t energy_ac_read(void *c, edata_t emj)
 	*pemj = 0;
 	return EAR_SUCCESS;
 }
+
+state_t energy_units(uint *units)
+{
+  *units=1000;
+  return EAR_SUCCESS;
+}
+
+unsigned long diff_node_energy(ulong init,ulong end)
+{
+  ulong ret=0;
+  if (end>init){
+    ret=end-init;
+  } else{
+    ret=ulong_diff_overflow(init,end);
+  }
+  return ret;
+}
+
+state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
+{
+  int i;
+  ulong *pinit=(ulong *)init,*pend=(ulong *)end;
+  unsigned long total=diff_node_energy(*pinit,*pend);
+  *e=total;
+  return EAR_SUCCESS;
+}
+

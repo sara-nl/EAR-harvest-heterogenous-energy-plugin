@@ -38,9 +38,10 @@ state_t energy_init(void **c);
 
 state_t energy_dispose(void **c);
 
-state_t energy_datasize(void *c, size_t *size);
+state_t energy_datasize(size_t *size);
 
-state_t energy_frequency(void *c, ulong *freq_us);
+/** Frequency is the minimum time bettween two changes, in usecs */
+state_t energy_frequency(ulong *freq_us);
 
 state_t energy_dc_read(void *c, edata_t energy_mj);
 

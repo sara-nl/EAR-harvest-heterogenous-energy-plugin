@@ -3,7 +3,8 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) -Wno-unused-variable
 ######## FILES
 
 find_OBJS = \
-    energy.o
+    energy.o \
+		energy_lib.o
 
 ######## RULES
 

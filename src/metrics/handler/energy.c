@@ -37,17 +37,19 @@ struct energy_op
 {
 	state_t (*init)               (void **c);
 	state_t (*dispose)            (void **c);
-	state_t (*data_length_get)    (void *c, size_t *size);
-	state_t (*data_frequency_get) (void *c, ulong *freq);
+	state_t (*datasize)           (size_t *size);
+	state_t (*frequency)          (ulong *freq);
 	state_t (*dc_read)            (void *c, edata_t emj);
 	state_t (*dc_time_read)       (void *c, edata_t emj, ulong *tms);
 	state_t (*ac_read)            (void *c, edata_t em);
+	state_t (*units)							(uint *uints);
+	state_t (*accumulated)				(ulong *e,edata_t init, edata_t end);
 } energy_ops;
 static char energy_manu[SZ_NAME_MEDIUM];
 static char energy_prod[SZ_NAME_MEDIUM];
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
-const int   energy_nops    = 7;
+const int   energy_nops    = 9;
 const char *energy_names[] = {
 	"energy_init",
 	"energy_dispose",
@@ -56,6 +58,8 @@ const char *energy_names[] = {
 	"energy_dc_read",
 	"energy_dc_time_read",
 	"energy_ac_read",
+	"energy_units",
+	"energy_accumulated"
 };
 
 state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
@@ -185,7 +189,7 @@ state_t energy_handler_clean(ehandler_t *eh)
 
 state_t energy_datasize(ehandler_t *eh, size_t *size)
 {
-	preturn (energy_ops.data_length_get, eh->context, size);
+	preturn (energy_ops.datasize, size);
 }
 
 state_t energy_frequency(ehandler_t *eh, ulong *fus)
@@ -200,8 +204,8 @@ state_t energy_frequency(ehandler_t *eh, ulong *fus)
 	c = (void *) eh->context;
 
 	// Dedicated frequency
-	if (energy_ops.data_frequency_get != NULL) {
-		return energy_ops.data_frequency_get (c, fus);
+	if (energy_ops.frequency != NULL) {
+		return energy_ops.frequency ( fus);
 	}
 
 	if (energy_ops.dc_read == NULL) {
@@ -249,3 +253,17 @@ state_t energy_ac_read(ehandler_t *eh, edata_t emj)
 {
 	preturn (energy_ops.ac_read, eh->context, emj);
 }
+
+/* Energy units are 1=Joules, 1000=mJ, 1000000=uJ, 1000000000nJ */
+state_t energy_units(ehandler_t *eh,uint *units)
+{
+  *units=1;
+  preturn (energy_ops.units, units);
+}
+
+state_t energy_accumulated(ehandler_t *eh,unsigned long *e,edata_t init,edata_t end)
+{
+  *e=0;
+  preturn (energy_ops.accumulated,e,init,end );
+}
+
