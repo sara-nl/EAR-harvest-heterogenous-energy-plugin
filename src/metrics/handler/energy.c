@@ -27,6 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <common/config.h>
+#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <common/symplug.h>
 #include <common/includes.h>
 #include <metrics/finder/energy.h>
@@ -90,6 +93,7 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 
 	if (found)
 	{
+		debug("Using ear.conf energy plugin %s",conf->install.obj_ener);
 		sprintf(energy_objc, "%s/energy/%s",
 			conf->install.dir_plug, conf->install.obj_ener);
 		sprintf(energy_prod, "custom");
@@ -121,11 +125,14 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 				if (strinc(energy_prod, "SD530")) {
 					sprintf(energy_objc, "%s/energy/ipmi.node.manager.so",
 							conf->install.dir_plug);
+					strcpy(conf->install.obj_ener,"ipmi.node.manager.so");
 					found = 1;
 				} else if (strinc(energy_prod, "SR650")) {
-					found = 0;
+					strcpy(conf->install.obj_ener,"ipmi.node.manager.so");
+					found = 1;
 				} else if (strinc(energy_prod, "SD650")) {
-					found = 0;
+					strcpy(conf->install.obj_ener,"ipmi.lenovo.sd650.so");
+					found = 1;
 				} else {
 					found = 0;
 				}
@@ -133,9 +140,14 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 			default:
 				break;
 		}
+		if (found) 	{
+			sprintf(energy_objc, "%s/energy/%s",
+      conf->install.dir_plug, conf->install.obj_ener);
+		}
+
+		debug("energy: detected product name '%s'", energy_prod);
+		debug("energy: detected manufacturer '%s'", energy_manu);
 		
-		debug(0, "energy: detected product name '%s'", energy_prod);
-		debug(0, "energy: detected manufacturer '%s'", energy_manu);
 	}
 	debug("loading shared object '%s'", energy_objc);
 
@@ -148,7 +160,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		if (state_fail(ret)) {
 			return ret;
 		}
-
 		//
 		energy_loaded = 1;
 		ret = energy_init(conf, eh);

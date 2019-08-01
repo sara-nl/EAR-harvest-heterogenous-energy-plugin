@@ -2,8 +2,8 @@ CFLAGS = $(CC_FLAGS) -fPIC -shared -O2 -Wextra
 
 ######## INSTALLATION
 
-stat_BINS = libmetrics.a
-dyna_BINS = libmetrics.so
+stat_BINS = libmetrics.a libmetrics_lib.a
+dyna_BINS = libmetrics.so libmetrics_lib.so
 
 ######## FILES
 
@@ -26,6 +26,16 @@ metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
     $(SRCDIR)/metrics/power_metrics/power_metrics.o \
     $(SRCDIR)/metrics/msr/energy_cpu.o
 
+metrics_lib_OBJS = $(SRCDIR)/metrics/handler/energy_lib.o \
+    $(SRCDIR)/metrics/custom/frequency.o \
+    $(SRCDIR)/metrics/custom/hardware_info.o \
+    $(SRCDIR)/metrics/papi/generics.o \
+    $(SRCDIR)/metrics/papi/cache.o \
+    $(SRCDIR)/metrics/papi/flops.o \
+    $(SRCDIR)/metrics/papi/instructions.o \
+    $(SRCDIR)/metrics/papi/stalls.o 
+
+
 ######## RULES
 
 all: all.components $(stat_BINS) $(dyna_BINS)
@@ -35,6 +45,13 @@ libmetrics.a: $(metrics_OBJS)
 
 libmetrics.so: $(metrics_OBJS)
 	$(CC) $(CFLAGS) -o $@ $(metrics_OBJS)
+
+
+libmetrics_lib.a: $(metrics_lib_OBJS)
+	$(AR) rvs $@ $(metrics_lib_OBJS)
+
+libmetrics_lib.so: $(metrics_lib_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(metrics_lib_OBJS)
 
 ######## OPTIONS
 

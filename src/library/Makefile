@@ -24,7 +24,7 @@ endif
 
 ######## FILES
 
-comm_OBJS = $(SRCDIR)/metrics/libmetrics.a \
+comm_OBJS = $(SRCDIR)/metrics/libmetrics_lib.a \
     $(SRCDIR)/control/frequency.o \
     $(SRCDIR)/daemon/eard_api.o \
     $(SRCDIR)/daemon/shared_configuration.o \

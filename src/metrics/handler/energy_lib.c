@@ -27,6 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <common/config.h>
+#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <common/symplug.h>
 #include <common/includes.h>
 #include <metrics/handler/energy_lib.h>
@@ -58,7 +61,7 @@ state_t energy_init(settings_conf_t *conf)
 	int cpu_model;
 	int found=0;
 
-
+	debug("energy_init library");
 	if (conf == NULL) {
 		state_return_msg(EAR_BAD_ARGUMENT, 0,
 		 "the conf value cannot be NULL if the plugin is not loaded");

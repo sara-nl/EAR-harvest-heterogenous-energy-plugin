@@ -34,6 +34,7 @@
 #include <papi.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
@@ -48,6 +49,7 @@
 #include <daemon/eard_api.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
+#include <metrics/api/energy_lib.h>
 
 //#define TEST_MB 0
 
@@ -112,6 +114,7 @@ static int flops_elements;
 static int rapl_elements;
 
 static ulong node_energy_datasize;
+static uint node_energy_units;
 
 // Registers
 #define LOO 0 // loop
@@ -130,8 +133,10 @@ static ull *metrics_rapl[2]; // nJ (vec)
 static ull *aux_rapl; // nJ (vec)
 static ull *last_rapl; // nJ (vec)
 static long long aux_time;
-static ulong aux_energy;
-static ulong metrics_ipmi[2]; // mJ
+static edata_t aux_energy;
+static edata_t metrics_ipmi[2]; // mJ
+static ulong   acum_ipmi[2];
+static edata_t aux_energy_stop;
 static ulong metrics_avg_frequency[2]; // MHz
 static long long metrics_instructions[2];
 static long long metrics_cycles[2];
@@ -160,7 +165,7 @@ static void metrics_global_start()
 	//
 	eards_begin_app_compute_turbo_freq();
 	// New
-    eards_node_dc_energy(&aux_energy,node_energy_datasize);
+    eards_node_dc_energy(aux_energy,node_energy_datasize);
     aux_time = metrics_time();
     eards_read_rapl(aux_rapl);
 	eards_start_uncore();
@@ -201,7 +206,7 @@ static void metrics_global_stop()
 static void metrics_partial_start()
 {
 	int i;
-	metrics_ipmi[LOO]=aux_energy;
+	memcpy(metrics_ipmi[LOO],aux_energy,node_energy_datasize);
 	metrics_usecs[LOO]=aux_time;
 	
 	eards_begin_compute_turbo_freq();
@@ -225,32 +230,30 @@ static int metrics_partial_stop(uint where)
 	ulong c_energy;
 	long long c_time;
 	float c_power;
-	ulong aux_energy_stop;
 	long long aux_time_stop;
 
 	// Manual IPMI accumulation
-	eards_node_dc_energy(&aux_energy_stop,node_energy_datasize);
-	if ((where==SIG_END) && (aux_energy_stop==metrics_ipmi[LOO])){ 
-		debug("EAR_NOT_READY because of energy %u\n",aux_energy);
+	eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
+	energy_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
+	if ((where==SIG_END) && (c_energy==0)){ 
+		debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
 		return EAR_NOT_READY;
 	}
 	aux_time_stop = metrics_time();
 	/* Sometimes energy is not zero but power is not correct */
-	if (aux_energy_stop>=metrics_ipmi[LOO]) c_energy=aux_energy_stop-metrics_ipmi[LOO];
-	else c_energy=ulong_diff_overflow(metrics_ipmi[LOO],aux_energy_stop);
 	c_time=metrics_usecs_diff(aux_time_stop, metrics_usecs[LOO]);
-	/* energy is computed in mJ and time in usecs */
-	c_power=(float)(c_energy*1000.0)/(float)c_time;
+	/* energy is computed in node_energy_units and time in usecs */
+	c_power=(float)(c_energy*(double)(1000000/node_energy_units))/(float)c_time;
 
 	if ((where==SIG_END) && (c_power<system_conf->min_sig_power)){ 
 		debug("EAR_NOT_READY because of power %f\n",c_power);
 		return EAR_NOT_READY;
 	}
-	aux_energy=aux_energy_stop;
+	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
 	aux_time=aux_time_stop;
 
-	metrics_ipmi[LOO] = c_energy;
-	metrics_ipmi[APP] += metrics_ipmi[LOO];
+	acum_ipmi[LOO] = c_energy;
+	acum_ipmi[APP] += acum_ipmi[LOO];
 	// Manual time accumulation
 	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
@@ -387,11 +390,12 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
 	metrics->TPI = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
 
-	// Energy IPMI
-	metrics->DC_power = (double) metrics_ipmi[s] / (time_s * 1000.0);
+	// Energy node
+	metrics->DC_power = (double) acum_ipmi[s] / (time_s * node_energy_units);
+	debug("DC power computed in signature %.2lf (%lu energy))",metrics->DC_power,acum_ipmi[s]);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
 	if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
-		verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,metrics_ipmi[s],time_s* 1000.0);
+		verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
 	}
 
 	// Energy RAPL (TODO: ask for the two individual energy types separately)
@@ -408,10 +412,17 @@ int metrics_init()
 	ulong flops_size;
 	ulong bandwith_size;
 	ulong rapl_size;
+	state_t st;
 
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
 	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+
+	st=energy_init(system_conf);
+	if (st!=EAR_SUCCESS){
+		verbose(1,"Error loading energy plugin");
+	}
+	debug("energy_init loaded");
 
 	// Local metrics initialization
 	init_basic_metrics();
@@ -433,7 +444,7 @@ int metrics_init()
 
 		if (metrics_flops[LOO] == NULL || metrics_flops[APP] == NULL)
 		{
-			verbose(0,"error allocating memory, exiting");
+			error("error allocating memory, exiting");
 			exit(1);
 		}
 
@@ -446,7 +457,18 @@ int metrics_init()
 	rapl_size = eards_get_data_size_rapl();
 	rapl_elements = rapl_size / sizeof(long long);
 
-	node_energy_datasize=eards_node_energy_data_size();
+	// Allocating data for energy node metrics
+	// node_energy_datasize=eards_node_energy_data_size();
+	energy_datasize(&node_energy_datasize);
+	energy_units(&node_energy_units);
+	aux_energy=(edata_t)malloc(node_energy_datasize);
+	metrics_ipmi[0]=(edata_t)malloc(node_energy_datasize);
+	metrics_ipmi[1]=(edata_t)malloc(node_energy_datasize);
+	memset(metrics_ipmi[0],0,node_energy_datasize);
+	memset(metrics_ipmi[1],0,node_energy_datasize);
+	aux_energy_stop=(edata_t)malloc(node_energy_datasize);
+	acum_ipmi[0]=0;acum_ipmi[1]=1;
+	
 
 	bandwith_size = eards_get_data_size_uncore();
 	bandwith_elements = bandwith_size / sizeof(long long);
@@ -557,7 +579,7 @@ long long metrics_usecs_diff(long long end, long long init)
 
 	if (end < init)
 	{
-		debug( "Timer overflow (end: %ll - init: %ll)\n", end, init);
+		debug( "Timer overflow (end: %lld - init: %lld)\n", end, init);
 		to_max = LLONG_MAX - init;
 		return (to_max + end);
 	}

@@ -28,6 +28,7 @@
 */
 
 #include <dlfcn.h>
+#define SHOW_DEBUGS 1
 #include <common/symplug.h>
 #include <common/includes.h>
 
@@ -38,7 +39,7 @@ static void symplug_join(void *handle, void *calls[], const char *names[], uint 
 	for (i = 0; i < n; ++i) {
 		calls[i] = dlsym(handle, names[i]);
 		if (calls[i]!=NULL) {
-			 //fprintf(stderr,"symbol %s found\n",names[i]);
+			 debug("symbol %s found\n",names[i]);
 		}
 	}
 }

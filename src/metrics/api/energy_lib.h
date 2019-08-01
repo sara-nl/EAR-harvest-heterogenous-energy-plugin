@@ -34,7 +34,7 @@
 #include <common/types/generic.h>
 #include <metrics/api/energy_data.h>
 #include <daemon/shared_configuration.h>
-state_t energy_init(system_conf *conf);
+state_t energy_init(settings_conf_t *conf);
 state_t energy_datasize(size_t *size);
 /** Frequency is the minimum time bettween two changes, in usecs */
 state_t energy_frequency(ulong *freq_us);
