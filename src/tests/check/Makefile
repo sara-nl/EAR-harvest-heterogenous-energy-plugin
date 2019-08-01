@@ -6,7 +6,6 @@ chck_BINS = cpu_examinable \
     cpu_aperf           \
     cpu_uncores         \
     cpu_uncores_all     \
-    free_ipmi_version   \
     gsl_version         \
     module_acpi_cpufreq \
     module_ipmi_devintf \
@@ -15,6 +14,9 @@ chck_BINS = cpu_examinable \
     papi_comp_available \
     papi_comp_enabled   \
     ear_types
+ifdef IPMI_BASE
+	chck_BINS += free_ipmi_version
+endif
 ifdef SLURM_BASE
 	chck_BINS += slurm_version
 endif

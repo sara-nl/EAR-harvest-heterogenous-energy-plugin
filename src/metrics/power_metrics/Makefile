@@ -4,7 +4,6 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) $(IPMI_CFLAGS)
 
 libs_BINS = libpowermetrics.a libpowermetrics.so
 libs_OBJS = \
-    $(SRCDIR)/metrics/finder/energy.o \
     $(SRCDIR)/metrics/handler/energy.o \
     $(SRCDIR)/metrics/custom/hardware_info.o \
     $(SRCDIR)/metrics/papi/energy_cpu.o

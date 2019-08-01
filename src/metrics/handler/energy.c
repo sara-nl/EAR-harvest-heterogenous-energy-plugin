@@ -29,7 +29,6 @@
 
 #include <common/symplug.h>
 #include <common/includes.h>
-#include <metrics/finder/energy.h>
 #include <metrics/handler/energy.h>
 #include <metrics/custom/hardware_info.h>
 
@@ -88,48 +87,8 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 			conf->install.dir_plug, conf->install.obj_ener);
 		sprintf(energy_prod, "custom");
 		sprintf(energy_manu, "custom");
-	}
-	else
-	{
-		// IPMI
-		found = finder_energy(energy_manu, energy_prod);
-
-		if (!found) {
-			return EAR_NOT_FOUND;
-		}
-
-		//
-		cpu_model = get_model();
-
-		switch (cpu_model)
-		{
-			case CPU_HASWELL_X:
-			case CPU_BROADWELL_X:
-				if (strinc(energy_prod, "NX360")) {
-					found = 0;
-				} else {
-					found = 0;
-				}
-				break;
-			case CPU_SKYLAKE_X:
-				if (strinc(energy_prod, "SD530")) {
-					sprintf(energy_objc, "%s/energy/ipmi.node.manager.so",
-							conf->install.dir_plug);
-					found = 1;
-				} else if (strinc(energy_prod, "SR650")) {
-					found = 0;
-				} else if (strinc(energy_prod, "SD650")) {
-					found = 0;
-				} else {
-					found = 0;
-				}
-				break;
-			default:
-				break;
-		}
-		
-		debug(0, "energy: detected product name '%s'", energy_prod);
-		debug(0, "energy: detected manufacturer '%s'", energy_manu);
+	} else {
+		return EAR_NOT_FOUND;
 	}
 	debug("loading shared object '%s'", energy_objc);
 
