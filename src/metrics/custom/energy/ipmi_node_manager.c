@@ -30,6 +30,7 @@
 #include <endian.h>
 #include <pthread.h>
 #include <freeipmi/freeipmi.h>
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <metrics/api/energy.h>
 #include <common/math_operations.h>
@@ -121,6 +122,7 @@ state_t energy_init(void **c)
 {
 	state_t s;
 
+	debug("Node Manager init");
 	pthread_mutex_lock(&lock);
 	s = _energy_init(c);
 	pthread_mutex_unlock(&lock);

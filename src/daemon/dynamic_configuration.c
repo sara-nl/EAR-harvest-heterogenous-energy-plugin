@@ -399,7 +399,7 @@ void *eard_dynamic_configuration(void *tmp)
 	if (pthread_setname_np(pthread_self(), TH_NAME)) {
 		error("Setting name for %s thread %s", TH_NAME, strerror(errno));
 	}
-
+	debug("Initializing energy in main dyn_conf thread");
 	if (energy_init(NULL, &my_eh_rapi) != EAR_SUCCESS) {
 		error("Error initializing energy node in %s thread", TH_NAME);
 	}

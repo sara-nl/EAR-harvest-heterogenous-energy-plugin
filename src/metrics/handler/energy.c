@@ -76,10 +76,10 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 	if (energy_loaded)
 	{
 		strcpy(eh->product, energy_prod);
-                strcpy(eh->manufacturer, energy_manu);
-		
+    strcpy(eh->manufacturer, energy_manu);
+		debug("Energy plugin already loaded, executing basic init");	
 		ret = energy_ops.init(&eh->context);
-		debug("energy_ops.init() returned %d", ret);
+		if (ret!=EAR_SUCCESS) debug("energy_ops.init() returned %d", ret);
 
 		return ret;
 	}
@@ -155,14 +155,17 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 	{
 		//
 		ret = symplug_open(energy_objc, (void **) &energy_ops, energy_names, energy_nops);
-		debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
+		if (ret!=EAR_SUCCESS) debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
 
 		if (state_fail(ret)) {
 			return ret;
 		}
 		//
 		energy_loaded = 1;
-		ret = energy_init(conf, eh);
+		if (energy_ops.init!=NULL){ 
+			ret = energy_ops.init(&eh->context);
+			return ret;
+		}else return EAR_ERROR;
 	} else {
 		ret = EAR_NOT_FOUND;
 	}

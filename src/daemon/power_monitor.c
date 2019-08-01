@@ -45,7 +45,7 @@
 #include <common/config.h>
 #include <common/sockets.h>
 
-#define SHOW_DEBUGS
+#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -103,6 +103,7 @@ static int sig_reported = 0;
 
 periodic_metric_t current_sample;
 double last_power_reported = 0;
+static energy_data_t c_energy;
 
 
 
@@ -162,6 +163,7 @@ void end_context(int cc) {
 	check_context("end_context: invalid job context");
 	if (current_ear_app[cc] != NULL) {
 		if (current_ear_app[cc]->governor.governor != NULL) free(current_ear_app[cc]->governor.governor);
+	  free_energy_data(&current_ear_app[cc]->energy_init);
 		free(current_ear_app[cc]);
 		current_ear_app[cc] = NULL;
 		num_contexts--;
@@ -231,6 +233,7 @@ int new_context(job_id id, job_id sid) {
 		return EAR_ERROR;
 	}
 	memset(current_ear_app[ccontext], 0, sizeof(powermon_app_t));
+	alloc_energy_data(&current_ear_app[ccontext]->energy_init);
 	/* This info will be overwritten later */
 	current_ear_app[ccontext]->app.job.id = id;
 	current_ear_app[ccontext]->app.job.step_id = sid;
@@ -318,8 +321,9 @@ void copy_powermon_app(powermon_app_t *dest, powermon_app_t *src) {
 		error("copy_powermon_app: NULL prointers provided");
 		return;
 	}
+	debug("copy_powermon_app");
 	dest->job_created = src->job_created;
-	dest->energy_init = src->energy_init;
+	copy_energy_data(&dest->energy_init,&src->energy_init);
 	copy_application(&(dest->app), &(src->app));
 	dest->governor.min = src->governor.min;
 	dest->governor.max = src->governor.max;
@@ -378,8 +382,6 @@ void form_database_paths()
 */
 
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
-	energy_data_t c_energy;
-	alloc_energy_data(&c_energy);
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
 	copy_application(&current_ear_app[ccontext]->app, new_app);
@@ -402,9 +404,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 
 
 void job_end_powermon_app(ehandler_t *ceh) {
-	energy_data_t c_energy;
 	power_data_t app_power;
-	alloc_energy_data(&c_energy);
 	check_context("job_end_powermon_app");
 	time(&current_ear_app[ccontext]->app.job.end_time);
 	if (current_ear_app[ccontext]->app.job.end_time == current_ear_app[ccontext]->app.job.start_time) {
@@ -1071,6 +1071,13 @@ void *eard_power_monitoring(void *noinfo) {
 	if (init_power_ponitoring(&my_eh_pm) != EAR_SUCCESS) {
 		error("Error in init_power_ponitoring");
 	}
+	debug("Allocating memory for energy data");	
+	alloc_energy_data(&c_energy);
+	alloc_energy_data(&e_begin);
+	alloc_energy_data(&e_end);
+
+	alloc_energy_data(&default_app.energy_init);
+
 	// current_sample is the current powermonitoring period
 	init_periodic_metric(&current_sample);
 	create_powermon_out();

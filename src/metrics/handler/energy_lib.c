@@ -82,7 +82,7 @@ state_t energy_init(settings_conf_t *conf)
 	{
 		//
 		ret = symplug_open(energy_objc, (void **) &energy_ops, energy_names, energy_nops);
-		debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
+		if (ret!=EAR_SUCCESS) debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
 
 		if (state_fail(ret)) {
 			return ret;

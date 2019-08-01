@@ -100,5 +100,6 @@ rapl_data_t diff_RAPL_energy(rapl_data_t end,rapl_data_t init);
 void null_energy_data(energy_data_t *acc_energy);
 
 void alloc_energy_data(energy_data_t *e);
+void free_energy_data(energy_data_t *e);
 
 #endif

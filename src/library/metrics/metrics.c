@@ -34,7 +34,7 @@
 #include <papi.h>
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
@@ -165,9 +165,9 @@ static void metrics_global_start()
 	//
 	eards_begin_app_compute_turbo_freq();
 	// New
-    eards_node_dc_energy(aux_energy,node_energy_datasize);
-    aux_time = metrics_time();
-    eards_read_rapl(aux_rapl);
+  eards_node_dc_energy(aux_energy,node_energy_datasize);
+  aux_time = metrics_time();
+  eards_read_rapl(aux_rapl);
 	eards_start_uncore();
 	eards_read_uncore(metrics_bandwith_init[APP]);
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
@@ -231,10 +231,13 @@ static int metrics_partial_stop(uint where)
 	long long c_time;
 	float c_power;
 	long long aux_time_stop;
+	char stop_energy_str[256],start_energy_str[256];
 
 	// Manual IPMI accumulation
 	eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
 	energy_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
+	energy_to_str(start_energy_str,metrics_ipmi[LOO]);	
+	energy_to_str(stop_energy_str,aux_energy_stop);	
 	if ((where==SIG_END) && (c_energy==0)){ 
 		debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
 		return EAR_NOT_READY;
@@ -243,7 +246,8 @@ static int metrics_partial_stop(uint where)
 	/* Sometimes energy is not zero but power is not correct */
 	c_time=metrics_usecs_diff(aux_time_stop, metrics_usecs[LOO]);
 	/* energy is computed in node_energy_units and time in usecs */
-	c_power=(float)(c_energy*(double)(1000000/node_energy_units))/(float)c_time;
+	debug("Energy computed %lu, time %lld",c_energy,c_time);
+	c_power=(float)(c_energy*(1000000.0/(double)node_energy_units))/(float)c_time;
 
 	if ((where==SIG_END) && (c_power<system_conf->min_sig_power)){ 
 		debug("EAR_NOT_READY because of power %f\n",c_power);
@@ -460,14 +464,16 @@ int metrics_init()
 	// Allocating data for energy node metrics
 	// node_energy_datasize=eards_node_energy_data_size();
 	energy_datasize(&node_energy_datasize);
+	debug("Node energy data size %lu",node_energy_datasize);
 	energy_units(&node_energy_units);
+	debug("Node energy units %u",node_energy_units);
 	aux_energy=(edata_t)malloc(node_energy_datasize);
+	aux_energy_stop=(edata_t)malloc(node_energy_datasize);
 	metrics_ipmi[0]=(edata_t)malloc(node_energy_datasize);
 	metrics_ipmi[1]=(edata_t)malloc(node_energy_datasize);
 	memset(metrics_ipmi[0],0,node_energy_datasize);
 	memset(metrics_ipmi[1],0,node_energy_datasize);
-	aux_energy_stop=(edata_t)malloc(node_energy_datasize);
-	acum_ipmi[0]=0;acum_ipmi[1]=1;
+	acum_ipmi[0]=0;acum_ipmi[1]=0;
 	
 
 	bandwith_size = eards_get_data_size_uncore();

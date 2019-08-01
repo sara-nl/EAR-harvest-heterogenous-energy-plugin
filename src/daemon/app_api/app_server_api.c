@@ -38,8 +38,8 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <common/output/verbose.h>
 //#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/app_api/app_conf_api.h>
@@ -52,6 +52,7 @@ static char app_to_eard[MAX_PATH_SIZE];
 static char *TH_NAME="No-EARL_API";
 
 static int fd_app_to_eard=-1;
+static unsigned long node_energy_datasize;
 
 #define MAX_FDS 100
 #define MAX_TRIES 100
@@ -455,6 +456,13 @@ void *eard_non_earl_api_service(void *noinfo)
 	if (energy_init(&my_cluster_conf, &my_eh_app_api) != EAR_SUCCESS){
 		error("Error initializing energy_init in No-EARL_API thread");
 		pthread_exit(0);
+	}
+
+	energy_datasize(&my_eh_app_api,&node_energy_datasize);
+	if (node_energy_datasize!=sizeof(unsigned long)){
+		error("Application api for energy readings not yet supported,exiting thread for app api");
+  	energy_dispose(&my_eh_app_api);
+  	pthread_exit(0);
 	}
 
 	FD_ZERO(&rfds);

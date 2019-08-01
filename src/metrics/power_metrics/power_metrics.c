@@ -137,6 +137,7 @@ int pm_connect(ehandler_t *my_eh)
 	if (pm_already_connected) return pm_connected_status;
 	if (getuid()==0)	rootp=1;
 	if (rootp){
+		debug("Initializing energy in main power_monitor  thread");
 		pm_connected_status=energy_init(NULL, my_eh);
 		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
@@ -323,4 +324,10 @@ void alloc_energy_data(energy_data_t *e)
 {
 	e->DC_node_energy=(edata_t*)malloc(node_size);
 	e->AC_node_energy=(edata_t*)malloc(node_size);
+}
+
+void free_energy_data(energy_data_t *e)
+{
+	free(e->DC_node_energy);
+	free(e->AC_node_energy);
 }

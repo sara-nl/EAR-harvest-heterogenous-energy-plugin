@@ -26,14 +26,25 @@ metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
     $(SRCDIR)/metrics/power_metrics/power_metrics.o \
     $(SRCDIR)/metrics/msr/energy_cpu.o
 
-metrics_lib_OBJS = $(SRCDIR)/metrics/handler/energy_lib.o \
+metrics_lib_OBJS = $(SRCDIR)/metrics/common/msr.o \
+    $(SRCDIR)/metrics/common/cpuid.o \
+    $(SRCDIR)/metrics/handler/energy_lib.o \
     $(SRCDIR)/metrics/custom/frequency.o \
+    $(SRCDIR)/metrics/custom/frequency_uncore.o \
     $(SRCDIR)/metrics/custom/hardware_info.o \
+    $(SRCDIR)/metrics/papi/energy_cpu.o \
     $(SRCDIR)/metrics/papi/generics.o \
     $(SRCDIR)/metrics/papi/cache.o \
     $(SRCDIR)/metrics/papi/flops.o \
     $(SRCDIR)/metrics/papi/instructions.o \
-    $(SRCDIR)/metrics/papi/stalls.o 
+    $(SRCDIR)/metrics/papi/stalls.o \
+    $(SRCDIR)/metrics/custom/bandwidth.o \
+    $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
+    $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
+    $(SRCDIR)/metrics/power_metrics/power_metrics.o \
+    $(SRCDIR)/metrics/msr/energy_cpu.o
+
+
 
 
 ######## RULES
