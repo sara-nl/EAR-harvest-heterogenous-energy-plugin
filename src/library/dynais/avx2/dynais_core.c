@@ -1,5 +1,5 @@
-#include <library/dynais/dynais_avx.h>
-#include <library/dynais/dynais_avx_core.h>
+#include <library/dynais/dynais.h>
+#include <library/dynais/dynais_core.h>
 
 // General indexes.
 extern uint _levels;
