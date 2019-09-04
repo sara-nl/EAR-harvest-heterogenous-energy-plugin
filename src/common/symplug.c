@@ -40,6 +40,8 @@ static void symplug_join(void *handle, void *calls[], const char *names[], uint 
 		calls[i] = dlsym(handle, names[i]);
 		if (calls[i]!=NULL) {
 			 debug("symbol %s found",names[i]);
+		}else{
+			debug("ssymbol %s notfound",names[i]);
 		}
 	}
 }
@@ -47,6 +49,10 @@ static void symplug_join(void *handle, void *calls[], const char *names[], uint 
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 {
 	void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
+
+	if (!handle){
+		debug("Error when loading shared object\n");
+	}
 
 	if (!handle) {
 		state_return_msg(EAR_ERROR, 0, "error during dlopen(), missing symbol?");

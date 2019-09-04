@@ -97,6 +97,8 @@ state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 	
 	if (st == EAR_SUCCESS) {
 		freturn(models_syms_fun.init,data->dir_conf, data->dir_temp, pstates);
+	}else{
+		debug("Error when loading shared object %s",obj_path);
 	}
 	
 	return st;

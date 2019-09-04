@@ -46,6 +46,7 @@
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/configuration/cluster_conf.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>
@@ -280,10 +281,9 @@ int dynconf_set_th(ulong p_id, ulong th) {
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
-	char *serial_status;
-	unsigned int serial_status_size;
 	int num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
 	unsigned long return_status = num_status;
+	debug("return_status %lu status=%p",return_status,status);
 	if (num_status < 1) {
 		error("Panic propagate_status returns less than 1 status");
 		return_status = 0;
@@ -293,8 +293,9 @@ void dyncon_get_status(int fd, request_t *command) {
 	powermon_get_status(&status[num_status - 1]);
 	write(fd, &return_status, sizeof(return_status));
 	write(fd, status, sizeof(status_t) * num_status);
-	verbose(VRAPI, "Returning from dyncon_get_status\n");
+	debug("Returning from dyncon_get_status");
 	free(status);
+	debug("status released");
 }
 
 

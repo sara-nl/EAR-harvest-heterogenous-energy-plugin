@@ -45,6 +45,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/job.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/eard_rapi.h>
 #include <daemon/eard_conf_rapi.h>
@@ -380,6 +381,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = ips[self_id];
         final_status[0].ok = STATUS_OK;
+				debug("status has 1 status");
         *status = final_status;
         return 1;
     }
@@ -396,7 +398,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
         //prepare next node distance
         command->node_dist = current_dist + i*NUM_PROPS;
-		verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
+			verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
 
         //connect and send data
         rc = eards_remote_connect(next_ip, port);
@@ -419,26 +421,33 @@ int propagate_status(request_t *command, uint port, status_t **status)
     
     //memory allocation for final status
     int total_status = 0;
-    for (i = 0; i < NUM_PROPS; i++)
+    for (i = 0; i < NUM_PROPS; i++){
+				debug("Propagation %d returned %d status",i,num_status[i]);
         total_status += num_status[i];
+		}
+		debug("Allocating memory for %d status",total_status + 1);
     final_status = calloc(total_status + 1, sizeof(status_t));
     
     //copy results to final status
     int temp_idx = 0;
     for (i = 0; i < NUM_PROPS; i++)
-	{
+		{
         memcpy(&final_status[temp_idx], temp_status[i], sizeof(status_t)*num_status[i]);
-		temp_idx += num_status[i];
-	}
+				temp_idx += num_status[i];
+		}
 	
     //set self ip
-	temp.sin_addr.s_addr = ips[self_id];
+    debug("adding self ip in possition %d",total_status);
+		temp.sin_addr.s_addr = ips[self_id];
     final_status[total_status].ip = ips[self_id];
     final_status[total_status].ok = STATUS_OK;
     *status = final_status;
 
     for (i = 0; i < NUM_PROPS; i++)
-        free(temp_status[i]);
+		{
+			debug("Propagation %d had %d status",i,num_status[i]);
+			if (num_status[i]>0) free(temp_status[i]);
+		}
 
     return total_status + 1;
 

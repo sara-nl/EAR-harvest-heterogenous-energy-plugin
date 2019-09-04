@@ -28,6 +28,7 @@
 */
 
 #include <dlfcn.h>
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/symplug.h>
 #include <control/frequency.h>

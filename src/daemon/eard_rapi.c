@@ -704,11 +704,13 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
             else eards_remote_disconnect();
         }
     }
-    
+
     //memory allocation for final status
     int total_status = 0;
-    for (i = 0; i < NUM_PROPS; i++)
+    for (i = 0; i < NUM_PROPS; i++){
         total_status += num_status[i];
+		}
+		debug("Total status collected from propagation %d",total_status);    
     final_status = calloc(total_status + 1, sizeof(status_t));
     
     //copy results to final status

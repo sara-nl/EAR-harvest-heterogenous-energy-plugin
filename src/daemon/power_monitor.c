@@ -1140,9 +1140,12 @@ void *eard_power_monitoring(void *noinfo) {
 
 void powermon_get_status(status_t *my_status) {
 	int i;
+	int max_p; // More than TOTAL_POLICIES is not yet supported
 	/* Policies */
-	my_status->num_policies=my_node_conf->num_policies;
-	for (i=0;i<my_status->num_policies;i++){
+	if (my_node_conf->num_policies>TOTAL_POLICIES) max_p=TOTAL_POLICIES;
+	else max_p=my_node_conf->num_policies;
+	my_status->num_policies=max_p;
+	for (i=0;i<max_p;i++){
 		my_status->policy_conf[i].freq=frequency_pstate_to_freq(my_node_conf->policies[i].p_state);
 		my_status->policy_conf[i].th=(uint)(my_node_conf->policies[i].settings[0]*100.0);
 	}
