@@ -1,3 +1,32 @@
+/**************************************************************
+* * Energy Aware Runtime (EAR)
+* * This program is part of the Energy Aware Runtime (EAR).
+* *
+* * EAR provides a dynamic, transparent and ligth-weigth solution for
+* * Energy management.
+* *
+* *     It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+* *
+* *       Copyright (C) 2017  
+* * BSC Contact   mailto:ear-support@bsc.es
+* * Lenovo contact  mailto:hpchelp@lenovo.com
+* *
+* * EAR is free software; you can redistribute it and/or
+* * modify it under the terms of the GNU Lesser General Public
+* * License as published by the Free Software Foundation; either
+* * version 2.1 of the License, or (at your option) any later version.
+* * 
+* * EAR is distributed in the hope that it will be useful,
+* * but WITHOUT ANY WARRANTY; without even the implied warranty of
+* * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+* * Lesser General Public License for more details.
+* * 
+* * You should have received a copy of the GNU Lesser General Public
+* * License along with EAR; if not, write to the Free Software
+* * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+* * The GNU LEsser General Public License is contained in the file COPYING  
+* */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,7 +35,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/version.h>
+
+#include <common/config.h>
+#ifdef EAR_CPUPOWER
 #include <common/sizes.h>
+#include <common/output/verbose.h>
+#include <common/states.h>
 
 // PATHS list
 static char *cpufreq_path="/sys/devices/system/cpu/cpu";
@@ -85,7 +119,7 @@ unsigned long write_one_freq(int fd, unsigned long f)
     perror("Error writting file");
     return 0;
   }else if (ret!=(strlen(my_freq_char)+1)){
-    printf("Error writting file expected bytes %d, written %d\n",strlen(my_freq_char)+1,ret);
+    debug("Error writting file expected bytes %lu, written %d\n",strlen(my_freq_char)+1,ret);
     return 0;
   }
 	return f;
@@ -101,13 +135,14 @@ unsigned long CPUfreq_get_cpufreq_driver(int cpu,char *src)
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_driver_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
     perror("Opening file");
     return 0;
   }
 	ret=read_one_word(fd,src);
+	close(fd);
 	return ret;
 }
 
@@ -118,13 +153,14 @@ unsigned long CPUfreq_get_cpufreq_governor(int cpu,char *src)
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_governor_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
     perror("Opening file");
     return 0;
   }
   ret=read_one_word(fd,src);
+	close(fd);
   return ret;
 }
 
@@ -135,13 +171,14 @@ unsigned long CPUfreq_get_cpufreq_maxf(int cpu)
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_max_freq_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
     perror("Opening file");
     return 0;
   }
   ret=read_one_freq(fd);
+	close(fd);
   return ret;
 }
 
@@ -152,25 +189,26 @@ unsigned long CPUfreq_get_cpufreq_minf(int cpu)
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_min_freq_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
     perror("Opening file");
     return 0;
   }
   ret=read_one_freq(fd);
+	close(fd);
   return ret;
 }
 
-void CPUfreq_set_cpufreq_governor(int fd,char *name)
+unsigned long CPUfreq_set_cpufreq_governor(int cpu,char *name)
 {
-	int fd,size;
+	int fd,size,i;
   unsigned long ret;
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
 	char c=LF;
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_governor_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_WRONLY);
   if (fd<0){
     perror("Opening file");
@@ -179,7 +217,9 @@ void CPUfreq_set_cpufreq_governor(int fd,char *name)
 	size=lseek(fd,0,SEEK_END);
 	lseek(fd,0,SEEK_SET);
 	write(fd,name,strlen(name));
-  for (i=strlen(name);i<size;i++) write(fd,&c,sizof(char));	
+  for (i=strlen(name);i<size;i++) write(fd,&c,sizeof(char));	
+	close(fd);
+	return 1;
 }
 
 unsigned long CPUfreq_set_cpufreq_minf(int cpu,unsigned long minf)
@@ -189,13 +229,15 @@ unsigned long CPUfreq_set_cpufreq_minf(int cpu,unsigned long minf)
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_min_freq_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_WRONLY);
   if (fd<0){
     perror("Opening file");
     return 0;
   }
-	return write_one_freq(fd,minf);	
+	ret= write_one_freq(fd,minf);	
+	close(fd);
+	return ret;
 }
 unsigned long CPUfreq_set_cpufreq_maxf(int cpu,unsigned long maxf)
 {
@@ -204,13 +246,16 @@ unsigned long CPUfreq_set_cpufreq_maxf(int cpu,unsigned long maxf)
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_max_freq_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_WRONLY);
   if (fd<0){
     perror("Opening file");
     return 0;
   }
-  return write_one_freq(fd,maxf);
+  ret= write_one_freq(fd,maxf);
+	close(fd);
+  return ret;
+
 }
 
 
@@ -222,13 +267,14 @@ unsigned long CPUfreq_set_frequency(unsigned int cpu, unsigned long f)
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,def_freq_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_WRONLY);
   if (fd<0){
     perror("Opening file");
     return 0;
   }
-	return write_one_freq(fd,f);
+	f=write_one_freq(fd,f);
+	close(fd);
   return f;
 }
 
@@ -246,7 +292,7 @@ unsigned long *CPUfreq_get_available_frequencies(int cpu,unsigned long *num_freq
   int i;
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,available_frequencies_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
     perror("Error opening file");
@@ -261,6 +307,7 @@ unsigned long *CPUfreq_get_available_frequencies(int cpu,unsigned long *num_freq
 		}
 	}while(f>0);
 	*num_freqs=num_f;
+	close(fd);
 	return my_freq;
 
 }
@@ -273,29 +320,30 @@ char **CPUfreq_get_available_governors(int cpu,unsigned long *num_governors)
   int i,num_gov=0;
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_available_governors_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
     perror("Error opening file");
     return 0;
   }
 	c_governor=malloc(GOVERNOR_MAX_NAME_LEN*sizeof(char));
-	printf("Malloc de %d byes\n",sizeof(char*));
+	debug("Malloc de %d byes\n",sizeof(char*));
 	governor=malloc(sizeof(char *));
   do{
     gov_len=read_one_word(fd,c_governor);
-		printf("Governor %d = %s (%d)\n",num_gov,c_governor,gov_len);
+		debug("Governor %d = %s (%d)\n",num_gov,c_governor,gov_len);
     if (gov_len>0){
 			governor[num_gov]=malloc(gov_len+1);
 			strcpy(governor[num_gov],c_governor);
 			num_gov++;
-			printf("reaalloc de %d byes\n",sizeof(char*)*num_gov);
+			debug("reaalloc de %d byes\n",sizeof(char*)*num_gov);
 			governor=realloc(governor,sizeof(char *)*(num_gov+1));
     }
   }while(gov_len>0);
 	governor[num_gov]=NULL;
-	printf("Totall governors found %d\n",num_gov);
+	debug("Totall governors found %d\n",num_gov);
   *num_governors=num_gov;
+	close(fd);
   return governor;
 }
 
@@ -309,19 +357,21 @@ void CPUfreq_put_available_governors(char **glist)
 	free(glist);
 }
 
-void CPUfreq_get_policy(governor_t *g)
+void CPUfreq_get_policy(int cpu,governor_t *g)
 {
-	CPUfreq_get_cpufreq_governor(0,g->name);
-	g->max_f=CPUfreq_get_cpufreq_maxf(0);
-	g->min_f=CPUfreq_get_cpufreq_minf(0);
+	CPUfreq_get_cpufreq_governor(cpu,g->name);
+	g->max_f=CPUfreq_get_cpufreq_maxf(cpu);
+	g->min_f=CPUfreq_get_cpufreq_minf(cpu);
 }
 
 
-void CPUfreq_set_policy(governor_t *g)
+int CPUfreq_set_policy(int cpu,governor_t *g)
 {
-  CPUfreq_set_cpufreq_governor(0,g->name);
-  CPUfreq_set_cpufreq_maxf(0,g->max_f);
-  CPUfreq_set_cpufreq_minf(0,g->min_f);
+	unsigned long ret;
+  if ((ret=CPUfreq_set_cpufreq_governor(cpu,g->name))==0) return EAR_ERROR; 
+  if ((ret=CPUfreq_set_cpufreq_maxf(cpu,g->max_f))==0) return EAR_ERROR;
+  if ((ret=CPUfreq_set_cpufreq_minf(cpu,g->min_f))==0) return EAR_ERROR;
+	return EAR_SUCCESS;
 }
 
 unsigned long CPUfreq_get_num_pstates(int cpu)
@@ -331,7 +381,7 @@ unsigned long CPUfreq_get_num_pstates(int cpu)
   int i;
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,available_frequencies_file);
-  printf("Opening %s\n",curr_freq_path);
+  debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
     perror("Error opening file");
@@ -341,6 +391,7 @@ unsigned long CPUfreq_get_num_pstates(int cpu)
     f=read_one_freq(fd);
 		if (f>0) num_f++;
   }while(f>0);
+	close(fd);
   return num_f;
 
 }
@@ -351,7 +402,7 @@ unsigned long CPUfreq_get(int cpu_num)
   unsigned long my_freq;
   char curr_freq_path[PATH_MAX];
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu_num,cpufreq_driver_folder,curr_freq_file);
-	printf("Opening %s\n",curr_freq_path);
+	debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_RDONLY);
   if (fd<0){
 		perror("Error opening file");
@@ -364,3 +415,4 @@ unsigned long CPUfreq_get(int cpu_num)
 }
 
 
+#endif

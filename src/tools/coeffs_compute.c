@@ -34,12 +34,16 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <common/config.h>
 #include <sys/types.h>
+#ifndef EAR_CPUPOWER
 #include <cpufreq.h>
+#else
+#include <control/cpupower.h>
+#endif
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
-#include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
@@ -106,6 +110,7 @@ uint freq_to_p_state(uint freq)
 
 uint fill_list_p_states()
 {
+	  #ifndef EAR_CPUPOWER
     struct cpufreq_available_frequencies *list_freqs, *first_freq;
     int num_pstates = 0;
 
@@ -128,7 +133,15 @@ uint fill_list_p_states()
     }
 
     cpufreq_put_available_frequencies(first_freq);
-    return num_pstates;
+		#else
+	  unsigned long num_pstates = 0;
+		unsigned long *flist;
+		flist=CPUfreq_get_available_frequencies(0,&num_pstates);
+		MALLOC(node_freq_list, uint, num_pstates);
+		memcpy(node_freq_list,flist,sizeof(unsigned long)*num_pstates);
+		CPUfreq_put_available_frequencies(flist);
+		#endif
+    return (uint)num_pstates;
 }
 
 int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {

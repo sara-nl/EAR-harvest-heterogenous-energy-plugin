@@ -22,6 +22,7 @@ eard_OBJS = \
 
 eard_OBJS += \
     $(SRCDIR)/control/frequency.o \
+    $(SRCDIR)/control/cpupower.o \
     $(SRCDIR)/database_cache/eardbd_api.o \
     $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a \

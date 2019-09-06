@@ -38,10 +38,14 @@
 
 #include <linux/version.h>
 
+#ifndef EAR_CPUPOWER
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
 #else
 #include <cpufreq.h>
+#endif
+#else
+#include <control/cpupower.h>
 #endif
 
 #include <common/types/application.h>
@@ -54,7 +58,11 @@ typedef struct powermon_app{
     application_t app;
     uint job_created;
     energy_data_t energy_init;
+	#ifndef EAR_CPUPOWER
 	struct cpufreq_policy governor;
+	#else
+	governor_t governor;
+	#endif
 	ulong current_freq;
 }powermon_app_t;
 

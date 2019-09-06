@@ -30,10 +30,15 @@
 #ifndef EAR_CONTROL_FREQUENCY_H
 #define EAR_CONTROL_FREQUENCY_H
 #include <linux/version.h>
+
+#ifndef EAR_CPUPOWER
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
 #else
 #include <cpufreq.h>
+#endif
+#else
+#include <control/cpupower.h>
 #endif
 
 
@@ -60,7 +65,13 @@ void frequency_recover_previous_configuration();
 void frequency_recover_previous_policy();
 int frequency_is_valid_frequency(ulong freq);
 int frequency_is_valid_pstate(uint pstate);
+
+#ifndef EAR_CPUPOWER
 void get_governor(struct cpufreq_policy *governor);
 void set_governor(struct cpufreq_policy *governor);
+#else
+void get_governor(governor_t *governor);
+void set_governor(governor_t *governor);
+#endif
 
 #endif //EAR_CONTROL_FREQUENCY_H

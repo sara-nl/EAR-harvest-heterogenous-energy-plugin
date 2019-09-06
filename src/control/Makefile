@@ -2,10 +2,13 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CPUF_CFLAGS) $(CONSTANTS)
 
 ######## RULES
 
-all: frequency.o
+all: frequency.o cpupower.o
 
 frequency.o: frequency.c frequency.h
 	$(CC) $(CFLAGS) -c frequency.c
+
+cpupower.o:cpupower.c cpupower.h
+	$(CC) $(CFLAGS) -c cpupower.c
 
 ######## OPTIONS
 

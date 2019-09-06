@@ -26,6 +26,7 @@ endif
 
 comm_OBJS = $(SRCDIR)/metrics/libmetrics_lib.a \
     $(SRCDIR)/control/frequency.o \
+    $(SRCDIR)/control/cpupower.o \
     $(SRCDIR)/daemon/eard_api.o \
     $(SRCDIR)/daemon/shared_configuration.o \
     $(SRCDIR)/common/libcommon.a
