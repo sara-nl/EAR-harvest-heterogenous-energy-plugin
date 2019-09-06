@@ -1,4 +1,8 @@
 ## Unreleased
+- First version of cpupower included but NOT tested
+- Merge with new_policies branch: rapl plugin for energy supported
+- Added SLURM_EAR_MPI_VERSION to automatic selection of ear library 
+- IPMI finder removed from energy loading. Default is not supported
 - power_cap and power_cap_type included in island for power_capping policies
 - New policies and power models included for testing
 - Merged with new policies in ear.conf

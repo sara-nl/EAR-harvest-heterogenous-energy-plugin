@@ -70,7 +70,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 {
 	state_t ret;
 	int cpu_model;
-	int found;
 
 	if (energy_loaded)
 	{
@@ -95,8 +94,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 	sprintf(energy_manu, "custom");
 	debug("loading shared object '%s'", energy_objc);
 
-	if (found)
-	{
 		//
 		ret = symplug_open(energy_objc, (void **) &energy_ops, energy_names, energy_nops);
 		if (ret!=EAR_SUCCESS) debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
@@ -110,9 +107,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 			ret = energy_ops.init(&eh->context);
 			return ret;
 		}else return EAR_ERROR;
-	} else {
-		ret = EAR_NOT_FOUND;
-	}
 
 	return ret;
 }
