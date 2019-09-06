@@ -7,12 +7,10 @@ ifdef CPUF_BASE
 	COMPONENTS += database_cache
 	endif
 	ifdef PAPI_BASE
-			ifdef IPMI_BASE
-			COMPONENTS += metrics \
-                          daemon \
-                          commands \
-                          tests
-		endif
+		COMPONENTS += metrics \
+                              daemon \
+                              commands \
+                              tests
 		COMPONENTS += library
 	endif
 	ifdef GSL_BASE

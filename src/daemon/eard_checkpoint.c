@@ -41,7 +41,7 @@ extern ulong eard_max_pstate;
 
 void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {
-	#if 0
+#if 0
 	char checkpoint_file[SZ_PATH];
 	mode_t old_mask;
 	int fd;
@@ -66,7 +66,7 @@ void save_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 }
 void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 {
-	#if 0
+#if 0
 	char checkpoint_file[SZ_PATH];
 	int fd;
 	if (eard_dyn_conf==NULL)	return;
@@ -86,5 +86,5 @@ void restore_eard_conf(eard_dyn_conf_t *eard_dyn_conf)
 	verbose(VCHCK,"Job recovered");
 	report_job(&eard_dyn_conf->pm_app->app.job);
 	close(fd);
-	#endif
+#endif
 }

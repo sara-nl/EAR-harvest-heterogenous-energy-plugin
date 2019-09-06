@@ -32,7 +32,6 @@
 #include <common/output/verbose.h>
 #include <common/symplug.h>
 #include <common/includes.h>
-#include <metrics/finder/energy.h>
 #include <metrics/handler/energy.h>
 #include <metrics/custom/hardware_info.h>
 
@@ -89,66 +88,11 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		 "the conf value cannot be NULL if the plugin is not loaded");
 	}
 
-	found = (strcmp(conf->install.obj_ener, "default") != 0);
-
-	if (found)
-	{
-		debug("Using ear.conf energy plugin %s",conf->install.obj_ener);
-		sprintf(energy_objc, "%s/energy/%s",
-			conf->install.dir_plug, conf->install.obj_ener);
-		sprintf(energy_prod, "custom");
-		sprintf(energy_manu, "custom");
-	}
-	else
-	{
-		// IPMI
-		found = finder_energy(energy_manu, energy_prod);
-
-		if (!found) {
-			return EAR_NOT_FOUND;
-		}
-
-		//
-		cpu_model = get_model();
-
-		switch (cpu_model)
-		{
-			case CPU_HASWELL_X:
-			case CPU_BROADWELL_X:
-				if (strinc(energy_prod, "NX360")) {
-					found = 0;
-				} else {
-					found = 0;
-				}
-				break;
-			case CPU_SKYLAKE_X:
-				if (strinc(energy_prod, "SD530")) {
-					sprintf(energy_objc, "%s/energy/ipmi.node.manager.so",
-							conf->install.dir_plug);
-					strcpy(conf->install.obj_ener,"ipmi.node.manager.so");
-					found = 1;
-				} else if (strinc(energy_prod, "SR650")) {
-					strcpy(conf->install.obj_ener,"ipmi.node.manager.so");
-					found = 1;
-				} else if (strinc(energy_prod, "SD650")) {
-					strcpy(conf->install.obj_ener,"ipmi.lenovo.sd650.so");
-					found = 1;
-				} else {
-					found = 0;
-				}
-				break;
-			default:
-				break;
-		}
-		if (found) 	{
-			sprintf(energy_objc, "%s/energy/%s",
-      conf->install.dir_plug, conf->install.obj_ener);
-		}
-
-		debug("energy: detected product name '%s'", energy_prod);
-		debug("energy: detected manufacturer '%s'", energy_manu);
-		
-	}
+	debug("Using ear.conf energy plugin %s",conf->install.obj_ener);
+	sprintf(energy_objc, "%s/energy/%s",
+	conf->install.dir_plug, conf->install.obj_ener);
+	sprintf(energy_prod, "custom");
+	sprintf(energy_manu, "custom");
 	debug("loading shared object '%s'", energy_objc);
 
 	if (found)
