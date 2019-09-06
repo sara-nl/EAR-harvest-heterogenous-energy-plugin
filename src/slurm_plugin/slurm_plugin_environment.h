@@ -137,7 +137,7 @@ struct variables_s {
 .ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"    },
 .ld_libr   = { .rem = "",                    .ear = "" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
-.version   = { .loc = "SLURM_EAR_VERSION",   .ear = "" },
+.version   = { .loc = "SLURM_EAR_MPI_VERSION",   .ear = "" },
 .gm_secure = { .loc = "SLURM_EGM_SECURED",   .ear = "" }
 };
 
