@@ -23,9 +23,9 @@ clean: rclean;
 
 ######## DEPENDENCIES
 
-depend: depend.components
+depend: ;
 
-depend-clean: depend-clean.components
+depend-clean: ;
 
 include $(SRCDIR)/Makefile.depend
 include $(SRCDIR)/Makefile.extra
