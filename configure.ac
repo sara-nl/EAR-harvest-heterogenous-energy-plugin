@@ -160,15 +160,11 @@ AC_DEPENDANCY_CHECK($GSL_DIR, GSL dependancy found, 1)
 AC_DEPENDANCY_CHECK($CPUPOWER_DIR, CPUPower dependancy found, 1)
 AC_DEPENDANCY_CHECK($SLURM_DIR, SLURM dependancy found, 0)
 AC_DEPENDANCY_CHECK($FREEIPMI_DIR, FreeIPMI dependancy found, 1)
+AC_DEPENDANCY_CHECK($DB_DIR, Database dependancy found, 1)
 
 #if test -z $COMPILABLE; then
 #	AC_MSG_ERROR(not compilable)
 #fi
-
-echo "-------------------------------------- Features summary --"
-AC_FEATURE_CHECK($DB_MYSQL, "1", MySQL as database)
-AC_FEATURE_CHECK($DB_FILES, "1",  text files as database)
-echo "----------------------------------------------------------"
 
 AC_CONFIG_FILES([Makefile
                  etc/module/ear
