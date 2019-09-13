@@ -35,7 +35,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/version.h>
-
+// #define SHOW_DEBUGS 1
 #include <common/config.h>
 #ifdef EAR_CPUPOWER
 #include <common/sizes.h>
@@ -202,11 +202,12 @@ unsigned long CPUfreq_get_cpufreq_minf(int cpu)
 
 unsigned long CPUfreq_set_cpufreq_governor(int cpu,char *name)
 {
-	int fd,size,i;
+	int fd,size,i,r;
   unsigned long ret;
   char my_freq_char[FREQ_SIZE];
   char curr_freq_path[PATH_MAX];
 	char c=LF;
+	debug("set governor %s in cpu %d",name,cpu);
   sprintf(curr_freq_path,"%s%d/%s/%s",cpufreq_path,cpu,cpufreq_driver_folder,scaling_governor_file);
   debug("Opening %s\n",curr_freq_path);
   fd=open(curr_freq_path,O_WRONLY);
@@ -214,10 +215,11 @@ unsigned long CPUfreq_set_cpufreq_governor(int cpu,char *name)
     perror("Opening file");
     return 0;
   }
-	size=lseek(fd,0,SEEK_END);
-	lseek(fd,0,SEEK_SET);
-	write(fd,name,strlen(name));
-  for (i=strlen(name);i<size;i++) write(fd,&c,sizeof(char));	
+	r=write(fd,name,strlen(name)+1);
+	if (r<0){
+		perror("Changing governor name");
+		return 0;
+	}
 	close(fd);
 	return 1;
 }
@@ -327,7 +329,7 @@ char **CPUfreq_get_available_governors(int cpu,unsigned long *num_governors)
     return 0;
   }
 	c_governor=malloc(GOVERNOR_MAX_NAME_LEN*sizeof(char));
-	debug("Malloc de %d byes\n",sizeof(char*));
+	debug("Malloc de %lu byes\n",sizeof(char*));
 	governor=malloc(sizeof(char *));
   do{
     gov_len=read_one_word(fd,c_governor);
@@ -336,7 +338,7 @@ char **CPUfreq_get_available_governors(int cpu,unsigned long *num_governors)
 			governor[num_gov]=malloc(gov_len+1);
 			strcpy(governor[num_gov],c_governor);
 			num_gov++;
-			debug("reaalloc de %d byes\n",sizeof(char*)*num_gov);
+			debug("reaalloc de %lu byes\n",sizeof(char*)*num_gov);
 			governor=realloc(governor,sizeof(char *)*(num_gov+1));
     }
   }while(gov_len>0);
@@ -362,12 +364,14 @@ void CPUfreq_get_policy(int cpu,governor_t *g)
 	CPUfreq_get_cpufreq_governor(cpu,g->name);
 	g->max_f=CPUfreq_get_cpufreq_maxf(cpu);
 	g->min_f=CPUfreq_get_cpufreq_minf(cpu);
+	debug("Savig policy %s maxf %lu minf %lu",g->name,g->max_f,g->min_f);
 }
 
 
 int CPUfreq_set_policy(int cpu,governor_t *g)
 {
 	unsigned long ret;
+	debug("Restoring policy %s maxf %lu minf %lu",g->name,g->max_f,g->min_f);
   if ((ret=CPUfreq_set_cpufreq_governor(cpu,g->name))==0) return EAR_ERROR; 
   if ((ret=CPUfreq_set_cpufreq_maxf(cpu,g->max_f))==0) return EAR_ERROR;
   if ((ret=CPUfreq_set_cpufreq_minf(cpu,g->min_f))==0) return EAR_ERROR;

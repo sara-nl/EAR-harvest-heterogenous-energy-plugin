@@ -46,7 +46,8 @@
 #include <common/config.h>
 #include <common/types/job.h>
 #include <common/types/configuration/cluster_conf.h>
-#define SHOW_DEBUGS 1
+
+// #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>

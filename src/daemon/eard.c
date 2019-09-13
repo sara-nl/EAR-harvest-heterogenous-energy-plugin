@@ -32,7 +32,7 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <linux/limits.h>
-#define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/environment.h>
 #include <control/frequency.h>

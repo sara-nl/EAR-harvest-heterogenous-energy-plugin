@@ -1,5 +1,5 @@
 ## Unreleased
-- First version of cpupower included but NOT tested
+- First version of cpupower included 
 - Merge with new_policies branch: rapl plugin for energy supported
 - Added SLURM_EAR_MPI_VERSION to automatic selection of ear library 
 - IPMI finder removed from energy loading. Default is not supported

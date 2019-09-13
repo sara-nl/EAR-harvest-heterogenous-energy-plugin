@@ -32,6 +32,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/version.h>
+// #define SHOW_DEBUGS 1
 #include <common/config.h>
 
 #ifdef EAR_CPUPOWER
@@ -182,7 +183,16 @@ static ulong *get_frequencies_rank()
 int frequency_init(unsigned int _num_cpus)
 {
 	num_cpus = _num_cpus;
+	char driver[128],my_gov[128];
+	CPUfreq_get_cpufreq_driver(0,driver);
+	debug("Current cpufreq driver is %s",driver);
+	if (strcmp(driver,"acpi-cpufreq")){
+		error("Invalid cpufreq driver %s, please, install %s",driver,"acpi-cpufreq");
+		exit(0);
+	}
 
+	CPUfreq_get_cpufreq_governor(0,my_gov);
+	debug("Current cpufreq governor %s",my_gov);
 	//
 	freq_list_cpu = get_frequencies_cpu();
 

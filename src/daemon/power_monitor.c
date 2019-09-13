@@ -45,7 +45,7 @@
 #include <common/config.h>
 #include <common/sockets.h>
 
-#define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -594,6 +594,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		frequency_set_all_cpus(f);
 	}
 	appID->is_mpi = 0;
+	debug("context configured");
 	return my_policy;
 }
 
@@ -667,7 +668,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	#ifndef EAR_CPUPOWER
 	verbose(VJOBPMON, "Saving governor %s", current_ear_app[ccontext]->governor.governor);
 	#else
-	verbose(VJOBPMON, "Saving governor %s", current_ear_app[ccontext]->governor.name);
+	debug("Saving governor %s", current_ear_app[ccontext]->governor.name);
 	#endif
 	/* Setting userspace */
 	user_type = get_user_type(&my_cluster_conf, appID->job.energy_tag, appID->job.user_id, appID->job.group_id,
@@ -676,7 +677,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	if (my_tag != NULL) print_energy_tag(my_tag);
 	/* Given a user type, application, and energy_tag, my_policy is the cofiguration for this user and application */
 	my_policy=configure_context(user_type, my_tag, appID);
-	verbose(VJOBPMON,"Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->settings[0]);
+	debug("Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->settings[0]);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
 	dyn_conf->id=new_app_id;
