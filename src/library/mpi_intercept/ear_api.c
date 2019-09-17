@@ -616,9 +616,9 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 	{
 		// Create the event for DynAIS
 		unsigned long  ear_event_l;
-		unsigned short ear_event_s;
-		unsigned short ear_size;
-		unsigned short ear_level;
+		udyn_t ear_event_s;
+		udyn_t ear_size;
+		udyn_t ear_level;
 
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);

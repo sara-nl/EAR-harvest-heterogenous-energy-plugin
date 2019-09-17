@@ -49,26 +49,26 @@
 #define NEW_LOOP        3
 #define END_NEW_LOOP    4
 
-#ifdef AVX512
-#define dutype ushort
-#define dstype short
+#if FEAT_AVX512
+#define udyn_t ushort
+#define sdyn_t short
 #else
-#define dutype uint
-#define dstype int
+#define udyn_t uint
+#define sdyn_t int
 #endif
 
 // Functions
 /** Given a sample and its size, returns the state the application is in (in
 *   a loop, in an iteration, etc.). */
-dstype dynais(dutype sample, dutype *size, dutype *level);
+sdyn_t dynais(udyn_t sample, udyn_t *size, udyn_t *level);
 
 /** Converts a long sample to short sample. */
-dutype dynais_sample_convert(ulong sample);
+udyn_t dynais_sample_convert(ulong sample);
 
 int dynais_build_type();
 
 /** Allocates memory in preparation to use dynais. Returns 0 on success */
-int dynais_init(dutype window, dutype levels);
+int dynais_init(udyn_t window, udyn_t levels);
 
 /** Frees the memory previously allocated. */
 void dynais_dispose();

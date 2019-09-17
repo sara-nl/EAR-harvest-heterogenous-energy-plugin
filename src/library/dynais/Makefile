@@ -1,8 +1,8 @@
-CFLAGS = $(CC_FLAGS) -fPIC -O2 -I$(SRCDIR) $(FEAT_AVX512)
+CFLAGS = $(CC_FLAGS) -fPIC -O2 -I$(SRCDIR)
 
 ######## FILES
 
-ifdef FEAT_AVX512
+ifeq ($(FEAT_AVX512), 1)
 FOLD = avx512
 else
 FOLD = avx2

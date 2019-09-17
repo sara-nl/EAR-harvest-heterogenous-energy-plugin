@@ -1,5 +1,5 @@
 #include <library/dynais/dynais.h>
-#include <library/dynais/dynais_core.h>
+#include <library/dynais/avx512/dynais_core.h>
 
 // General indexes.
 extern ushort _levels;

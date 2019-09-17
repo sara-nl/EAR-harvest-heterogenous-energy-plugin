@@ -95,10 +95,10 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		AS_HELP_STRING([--disable-avx512], [Compiles replacing AVX-512 instructions by AVX-2])
         )
 	
-	FEAT_AVX512=-DAVX512
+	FEAT_AVX512=1
 
 	if test "x$enable_avx512" = "xno"; then
-		FEAT_AVX512=
+		FEAT_AVX512=0
 	fi
 	
 	# AC_ARG_VAR([ARCH],[Compiles the code for a CPU architecture dis/enabling some specific features (sandy, ivy, haswell, broadwell, skylake (def))])

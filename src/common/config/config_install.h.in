@@ -31,10 +31,10 @@
 #define EAR_PATHS_H
 
 // Library paths
-#define SLURM_LIB_PATH      "@SLURM_LIBDIR@"
-#define PAPI_LIB_PATH       "@PAPI_LIBDIR@"
-#define GSL_LIB_PATH        "@GSL_LIBDIR@"
-#define EAR_INSTALL_PATH    "@prefix@"
+#define SLURM_LIB_PATH		"@SLURM_LIBDIR@"
+#define PAPI_LIB_PATH		"@PAPI_LIBDIR@"
+#define GSL_LIB_PATH		"@GSL_LIBDIR@"
+#define EAR_INSTALL_PATH	"@prefix@"
 
 // File paths
 #define EAR_DAEMON_PATH		""
@@ -43,6 +43,10 @@
 #define MPI_F_LIB_PATH		""
 
 // Database
-#define DB_MYSQL		1
+#define DB_MYSQL		@DB_MYSQL@
+#define DB_PGSQL		@DB_PGSQL@
+
+// Features
+#define FEAT_AVX512		@FEAT_AVX512@
 
 #endif //EAR_PATHS_H

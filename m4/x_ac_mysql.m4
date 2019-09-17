@@ -90,7 +90,6 @@ AC_DEFUN([X_AC_MYSQL],
 
 	if test -z "$_cv_mysql_dir_root"; then
 		echo checking for MySQL compiler link... no
-		DB_MYSQL=0
 	else
 		DB_NAME=mysql
 		DB_DIR=$_cv_mysql_dir_root
@@ -113,7 +112,6 @@ AC_DEFUN([X_AC_MYSQL],
     AC_SUBST(DB_CPPFLAGS)
     AC_SUBST(DB_LDFLAGS)
     AC_SUBST(DB_DIR)
-    AC_SUBST(DB_TYPE)
 
     AM_CONDITIONAL(WITH_MYSQL, test -n "$_cv_mysql_dir_root")
 ])
