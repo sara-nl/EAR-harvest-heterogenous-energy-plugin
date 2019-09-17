@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(IPMI_CFLAGS) $(SLURM_CFLAGS)
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(SLURM_CFLAGS)
 
 ######## INSTALLATION
 
@@ -14,9 +14,6 @@ chck_BINS = cpu_examinable \
     papi_comp_available \
     papi_comp_enabled   \
     ear_types
-ifdef IPMI_BASE
-	chck_BINS += free_ipmi_version
-endif
 ifdef SLURM_BASE
 	chck_BINS += slurm_version
 endif
@@ -73,9 +70,6 @@ gsl_version: gsl_version.c
 
 slurm_version: slurm_version.c	
 	$(CC) $(CFLAGS) $(SLURM_CFLAGS) -o $@ $<
-
-free_ipmi_version: free_ipmi_version.c
-	$(CC) $(CFLAGS) $(IPMI_CFLAGS) -o $@ $<
 
 ear_types: ear_types.c 
 	$(CC) $(CFLAGS) -o $@ $<

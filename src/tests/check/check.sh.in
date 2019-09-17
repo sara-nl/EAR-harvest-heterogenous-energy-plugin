@@ -1,11 +1,7 @@
 #!/bin/bash
 
-CPUPOWER_LIB_PATH="@CPUPOWER_LIBDIR@"
-FREEIPMI_LIB_PATH="@FREEIPMI_LIBDIR@"
 PAPI_LIB_PATH="@PAPI_LIBDIR@"
 
-export LD_LIBRARY_PATH=$CPUPOWER_LIB_PATH:$LD_LIBRARY_PATH
-export LD_LIBRARY_PATH=$FREEIPMI_LIB_PATH:$LD_LIBRARY_PATH
 export LD_LIBRARY_PATH=$PAPI_LIB_PATH:$LD_LIBRARY_PATH
 
 function check
@@ -32,14 +28,9 @@ check w papi_version "PAPI version >="
 check e papi_init "PAPI initialization"
 check e papi_comp_available "PAPI perf counters component available" "perf_event"
 check e papi_comp_enabled "PAPI perf counters component enabled" "perf_event"
-#check e papi_comp_available "PAPI perf uncore counters component available" "perf_event_uncore"
-#check w papi_comp_enabled "PAPI perf uncore counters component enabled" "perf_event_uncore"
-#check w papi_comp_available "PAPI libmsr component available" "libmsr"
-#check w papi_comp_enabled "PAPI libmsr component enabled" "libmsr"
 check e papi_comp_available "PAPI rapl component available" "rapl"
 check w papi_comp_enabled "PAPI rapl component enabled" "rapl"
 check w gsl_version "GSL version >="
 check w slurm_version "SLURM version >="
-check w free_ipmi_version "Free IPMI version >="
 check e module_ipmi_devintf "ipmi_devintf driver online"
 check e module_acpi_cpufreq "acpi-cpufreq driver online"

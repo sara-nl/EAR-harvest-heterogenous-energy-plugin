@@ -1,5 +1,5 @@
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) 
-LDFLAGS = -shared $(PAPI_LDFLAGS) $(CPUF_LDFLAGS) -ldl
+LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 
 ######## VARS
 
