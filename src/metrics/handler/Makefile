@@ -21,11 +21,5 @@ install: ;
 
 clean: rclean;
 
-######## DEPENDENCIES
-
-depend: ;
-
-depend-clean: ;
-
 include $(SRCDIR)/Makefile.depend
 include $(SRCDIR)/Makefile.extra

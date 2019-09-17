@@ -1,21 +1,18 @@
 ######## FILES
 
-COMPONENTS = common
-ifdef CPUF_BASE
-	COMPONENTS += control
-	ifdef DB_BASE
+COMPONENTS = common control
+ifdef DB_BASE
 	COMPONENTS += database_cache
-	endif
-	ifdef PAPI_BASE
-		COMPONENTS += metrics \
-                              daemon \
-                              commands \
-                              tests
-		COMPONENTS += library
-	endif
-	ifdef GSL_BASE
-		COMPONENTS += tools
-	endif
+endif
+ifdef PAPI_BASE
+	COMPONENTS += metrics \
+                      daemon \
+                      commands \
+                      tests
+	COMPONENTS += library
+endif
+ifdef GSL_BASE
+	COMPONENTS += tools
 endif
 ifdef DB_BASE
 	COMPONENTS += global_manager

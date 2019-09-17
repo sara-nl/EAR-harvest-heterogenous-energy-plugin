@@ -37,5 +37,8 @@ clean: rclean
 
 ######## DEPENDENCIES
 
-include $(SRCDIR)/Makefile.depend
+depend: ;
+
+depend-clean: ;
+
 include $(SRCDIR)/Makefile.extra
