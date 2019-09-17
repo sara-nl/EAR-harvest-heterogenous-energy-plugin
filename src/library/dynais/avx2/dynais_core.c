@@ -1,5 +1,5 @@
 #include <library/dynais/dynais.h>
-#include <library/dynais/dynais_core.h>
+#include <library/dynais/avx2/dynais_core.h>
 
 // General indexes.
 extern uint _levels;
@@ -33,27 +33,6 @@ extern __m256i zmmx29; // Shifts
 //
 
 #ifdef DYN_CORE_N
-void print_m512(__m512i *array)
-{
-        uint *c;
-        int i;
-
-        c = (uint *) array;
-
-        for (i = 0; i < 8; ++i) {
-                fprintf(stderr, "%u ", c[i]);
-        }
-        fprintf(stderr, "\n");
-}
-void print_a512(uint *array)
-{
-        int i;
-        for (i = 0; i < _window; ++i) {
-                fprintf(stderr, "%u ", array[i]);
-        }
-        fprintf(stderr, "\n");
-}
-
 void dynais_core_n(uint sample, uint size, uint level)
 #else
 void dynais_core_0(uint sample, uint size, uint level)
@@ -124,8 +103,6 @@ void dynais_core_0(uint sample, uint size, uint level)
 	#ifdef DYN_CORE_N
 	accu[_window] = accu[0];
 	#endif
-
-//fprintf(stderr, "level %u size %u\n", level, size);
 
 	/* Main iteration */
 	for (k = 0, i = 8; k < _window; k += 8, i += 8)
@@ -242,11 +219,6 @@ void dynais_core_0(uint sample, uint size, uint level)
 	cur_sizes_aux = 0x7FFFFFFF;
 	#endif
 
-	#ifdef DYN_CORE_N
-	//print_m512(&zmmx24);
-	//print_a512(accu);
-	#endif
-
 	for (i = 0; i < 8; ++i)
 	{
 		if (pz[i] > cur_zeros_aux)
@@ -261,16 +233,6 @@ void dynais_core_0(uint sample, uint size, uint level)
 		}
 		#endif
 	}
-
-	#if 0
-	for (i = 0; i < 8; ++i)
-	{
-		if (pz[i] == cur_zeros_aux && ps[i] < cur_sizes_aux)
-		{
-			cur_sizes_aux = ps[i];
-		}
-	}
-	#endif
 
 	// New loop
 	res_inl = (cur_zeros_aux >= _window);

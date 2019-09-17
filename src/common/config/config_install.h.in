@@ -42,4 +42,7 @@
 #define MPI_C_LIB_PATH		"lib/libear"
 #define MPI_F_LIB_PATH		""
 
+// Database
+#define DB_MYSQL		1
+
 #endif //EAR_PATHS_H

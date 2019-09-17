@@ -53,6 +53,7 @@ export DB_LDFLAGS
 export CHOWN_USR
 export CHOWN_GRP
 export CONSTANTS
+export REPLACE
 export FEAT_AVX512
 
 ######## RULES
