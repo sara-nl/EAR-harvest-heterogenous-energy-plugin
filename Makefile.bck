@@ -1,30 +1,38 @@
-CC           = @CC@
-CC_FLAGS     = @CC_FLAGS@
-MPICC        = @MPICC@
-MPICC_FLAGS  = @MPICC_FLAGS@
-MPI_VERSION  = @MPI_VERSION@
+#CC           = /opt/rh/devtoolset-7/root/bin/gcc -Wall
+CC           = icc
+CC_FLAGS     =
+CC_FLAGS     = -static-intel 
+MPICC        = /hpc/opt/intel/compilers_and_libraries_2017.7.259/linux/mpi/intel64/bin/mpiicc
+MPICC_FLAGS  = -static-intel -Wall -Werror-all
+MPI_VERSION  = 
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
-DESTDIR      = @prefix@
-ETCDIR       = @sysconfdir@
-TMPDIR       = @localstatedir@
-DOCDIR       = @docdir@
-PAPI_BASE    = @PAPI_DIR@
-PAPI_CFLAGS  = @PAPI_CPPFLAGS@
-PAPI_LDFLAGS = @PAPI_LDFLAGS@ @PAPI_LIBS@
-GSL_BASE     = @GSL_DIR@
-GSL_CFLAGS   = @GSL_CPPFLAGS@
-GSL_LDFLAGS  = @GSL_LDFLAGS@ @GSL_LIBS@
-SLURM_BASE   = @SLURM_DIR@
-SLURM_CFLAGS = @SLURM_CPPFLAGS@
-DB_BASE      = @DB_DIR@
-DB_CFLAGS    = @DB_CPPFLAGS@
-DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
-CHOWN_USR    = @USER@
-CHOWN_GRP    = @GROUP@
+#DESTDIR      = /hpc/opt/ear
+DESTDIR      = ~/my_ear
+ETCDIR       = /hpc/opt/ear/etc
+TMPDIR       = /var/run
+DOCDIR       = /share/doc/ear
+PAPI_BASE    = /hpc/opt/papi
+PAPI_CFLAGS  = -I/hpc/opt/papi/include
+PAPI_LDFLAGS = -L/hpc/opt/papi/lib -Wl,-rpath,/hpc/opt/papi/lib -lpapi
+GSL_BASE     = /hpc/opt/gsl
+GSL_CFLAGS   = -I/hpc/opt/gsl/include
+GSL_LDFLAGS  = -L/hpc/opt/gsl/lib -lm -lgsl -lgslcblas
+SLURM_BASE   = /hpc/opt/slurm
+SLURM_CFLAGS = -I/hpc/opt/slurm/include
+CPUF_BASE    = /usr
+CPUF_CFLAGS  = 
+CPUF_LDFLAGS =  -lcpupower
+#IPMI_BASE    = /hpc/opt/freeipmi
+#IPMI_CFLAGS  = -I/hpc/opt/freeipmi/include
+#IPMI_LDFLAGS = -L/hpc/opt/freeipmi/lib -Wl,-rpath,/hpc/opt/freeipmi/lib -lfreeipmi
+DB_BASE      = /usr
+DB_CFLAGS    = 
+DB_LDFLAGS   = -L/usr/lib64/mysql -lmysqlclient
+CHOWN_USR    =
+CHOWN_GRP    =
 CONSTANTS    = -DSEC_KEY=10001
-REPLACE      =
-FEAT_AVX512  = @FEAT_AVX512@
+REPLACE      = yes
 
 ######## VARS
 
@@ -45,15 +53,20 @@ export PAPI_LDFLAGS
 export GSL_BASE
 export GSL_CFLAGS
 export GSL_LDFLAGS
+export IPMI_BASE
+export IPMI_CFLAGS
+export IPMI_LDFLAGS
 export SLURM_BASE
 export SLURM_CFLAGS
+export CPUF_BASE
+export CPUF_LDFLAGS
 export DB_BASE
 export DB_CFLAGS
 export DB_LDFLAGS
 export CHOWN_USR
 export CHOWN_GRP
 export CONSTANTS
-export FEAT_AVX512
+export REPLACE
 
 ######## RULES
 

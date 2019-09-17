@@ -74,7 +74,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	fi
 
 	if echo "$CC" | grep -q "icc"; then
-        	CC_FLAGS=-static-intel
+		CC_FLAGS=-static-intel
 	fi
 
 	if echo "$MPICC" | grep -q "mpiicc"; then	
@@ -89,34 +89,38 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	CC="`which $CC`"
 
 	#
-	# DATABASE
+	# Architecture
 	#
-	AC_ARG_ENABLE([database],
-		AS_HELP_STRING([--enable-database=TYPE], [Stores the execution data in the selected database type: mysql (def) or files])
-	)
+	AC_ARG_ENABLE([avx512],
+		AS_HELP_STRING([--disable-avx512], [Compiles replacing AVX-512 instructions by AVX-2])
+        )
+	
+	FEAT_AVX512=-DAVX512
 
-	DB_MYSQL=0
-	DB_FILES=0
+	if test "x$enable_avx512" = "xno"; then
+		FEAT_AVX512=
+	fi
+	
+	# AC_ARG_VAR([ARCH],[Compiles the code for a CPU architecture dis/enabling some specific features (sandy, ivy, haswell, broadwell, skylake (def))])
 
-	AS_IF([test -z "$enable_database" || test "x$enable_database" = "xmysql"],
-	[
-		DB_MYSQL=1
-		DB_FILES=0
-	])
-	AS_IF([test "x$enable_database" = "xfiles"],
-    [
-		DB_MYSQL=0
-		DB_FILES=1
-    ])
-	AS_IF([test "x$enable_database" = "xboth"],
-    [
-		DB_MYSQL=1
-		DB_FILES=1
-    ])
+	# if test -z "$ARCH"; then
+	# 	MARCH="skylake"
+	# else
+	# 	MARCH=`echo $ARCH | tr '[:upper:]' '[:lower:]'`
+	# fi
 
-    #
-    # Installation user/group
-    #
+	# case $MARCH in
+	# 	skylake) ARCH=5;;
+	# 	broadwell) ARCH=4;;
+	# 	haswell) ARCH=3;;
+	# 	ivy) ARCH=2;;
+	# 	sandy) ARCH=1;;
+	# 	*) ARCH=5;;
+	# esac
+
+ 	#
+	# Installation user/group
+	#
 	AC_ARG_VAR([USER],[Sets the owner user of your installed files])
 	AC_ARG_VAR([GROUP],[Sets the owner group of your installed files])
 

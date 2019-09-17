@@ -34,8 +34,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <immintrin.h> // -mavx -mfma
+#include <immintrin.h>
 #include <common/types/generic.h>
+#include <common/config/config_install.h>
 
 #define MAX_LEVELS      10
 #define METRICS_WINDOW  40000
@@ -48,18 +49,26 @@
 #define NEW_LOOP        3
 #define END_NEW_LOOP    4
 
+#ifdef AVX512
+#define dutype ushort
+#define dstype short
+#else
+#define dutype uint
+#define dstype int
+#endif
+
 // Functions
 /** Given a sample and its size, returns the state the application is in (in
 *   a loop, in an iteration, etc.). */
-short dynais(ushort sample, ushort *size, ushort *level);
+dstype dynais(dutype sample, dutype *size, dutype *level);
 
 /** Converts a long sample to short sample. */
-ushort dynais_sample_convert(ulong sample);
+dutype dynais_sample_convert(ulong sample);
 
 int dynais_build_type();
 
 /** Allocates memory in preparation to use dynais. Returns 0 on success */
-int dynais_init(ushort window, ushort levels);
+int dynais_init(dutype window, dutype levels);
 
 /** Frees the memory previously allocated. */
 void dynais_dispose();

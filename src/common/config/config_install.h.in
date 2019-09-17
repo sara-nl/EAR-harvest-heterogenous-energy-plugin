@@ -31,21 +31,15 @@
 #define EAR_PATHS_H
 
 // Library paths
-#define CPUPOWER_LIB_PATH   "@CPUPOWER_LIBDIR@"
-#define FREEIPMI_LIB_PATH   "@FREEIPMI_LIBDIR@"
 #define SLURM_LIB_PATH      "@SLURM_LIBDIR@"
 #define PAPI_LIB_PATH       "@PAPI_LIBDIR@"
 #define GSL_LIB_PATH        "@GSL_LIBDIR@"
 #define EAR_INSTALL_PATH    "@prefix@"
 
 // File paths
-#define EAR_DAEMON_PATH     ""
+#define EAR_DAEMON_PATH		""
 #define EAR_CONF_FILE		""
 #define MPI_C_LIB_PATH		"lib/libear"
 #define MPI_F_LIB_PATH		""
-
-// Database
-#define DB_FILES			@DB_FILES@
-#define DB_MYSQL			@DB_MYSQL@
 
 #endif //EAR_PATHS_H

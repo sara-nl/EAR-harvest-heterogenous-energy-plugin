@@ -65,51 +65,48 @@ AC_DEFUN([X_AC_MYSQL],
     _x_ac_mysql_dir_bin=
     _x_ac_mysql_dir_lib=
 
-    AC_ARG_WITH(
-        [mysql],
-        AS_HELP_STRING(--with-mysql=PATH,Specify path to MySQL installation),
-        [
+	AC_ARG_WITH(
+		[mysql],
+		AS_HELP_STRING(--with-mysql=PATH,Specify path to MySQL installation),
+        	[
 			_x_ac_mysql_dirs_root="$withval"
 			_x_ac_mysql_custom="yes"
+			_x_ac_mysql_with="yes"
 		]
-    )
+	)
 
-	AS_IF([test "x$DB_MYSQL" = "x1"],
-	[
-    AC_CACHE_CHECK(
+	AC_CACHE_CHECK(
         [for MySQL root directory],
         [_cv_mysql_dir_root],
         [
 			X_AC_MYSQL_FIND_ROOT_DIR([])
-
-    		if test -z "$_cv_mysql_dir_root"; then
-				_x_ac_mysql_dirs_root="${_ax_ld_dirs_root}"
-				_x_ac_mysql_custom="yes"
-
-				X_AC_MYSQL_FIND_ROOT_DIR([])
+			if test -z "$_cv_mysql_dir_root"; then
+			_x_ac_mysql_dirs_root="${_ax_ld_dirs_root}"
+			_x_ac_mysql_custom="yes"
+			X_AC_MYSQL_FIND_ROOT_DIR([])
 			fi
         ]
     )
 
-    if test -z "$_cv_mysql_dir_root"; then
-        echo checking for MySQL compiler link... no
+	if test -z "$_cv_mysql_dir_root"; then
+		echo checking for MySQL compiler link... no
 		DB_MYSQL=0
-    else
-        DB_DIR=$_cv_mysql_dir_root
-        DB_LIBS=$_x_ac_mysql_gcc_libs
-       	DB_LDFLAGS=$_x_ac_mysql_gcc_ldflags
+	else
+		DB_NAME=mysql
+		DB_DIR=$_cv_mysql_dir_root
+		DB_LIBS=$_x_ac_mysql_gcc_libs
+		DB_LDFLAGS=$_x_ac_mysql_gcc_ldflags
 
-        if test "x$_x_ac_mysql_custom" = "xyes"; then
-        	DB_LIBDIR=$_x_ac_mysql_dir_lib
-        	DB_CPPFLAGS="-I$FREEIPMI_DIR/include"
+		if test "x$_x_ac_mysql_custom" = "xyes"; then
+			DB_LIBDIR=$_x_ac_mysql_dir_lib
+			DB_CPPFLAGS="-I$DB_DIR/include"
 		fi
 
-        echo checking for MySQL compiler link... yes
-        echo checking for MySQL CPPFLAGS... $DB_CPPFLAGS
-        echo checking for MySQL LDFLAGS... $DB_LDFLAGS
-        echo checking for MySQL libraries... $DB_LIBS
-    fi
-	])
+		echo checking for MySQL compiler link... yes
+		echo checking for MySQL CPPFLAGS... $DB_CPPFLAGS
+		echo checking for MySQL LDFLAGS... $DB_LDFLAGS
+		echo checking for MySQL libraries... $DB_LIBS
+	fi
 
     AC_SUBST(DB_LIBS)
     AC_SUBST(DB_LIBDIR)

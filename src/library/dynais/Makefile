@@ -1,12 +1,18 @@
-#CC = icc -Werror-all
+CFLAGS = $(CC_FLAGS) -fPIC -O2 $(FEAT_AVX512)
 
 ######## FILES
 
-OBJS = dynais.o \
-       dynais_core_0.o \
-       dynais_core_n.o
-DEPS = dynais.o \
-       dynais_core.o
+ifdef FEAT_AVX512
+FOLD = avx512
+else
+FOLD = avx2
+endif
+
+OBJS = $(FOLD)/dynais.o \
+       $(FOLD)/dynais_core_0.o \
+       $(FOLD)/dynais_core_n.o
+DEPS = $(FOLD)/dynais.o \
+       $(FOLD)/dynais_core.o
 
 ######## RULES
 
