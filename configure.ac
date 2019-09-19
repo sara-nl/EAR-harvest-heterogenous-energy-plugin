@@ -3,7 +3,6 @@ m4_include([m4/ax_compare_version.m4])
 m4_include([m4/ax_helper_functions.m4])
 m4_include([m4/ax_post_opt_features.m4])
 m4_include([m4/ax_pre_opt_features.m4])
-m4_include([m4/x_ac_cpupower.m4])
 m4_include([m4/x_ac_pgsql.m4])
 m4_include([m4/x_ac_mysql.m4])
 m4_include([m4/x_ac_slurm.m4])
@@ -73,13 +72,6 @@ X_AC_PAPI
 #
 
 X_AC_GSL
-
-############
-# CPUPOWER #
-############
-#
-
-X_AC_CPUPOWER
 
 #########
 # SLURM #
