@@ -46,12 +46,13 @@
 #define MIN_TIME_TO_SOLUTION    1
 #define MONITORING_ONLY         2
 #define MAX_POLICY_SETTINGS     5
+#define POLICY_NAME_SIZE			64
 
 
 typedef struct policy_conf
 {
     uint policy; 
-    char name[64];
+    char name[POLICY_NAME_SIZE];
     double settings[MAX_POLICY_SETTINGS];
     //double th; 
     //uint num_settings;

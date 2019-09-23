@@ -279,6 +279,29 @@ int dynconf_set_th(ulong p_id, ulong th) {
 	return s;
 }
 
+
+int dyncon_set_policy(new_policy_cont_t *p)
+{
+	state_t s=EAR_SUCCESS;
+	int pid;
+	pid=policy_name_to_id(p->name,&my_cluster_conf);
+	if (pid==EAR_ERROR){ 
+		error("Policy %s not found",p->name);
+		return EAR_ERROR;
+	}
+	debug("Policy %s found at id %d",p->name,pid);
+	if (frequency_is_valid_frequency(p->def_freq)){
+		memcpy(my_cluster_conf.power_policies[pid].settings,p->settings,sizeof(double)*MAX_POLICY_SETTINGS);
+		my_cluster_conf.power_policies[pid].def_freq=p->def_freq;
+		my_cluster_conf.power_policies[pid].p_state=frequency_pstate_to_freq(p->def_freq);
+	}else{
+		error("Invalid frequency %lu for policy %s ",p->def_freq,p->name);
+		s=EAR_ERROR;
+	}
+	return s;
+	
+}
+
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
@@ -361,6 +384,10 @@ void process_remote_requests(int clientfd) {
 		case EAR_RC_REST_CONF:
 			verbose(VRAPI, "restore conf command received\n");
 			ack = dyncon_restore_conf();
+			break;
+	  case EAR_RC_SET_POLICY:
+			verbose(VRAPI,"set policy received\n");
+			ack = dyncon_set_policy(&command.my_req.pol_conf);
 			break;
 		case EAR_RC_PING:
 			verbose(VRAPI + 1, "ping received\n");

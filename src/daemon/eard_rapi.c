@@ -457,10 +457,23 @@ int eards_ping()
 int eards_set_powercap(unsigned long pc)
 {
     request_t command;
-  command.node_dist = 0;
+  	command.node_dist = 0;
     command.req=EAR_RC_NEW_POWERCAP;
     command.node_dist = 0;
     command.time_code = time(NULL);
+		command.my_req.pc=pc;
+    return send_command(&command);
+}
+
+
+int eards_set_policy_info(new_policy_cont_t *p)
+{
+    request_t command;
+    command.node_dist = 0;
+    command.req=EAR_RC_SET_POLICY;
+    command.node_dist = 0;
+    command.time_code = time(NULL);
+		memcpy(&command.my_req.pol_conf,p,sizeof(new_policy_cont_t));
     return send_command(&command);
 }
 

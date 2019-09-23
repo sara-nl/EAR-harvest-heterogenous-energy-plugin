@@ -90,6 +90,15 @@ int eards_inc_th(ulong th);
 int eards_ping();
 
 
+/** gets the policy_configuration for a given policy 
+ * */
+int eards_get_policy_info(new_policy_cont_t *p);
+/** set the policy_configuration for a given policy 
+ * */
+int eards_set_policy_info(new_policy_cont_t *p);
+
+
+
 /** Disconnect from the previously connected EARD
 */
 int eards_remote_disconnect();
