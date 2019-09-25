@@ -57,11 +57,20 @@ typedef struct new_conf{
 	uint p_id;
 }new_conf_t;
 
+typedef struct new_policy_cont{
+	char name[POLICY_NAME_SIZE];
+	ulong def_freq;
+	double settings[MAX_POLICY_SETTINGS];
+}new_policy_cont_t;
+
 typedef union req_data{
-		application_t 			new_job;
-		end_job_req_t 	end_job;
-		new_conf_t 		ear_conf;
+		application_t 		new_job;
+		end_job_req_t 		end_job;
+		new_conf_t 				ear_conf;
+		new_policy_cont_t	pol_conf;
+	  unsigned long     pc;
 }req_data_t;
+
 
 
 typedef struct request{
@@ -108,6 +117,7 @@ typedef struct status{
 #define EAR_RC_SET_FREQ 	104
 #define EAR_RC_DEF_FREQ		105
 #define EAR_RC_REST_CONF	106
+#define EAR_RC_SET_POLICY 108
 #define EAR_RC_PING		    500
 #define EAR_RC_NEW_POWERCAP	700
 #define EAR_RC_STATUS		600
