@@ -113,6 +113,7 @@ src/tests/app_api/app_api_test
 src/tests/functionals/ping
 src/tests/functionals/read_from_file
 src/tests/functionals/signaures_avg
+src/tests/functionals/ips_check
 src/tools/coefficients_comparison
 src/tools/coeffs_compare
 src/tools/coeffs_comparison
