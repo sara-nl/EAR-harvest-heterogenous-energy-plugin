@@ -2,7 +2,10 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS)
 
 ######## FILES
 
-BINS = ear_conf
+ips_check_OBJS = \
+	$(SRCDIR)/common/libcommon.a 
+
+BINS = ear_conf ips_check
 
 ######## RULES
 
@@ -11,6 +14,8 @@ all: $(BINS)
 ear_conf: ear_conf.c $(SRCDIR)/common/libcommon.a
 	$(CC) $(CFLAGS) -o ear_conf $^
 
+ips_check: ips_check.c $(ips_check_OBJS)
+	$(CC) $(CFLAGS) -o ips_check $^
 ######## OPTIONS
 
 clean:
