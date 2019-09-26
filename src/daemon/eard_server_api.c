@@ -54,7 +54,7 @@
 #define DAEMON_EXTERNAL_CONNEXIONS 1
 
 
-int *ips;
+int *ips = NULL;
 int total_ips = -1;
 int self_id = -1;
 
@@ -186,7 +186,11 @@ int init_ips(cluster_conf_t *my_conf)
     gethostname(buff, 64);
     strtok(buff,".");
     ret = get_range_ips(my_conf, buff, &ips);
-    if (ret < 1) return EAR_ERROR;
+    if (ret < 1) {
+        ips = NULL;
+        self_id = -1;
+        return EAR_ERROR;
+    }
     if (strlen(my_conf->net_ext) > 0)
     strcat(buff, my_conf->net_ext);
     temp_ip = get_ip(buff, my_conf);
@@ -201,6 +205,7 @@ int init_ips(cluster_conf_t *my_conf)
     if (self_id < 0)
     {
         free(ips);
+        ips = NULL;
         error("Couldn't find node in IP list.");
         return EAR_ERROR;
     }
@@ -228,6 +233,7 @@ void propagate_req(request_t *command, uint port)
 {
      
     if (command->node_dist > total_ips) return;
+    if (self_id = -1 || ips == NULL || total_ips < 1) return;
 
     struct sockaddr_in temp;
 
@@ -363,6 +369,45 @@ void propagate_req(request_t *command, uint port)
 }
 #endif
 
+int get_self_ip()
+{
+    int s;
+    char buff[512];
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+    gethostname(buff, 50);
+
+    strtok(buff,".");
+    #if USE_EXT
+    strcat(buff, NW_EXT);
+    #endif
+
+
+   	s = getaddrinfo(buff, NULL, &hints, &result);
+    if (s != 0) {
+		error("propagate_status:getaddrinfo fails for port %s (%s)",buff,strerror(errno));
+		return EAR_ERROR;
+    }
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        if (rp->ai_addr->sa_family == AF_INET)
+        {
+            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
+            struct sockaddr_in temp;
+
+            return saddr->sin_addr.s_addr;
+        }
+    }
+}
 
 #if USE_NEW_PROP
 int propagate_status(request_t *command, uint port, status_t **status)
@@ -376,12 +421,16 @@ int propagate_status(request_t *command, uint port, status_t **status)
     temp_status = calloc(NUM_PROPS, sizeof(status_t *));
     memset(num_status, 0, sizeof(num_status));
 
-    if (command->node_dist > total_ips || self_id < 0)
+    debug("recieved status: total_ips: %d\t self_id: %d\t ips is null: %d\n", total_ips, self_id, ips==NULL);
+    if (command->node_dist > total_ips || self_id < 0 || ips == NULL || total_ips < 1)
     {
         final_status = calloc(1, sizeof(status_t));
-        final_status[0].ip = ips[self_id];
+        if (self_id < 0 || ips == NULL)
+            final_status[0].ip = get_self_ip();
+        else
+            final_status[0].ip = ips[self_id];
         final_status[0].ok = STATUS_OK;
-				debug("status has 1 status");
+	    debug("status has 1 status\n");
         *status = final_status;
         return 1;
     }

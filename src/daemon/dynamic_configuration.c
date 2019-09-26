@@ -73,6 +73,9 @@ static uint num_f;
 int last_command = -1;
 int last_dist = -1;
 int last_command_time = -1;
+#if USE_NEW_PROP
+int node_found = EAR_ERROR;
+#endif
 
 static char *TH_NAME = "RemoteAPI";
 static ehandler_t my_eh_rapi;
@@ -335,7 +338,7 @@ void process_remote_requests(int clientfd) {
 			verbose(VRAPI + 1, "Recieved repeating command: %u", req);
 			ack = EAR_IGNORE;
 			send_answer(clientfd, &ack);
-			if ((command.node_dist > 0) && (command.node_dist != last_dist)) {
+			if ((command.node_dist > 0) && (command.node_dist != last_dist) && node_found != EAR_ERROR) {
 				last_dist = command.node_dist;
 				propagate_req(&command, my_cluster_conf.eard.port);
 			}
@@ -403,7 +406,7 @@ void process_remote_requests(int clientfd) {
 	}
 	send_answer(clientfd, &ack);
 #if USE_NEW_PROP
-	if (req != EAR_RC_PING && req != NO_COMMAND && req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB)
+	if (req != EAR_RC_PING && req != NO_COMMAND && req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB && node_found != EAR_ERROR)
 #else
 	if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
 #endif
@@ -439,7 +442,8 @@ void *eard_dynamic_configuration(void *tmp)
 	verbose(VRAPI + 2, "We have %u valid p_states\n", num_f);
 #if USE_NEW_PROP
 	verbose(0, "Init for ips\n");
-	init_ips(&my_cluster_conf);
+	node_found = init_ips(&my_cluster_conf);
+    if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file\n");
 #endif
 
 
