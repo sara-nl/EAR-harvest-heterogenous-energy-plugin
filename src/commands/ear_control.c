@@ -180,15 +180,25 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
     if (counter < num_ips)
     {
         printf("\n\nINACTIVE NODES\n");
+        char first_node = 1;
         for (i = 0; i <num_ips; i++)
         {
-            if (!ips[i].counter) {
-                if (error_only) printf("%10s\t%10s\t->node not responding\n", ips[i].name, ips[i].ip);
-                else printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
-            } else if (!ips[i].power || ips[i].power > ips[i].max_power) {
-                printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
-	    }
+            if (error_only)
+            {
+                if (!first_node)
+                    printf(",");
+                else first_node = 0;
+                printf("%8s", ips[i].name);
+            }
+            else {
+                if (!ips[i].counter) {
+                    printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
+                } else if (!ips[i].power || ips[i].power > ips[i].max_power) {
+                    printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
+                }
+	        }
         }
+        printf("\n");
     }
 }
 
