@@ -185,10 +185,13 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
         {
             if (error_only)
             {
-                if (!first_node)
-                    printf(",");
-                else first_node = 0;
-                printf("%8s", ips[i].name);
+                if (!ips[i].counter || !ips[i].power || ips[i].power > ips[i].max_power)
+                {
+                    if (!first_node)
+                        printf(",");
+                    else first_node = 0;
+                    printf("%8s", ips[i].name);
+                }
             }
             else {
                 if (!ips[i].counter) {
