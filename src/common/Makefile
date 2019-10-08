@@ -33,10 +33,10 @@ clean: clean.components libc.gclean rclean;
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'types' $* || exit
-ifdef DB_BASE
+	@ $(MAKE) -C 'types'    $* || exit
+	@ $(MAKE) -C 'system'   $* || exit
+	@ $(MAKE) -C 'hardware' $* || exit
 	@ $(MAKE) -C 'database' $* || exit
-endif
 
 ######## DEPENDENCIES
 

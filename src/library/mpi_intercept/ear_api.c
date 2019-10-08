@@ -56,10 +56,9 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
-#include <metrics/metrics_earl.h>
 
 
 // Statics
@@ -68,7 +67,7 @@
 #define USE_LOCK_FILES 		1
 
 #if USE_LOCK_FILES
-#include <common/file.h>
+#include <common/system/file.h>
 static char fd_lock_filename[BUFFSIZE];
 static int fd_master_lock;
 #endif

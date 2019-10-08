@@ -35,17 +35,17 @@
 // #define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/environment.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 #if USE_MSR_RAPL
-#include <metrics/msr/energy_cpu.h>
+#include <metrics/accumulators/energy_cpu.h>
 #else
 #include <metrics/papi/generics.h>
 #include <metrics/papi/energy_cpu.h>
 #endif
-#include <metrics/handler/energy.h>
-#include <metrics/custom/bandwidth.h>
-#include <metrics/custom/hardware_info.h>
-#include <metrics/custom/frequency.h>
+#include <metrics/energy/energy_node.h>
+#include <metrics/bandwidth/bandwidth.h>
+#include <common/hardware/hardware_info.h>
+#include <metrics/frequency/frequency_cpu.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>

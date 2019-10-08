@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/folder.h>
+#include <common/system/folder.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_options.h>

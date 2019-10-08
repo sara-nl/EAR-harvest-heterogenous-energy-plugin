@@ -48,9 +48,9 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 
-#include <metrics/custom/hardware_info.h>
+#include <common/hardware/hardware_info.h>
 #ifndef EAR_CPUPOWER
 static struct cpufreq_policy previous_cpu0_policy;
 #else

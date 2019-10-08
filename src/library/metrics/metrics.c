@@ -38,7 +38,6 @@
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
-#include <metrics/metrics_earl.h>
 #if 0
 #include <metrics/papi/flops.h>
 #include <metrics/papi/cache.h>
@@ -49,7 +48,7 @@
 #include <daemon/eard_api.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
-#include <metrics/api/energy_lib.h>
+#include <metrics/energy/node/energy_node.h>
 
 //#define TEST_MB 0
 

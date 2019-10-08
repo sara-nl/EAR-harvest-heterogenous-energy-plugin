@@ -32,7 +32,7 @@
 #include <unistd.h>
 
 #include <common/config.h>
-#include <common/file.h>
+#include <common/system/file.h>
 #include <common/output/verbose.h>
 #include <library/tracer/tracer_mpi.h>
 

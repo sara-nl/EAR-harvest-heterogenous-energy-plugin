@@ -47,7 +47,7 @@
 #include <library/states/states.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 #include <daemon/eard_api.h>
 
 extern uint mpi_calls_in_period;

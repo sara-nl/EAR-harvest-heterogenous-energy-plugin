@@ -42,7 +42,7 @@
 #include <common/types/projection.h> //?
 #include <library/policies/policy_api.h> //clean
 #include <library/policies/policy_ctx.h> //clean
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 #include <daemon/eard_api.h> //?
 
 typedef unsigned long ulong;

@@ -29,7 +29,7 @@
 
 #include <pwd.h>
 #include <grp.h>
-#include <common/file.h>
+#include <common/system/file.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>

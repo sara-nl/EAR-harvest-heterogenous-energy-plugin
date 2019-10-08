@@ -34,7 +34,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <common/user.h>
+#include <common/system/user.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>

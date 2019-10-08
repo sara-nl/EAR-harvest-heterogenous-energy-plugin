@@ -2,17 +2,19 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
 
-comm_OBJS = msr.o cpuid.o
+comm_OBJS = msr.o pci.o
 
 ######## RULES
 
 all: $(comm_OBJS)
 
-msr.o: msr.c msr.h
+%.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-cpuid.o: cpuid.c cpuid.h
-	$(CC) $(CFLAGS) -c $<
+######## SUBFOLDERS
+
+%.components:
+	@ $(MAKE) -C 'cpu' $* || exit
 
 ######## OPTIONS
 
