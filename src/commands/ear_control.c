@@ -148,26 +148,31 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
     return num_ips;
 }
 
-void print_ips(ip_table_t *ips, int num_ips)
+void print_ips(ip_table_t *ips, int num_ips, char error_only)
 {
     int i, j, counter = 0;
-    printf("%10s\t%5s\t%4s\t%4s\t%6s\t%6s", "hostname", "power", "temp", "freq", "job_id", "stepid");
-    printf("  %6s  %5s  %2s\n", "policy", "pfreq", "th");
+    if (!error_only)
+    {
+        printf("%10s\t%5s\t%4s\t%4s\t%6s\t%6s", "hostname", "power", "temp", "freq", "job_id", "stepid");
+        printf("  %6s  %5s  %2s\n", "policy", "pfreq", "th");
+    }
 	char temp[GENERIC_NAME];
     char final[GENERIC_NAME];
     for (i=0; i<num_ips; i++)
 	{
         if (ips[i].counter && ips[i].power != 0 )
         {
-            printf("%10s\t%5d\t%3dC\t%.2lf\t%6d\t%6d", ips[i].name, ips[i].power, ips[i].temp, 
+            if (!error_only) {
+                    printf("%10s\t%5d\t%3dC\t%.2lf\t%6d\t%6d", ips[i].name, ips[i].power, ips[i].temp, 
                             (double)ips[i].current_freq/1000000.0, ips[i].job_id, ips[i].step_id);
-		    for (j = 0; j < TOTAL_POLICIES; j++)
-		    {
-			    policy_id_to_name(j, temp, &my_cluster_conf);
-                get_short_policy(final, temp, &my_cluster_conf);
-			    printf("  %6s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
-		    }
-            printf("\n");
+	    	    for (j = 0; j < TOTAL_POLICIES; j++)
+    		    {
+			        policy_id_to_name(j, temp, &my_cluster_conf);
+                    get_short_policy(final, temp, &my_cluster_conf);
+		    	    printf("  %6s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
+	    	    }
+                printf("\n");
+            }
             if (ips[i].power < ips[i].max_power)
                 counter++;
         }
@@ -178,7 +183,8 @@ void print_ips(ip_table_t *ips, int num_ips)
         for (i = 0; i <num_ips; i++)
         {
             if (!ips[i].counter) {
-                printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
+                if (error_only) printf("%10s\t%10s\t->node not responding\n", ips[i].name, ips[i].ip);
+                else printf("%10s\t%10s\n", ips[i].name, ips[i].ip);
             } else if (!ips[i].power || ips[i].power > ips[i].max_power) {
                 printf("%10s\t%10s\t->power error (reported %dW)\n", ips[i].name, ips[i].ip, ips[i].power);
 	    }
@@ -235,7 +241,7 @@ void clean_ips(ip_table_t *ips, int num_ips)
         ips[i].counter=0;
 }
 
-void process_status(int num_status, status_t *status)
+void process_status(int num_status, status_t *status, char error_only)
 {
     if (num_status > 0)
     {
@@ -245,7 +251,7 @@ void process_status(int num_status, status_t *status)
         clean_ips(ips, num_ips);
         for (i = 0; i < num_status; i++)
             check_ip(status[i], ips, num_ips);
-        print_ips(ips, num_ips);
+        print_ips(ips, num_ips, error_only);
         free(status);
     }
     else printf("An error retrieving status has occurred.\n");
@@ -276,7 +282,7 @@ void process_single_status(int num_status, status_t *status, char *node_name)
         ip_table_t ips;
         generate_ip(&ips, node_name);
         check_ip(*status, &ips, 1);
-        print_ips(&ips, 1);
+        print_ips(&ips, 1, 0);
     }
     else printf("An error retrieving status has occurred.\n");
 }
@@ -319,6 +325,7 @@ int main(int argc, char *argv[])
             {"restore-conf", 	no_argument, 0, 6},
 	        {"ping", 	     	optional_argument, 0, 'p'},
             {"status",       	optional_argument, 0, 's'},
+            {"error",           no_argument, 0, 'e'},
             {"help",         	no_argument, 0, 'h'},
             {0, 0, 0, 0}
         };
@@ -435,8 +442,12 @@ int main(int argc, char *argv[])
                 else
                 {
                     num_status = status_all_nodes(my_cluster_conf, &status);
-                    process_status(num_status, status);
+                    process_status(num_status, status, 0);
                 }
+                break;
+            case 'e':
+                num_status = status_all_nodes(my_cluster_conf, &status);
+                process_status(num_status, status, 1);
                 break;
             case 'h':
                 usage(argv[0]);
