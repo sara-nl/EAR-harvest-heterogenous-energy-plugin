@@ -179,7 +179,7 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
 	}
     if (counter < num_ips)
     {
-        printf("\n\nINACTIVE NODES\n");
+        if (!error_only) printf("\n\nINACTIVE NODES\n");
         char first_node = 1;
         for (i = 0; i <num_ips; i++)
         {

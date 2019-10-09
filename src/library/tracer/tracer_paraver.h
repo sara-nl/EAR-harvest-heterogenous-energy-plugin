@@ -30,15 +30,29 @@
 #ifndef _EAR_TRACES_H_
 #define _EAR_TRACES_H_
 
+/*
+        timestamp:1:            Period id
+        timestamp:2:            Period length
+        timestamp:3:            Period iterations
+        timestamp:4:            Period time
+        timestamp:5:            Period CPI
+        timestamp:6:            Period TPI
+        timestamp:7:            Period GBs
+        timestamp:8:            Period power
+        timestamp:9:            Period time projection
+        timestamp:10:           Period CPI projection
+        timestamp:11:           Period power projection
+        timestamp:12:           Frequency
+*/
 
 #include <common/config.h>
 #include <common/types/generic.h>
-#include <daemon/shared_configuration.h>
 
+#define MIN_FREQ_FOR_SAMPLING 500000
 
 #ifdef EAR_GUI
 	/** Executed at application start */
- 	void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn);
+ 	void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn);
 	/** Executed at application end */
 	void traces_end(int global_rank,int local_rank, unsigned long int total_ener);
 	/** **/
@@ -67,10 +81,6 @@
 	
 	/** returns true if traces are dynamically activated , is independent on start/stop*/
 	int traces_are_on();
-	void traces_mpi_init();
-	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
-	void traces_mpi_end();
-
 #else
 	#define traces_init(a,g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
@@ -88,10 +98,6 @@
 	#define traces_start()
 	#define traces_stop()
 	#define traces_are_on() 	0
-	#define traces_mpi_init();
-	#define traces_mpi_call(g,l,t,e,a1,a2,a3);
-	#define traces_mpi_end();
-
 #endif
 
 #endif

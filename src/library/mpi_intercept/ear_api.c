@@ -47,7 +47,6 @@
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
-#include <library/tracer/tracer_mpi.h>
 #include <library/states/states.h>
 #include <library/states/states_periodic.h>
 #include <library/models/models.h>

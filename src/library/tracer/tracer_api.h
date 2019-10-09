@@ -31,12 +31,10 @@
 #define _EAR_TRACES_H_
 
 
-#include <common/config.h>
 #include <common/types/generic.h>
 #include <daemon/shared_configuration.h>
 
 
-#ifdef EAR_GUI
 	/** Executed at application start */
  	void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn);
 	/** Executed at application end */
@@ -67,31 +65,12 @@
 	
 	/** returns true if traces are dynamically activated , is independent on start/stop*/
 	int traces_are_on();
+
 	void traces_mpi_init();
+
 	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
+
 	void traces_mpi_end();
 
-#else
-	#define traces_init(a,g,l,n,m,p)
-	#define traces_new_n_iter(g,l,p,lo,i)
-	#define traces_end(g,l,e)
-	#define traces_new_signature(g,l,s,c,t,gb,p,vpi)
-	#define traces_frequency(g,l,f)
-	#define traces_PP(g,l,s,p)
-	#define traces_new_period(g,l,p)
-	#define traces_end_period(g,l)
-	#define traces_policy_state(g,l,s);
-	#define traces_dynais(g,l,s);
-	#define traces_earl_mode_dynais(g,l);
-	#define traces_earl_mode_periodic(g,l);
-	#define traces_reconfiguration(g,l);
-	#define traces_start()
-	#define traces_stop()
-	#define traces_are_on() 	0
-	#define traces_mpi_init();
-	#define traces_mpi_call(g,l,t,e,a1,a2,a3);
-	#define traces_mpi_end();
-
-#endif
 
 #endif

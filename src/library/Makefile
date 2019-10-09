@@ -37,7 +37,6 @@ mpix_OBJS = \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
-    tracer/tracer_mpi.o \
     mpi_intercept/ear_api.o \
     mpi_intercept/process_MPI.o \
     dynais/dynais.a
