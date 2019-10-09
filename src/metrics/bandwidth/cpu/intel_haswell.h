@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef EAR_BANDWIDTH_INTEL_HASWELL_H
-#define EAR_BANDWIDTH_INTEL_HASWELL_H
+#ifndef METRICS_BANDWIDTH_CPU_INTEL_HASWELL_H
+#define METRICS_BANDWIDTH_CPU_INTEL_HASWELL_H
 
 #include <metrics/bandwidth/cpu/utils.h>
 

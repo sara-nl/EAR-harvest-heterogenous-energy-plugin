@@ -27,11 +27,12 @@
  * *	The GNU LEsser General Public License is contained in the file COPYING
  * */
 
-#ifndef EAR_ENERGY_H
-#define EAR_ENERGY_H
+#ifndef METRICS_ENERGY_NODE_H
+#define METRICS_ENERGY_NODE_H
 
 #include <common/includes.h>
 #include <common/system/time.h>
+#include <metrics/accumulators/types.h>
 #include <common/types/configuration/cluster_conf.h>
 
 state_t energy_init(cluster_conf_t *conf, void **c);

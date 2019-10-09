@@ -2,7 +2,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-freq_OBJS = frequency.o
+freq_OBJS = frequency_imc.o frequency_cpu.o
 
 ######## RULES
 

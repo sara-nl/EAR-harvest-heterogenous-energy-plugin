@@ -32,6 +32,7 @@
 
 #include <common/states.h>
 #include <common/types/generic.h>
+#include <metrics/accumulators/types.h>
 
 state_t energy_init(void **c);
 

@@ -34,21 +34,17 @@
 #include <papi.h>
 #include <common/config.h>
 #include <common/states.h>
-// #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
-#if 0
-#include <metrics/papi/flops.h>
-#include <metrics/papi/cache.h>
-#include <metrics/papi/generics.h>
-#include <metrics/papi/instructions.h>
-#endif
-#include <metrics/custom/bandwidth_notpriv.h>
-#include <daemon/eard_api.h>
+#include <common/hardware/hardware_info.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
+#include <metrics/cpi/cpi.h>
+#include <metrics/flops/flops.h>
 #include <metrics/energy/node/energy_node.h>
+#include <metrics/bandwidth/cpu/utils.h>
+#include <daemon/eard_api.h>
 
 //#define TEST_MB 0
 

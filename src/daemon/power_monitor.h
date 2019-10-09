@@ -50,7 +50,7 @@
 
 #include <common/types/application.h>
 #include <metrics/energy/energy_node.h>
-#include <metrics/power_metrics/power_metrics.h>
+#include <metrics/accumulators/power_metrics.h>
 #include <daemon/node_metrics.h>
 #include <daemon/eard_conf_rapi.h>
 

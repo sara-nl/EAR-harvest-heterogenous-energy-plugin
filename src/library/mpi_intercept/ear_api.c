@@ -57,6 +57,7 @@
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
 #include <common/hardware/frequency.h>
+#include <metrics/common/papi.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
 

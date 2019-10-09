@@ -43,7 +43,7 @@
 #else
 #include <metrics/papi/energy_cpu.h>
 #endif
-#include <metrics/power_metrics/power_metrics.h>
+#include <metrics/accumulators/power_metrics.h>
 
 uint8_t power_mon_connected=0; 
 rapl_data_t *RAPL_metrics;
@@ -70,7 +70,7 @@ int pm_get_data_size_rapl()
 void pm_disconnect(ehandler_t *my_eh)
 {
 	if (rootp){
-		energy_dispose(my_eh);
+		energy_dispose(my_eh->context);
 	}else{
 		//eards_disconnect();
 	}
@@ -138,7 +138,7 @@ int pm_connect(ehandler_t *my_eh)
 	if (getuid()==0)	rootp=1;
 	if (rootp){
 		debug("Initializing energy in main power_monitor  thread");
-		pm_connected_status=energy_init(NULL, my_eh);
+		pm_connected_status=energy_init(NULL, my_eh->context);
 		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);

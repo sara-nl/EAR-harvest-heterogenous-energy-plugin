@@ -39,6 +39,7 @@
 #define _POWER_MON_H_
 
 #include <common/states.h>
+#include <metrics/accumulators/types.h>
 #include <metrics/energy/energy_node.h>
 
 #define NUM_SOCKETS	2

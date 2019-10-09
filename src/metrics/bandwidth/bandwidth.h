@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _MB_H_
-#define _MB_H_
+#ifndef METRICS_BANDWIDTH_CPU
+#define METRICS_BANDWIDTH_CPU
 
 #include <metrics/bandwidth/cpu/intel_haswell.h>
 

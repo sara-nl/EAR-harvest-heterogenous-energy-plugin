@@ -23,7 +23,8 @@ mets_OBJS = \
     $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/papi.o \
-    $(SRCDIR)/metrics/frequency/frequency.o \
+    $(SRCDIR)/metrics/frequency/frequency_imc.o \
+    $(SRCDIR)/metrics/frequency/frequency_cpu.o \
     $(SRCDIR)/metrics/frequency/cpu/intel_haswell.o \
     $(SRCDIR)/metrics/frequency/imc/intel_haswell.o \
     $(SRCDIR)/metrics/stalls/stalls.o \

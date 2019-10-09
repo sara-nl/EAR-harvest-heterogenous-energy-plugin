@@ -35,6 +35,7 @@
 // #define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/environment.h>
+#include <common/types/log.h>
 #include <common/hardware/frequency.h>
 #if USE_MSR_RAPL
 #include <metrics/accumulators/energy_cpu.h>

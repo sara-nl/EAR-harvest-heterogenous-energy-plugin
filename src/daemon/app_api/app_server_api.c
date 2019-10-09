@@ -38,13 +38,12 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <daemon/app_api/app_conf_api.h>
-//#include <metrics/ipmi/energy_node.h>
 #include <daemon/power_monitor.h>
+#include <daemon/app_api/app_conf_api.h>
+#include <metrics/energy/energy_node.h>
 
 #define close_app_connection()
 
