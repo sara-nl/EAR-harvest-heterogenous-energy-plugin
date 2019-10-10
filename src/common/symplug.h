@@ -30,6 +30,9 @@
 #ifndef EAR_PRIVATE_SYMPLUG_H
 #define EAR_PRIVATE_SYMPLUG_H
 
+#define _GNU_SOURCE
+
+#include <dlfcn.h>
 #include <common/states.h>
 #include <common/types/generic.h>
 

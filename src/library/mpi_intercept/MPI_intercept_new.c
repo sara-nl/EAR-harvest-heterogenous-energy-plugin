@@ -27,7 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <librar/mpi_intercept/MPI_intercept_new.h>
+#include <common/symplug.h>
+#include <common/output/debug.h>
+#include <library/mpi_intercept/MPI_intercept_new.h>
 
 struct mpisyms_t {
 	int (*MPI_Allgather) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
@@ -572,8 +574,8 @@ int MPI_Init(int *argc, char ***argv)
 	debug(">> MPI_Init...............");
 
 	// Looking for next symbols
-	int syms_n = (int) (sizeof(mpi_names) / sizeof(mpi_names[0]);
-	symplug_join(RTLD_NEXT, (void *) &mpi_syms, mpi_names, n);
+	int syms_n = (int) (sizeof(mpi_names) / sizeof(mpi_names[0]));
+	symplug_join(RTLD_NEXT, (void *) &mpi_syms, mpi_names, syms_n);
 
 	// Proceed as normal
 	EAR_MPI_Init_enter(argc, argv);

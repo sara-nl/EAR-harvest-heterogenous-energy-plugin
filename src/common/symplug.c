@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <dlfcn.h>
-#define SHOW_DEBUGS 1
 #include <common/symplug.h>
 #include <common/includes.h>
 

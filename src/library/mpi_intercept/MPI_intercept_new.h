@@ -31,6 +31,6 @@
 #define LIBRARY_MPI_INTERCEPT_NEW_H
 
 #include <mpi.h>
-#include <librar/mpi_intercept/MPI_interface.h>
+#include <library/mpi_intercept/MPI_interface.h>
 
 #endif //LIBRARY_MPI_INTERCEPT_NEW_H
