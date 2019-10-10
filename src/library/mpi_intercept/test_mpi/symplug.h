@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,39 +15,32 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#ifndef EAR_PRIVATE_SYMPLUG_H
+#define EAR_PRIVATE_SYMPLUG_H
 
-#ifndef _RAPL_METRICS_H_
-#define _RAPL_METRICS_H_
+typedef int state_t;
+typedef unsigned int uint;
 
-#define RAPL_EVS            4
-#define RAPL_DRAM0          0
-#define RAPL_DRAM1          1
-#define RAPL_PACKAGE0       2
-#define RAPL_PACKAGE1       3
+#define preturn(call, ...) \
+	if (call == NULL) { \
+		return EAR_UNDEFINED; \
+	} \
+	return call (__VA_ARGS__);
 
-#define NUM_SOCKETS 				2
-#define MAX_PACKAGES  			16
+state_t symplug_join(void *handle, void *calls[], const char *names[], uint n);
 
-/** Opens the necessary fds to read the MSR registers. Returns 0 on success 
-* 	and -1 on error. */
-int init_rapl_msr(int *fd_map);
-void dispose_rapl_msr(int *fd_map);
+state_t symplug_open(char *path, void *calls[], const char *names[], uint n);
 
-/** Reads rapl counters and stores them in values array. Returns 0 on success 
-*	and -1 on error. */
-int read_rapl_msr(int *fd_map,unsigned long long *_values);
-
-#else
-#endif
+#endif //EAR_PRIVATE_SYMPLUG_H

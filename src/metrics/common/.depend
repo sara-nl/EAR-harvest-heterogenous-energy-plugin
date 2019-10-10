@@ -1,0 +1,5 @@
+pci.o: pci.c
+cpuid.o: cpuid.c ../../metrics/common/cpuid.h \
+ ../../common/types/generic.h
+msr.o: msr.c ../../common/sizes.h ../../metrics/common/msr.h \
+ ../../common/states.h ../../common/types/generic.h
