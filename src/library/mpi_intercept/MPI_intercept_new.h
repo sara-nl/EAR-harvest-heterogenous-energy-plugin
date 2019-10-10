@@ -27,39 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <dlfcn.h>
-#define SHOW_DEBUGS 1
-#include <common/symplug.h>
-#include <common/includes.h>
+#ifndef LIBRARY_MPI_INTERCEPT_NEW_H
+#define LIBRARY_MPI_INTERCEPT_NEW_H
 
-state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
-{
-	uint i;
+#include <mpi.h>
+#include <librar/mpi_intercept/MPI_interface.h>
 
-	for (i = 0; i < n; ++i)
-	{
-		calls[i] = dlsym(handle, names[i]);
-
-		if (calls[i]!=NULL) {
-			debug("symbol %s found", names[i]);
-		}else{
-			debug("symbol %s not found", names[i]);
-		}
-	}
-
-	return EAR_SUCCESS;
-}
-
-state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
-{
-	void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
-
-	if (!handle)
-	{
-		debug("Error when loading shared object (%s)\n", dlerror());
-
-		state_return_msg(EAR_DL_ERROR, 0, dlerror());
-	}
-
-	return symplug_join(handle, calls, names, n);
-}
+#endif //LIBRARY_MPI_INTERCEPT_NEW_H
