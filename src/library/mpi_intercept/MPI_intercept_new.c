@@ -375,18 +375,10 @@ int MPI_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest,
 int MPI_Init(int *argc, char ***argv)
 {
 	debug(">> MPI_Init...............");
-
-	// Looking for next symbols
-	int syms_n = (int) (sizeof(mpi_names) / sizeof(mpi_names[0]));
-	symplug_join(RTLD_NEXT, (void *) &mpi_syms, mpi_names, syms_n);
-
-	// Proceed as normal
 	EAR_MPI_Init_enter(argc, argv);
 	int res = mpi_syms.MPI_Init(argc, argv);
 	EAR_MPI_Init_leave();
-
 	debug("<< MPI_Init...............");
-
 	return res;
 }
 
