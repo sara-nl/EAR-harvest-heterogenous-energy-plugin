@@ -35,7 +35,8 @@
 #include <slurm_plugin/slurm_plugin_serialization.h>
 
 // Buffers
-static char buffer[SZ_BUFF_EXTRA];
+static char buffer1[SZ_BUFF_EXTRA];
+static char buffer2[SZ_BUFF_EXTRA];
 
 /*
  *
@@ -172,24 +173,24 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 	if (!getenv_agnostic(sp, Var.policy.ear, app->job.policy, SZ_NAME_MEDIUM)) {
 		strcpy(app->job.policy, "");
 	}
-	if (!getenv_agnostic(sp, Var.policy_th.ear, buffer, SZ_NAME_SHORT)) {
+	if (!getenv_agnostic(sp, Var.policy_th.ear, buffer1, SZ_NAME_SHORT)) {
 		app->job.th = -1.0;
 	} else {
-		app->job.th = atof(buffer);
+		app->job.th = atof(buffer1);
 	}
-	if (!getenv_agnostic(sp, Var.frequency.ear, buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.frequency.ear, buffer1, SZ_NAME_MEDIUM)) {
 		app->job.def_f = 0;
 	} else {
-		app->job.def_f = (ulong) atol(buffer);
+		app->job.def_f = (ulong) atol(buffer1);
 		if (!frequency_exists(sp, freqs, n_freqs, app->job.def_f)) {
 			app->job.def_f = 0;
 		}
 	}
-	if (!getenv_agnostic(sp, Var.learning.ear, buffer, SZ_NAME_MEDIUM)) {
+	if (!getenv_agnostic(sp, Var.learning.ear, buffer1, SZ_NAME_MEDIUM)) {
 		app->is_learning = 0;
 	} else {
-		if ((unsigned int) atoi(buffer) < n_freqs) {
-			app->job.def_f = freqs[atoi(buffer)];
+		if ((unsigned int) atoi(buffer1) < n_freqs) {
+			app->job.def_f = freqs[atoi(buffer1)];
 			app->is_learning = 1;
 		}
 	}
@@ -295,8 +296,8 @@ int plug_deserialize_local_alloc(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Job
 	 */
-	getenv_agnostic(sp, Var.node_num.loc, buffer, SZ_PATH);
-	sd->job.n_nodes = atoi(buffer);
+	getenv_agnostic(sp, Var.node_num.loc, buffer1, SZ_PATH);
+	sd->job.n_nodes = atoi(buffer1);
 	
 	return ESPANK_SUCCESS;
 }
@@ -392,30 +393,30 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 		unsetenv_agnostic(sp, Var.tag.ear);
 	}
 
-	snprintf(buffer, 16, "%u", setts->def_p_state);
-	setenv_agnostic(sp, Var.p_state.ear, buffer, 1);
+	snprintf(buffer1, 16, "%u", setts->def_p_state);
+	setenv_agnostic(sp, Var.p_state.ear, buffer1, 1);
 
-	snprintf(buffer, 16, "%lu", setts->def_freq);
-	setenv_agnostic(sp, Var.frequency.ear, buffer, 1);
+	snprintf(buffer1, 16, "%lu", setts->def_freq);
+	setenv_agnostic(sp, Var.frequency.ear, buffer1, 1);
 
-	/*if(policy_id_to_name(setts->policy, buffer) != EAR_ERROR) {
-		setenv_agnostic(sp, Var.policy.ear, buffer, 1);
+	/*if(policy_id_to_name(setts->policy, buffer1) != EAR_ERROR) {
+		setenv_agnostic(sp, Var.policy.ear, buffer1, 1);
 	}*/
     if (strlen(setts->policy_name) > 0) {
         setenv_agnostic(sp, Var.policy.ear, setts->policy_name, 1);
     }
 
-	snprintf(buffer, 16, "%0.2f", setts->settings[0]);
-	setenv_agnostic(sp, Var.eff_gain.ear, buffer, 1);
-	setenv_agnostic(sp, Var.perf_pen.ear, buffer, 1);
+	snprintf(buffer1, 16, "%0.2f", setts->settings[0]);
+	setenv_agnostic(sp, Var.eff_gain.ear, buffer1, 1);
+	setenv_agnostic(sp, Var.perf_pen.ear, buffer1, 1);
 
 	if(!setts->learning) {
 		unsetenv_agnostic(sp, Var.p_state.ear);
 		unsetenv_agnostic(sp, Var.learning.ear);
 	}
 
-	if (getenv_agnostic(sp, Var.name_app.rem, buffer, sizeof(buffer)) == 1) {
-		setenv_agnostic(sp, Var.name_app.ear, buffer, 1);
+	if (getenv_agnostic(sp, Var.name_app.rem, buffer1, sizeof(buffer1)) == 1) {
+		setenv_agnostic(sp, Var.name_app.ear, buffer1, 1);
 	}
 
 	/*
@@ -439,14 +440,29 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	}
 
 	// Appending libraries to LD_PRELOAD
-	apenv_agnostic(sd->job.user.env.ld_preload, sd->pack.path_inst, 64);
+	apenv_agnostic(buffer2, sd->pack.path_inst, 64);
 
 	//
-	n = snprintf(     0,       0, "%s/%s.%s", sd->job.user.env.ld_preload, lib_path, ext2);
-	    snprintf(buffer,   n + 1, "%s/%s.%s", sd->job.user.env.ld_preload, lib_path, ext2);
+	n = snprintf(     0,      0, "%s/%s.%s", buffer2, lib_path, ext2);
+	n = snprintf(buffer1, n + 1, "%s/%s.%s", buffer2, lib_path, ext2);
 
-	if (file_is_regular(buffer)) {
-		setenv_agnostic(sp, Var.ld_prel.ear, buffer, 1);
+	if (file_is_regular(buffer1))
+	{
+		char *ld_buf = sd->job.user.env.ld_preload;
+		char *ld_var = NULL;
+
+		if (getenv_agnostic(sp, Var.hack_libr.hck, ld_buf, SZ_PATH)) {
+			ld_var = Var.hack_libr.hck;
+		} else if (getenv_agnostic(sp, Var.ld_prel.ear, ld_buf, SZ_PATH)) {
+			ld_var = Var.ld_prel.ear;
+		}
+
+		if (ld_var != NULL) {
+			snprintf(buffer2,      n,    "%s", buffer1);
+			snprintf(buffer1 , n + 1, "%s:%s", buffer2, ld_buf);
+		}
+
+		setenv_agnostic(sp, Var.ld_prel.ear, buffer1, 1);
 	}
 	#endif	
 

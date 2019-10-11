@@ -267,12 +267,12 @@ int MPI_Alltoallv_empty(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MP
 	return MPI_Symbol_load();
 }
 
-int MPI_Barrier(MPI_Comm comm)
+int MPI_Barrier_empty(MPI_Comm comm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
+int MPI_Bcast_empty(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
 {
 	return MPI_Symbol_load();
 }
@@ -287,42 +287,42 @@ int MPI_Bsend_init_empty(MPI3_CONST void *buf, int count, MPI_Datatype datatype,
 	return MPI_Symbol_load();
 }
 
-int MPI_Cancel(MPI_Request *request)
+int MPI_Cancel_empty(MPI_Request *request)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Cart_create(MPI_Comm comm_old, int ndims, MPI3_CONST int dims[], MPI3_CONST int periods[], int reorder, MPI_Comm *comm_cart)
+int MPI_Cart_create_empty(MPI_Comm comm_old, int ndims, MPI3_CONST int dims[], MPI3_CONST int periods[], int reorder, MPI_Comm *comm_cart)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Cart_sub(MPI_Comm comm, MPI3_CONST int remain_dims[], MPI_Comm *newcomm)
+int MPI_Cart_sub_empty(MPI_Comm comm, MPI3_CONST int remain_dims[], MPI_Comm *newcomm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Comm_create(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm)
+int MPI_Comm_create_empty(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Comm_dup(MPI_Comm comm, MPI_Comm *newcomm)
+int MPI_Comm_dup_empty(MPI_Comm comm, MPI_Comm *newcomm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Comm_free(MPI_Comm *comm)
+int MPI_Comm_free_empty(MPI_Comm *comm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Comm_rank(MPI_Comm comm, int *rank)
+int MPI_Comm_rank_empty(MPI_Comm comm, int *rank)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Comm_size(MPI_Comm comm, int *size)
+int MPI_Comm_size_empty(MPI_Comm comm, int *size)
 {
 	return MPI_Symbol_load();
 }
@@ -332,62 +332,62 @@ int MPI_Comm_spawn_empty(MPI3_CONST char *command, char *argv[], int maxprocs, M
 	return MPI_Symbol_load();
 }
 
-int MPI_Comm_spawn_multiple(int count, char *array_of_commands[], char **array_of_argv[], MPI3_CONST int array_of_maxprocs[], MPI3_CONST MPI_Info array_of_info[], int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])
+int MPI_Comm_spawn_multiple_empty(int count, char *array_of_commands[], char **array_of_argv[], MPI3_CONST int array_of_maxprocs[], MPI3_CONST MPI_Info array_of_info[], int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Comm_split(MPI_Comm comm, int color, int key, MPI_Comm *newcomm)
+int MPI_Comm_split_empty(MPI_Comm comm, int color, int key, MPI_Comm *newcomm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_close(MPI_File *fh)
+int MPI_File_close_empty(MPI_File *fh)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_read(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_read_empty(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_read_all(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_read_all_empty(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_read_at(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_read_at_empty(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_read_at_all(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_read_at_all_empty(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_write(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_write_empty(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_write_all(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_write_all_empty(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_write_at(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_write_at_empty(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_File_write_at_all(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int MPI_File_write_at_all_empty(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Finalize(void)
+int MPI_Finalize_empty(void)
 {
 	return MPI_Symbol_load();
 }
@@ -402,7 +402,7 @@ int MPI_Gatherv_empty(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype send
 	return MPI_Symbol_load();
 }
 
-int MPI_Get(void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)
+int MPI_Get_empty(void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)
 {
 	return MPI_Symbol_load();
 }
@@ -412,32 +412,32 @@ int MPI_Ibsend_empty(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int
 	return MPI_Symbol_load();
 }
 
-int MPI_Init(int *argc, char ***argv)
+int MPI_Init_empty(int *argc, char ***argv)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Init_thread(int *argc, char ***argv, int required, int *provided)
+int MPI_Init_thread_empty(int *argc, char ***argv, int required, int *provided)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Intercomm_create(MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm, int remote_leader, int tag, MPI_Comm *newintercomm)
+int MPI_Intercomm_create_empty(MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm, int remote_leader, int tag, MPI_Comm *newintercomm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Intercomm_merge(MPI_Comm intercomm, int high, MPI_Comm *newintracomm)
+int MPI_Intercomm_merge_empty(MPI_Comm intercomm, int high, MPI_Comm *newintracomm)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Iprobe(int source, int tag, MPI_Comm comm, int *flag, MPI_Status *status)
+int MPI_Iprobe_empty(int source, int tag, MPI_Comm comm, int *flag, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Irecv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
+int MPI_Irecv_empty(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
 {
 	return MPI_Symbol_load();
 }
@@ -457,7 +457,7 @@ int MPI_Issend_empty(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int
 	return MPI_Symbol_load();
 }
 
-int MPI_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status)
+int MPI_Probe_empty(int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
@@ -467,12 +467,12 @@ int MPI_Put_empty(MPI3_CONST void *origin_addr, int origin_count, MPI_Datatype o
 	return MPI_Symbol_load();
 }
 
-int MPI_Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
+int MPI_Recv_empty(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Recv_init(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
+int MPI_Recv_init_empty(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
 {
 	return MPI_Symbol_load();
 }
@@ -487,12 +487,12 @@ int MPI_Reduce_scatter_empty(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST
 	return MPI_Symbol_load();
 }
 
-int MPI_Request_free(MPI_Request *request)
+int MPI_Request_free_empty(MPI_Request *request)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Request_get_status(MPI_Request request, int *flag, MPI_Status *status)
+int MPI_Request_get_status_empty(MPI_Request request, int *flag, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
@@ -537,7 +537,7 @@ int MPI_Sendrecv_empty(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sen
 	return MPI_Symbol_load();
 }
 
-int MPI_Sendrecv_replace(void *buf, int count, MPI_Datatype datatype, int dest, int sendtag, int source, int recvtag, MPI_Comm comm, MPI_Status *status)
+int MPI_Sendrecv_replace_empty(void *buf, int count, MPI_Datatype datatype, int dest, int sendtag, int source, int recvtag, MPI_Comm comm, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
@@ -552,87 +552,87 @@ int MPI_Ssend_init_empty(MPI3_CONST void *buf, int count, MPI_Datatype datatype,
 	return MPI_Symbol_load();
 }
 
-int MPI_Start(MPI_Request *request)
+int MPI_Start_empty(MPI_Request *request)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Startall(int count, MPI_Request array_of_requests[])
+int MPI_Startall_empty(int count, MPI_Request array_of_requests[])
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Test(MPI_Request *request, int *flag, MPI_Status *status)
+int MPI_Test_empty(MPI_Request *request, int *flag, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Testall(int count, MPI_Request array_of_requests[], int *flag, MPI_Status array_of_statuses[])
+int MPI_Testall_empty(int count, MPI_Request array_of_requests[], int *flag, MPI_Status array_of_statuses[])
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Testany(int count, MPI_Request array_of_requests[], int *indx, int *flag, MPI_Status *status)
+int MPI_Testany_empty(int count, MPI_Request array_of_requests[], int *indx, int *flag, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Testsome(int incount, MPI_Request array_of_requests[], int *outcount, int array_of_indices[], MPI_Status array_of_statuses[])
+int MPI_Testsome_empty(int incount, MPI_Request array_of_requests[], int *outcount, int array_of_indices[], MPI_Status array_of_statuses[])
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Wait(MPI_Request *request, MPI_Status *status)
+int MPI_Wait_empty(MPI_Request *request, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Waitall(int count, MPI_Request *array_of_requests, MPI_Status *array_of_statuses)
+int MPI_Waitall_empty(int count, MPI_Request *array_of_requests, MPI_Status *array_of_statuses)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Waitany(int count, MPI_Request *requests, int *index, MPI_Status *status)
+int MPI_Waitany_empty(int count, MPI_Request *requests, int *index, MPI_Status *status)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Waitsome(int incount, MPI_Request *array_of_requests, int *outcount, int *array_of_indices, MPI_Status *array_of_statuses)
+int MPI_Waitsome_empty(int incount, MPI_Request *array_of_requests, int *outcount, int *array_of_indices, MPI_Status *array_of_statuses)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Win_complete(MPI_Win win)
+int MPI_Win_complete_empty(MPI_Win win)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Win_create(void *base, MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win)
+int MPI_Win_create_empty(void *base, MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Win_fence(int assert, MPI_Win win)
+int MPI_Win_fence_empty(int assert, MPI_Win win)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Win_free(MPI_Win *win)
+int MPI_Win_free_empty(MPI_Win *win)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Win_post(MPI_Group group, int assert, MPI_Win win)
+int MPI_Win_post_empty(MPI_Group group, int assert, MPI_Win win)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Win_start(MPI_Group group, int assert, MPI_Win win)
+int MPI_Win_start_empty(MPI_Group group, int assert, MPI_Win win)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Win_wait(MPI_Win win)
+int MPI_Win_wait_empty(MPI_Win win)
 {
 	return MPI_Symbol_load();
 }
@@ -663,12 +663,12 @@ int MPI_Ialltoallv_empty(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], 
 	return MPI_Symbol_load();
 }
 
-int MPI_Ibarrier(MPI_Comm comm, MPI_Request *request)
+int MPI_Ibarrier_empty(MPI_Comm comm, MPI_Request *request)
 {
 	return MPI_Symbol_load();
 }
 
-int MPI_Ibcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm, MPI_Request *request)
+int MPI_Ibcast_empty(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm, MPI_Request *request)
 {
 	return MPI_Symbol_load();
 }

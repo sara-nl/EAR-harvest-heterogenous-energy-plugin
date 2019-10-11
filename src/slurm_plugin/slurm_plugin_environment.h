@@ -73,7 +73,6 @@ typedef struct varname_s {
 	char *loc;
 	char *rem;
 	char *ear;
-	char *tes;
 	char *cmp;
 } varnames_t;
 
@@ -115,6 +114,7 @@ struct variables_s {
 .comp_moni = { .cmp = "SLURM_COMP_MONITOR" },
 .comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
+.hack_libr = { .hck = "SLURM_HACK_LIBRARY" },
 .verbose   = { .loc = "SLURM_EOVERB", .ear = "EAR_VERBOSE"          },
 .policy    = { .loc = "SLURM_EOPOLI", .ear = "EAR_POWER_POLICY"     },
 .policy_th = { .loc = "SLURM_EOPOTH", .ear = "EAR_POWER_POLICY_TH"  },
