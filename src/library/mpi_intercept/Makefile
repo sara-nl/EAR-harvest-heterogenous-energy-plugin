@@ -2,6 +2,7 @@
 
 OBJS = ear_api.o \
        process_MPI.o \
+       MPI_intercept_empty.o \
        MPI_intercept_new.o \
        MPI_interface.o
 

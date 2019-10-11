@@ -35,7 +35,7 @@ comm_OBJS = \
 mpix_OBJS = \
     metrics/metrics.o \
     models/models.o \
-	policies/policy.o \
+    policies/policy.o \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
@@ -44,7 +44,9 @@ mpix_OBJS = \
     mpi_intercept/process_MPI.o \
     dynais/dynais.a
 
-mpic_OBJS = mpi_intercept/MPI_intercept_new.o \
+mpic_OBJS = \
+    mpi_intercept/MPI_intercept_empty.o \
+    mpi_intercept/MPI_intercept_new.o \
     mpi_intercept/MPI_interface.o \
 
 mpif_OBJS = mpi_intercept/MPI_interceptF.o \
