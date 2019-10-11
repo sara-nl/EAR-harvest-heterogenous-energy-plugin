@@ -74,6 +74,7 @@ typedef struct varname_s {
 	char *rem;
 	char *ear;
 	char *cmp;
+	char *hck;
 } varnames_t;
 
 struct variables_s {
@@ -82,6 +83,7 @@ struct variables_s {
 	varnames_t comp_moni;
 	varnames_t comp_test;
 	varnames_t comp_verb;
+	varnames_t hack_libr;
 	varnames_t verbose;
 	varnames_t policy;
 	varnames_t policy_th;

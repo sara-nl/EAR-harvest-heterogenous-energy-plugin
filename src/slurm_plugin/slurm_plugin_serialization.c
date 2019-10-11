@@ -402,9 +402,9 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	/*if(policy_id_to_name(setts->policy, buffer1) != EAR_ERROR) {
 		setenv_agnostic(sp, Var.policy.ear, buffer1, 1);
 	}*/
-    if (strlen(setts->policy_name) > 0) {
-        setenv_agnostic(sp, Var.policy.ear, setts->policy_name, 1);
-    }
+	if (strlen(setts->policy_name) > 0) {
+        	setenv_agnostic(sp, Var.policy.ear, setts->policy_name, 1);
+	}
 
 	snprintf(buffer1, 16, "%0.2f", setts->settings[0]);
 	setenv_agnostic(sp, Var.eff_gain.ear, buffer1, 1);
@@ -451,15 +451,19 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 		char *ld_buf = sd->job.user.env.ld_preload;
 		char *ld_var = NULL;
 
-		if (getenv_agnostic(sp, Var.hack_libr.hck, ld_buf, SZ_PATH)) {
-			ld_var = Var.hack_libr.hck;
-		} else if (getenv_agnostic(sp, Var.ld_prel.ear, ld_buf, SZ_PATH)) {
-			ld_var = Var.ld_prel.ear;
+		if (exenv_agnostic(sp, Var.hack_libr.hck)) {
+			buffer1[0] = '\0';
+			ld_var     = Var.hack_libr.hck;
+		} else if (exenv_agnostic(sp, Var.ld_prel.ear)) {
+			ld_var     = Var.ld_prel.ear;
 		}
 
 		if (ld_var != NULL) {
-			snprintf(buffer2,      n,    "%s", buffer1);
-			snprintf(buffer1 , n + 1, "%s:%s", buffer2, ld_buf);
+			getenv_agnostic(sp, ld_var, ld_buf, SZ_PATH);
+
+			n = snprintf(      0,     0, "%s:%s", buffer1, ld_buf);
+			n = snprintf(buffer2, n + 1, "%s:%s", buffer1, ld_buf);
+			n = snprintf(buffer1, n + 1,    "%s", buffer2);
 		}
 
 		setenv_agnostic(sp, Var.ld_prel.ear, buffer1, 1);

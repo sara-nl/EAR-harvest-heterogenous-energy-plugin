@@ -32,6 +32,17 @@
 
 extern mpi_syms_t mpi_syms;
 
+int MPI_Symbol_load()
+{
+	debug("MPI_Symbol_load");
+
+	// Looking for next symbols
+	int syms_n = (int) (sizeof(mpi_names) / sizeof(mpi_names[0]));
+	symplug_join(RTLD_NEXT, (void *) &mpi_syms, mpi_names, syms_n);
+
+	return 0;
+}
+
 int MPI_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
 	debug(">> MPI_Allgather...............");
@@ -374,6 +385,8 @@ int MPI_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest,
 
 int MPI_Init(int *argc, char ***argv)
 {
+	MPI_Symbol_load();
+
 	debug(">> MPI_Init...............");
 	EAR_MPI_Init_enter(argc, argv);
 	int res = mpi_syms.MPI_Init(argc, argv);
@@ -384,6 +397,8 @@ int MPI_Init(int *argc, char ***argv)
 
 int MPI_Init_thread(int *argc, char ***argv, int required, int *provided)
 {
+	MPI_Symbol_load();
+	
 	debug(">> MPI_Init_thread...............");
 	EAR_MPI_Init_thread_enter(argc, argv, required, provided);
 	int res = mpi_syms.MPI_Init_thread(argc, argv, required, provided);
