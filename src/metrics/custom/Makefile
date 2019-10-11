@@ -30,7 +30,6 @@ clean: clean.components rclean;
 
 %.components:
 	@ $(MAKE) -C 'bandwidth' $* || exit
-	@ $(MAKE) -C 'energy'    $* || exit
 
 ######## DEPENDENCIES
 
