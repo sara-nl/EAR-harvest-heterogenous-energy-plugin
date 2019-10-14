@@ -28,9 +28,10 @@
 */
 
 #include <common/output/debug.h>
-#include <library/mpi_intercept/MPI_intercept_new.h>
+#include <library/mpi_intercept/mpi_interception.h>
 
 extern mpi_syms_t mpi_syms;
+extern char **mpi_names;
 
 int MPI_Symbol_load()
 {
