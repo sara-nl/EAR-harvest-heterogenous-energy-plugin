@@ -206,3 +206,44 @@ void log_report_global_policy_freq(job_id job,job_id sid,ulong newf)
 #endif
 }
 
+void log_report_eard_init_error(job_id job,job_id sid,uint eventid,ulong value)
+{
+	ear_event_t event;
+	#if DB_MYSQL
+  /* we request the daemon to write the event in the DB */
+  event.timestamp=time(NULL);
+	event.joid=job;
+	event.step_id=sid;	
+  strcpy(event.node_id,log_nodename);
+	event.event=eventid;
+	event.freq=value;
+  eards_write_event(&event);
+  #endif
+}
+
+static double min_interval=0.0;
+static time_t last_rt_event=0;
+void log_report_eard_min_interval(uint secs)
+{
+	min_interval=(double)secs;	
+	last_rt_event=time(NULL);
+}
+
+void log_report_eard_rt_error(job_id job,job_id sid,uint eventid,ulong value)
+{
+	ear_event_t event;
+	
+	#if DB_MYSQL
+	event.timestamp=time(NULL);
+	if (difftime(event.timestamp,last_rt_event)>=min_interval){
+		last_rt_event=event.timestamp;
+		event.joid=job;
+		event.step_id=sid;	
+  	strcpy(event.node_id,log_nodename);
+  	event.event=eventid;
+  	event.freq=value;
+  	eards_write_event(&event);
+	}
+	#endif
+}
+	

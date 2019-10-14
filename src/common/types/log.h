@@ -50,6 +50,42 @@ typedef struct ear_event {
 #define DYNAIS_OFF				3
 
 
+/* EARD Init events */
+#define TOPOLOGY_INIT_ERROR 	100
+#define FREQUENCY_INIT_ERROR	101
+#define EAR_CONF_FILE_ERROR 	102
+#define EAR_CONF_ERROR				103
+#define MY_NODE_INIT_ERROR		104
+#define SHARED_MEMORY_INIT_ERROR	105
+#define COEFFS_INIT_ERROR			106
+#define COEFFS_DEF_INIT_ERROR	107
+#define APERF_INIT_ERROR			108
+#define UNCORES_INIT_ERROR		109
+#define RAPL_INIT_ERROR				110
+#define ENERGY_INIT_ERROR			111
+#define EARL_CONN_ERROR				112
+#define RAPI_CONN_ERROR				113
+#define EARDBD_CONN_ERROR			114
+#define DB_CONN_ERROR					115
+#define PM_CREATION_ERROR			116
+#define APP_API_CREATION_ERROR	117
+#define DYN_CREATION_ERROR			118
+
+#define EARD_INIT_ERROR 19
+#define BASE_EARD_INIT_ERROR	100
+
+
+/* EARD runtime events */
+#define DC_POWER_ERROR		300
+#define TEMP_ERROR				301
+#define FREQ_ERROR				302
+#define RAPL_ERROR				303
+#define GBS_ERROR					304
+
+
+
+
+
 
 /** Creates the log file and starts it with the current time. If it can't
 *   create the file it reports it to stderr */
@@ -71,4 +107,13 @@ void log_report_max_tries(job_id id,job_id step_id,ulong newf);
 /** Given a job id and a frequency value, reports to the log file the change
 *   of frequency because of Energy Budget*/
 void log_report_global_policy_freq(job_id id,job_id step_id,ulong newf);
+
+
+/** Sets the minimum interval between two runtime errors to avoid saturating the DB */
+void log_report_eard_min_interval(uint secs);
+/** Reports a RT error from EARD */
+void log_report_eard_rt_error(job_id job,job_id sid,uint eventid,ulong value);
+/* Reports and error when initializing EARD */
+void log_report_eard_init_error(job_id job,job_id sid,uint eventid,ulong value);
+
 #endif

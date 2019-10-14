@@ -100,6 +100,7 @@ int coeffs_default_size;
 uint signal_sighup = 0;
 uint f_monitoring;
 
+uint eard_init_error[EARD_INIT_ERROR];
 
 #define max(a, b) (a>b?a:b)
 #define min(a, b) (a<b?a:b)
@@ -1120,7 +1121,7 @@ int main(int argc, char *argv[]) {
 		_exit(1);
 	}
 	strtok(nodename, ".");
-	verbose(VCONF, "Executed in node name %s", nodename);
+	verbose(0,"Executed in node name %s", nodename);
 
 	/** CONFIGURATION **/
         int node_size;
@@ -1164,7 +1165,7 @@ int main(int argc, char *argv[]) {
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 		if (my_node_conf == NULL) {
-			verbose(VCONF, " Error in cluster configuration, node %s not found\n", nodename);
+			error( " Error in cluster configuration, node %s not found\n", nodename);
 		}
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
