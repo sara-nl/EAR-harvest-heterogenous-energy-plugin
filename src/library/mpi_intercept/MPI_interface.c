@@ -29,7 +29,7 @@
 
 #include <common/output/debug.h>
 #include <library/mpi_intercept/process_MPI.h>
-#include <library/mpi_intercept/mpi_interface.h>
+#include <library/mpi_intercept/MPI_interface.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
 
 #pragma GCC visibility push(default)

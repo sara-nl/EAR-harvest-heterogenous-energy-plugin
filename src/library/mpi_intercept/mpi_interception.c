@@ -31,16 +31,15 @@
 #include <common/output/debug.h>
 #include <library/mpi_intercept/mpi_interception.h>
 
+extern const char *mpi_names[];
 extern mpi_syms_t mpi_syms;
-extern char **mpi_names;
 
 int MPI_Symbol_load()
 {
 	debug("MPI_Symbol_load");
 
 	// Looking for next symbols
-	int syms_n = (int) (sizeof(mpi_names) / sizeof(mpi_names[0]));
-	symplug_join(RTLD_NEXT, (void *) &mpi_syms, mpi_names, syms_n);
+	symplug_join(RTLD_NEXT, (void *) &mpi_syms, mpi_names, MPI_SYMS_N);
 
 	return 0;
 }

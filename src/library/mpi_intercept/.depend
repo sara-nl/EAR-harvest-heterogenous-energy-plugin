@@ -13,12 +13,10 @@ process_MPI.o: process_MPI.c ../../common/config.h \
  ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/types/coefficient.h \
  ../../daemon/shared_configuration.h
-MPI_interceptF.o: MPI_interceptF.c MPI_interfaceF.h
-MPI_intercept.o: MPI_intercept.c MPI_interface.h
-mpi_struct.o: mpi_struct.c
-MPI_interface.o: MPI_interface.c process_MPI.h \
- ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
- MPI_interface.h
+MPI_interface.o: MPI_interface.c ../../common/output/debug.h \
+ ../../library/mpi_intercept/process_MPI.h \
+ ../../library/mpi_intercept/MPI_types.h \
+ ../../library/mpi_intercept/MPI_calls_coded.h
 ear_api.o: ear_api.c ../../common/config.h \
  ../../common/config/config_def.h ../../common/config/config_dev.h \
  ../../common/config/config_install.h ../../common/states.h \
@@ -47,7 +45,3 @@ ear_api.o: ear_api.c ../../common/config.h \
  ../../metrics/papi/generics.h ../../metrics/papi/instructions.h \
  ../../metrics/custom/frequency.h ../../metrics/custom/hardware_info.h \
  ../../common/file.h ../../metrics/common/cpuid.h
-mpi_struct_aux.o: mpi_struct_aux.c
-MPI_interfaceF.o: MPI_interfaceF.c process_MPI.h \
- ../../library/mpi_intercept/MPI_types.h MPI_calls_coded.h \
- MPI_interfaceF.h
