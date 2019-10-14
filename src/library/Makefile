@@ -45,8 +45,8 @@ mpix_OBJS = \
     dynais/dynais.a
 
 mpic_OBJS = \
-    mpi_intercept/MPI_intercept_empty.o \
-    mpi_intercept/MPI_intercept_new.o \
+    mpi_intercept/mpi_definitions.o \
+    mpi_intercept/mpi_interception.o \
     mpi_intercept/MPI_interface.o \
 
 mpif_OBJS = mpi_intercept/MPI_interceptF.o \

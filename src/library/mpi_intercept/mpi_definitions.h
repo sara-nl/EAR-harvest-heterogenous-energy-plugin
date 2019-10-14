@@ -31,6 +31,7 @@
 #define LIBRARY_MPI_DEFINITIONS_H
 
 #include <mpi.h>
+#include <library/mpi_intercept/mpi_interface.h
 
 typedef struct mpi_syms_s
 {
