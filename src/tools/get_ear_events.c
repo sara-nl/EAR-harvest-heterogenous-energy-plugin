@@ -36,7 +36,7 @@
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#define EVENT_QUERY "SELECT id, from_unixtime(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
+#define EVENT_QUERY "SELECT id, from_unixtime(timestamp), event_type, job_id, step_id, freq, node_id FROM Events WHERE timestamp >= UNIX_TIMESTAMP(NOW()) - %d"
 
 int _verbose = 0;
 
@@ -109,6 +109,8 @@ void show_query_result(cluster_conf_t my_conf, char *query)
 int main(int argc,char *argv[])
 {
     char path_name[256];
+    char query[512];
+    int time_hours = 24;
     cluster_conf_t my_conf;
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
@@ -132,8 +134,11 @@ int main(int argc,char *argv[])
         user = NULL; //by default, privilegd users or root will query all user jobs
     }
 
+    if (argc > 1)
+        time_hours = atoi(argv[1]);
 
-    show_query_result(my_conf, EVENT_QUERY); 
+    sprintf(query, EVENT_QUERY, time_hours*3600);
+    show_query_result(my_conf, query); 
     free_cluster_conf(&my_conf);
 
 	return 0;
