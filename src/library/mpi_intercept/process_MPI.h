@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef PROCESS_MPI_H
 #define PROCESS_MPI_H
 

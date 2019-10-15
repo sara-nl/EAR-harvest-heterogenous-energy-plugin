@@ -42,6 +42,7 @@ slurm-*.out
 coefficients_list.csv
 *accepted_intel_ptu_license
 *.csv
+*TOOLADMIN_NOTES.txt
 
 # Build files
 etc/module/ear

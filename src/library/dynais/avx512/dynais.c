@@ -1,30 +1,88 @@
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING
+*/
+
+/*
+ * Usage:
+ * Just call dynais() passing the sample and the size of
+ * this sample. It will be returned one of these states:
+ *      END_LOOP
+ *      NO_LOOP
+ *      IN_LOOP
+ *      NEW_ITERATION
+ *      NEW_LOOP
+ *      END_NEW_LOOP
+ *
+ * Errors:
+ * A returned dynais_init() value different than 0,
+ * means that something went wrong while allocating
+ * memory.
+ *
+ * You HAVE to call dynais_init() method before with
+ * the window length and the number of levels and
+ * dynais_dispose() at the end of the execution.
+ *
+ * You can also set the METRICS define to 1 in case you
+ * want some metrics at the end of the execution. Moreover,
+ * you can increase MAX_LEVELS in case you need more or
+ * METRICS_WINDOW, used to store the information of the
+ * different loops found (sorted by size) because could
+ * be necessary if you want to test big single level
+ * windows.
+ */
+
 #include <library/dynais/dynais.h>
 #include <library/dynais/avx512/dynais_core.h>
 
 // General indexes.
-extern ushort _levels;
-extern ushort _window;
-extern ushort _topmos;
+ushort _levels;
+ushort _window;
+ushort _topmos;
 
 // Circular buffers
-extern ushort *circ_samps[MAX_LEVELS];
-extern ushort *circ_zeros[MAX_LEVELS];
-extern ushort *circ_sizes[MAX_LEVELS];
-extern ushort *circ_indxs[MAX_LEVELS];
-extern ushort *circ_accus[MAX_LEVELS];
+ushort *circ_samps[MAX_LEVELS];
+ushort *circ_zeros[MAX_LEVELS];
+ushort *circ_sizes[MAX_LEVELS];
+ushort *circ_indxs[MAX_LEVELS];
+ushort *circ_accus[MAX_LEVELS];
 
 // Current and previous data
-extern  short cur_resul[MAX_LEVELS];
-extern ushort cur_width[MAX_LEVELS];
-extern ushort cur_index[MAX_LEVELS];
-extern ushort cur_fight[MAX_LEVELS];
-extern ushort old_sizes[MAX_LEVELS];
-extern ushort old_width[MAX_LEVELS];
+ short cur_resul[MAX_LEVELS];
+ushort cur_width[MAX_LEVELS];
+ushort cur_index[MAX_LEVELS];
+ushort cur_fight[MAX_LEVELS];
+ushort old_sizes[MAX_LEVELS];
+ushort old_width[MAX_LEVELS];
 
 // Static replicas
-extern __m512i zmmx31; // Ones
-extern __m512i zmmx30; //
-extern __m512i zmmx29; // Shifts
+__m512i zmmx31; // Ones
+__m512i zmmx30; // 65535
+__m512i zmmx29; // Shifts
 
 //
 //
@@ -32,241 +90,178 @@ extern __m512i zmmx29; // Shifts
 //
 //
 
-#ifdef DYN_CORE_N
-void dynais_core_n(ushort sample, ushort size, ushort level)
-#else
-void dynais_core_0(ushort sample, ushort size, ushort level)
-#endif
+static int dynais_alloc(ushort **c, size_t o)
 {
-	__m512i zmmx00; // S
-	__m512i zmmx04; // W
-	__m512i zmmx08; // Z
-	__m512i zmmx12; // I
-	#ifdef DYN_CORE_N
-	__m512i zmmx16; // A
-	#endif
-	__m512i zmmx28; // Replica S
-	__m512i zmmx27; // Replica W
-	__m512i zmmx26; // Maximum Z
-	__m512i zmmx25; // Maximum I
-	#ifdef DYN_CORE_N
-	__m512i zmmx24; // Maximum A
-	#endif
+	ushort *p;
+	int i;
 
-	__mmask32 mask00;
-	__mmask32 mask01;
-	__mmask32 mask02;
+	o = sizeof(short) * (_window + o) * _levels;
 
-	// Basura
-	unsigned short *samp;
-	unsigned short *zero;
-	unsigned short *indx;
-	unsigned short *sizz;
-	#ifdef DYN_CORE_N
-	unsigned short *accu;
-	#endif
+	if (posix_memalign((void *) &p, sizeof(__m512i), sizeof(short) * (_window + o) * _levels) != 0) {
+		return -1;
+	}
 
-	//  signed short resul;
-	unsigned short index;
-	unsigned short i, k;
+	memset((void *) p, 0, sizeof(short) * (_window + o) * _levels);
 
-	index = cur_index[level];
+	for (i = 0; i < _levels; ++i) {
+		c[i] = &p[i * (_window + o)];
+	}
 
-	samp = circ_samps[level];
-	sizz = circ_sizes[level];
-	zero = circ_zeros[level];
-	indx = circ_indxs[level];
-	#ifdef DYN_CORE_N
-	accu = circ_accus[level];
-	#endif
+	return 0;
+}
 
-	samp[index] = 0;
-	sizz[index] = 0;
-	#ifdef DYN_CORE_N
-	accu[index] = 0;
-	#endif
+int dynais_init(ushort window, ushort levels)
+{
+	int i, k;
 
-	// Statics
-	zmmx28 = _mm512_set1_epi16(sample);
-	zmmx27 = _mm512_set1_epi16(size);
-	zmmx26 = _mm512_setzero_si512();
-	zmmx25 = _mm512_set1_epi16(0xFFFF);
-	#ifdef DYN_CORE_N
-	zmmx26 = _mm512_setzero_si512();
-	#endif
+	unsigned int multiple = window / 32;
+	window = 32 * (multiple + 1);
 
-	/* Outsiders */
-	zero[_window] = zero[0];
-	indx[_window] = indx[0];
-	#ifdef DYN_CORE_N
-	accu[_window] = accu[0];
-	#endif
+	_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
+	_levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
 
-	/* Main iteration */
-	for (k = 0, i = 32; k < _window; k += 32, i += 32)
-	{
-    	zmmx00 = _mm512_load_si512((__m512i *) &samp[k]);
-    	zmmx04 = _mm512_load_si512((__m512i *) &sizz[k]);
-    	zmmx08 = _mm512_load_si512((__m512i *) &zero[k]);
-    	zmmx12 = _mm512_load_si512((__m512i *) &indx[k]);
-    	#ifdef DYN_CORE_N
-    	zmmx16 = _mm512_load_si512((__m512i *) &accu[k]);
-    	#endif
+	if (dynais_alloc(circ_samps, 00) != 0) return -1;
+	if (dynais_alloc(circ_sizes, 00) != 0) return -1;
+	if (dynais_alloc(circ_zeros, 32) != 0) return -1;
+	if (dynais_alloc(circ_indxs, 32) != 0) return -1;
+	if (dynais_alloc(circ_accus, 32) != 0) return -1;
 
-		/* Circular buffer processing */
-		mask00 = _mm512_cmp_epu16_mask(zmmx00, zmmx28, _MM_CMPINT_EQ);
-		mask00 = _mm512_mask_cmp_epu16_mask(mask00, zmmx04, zmmx27, _MM_CMPINT_EQ);
-
-		/* */
-		zmmx08 = _mm512_permutexvar_epi16(zmmx29, zmmx08);
-		zmmx12 = _mm512_permutexvar_epi16(zmmx29, zmmx12);
-		#ifdef DYN_CORE_N
-		zmmx16 = _mm512_permutexvar_epi16(zmmx29, zmmx16);
-		#endif
-
-		/* */
-		zmmx08 = _mm512_mask_set1_epi16(zmmx08, 0x80000000, zero[i]); // C3
-		zmmx12 = _mm512_mask_set1_epi16(zmmx12, 0x80000000, indx[i]); // D3
-		#ifdef DYN_CORE_N
-			zmmx16 = _mm512_mask_set1_epi16(zmmx16, 0x80000000, accu[i]); // D3
-		#endif
-
-		/* */
-		zmmx08 = _mm512_maskz_adds_epu16(mask00, zmmx08, zmmx31);
-		#ifdef DYN_CORE_N
-		zmmx16 = _mm512_maskz_adds_epu16(mask00, zmmx16, zmmx04);
-		#endif
-
-		/* Data storing */
-		_mm512_store_si512((__m512i *) &zero[k], zmmx08);
-		_mm512_store_si512((__m512i *) &indx[k], zmmx12);
-		#ifdef DYN_CORE_N
-		_mm512_store_si512((__m512i *) &accu[k], zmmx16);
-		#endif
-
-		/* Maximum preparing */
-		mask01 = _mm512_cmp_epu16_mask(zmmx12, zmmx08, _MM_CMPINT_LT);
-
-		if (mask01 == 0) {
-			continue;
+	// Filling index array
+	for (i = 0; i < levels; ++i) {
+		for (k = 0; k < _window; ++k) {
+			circ_indxs[i][k] = k - 1;
 		}
 
-		mask00 = _mm512_mask_cmp_epu16_mask(mask01, zmmx26, zmmx08, _MM_CMPINT_LT);
-		mask01 = _mm512_mask_cmp_epu16_mask(mask01, zmmx26, zmmx08, _MM_CMPINT_EQ);
-		mask01 = _mm512_mask_cmp_epu16_mask(mask01, zmmx25, zmmx12, _MM_CMPINT_LT);
-		mask00 = mask00 | mask01;
-
-		/* */
-		zmmx26 = _mm512_mask_mov_epi16(zmmx26, mask00, zmmx08);
-		zmmx25 = _mm512_mask_mov_epi16(zmmx25, mask00, zmmx12);
-		#ifdef DYN_CORE_N
-		zmmx24 = _mm512_mask_mov_epi16(zmmx24, mask00, zmmx16);
-		#endif
+		circ_indxs[i][0] = _window - 1;
 	}
 
-	ushort res_nol;
-	ushort res_inl;
-	ushort res_ite;
-	ushort res_new;
-	ushort res_end;
-	ushort res_dif;
-	ushort cur_zeros;
-	ushort l = level;
+	//
+	static ushort shifts_array[32] __attribute__ ((aligned (64))) =
+			{  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16,
+			   17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 31 };
 
-	// Maximum zero
-	zmmx00 = _mm512_srli_epi32(zmmx26, 0x10);
-	zmmx04 = _mm512_mask_set1_epi16(zmmx26, 0xAAAAAAAA, 0);
-	zmmx08 = _mm512_max_epu16(zmmx00, zmmx04);
-	mask01 = _mm512_reduce_max_epu32(zmmx08);
-	cur_zeros = (ushort) mask01;
+	zmmx31 = _mm512_set1_epi16(1);
+	//zmmx30 = _mm512_set1_epi16(65535);
+	zmmx29 = _mm512_load_si512((__m512i *) &shifts_array);
 
-	// New loop
-	res_inl = (cur_zeros > _window);
+	return 0;
+}
 
-	if (!res_inl)
-	{
-		// Minimum index
-		zmmx08 = _mm512_set1_epi16(mask01);
-		mask02 = _mm512_cmp_epu16_mask(zmmx08, zmmx26, _MM_CMPINT_EQ);
-		zmmx25 = _mm512_maskz_srli_epi16(mask02, zmmx25, 0);
-		mask00 = _mm512_reduce_max_epu32(zmmx25);
+void dynais_dispose()
+{
+	free((void *) circ_samps[0]);
+	free((void *) circ_zeros[0]);
+	free((void *) circ_sizes[0]);
+	free((void *) circ_indxs[0]);
+	free((void *) circ_accus[0]);
+}
 
-		// Shift to 16-bits
-		if ((unsigned int) mask00 > 65535) {
-			mask00 = mask00 >> 16;
-		}
+int dynais_build_type()
+{
+	// AVX 512
+	return 1;
+}
 
-		// Array width
-		cur_width[l] = (ushort) mask00;
-
-		// New loop again
-		res_inl = (cur_width[l] > 0) & (cur_zeros > cur_width[l]);
+// Returns the highest level.
+static short dynais_hierarchical(ushort sample, ushort size, ushort level)
+{
+	if (level >= _levels) {
+		return level - 1;
 	}
 
-	// New no loop
-	res_nol = !res_inl;
+	// DynAIS basic algorithm call.
+	if (level) dynais_core_n(sample, size, level);
+	else dynais_core_0(sample, size, level);
 
-	// New different loop
-	res_dif = old_width[l] != cur_width[l];
-
-	// Array in loop counter
-	if (res_dif || cur_fight[l] == cur_width[l]) {
-		cur_fight[l] = 0;
+	// If new loop is detected, the sample and the size
+	// is passed recursively to dynais_hierarchical.
+	if (cur_resul[level] >= NEW_LOOP) {
+		return dynais_hierarchical(sample, old_sizes[level], level + 1);
 	}
 
-	// New iteration
-	res_ite = res_inl && (cur_width[l] == 1 || cur_fight[l] == 0);
+	// If is not a NEW_LOOP.
+	return level;
+}
+
+short dynais(ushort sample, ushort *size, ushort *govern_level)
+{
+	short end_loop = 0;
+	short reach;
+	short l, ll;
 	
-	cur_fight[l] += res_inl;
+	// Hierarchical algorithm call. The maximum level
+	// reached is returned. All those values were updated
+	// by the basic DynAIS algorithm call.
+	reach = dynais_hierarchical(sample, 1, 0);
 
-	// New loop
-	res_new = res_ite & (old_width[l] != cur_width[l]);
+	if (reach > _topmos) {
+		_topmos = reach;
+	}
 
-	// New end-new loop
-	res_end = ((old_width[l] != cur_width[l]) && old_width[l] != 0);
+	// Cleans didn't reach levels. Cleaning means previous
+	// loops with a state greater than IN_LOOP have to be
+	// converted to IN_LOOP and also END_LOOP have to be
+	// converted to NO_LOOP.
+	for (l = _topmos - 1; l > reach; --l) {
+		if (cur_resul[l] > IN_LOOP) cur_resul[l] = IN_LOOP;
+		if (cur_resul[l] < NO_LOOP) cur_resul[l] = NO_LOOP;
+	}
 
-	i = (index + cur_width[l]) % _window;
-	k = index;
-
-	if (res_new)
+	// After cleaning, the highest IN_LOOP or greater
+	// level is returned with its state data. If an
+	// END_LOOP is detected before a NEW_LOOP,
+	// END_NEW_LOOP is returned.
+	for (l = _topmos - 1; l >= 0; --l)
 	{
-		// Minimum index size
-		#ifdef DYN_CORE_N
-		zmmx24 = _mm512_maskz_srli_epi16(mask02, zmmx24, 0);
-		mask02 = _mm512_reduce_max_epu32(zmmx24);
+		end_loop = end_loop | (cur_resul[l] == END_LOOP);
 
-		if ((unsigned int) mask02 > 65535) {
-			mask02 = mask02 >> 16;
+		if (cur_resul[l] >= IN_LOOP) {
+			*govern_level = l;
+			//*size = old_width[l];
+			*size = old_sizes[l];
+
+			// END_LOOP is detected above, it means that in this and
+			// below levels the status is NEW_LOOP or END_NEW_LOOP,
+			// because the only way to break a loop is with the
+			// detection of a new loop.
+			if (end_loop) {
+				return END_NEW_LOOP;
+			}
+
+			// If the status of this level is NEW_LOOP, it means
+			// that the status in all below levels is NEW_LOOP or
+			// END_NEW_LOOP. If there is at least one END_NEW_LOOP
+			// the END part have to be propagated to this level.
+			if (cur_resul[l] == NEW_LOOP) {
+				for (ll = l - 1; ll >= 0; --ll) {
+					end_loop |= cur_resul[ll] == END_NEW_LOOP;
+
+					if (cur_resul[ll] < NEW_LOOP) {
+						return IN_LOOP;
+					}
+				}
+			}
+
+			if (end_loop) {
+				return END_NEW_LOOP;
+			}
+
+			return cur_resul[l];
 		}
-		old_sizes[l] = (unsigned short) mask02 - size;
-		#else
-		old_sizes[l] = cur_width[l];
-		#endif
-		old_width[l] = cur_width[l];
 	}
 
-	if (res_nol)
-	{
-		cur_fight[l] = 0;
-		old_width[l] = 0;
-	}
 
-	// Level result
-	cur_resul[l] = 0;
-	cur_resul[l] -= (!res_inl) & res_end;	// -1 = end lopp
-	cur_resul[l] += res_inl;				// 1 = in loop
-	cur_resul[l] += res_ite;				// 2 = new iteration
-	cur_resul[l] += res_new;				// 3 = new loop
-	cur_resul[l] += res_new & res_end;	// 4 = end and new loop
+	// In case no loop were found: NO_LOOP or END_LOOP
+	// in level 0, size and government level are 0.
+	*size = 0;
+	*govern_level = 0;
 
-	// Cleaning
-	samp[index] = sample;
-	sizz[index] = size;
+	return -end_loop;
+}
 
-	if (index == 0) index = _window;
-	index = index - 1;
-	
-	cur_index[level] = index;
-	// Linea causante de problemas, investigar de donde ha salido	
-	// cur_resul[level] = resul;
+ushort dynais_sample_convert(ulong sample)
+{
+	uint *p = (uint *) &sample;
+	p[0] = _mm_crc32_u32(p[0], p[1]);
+	return (ushort) p[0];
 }

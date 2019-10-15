@@ -27,38 +27,37 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <dlfcn.h>
-#define SHOW_DEBUGS 1
 #include <common/symplug.h>
 #include <common/includes.h>
 
-static void symplug_join(void *handle, void *calls[], const char *names[], uint n)
+state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 {
 	uint i;
 
-	for (i = 0; i < n; ++i) {
+	for (i = 0; i < n; ++i)
+	{
 		calls[i] = dlsym(handle, names[i]);
+
 		if (calls[i]!=NULL) {
-			 debug("symbol %s found",names[i]);
+			debug("symbol %s found", names[i]);
 		}else{
-			debug("ssymbol %s notfound",names[i]);
+			debug("symbol %s not found", names[i]);
 		}
 	}
+
+	return EAR_SUCCESS;
 }
 
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 {
 	void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
 
-	if (!handle){
-		debug("Error when loading shared object\n");
+	if (!handle)
+	{
+		debug("Error when loading shared object (%s)\n", dlerror());
+
+		state_return_msg(EAR_DL_ERROR, 0, dlerror());
 	}
 
-	if (!handle) {
-		state_return_msg(EAR_ERROR, 0, "error during dlopen(), missing symbol?");
-	}
-
-	symplug_join(handle, calls, names, n);
-
-	return EAR_SUCCESS;
+	return symplug_join(handle, calls, names, n);
 }
