@@ -72,8 +72,13 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 
 	if (energy_loaded)
 	{
+		debug("sizeof energy_prod %lu", sizeof(energy_prod));
+		debug("sizeof energy_manu %lu", sizeof(energy_manu));
+		debug("ehand %p", eh);
 		strcpy(eh->product, energy_prod);
-    strcpy(eh->manufacturer, energy_manu);
+    		strcpy(eh->manufacturer, energy_manu);
+		debug("22222");	
+		
 		debug("Energy plugin already loaded, executing basic init");	
 		ret = energy_ops.init(&eh->context);
 		if (ret!=EAR_SUCCESS) debug("energy_ops.init() returned %d", ret);

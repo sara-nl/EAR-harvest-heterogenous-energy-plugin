@@ -21,6 +21,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/cpi/cpu/papi.o \
     $(SRCDIR)/metrics/energy/energy_cpu.o \
     $(SRCDIR)/metrics/energy/energy_node.o \
+    $(SRCDIR)/metrics/energy/energy_node_lib.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/papi.o \
     $(SRCDIR)/metrics/frequency/frequency_imc.o \

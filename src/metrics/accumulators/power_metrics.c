@@ -70,7 +70,7 @@ int pm_get_data_size_rapl()
 void pm_disconnect(ehandler_t *my_eh)
 {
 	if (rootp){
-		energy_dispose(my_eh->context);
+		energy_dispose(my_eh);
 	}else{
 		//eards_disconnect();
 	}
@@ -138,7 +138,7 @@ int pm_connect(ehandler_t *my_eh)
 	if (getuid()==0)	rootp=1;
 	if (rootp){
 		debug("Initializing energy in main power_monitor  thread");
-		pm_connected_status=energy_init(NULL, my_eh->context);
+		pm_connected_status=energy_init(NULL, my_eh);
 		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);
@@ -294,7 +294,6 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 }
 
 
-
 void copy_energy_data(energy_data_t *dest,energy_data_t *src)
 {
 	dest->sample_time=src->sample_time;
@@ -305,6 +304,7 @@ void copy_energy_data(energy_data_t *dest,energy_data_t *src)
 	dest->CPU_energy[0]=src->CPU_energy[0];
 	dest->CPU_energy[1]=src->CPU_energy[1];
 }
+
 void print_energy_data(energy_data_t *e)
 {
     struct tm *current_t;

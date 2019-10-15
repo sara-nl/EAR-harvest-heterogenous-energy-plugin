@@ -28,9 +28,9 @@
 */
 
 #include <common/config.h>
-#include <common/symplug.h>
 #include <common/includes.h>
 #include <common/output/verbose.h>
+#include <common/system/symplug.h>
 #include <metrics/energy/energy_node_lib.h>
 
 struct energy_op
@@ -45,8 +45,8 @@ static char energy_manu[SZ_NAME_MEDIUM];
 static char energy_prod[SZ_NAME_MEDIUM];
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
-const int   energy_nops    = 5;
-const char *energy_names[] = {
+static const int   energy_nops    = 5;
+static const char *energy_names[] = {
 	"energy_datasize",
 	"energy_frequency",
 	"energy_units",
@@ -54,7 +54,7 @@ const char *energy_names[] = {
 	"energy_to_str"
 };
 
-state_t energy_init(settings_conf_t *conf)
+state_t energy_lib_init(settings_conf_t *conf)
 {
 	state_t ret=EAR_SUCCESS;
 	int cpu_model;
@@ -96,31 +96,31 @@ state_t energy_init(settings_conf_t *conf)
 	return ret;
 }
 
-state_t energy_datasize(size_t *size)
+state_t energy_lib_datasize(size_t *size)
 {
 	preturn (energy_ops.datasize, size);
 }
 
-state_t energy_frequency(ulong *fus)
+state_t energy_lib_frequency(ulong *fus)
 {
 	*fus=ULONG_MAX;
 	preturn(energy_ops.frequency,fus);
 }
 
 /* Energy units are 1=Joules, 1000=mJ, 1000000=uJ, 1000000000nJ */
-state_t energy_units(uint *units)
+state_t energy_lib_units(uint *units)
 {
 	*units=1;
 	preturn (energy_ops.units, units);
 }
 
-state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
+state_t energy_lib_accumulated(unsigned long *e,edata_t init,edata_t end)
 {
 	*e=0;
 	preturn (energy_ops.accumulated,e,init,end );
 }
 
-state_t energy_to_str(char *str,edata_t e)
+state_t energy_lib_to_str(char *str,edata_t e)
 {
 	preturn (energy_ops.energy_to_str,str,e );
 }

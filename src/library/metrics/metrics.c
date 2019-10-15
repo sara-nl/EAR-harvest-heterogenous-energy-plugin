@@ -230,9 +230,9 @@ static int metrics_partial_stop(uint where)
 
 	// Manual IPMI accumulation
 	eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
-	energy_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
-	energy_to_str(start_energy_str,metrics_ipmi[LOO]);	
-	energy_to_str(stop_energy_str,aux_energy_stop);	
+	energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
+	energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
+	energy_lib_to_str(stop_energy_str,aux_energy_stop);	
 	if ((where==SIG_END) && (c_energy==0)){ 
 		debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
 		return EAR_NOT_READY;
@@ -417,7 +417,7 @@ int metrics_init()
 	hw_cache_line_size = (double) get_cache_line_size();
 	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
 
-	st=energy_init(system_conf);
+	st=energy_lib_init(system_conf);
 	if (st!=EAR_SUCCESS){
 		verbose(1,"Error loading energy plugin");
 	}
@@ -458,9 +458,9 @@ int metrics_init()
 
 	// Allocating data for energy node metrics
 	// node_energy_datasize=eards_node_energy_data_size();
-	energy_datasize(&node_energy_datasize);
+	energy_lib_datasize(&node_energy_datasize);
 	debug("Node energy data size %lu",node_energy_datasize);
-	energy_units(&node_energy_units);
+	energy_lib_units(&node_energy_units);
 	debug("Node energy units %u",node_energy_units);
 	aux_energy=(edata_t)malloc(node_energy_datasize);
 	aux_energy_stop=(edata_t)malloc(node_energy_datasize);

@@ -2,7 +2,10 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -DSHOW_DEBUGS
 
 ######## FILES
 
-ener_BINS = energy_cpu.o energy_node.o
+ener_BINS = \
+    energy_cpu.o \
+    energy_node.o \
+    energy_node_lib.o
 ener_DEPS = \
     $(SRCDIR)/common/libcommon.a
 
