@@ -1,7 +1,11 @@
 ## Unreleased
-- First version of cpupower included 
+- rpms3 folder included for rpm testing
+- EARplug including SLURM_HACK_LIBRARY for local EARL utilization
+- Support for multiple LD_PRELOAD libraries
+- Default plugins included in EAR
+- EAR cpupower included 
 - Merge with new_policies branch: rapl plugin for energy supported
-- Added SLURM_EAR_MPI_VERSION to automatic selection of ear library 
+- Added SLURM_EAR_MPI_VERSION to automatic selection of ear library  in EARplug
 - IPMI finder removed from energy loading. Default is not supported
 - power_cap and power_cap_type included in island for power_capping policies
 - New policies and power models included for testing
