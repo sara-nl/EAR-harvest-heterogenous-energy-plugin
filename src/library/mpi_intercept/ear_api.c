@@ -758,3 +758,98 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
     } //ear_whole_app
 }
 
+/************************** MANUAL API *******************/
+
+static short ear_status=NO_LOOP;
+static unsigned long manual_loopid=0;
+unsigned long ear_new_loop()
+{
+  if (my_id)  return 0;
+	manual_loopid++;
+  if (!ear_whole_app)
+  {
+		switch (ear_status){
+			debug("New loop reported");
+			case NO_LOOP:
+				ear_status=IN_LOOP;
+				ear_iterations=0;
+				states_begin_period(my_id, manual_loopid,1,1);
+				ear_loop_size=1;
+				ear_loop_level=1;
+				in_loop=1;
+				mpi_calls_per_loop=1;
+				break;
+			case IN_LOOP:
+				debug("END_NEW Loop");
+				if (loop_with_signature) {
+					debug("loop ends with %d iterations detected", ear_iterations);
+				}
+				loop_with_signature=0;
+				traces_end_period(ear_my_rank, my_id);
+				states_end_period(ear_iterations);
+				ear_iterations=0;
+				mpi_calls_per_loop=1;
+				ear_loop_size=1;
+				ear_loop_level=1;
+				states_begin_period(my_id, manual_loopid, 1,1);
+				break;
+		}
+  }
+	return manual_loopid;
+}
+
+void ear_end_loop(unsigned long loop_id)
+{
+	if (my_id) return;
+  if (!ear_whole_app)
+  {
+		switch(ear_status){
+			case IN_LOOP:
+				if (loop_id==manual_loopid){
+					debug("END_LOOP event %u\n",ear_event_l);
+					if (loop_with_signature) {
+						debug("loop ends with %d iterations detected", ear_iterations);
+					}
+					loop_with_signature=0;
+					states_end_period(ear_iterations);
+					traces_end_period(ear_my_rank, my_id);
+					ear_iterations=0;
+					in_loop=0;
+					mpi_calls_per_loop=0;
+					ear_status=NO_LOOP;
+				}else{ // Loop id is different from current one
+					debug("Error END_LOOP and current loop id %lu different from active one %lu",manual_loopid,loop_id);
+					ear_status=NO_LOOP;
+				}
+				break;
+			case NO_LOOP:debug("Error, application was not in a loop");
+				break;
+		}
+  }
+}
+
+void ear_new_iteration(unsigned long loop_id)
+{
+	if (my_id) return;
+  if (!ear_whole_app)
+  {
+
+		switch (ear_status){
+			case IN_LOOP:
+				ear_iterations++;
+				if (loop_with_signature)
+				{
+				debug("new iteration detected for level %u, event %u, size %u and iterations %u",
+  				1, loop_id,1, ear_iterations);
+				}
+				traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
+				states_new_iteration(my_id, 1, ear_iterations, 1, loop_id, mpi_calls_per_loop);
+				mpi_calls_per_loop=1;
+				break;
+			case NO_LOOP:
+				debug("Error, application is not in a loop");
+				break;
+		}
+  }
+}
+

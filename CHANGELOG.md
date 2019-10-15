@@ -1,4 +1,5 @@
 ## Unreleased
+- Three new functions in ear_api for manual utilization of EAR (requires application modification)
 - Option in EARPlug to specify trace pathname changed to SLURM_EAR_TRACE_PATH.
 - new trace plugin mechamism. EAR_GUI is set to on by default. SLURM_EAR_TRACE_PLUGIN env var defines trace path (no default location). Paraver plugin uses SLURM_EAR_TRACE_PATH env var. Pending to check the plugin.
 - EARD INIT and RT errors reported as events to the DB: Not fully tested
