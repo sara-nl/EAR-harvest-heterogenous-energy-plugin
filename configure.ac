@@ -97,18 +97,18 @@ X_AC_GSL
 X_AC_SLURM
 
 #########
-# MYSQL #
-#########
-#
-
-X_AC_MYSQL
-
-#########
 # PGSQL #
 #########
 #
 
 X_AC_PGSQL
+
+#########
+# MYSQL #
+#########
+#
+
+X_AC_MYSQL
 
 ############
 # FEATURES #
