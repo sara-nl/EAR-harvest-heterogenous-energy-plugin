@@ -33,14 +33,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <common/states.h>
 #include <common/output/verbose.h>
-
-#include <metrics/common/msr.h>
-#include <metrics/accumulators/energy_cpu.h>
 #include <common/hardware/hardware_info.h>
-#include <metrics/power_metrics/power_metrics.h>
+#include <metrics/common/msr.h>
+#include <metrics/accumulators/power_metrics.h>
+#include <metrics/accumulators/energy_cpu.h>
 
 
 #define MSR_INTEL_RAPL_POWER_UNIT		0x606

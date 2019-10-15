@@ -9,6 +9,7 @@ dyna_BINS = libmetrics.so
 
 mets_OBJS = \
     $(SRCDIR)/metrics/accumulators/power_metrics.o \
+    $(SRCDIR)/metrics/accumulators/energy_cpu.o \
     $(SRCDIR)/metrics/common/pci.o \
     $(SRCDIR)/metrics/common/msr.o \
     $(SRCDIR)/metrics/bandwidth/bandwidth.o \
@@ -20,7 +21,6 @@ mets_OBJS = \
     $(SRCDIR)/metrics/cpi/cpu/papi.o \
     $(SRCDIR)/metrics/energy/energy_cpu.o \
     $(SRCDIR)/metrics/energy/energy_node.o \
-    $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/papi.o \
     $(SRCDIR)/metrics/frequency/frequency_imc.o \
@@ -29,6 +29,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/frequency/imc/intel_haswell.o \
     $(SRCDIR)/metrics/stalls/stalls.o \
     $(SRCDIR)/metrics/stalls/cpu/papi.o
+# $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
 
 ######## RULES
 

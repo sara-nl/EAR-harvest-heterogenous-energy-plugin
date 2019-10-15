@@ -42,7 +42,7 @@
 #include <library/metrics/metrics.h>
 #include <metrics/cpi/cpi.h>
 #include <metrics/flops/flops.h>
-#include <metrics/energy/node/energy_node.h>
+#include <metrics/energy/energy_node_lib.h>
 #include <metrics/bandwidth/cpu/utils.h>
 #include <daemon/eard_api.h>
 

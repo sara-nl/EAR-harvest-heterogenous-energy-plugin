@@ -36,79 +36,92 @@
 
 struct energy_op
 {
-	state_t (*init)				(void **c);
-	state_t (*dispose)			(void **c);
-	state_t (*datasize)			(size_t *size);
-	state_t (*frequency)		(ulong *freq);
-	state_t (*dc_read)			(void *c, void *emj);
-	state_t (*dc_time_read)		(void *c, void *emj, ulong *tms);
-	state_t (*ac_read)			(void *c, void *em);
-	state_t (*units)			(uint *uints);
-	state_t (*accumulated)		(ulong *e, void *init, void *end);
-	state_t (*energy_to_str)	(char *str, void *end);
+	state_t (*init)               (void **c);
+	state_t (*dispose)            (void **c);
+	state_t (*datasize)           (size_t *size);
+	state_t (*frequency)          (ulong *freq);
+	state_t (*dc_read)            (void *c, edata_t emj);
+	state_t (*dc_time_read)       (void *c, edata_t emj, ulong *tms);
+	state_t (*ac_read)            (void *c, edata_t em);
+	state_t (*units)							(uint *uints);
+	state_t (*accumulated)				(ulong *e,edata_t init, edata_t end);
+	state_t (*energy_to_str)			(char *str,edata_t end);
 } energy_ops;
-
+static char energy_manu[SZ_NAME_MEDIUM];
+static char energy_prod[SZ_NAME_MEDIUM];
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
-const  int  energy_nops    = 10;
+const int   energy_nops    = 10;
 const char *energy_names[] = {
-		"energy_init",
-		"energy_dispose",
-		"energy_datasize",
-		"energy_frequency",
-		"energy_dc_read",
-		"energy_dc_time_read",
-		"energy_ac_read",
-		"energy_units",
-		"energy_accumulated",
-		"energy_to_str"
+	"energy_init",
+	"energy_dispose",
+	"energy_datasize",
+	"energy_frequency",
+	"energy_dc_read",
+	"energy_dc_time_read",
+	"energy_ac_read",
+	"energy_units",
+	"energy_accumulated",
+	"energy_to_str"
 };
 
-state_t energy_init(cluster_conf_t *conf, void **c)
+state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 {
 	state_t ret;
+	int cpu_model;
+
+	if (energy_loaded)
+	{
+		strcpy(eh->product, energy_prod);
+    strcpy(eh->manufacturer, energy_manu);
+		debug("Energy plugin already loaded, executing basic init");	
+		ret = energy_ops.init(&eh->context);
+		if (ret!=EAR_SUCCESS) debug("energy_ops.init() returned %d", ret);
+
+		return ret;
+	}
 
 	if (conf == NULL) {
 		state_return_msg(EAR_BAD_ARGUMENT, 0,
-			 "the conf value cannot be NULL if the plugin is not loaded");
+		 "the conf value cannot be NULL if the plugin is not loaded");
 	}
 
+	debug("Using ear.conf energy plugin %s",conf->install.obj_ener);
 	sprintf(energy_objc, "%s/energy/%s",
-			conf->install.dir_plug, conf->install.obj_ener);
-	debug("using ear.conf energy plugin '%s'", conf->install.obj_ener);
+	conf->install.dir_plug, conf->install.obj_ener);
+	sprintf(energy_prod, "custom");
+	sprintf(energy_manu, "custom");
 	debug("loading shared object '%s'", energy_objc);
 
-	//
-	ret = symplug_open(energy_objc, (void **) &energy_ops, energy_names, energy_nops);
+		//
+		ret = symplug_open(energy_objc, (void **) &energy_ops, energy_names, energy_nops);
+		if (ret!=EAR_SUCCESS) debug("symplug_open() returned %d (%s)", ret, intern_error_str);		
 
-	if (state_fail(ret)) {
-		debug("symplug_open() returned %d (%s)", ret, intern_error_str);
-		return ret;
-	}
+		if (state_fail(ret)) {
+			return ret;
+		}
+		//
+		energy_loaded = 1;
+		if (energy_ops.init!=NULL){ 
+			ret = energy_ops.init(&eh->context);
+			return ret;
+		}else return EAR_ERROR;
 
-	//
-	energy_loaded = 1;
-
-	if (energy_ops.init != NULL) {
-		ret = energy_ops.init(c);
-		return ret;
-	}
-
-	return EAR_ERROR;
+	return ret;
 }
 
-state_t energy_dispose(void **c)
+state_t energy_dispose(ehandler_t *eh)
 {
 	state_t s = EAR_SUCCESS;
 
 	if (energy_ops.dispose != NULL) {
-		s = energy_ops.dispose(c);
+		s = energy_ops.dispose(&eh->context);
 	}
 
-	energy_handler_clean(*c);
+	energy_handler_clean(eh);
 
 	// By now, libraries are not unloadable
-#if 0
+	#if 0
 	energy_ops.init               = NULL;
 	energy_ops.dispose            = NULL;
 	energy_ops.data_length_get    = NULL;
@@ -116,33 +129,36 @@ state_t energy_dispose(void **c)
 	energy_ops.dc_read            = NULL;
 	energy_ops.dc_time_read       = NULL;
 	energy_ops.ac_read            = NULL;
-#endif
+	#endif
 
 	return s;
 }
 
-state_t energy_handler_clean(void *c)
+state_t energy_handler_clean(ehandler_t *eh)
 {
-	memset(c, 0, sizeof(void *));
+	memset(eh, 0, sizeof(ehandler_t));
 	return EAR_SUCCESS;
 }
 
-state_t energy_datasize(void *c, size_t *size)
+state_t energy_datasize(ehandler_t *eh, size_t *size)
 {
-	preturn(energy_ops.datasize, size);
+	preturn (energy_ops.datasize, size);
 }
 
-state_t energy_frequency(void *c, ulong *fus)
+state_t energy_frequency(ehandler_t *eh, ulong *fus)
 {
 	int intents = 0;
 	timestamp ts1;
 	timestamp ts2;
 	ulong e1;
 	ulong e2;
+	void *c;
+
+	c = (void *) eh->context;
 
 	// Dedicated frequency
 	if (energy_ops.frequency != NULL) {
-		return energy_ops.frequency(fus);
+		return energy_ops.frequency ( fus);
 	}
 
 	if (energy_ops.dc_read == NULL) {
@@ -150,7 +166,8 @@ state_t energy_frequency(void *c, ulong *fus)
 	}
 
 	// Generic frequency
-	if (state_ok(energy_ops.dc_read(c, &e1))) {
+	if (state_ok(energy_ops.dc_read(eh->context, &e1)))
+	{
 		do {
 			energy_ops.dc_read(c, &e2);
 			intents++;
@@ -175,35 +192,35 @@ state_t energy_frequency(void *c, ulong *fus)
 	return EAR_SUCCESS;
 }
 
-state_t energy_dc_read(void *c, void *emj)
+state_t energy_dc_read(ehandler_t *eh, edata_t emj)
 {
-	preturn(energy_ops.dc_read, c, emj);
+	preturn (energy_ops.dc_read, eh->context, emj);
 }
 
-state_t energy_dc_time_read(void *c, void *emj, ulong *tms)
+state_t energy_dc_time_read(ehandler_t *eh, edata_t emj, ulong *tms)
 {
-	preturn(energy_ops.dc_time_read, c, emj, tms);
+	preturn (energy_ops.dc_time_read, eh->context, emj, tms);
 }
 
-state_t energy_ac_read(void *c, void *emj)
+state_t energy_ac_read(ehandler_t *eh, edata_t emj)
 {
-	preturn(energy_ops.ac_read, c, emj);
+	preturn (energy_ops.ac_read, eh->context, emj);
 }
 
 /* Energy units are 1=Joules, 1000=mJ, 1000000=uJ, 1000000000nJ */
-state_t energy_units(void *c, uint *units)
+state_t energy_units(ehandler_t *eh,uint *units)
 {
-	*units = 1;
-	preturn(energy_ops.units, units);
+  *units=1;
+  preturn (energy_ops.units, units);
 }
 
-state_t energy_accumulated(void *c, ulong *e, void *init, void *end)
+state_t energy_accumulated(ehandler_t *eh,unsigned long *e,edata_t init,edata_t end)
 {
-	*e = 0;
-	preturn(energy_ops.accumulated, e, init, end);
+  *e=0;
+  preturn (energy_ops.accumulated,e,init,end );
 }
 
-state_t energy_to_str(void *c, char *str, void *e)
+state_t energy_to_str(ehandler_t *eh,char *str,edata_t e)
 {
-	preturn(energy_ops.energy_to_str, str, e);
+  preturn (energy_ops.energy_to_str,str,e );
 }

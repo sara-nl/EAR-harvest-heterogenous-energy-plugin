@@ -2,7 +2,9 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -DSHOW_DEBUGS
 
 ######## FILES
 
-band_OBJS = power_metrics.o
+band_OBJS = \
+    power_metrics.o \
+    energy_cpu.o
 
 ######## RULES
 

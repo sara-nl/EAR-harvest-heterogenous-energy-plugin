@@ -35,28 +35,29 @@
 #include <metrics/accumulators/types.h>
 #include <common/types/configuration/cluster_conf.h>
 
-state_t energy_init(cluster_conf_t *conf, void **c);
+state_t energy_init(cluster_conf_t *conf, ehandler_t *eh);
 
-state_t energy_dispose(void **c);
+state_t energy_dispose(ehandler_t *eh);
 
-state_t energy_handler_clean(void *c);
+state_t energy_handler_clean(ehandler_t *eh);
 
-state_t energy_datasize(void *c, size_t *size);
+state_t energy_datasize(ehandler_t *eh, size_t *size);
 
-state_t energy_frequency(void *c, ulong *freq_us);
+state_t energy_frequency(ehandler_t *eh, ulong *freq_us);
 
-state_t energy_dc_read(void *c, void *energy_mj);
+state_t energy_dc_read(ehandler_t *eh, edata_t  energy_mj);
 
-state_t energy_dc_time_read(void *c, void *energy_mj, ulong *time_ms);
+state_t energy_dc_time_read(ehandler_t *eh, edata_t energy_mj, ulong *time_ms);
 
-state_t energy_ac_read(void *c, void *energy_mj);
+state_t energy_ac_read(ehandler_t *eh, edata_t energy_mj);
 
 /* Energy units are 1=Joules, 1000=mJ, 1000000=uJ, 1000000000nJ */
-state_t energy_units(void *c, uint *units);
+state_t energy_units(ehandler_t *eh,uint *units);
 
-state_t energy_accumulated(void *c, ulong *e, void *init, void *end);
+state_t energy_accumulated(ehandler_t *eh,unsigned long *e,edata_t init,edata_t end);
 
-state_t energy_to_str(void *c, char *str, void *e);
+state_t energy_to_str(ehandler_t *eh,char *str,edata_t e);
+
 
 #endif //EAR_ENERGY_H
 
