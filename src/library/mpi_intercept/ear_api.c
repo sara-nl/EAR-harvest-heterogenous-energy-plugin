@@ -294,6 +294,7 @@ void ear_init()
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
+	
 
 	// Environment initialization
 	ear_lib_environment();
@@ -433,13 +434,13 @@ void ear_init()
 
 	// Tracing init
 	#if EAR_LIB_SYNC	
-	traces_init(application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(system_conf,application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
 	#else
-	traces_init(application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(system_conf,application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	#endif
 
 	traces_start();
-	traces_frequency(ear_my_rank, my_id, ear_current_freq);
+	traces_frequency(ear_my_rank, my_id, EAR_default_frequency);
 	traces_stop();
 
 	traces_mpi_init();

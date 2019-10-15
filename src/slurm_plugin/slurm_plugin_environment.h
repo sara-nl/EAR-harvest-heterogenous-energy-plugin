@@ -125,7 +125,7 @@ struct variables_s {
 .learning  = { .loc = "SLURM_EOLERN", .ear = "EAR_LEARNING_PHASE"   },
 .tag       = { .loc = "SLURM_EOETAG", .ear = "EAR_ENERGY_TAG"       },
 .path_usdb = { .loc = "SLURM_EOUSDB", .ear = "EAR_USER_DB_PATHNAME" },
-.path_trac = { .loc = "SLURM_EOTRAC", .ear = "EAR_PATH_TRACE"       },
+.path_trac = { .loc = "SLURM_EOTRAC", .ear = "SLURM_EAR_TRACE_PATH"       },
 .perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                     },
 .eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"         },
 .name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME"  },

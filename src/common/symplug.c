@@ -28,6 +28,7 @@
 */
 
 #include <common/symplug.h>
+//#define SHOW_DEBUGS 1
 #include <common/includes.h>
 
 state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)

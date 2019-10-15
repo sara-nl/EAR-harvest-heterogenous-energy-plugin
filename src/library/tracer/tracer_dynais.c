@@ -33,30 +33,35 @@
 
 #include <common/config.h>
 #include <common/file.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/tracer/tracer_dynais.h>
 
-#ifdef EAR_TRACER_MPI
 
 static char buffer[SZ_PATH];
-static int enabled;
+static int enabled=0;
 static int fd;
 
-void traces_mpi_init()
+void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
 	char myhost[128];
 	
-	char *pathname = getenv("EAR_TRACE_MPI_PATH");
+	char *pathname = getenv("SLURM_EAR_TRACE_PATH");
 
-	if (pathname!=NULL) verbose(1,"Dynais traces ON. Traces %s",pathname);
+	if (pathname!=NULL){ 
+		debug("Dynais traces ON. Traces %s",pathname);
+	}
+	else {
+		debug("SLURM_EAR_TRACE_PATH is not defined");
+	}
 
 	if (enabled || pathname == NULL) {
 		return;
 	}
 
 	gethostname(myhost,sizeof(myhost));
-	sprintf(buffer, "%s.%s", pathname,myhost);
-	//fprintf("saving trace in %s\n", buffer);
+	sprintf(buffer, "%s/%s.%s.%d", pathname,app,myhost,global_rank);
+	debug("saving trace in %s\n", buffer);
 
 	fd = open(buffer, F_WR | F_CR | F_TR, F_UR | F_UW | F_GR | F_GW | F_OR | F_OW);
 	enabled = (fd >= 0);
@@ -88,4 +93,3 @@ void traces_mpi_end()
 
 	close(fd);
 }
-#endif

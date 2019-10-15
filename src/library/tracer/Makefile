@@ -1,3 +1,5 @@
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
+LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 ######## RULES
 
 all: tracer.o tracer_dynais.o tracer_paraver.o tracer_dynais.so tracer_paraver.so tracer_debug.o tracer_debug.so
@@ -9,7 +11,7 @@ allt: tracer.o tracer_dynais.o tracer_paraver.o
 	$(MPICC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) -c $<
 
 %.so:%.o
-	$(MPICC) $(CC_FLAGS) $(CFLAGS) $(DEFINES)  -shared $< -o $@
+	$(MPICC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) $(LDFLAGS)  -shared $< -o $@
 
 
 ######## OPTIONS

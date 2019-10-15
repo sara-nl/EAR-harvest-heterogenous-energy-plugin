@@ -42,6 +42,6 @@
 #define USE_EXT								0
 #define NW_EXT								"-opa"
 /* When defined, activates dynamic traces on EARL */
-/*#define EAR_GUI */
+#define EAR_GUI 1
 
 #endif

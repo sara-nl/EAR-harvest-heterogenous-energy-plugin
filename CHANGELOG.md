@@ -1,8 +1,10 @@
 ## Unreleased
-- EARD INIT and RT errors reported as events to the DB
+- Option in EARPlug to specify trace pathname changed to SLURM_EAR_TRACE_PATH.
+- new trace plugin mechamism. EAR_GUI is set to on by default. SLURM_EAR_TRACE_PLUGIN env var defines trace path (no default location). Paraver plugin uses SLURM_EAR_TRACE_PATH env var. Pending to check the plugin.
+- EARD INIT and RT errors reported as events to the DB: Not fully tested
 - rpms3 folder included for rpm testing
 - EARplug including SLURM_HACK_LIBRARY for local EARL utilization
-- Support for multiple LD_PRELOAD libraries
+- Support for multiple LD_PRELOAD libraries in EARplug
 - Default plugins included in EAR
 - EAR cpupower included 
 - Merge with new_policies branch: rapl plugin for energy supported

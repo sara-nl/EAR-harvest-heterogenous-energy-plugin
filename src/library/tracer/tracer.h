@@ -72,7 +72,7 @@
 	void traces_mpi_end();
 
 #else
-	#define traces_init(a,g,l,n,m,p)
+	#define traces_init(s,a,g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
 	#define traces_end(g,l,e)
 	#define traces_new_signature(g,l,s,c,t,gb,p,vpi)

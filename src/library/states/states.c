@@ -105,8 +105,8 @@ extern uint check_periodic_mode;
 
 #define  REPORT_TRACES() \
       traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI); \
-      traces_frequency(ear_my_rank, my_id, policy_freq); \
-      traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
+      traces_frequency(ear_my_rank, my_id, policy_freq); 
+      // traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
 #define VERBOSE_SIG() \
       verbose(1,"EAR(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
