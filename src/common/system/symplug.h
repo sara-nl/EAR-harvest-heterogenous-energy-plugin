@@ -30,6 +30,8 @@
 #ifndef EAR_PRIVATE_SYMPLUG_H
 #define EAR_PRIVATE_SYMPLUG_H
 
+
+#include <dlfcn.h>
 #include <common/states.h>
 #include <common/types/generic.h>
 
@@ -38,6 +40,8 @@
 		return EAR_UNDEFINED; \
 	} \
 	return call (__VA_ARGS__);
+
+state_t symplug_join(void *handle, void *calls[], const char *names[], uint n);
 
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n);
 

@@ -18,7 +18,7 @@ all: $(ener_BINS)
 
 ######## OPTIONS
 
-install: ener.ginstall;
+install: ;
 
 %.install: ;
 

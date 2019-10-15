@@ -2,10 +2,9 @@
 
 OBJS = ear_api.o \
        process_MPI.o \
-       MPI_intercept.o \
-       MPI_interface.o \
-       MPI_interceptF.o \
-       MPI_interfaceF.o
+       mpi_definitions.o \
+       mpi_interception.o \
+       MPI_interface.o
 
 ######## RULES
 
@@ -15,7 +14,7 @@ allt: DEFINES=-DEAR_GUI
 allt: $(OBJS)
 
 %.o: %.c %.h
-	$(MPICC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) -c $<
+	$(MPICC) $(CC_FLAGS) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 
