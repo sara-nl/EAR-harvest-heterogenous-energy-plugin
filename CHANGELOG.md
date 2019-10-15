@@ -1,4 +1,5 @@
 ## Unreleased
+- EARD INIT and RT errors reported as events to the DB
 - rpms3 folder included for rpm testing
 - EARplug including SLURM_HACK_LIBRARY for local EARL utilization
 - Support for multiple LD_PRELOAD libraries
