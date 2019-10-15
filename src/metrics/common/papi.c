@@ -30,10 +30,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <papi.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
-#include <metrics/papi/generics.h>
+#include <metrics/common/papi.h>
 
 void metrics_get_app_name(char *app_name)
 {

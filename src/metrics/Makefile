@@ -8,10 +8,11 @@ dyna_BINS = libmetrics.so
 ######## FILES
 
 mets_OBJS = \
-    $(SRCDIR)/metrics/accumulators/power_metrics.o \
-    $(SRCDIR)/metrics/accumulators/energy_cpu.o \
     $(SRCDIR)/metrics/common/pci.o \
     $(SRCDIR)/metrics/common/msr.o \
+    $(SRCDIR)/metrics/common/papi.o \
+    $(SRCDIR)/metrics/accumulators/energy_cpu.o \
+    $(SRCDIR)/metrics/accumulators/power_metrics.o \
     $(SRCDIR)/metrics/bandwidth/bandwidth.o \
     $(SRCDIR)/metrics/bandwidth/cpu/intel_haswell.o \
     $(SRCDIR)/metrics/bandwidth/cpu/utils.o \
