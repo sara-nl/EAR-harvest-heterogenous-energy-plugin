@@ -1,7 +1,7 @@
 ######## RULES
 
 %.gclean:
-	@ rm -f $($*_BINS)
+	rm -f $($*_BINS) $($*_OBJS)
 
 rclean:
 	rm -f *.o *.a *.so
