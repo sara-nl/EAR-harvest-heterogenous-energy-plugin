@@ -51,6 +51,7 @@
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
+#include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <metrics/custom/frequency.h>
 #include <metrics/power_metrics/power_metrics.h>
@@ -906,15 +907,20 @@ void powermon_reload_conf() {
 
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
-	ulong jid, mpi;
+	ulong jid, mpi,sid;
+	uint usedb,useeardbd;
 	double maxpower, minpower, RAPL, corrected_power;
+	usedb=my_cluster_conf.eard.use_mysql;
+	useeardbd=my_cluster_conf.eard.use_eardbd;
 	if (ccontext >= 0) {
 		jid = current_ear_app[ccontext]->app.job.id;
+		sid = current_ear_app[ccontext]->app.job.step_id; 
 		mpi = current_ear_app[ccontext]->app.is_mpi;
 		maxpower = current_ear_app[ccontext]->app.power_sig.max_DC_power;
 		minpower = current_ear_app[ccontext]->app.power_sig.min_DC_power;
 	} else {
 		jid = 0;
+		sid = 0;
 		mpi = 0;
 		maxpower = minpower = 0;
 	}
@@ -957,9 +963,17 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 #if SYSLOG_MSG
 	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< my_node_conf->min_sig_power) || (my_current_power->avg_dc>my_node_conf->max_sig_power)){
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,DC_POWER_ERROR,my_current_power->avg_dc);
 	}
 	if (current_sample.temp>my_node_conf->max_temp){
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %lu degress (max %lu)\n",nodename,current_sample.temp,my_node_conf->max_temp);
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,TEMP_ERROR,current_sample.temp);
+	}
+	if (RAPL == 0) {
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,RAPL_ERROR,RAPL);
+	}
+	if ((current_sample.avg_f==0) || (current_sample.avg_f>frequency_get_nominal_freq())){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,FREQ_ERROR,current_sample.avg_f);
 	}
 #endif
 	if ((my_current_power->avg_dc == 0) || (my_current_power->avg_dc > my_node_conf->max_error_power)) {
@@ -1037,12 +1051,36 @@ void create_powermon_out() {
 	umask(my_mask);
 }
 
+void check_rt_error_for_signature(application_t *app)
+{
+	uint usedb,useeardbd;
+	job_id jid,sid;
+	jid=app->job.id;
+	sid=app->job.step_id;
+	usedb=my_cluster_conf.eard.use_mysql;
+	useeardbd=my_cluster_conf.eard.use_eardbd;
+	if (app->signature.GBS==0)
+	{
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,GBS_ERROR,0);
+	}
+	if (app->signature.CPI==0){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,CPI_ERROR,0);
+	}
+	if (app->signature.DC_power==0){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,DC_POWER_ERROR,0);
+	}
+	if (app->signature.avg_f==0){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,FREQ_ERROR,0);
+	}
+}
+
 void powermon_mpi_signature(application_t *app) {
 	check_context("powermon_mpi_signature and not current context");
 	if (app == NULL) {
 		error("powermon_mpi_signature: and NULL app provided");
 		return;
 	}
+	check_rt_error_for_signature(app);
 	signature_copy(&current_ear_app[ccontext]->app.signature, &app->signature);
 	current_ear_app[ccontext]->app.job.def_f = app->job.def_f;
 	current_ear_app[ccontext]->app.job.th = app->job.th;

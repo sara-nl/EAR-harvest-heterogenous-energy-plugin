@@ -35,6 +35,7 @@
 // #define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/environment.h>
+#include <common/types/log_eard.h>
 #include <control/frequency.h>
 #if USE_MSR_RAPL
 #include <metrics/msr/energy_cpu.h>
@@ -57,6 +58,9 @@
 #endif
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
+
+
+#define MIN_INTERVAL_RT_ERROR 3600
 
 #if APP_API_THREAD
 pthread_t app_eard_api_th;
@@ -100,7 +104,6 @@ int coeffs_default_size;
 uint signal_sighup = 0;
 uint f_monitoring;
 
-uint eard_init_error[EARD_INIT_ERROR];
 
 #define max(a, b) (a>b?a:b)
 #define min(a, b) (a<b?a:b)
@@ -131,6 +134,14 @@ struct daemon_req req;
 int RAPL_counting = 0;
 int eard_must_exit = 0;
 topology_t node_desc;
+
+
+/* EARD init errors control */
+static uint error_uncore=0;
+static uint error_rapl=0;
+static uint error_energy=0;
+static uint error_connector=0;
+
 
 
 void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
@@ -223,9 +234,13 @@ void create_connector(char *ear_tmp, char *nodename, int i) {
 	if (mknod(ear_commreq, S_IFIFO | S_IRUSR | S_IRGRP | S_IWUSR | S_IWGRP | S_IROTH | S_IWOTH, 0) < 0) {
 		if (errno != EEXIST) {
 			error("Error creating ear communicator for requests %s\n", strerror(errno));
+			error_connector=1;
 		}
 	}
-	chmod(ear_commreq, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (chmod(ear_commreq, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)<0){
+		error("Error setting privileges for eard-earl connection");
+		error_connector=1;
+	}
 }
 
 void connect_service(int req, application_t *new_app) {
@@ -1084,6 +1099,28 @@ int read_coefficients() {
 }
 
 
+void report_eard_init_error()
+{
+	if (error_uncore)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,UNCORE_INIT_ERROR,0);
+	}
+	if (error_rapl)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,RAPL_INIT_ERROR,0);
+	}
+	if (error_energy)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,ENERGY_INIT_ERROR,0);
+	}
+	if (error_connector)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,CONNECTOR_INIT_ERROR,0);
+		
+	}
+}
+
+
 /*
 *
 *
@@ -1126,6 +1163,9 @@ int main(int argc, char *argv[]) {
 	/** CONFIGURATION **/
         int node_size;
         state_t s;
+
+				init_eard_rt_log();
+				log_report_eard_min_interval(MIN_INTERVAL_RT_ERROR);
 
         /* We initialize topology */
         s = hardware_gettopology(&node_desc);
@@ -1292,13 +1332,20 @@ int main(int argc, char *argv[]) {
 	cpu_model = get_model();
 	num_uncore_counters = init_uncores(cpu_model);
 	verbose(VCONF + 1, "eard %d imc uncore counters detected\n", num_uncore_counters);
+	if (num_uncore_counters == 0){
+		error("Uncore counters to compute memory bandwith not detected");
+		error_uncore=1;
+	}
 	reset_uncores();
 	/* Start uncore to have counters ready for reading */
 	start_uncores();
 
 	// We initialize rapl counters
 #if USE_MSR_RAPL
-	if (init_rapl_msr()<0) error("Error initializing rapl");
+	if (init_rapl_msr()<0){ 
+		error("Error initializing rapl");
+		error_rapl=1;
+	}
 #else
 	init_rapl_metrics();
 	start_rapl_metrics();
@@ -1306,7 +1353,8 @@ int main(int argc, char *argv[]) {
 	// We initilize energy_node
 	debug("Initializing energy in main EARD thread");
 	if (state_fail(energy_init(&my_cluster_conf, &handler_energy))) {
-		warning("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
+		error("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
+		error_energy=1;
 	}
 	energy_datasize(&handler_energy,&node_energy_datasize);
 	debug("EARD main thread: node_energy_datasize %lu",node_energy_datasize);
@@ -1370,21 +1418,26 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
+	report_eard_init_error();
+
 #if POWERMON_THREAD
 	if ((ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL))){
 		errno=ret;
 		error("error creating power_monitoring thread %s\n",strerror(errno));
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,PM_CREATION_ERROR,ret);
 	}
 #endif
 
 #if EXTERNAL_COMMANDS_THREAD
 	if ((ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp))){
 		error("error creating dynamic_configuration thread \n");
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,DYN_CREATION_ERROR,ret);
 	}
 #endif
 #if APP_API_THREAD
 	if ((ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL))){
 		error("error creating server thread for non-earl api\n");
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,APP_API_CREATION_ERROR,ret);
 	}
 #endif
 

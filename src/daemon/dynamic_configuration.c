@@ -45,6 +45,7 @@
 
 #include <common/config.h>
 #include <common/types/job.h>
+#include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 
 // #define SHOW_DEBUGS 1
@@ -451,6 +452,7 @@ void *eard_dynamic_configuration(void *tmp)
 	eards_remote_socket = create_server_socket(my_cluster_conf.eard.port);
 	if (eards_remote_socket < 0) {
 		error("Error creating socket, exiting eard_dynamic_configuration thread\n");
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,RCONNECTOR_INIT_ERROR,eards_remote_socket);
 		pthread_exit(0);
 	}
 	/*
