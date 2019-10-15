@@ -212,7 +212,7 @@ void log_report_eard_init_error(job_id job,job_id sid,uint eventid,ulong value)
 	#if DB_MYSQL
   /* we request the daemon to write the event in the DB */
   event.timestamp=time(NULL);
-	event.joid=job;
+	event.jid=job;
 	event.step_id=sid;	
   strcpy(event.node_id,log_nodename);
 	event.event=eventid;
@@ -237,7 +237,7 @@ void log_report_eard_rt_error(job_id job,job_id sid,uint eventid,ulong value)
 	event.timestamp=time(NULL);
 	if (difftime(event.timestamp,last_rt_event)>=min_interval){
 		last_rt_event=event.timestamp;
-		event.joid=job;
+		event.jid=job;
 		event.step_id=sid;	
   	strcpy(event.node_id,log_nodename);
   	event.event=eventid;
