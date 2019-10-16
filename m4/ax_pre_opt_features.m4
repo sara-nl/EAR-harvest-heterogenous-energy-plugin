@@ -88,6 +88,24 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	MPICC="`which $MPICC`"
 	CC="`which $CC`"
 
+    #
+    # Fortran
+    #
+	
+	AC_ARG_WITH(
+		[fortran],
+		AS_HELP_STRING(--with-fortran,Adds MPI Fortran symbols.),
+		[
+           	enable_fort="$withval"
+		]
+	)
+	
+	FEAT_FORT=0
+
+	if test -n "$enable_fort"; then
+		FEAT_FORT=1
+	fi
+
 	#
 	# Architecture
 	#

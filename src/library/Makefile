@@ -49,15 +49,18 @@ mpic_OBJS = \
     mpi_intercept/mpi_interception.o \
     mpi_intercept/MPI_interface.o \
 
-mpif_OBJS = mpi_intercept/MPI_interceptF.o \
+ifeq ($(FEAT_FORT), 1)
+mpif_OBJS = \
+    mpi_intercept/MPI_interceptF.o \
     mpi_intercept/MPI_interfaceF.o
+endif
 
 ######## RULES
 
 all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(comm_OBJS)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.$(ext) $(mpix_OBJS) $(mpic_OBJS) \
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.$(ext) $(mpix_OBJS) $(mpic_OBJS) $(mpif_OBJS) \
 	$(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
