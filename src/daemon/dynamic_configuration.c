@@ -54,7 +54,7 @@
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_conf_rapi.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;

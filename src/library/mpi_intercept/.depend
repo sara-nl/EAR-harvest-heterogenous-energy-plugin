@@ -42,16 +42,12 @@ ear_api.o: ear_api.c ../../common/config.h \
  ../../library/policies/policy.h ../../common/types/projection.h \
  ../../library/metrics/metrics.h ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
- ../../library/mpi_intercept/MPI_calls_coded.h ../../control/frequency.h \
- ../../control/cpupower.h ../../daemon/eard_api.h \
+ ../../library/mpi_intercept/MPI_calls_coded.h \
+ ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
+ ../../metrics/common/papi.h ../../daemon/eard_api.h \
  ../../common/types/log.h ../../daemon/eard_conf_api.h \
- ../../metrics/metrics_earl.h ../../metrics/papi/flops.h \
- ../../metrics/papi/generics.h ../../metrics/papi/instructions.h \
- ../../metrics/custom/frequency.h ../../metrics/custom/hardware_info.h \
- ../../common/file.h ../../metrics/common/cpuid.h
-mpi_interception.o: mpi_interception.c ../../common/symplug.h \
- ../../common/states.h ../../common/types/generic.h \
- ../../common/output/debug.h \
+ ../../common/system/file.h
+mpi_interception.o: mpi_interception.c ../../common/output/debug.h \
  ../../library/mpi_intercept/mpi_interception.h \
  ../../library/mpi_intercept/mpi_definitions.h \
  ../../library/mpi_intercept/MPI_interface.h

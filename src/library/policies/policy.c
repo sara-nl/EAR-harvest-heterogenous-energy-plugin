@@ -30,8 +30,8 @@
 #include <dlfcn.h>
 #define SHOW_DEBUGS 1
 #include <common/includes.h>
-#include <common/symplug.h>
-#include <control/frequency.h>
+#include <common/system/symplug.h>
+#include <common/hardware/frequency.h>
 #include <library/policies/policy_ctx.h>
 #include <library/policies/policy.h>
 #include <library/common/externs.h>

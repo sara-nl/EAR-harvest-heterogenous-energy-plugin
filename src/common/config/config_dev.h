@@ -46,7 +46,7 @@
 #define POWERMON_THREAD						1
 /* When set to 1 , creates a thread in EARD for external commands, do not set to
  * 0 except for debug purposes */
-#define EXTERNAL_COMMANDS_THREAD 			1
+#define EXTERNAL_COMMANDS_THREAD 				1
 /* Just for ear.conf reading. */
 #define EARDBD_TYPES						7
 /** Specifies if the new version of the commands propagation is used and the number

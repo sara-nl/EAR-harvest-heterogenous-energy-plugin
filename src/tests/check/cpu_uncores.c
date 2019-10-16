@@ -29,8 +29,8 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <metrics/custom/bandwidth.h>
-#include <metrics/custom/hardware_info.h>
+#include <metrics/bandwidth/bandwidth.h>
+#include <common/hardware/hardware_info.h>
 #include <common/states.h>
 
 int main(void)

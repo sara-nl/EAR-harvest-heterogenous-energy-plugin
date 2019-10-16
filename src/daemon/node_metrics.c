@@ -34,9 +34,9 @@
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/node_metrics.h>
-#include <metrics/custom/frequency.h>
-#include <metrics/custom/frequency_uncore.h>
-#include <metrics/msr/energy_cpu.h>
+#include <metrics/frequency/frequency_cpu.h>
+#include <metrics/frequency/frequency_imc.h>
+#include <metrics/accumulators/energy_cpu.h>
 
 #define NM_CONNECTED	100
 

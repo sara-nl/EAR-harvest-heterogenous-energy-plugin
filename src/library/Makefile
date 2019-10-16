@@ -25,11 +25,9 @@ endif
 ######## FILES
 
 comm_OBJS = \
-    $(SRCDIR)/metrics/libmetrics_lib.a \
-    $(SRCDIR)/control/frequency.o \
-    $(SRCDIR)/control/cpupower.o \
     $(SRCDIR)/daemon/eard_api.o \
     $(SRCDIR)/daemon/shared_configuration.o \
+    $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a
 
 mpix_OBJS = \

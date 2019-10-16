@@ -32,7 +32,7 @@
 #include <common/states.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 
 #include <library/models/models_api.h>
 

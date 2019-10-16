@@ -48,7 +48,7 @@
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
 #include <library/policies/policy.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 #include <daemon/eard_api.h>
 #include <common/environment.h>
 

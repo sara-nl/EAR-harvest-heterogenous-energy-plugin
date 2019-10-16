@@ -27,8 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/symplug.h>
+#define _GNU_SOURCE
+
 #include <common/output/debug.h>
+#include <common/system/symplug.h>
 #include <library/mpi_intercept/mpi_interception.h>
 
 extern const char *mpi_names[];

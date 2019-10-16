@@ -13,7 +13,7 @@ slurm_plugin_rcom_shared.o: slurm_plugin_rcom_shared.c \
  ../daemon/eard_conf_rapi.h ../daemon/shared_configuration.h \
  ../common/types/coefficient.h ../global_manager/eargm_rapi.h \
  ../slurm_plugin/slurm_plugin_environment.h
-slurm_plugin_options.o: slurm_plugin_options.c ../common/folder.h \
+slurm_plugin_options.o: slurm_plugin_options.c ../common/system/folder.h \
  ../common/sizes.h ../common/states.h ../slurm_plugin/slurm_plugin.h \
  ../common/config.h ../common/config/config_def.h \
  ../common/config/config_dev.h ../common/config/config_install.h \
@@ -62,7 +62,7 @@ slurm_plugin_test.o: slurm_plugin_test.c ../common/colors.h \
  ../slurm_plugin/slurm_plugin_options.h \
  ../slurm_plugin/slurm_plugin_environment.h
 slurm_plugin_serialization.o: slurm_plugin_serialization.c \
- ../common/file.h ../common/sizes.h ../common/states.h \
+ ../common/system/file.h ../common/sizes.h ../common/states.h \
  ../slurm_plugin/slurm_plugin.h ../common/config.h \
  ../common/config/config_def.h ../common/config/config_dev.h \
  ../common/config/config_install.h ../common/output/verbose.h \

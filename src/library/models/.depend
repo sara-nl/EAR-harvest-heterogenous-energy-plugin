@@ -7,7 +7,7 @@ basic_model.o: basic_model.c ../../common/states.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/types/coefficient.h \
- ../../control/frequency.h ../../control/cpupower.h \
+ ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
  ../../library/models/models_api.h
 models.o: models.c ../../common/config.h ../../common/config/config_def.h \
  ../../common/config/config_dev.h ../../common/config/config_install.h \
