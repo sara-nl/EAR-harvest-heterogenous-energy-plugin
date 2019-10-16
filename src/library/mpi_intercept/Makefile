@@ -23,9 +23,6 @@ allt: $(OBJS)
 %.o: %.c %.h
 	$(MPICC) $(CC_FLAGS) $(CFLAGS) -c $<
 
-ear_api.o: ear_api.c ear_api.h
-	$(MPICC) $(CC_FLAGS) $(CFLAGS) -DSHOW_DEBUGS -c ear_api.c
-
 ######## OPTIONS 
 
 install: ;
