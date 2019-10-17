@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <papi.h>
+#define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>
 // #define SHOW_DEBUGS 1
@@ -41,9 +42,11 @@
 #include <metrics/metrics_earl.h>
 #if 0
 #include <metrics/papi/flops.h>
-#include <metrics/papi/cache.h>
 #include <metrics/papi/generics.h>
 #include <metrics/papi/instructions.h>
+#endif
+#ifdef CACHE_METRICS
+#include <metrics/papi/cache.h>
 #endif
 #include <metrics/custom/bandwidth_notpriv.h>
 #include <daemon/eard_api.h>
@@ -341,7 +344,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	metrics->time = time_s / (double) iterations;
 	metrics->avg_f = metrics_avg_frequency[s];
 
-	#if 0
+	#if CACHE_METRICS
 	metrics->L1_misses = metrics_l1[s];
 	metrics->L2_misses = metrics_l2[s];
 	metrics->L3_misses = metrics_l3[s];

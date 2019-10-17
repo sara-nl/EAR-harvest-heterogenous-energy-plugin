@@ -67,7 +67,7 @@
 #define VDBH 0
 
 
-#define VMETRICS 2
+#define VMETRICS 3
 #define VTYPE   2
 #define VJOBINFO 1
 
