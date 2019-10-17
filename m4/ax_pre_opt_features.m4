@@ -84,6 +84,10 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 			MPICC_FLAGS="$MPICC_FLAGS -norpath"
 		fi
 	fi
+	
+	if echo "$MPICC" | grep -q "/"; then
+		echo GOOOOOOOOOOOOOOOOOOOOLLLLLLL
+	fi
 
 	dnl Getting full path
 	MPICC="`which $MPICC`"
