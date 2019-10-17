@@ -3,7 +3,8 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC $(CONSTANTS) -O2
 ######## INSTALLATION
 
 libc_BINS = libcommon.a
-libc_OBJS = $(patsubst %.c, %.o, $(shell find -maxdepth 1 -type f -name '*.c'))
+libc_OBJS = $(shell find ./ -type f -name '*.o')
+comm_OBJS = $(patsubst %.c, %.o, $(shell find -maxdepth 1 -type f -name '*.c'))
 incl_BINS = states.h
 incl_PATH = $(DESTDIR)/include
 incl_PERM = 0660
@@ -17,8 +18,8 @@ all: all.components $(libc_BINS)
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-libcommon.a: $(libc_OBJS)
-	$(AR) rvs $@ $(shell find ./ -type f -name '*.o')
+libcommon.a: $(comm_OBJS)
+	$(AR) rvs $@ $(libc_OBJS)
 
 ######## OPTIONS
 
@@ -33,10 +34,10 @@ clean: clean.components libc.gclean rclean;
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'types' $* || exit
-ifdef DB_BASE
+	@ $(MAKE) -C 'types'    $* || exit
+	@ $(MAKE) -C 'system'   $* || exit
+	@ $(MAKE) -C 'hardware' $* || exit
 	@ $(MAKE) -C 'database' $* || exit
-endif
 
 ######## DEPENDENCIES
 

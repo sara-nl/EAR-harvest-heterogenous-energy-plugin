@@ -1,10 +1,17 @@
 ######## FILES
 
-OBJS = ear_api.o \
-       process_MPI.o \
-       mpi_definitions.o \
-       mpi_interception.o \
-       MPI_interface.o
+OBJS = \
+    ear_api.o \
+    process_MPI.o \
+    mpi_definitions.o \
+    mpi_interception.o \
+    MPI_interface.o
+
+ifeq ($(FEAT_FORT), 1)
+OBJS += \
+    MPI_interceptF.o \
+    MPI_interfaceF.o
+endif
 
 ######## RULES
 

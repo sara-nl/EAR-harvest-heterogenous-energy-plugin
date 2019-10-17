@@ -39,7 +39,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <common/user.h>
+#include <common/system/user.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>

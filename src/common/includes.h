@@ -42,12 +42,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/resource.h>
-#include <common/time.h>
-#include <common/user.h>
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/config.h>
-#include <common/types/types.h>
 #include <common/output/verbose.h>
 
 #endif //EAR_INCLUDES_H

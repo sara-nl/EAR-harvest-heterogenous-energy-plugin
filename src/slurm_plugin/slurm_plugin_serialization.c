@@ -29,7 +29,7 @@
 
 #include <pwd.h>
 #include <grp.h>
-#include <common/file.h>
+#include <common/system/file.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
@@ -431,7 +431,6 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	char *lib_path = MPI_C_LIB_PATH;
 	char ext1[64];
 	char ext2[64];
-	int n;
 
 	if(getenv_agnostic(sp, Var.version.loc, ext1, 64)) {
 		snprintf(ext2, 64, "%s.so", ext1);
@@ -442,28 +441,32 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	// Appending libraries to LD_PRELOAD
 	apenv_agnostic(buffer2, sd->pack.path_inst, 64);
 
+	#define t(max, val) \
+		((val + 1) > max) ? max : val + 1
+
 	//
-	n = snprintf(     0,      0, "%s/%s.%s", buffer2, lib_path, ext2);
-	n = snprintf(buffer1, n + 1, "%s/%s.%s", buffer2, lib_path, ext2);
+	const int m = SZ_BUFF_EXTRA;
+	int n;
+	
+	n = snprintf(      0,       0, "%s/%s.%s", buffer2, lib_path, ext2);
+	n = snprintf(buffer1, t(m, n), "%s/%s.%s", buffer2, lib_path, ext2);
 
 	if (file_is_regular(buffer1))
 	{
 		char *ld_buf = sd->job.user.env.ld_preload;
-		char *ld_var = NULL;
 
-		if (exenv_agnostic(sp, Var.hack_libr.hck)) {
-			buffer1[0] = '\0';
-			ld_var     = Var.hack_libr.hck;
-		} else if (exenv_agnostic(sp, Var.ld_prel.ear)) {
-			ld_var     = Var.ld_prel.ear;
+		if (getenv_agnostic(sp, Var.hack_libr.hck, buffer2, m)) {
+			n = snprintf(      0,       0, "%s", buffer2);
+			n = snprintf(buffer1, t(m, n), "%s", buffer2);
 		}
+		if (getenv_agnostic(sp, Var.ld_prel.ear, ld_buf, m))
+		{
+			if (n > 0) {
+				n = sprintf(buffer2,    "%s:", buffer1);
+			}
 
-		if (ld_var != NULL) {
-			getenv_agnostic(sp, ld_var, ld_buf, SZ_PATH);
-
-			n = snprintf(      0,     0, "%s:%s", buffer1, ld_buf);
-			n = snprintf(buffer2, n + 1, "%s:%s", buffer1, ld_buf);
-			n = snprintf(buffer1, n + 1,    "%s", buffer2);
+			n = snprintf(      0,       0, "%s%s", buffer2, ld_buf);
+			n = snprintf(buffer1, t(m, n), "%s%s", buffer2, ld_buf);
 		}
 
 		setenv_agnostic(sp, Var.ld_prel.ear, buffer1, 1);

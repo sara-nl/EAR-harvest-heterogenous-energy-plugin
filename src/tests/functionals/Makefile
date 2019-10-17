@@ -3,7 +3,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS)
 ######## FILES
 
 ips_check_OBJS = \
-	$(SRCDIR)/common/libcommon.a 
+        $(SRCDIR)/common/libcommon.a 
 
 BINS = ear_conf ips_check
 

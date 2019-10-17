@@ -28,7 +28,7 @@
 */
 
 #include <assert.h>
-#include <metrics/custom/hardware_info.h>
+#include <common/hardware/hardware_info.h>
 
 int main ()
 {

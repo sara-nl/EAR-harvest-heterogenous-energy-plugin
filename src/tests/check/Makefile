@@ -54,16 +54,16 @@ module_ipmi_devintf: module_ipmi_devintf.c $(chck_OBJS) $(comm_OBJS)
 	$(CC) $(CFLAGS) -o $@ $< $(chck_OBJS) $(comm_OBJS)
 
 cpu_examinable: cpu_examinable.c
-	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(comm_OBJS)
 
 cpu_aperf: cpu_aperf.c
-	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(comm_OBJS)
 
 cpu_uncores: cpu_uncores.c
-	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS) $(metr_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(comm_OBJS) $(metr_OBJS)
 
 cpu_uncores_all: cpu_uncores_all.c
-	$(CC) $(CFLAGS) -o $@ $< $(metr_OBJS) $(metr_OBJS)
+	$(CC) $(CFLAGS) -o $@ $< $(comm_OBJS) $(metr_OBJS)
 
 gsl_version: gsl_version.c
 	$(CC) $(CFLAGS) $(GSL_CFLAGS) -o $@ $<
