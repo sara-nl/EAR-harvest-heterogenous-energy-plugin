@@ -54,6 +54,7 @@ earplug.install: slurm_plugin.install;
 	@ $(MAKE) -C $* install || exit
 
 %.build:
+	@ $(MAKE) -C $* clean || exit
 	@ $(MAKE) -C $* all || exit
 
 ######## SUBFOLDERS
