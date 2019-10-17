@@ -407,6 +407,7 @@ int get_self_ip()
             return saddr->sin_addr.s_addr;
         }
     }
+	return EAR_ERROR;
 }
 
 #if USE_NEW_PROP

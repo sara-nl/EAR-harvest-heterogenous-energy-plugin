@@ -41,7 +41,7 @@
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/tracer/tracer.h>
-#include <common/symplug.h>
+#include <common/system/symplug.h>
 
 #ifdef EAR_GUI
 

@@ -67,7 +67,7 @@ void log_report_eard_init_error(uint usedb,uint useeardbd,uint eventid,ulong val
 {
 	ear_event_t event;
   /* we request the daemon to write the event in the DB */
-	debug("New init EARD error %lu",eventid);
+	debug("New init EARD error %u",eventid);
   event.timestamp=time(NULL);
 	event.jid=0;
 	event.step_id=0;	
@@ -78,7 +78,7 @@ void log_report_eard_init_error(uint usedb,uint useeardbd,uint eventid,ulong val
   	if (useeardbd) eardbd_send_event(&event);
   	else db_insert_ear_event(&event);
 	}else{
-		debug("INIT EARD error  event type %lu value %lu",eventid,value);
+		debug("INIT EARD error  event type %u value %lu",eventid,value);
 	}
 
 }
@@ -106,7 +106,7 @@ void log_report_eard_rt_error(uint usedb,uint useeardbd,job_id job,job_id sid,ui
 			if (useeardbd) eardbd_send_event(&event);
 			else db_insert_ear_event(&event);
 		}else{
-			debug("jid %lu sid %lu event type %lu value %lu",job,sid,eventid,value);
+			debug("jid %lu sid %lu event type %u value %lu",job,sid,eventid,value);
 		}
 	}else{
 		debug("RT EARD erro NOT reported %u because of min_interval definition", eventid);
