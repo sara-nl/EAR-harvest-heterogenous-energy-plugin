@@ -41,6 +41,13 @@
 #include <daemon/eard_api.h>
 
 typedef unsigned long ulong;
+#ifdef EARL_RESEARCH
+extern unsigned long ext_def_freq;
+#define FREQ_DEF(f) (!ext_def_freq?f:ext_def_freq)
+#else
+#define FREQ_DEF(f) f
+#endif
+
 
 state_t policy_init(polctx_t *c)
 {
@@ -62,7 +69,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *l)
 {
     if ((c!=NULL) && (c->reset_freq_opt))
     {
-        *(c->ear_frequency) = eards_change_freq(c->app->def_freq);
+        *(c->ear_frequency) = eards_change_freq(FREQ_DEF(c->app->def_freq));
     }
 	return EAR_SUCCESS;
 }
@@ -90,7 +97,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	// Default values
 
 		max_penalty=c->app->settings[0];
-		def_freq=c->app->def_freq;
+		def_freq=FREQ_DEF(c->app->def_freq);
 		def_pstate=frequency_freq_to_pstate(def_freq);
 
 		// This is the frequency at which we were running

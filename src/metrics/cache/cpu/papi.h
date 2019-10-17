@@ -32,6 +32,10 @@
 
 #include <metrics/common/papi.h>
 
+#define CACHE_SETS 3
+#define CACHE_EVS 2
+
+
 /** Initializes the event metrics for each cache level. */
 int init_cache_metrics();
 
@@ -43,10 +47,9 @@ void start_cache_metrics();
 
 /** Stops cache metrics and accumulates registered events in the variables corresponding
 * 	to each cache level recieved by parameter. */
-void stop_cache_metrics(long long *l1, long long *l2, long long *l3);
+void stop_cache_metrics(long long *l1);
 
-/** Puts the current cache metrics in the variables recieved by parameter. */
-void get_cache_metrics(long long *l1, long long *l2, long long *l3);
 
+void print_cache_metrics(long long *L);
 #else
 #endif

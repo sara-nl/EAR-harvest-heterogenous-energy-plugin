@@ -114,6 +114,11 @@ void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank
 	if (traces_plugin==NULL) trace_plugin=0;
 	else trace_plugin=1;
 
+	if (trace_plugin==0){ 
+		debug("traces OFF");
+		return;
+	}
+
   debug("traces library");
   if (conf == NULL) {
 		debug("NULL configuration in traces_init");

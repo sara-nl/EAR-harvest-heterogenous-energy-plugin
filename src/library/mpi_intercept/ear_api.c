@@ -66,6 +66,8 @@
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
 
+unsigned long ext_def_freq=0;
+
 #if USE_LOCK_FILES
 #include <common/system/file.h>
 static char fd_lock_filename[BUFFSIZE];
@@ -99,7 +101,6 @@ static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #define MASTERS_SYNC_VERBOSE 1
 MPI_Comm new_world_comm,masters_comm;
 int num_masters;
-int my_master_rank;
 int my_master_size;
 int masters_connected=0;
 unsigned masters_comm_created=0;
@@ -290,6 +291,7 @@ void ear_init()
 {
 	char *summary_pathname;
 	state_t st;
+	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
 
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
@@ -298,6 +300,11 @@ void ear_init()
 
 	// Environment initialization
 	ear_lib_environment();
+
+	if (ext_def_freq_str!=NULL){
+		ext_def_freq=(unsigned long)atol(ext_def_freq_str);
+		debug("Using externally defined default freq %lu",ext_def_freq);
+	}
 
 	// Fundamental data
 	gethostname(node_name, sizeof(node_name));
@@ -317,9 +324,11 @@ void ear_init()
 	attach_to_master_set(my_id==0);
 
 	// if we are not the master, we return
+#if ONLY_MASTER
 	if (my_id != 0) {
 		return;
 	}
+#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	debug("system_conf_path %s",system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
@@ -334,15 +343,17 @@ void ear_init()
 		debug("Shared memory not present");
 #if USE_LOCK_FILES
     debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-    file_unlock_master(fd_master_lock,fd_lock_filename);
+    if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
 		notify_eard_connection(0);
 		my_id=1;
 	}	
 
+#if ONLY_MASTER
 	if (my_id != 0) {
 		return;
 	}
+#endif
 
 
 	// Application static data and metrics
@@ -368,12 +379,14 @@ void ear_init()
 	//sets the job start_time
 	start_job(&application.job);
 
+	if (!my_id){ //only the master will connect with eard
 	verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
 	if (eards_connect(&application) == EAR_SUCCESS) {
 		debug("Rank %d connected with EARD", ear_my_rank);
 		notify_eard_connection(1);
 	}else{   
 		notify_eard_connection(0);
+	}
 	}
 	
 	// Initializing sub systems
@@ -386,7 +399,7 @@ void ear_init()
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			verbose(2, "turbo learning phase, turbo selected and start computing");
-			eards_set_turbo();
+			if (!my_id) eards_set_turbo();
 		} else {
 			verbose(2, "learning phase %d, turbo %d", ear_whole_app, ear_use_turbo);
 		}
@@ -397,8 +410,16 @@ void ear_init()
 	init_power_policy(system_conf,resched_conf);
 	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
 
-	EAR_default_frequency=system_conf->def_freq;
-	EAR_default_pstate=system_conf->def_p_state;
+	if (ext_def_freq==0){
+		EAR_default_frequency=system_conf->def_freq;
+		EAR_default_pstate=system_conf->def_p_state;
+	}else{
+		EAR_default_frequency=ext_def_freq;
+		EAR_default_pstate=frequency_freq_to_pstate(EAR_default_pstate);
+		if (EAR_default_frequency!=system_conf->def_freq) {
+			if (!my_id) eards_change_freq(EAR_default_frequency);
+		}
+	}
 
 	strcpy(application.job.policy,system_conf->policy_name);
 	strcpy(application.job.app_id, ear_app_name);
@@ -460,13 +481,15 @@ void ear_init()
 void ear_finalize()
 {
 	// if we are not the master, we return
+#if ONLY_MASTER
 	if (my_id) {
 		return;
 	}	
+#endif
 
 #if USE_LOCK_FILES
 	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-	file_unlock_master(fd_master_lock,fd_lock_filename);
+	if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
 
 	// Tracing
@@ -481,10 +504,12 @@ void ear_finalize()
 	frequency_dispose();
 
 	// Writing application data
-	eards_write_app_signature(&application);
-	append_application_text_file(app_summary_path, &application, 1);
-	report_mpi_application_data(&application);
-
+	if (!my_id) 
+	{
+		eards_write_app_signature(&application);
+		append_application_text_file(app_summary_path, &application, 1);
+		report_mpi_application_data(&application);
+	}
 	// Closing any remaining loop
 	if (loop_with_signature) {
 		debug("loop ends with %d iterations detected", ear_iterations);
@@ -514,7 +539,7 @@ void ear_finalize()
 	dettach_resched_shared_area();
 
 	// Cest fini
-	eards_disconnect();
+	if (!my_id) eards_disconnect();
 }
 
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest);
@@ -526,7 +551,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	time_t curr_time;
 	double time_from_mpi_init;
 
+#if ONLY_MASTER
 	if (my_id) return;
+#endif
 	/* The learning phase avoids EAR internals ear_whole_app is set to 1 when learning-phase is set */
 	if (!ear_whole_app)
 	{
