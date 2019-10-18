@@ -36,6 +36,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
 #include <common/math_operations.h>
@@ -70,6 +71,7 @@ int init_rapl_msr(int *fd_map)
 		unsigned long long result;
 		/* If it is not initialized, I do it, else, I get the ids */
     if (is_msr_initialized()==0){ 
+			debug("MSR was not initialized in init_rapl_msr, initializing");
 			init_msr(fd_map);
 		}else get_msr_ids(fd_map);
 		/* Ask for msr info */
