@@ -1,4 +1,5 @@
 ## Unreleased
+- metrics folder modified by topics, msr common for rapl and temperature included in msr
 - Three new functions in ear_api for manual utilization of EAR (requires application modification)
 - Option in EARPlug to specify trace pathname changed to SLURM_EAR_TRACE_PATH.
 - new trace plugin mechamism. EAR_GUI is set to on by default. SLURM_EAR_TRACE_PLUGIN env var defines trace path (no default location). Paraver plugin uses SLURM_EAR_TRACE_PATH env var. Pending to check the plugin.
