@@ -77,16 +77,24 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		CC_FLAGS=-static-intel
 	fi
 
-	if echo "$MPICC" | grep -q "mpiicc"; then	
+	if echo "$MPICC" | grep -q "mpiicc" && test -z "$MPICC_FLAGS"; then	
 		MPICC_FLAGS="-static-intel"
+		
 		if test "x$enable_rpath" = "xno"; then
 			MPICC_FLAGS="$MPICC_FLAGS -norpath"
 		fi
 	fi
-
-	dnl Getting full path
-	MPICC="`which $MPICC`"
-	CC="`which $CC`"
+	
+	if echo "$MPICC" | grep -q "/"; then
+		echo nothing
+	else
+		MPICC="`which $MPICC`"
+	fi
+	if echo "$CC" | grep -q "/"; then
+		echo nothing
+	else
+		CC="`which $CC`"
+	fi
 
     #
     # Fortran
