@@ -41,6 +41,7 @@
 #include <common/states.h>
 #include <metrics/accumulators/types.h>
 #include <metrics/energy/energy_node.h>
+#include <metrics/energy/energy_cpu.h>
 
 #define NUM_SOCKETS	2
 #define POWER_MON_OK	EAR_SUCCESS

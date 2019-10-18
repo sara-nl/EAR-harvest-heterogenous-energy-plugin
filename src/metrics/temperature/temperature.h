@@ -29,5 +29,6 @@
 
 #ifndef METRICS_TEMPERATURE_H
 #define METRICS_TEMPERATURE_H
-
+int init_temp_msr(int *fd);
+int read_temp_msr(int *fd,unsigned long long *_values);
 #endif //METRICS_TEMPERATURE_H

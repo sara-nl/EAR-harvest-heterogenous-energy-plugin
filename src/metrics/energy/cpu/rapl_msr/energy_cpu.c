@@ -33,12 +33,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
+#include <common/math_operations.h.h>
+#include <metrics/energy/energy_cpu.h>
 #include <metrics/common/msr.h>
-#include <metrics/accumulators/power_metrics.h>
-#include <metrics/accumulators/energy_cpu.h>
+
 
 
 #define MSR_INTEL_RAPL_POWER_UNIT		0x606
@@ -60,7 +63,6 @@
 #define IA32_PKG_THERM_STATUS           0x1B1
 #define MSR_TEMPERATURE_TARGET          0x1A2
 
-#define MAX_CPUS        24
 #define MAX_PACKAGES	16
 
 
@@ -70,10 +72,8 @@ int msr_initialised = 0;
 
 static int total_cores=0,total_packages=0;
 static int package_map[MAX_PACKAGES];
-static int fd_map[MAX_PACKAGES];
 
 double power_units, cpu_energy_units, time_units, dram_energy_units;
-int throttling_temp[NUM_SOCKETS];
 
 static int detect_packages(void) {
 
@@ -112,12 +112,11 @@ static int detect_packages(void) {
 	return 0;
 }
 
-int init_rapl_msr()
+int init_rapl_msr(int *fd_map)
 {
     if (msr_initialised) return EAR_SUCCESS;
     if (detect_packages() == EAR_ERROR)
     {
-        error("ERROR reading hardware info\n");
         return EAR_ERROR;
     }
 
@@ -128,13 +127,6 @@ int init_rapl_msr()
 	    fd = -1;
 		if ((ret = msr_open(package_map[j], &fd)) != EAR_SUCCESS)
        	{
-	        warning("ERROR opening msr\n");
-       		if (ret == EAR_BUSY) {
-				warning("msr is busy\n");
-		    }
-	    	else {
-				warning("couldn't open msr file (ret = %d)\n", ret);
-		    }
 		    return EAR_ERROR;
         }
 		fd_map[j] = fd;
@@ -146,32 +138,13 @@ int init_rapl_msr()
 		time_units=pow(0.5,(double)((result>>16)&0xf));
 		dram_energy_units=pow(0.5,(double)16);
 
-		if (msr_read(&fd, &result, sizeof result, MSR_TEMPERATURE_TARGET))
-			return EAR_ERROR;
-
-        throttling_temp[j] = (result >> 16);
 	}
     msr_initialised = 1;
 	return EAR_SUCCESS;
 }
 
-//as it currently stands this function does not make much sense
-int reset_rapl_msr()
-{
-	unsigned long long result;
-	int fd, j;
-	for(j=0;j<NUM_SOCKETS;j++) {
-	    
-	    if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_PKG_ENERGY_STATUS))
-			return EAR_ERROR;
-		result &= 0xffffffff;
 
-		msr_close(&fd);
-    }
-	return EAR_SUCCESS;
-}
-
-int read_rapl_msr(unsigned long long *_values)
+int read_rapl_msr(int *fd_map,unsigned long long *_values)
 {
 	unsigned long long result;
 	int j;
@@ -194,28 +167,11 @@ int read_rapl_msr(unsigned long long *_values)
 	return EAR_SUCCESS;
 }
 
-void dispose_rapl_msr()
+void dispose_rapl_msr(int *fd_map)
 {
 	int j;
 	for (j = 0; j < total_packages; j++)
 		msr_close(&fd_map[j]);
     msr_initialised = 0;
-}
-
-int read_temp_msr(unsigned long long *_values)
-{
-	unsigned long long result;
-	int j;
-
-	for(j=0;j<NUM_SOCKETS;j++)
-	{
-		/* PKG reading */	    
-	    if (msr_read(&fd_map[j], &result, sizeof result, IA32_PKG_THERM_STATUS))
-			return EAR_ERROR;
-		_values[j] = throttling_temp[j] - ((result>>16)&0xff);
-
-		
-    }
-	return EAR_SUCCESS;
 }
 

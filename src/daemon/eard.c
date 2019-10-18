@@ -37,12 +37,7 @@
 #include <common/environment.h>
 #include <common/types/log_eard.h>
 #include <common/hardware/frequency.h>
-#if USE_MSR_RAPL
-#include <metrics/accumulators/energy_cpu.h>
-#else
-#include <metrics/papi/generics.h>
-#include <metrics/papi/energy_cpu.h>
-#endif
+#include <metrics/energy/energy_cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
 #include <common/hardware/hardware_info.h>
@@ -70,6 +65,7 @@ static ehandler_t handler_energy;
 static ulong node_energy_datasize;
 static edata_t node_energy_data;
 unsigned int power_mon_freq = POWERMON_FREQ;
+static int fd_rapl[MAX_PACKAGES];
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 cluster_conf_t my_cluster_conf;
@@ -454,11 +450,6 @@ void eard_close_comm() {
 
 	// Stop counting
 	if (RAPL_counting) {
-#if USE_MSR_RAPL
-		warning("stop_rapl counters not supported");
-#else
-		stop_rapl_metrics(values);
-#endif
 		//reset_rapl_metrics();
 		RAPL_counting = 0;
 	}
@@ -738,28 +729,16 @@ int eard_rapl(int must_read) {
 			connect_service(rapl_req, &req.req_data.app);
 			break;
 		case START_RAPL:
-#if USE_MSR_RAPL
-			warning("starting rapl msr not supported");
-#else
-			start_rapl_metrics();
-#endif
+			error("starting rapl msr not supported");
 			RAPL_counting = 1;
 			write(ear_fd_ack[comm_req], &ack, sizeof(ack));
 			break;
 		case RESET_RAPL:
-#if USE_MSR_RAPL
-			if (reset_rapl_msr()<0) error("Error resetting rapl msr counters");
-#else
-			reset_rapl_metrics();
-#endif
+			error("Reset RAPL counters not provided");
 			write(ear_fd_ack[comm_req], &ack, sizeof(ack));
 			break;
 		case READ_RAPL:
-#if USE_MSR_RAPL
-			if (read_rapl_msr(values)<0) error("Error reading rapl msr counters");
-#else
-			read_rapl_metrics(values);
-#endif
+			if (read_rapl_msr(fd_rapl,values)<0) error("Error reading rapl msr counters");
 			RAPL_counting = 0;
 			write(ear_fd_ack[comm_req], values, sizeof(unsigned long long) * RAPL_EVS);
 			break;
@@ -1341,15 +1320,10 @@ int main(int argc, char *argv[]) {
 	start_uncores();
 
 	// We initialize rapl counters
-#if USE_MSR_RAPL
-	if (init_rapl_msr()<0){ 
+	if (init_rapl_msr(fd_rapl)<0){ 
 		error("Error initializing rapl");
 		error_rapl=1;
 	}
-#else
-	init_rapl_metrics();
-	start_rapl_metrics();
-#endif
 	// We initilize energy_node
 	debug("Initializing energy in main EARD thread");
 	if (state_fail(energy_init(&my_cluster_conf, &handler_energy))) {

@@ -77,7 +77,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 		debug("ehand %p", eh);
 		strcpy(eh->product, energy_prod);
     		strcpy(eh->manufacturer, energy_manu);
-		debug("22222");	
 		
 		debug("Energy plugin already loaded, executing basic init");	
 		ret = energy_ops.init(&eh->context);
@@ -125,16 +124,6 @@ state_t energy_dispose(ehandler_t *eh)
 
 	energy_handler_clean(eh);
 
-	// By now, libraries are not unloadable
-	#if 0
-	energy_ops.init               = NULL;
-	energy_ops.dispose            = NULL;
-	energy_ops.data_length_get    = NULL;
-	energy_ops.data_frequency_get = NULL;
-	energy_ops.dc_read            = NULL;
-	energy_ops.dc_time_read       = NULL;
-	energy_ops.ac_read            = NULL;
-	#endif
 
 	return s;
 }

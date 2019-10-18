@@ -38,11 +38,7 @@
 #include <common/config.h>
 #include <common/math_operations.h>
 #include <common/states.h>
-#if USE_MSR_RAPL
-#include <metrics/accumulators/energy_cpu.h>
-#else
-#include <metrics/papi/energy_cpu.h>
-#endif
+#include <metrics/energy/energy_cpu.h>
 #include <metrics/accumulators/power_metrics.h>
 
 uint8_t power_mon_connected=0; 
@@ -75,40 +71,12 @@ void pm_disconnect(ehandler_t *my_eh)
 		//eards_disconnect();
 	}
 }             
-int pm_start_rapl()
+int pm_read_rapl(ehandler_t *my_eh,rapl_data_t *rm)
 {
 	if (rootp){
-#if USE_MSR_RAPL
-		//return start_rapl_msr();
-#else
-		return start_rapl_metrics();
-#endif
-	}
-	return EAR_ERROR;
-}            
-int pm_stop_rapl(rapl_data_t *rm)
-{
-	if (rootp){
-#if USE_MSR_RAPL
-		memset(rm,0,sizeof(rapl_data_t));
-		return -1;
-#else
-		return stop_rapl_metrics(rm);
-#endif
-	}
-	return EAR_ERROR;
-}            
-int pm_read_rapl(rapl_data_t *rm)
-{
-	if (rootp){
-#if USE_MSR_RAPL
-		return read_rapl_msr((unsigned long long *)rm);
-#else
-		return read_rapl_metrics((unsigned long long *)rm);
-#endif
+		return read_rapl_msr(my_eh->fds_rapl,(unsigned long long *)rm);
 	}else{
 		return EAR_ERROR;
-		//return eards_read_rapl(rm);
 	}
 }            
 int pm_node_dc_energy(ehandler_t *my_eh,node_data_t *dc)
@@ -142,22 +110,12 @@ int pm_connect(ehandler_t *my_eh)
 		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);
-		#if USE_MSR_RAPL
-			pm_connected_status=init_rapl_msr();
-		#else
-			pm_connected_status=init_rapl_metrics();
-		#endif
+			pm_connected_status=init_rapl_msr(my_eh->fds_rapl);
 		}
 		pm_already_connected=1;
 		return pm_connected_status;
 	}else{
 		return EAR_ERROR;
-		// User API is being redesigned
-		#if 0
-		pm_already_connected=1;
-		pm_connected_status=eards_connect();
-		return pm_connected_status;
-		#endif
 	}	
 		
 }
@@ -251,7 +209,6 @@ int init_power_ponitoring(ehandler_t *my_eh)
 		return POWER_MON_ERROR;
 	}
 	memset((char *)RAPL_metrics,0,rapl_size);
-	pm_start_rapl();
 	power_mon_connected=1;
 	return POWER_MON_OK;
 }
@@ -278,9 +235,7 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 	if (power_mon_connected){
 		if (acc_energy==NULL) return POWER_MON_ERROR;
 		// Contacting the eards api
-		pm_read_rapl(RAPL_metrics);
-		//read_rapl_msr(RAPL_metrics);
-		//pm_start_rapl();
+		pm_read_rapl(my_eh,RAPL_metrics);
 		pm_node_dc_energy(my_eh,acc_energy->DC_node_energy);
 		acc_energy->AC_node_energy=ac;
 		acc_energy->DRAM_energy[0]=RAPL_metrics[0];

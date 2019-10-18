@@ -2,19 +2,17 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-band_OBJS = \
-    power_metrics.o 
+temp_OBJS = temperature.o
 
 ######## RULES
 
-all: all.components $(band_OBJS)
+all:  $(temp_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
 ######## SUBFOLDERS
 
-%.components: ;
 
 ######## OPTIONS
 

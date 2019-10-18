@@ -39,7 +39,7 @@
 #ifndef EAR_CPUPOWER
 #include <cpufreq.h>
 #else
-#include <control/cpupower.h>
+#include <common/hardware/cpupower.h>
 #endif
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>

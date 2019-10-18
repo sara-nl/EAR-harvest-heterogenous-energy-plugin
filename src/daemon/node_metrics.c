@@ -36,7 +36,8 @@
 #include <daemon/node_metrics.h>
 #include <metrics/frequency/frequency_cpu.h>
 #include <metrics/frequency/frequency_imc.h>
-#include <metrics/accumulators/energy_cpu.h>
+#include <metrics/energy/energy_cpu.h>
+#include <metrics/temperature/temperature.h>
 
 #define NM_CONNECTED	100
 
@@ -47,6 +48,8 @@ uint64_t *uncore_freq;
 uint64_t *temp;
 }nm_data_t;
 */
+
+static int nm_temp_fd[MAX_PACKAGES];
 
 unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
 {
@@ -98,6 +101,7 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
         debug("init_node_metrics_data not enough memory\n");
         return EAR_ERROR;
     }
+	init_temp_msr(nm_temp_fd);
 	return EAR_SUCCESS;
 }
 
@@ -124,7 +128,7 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
 	nm->avg_cpu_freq=aperf_periodic_avg_frequency_end_all_cpus();
 	if (frequency_uncore_counters_stop(nm->uncore_freq)!=EAR_SUCCESS) return EAR_ERROR;
-	if (read_temp_msr(nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
+	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
 	return EAR_SUCCESS;
 }
 
