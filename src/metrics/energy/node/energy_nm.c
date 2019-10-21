@@ -46,7 +46,6 @@
 #include <ipmi_nm.h>
 #include <math.h>
 
-#define SHOW_DEBUGS 1
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
 #else

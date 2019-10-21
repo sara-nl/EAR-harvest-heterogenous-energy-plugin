@@ -39,7 +39,6 @@
 #include <papi.h>
 #include <common/sizes.h>
 #include <common/config.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/metrics/metrics.h>
 #include <library/tracer/tracer_paraver.h>

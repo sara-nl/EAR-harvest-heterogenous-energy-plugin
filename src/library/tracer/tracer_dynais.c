@@ -30,9 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
 #include <common/system/file.h>
 #include <common/output/verbose.h>
 #include <library/tracer/tracer_dynais.h>
