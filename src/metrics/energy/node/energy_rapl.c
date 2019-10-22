@@ -38,6 +38,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <common/states.h>
+#include <common/math_operations.h>
 #include <metrics/energy/node/energy_node.h>
 
 static pthread_mutex_t rapl_lock = PTHREAD_MUTEX_INITIALIZER;

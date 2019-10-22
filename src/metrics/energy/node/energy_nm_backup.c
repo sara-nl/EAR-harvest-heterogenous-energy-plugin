@@ -27,19 +27,18 @@
  * * The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
-#include <math.h>
-#include <errno.h>
-#include <stdio.h>
-#include <fcntl.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdint.h>
+#include <fcntl.h>
+#include <errno.h>
 #include <unistd.h>
-#include <pthread.h>
-#include <sys/time.h>
 #include <sys/ioctl.h>
 #include <sys/select.h> 
+#include <sys/time.h>
+#include <pthread.h>
 #include <common/states.h>
 #include <common/output/debug.h>
 #include <common/output/verbose.h>
@@ -173,13 +172,11 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
 	struct ipmi_rs * rsp;
 	struct ipmi_rq req;
 	uint8_t msg_data[6];
-	int i;  
-	int s;
+	debug("getting nm_arg\n");
 
-	if ((s = pthread_mutex_trylock(&ompi_lock)) != 0) {
-		debug ("error during trylock %d (%s)", s, strerror(s));
-		return EAR_BUSY;
-	}
+// ipmitool raw 0x2e 0x82 0x66 0x4a 0 0 0 1 --> Command to get the parameter (0x20 in Lenovo) bytes_rq[6]
+// // sudo ./ipmi-raw 0x0 0x2e 0x82 0x66 0x4a 0 0 0 1 
+// // byte number 8 with ipmi-raw command
 
 //// bytes_rq[3]=(uint8_t)0x66;
 //// bytes_rq[4]=(uint8_t)0x4a;
@@ -188,41 +185,39 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
 //// bytes_rq[7]=(uint8_t)0x00;
 //// bytes_rq[8]=(uint8_t)0x01;
 //
-	memset(&req, 0, sizeof(req));
-	req.msg.netfn = NM_NETFN;
-	req.msg.cmd = NM_CMD_GET_ARG;
-	msg_data[0]=(uint8_t)0x66;
-	msg_data[1]=(uint8_t)0x4a;
-	msg_data[2]=(uint8_t)0x00;
-	msg_data[3]=(uint8_t)0x00;
-	msg_data[4]=(uint8_t)0x00;
-	msg_data[5]=(uint8_t)0x01;
-	intf->addr=0x0;
-	req.msg.data = msg_data;
-	req.msg.data_len = sizeof(msg_data);
+  memset(&req, 0, sizeof(req));
+  req.msg.netfn = NM_NETFN;
+  req.msg.cmd = NM_CMD_GET_ARG;
+  msg_data[0]=(uint8_t)0x66;
+  msg_data[1]=(uint8_t)0x4a;
+  msg_data[2]=(uint8_t)0x00;
+  msg_data[3]=(uint8_t)0x00;
+  msg_data[4]=(uint8_t)0x00;
+  msg_data[5]=(uint8_t)0x01;
+  intf->addr=0x0;
+  req.msg.data = msg_data;
+  req.msg.data_len = sizeof(msg_data);
+	debug("sending command\n");
+  rsp = sendcmd(intf, &req);
+  if (rsp == NULL) {
+        out->mode=-1;
+				debug("Error rsp null\n");
+        return EAR_ERROR;
+  };
+  if (rsp->ccode > 0) {
+        out->mode=-1;
+				debug("error code>0\n");
+        return EAR_ERROR;
+        };
 
-	rsp = sendcmd(intf, &req);
-	if (rsp == NULL) {
-		debug ("rsp == NULL");
- 		out->mode=-1;
-		pthread_mutex_unlock(&ompi_lock);
-        	return EAR_ERROR;
-	}
-
-	if (rsp->ccode > 0) {
-		debug ("rsp->ccode > 0");
-		out->mode=-1;
-		pthread_mutex_unlock(&ompi_lock);
-		return EAR_ERROR;
-        }
-
-	out->data_len=rsp->data_len;
-	for (i=0;i<rsp->data_len; i++) {
-		out->data[i]=rsp->data[i];
-	}
-	pthread_mutex_unlock(&ompi_lock);
-  
-	return EAR_SUCCESS;
+  out->data_len=rsp->data_len;
+  int i;
+  for (i=0;i<rsp->data_len; i++) {
+    out->data[i]=rsp->data[i];
+		debug("cmd arg byte %d is %hu\n",i,out->data[i]);
+  }
+	debug("nm_arg ok\n");
+  return EAR_SUCCESS;
 }
 
 state_t nm_ene(struct ipmi_intf *intf,struct ipmi_data * out)
@@ -230,13 +225,9 @@ state_t nm_ene(struct ipmi_intf *intf,struct ipmi_data * out)
 	struct ipmi_rs * rsp;
 	struct ipmi_rq req;
 	uint8_t msg_data[8];
-	int i;	
-	int s;
-
-	if ((s = pthread_mutex_trylock(&ompi_lock)) != 0) {
-		debug ("error during trylock %d (%s)", s, strerror(s));
-		return EAR_BUSY;
-	}
+	if (pthread_mutex_trylock(&ompi_lock)) {
+    return EAR_BUSY;
+  }
 
 //// bytes_rq[3]=(uint8_t)0x66;
 //// bytes_rq[4]=(uint8_t)0x4A;
@@ -262,71 +253,57 @@ state_t nm_ene(struct ipmi_intf *intf,struct ipmi_data * out)
   req.msg.data = msg_data;
   req.msg.data_len = sizeof(msg_data);
 
-	rsp = sendcmd(intf, &req);
-	if (rsp == NULL) {
-		debug ("rsp NULL");
-		out->mode=-1;
-		pthread_mutex_unlock(&ompi_lock);
-		return EAR_ERROR;
-	}
+  rsp = sendcmd(intf, &req);
+  if (rsp == NULL) {
+        out->mode=-1;
+	pthread_mutex_unlock(&ompi_lock);
+        return EAR_ERROR;
+  };
+  if (rsp->ccode > 0) {
+        out->mode=-1;
+	pthread_mutex_unlock(&ompi_lock);
+        return EAR_ERROR;
+        };
 
-  	if (rsp->ccode > 0) {
-		debug ("rsp ccode > 0");
-        	out->mode=-1;
-		pthread_mutex_unlock(&ompi_lock);
-        	return EAR_ERROR;
-        }
-
-	out->data_len=rsp->data_len;
-	for (i=0;i<rsp->data_len; i++) {
-  		out->data[i]=rsp->data[i];
-	 }
-
+  out->data_len=rsp->data_len;
+  int i;
+  for (i=0;i<rsp->data_len; i++) {
+  	out->data[i]=rsp->data[i];
+  }
 	pthread_mutex_unlock(&ompi_lock);
 	return EAR_SUCCESS;
-}
+}; 
 
 /*
  * MAIN FUNCTIONS
  */
-#define CMD_ARG_BYTE	8
+//#define CMD_ARG_BYTE	8
+#define CMD_ARG_BYTE	6
 state_t energy_init(void **c)
 {
+	int ret;
 	struct ipmi_data out;
 	state_t st;
-	int ret;
-	
-	if (c==NULL) {
-		debug ("the context parameter is NULL");
-		return EAR_ERROR;
-	}
-
-	*c = (struct ipmi_intf *) malloc(sizeof(struct ipmi_intf));
-	
-	if (*c==NULL) {
-		debug ("error during context memory allocation");
-		return EAR_ERROR;
-	}
-
+	if (c==NULL) return EAR_ERROR;
+	*c=(struct ipmi_intf *)malloc(sizeof(struct ipmi_intf));
+	if (*c==NULL) return EAR_ERROR;
 	pthread_mutex_lock(&ompi_lock);
-	ret = opendev((struct ipmi_intf *) *c);
-
+	debug("trying opendev\n");
+	ret= opendev((struct ipmi_intf *)*c);
 	if (ret<0){ 
-		debug ("error during device open");
+		debug("opendev fails\n");
+		pthread_mutex_unlock(&ompi_lock);
 		return EAR_ERROR;
 	}
-
 	st=nm_arg((struct ipmi_intf *)*c,&out);
-	
 	if (st!=EAR_SUCCESS){ 
-		debug ("erro while sending command to node manager");
+		debug("nm fails\n");
 		pthread_mutex_unlock(&ompi_lock);
 		return st;
 	}
-
 	cmd_arg=out.data[CMD_ARG_BYTE];
+	debug("cmd arg is %hu\n",cmd_arg);
 	pthread_mutex_unlock(&ompi_lock);
-
 	return EAR_SUCCESS;
 }
 state_t energy_dispose(void **c)
@@ -340,6 +317,7 @@ state_t energy_dispose(void **c)
 }
 state_t energy_datasize(size_t *size)
 {
+	debug("energy_datasize %lu\n",sizeof(unsigned long));
 	*size=sizeof(unsigned long);
 	return EAR_SUCCESS;
 }
@@ -357,6 +335,8 @@ state_t energy_dc_read(void *c, edata_t energy_mj)
 	int FIRST_BYTE_EMJ;
 	state_t st;
 	ulong *penergy_mj=(ulong *)energy_mj;
+	
+	debug("energy_dc_read\n");
 
 	*penergy_mj=0;
 	st=nm_ene((struct ipmi_intf *)c,&out);
@@ -423,6 +403,13 @@ state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
 
   unsigned long total=diff_node_energy(*pinit,*pend);
   *e=total;
+  return EAR_SUCCESS;
+}
+
+state_t energy_to_str(char *str,edata_t e)
+{
+  ulong *pe=(ulong *)e;
+  sprintf(str,"%lu",*pe);
   return EAR_SUCCESS;
 }
 
