@@ -2,30 +2,28 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-energy_OBJS = energy_nm.o energy_rapl.o
-energy_SOFILES = energy_nm.so energy_rapl.so
+ener_OBJS = \
+    energy_nm.o \
+    energy_rapl.o
+ener_BINS = \
+    energy_nm.so \
+    energy_rapl.so
+ener_PATH = $(DESTDIR)/lib/plugins/energy
+ener_PERM = 0775
 
 ######## RULES
 
-all: all.components $(flop_OBJS)
+all: $(ener_BINS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-%.so: %.c
+%.so: %.o
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 
-
-
-######## SUBFOLDERS
-
-%.components:
-	@ $(MAKE) -C 'cpu' $* || exit
 
 ######## OPTIONS
 
-install: ;
-
-%.install: ;
+install: ener.ginstall;
 
 clean: rclean;
 

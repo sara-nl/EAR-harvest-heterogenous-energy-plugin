@@ -18,13 +18,14 @@ all: all.components $(ener_BINS)
 
 ######## SUBFOLDERS
 
-%.components: ;
+%.components:
+	@ $(MAKE) -C 'node' $* || exit
 
 ######## OPTIONS
 
-install: ;
+install: install.components;
 
-%.install: ;
+%.install: %.install.components;
 
 clean: rclean;
 

@@ -27,31 +27,20 @@
  * * The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
-#include <string.h>
-#include <stddef.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stddef.h>
 #include <unistd.h>
+#include <stdint.h>
 #include <pthread.h>
 #include <sys/time.h>
-
-
 #include <common/states.h>
-#include <metrics/api/energy.h>
-#include <energy_cpu.h>
-#include <mymath.h>
-
-#ifdef SHOW_DEBUGS
-#define debug(...) fprintf(stderr, __VA_ARGS__); 
-#else
-#define debug(...) 
-#endif
+#include <metrics/energy/node/energy_node.h>
 
 static pthread_mutex_t rapl_lock = PTHREAD_MUTEX_INITIALIZER;
-
 
 /*
  * MAIN FUNCTIONS

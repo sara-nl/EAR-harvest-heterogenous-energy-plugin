@@ -27,30 +27,24 @@
  * * The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
+#include <math.h>
+#include <errno.h>
+#include <stdio.h>
+#include <fcntl.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <unistd.h>
+#include <pthread.h>
+#include <sys/time.h>
 #include <sys/ioctl.h>
 #include <sys/select.h> 
-#include <sys/time.h>
-
-
 #include <common/states.h>
-#include <pthread.h>
-#include <metrics/api/energy.h>
-#include <ipmi_nm.h>
-#include <math.h>
-
-#ifdef SHOW_DEBUGS
-#define debug(...) fprintf(stderr, __VA_ARGS__); 
-#else
-#define debug(...) 
-#endif
+#include <common/output/debug.h>
+#include <common/output/verbose.h>
+#include <metrics/energy/node/energy_nm.h>
+#include <metrics/energy/node/energy_node.h>
 
 static pthread_mutex_t ompi_lock = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t cmd_arg;
@@ -178,6 +172,8 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
   struct ipmi_rs * rsp;
   struct ipmi_rq req;
   uint8_t msg_data[6];
+  int i;  
+
   if (pthread_mutex_trylock(&ompi_lock)) {
     return EAR_BUSY;
   }
@@ -215,7 +211,7 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
         };
 
   out->data_len=rsp->data_len;
-  for (int i=0;i<rsp->data_len; i++) {
+  for (i=0;i<rsp->data_len; i++) {
     out->data[i]=rsp->data[i];
   }
   pthread_mutex_unlock(&ompi_lock);
@@ -227,9 +223,11 @@ state_t nm_ene(struct ipmi_intf *intf,struct ipmi_data * out)
 	struct ipmi_rs * rsp;
 	struct ipmi_rq req;
 	uint8_t msg_data[8];
+	int i;	
+
 	if (pthread_mutex_trylock(&ompi_lock)) {
-    return EAR_BUSY;
-  }
+		return EAR_BUSY;
+	}
 
 //// bytes_rq[3]=(uint8_t)0x66;
 //// bytes_rq[4]=(uint8_t)0x4A;
@@ -268,7 +266,7 @@ state_t nm_ene(struct ipmi_intf *intf,struct ipmi_data * out)
         };
 
   out->data_len=rsp->data_len;
-  for (int i=0;i<rsp->data_len; i++) {
+  for (i=0;i<rsp->data_len; i++) {
   	out->data[i]=rsp->data[i];
   }
 	pthread_mutex_unlock(&ompi_lock);
