@@ -178,10 +178,9 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
 	int i;
 	int s;
 
-	if ((s = pthread_mutex_trylock(&ompi_lock)) != 0) {
-		debug("error during trylock %d (%s)", s, strerror(s));
-		return EAR_BUSY;
-	}
+	//if (pthread_mutex_trylock(&ompi_lock)) {
+	//	return EAR_BUSY;
+	//}
 
 	// bytes_rq[3]=(uint8_t)0x66;
 	// bytes_rq[4]=(uint8_t)0x4a;
@@ -205,15 +204,13 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
 	rsp = sendcmd(intf, &req);
 
 	if (rsp == NULL) {
-		debug("rsp == NULL");
 		out->mode = -1;
-		pthread_mutex_unlock(&ompi_lock);
+		//pthread_mutex_unlock(&ompi_lock);
 		return EAR_ERROR;
 	}
 	if (rsp->ccode > 0) {
-		debug("rsp->ccode > 0");
 		out->mode = -1;
-		pthread_mutex_unlock(&ompi_lock);
+		//pthread_mutex_unlock(&ompi_lock);
 		return EAR_ERROR;
 	}
 
@@ -221,7 +218,7 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
 	for (i = 0; i < rsp->data_len; i++) {
 		out->data[i] = rsp->data[i];
 	}
-	pthread_mutex_unlock(&ompi_lock);
+	//pthread_mutex_unlock(&ompi_lock);
 
 	return EAR_SUCCESS;
 }
@@ -234,8 +231,7 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
 	int i;
 	int s;
 
-	if ((s = pthread_mutex_trylock(&ompi_lock)) != 0) {
-		debug("error during trylock %d (%s)", s, strerror(s));
+	if (pthread_mutex_trylock(&ompi_lock)) {
 		return EAR_BUSY;
 	}
 
@@ -288,7 +284,7 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
 /*
  * MAIN FUNCTIONS
  */
-#define CMD_ARG_BYTE    8
+#define CMD_ARG_BYTE    6
 
 state_t energy_init(void **c)
 {
@@ -411,4 +407,10 @@ state_t energy_accumulated(unsigned long *e, edata_t init, edata_t end) {
 	unsigned long total = diff_node_energy(*pinit, *pend);
 	*e = total;
 	return EAR_SUCCESS;
+}
+
+state_t energy_to_str(char *str, edata_t e) {
+        ulong *pe = (ulong *) e;
+        sprintf(str, "%lu", *pe);
+        return EAR_SUCCESS;
 }
