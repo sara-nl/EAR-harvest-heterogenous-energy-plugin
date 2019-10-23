@@ -1,4 +1,5 @@
 ## Unreleased
+- Added '--disable-avx512' flag to configure to use AVX2 symbols instead of AVX512. It is required when working with Haswell/Broadwell systems or older. Also added '--with-fortran' flag to configure to add Fortran symbols to the EAR library. It is required when working with some MPI distributions such as OpenMPI. Finally, configure accepts PostgreSQL flags.
 - Three new functions in ear_api for manual utilization of EAR (requires application modification)
 - Option in EARPlug to specify trace pathname changed to SLURM_EAR_TRACE_PATH.
 - new trace plugin mechamism. EAR_GUI is set to on by default. SLURM_EAR_TRACE_PLUGIN env var defines trace path (no default location). Paraver plugin uses SLURM_EAR_TRACE_PATH env var. Pending to check the plugin.
