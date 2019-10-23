@@ -10,14 +10,21 @@ ener_BINS = \
     energy_rapl.so
 ener_PATH = $(DESTDIR)/lib/plugins/energy
 ener_PERM = 0775
-ener_DEPS = $(SRCDIR)/common/libcommon.a
+ener_DEPS = \
+    $(SRCDIR)/common/libcommon.a
+rapl_DEPS = \
+    $(SRCDIR)/metrics/common/msr.o \
+    $(SRCDIR)/metrics/energy/cpu/intel_haswell.o
 
 ######## RULES
 
 all: $(ener_BINS)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -DSHOW_DEBUGS -c $<
+	$(CC) $(CFLAGS) -c $<
+
+energy_rapl.so: energy_rapl.o $(rapl_DEPS) $(ener_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(rapl_DEPS) $(ener_DEPS) -lm 
 
 %.so: %.o $(ener_DEPS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(ener_DEPS) 

@@ -31,14 +31,14 @@
 #ifndef _RAPL_METRICS_H_
 #define _RAPL_METRICS_H_
 
+#include <metrics/common/msr.h>
+
 #define RAPL_EVS            4
 #define RAPL_DRAM0          0
 #define RAPL_DRAM1          1
 #define RAPL_PACKAGE0       2
 #define RAPL_PACKAGE1       3
 
-#define NUM_SOCKETS 				2
-#define MAX_PACKAGES  			16
 
 /** Opens the necessary fds to read the MSR registers. Returns 0 on success 
 * 	and -1 on error. */

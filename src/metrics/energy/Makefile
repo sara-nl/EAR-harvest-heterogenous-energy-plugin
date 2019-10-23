@@ -19,6 +19,7 @@ all: all.components $(ener_BINS)
 ######## SUBFOLDERS
 
 %.components:
+	@ $(MAKE) -C 'cpu' $* || exit
 	@ $(MAKE) -C 'node' $* || exit
 
 ######## OPTIONS
