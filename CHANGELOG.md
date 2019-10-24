@@ -1,4 +1,5 @@
 ## Unreleased
+- energy_nm updated to be the same installed in lennox
 - metrics folder modified by topics, msr common for rapl and temperature included in msr
 - Three new functions in ear_api for manual utilization of EAR (requires application modification)
 - Option in EARPlug to specify trace pathname changed to SLURM_EAR_TRACE_PATH.

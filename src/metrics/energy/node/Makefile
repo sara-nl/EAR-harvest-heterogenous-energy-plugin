@@ -2,30 +2,35 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-energy_OBJS = energy_nm.o energy_rapl.o
-energy_SOFILES = energy_nm.so energy_rapl.so
+ener_OBJS = \
+    energy_nm.o \
+    energy_rapl.o
+ener_BINS = \
+    energy_nm.so \
+    energy_rapl.so
+
+rapl_DEPS = $(SRCDIR)/metrics/energy/energy_cpu.o $(SRCDIR)/metrics/common/msr.o $(SRCDIR)/common/hardware/hardware_info.o \
+$(SRCDIR)/common/hardware/cpuid.o
+ener_PATH = $(DESTDIR)/lib/plugins/energy
+ener_PERM = 0775
+ener_DEPS = $(SRCDIR)/common/libcommon.a
 
 ######## RULES
 
-all: all.components $(flop_OBJS)
+all: $(ener_BINS)
 
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+%.o: %.c
+	$(CC) $(CFLAGS)  -c $<
 
-%.so: %.c
-	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 
+energy_rapl.so:energy_rapl.o $(rapl_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(ener_DEPS) $(rapl_DEPS)
 
-
-######## SUBFOLDERS
-
-%.components:
-	@ $(MAKE) -C 'cpu' $* || exit
+%.so: %.o $(ener_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(ener_DEPS) 
 
 ######## OPTIONS
 
-install: ;
-
-%.install: ;
+install: ener.ginstall;
 
 clean: rclean;
 

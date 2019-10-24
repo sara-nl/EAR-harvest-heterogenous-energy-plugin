@@ -35,7 +35,7 @@
 #include <common/config.h>
 #include <common/types/projection.h>
 #include <common/system/symplug.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 
