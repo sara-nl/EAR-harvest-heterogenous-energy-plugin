@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -DSHOW_DEFINES
 
 ######## FILES
 
@@ -19,6 +19,7 @@ all: all.components $(ener_BINS)
 ######## SUBFOLDERS
 
 %.components:
+	@ $(MAKE) -C 'cpu' $* || exit
 	@ $(MAKE) -C 'node' $* || exit
 
 ######## OPTIONS
@@ -27,7 +28,7 @@ install: install.components;
 
 %.install: %.install.components;
 
-clean: rclean;
+clean: rclean clean.components;
 
 ######## DEPENDENCIES
 

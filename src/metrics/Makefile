@@ -22,6 +22,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/energy/energy_cpu.o \
     $(SRCDIR)/metrics/energy/energy_node.o \
     $(SRCDIR)/metrics/energy/energy_node_lib.o \
+    $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/papi.o \
     $(SRCDIR)/metrics/frequency/frequency_imc.o \
@@ -30,7 +31,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/frequency/imc/intel_haswell.o \
     $(SRCDIR)/metrics/stalls/stalls.o \
     $(SRCDIR)/metrics/stalls/cpu/papi.o \
-   	$(SRCDIR)/metrics/temperature/temperature.o
+    $(SRCDIR)/metrics/temperature/temperature.o
 
 # $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
 

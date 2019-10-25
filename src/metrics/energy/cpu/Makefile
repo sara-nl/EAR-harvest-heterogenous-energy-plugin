@@ -2,27 +2,21 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-flop_OBJS = flops.o
+ener_OBJS = \
+    intel_haswell.o
 
 ######## RULES
 
-all: all.components $(flop_OBJS)
+all: $(ener_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
-
-######## SUBFOLDERS
-
-%.components:
-	@ $(MAKE) -C 'cpu' $* || exit
 
 ######## OPTIONS
 
 install: ;
 
-%.install: ;
-
-clean: rclean clean.components;
+clean: rclean;
 
 ######## DEPENDENCIES
 
