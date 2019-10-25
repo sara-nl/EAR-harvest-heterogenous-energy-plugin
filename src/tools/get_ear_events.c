@@ -29,6 +29,7 @@
 
 
 #include <stdio.h>
+#include <getopt.h>
 #include <unistd.h>
 #include <mysql/mysql.h>
 #include <common/output/verbose.h>
@@ -110,7 +111,11 @@ int main(int argc,char *argv[])
 {
     char path_name[256];
     char query[512];
-    int time_hours = 24;
+    char node[512], users[512], jobs[512];
+    char *token;
+    int time_hours = 24, c;
+    int has_user = 0, has_jobs = 0, has_node = 0;
+    int job_id = -1, step_id = -1;
     cluster_conf_t my_conf;
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
@@ -134,10 +139,82 @@ int main(int argc,char *argv[])
         user = NULL; //by default, privilegd users or root will query all user jobs
     }
 
-    if (argc > 1)
-        time_hours = atoi(argv[1]);
+    while (1)
+    {
+        int option_idx = 0;
+        static struct option long_options[] = {
+	        {"time", 	     	optional_argument, 0, 't'},
+	        {"jobs", 	     	optional_argument, 0, 'j'},
+            {"user",       	optional_argument, 0, 'u'},
+            {"node",           no_argument, 0, 'n'},
+            {"help",         	no_argument, 0, 'h'},
+            {0, 0, 0, 0}
+        };
 
+        c = getopt_long(argc, argv, "t:j:u:n:h", long_options, &option_idx);
+
+        if (c == -1)
+            break;
+
+        switch(c)
+        {
+            case 't':
+                time_hours = atoi(optarg);
+                break;
+            case 'n':
+                if (!strcmp(optarg, "all")) break;
+                strcpy(node, optarg);
+                has_node = 1;
+                break;
+            case 'j':
+                if (strchr(optarg, ','))
+                {
+                    strcpy(jobs, optarg);
+                    has_jobs = 1;
+                }
+                else
+                {
+                    job_id = atoi(strtok(optarg, "."));
+                    token = strtok(NULL, ".");
+                    if (token != NULL) step_id = atoi(token);
+                }
+                break;
+            case 'u':
+                strcpy(users, optarg);
+                has_user = 1;
+                break;
+        }
+    }
+
+
+    char sub_query[512];
     sprintf(query, EVENT_QUERY, time_hours*3600);
+
+    if (has_node)
+    {
+        strcat(query, " AND node_id IN ('");
+        strcat(query, node);
+        strcat(query, "')");
+    }
+    if (has_jobs)
+    {
+        strcat(query, " AND job_id IN (");
+        strcat(query, jobs);
+        strcat(query, ")");
+    }
+    else if (job_id >= 0)
+    {
+        sprintf(sub_query, " AND job_id = %d", job_id);
+        strcat(query, sub_query);
+        if (step_id >= 0)
+            sprintf(sub_query, " AND step_id = %d", step_id);
+    }
+
+    
+    int _verbosity = 1;
+    if (_verbosity)
+            printf("QUERY: %s\n", query);
+
     show_query_result(my_conf, query); 
     free_cluster_conf(&my_conf);
 
