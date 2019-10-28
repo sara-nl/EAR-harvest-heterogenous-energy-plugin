@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "api-nvml-smi.h"
 
 #define SZ_BUFF_BIG     4096
 #define GPU_METRICS     7
@@ -46,7 +45,7 @@ static const char *command = "nvidia-smi"                                       
 static uint ok = 1;
 static uint ko = 0;
 
-state_t power_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, uint num_cpus)
+state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, uint num_cpus)
 {
     if (dread != NULL) {
 		*dread = malloc(num_cpus * sizeof(gpu_power_t));
@@ -72,7 +71,7 @@ state_t power_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, 
     return EAR_SUCCESS;
 }
 
-state_t power_gpu_disclose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t nvsmi_gpu_disclose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
     if (c->context == &ok) {
         c->context = NULL;
@@ -112,7 +111,7 @@ static void power_gpu_read_diff(gpu_power_t *dread, gpu_power_t *ddiff, int i)
     ddiff[i].energy_j     = (ddiff[i].power_w / time_s);
 }
 
-state_t power_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *ddiff, uint num_gpus)
+state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *ddiff, uint num_gpus)
 {
     FILE* file = popen(command, "r");
     int i;
@@ -160,4 +159,9 @@ state_t power_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *ddiff, ui
     pclose(file);
 
     return r;
+}
+
+state_t nvsmi_gpu_status()
+{
+	return EAR_SUCCESS;
 }

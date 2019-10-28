@@ -2,26 +2,19 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-band_OBJS = \
-    gpu_metrics.o \
-    power_metrics.o 
+ener_OBJS = \
+    nvsmi.o
 
 ######## RULES
 
-all: all.components $(band_OBJS)
+all: $(ener_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-######## SUBFOLDERS
-
-%.components: ;
-
 ######## OPTIONS
 
 install: ;
-
-%.install: ;
 
 clean: rclean;
 
