@@ -49,10 +49,12 @@ typedef struct gpu_power_s
 	uint correct;
 } gpu_power_t;
 
-state_t energy_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg, uint num_cpus);
+state_t energy_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
 state_t energy_gpu_disclose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
-state_t energy_gpu_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg, uint num_gpus);
+state_t energy_gpu_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg);
+
+state_t energy_gpu_count(pcontext_t *c, uint *count);
 
 #endif

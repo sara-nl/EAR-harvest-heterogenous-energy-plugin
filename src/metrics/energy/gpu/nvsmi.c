@@ -37,19 +37,29 @@
 #define GPU_METRICS     7
 
 static char buffer[SZ_BUFF_BIG];
-static const char *command = "nvidia-smi"                                                \
-                             " --query-gpu='power.draw,clocks.current.sm,"               \
-                             "clocks.current.memory,utilization.gpu,utilization.memory," \
-                             "temperature.gpu,temperature.memory'"                       \
-                             " --format='csv,noheader,nounits'";
-
 static uint ok = 1;
 static uint ko = 0;
 
-state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, uint num_cpus)
+typedef struct nvsmi_context_s {
+	uint num_gpus;
+} nvsmi_context_t;
+
+state_t nvsmi_gpu_status()
 {
+	return EAR_SUCCESS;
+}
+
+state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff)
+{
+	nvsmi_context_t *nvsmi_c;
+	uint num_gpus;
+
+	if (state_fail(nvsmi_gpu_count(c, &num_gpus))) {
+		return EAR_ERROR;
+	}	
+
     if (dread != NULL) {
-		*dread = malloc(num_cpus * sizeof(gpu_power_t));
+		*dread = malloc(num_gpus * sizeof(gpu_power_t));
 		if (*dread == NULL) {
         	nvsmi_gpu_dispose(c, dread, ddiff);
         	return EAR_ERROR;
@@ -59,23 +69,30 @@ state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, 
 	}
 
     if (ddiff != NULL) {
-        *ddiff = malloc(num_cpus * sizeof(gpu_power_t));
+        *ddiff = malloc(num_gpus * sizeof(gpu_power_t));
     	if (ddiff == NULL) {
         	nvsmi_gpu_dispose(c, dread, ddiff);
         	return EAR_ERROR;
     	}
     }
 
-    //
-    c->context = &ok;
-
+    if (c != NULL) {
+        c->context = malloc(sizeof(nvsmi_c));
+    	if (c->context == NULL) {
+        	nvsmi_gpu_dispose(c, dread, ddiff);
+        	return EAR_ERROR;
+		}
+		nvsmi_c = (nvsmi_context_t *) c->context;
+		nvsmi_c->num_gpus = num_gpus;
+	}
+    
     return EAR_SUCCESS;
 }
 
 state_t nvsmi_gpu_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
-    if (c->context == &ok) {
-        c->context = NULL;
+    if (c->context != NULL) {
+        free(c->context);
     }
 	if (dread != NULL) {
 		if (*dread != NULL) {
@@ -87,6 +104,7 @@ state_t nvsmi_gpu_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davr
         	free(*davrg);
 		}
 	}
+	c->context = NULL;
 	dread = NULL;
 	davrg = NULL;
     return EAR_SUCCESS;
@@ -112,14 +130,23 @@ static void power_gpu_read_diff(gpu_power_t *dread, gpu_power_t *ddiff, int i)
     ddiff[i].energy_j     = (ddiff[i].power_w / time_s);
 }
 
-state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *ddiff, uint num_gpus)
+state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *ddiff)
 {
+	static const char *command = "nvidia-smi"                                   \
+					" --query-gpu='power.draw,clocks.current.sm,"               \
+					"clocks.current.memory,utilization.gpu,utilization.memory," \
+					"temperature.gpu,temperature.memory'"                       \
+ 					" --format='csv,noheader,nounits'";
+	
     FILE* file = popen(command, "r");
+	int num_gpus;
     int i;
     int s;
     int r;
 
-    if (c->context != &ok) {
+	num_gpus = ((nvsmi_context_t *) c->context)->num_gpus;
+	
+    if (num_gpus == 0) {
         return EAR_ERROR;
     }
 
@@ -162,7 +189,23 @@ state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *ddiff, ui
     return r;
 }
 
-state_t nvsmi_gpu_status()
+state_t nvsmi_gpu_count(pcontext_t *c, uint *count)
 {
+	static const char *command = "nvidia-smi -L";
+    FILE* file = popen(command, "r");
+	int s;
+	
+	//
+	*count = 0;
+
+	while (fgets(buffer, SZ_BUFF_BIG, file)) {
+		*count += 1;
+	}
+
+	if (*count == 0) { 
+		return EAR_ERROR;
+	}
+
 	return EAR_SUCCESS;
 }
+

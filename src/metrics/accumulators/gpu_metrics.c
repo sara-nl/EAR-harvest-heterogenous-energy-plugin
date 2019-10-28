@@ -29,13 +29,10 @@
 
 #include <metrics/accumulators/gpu_metrics.h>
 
-static uint num_gpus = 2;
-
 state_t acc_gpu_metrics_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
 	// Count GPUS
-
-	return energy_gpu_init(c, dread, davrg, num_gpus);
+	return energy_gpu_init(c, dread, davrg);
 }
 
 state_t acc_gpu_metrics_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
@@ -45,6 +42,10 @@ state_t acc_gpu_metrics_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t 
 
 state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg)
 {
-	return energy_gpu_read(c, dread, davrg, num_gpus);
+	return energy_gpu_read(c, dread, davrg);
 }
 
+state_t acc_gpu_metrics_count(pcontext_t *c, uint *count)
+{
+	return energy_gpu_count(c, count);
+}

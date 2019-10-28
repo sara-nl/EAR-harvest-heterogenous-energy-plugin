@@ -32,21 +32,25 @@
 
 #include <metrics/energy/energy_gpu.h>
 
+/** Reveals if the system is 'nvidia-smi' compatible. **/
+state_t nvsmi_gpu_status();
+
 /** Initializes and allocates the GPU context (c) memory for the data readings (data_read).
   * Also the data average structure (data_avrg) is allocated if its pointer it is not NULL.
   * This data computes the average of the current read metric and the previous one, and also
   * computes the energy and time between two different readings. **/
-state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg, uint num_cpus);
+state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
 /** Frees the allocated memory of the context and data readings structures. **/
 state_t nvsmi_gpu_dispose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
+/** Counts the number of GPUs. **/
+state_t nvsmi_gpu_count(context_t *c, uint *count);
+
 /** Reads the GPU metrics and returns its values (data_read). If previous data reading is
   * given (data_read), the averages of the current reading and the previous is computed and
-  * returned (data_avrg). **/
-state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg, uint num_gpus);
-
-/** **/
-state_t nvsmi_gpu_status();
+  * returned (data_avrg). You can get the number of samples contained in the arrays by
+  * calling 'nvsmi_gpu_count()'. **/
+state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg);
 
 #endif // METRICS_ENERGY_NVSMI_GPU_H

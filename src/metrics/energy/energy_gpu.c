@@ -29,10 +29,10 @@
 
 #include <metrics/energy/energy_gpu.h>
 
-state_t energy_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg, uint num_cpus)
+state_t energy_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
 	if (state_ok(nvsmi_gpu_status())) {
-		return nvsmi_gpu_init(c, dread, davrg, num_cpus);
+		return nvsmi_gpu_init(c, dread, davrg);
 	} else {
 		return EAR_INCOMPATIBLE;
 	}
@@ -43,7 +43,12 @@ state_t energy_gpu_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **dav
 	return nvsmi_gpu_dispose(c, dread, davrg);
 }
 
-state_t energy_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg, uint num_gpus)
+state_t energy_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg)
 {
-	return nvsmi_gpu_read(c, dread, davrg, num_gpus);
+	return nvsmi_gpu_read(c, dread, davrg);
+}
+
+state_t energy_gpu_count(pcontext_t *c, uint *count)
+{
+	return nvsmi_gpu_count(c, count);
 }

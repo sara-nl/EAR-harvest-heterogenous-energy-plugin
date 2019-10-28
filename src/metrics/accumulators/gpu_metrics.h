@@ -38,4 +38,6 @@ state_t acc_gpu_metrics_disclose(pcontext_t *c, gpu_power_t **data_read, gpu_pow
 
 state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg);
 
+state_t acc_gpu_metrics_count(pcontext_t *c, uint *count);
+
 #endif // ACCUMULATORS_GPU_METRICS_H

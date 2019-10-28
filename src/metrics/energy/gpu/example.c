@@ -3,22 +3,35 @@
 #include <unistd.h>
 #include <string.h>
 #include <metrics/energy/energy_gpu.h>
+#include <metrics/accumulators/gpu_metrics.h>
 
 int main(int argc, char *argv[])
 {
 	gpu_power_t *pr;
 	gpu_power_t *pd;
 	pcontext_t c;
-	int n = 100; 
+	int n = 100;
+	int m; 
 	int s;
 	int i;
 
-	s = energy_gpu_init(&c, &pr, &pd, 2);
+	s = acc_gpu_metrics_init(&c, &pr, &pd);
 	printf("power_gpu_init: %d\n", s);
+
+	if (state_fail(s)) {
+		return 0;
+	}
+
+	s = acc_gpu_metrics_count(&c, &m);
+	printf("power_gpu_init: %d (%u)\n", s, m);
+	
+	if (state_fail(s)) {
+		return 0;
+	}
 
 	while (n > 0)
 	{ 
-		s = energy_gpu_read(&c, pr, pd, 2);
+		s = acc_gpu_metrics_read(&c, pr, pd);
 		printf("power_gpu_read: %d\n", s);
 
 #if 1
@@ -34,7 +47,7 @@ int main(int argc, char *argv[])
 		printf("energy is: %f\n", d[i].energy_j);
 		
 		i = 0;
-		while (i < 2) {
+		while (i < m) {
 			gprint(pr, i);
 			gprint(pd, i);
 			i += 1;
@@ -45,7 +58,7 @@ int main(int argc, char *argv[])
 		n--;
 	}
 
-	energy_gpu_dispose(&c, &pr, &pd);
+	acc_gpu_metrics_dispose(&c, &pr, &pd);
 	
 	return 0;
 }
