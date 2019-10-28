@@ -207,7 +207,10 @@ int main(int argc,char *argv[])
         sprintf(sub_query, " AND job_id = %d", job_id);
         strcat(query, sub_query);
         if (step_id >= 0)
+        {
             sprintf(sub_query, " AND step_id = %d", step_id);
+            strcat(query, sub_query);
+        }
     }
 
     
