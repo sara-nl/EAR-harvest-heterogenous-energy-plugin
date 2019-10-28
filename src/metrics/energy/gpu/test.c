@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include "time.h"
-#include "api-nvml-smi.h"
+#include <metrics/energy/energy_gpu.h>
 
 int main(int argc, char *argv[])
 {
@@ -14,12 +13,12 @@ int main(int argc, char *argv[])
 	int s;
 	int i;
 
-	s = power_gpu_init(&c, &pr, &pd, 2);
+	s = energy_gpu_init(&c, &pr, &pd, 2);
 	printf("power_gpu_init: %d\n", s);
 
 	while (n > 0)
 	{ 
-		s = power_gpu_read(&c, pr, pd, 2);
+		s = energy_gpu_read(&c, pr, pd, 2);
 		printf("power_gpu_read: %d\n", s);
 
 #if 1
@@ -46,7 +45,7 @@ int main(int argc, char *argv[])
 		n--;
 	}
 
-	power_gpu_dispose(&c, &pr, &pd);
+	energy_gpu_dispose(&c, &pr, &pd);
 	
 	return 0;
 }

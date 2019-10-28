@@ -39,7 +39,7 @@
 state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg, uint num_cpus);
 
 /** Frees the allocated memory of the context and data readings structures. **/
-state_t nvsmi_gpu_disclose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
+state_t nvsmi_gpu_dispose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
 /** Reads the GPU metrics and returns its values (data_read). If previous data reading is
   * given (data_read), the averages of the current reading and the previous is computed and

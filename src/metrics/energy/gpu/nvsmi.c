@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <metrics/energy/energy_gpu.h>
 
 #define SZ_BUFF_BIG     4096
 #define GPU_METRICS     7
@@ -50,7 +51,7 @@ state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, 
     if (dread != NULL) {
 		*dread = malloc(num_cpus * sizeof(gpu_power_t));
 		if (*dread == NULL) {
-        	power_gpu_disclose(c, dread, ddiff);
+        	nvsmi_gpu_dispose(c, dread, ddiff);
         	return EAR_ERROR;
 		}
 	} else {
@@ -60,7 +61,7 @@ state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, 
     if (ddiff != NULL) {
         *ddiff = malloc(num_cpus * sizeof(gpu_power_t));
     	if (ddiff == NULL) {
-        	power_gpu_disclose(c, dread, ddiff);
+        	nvsmi_gpu_dispose(c, dread, ddiff);
         	return EAR_ERROR;
     	}
     }
@@ -71,7 +72,7 @@ state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff, 
     return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_disclose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t nvsmi_gpu_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
     if (c->context == &ok) {
         c->context = NULL;

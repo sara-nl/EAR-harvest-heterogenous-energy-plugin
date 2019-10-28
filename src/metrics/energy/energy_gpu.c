@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <metrics/energy/energy_gpu.h>
+
 state_t energy_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg, uint num_cpus)
 {
 	if (state_ok(nvsmi_gpu_status())) {
@@ -36,9 +38,9 @@ state_t energy_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg,
 	}
 }
 
-state_t energy_gpu_disclose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t energy_gpu_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
-	return nvsmi_gpu_disclose(c, dread, davrg);
+	return nvsmi_gpu_dispose(c, dread, davrg);
 }
 
 state_t energy_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg, uint num_gpus)

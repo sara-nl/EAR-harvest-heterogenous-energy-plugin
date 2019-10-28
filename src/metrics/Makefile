@@ -11,6 +11,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/common/pci.o \
     $(SRCDIR)/metrics/common/msr.o \
     $(SRCDIR)/metrics/common/papi.o \
+    $(SRCDIR)/metrics/accumulators/gpu_metrics.o \
     $(SRCDIR)/metrics/accumulators/power_metrics.o \
     $(SRCDIR)/metrics/bandwidth/bandwidth.o \
     $(SRCDIR)/metrics/bandwidth/cpu/intel_haswell.o \
@@ -20,9 +21,11 @@ mets_OBJS = \
     $(SRCDIR)/metrics/cpi/cpi.o \
     $(SRCDIR)/metrics/cpi/cpu/papi.o \
     $(SRCDIR)/metrics/energy/energy_cpu.o \
+    $(SRCDIR)/metrics/energy/energy_gpu.o \
     $(SRCDIR)/metrics/energy/energy_node.o \
     $(SRCDIR)/metrics/energy/energy_node_lib.o \
     $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
+    $(SRCDIR)/metrics/energy/gpu/nvsmi.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/papi.o \
     $(SRCDIR)/metrics/frequency/frequency_imc.o \

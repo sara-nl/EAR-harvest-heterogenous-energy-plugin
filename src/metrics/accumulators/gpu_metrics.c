@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <metrics/accumulators/gpu_metrics.h>
+
 static uint num_gpus = 2;
 
 state_t acc_gpu_metrics_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
@@ -36,13 +38,13 @@ state_t acc_gpu_metrics_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **d
 	return energy_gpu_init(c, dread, davrg, num_gpus);
 }
 
-state_t acc_gpu_metrics_disclose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t acc_gpu_metrics_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
-	return nvsmi_gpu_disclose(c, dread, davrg);
+	return energy_gpu_dispose(c, dread, davrg);
 }
 
 state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg)
 {
-	return nvsmi_gpu_read(c, dread, davrg, num_gpus);
+	return energy_gpu_read(c, dread, davrg, num_gpus);
 }
 

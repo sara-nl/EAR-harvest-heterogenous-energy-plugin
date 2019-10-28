@@ -32,6 +32,7 @@
 
 #include <common/states.h>
 #include <common/plugins.h>
+#include <common/system/time.h>
 #include <common/types/generic.h>
 
 typedef struct gpu_power_s
