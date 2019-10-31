@@ -28,6 +28,7 @@
 */
 
 #include <metrics/energy/energy_gpu.h>
+#include <metrics/energy/gpu/nvsmi.h>
 
 state_t energy_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {

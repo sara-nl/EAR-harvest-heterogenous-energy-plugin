@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <metrics/energy/energy_gpu.h>
+#include <metrics/energy/gpu/nvsmi.h>
 
 #define SZ_BUFF_BIG     4096
 #define GPU_METRICS     7
