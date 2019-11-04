@@ -215,6 +215,65 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
  *
  */
 
+int plug_print_variables(spank_t sp)
+{
+	if (plug_verbosity_test(sp, 4) != 1) {
+		return ESPANK_SUCCESS;
+	}
+
+	printenv_agnostic(sp, Component.plugin);
+	printenv_agnostic(sp, Component.library);
+	printenv_agnostic(sp, Component.monitor);
+	printenv_agnostic(sp, Component.test);
+	printenv_agnostic(sp, Component.verbose);
+	printenv_agnostic(sp, Var.comp_libr.cmp);
+	printenv_agnostic(sp, Var.comp_plug.cmp);
+	printenv_agnostic(sp, Var.comp_moni.cmp);
+	printenv_agnostic(sp, Var.comp_test.cmp);
+	printenv_agnostic(sp, Var.comp_verb.cmp);
+	printenv_agnostic(sp, Var.hack_libr.hck);
+
+	printenv_agnostic(sp, Var.verbose.loc);
+	printenv_agnostic(sp, Var.policy.loc);
+	printenv_agnostic(sp, Var.policy_th.loc);
+	printenv_agnostic(sp, Var.frequency.loc);
+	printenv_agnostic(sp, Var.p_state.loc);
+	printenv_agnostic(sp, Var.learning.loc);
+	printenv_agnostic(sp, Var.tag.loc);
+	printenv_agnostic(sp, Var.path_usdb.loc);
+	printenv_agnostic(sp, Var.path_trac.loc);
+	
+	printenv_agnostic(sp, Var.user.rem);
+	printenv_agnostic(sp, Var.group.rem);
+	printenv_agnostic(sp, Var.path_temp.rem);
+	printenv_agnostic(sp, Var.path_inst.rem);
+	printenv_agnostic(sp, Var.context.rem);
+	printenv_agnostic(sp, Var.node_num.loc);
+	printenv_agnostic(sp, Var.name_app.rem);
+	printenv_agnostic(sp, Var.account.rem);
+	printenv_agnostic(sp, Var.node_list.rem);
+	printenv_agnostic(sp, Var.version.loc);
+	printenv_agnostic(sp, Var.gm_secure.loc);
+
+	printenv_agnostic(sp, Var.verbose.ear);
+	printenv_agnostic(sp, Var.policy.ear);
+	printenv_agnostic(sp, Var.policy_th.ear);
+	printenv_agnostic(sp, Var.frequency.ear);
+	printenv_agnostic(sp, Var.p_state.ear);
+	printenv_agnostic(sp, Var.learning.ear);
+	printenv_agnostic(sp, Var.tag.ear);
+	printenv_agnostic(sp, Var.path_usdb.ear);
+	printenv_agnostic(sp, Var.path_trac.ear);
+	printenv_agnostic(sp, Var.perf_pen.ear);
+	printenv_agnostic(sp, Var.eff_gain.ear);
+	printenv_agnostic(sp, Var.name_app.ear);
+	printenv_agnostic(sp, Var.path_temp.ear);
+	printenv_agnostic(sp, Var.ld_prel.ear);
+	printenv_agnostic(sp, Var.ld_libr.ear);
+
+	return ESPANK_SUCCESS;
+}
+
 int plug_clean_components(spank_t sp)
 {
 	int test;
