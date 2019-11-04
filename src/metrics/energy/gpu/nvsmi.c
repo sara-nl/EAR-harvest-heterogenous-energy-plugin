@@ -47,6 +47,8 @@ typedef struct nvsmi_context_s {
 
 state_t nvsmi_gpu_status()
 {
+	static const char *command = "nvidia-smi";
+
 	return EAR_SUCCESS;
 }
 

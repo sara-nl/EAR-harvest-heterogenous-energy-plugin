@@ -34,7 +34,7 @@ struct uncore_op
 {
 	state_t (*init)    (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
 	state_t (*dispose) (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
-	state_t (*read)    (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
+	state_t (*read)    (pcontext_t *c, gpu_power_t  *dr, gpu_power_t  *da);
 	state_t (*count)   (pcontext_t *c, uint *co);
 } ops;
 

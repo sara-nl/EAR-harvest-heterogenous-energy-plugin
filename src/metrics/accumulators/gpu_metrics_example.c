@@ -5,6 +5,9 @@
 #include <metrics/energy/energy_gpu.h>
 #include <metrics/accumulators/gpu_metrics.h>
 
+// Compile:
+// icc -I ../../ -o ex gpu_metrics_example.c ../libmetrics.a ../../common/libcommon.a
+
 int main(int argc, char *argv[])
 {
 	gpu_power_t *pr;
