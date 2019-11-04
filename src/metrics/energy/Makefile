@@ -11,7 +11,7 @@ ener_DEPS = \
 
 ######## RULES
 
-all: all.components $(ener_BINS)
+all:  $(ener_BINS) all.components
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

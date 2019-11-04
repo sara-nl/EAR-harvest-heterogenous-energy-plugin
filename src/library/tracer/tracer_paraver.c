@@ -41,6 +41,7 @@
 #include <common/config.h>
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
+#include <common/types/signature.h>
 #include <library/metrics/metrics.h>
 #include <library/tracer/tracer_paraver.h>
 
@@ -195,6 +196,8 @@ static void config_file_create(char *pathname, char* hostname)
 	sprintf(buffer1, "EVENT_TYPE\n0\t60017\tVPI\n\n");
 	write(file_pcf, buffer1, strlen(buffer1));
 	sprintf(buffer1, "EVENT_TYPE\n0\t60018\tRECONFIGURATION\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60019\tAVG_FREQ\n\n");
 	write(file_pcf, buffer1, strlen(buffer1));
 
 	close(file_pcf);
@@ -453,9 +456,9 @@ void traces_end_period(int global_rank, int local_rank)
 }
 
 // ear_states.c
-void traces_new_signature(int global_rank, int local_rank, double seconds,
-	double cpi, double tpi, double gbs, double power, double vpi)
+void traces_new_signature(int global_rank, int local_rank, signature_t *sig)
 {
+	double seconds,cpi,gbs,power,vpi,tpi;
 	ullong lsec;
 	ullong lcpi;
 	ullong ltpi;
@@ -466,6 +469,12 @@ void traces_new_signature(int global_rank, int local_rank, double seconds,
 	if (!enabled || !working) {
 		return;
 	}
+  seconds=sig->time;
+  cpi=sig->CPI;
+  tpi=sig->TPI;
+  gbs=sig->GBS;
+  power=sig->DC_power;
+  vpi=(double)(sig->FLOPS[3]/16+sig->FLOPS[7]/8)/(double)sig->instructions;
 
     lsec = (ullong) (seconds * 1000000.0);
     lcpi = (ullong) (cpi * 1000.0);

@@ -381,7 +381,7 @@ state_t energy_ac_read(void *c, edata_t energy_mj)
 unsigned long diff_node_energy(ulong init,ulong end)
 {
   ulong ret=0;
-  if (end>init){
+  if (end>=init){
     ret=end-init;
   } else{
     ret=ulong_diff_overflow(init,end);

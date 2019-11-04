@@ -104,7 +104,7 @@ extern uint check_periodic_mode;
 
 
 #define  REPORT_TRACES() \
-      traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI); \
+      traces_new_signature(ear_my_rank, my_id, &loop.signature); \
       traces_frequency(ear_my_rank, my_id, policy_freq); 
       // traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
@@ -594,7 +594,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
             EDP = ENERGY * TIME;
 
             /* VERBOSE */
-            traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
+            traces_new_signature(ear_my_rank, my_id, &loop_signature.signature);
             traces_frequency(ear_my_rank, my_id, policy_freq);
 			}
 			/* We run here at default freq */

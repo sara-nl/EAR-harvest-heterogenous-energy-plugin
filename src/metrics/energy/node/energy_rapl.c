@@ -40,9 +40,9 @@
 
 
 #include <common/states.h>
-#include <metrics/api/energy.h>
-#include <energy_cpu.h>
-#include <mymath.h>
+#include <metrics/energy/node/energy_node.h>
+#include <metrics/energy/energy_cpu.h>
+#include <common/math_operations.h>
 
 #define SHOW_DEBUGS 1
 #ifdef SHOW_DEBUGS

@@ -47,6 +47,7 @@
 
 #include <common/config.h>
 #include <common/types/generic.h>
+#include <common/types/signature.h>
 
 #define MIN_FREQ_FOR_SAMPLING 500000
 
@@ -62,7 +63,7 @@
 
 	/**@{ Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states */
 	void traces_frequency(int global_rank, int local_rank, unsigned long f);
-	void traces_new_signature(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power,double vpi);
+	void traces_new_signature(int global_rank, int local_rank, signature_t *sig);
 	void traces_PP(int global_rank, int local_rank, double seconds, double power); /**@}*/ 
 
 	/**@{ Executed when each time a new loop is detected, the loop ends, or a new iteration are reported */
