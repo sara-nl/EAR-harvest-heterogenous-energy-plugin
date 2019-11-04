@@ -29,10 +29,22 @@
 
 #include <metrics/energy/energy_gpu.h>
 
+struct uncore_op
+{
+	state_t (*init)    (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
+	state_t (*dispose) (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
+	state_t (*read)    (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
+	state_t (*count)   (pcontext_t *c, uint *co);
+} ops;
+
 state_t energy_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
 {
 	if (state_ok(nvsmi_gpu_status())) {
-		return nvsmi_gpu_init(c, dread, davrg);
+		ops.init    = nvsmi_gpu_init;
+		ops.dispose = nvsmi_gpu_dispose;
+		ops.read    = nvsmi_gpu_read;
+		ops.count   = nvsmi_gpu_count;
+		return ops.init(c, dread, davrg);
 	} else {
 		return EAR_INCOMPATIBLE;
 	}
