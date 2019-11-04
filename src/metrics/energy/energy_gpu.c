@@ -28,6 +28,7 @@
 */
 
 #include <metrics/energy/energy_gpu.h>
+#include <metrics/energy/gpu/nvsmi.h>
 
 struct uncore_op
 {

@@ -45,7 +45,7 @@ state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **dat
 state_t nvsmi_gpu_dispose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
 /** Counts the number of GPUs. **/
-state_t nvsmi_gpu_count(context_t *c, uint *count);
+state_t nvsmi_gpu_count(pcontext_t *c, uint *count);
 
 /** Reads the GPU metrics and returns its values (data_read). If previous data reading is
   * given (data_read), the averages of the current reading and the previous is computed and

@@ -51,7 +51,7 @@ typedef struct gpu_power_s
 
 state_t energy_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
-state_t energy_gpu_disclose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
+state_t energy_gpu_dispose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
 state_t energy_gpu_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg);
 
