@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017
+*       Copyright (C) 2017  
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,56 +15,39 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*
+*	
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*
+*	
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <common/config.h>
-#define SHOW_DEBUGS 1
+
+#ifndef _RAPL_METRICS_H_
+#define _RAPL_METRICS_H_
+
 #include <metrics/common/msr.h>
-#include <common/output/verbose.h>
-/* Thermal Domain */
-#define IA32_THERM_STATUS               0x19C
-#define IA32_PKG_THERM_STATUS           0x1B1
-#define MSR_TEMPERATURE_TARGET          0x1A2
-int throttling_temp[NUM_SOCKETS];
-static int my_fd_map[MAX_PACKAGES];
 
-int init_temp_msr(int *fd_map)
-{
-		int j;
-		unsigned long long result;
-    if (is_msr_initialized()==0){
-			debug("Temperature: msr was not initialized, initializing");
-      init_msr(fd_map);
-    }else get_msr_ids(fd_map);
-    for(j=0;j<NUM_SOCKETS;j++) {
-    	if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
-       throttling_temp[j] = (result >> 16);
-    }
+#define RAPL_EVS            4
+#define RAPL_DRAM0          0
+#define RAPL_DRAM1          1
+#define RAPL_PACKAGE0       2
+#define RAPL_PACKAGE1       3
 
-		return EAR_SUCCESS;
-}
 
-int read_temp_msr(int *fds,unsigned long long *_values)
-{
-	unsigned long long result;
-	int j;
+/** Opens the necessary fds to read the MSR registers. Returns 0 on success 
+* 	and -1 on error. */
+int init_rapl_msr(int *fd_map);
+void dispose_rapl_msr(int *fd_map);
 
-	for(j=0;j<NUM_SOCKETS;j++)
-	{
-	/* PKG reading */    
-    if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
-	_values[j] = throttling_temp[j] - ((result>>16)&0xff);
+/** Reads rapl counters and stores them in values array. Returns 0 on success 
+*	and -1 on error. */
+int read_rapl_msr(int *fd_map,unsigned long long *_values);
 
-    }
-	return EAR_SUCCESS;
-}
+#else
+#endif

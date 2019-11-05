@@ -32,7 +32,6 @@
 
 #include <papi.h>
 #include <common/config.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <daemon/shared_configuration.h>

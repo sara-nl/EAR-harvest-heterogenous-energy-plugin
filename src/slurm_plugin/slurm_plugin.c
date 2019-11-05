@@ -55,6 +55,14 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 // Function order:
 // 	- Local 2
 // 	- Remote 0
+int slurm_spank_init_post_opt_fini(spank_t sp)
+{
+	//
+	plug_print_variables(sp);
+
+	return ESPANK_SUCCESS;
+}
+
 int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
@@ -93,8 +101,8 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	//
 	plug_serialize_remote(sp, &sd);
-	
-	return ESPANK_SUCCESS;
+
+	return slurm_spank_init_post_opt_fini(sp);
 }
 
 // Function order:
@@ -127,6 +135,14 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 // Function order:
 // 	- Local 0
 // 	- Remote 2
+int slurm_spank_user_init_fini(spank_t sp)
+{
+        //
+        plug_print_variables(sp);
+
+        return ESPANK_SUCCESS;
+}
+
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
@@ -172,8 +188,8 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	if (plug_component_isenabled(sp, Component.test)) {
 		plug_test_result(sp);
 	}
-	
-	return ESPANK_SUCCESS;
+
+	return slurm_spank_user_init_fini(sp);
 }
 
 // Function order:

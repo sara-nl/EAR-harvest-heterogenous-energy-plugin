@@ -293,7 +293,7 @@ p_state INT, \
 GlobEnergyConsumedT1 INT UNSIGNED, \
 GlobEnergyConsumedT2 INT UNSIGNED, \
 GlobEnergyLimit INT UNSIGNED, \
-GlobEnergyPeriodT2 INT UNSIGNED, \
+GlobEnergyPeriodT1 INT UNSIGNED, \
 GlobEnergyPeriodT2 INT UNSIGNED, \
 GlobEnergyPolicy VARCHAR(64), \
 PRIMARY KEY (time))");

@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
 #include <math.h>
 #include <time.h>
 #include <stdio.h>
@@ -38,7 +37,7 @@
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
-#include <common/math_operations.h.h>
+#include <common/math_operations.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/common/msr.h>
 
@@ -58,89 +57,30 @@
 #define MSR_DRAM_PERF_STATUS			0x61B
 #define MSR_DRAM_POWER_INFO				0x61C
 
-/* Thermal Domain */
-#define IA32_THERM_STATUS               0x19C
-#define IA32_PKG_THERM_STATUS           0x1B1
-#define MSR_TEMPERATURE_TARGET          0x1A2
-
-#define MAX_PACKAGES	16
 
 
-int num_cpus = -1;
-int num_cores = -1;
-int msr_initialised = 0;
 
-static int total_cores=0,total_packages=0;
-static int package_map[MAX_PACKAGES];
 
 double power_units, cpu_energy_units, time_units, dram_energy_units;
 
-static int detect_packages(void) {
-
-	char filename[BUFSIZ];
-	FILE *fff;
-	int package;
-	int i;
-    topology_t topo;
-    hardware_gettopology(&topo);
-    num_cpus = topo.sockets;
-    num_cores = topo.cores*topo.sockets;
-    
-	if (num_cpus < 1 || num_cores < 1) {
-        	return EAR_ERROR;
-	}
-	
-	for(i=0;i<MAX_PACKAGES;i++) {
-		package_map[i]=-1;
-	}
-
-	for(i=0;i<num_cores;i++)
-	{
-		sprintf(filename,"/sys/devices/system/cpu/cpu%d/topology/physical_package_id",i);
-		fff=fopen(filename,"r");
-		if (fff==NULL) break;
-		fscanf(fff,"%d",&package);
-		fclose(fff);
-
-		if (package_map[package]==-1) {
-			total_packages++;
-			package_map[package]=i;
-		}
-	}
-	total_cores=i;
-
-	return 0;
-}
-
 int init_rapl_msr(int *fd_map)
-{
-    if (msr_initialised) return EAR_SUCCESS;
-    if (detect_packages() == EAR_ERROR)
-    {
-        return EAR_ERROR;
-    }
+{	
+		int j;
+		unsigned long long result;
+		/* If it is not initialized, I do it, else, I get the ids */
+    if (is_msr_initialized()==0){ 
+			init_msr(fd_map);
+		}else get_msr_ids(fd_map);
+		/* Ask for msr info */
+		for(j=0;j<NUM_SOCKETS;j++) {
+			if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT)) return EAR_ERROR;
+			power_units=pow(0.5,(double)(result&0xf));
+			cpu_energy_units=pow(0.5,(double)((result>>8)&0x1f));
+			time_units=pow(0.5,(double)((result>>16)&0xf));
+			dram_energy_units=pow(0.5,(double)16);
 
-	unsigned long long result;
-	int fd, j;
-	for(j=0;j<NUM_SOCKETS;j++) {
-       	int ret;
-	    fd = -1;
-		if ((ret = msr_open(package_map[j], &fd)) != EAR_SUCCESS)
-       	{
-		    return EAR_ERROR;
-        }
-		fd_map[j] = fd;
-		if (msr_read(&fd, &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT))
-			return EAR_ERROR;
-
-		power_units=pow(0.5,(double)(result&0xf));
-		cpu_energy_units=pow(0.5,(double)((result>>8)&0x1f));
-		time_units=pow(0.5,(double)((result>>16)&0xf));
-		dram_energy_units=pow(0.5,(double)16);
-
-	}
-    msr_initialised = 1;
-	return EAR_SUCCESS;
+		}
+		return EAR_SUCCESS;
 }
 
 
@@ -169,9 +109,9 @@ int read_rapl_msr(int *fd_map,unsigned long long *_values)
 
 void dispose_rapl_msr(int *fd_map)
 {
-	int j;
-	for (j = 0; j < total_packages; j++)
+	int j,tp;
+	tp=get_total_packages();
+	for (j = 0; j < tp; j++)
 		msr_close(&fd_map[j]);
-    msr_initialised = 0;
 }
 

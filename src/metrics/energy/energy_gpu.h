@@ -27,44 +27,34 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/config.h>
-#define SHOW_DEBUGS 1
-#include <metrics/common/msr.h>
-#include <common/output/verbose.h>
-/* Thermal Domain */
-#define IA32_THERM_STATUS               0x19C
-#define IA32_PKG_THERM_STATUS           0x1B1
-#define MSR_TEMPERATURE_TARGET          0x1A2
-int throttling_temp[NUM_SOCKETS];
-static int my_fd_map[MAX_PACKAGES];
+#ifndef METRICS_ENERGY_GPU_H
+#define METRICS_ENERGY_GPU_H
 
-int init_temp_msr(int *fd_map)
+#include <common/states.h>
+#include <common/plugins.h>
+#include <common/system/time.h>
+#include <common/types/generic.h>
+
+typedef struct gpu_power_s
 {
-		int j;
-		unsigned long long result;
-    if (is_msr_initialized()==0){
-			debug("Temperature: msr was not initialized, initializing");
-      init_msr(fd_map);
-    }else get_msr_ids(fd_map);
-    for(j=0;j<NUM_SOCKETS;j++) {
-    	if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
-       throttling_temp[j] = (result >> 16);
-    }
+	timestamp time;
+	uint freq_gpu_mhz;
+	uint freq_mem_mhz;
+	uint util_gpu; // percent
+	uint util_mem; // percent
+	uint temp_gpu; // celsius
+	uint temp_mem; // celsius
+	float energy_j;
+	float power_w;
+	uint correct;
+} gpu_power_t;
 
-		return EAR_SUCCESS;
-}
+state_t energy_gpu_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
-int read_temp_msr(int *fds,unsigned long long *_values)
-{
-	unsigned long long result;
-	int j;
+state_t energy_gpu_dispose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
-	for(j=0;j<NUM_SOCKETS;j++)
-	{
-	/* PKG reading */    
-    if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
-	_values[j] = throttling_temp[j] - ((result>>16)&0xff);
+state_t energy_gpu_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg);
 
-    }
-	return EAR_SUCCESS;
-}
+state_t energy_gpu_count(pcontext_t *c, uint *count);
+
+#endif

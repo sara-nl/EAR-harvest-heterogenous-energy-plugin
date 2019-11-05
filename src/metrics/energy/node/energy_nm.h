@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _ENERGY_NM_H
-#define _ENERGY_NM_H
+#ifndef METRICS_NODE_IPMI_NM_H
+#define METRICS_NODE_IPMI_NM_H
 
 #define IPMI_BUF_SIZE	1024
 #define IPMI_SYSTEM_INTERFACE_ADDR_TYPE	0x0c

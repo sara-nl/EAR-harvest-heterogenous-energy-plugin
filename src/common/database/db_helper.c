@@ -622,6 +622,89 @@ int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_a
 
 }
 
+#if 0
+#define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
+                                ">= ? AND end_time <= ? AND DC_energy <= %d"
+#define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
+                                ">= ? AND end_time <= ?"
+#endif
+
+int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uint *last_index, ulong *energy, long num_nodes, char **nodes)
+{
+    char query[1024];
+    int i;
+    *energy = 0;
+	MYSQL *connection = mysql_create_connection();
+
+    if (connection == NULL) {
+        return EAR_ERROR;
+    }
+
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement)
+    {
+        verbose(VDBH, "Error creating statement (%d): %s\n", mysql_errno(connection),
+                mysql_error(connection));
+        mysql_close(connection);
+        return EAR_ERROR;
+    }
+
+    sprintf(query, METRICS_SUM_QUERY, MAX_ENERGY);
+    if (num_nodes > 0)
+    {
+        strcat(query, " AND node_id IN (");
+        for (i = 0; i < num_nodes; i++)
+        {
+            strcat(query, "'");
+            strcat(query, nodes[i]);
+            i == num_nodes - 1 ? strcat(query, ")'") : strcat(query, "', ");
+        }
+
+    }
+
+
+
+    if (mysql_stmt_prepare(statement, query, strlen(query)))
+        return stmt_error(connection, statement);
+
+    //Query parameters binding
+    MYSQL_BIND bind[3];
+    memset(bind, 0, sizeof(bind));
+
+    bind[0].buffer_type = MYSQL_TYPE_LONGLONG;
+    bind[0].is_unsigned = 1;
+
+    bind[1].buffer_type = bind[2].buffer_type = MYSQL_TYPE_LONG;
+
+    bind[0].buffer = (char *)&divisor;
+    bind[1].buffer = (char *)&start_time;
+    bind[2].buffer = (char *)&end_time;
+
+
+    //Result parameters
+    MYSQL_BIND res_bind[2];
+    memset(res_bind, 0, sizeof(res_bind));
+    res_bind[0].buffer_type = res_bind[1].buffer_type = MYSQL_TYPE_LONGLONG;
+    res_bind[0].buffer = energy;
+    res_bind[1].buffer = last_index;
+
+    if (mysql_stmt_bind_param(statement, bind)) return stmt_error(connection, statement);
+    if (mysql_stmt_bind_result(statement, res_bind)) return stmt_error(connection, statement);
+    if (mysql_stmt_execute(statement)) return stmt_error(connection, statement);
+    if (mysql_stmt_store_result(statement)) return stmt_error(connection, statement);
+
+    int status = mysql_stmt_fetch(statement);
+    if (status != 0 && status != MYSQL_DATA_TRUNCATED)
+    {
+        return stmt_error(connection, statement);
+    }
+
+    mysql_stmt_close(statement);
+    mysql_close(connection);
+
+    return EAR_SUCCESS;
+
+}
 
 #define METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
                                 "id > %d AND DC_energy <= %d"

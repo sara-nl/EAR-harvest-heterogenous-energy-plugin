@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
-
 #include <common/config.h>
 #include <common/types/projection.h>
 #include <common/system/symplug.h>

@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,39 +15,37 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <metrics/accumulators/gpu_metrics.h>
 
-#ifndef _RAPL_METRICS_H_
-#define _RAPL_METRICS_H_
+state_t acc_gpu_metrics_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+{
+	// Count GPUS
+	return energy_gpu_init(c, dread, davrg);
+}
 
-#define RAPL_EVS            4
-#define RAPL_DRAM0          0
-#define RAPL_DRAM1          1
-#define RAPL_PACKAGE0       2
-#define RAPL_PACKAGE1       3
+state_t acc_gpu_metrics_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+{
+	return energy_gpu_dispose(c, dread, davrg);
+}
 
-#define NUM_SOCKETS 				2
-#define MAX_PACKAGES  			16
+state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg)
+{
+	return energy_gpu_read(c, dread, davrg);
+}
 
-/** Opens the necessary fds to read the MSR registers. Returns 0 on success 
-* 	and -1 on error. */
-int init_rapl_msr(int *fd_map);
-void dispose_rapl_msr(int *fd_map);
-
-/** Reads rapl counters and stores them in values array. Returns 0 on success 
-*	and -1 on error. */
-int read_rapl_msr(int *fd_map,unsigned long long *_values);
-
-#else
-#endif
+state_t acc_gpu_metrics_count(pcontext_t *c, uint *count)
+{
+	return energy_gpu_count(c, count);
+}

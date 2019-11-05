@@ -27,44 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/config.h>
-#define SHOW_DEBUGS 1
-#include <metrics/common/msr.h>
-#include <common/output/verbose.h>
-/* Thermal Domain */
-#define IA32_THERM_STATUS               0x19C
-#define IA32_PKG_THERM_STATUS           0x1B1
-#define MSR_TEMPERATURE_TARGET          0x1A2
-int throttling_temp[NUM_SOCKETS];
-static int my_fd_map[MAX_PACKAGES];
+#ifndef ACCUMULATORS_GPU_METRICS_H
+#define ACCUMULATORS_GPU_METRICS_H
 
-int init_temp_msr(int *fd_map)
-{
-		int j;
-		unsigned long long result;
-    if (is_msr_initialized()==0){
-			debug("Temperature: msr was not initialized, initializing");
-      init_msr(fd_map);
-    }else get_msr_ids(fd_map);
-    for(j=0;j<NUM_SOCKETS;j++) {
-    	if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
-       throttling_temp[j] = (result >> 16);
-    }
+#include <metrics/energy/energy_gpu.h>
 
-		return EAR_SUCCESS;
-}
+state_t acc_gpu_metrics_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
-int read_temp_msr(int *fds,unsigned long long *_values)
-{
-	unsigned long long result;
-	int j;
+state_t acc_gpu_metrics_disclose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
 
-	for(j=0;j<NUM_SOCKETS;j++)
-	{
-	/* PKG reading */    
-    if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
-	_values[j] = throttling_temp[j] - ((result>>16)&0xff);
+state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg);
 
-    }
-	return EAR_SUCCESS;
-}
+state_t acc_gpu_metrics_count(pcontext_t *c, uint *count);
+
+#endif // ACCUMULATORS_GPU_METRICS_H

@@ -31,12 +31,10 @@
 #define _EAR_TRACES_H_
 
 #include <common/config.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <daemon/shared_configuration.h>
 #include <common/types/signature.h>
-
 
 	/** Executed at application start */
 void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn)

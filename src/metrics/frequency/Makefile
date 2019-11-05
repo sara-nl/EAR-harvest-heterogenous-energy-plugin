@@ -23,7 +23,7 @@ install: ;
 
 %.install: ;
 
-clean: rclean;
+clean: rclean clean.components;
 
 ######## DEPENDENCIES
 

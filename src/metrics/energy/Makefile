@@ -1,9 +1,10 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC 
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -DSHOW_DEFINES
 
 ######## FILES
 
 ener_BINS = \
     energy_cpu.o \
+    energy_gpu.o \
     energy_node.o \
     energy_node_lib.o
 ener_DEPS = \
@@ -19,6 +20,8 @@ all:  $(ener_BINS) all.components
 ######## SUBFOLDERS
 
 %.components:
+	@ $(MAKE) -C 'cpu' $* || exit
+	@ $(MAKE) -C 'gpu' $* || exit
 	@ $(MAKE) -C 'node' $* || exit
 
 ######## OPTIONS
@@ -27,7 +30,7 @@ install: install.components;
 
 %.install: %.install.components;
 
-clean: rclean;
+clean: rclean clean.components;
 
 ######## DEPENDENCIES
 

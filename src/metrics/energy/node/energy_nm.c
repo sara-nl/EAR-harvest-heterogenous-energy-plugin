@@ -1,170 +1,174 @@
 /**************************************************************
- * * Energy Aware Runtime (EAR)
- * * This program is part of the Energy Aware Runtime (EAR).
- * *
- * * EAR provides a dynamic, transparent and ligth-weigth solution for
- * * Energy management.
- * *
- * *     It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
- * *
- * *       Copyright (C) 2017  
- * * BSC Contact   mailto:ear-support@bsc.es
- * * Lenovo contact  mailto:hpchelp@lenovo.com
- * *
- * * EAR is free software; you can redistribute it and/or
- * * modify it under the terms of the GNU Lesser General Public
- * * License as published by the Free Software Foundation; either
- * * version 2.1 of the License, or (at your option) any later version.
- * * 
- * * EAR is distributed in the hope that it will be useful,
- * * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * * Lesser General Public License for more details.
- * * 
- * * You should have received a copy of the GNU Lesser General Public
- * * License along with EAR; if not, write to the Free Software
- * * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- * * The GNU LEsser General Public License is contained in the file COPYING  
- * */
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING
+*/
 
+#include <math.h>
+#include <errno.h>
+#include <stdio.h>
+#include <fcntl.h>
 #include <string.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <stdint.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <unistd.h>
-#include <sys/ioctl.h>
-#include <sys/select.h> 
+#include <pthread.h>
 #include <sys/time.h>
 #include <pthread.h>
+#include <sys/ioctl.h>
+#include <sys/select.h>
+
 #include <common/states.h> //clean
 #include <common/math_operations.h>
-#include <metrics/energy/node/energy_node.h> //clean
-#include <metrics/energy/node/energy_nm.h>
 #include <common/output/verbose.h>
-
+#include <metrics/energy/node/energy_nm.h>
+#include <metrics/energy/node/energy_node.h>
 
 static pthread_mutex_t ompi_lock = PTHREAD_MUTEX_INITIALIZER;
 static uint8_t cmd_arg;
 
-int opendev(struct ipmi_intf *intf){
-  intf->fd = open("/dev/ipmi0", O_RDWR);
-  if (intf->fd < 0) {
-  	intf->fd = open("/dev/ipmi/0", O_RDWR);
-    if (intf->fd < 0) {
-  	  intf->fd = open("/dev/ipmidev/0", O_RDWR);
-    };
-  };
+int opendev(struct ipmi_intf *intf)
+{
+	intf->fd = open("/dev/ipmi0", O_RDWR);
+	if (intf->fd < 0) {
+		intf->fd = open("/dev/ipmi/0", O_RDWR);
+		if (intf->fd < 0) {
+			intf->fd = open("/dev/ipmidev/0", O_RDWR);
+		};
+	};
 	return intf->fd;
 };
 
-void closedev(struct ipmi_intf * intf){
-  if (intf->fd > 0){
-    close(intf->fd);
-    intf->fd = -1 ;
-  };
+void closedev(struct ipmi_intf *intf)
+{
+	if (intf->fd > 0) {
+		close(intf->fd);
+		intf->fd = -1;
+	};
 };
 
-static struct ipmi_rs * sendcmd(struct ipmi_intf * intf, struct ipmi_rq * req)
+static struct ipmi_rs *sendcmd(struct ipmi_intf *intf, struct ipmi_rq *req)
 {
 	struct ipmi_req _req;
 	struct ipmi_recv recv;
 	struct ipmi_addr addr;
 	struct ipmi_system_interface_addr bmc_addr = {
-		addr_type:	IPMI_SYSTEM_INTERFACE_ADDR_TYPE,
-		channel:	IPMI_BMC_CHANNEL,
-		};
+			addr_type:    IPMI_SYSTEM_INTERFACE_ADDR_TYPE,
+			channel:    IPMI_BMC_CHANNEL,
+	};
 	struct ipmi_ipmb_addr ipmb_addr = {
-		addr_type:	IPMI_IPMB_ADDR_TYPE,
-		channel:	intf->channel & 0x0f,
-		};
+			addr_type:    IPMI_IPMB_ADDR_TYPE,
+			channel:    intf->channel & 0x0f,
+	};
 	static struct ipmi_rs rsp;
-	uint8_t * data = NULL;
+	uint8_t *data = NULL;
 	int data_len = 0;
 	static int curr_seq = 0;
 	fd_set rset;
-	
+
 	if (intf == NULL || req == NULL)
-   	return NULL;
+		return NULL;
 	memset(&_req, 0, sizeof(struct ipmi_req));
-	
-	if (intf->addr != 0){
+
+	if (intf->addr != 0) {
 		ipmb_addr.slave_addr = intf->addr;
 		ipmb_addr.lun = req->msg.lun;
 		_req.addr = (unsigned char *) &ipmb_addr;
 		_req.addr_len = sizeof(ipmb_addr);
-	
-	}else {
-	bmc_addr.lun = req->msg.lun;
-	_req.addr = (unsigned char *) &bmc_addr;
-	_req.addr_len = sizeof(bmc_addr);
+
+	} else {
+		bmc_addr.lun = req->msg.lun;
+		_req.addr = (unsigned char *) &bmc_addr;
+		_req.addr_len = sizeof(bmc_addr);
 	};
 	_req.msgid = curr_seq++;
-	
+
 	_req.msg.data = req->msg.data;
 	_req.msg.data_len = req->msg.data_len;
 	_req.msg.netfn = req->msg.netfn;
 	_req.msg.cmd = req->msg.cmd;
-	
+
 	if (ioctl(intf->fd, IPMICTL_SEND_COMMAND, &_req) < 0) {
-  	debug("Unable to send command\n");
-  	if (data != NULL)
-     	free(data);
-   	return NULL;
+		debug("Unable to send command\n");
+		if (data != NULL)
+			free(data);
+		return NULL;
 	};
-	
+
 	FD_ZERO(&rset);
 	FD_SET(intf->fd, &rset);
-	
-	if (select(intf->fd+1, &rset, NULL, NULL, NULL) < 0) {
-   	debug("I/O Error\n");
-   	if (data != NULL)
-      	free(data);
-   	return NULL;
+
+	if (select(intf->fd + 1, &rset, NULL, NULL, NULL) < 0) {
+		debug("I/O Error\n");
+		if (data != NULL)
+			free(data);
+		return NULL;
 	};
 	if (FD_ISSET(intf->fd, &rset) == 0) {
-   	debug("No data available\n");
-   	if (data != NULL)
-      	free(data);
-   	return NULL;
+		debug("No data available\n");
+		if (data != NULL)
+			free(data);
+		return NULL;
 	};
-	
+
 	recv.addr = (unsigned char *) &addr;
 	recv.addr_len = sizeof(addr);
 	recv.msg.data = rsp.data;
 	recv.msg.data_len = sizeof(rsp.data);
 	if (ioctl(intf->fd, IPMICTL_RECEIVE_MSG_TRUNC, &recv) < 0) {
-  	debug("Error receiving message\n");
-   	if (errno != EMSGSIZE) {
-      	if (data != NULL)
-	 	free(data);
-      	return NULL;
-   	};
+		debug("Error receiving message\n");
+		if (errno != EMSGSIZE) {
+			if (data != NULL)
+				free(data);
+			return NULL;
+		};
 	};
-	
-	
+
+
 	/* save completion code */
 	rsp.ccode = recv.msg.data[0];
 	rsp.data_len = recv.msg.data_len - 1;
-	
-	if( recv.msg.data[0] == 0 ) {
-	
-	/* save response data for caller */
-	if (rsp.ccode == 0 && rsp.data_len > 0) {
-   	memmove(rsp.data, rsp.data + 1, rsp.data_len);
-   	rsp.data[recv.msg.data_len] = 0;
-	};
-	
-	if (data != NULL)
-   	free(data);
-	return &rsp;
+
+	if (recv.msg.data[0] == 0) {
+
+		/* save response data for caller */
+		if (rsp.ccode == 0 && rsp.data_len > 0) {
+			memmove(rsp.data, rsp.data + 1, rsp.data_len);
+			rsp.data[recv.msg.data_len] = 0;
+		};
+
+		if (data != NULL)
+			free(data);
+		return &rsp;
 	};
 	rsp.ccode = recv.msg.data[0];
 	rsp.data_len = recv.msg.data_len - 1;
 	return &rsp;
-};//sendcmd
+} //sendcmd
 
 
 state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
@@ -219,11 +223,14 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
   return EAR_SUCCESS;
 }
 
-state_t nm_ene(struct ipmi_intf *intf,struct ipmi_data * out)
+state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
 {
-	struct ipmi_rs * rsp;
+	struct ipmi_rs *rsp;
 	struct ipmi_rq req;
 	uint8_t msg_data[8];
+	int i;
+	int s;
+
 	if (pthread_mutex_trylock(&ompi_lock)) {
     return EAR_BUSY;
   }
@@ -271,21 +278,28 @@ state_t nm_ene(struct ipmi_intf *intf,struct ipmi_data * out)
   }
 	pthread_mutex_unlock(&ompi_lock);
 	return EAR_SUCCESS;
-}; 
+}
 
 /*
  * MAIN FUNCTIONS
  */
-//#define CMD_ARG_BYTE	8
 #define CMD_ARG_BYTE	6
+
 state_t energy_init(void **c)
 {
-	int ret;
 	struct ipmi_data out;
 	state_t st;
-	if (c==NULL) return EAR_ERROR;
-	*c=(struct ipmi_intf *)malloc(sizeof(struct ipmi_intf));
-	if (*c==NULL) return EAR_ERROR;
+	int ret;
+
+	if (c == NULL) {
+		return EAR_ERROR;
+	}
+
+	*c = (struct ipmi_intf *) malloc(sizeof(struct ipmi_intf));
+	if (*c == NULL) {
+		return EAR_ERROR;
+	}
+
 	pthread_mutex_lock(&ompi_lock);
 	debug("trying opendev\n");
 	ret= opendev((struct ipmi_intf *)*c);
@@ -303,13 +317,14 @@ state_t energy_init(void **c)
 	cmd_arg=out.data[CMD_ARG_BYTE];
 	debug("cmd arg is %hu\n",cmd_arg);
 	pthread_mutex_unlock(&ompi_lock);
+
 	return EAR_SUCCESS;
 }
-state_t energy_dispose(void **c)
-{
-	if ((c==NULL) || (*c==NULL)) return EAR_ERROR;
+
+state_t energy_dispose(void **c) {
+	if ((c == NULL) || (*c == NULL)) return EAR_ERROR;
 	pthread_mutex_lock(&ompi_lock);
-	closedev((struct ipmi_intf *)*c);
+	closedev((struct ipmi_intf *) *c);
 	free(*c);
 	pthread_mutex_unlock(&ompi_lock);
 	return EAR_SUCCESS;
@@ -320,16 +335,15 @@ state_t energy_datasize(size_t *size)
 	*size=sizeof(unsigned long);
 	return EAR_SUCCESS;
 }
-state_t energy_frequency(ulong *freq_us)
-{
-	*freq_us=1000000;	
+
+state_t energy_frequency(ulong *freq_us) {
+	*freq_us = 1000000;
 	return EAR_SUCCESS;
 }
 
-state_t energy_dc_read(void *c, edata_t energy_mj)
-{
+state_t energy_dc_read(void *c, edata_t energy_mj) {
 	struct ipmi_data out;
-	unsigned long aux_emj = 0,*energyp;
+	unsigned long aux_emj = 0, *energyp;
 	uint8_t *bytes_rs;
 	int FIRST_BYTE_EMJ;
 	state_t st;
@@ -347,36 +361,33 @@ state_t energy_dc_read(void *c, edata_t energy_mj)
 	return EAR_SUCCESS;
 }
 
-
-state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms)
-{
+state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms) {
 	struct ipmi_data out;
-	unsigned long aux_emj = 0,*energy,*energyp;
+	unsigned long aux_emj = 0, *energy, *energyp;
 	int FIRST_BYTE_EMJ;
 	uint8_t *bytes_rs;
 	state_t st;
 	struct timeval t;
-	ulong *penergy_mj=(ulong *)energy_mj;
+	ulong *penergy_mj = (ulong *) energy_mj;
 
-	*penergy_mj=0;
-	*time_ms=0;
-	st=nm_ene((struct ipmi_intf *)c,&out);
-	if (st!=EAR_SUCCESS) return st;
-	bytes_rs=out.data;
-	FIRST_BYTE_EMJ=out.data_len-8;
-	energyp=(unsigned long *)&bytes_rs[FIRST_BYTE_EMJ];
-	*penergy_mj=(unsigned long)be64toh(*energyp);
+	*penergy_mj = 0;
+	*time_ms = 0;
+	st = nm_ene((struct ipmi_intf *) c, &out);
+	if (st != EAR_SUCCESS) return st;
+	bytes_rs = out.data;
+	FIRST_BYTE_EMJ = out.data_len - 8;
+	energyp = (unsigned long *) &bytes_rs[FIRST_BYTE_EMJ];
+	*penergy_mj = (unsigned long) be64toh(*energyp);
 	gettimeofday(&t, NULL);
-	*time_ms=t.tv_sec*1000+t.tv_usec/1000;
-	return EAR_SUCCESS;
-}
-state_t energy_ac_read(void *c, edata_t energy_mj)
-{
-	ulong *penergy_mj=(ulong *)energy_mj;
-	*penergy_mj=0;
+	*time_ms = t.tv_sec * 1000 + t.tv_usec / 1000;
 	return EAR_SUCCESS;
 }
 
+state_t energy_ac_read(void *c, edata_t energy_mj) {
+	ulong *penergy_mj = (ulong *) energy_mj;
+	*penergy_mj = 0;
+	return EAR_SUCCESS;
+}
 
 unsigned long diff_node_energy(ulong init,ulong end)
 {
@@ -388,27 +399,22 @@ unsigned long diff_node_energy(ulong init,ulong end)
   }
   return ret;
 }
-
-
-state_t energy_units(uint *units)
-{
-  *units=1000;
-  return EAR_SUCCESS;
-}
-state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
-{
-  int i;
-	ulong *pinit=(ulong *)init,*pend=(ulong *)end;
-
-  unsigned long total=diff_node_energy(*pinit,*pend);
-  *e=total;
-  return EAR_SUCCESS;
+state_t energy_units(uint *units) {
+	*units = 1000;
+	return EAR_SUCCESS;
 }
 
-state_t energy_to_str(char *str,edata_t e)
-{
-  ulong *pe=(ulong *)e;
-  sprintf(str,"%lu",*pe);
-  return EAR_SUCCESS;
+state_t energy_accumulated(unsigned long *e, edata_t init, edata_t end) {
+	int i;
+	ulong *pinit = (ulong *) init, *pend = (ulong *) end;
+
+	unsigned long total = diff_node_energy(*pinit, *pend);
+	*e = total;
+	return EAR_SUCCESS;
 }
 
+state_t energy_to_str(char *str, edata_t e) {
+        ulong *pe = (ulong *) e;
+        sprintf(str, "%lu", *pe);
+        return EAR_SUCCESS;
+}

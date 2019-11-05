@@ -3,6 +3,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 ######## FILES
 
 band_OBJS = \
+    gpu_metrics.o \
     power_metrics.o 
 
 ######## RULES

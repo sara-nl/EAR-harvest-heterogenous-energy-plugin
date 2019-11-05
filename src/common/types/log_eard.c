@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
 #include <time.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -39,7 +38,6 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/types/log_eard.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 
 #if DB_MYSQL
@@ -47,11 +45,9 @@
 #include <common/database/db_helper.h>
 #endif
 
-
 static char log_nodename[GENERIC_NAME];
 static double min_interval=0.0;
 static time_t last_rt_event[EARD_RT_ERRORS];
-
 
 void init_eard_rt_log()
 {
