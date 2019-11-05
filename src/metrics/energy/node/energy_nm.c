@@ -272,7 +272,6 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
         };
 
   out->data_len=rsp->data_len;
-  int i;
   for (i=0;i<rsp->data_len; i++) {
   	out->data[i]=rsp->data[i];
   }
