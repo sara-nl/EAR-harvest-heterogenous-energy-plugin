@@ -175,6 +175,8 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
             }
             if (ips[i].power < ips[i].max_power)
                 counter++;
+            else if (ips[i].max_power == 0)
+                counter++;
         }
 	}
     if (counter < num_ips)
@@ -425,12 +427,21 @@ int main(int argc, char *argv[])
             case 'p':
                 if (optarg)
                 {
-                    int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
+                    char node_name[256];
+                    strcpy(node_name, optarg);
+                    strtoup(node_name);
+                    if (strcmp(node_name, optarg))
+                    {
+                        strcpy(node_name, optarg);
+                        strcat(node_name, my_cluster_conf.net_ext);
+                    }
+                    else strcpy(node_name, optarg);
+                    int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
                     if (rc<0){
-                        printf("Error connecting with node %s\n", optarg);
+                        printf("Error connecting with node %s\n", node_name);
                     }else{
-                        verbose(1,"Node %s ping!\n", optarg);
-                        if (!eards_ping()) printf("Error doing ping for node %s\n", optarg);
+                        verbose(1,"Node %s ping!\n", node_name);
+                        if (!eards_ping()) printf("Error doing ping for node %s\n", node_name);
                         eards_remote_disconnect();
                     }
                 }
@@ -440,15 +451,24 @@ int main(int argc, char *argv[])
             case 's':
                 if (optarg)
                 {
-                    int rc=eards_remote_connect(optarg ,my_cluster_conf.eard.port);
+                    char node_name[256];
+                    strcpy(node_name, optarg);
+                    strtoup(node_name);
+                    if (strcmp(node_name, optarg))
+                    {
+                        strcpy(node_name, optarg);
+                        strcat(node_name, my_cluster_conf.net_ext);
+                    }
+                    else strcpy(node_name, optarg);
+                    int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
                     if (rc<0){
-                        printf("Error connecting with node %s\n", optarg);
+                        printf("Error connecting with node %s\n", node_name);
                     }else{
                         request_t command;
                         command.req = EAR_RC_STATUS;
                         command.node_dist = INT_MAX;
-                        if ((num_status = send_status(&command, &status)) != 1) printf("Error doing status for node %s, returned (%d)\n", optarg, num_status);
-                        process_single_status(num_status, status, optarg);
+                        if ((num_status = send_status(&command, &status)) != 1) printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
+                        process_single_status(num_status, status, node_name);
                         eards_remote_disconnect();
                     }
                 }
