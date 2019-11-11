@@ -245,7 +245,11 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
             else strcpy(query, AGGR_TIME);
         }
         else
+#if AGGREGATED
+            strcpy(query, AGGR_TIME);
+#else
             strcpy(query, MET_TIME);
+#endif
 
         if (verbose) {
             printf( "QUERY: %s\n", query);
