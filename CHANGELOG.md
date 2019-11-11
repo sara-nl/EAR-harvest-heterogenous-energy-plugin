@@ -1,4 +1,5 @@
 ## Unreleased
+- bandwith.c modified to include NULL pointers when architecture is not detected. It is pending to migrate it to a plugin
 - energy_nm updated to be the same installed in lennox
 - metrics folder modified by topics, msr common for rapl and temperature included in msr
 - Added '--disable-avx512' flag to configure to use AVX2 symbols instead of AVX512. It is required when working with Haswell/Broadwell systems or older. Also added '--with-fortran' flag to configure to add Fortran symbols to the EAR library. It is required when working with some MPI distributions such as OpenMPI. Finally, configure accepts PostgreSQL flags.
