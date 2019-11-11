@@ -109,7 +109,7 @@
     for(k = 0; k < k_len; k++)
 
 static int n_buses;
-static int n_functions;
+static int n_functions=0;
 static int *fd_functions;
 static int _cpu_model;
 
@@ -345,6 +345,7 @@ int pci_count_uncores()
 int pci_reset_uncores()
 {
 	int n_cmd, n_ctl;
+	if (n_functions<=0) return 0;
 	int *cmd = get_arch_reset_commands(&n_cmd);
 	char *ctl = get_arch_reset_controls(&n_ctl);
 	return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
@@ -354,6 +355,7 @@ int pci_reset_uncores()
 int pci_start_uncores()
 {
     int n_cmd, n_ctl;
+		if (n_functions<=0) return 0;
     int *cmd = get_arch_start_commands(&n_cmd);
     char *ctl = get_arch_start_controls(&n_ctl);
     return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
@@ -363,6 +365,7 @@ int pci_start_uncores()
 int pci_stop_uncores(ull *values)
 {
     int n_cmd, n_ctl, res;
+		if (n_functions<=0) return 0;
     int *cmd = get_arch_stop_commands(&n_cmd);
     char *ctl = get_arch_stop_controls(&n_ctl);
     res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
@@ -376,6 +379,9 @@ int pci_read_uncores(ull *values)
     int i, j, k, res;
     int n_ctrs;
 
+		if (n_functions<=0){ 
+			return 0;
+		}
     uchar *ctrs = (uchar *) get_arch_read_counters(&n_ctrs);
 
     for(i = k = 0; i < n_functions; i++)

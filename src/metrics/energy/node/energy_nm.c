@@ -38,12 +38,13 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <pthread.h>
 #include <sys/ioctl.h>
 #include <sys/select.h>
-#include <common/states.h>
-#include <common/output/debug.h>
-#include <common/output/verbose.h>
+
+#include <common/states.h> //clean
 #include <common/math_operations.h>
+#include <common/output/verbose.h>
 #include <metrics/energy/node/energy_nm.h>
 #include <metrics/energy/node/energy_node.h>
 
@@ -172,55 +173,54 @@ static struct ipmi_rs *sendcmd(struct ipmi_intf *intf, struct ipmi_rq *req)
 
 state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
 {
-	struct ipmi_rs *rsp;
-	struct ipmi_rq req;
-	uint8_t msg_data[6];
-	int i;
-	int s;
+  struct ipmi_rs * rsp;
+  struct ipmi_rq req;
+  uint8_t msg_data[6];
+	debug("getting nm_arg\n");
+// ipmitool raw 0x2e 0x82 0x66 0x4a 0 0 0 1 --> Command to get the parameter (0x20 in Lenovo) bytes_rq[6]
+// // sudo ./ipmi-raw 0x0 0x2e 0x82 0x66 0x4a 0 0 0 1 
+// // byte number 8 with ipmi-raw command
 
-	//if (pthread_mutex_trylock(&ompi_lock)) {
-	//	return EAR_BUSY;
-	//}
+//// bytes_rq[3]=(uint8_t)0x66;
+//// bytes_rq[4]=(uint8_t)0x4a;
+//// bytes_rq[5]=(uint8_t)0x00;
+//// bytes_rq[6]=(uint8_t)0x00;
+//// bytes_rq[7]=(uint8_t)0x00;
+//// bytes_rq[8]=(uint8_t)0x01;
+//
+  memset(&req, 0, sizeof(req));
+  req.msg.netfn = NM_NETFN;
+  req.msg.cmd = NM_CMD_GET_ARG;
+  msg_data[0]=(uint8_t)0x66;
+  msg_data[1]=(uint8_t)0x4a;
+  msg_data[2]=(uint8_t)0x00;
+  msg_data[3]=(uint8_t)0x00;
+  msg_data[4]=(uint8_t)0x00;
+  msg_data[5]=(uint8_t)0x01;
+  intf->addr=0x0;
+  req.msg.data = msg_data;
+  req.msg.data_len = sizeof(msg_data);
+	debug("sending command\n");
+  rsp = sendcmd(intf, &req);
+  if (rsp == NULL) {
+        out->mode=-1;
+				debug("Error rsp null\n");
+        return EAR_ERROR;
+  };
+  if (rsp->ccode > 0) {
+        out->mode=-1;
+				debug("error code>0\n");
+        return EAR_ERROR;
+        };
 
-	// bytes_rq[3]=(uint8_t)0x66;
-	// bytes_rq[4]=(uint8_t)0x4a;
-	// bytes_rq[5]=(uint8_t)0x00;
-	// bytes_rq[6]=(uint8_t)0x00;
-	// bytes_rq[7]=(uint8_t)0x00;
-	// bytes_rq[8]=(uint8_t)0x01;
-
-	memset(&req, 0, sizeof(req));
-	req.msg.netfn = NM_NETFN;
-	req.msg.cmd = NM_CMD_GET_ARG;
-	msg_data[0] = (uint8_t) 0x66;
-	msg_data[1] = (uint8_t) 0x4a;
-	msg_data[2] = (uint8_t) 0x00;
-	msg_data[3] = (uint8_t) 0x00;
-	msg_data[4] = (uint8_t) 0x00;
-	msg_data[5] = (uint8_t) 0x01;
-	intf->addr = 0x0;
-	req.msg.data = msg_data;
-	req.msg.data_len = sizeof(msg_data);
-	rsp = sendcmd(intf, &req);
-
-	if (rsp == NULL) {
-		out->mode = -1;
-		//pthread_mutex_unlock(&ompi_lock);
-		return EAR_ERROR;
-	}
-	if (rsp->ccode > 0) {
-		out->mode = -1;
-		//pthread_mutex_unlock(&ompi_lock);
-		return EAR_ERROR;
-	}
-
-	out->data_len = rsp->data_len;
-	for (i = 0; i < rsp->data_len; i++) {
-		out->data[i] = rsp->data[i];
-	}
-	//pthread_mutex_unlock(&ompi_lock);
-
-	return EAR_SUCCESS;
+  out->data_len=rsp->data_len;
+  int i;
+  for (i=0;i<rsp->data_len; i++) {
+    out->data[i]=rsp->data[i];
+		debug("cmd arg byte %d is %hu\n",i,out->data[i]);
+  }
+	debug("nm_arg ok\n");
+  return EAR_SUCCESS;
 }
 
 state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
@@ -232,51 +232,49 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
 	int s;
 
 	if (pthread_mutex_trylock(&ompi_lock)) {
-		return EAR_BUSY;
-	}
+    return EAR_BUSY;
+  }
 
-	//// bytes_rq[3]=(uint8_t)0x66;
-	//// bytes_rq[4]=(uint8_t)0x4A;
-	//// bytes_rq[5]=(uint8_t)0x00;
-	//// bytes_rq[6]=bytes_rs[8];
-	//// bytes_rq[7]=(uint8_t)0x01;
-	//// bytes_rq[8]=(uint8_t)0x82;
-	//// bytes_rq[9]=(uint8_t)0x00;
-	//// bytes_rq[10]=(uint8_t)0x08;
+//// bytes_rq[3]=(uint8_t)0x66;
+//// bytes_rq[4]=(uint8_t)0x4A;
+//// bytes_rq[5]=(uint8_t)0x00;
+//// bytes_rq[6]=bytes_rs[8];
+//// bytes_rq[7]=(uint8_t)0x01;
+//// bytes_rq[8]=(uint8_t)0x82;
+//// bytes_rq[9]=(uint8_t)0x00;
+//// bytes_rq[10]=(uint8_t)0x08;
 
-	memset(&req, 0, sizeof(req));
-	req.msg.netfn = NM_NETFN;
-	req.msg.cmd = NM_CMD_ENERGY;
-	msg_data[0] = (uint8_t) 0x66;
-	msg_data[1] = (uint8_t) 0x4A;
-	msg_data[2] = (uint8_t) 0x00;
-	msg_data[3] = cmd_arg;
-	msg_data[4] = (uint8_t) 0x01;
-	msg_data[5] = (uint8_t) 0x82;
-	msg_data[6] = (uint8_t) 0x00;
-	msg_data[7] = (uint8_t) 0x08;
-	intf->addr = 0x0;
-	req.msg.data = msg_data;
-	req.msg.data_len = sizeof(msg_data);
+  memset(&req, 0, sizeof(req));
+  req.msg.netfn = NM_NETFN;
+  req.msg.cmd = NM_CMD_ENERGY;
+  msg_data[0]=(uint8_t)0x66;
+  msg_data[1]=(uint8_t)0x4A;
+  msg_data[2]=(uint8_t)0x00;
+  msg_data[3]=cmd_arg;
+  msg_data[4]=(uint8_t)0x01;
+  msg_data[5]=(uint8_t)0x82;
+  msg_data[6]=(uint8_t)0x00;
+  msg_data[7]=(uint8_t)0x08;
+  intf->addr=0x0;
+  req.msg.data = msg_data;
+  req.msg.data_len = sizeof(msg_data);
 
-	rsp = sendcmd(intf, &req);
-	if (rsp == NULL) {
-		out->mode = -1;
-		pthread_mutex_unlock(&ompi_lock);
-		return EAR_ERROR;
-	}
+  rsp = sendcmd(intf, &req);
+  if (rsp == NULL) {
+        out->mode=-1;
+				pthread_mutex_unlock(&ompi_lock);
+        return EAR_ERROR;
+  };
+  if (rsp->ccode > 0) {
+        out->mode=-1;
+				pthread_mutex_unlock(&ompi_lock);
+        return EAR_ERROR;
+        };
 
-	if (rsp->ccode > 0) {
-		out->mode = -1;
-		pthread_mutex_unlock(&ompi_lock);
-		return EAR_ERROR;
-	}
-
-	out->data_len = rsp->data_len;
-	for (i = 0; i < rsp->data_len; i++) {
-		out->data[i] = rsp->data[i];
-	}
-
+  out->data_len=rsp->data_len;
+  for (i=0;i<rsp->data_len; i++) {
+  	out->data[i]=rsp->data[i];
+  }
 	pthread_mutex_unlock(&ompi_lock);
 	return EAR_SUCCESS;
 }
@@ -284,7 +282,7 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
 /*
  * MAIN FUNCTIONS
  */
-#define CMD_ARG_BYTE    6
+#define CMD_ARG_BYTE	6
 
 state_t energy_init(void **c)
 {
@@ -302,19 +300,21 @@ state_t energy_init(void **c)
 	}
 
 	pthread_mutex_lock(&ompi_lock);
-	ret = opendev((struct ipmi_intf *) *c);
-	if (ret < 0) {
+	debug("trying opendev\n");
+	ret= opendev((struct ipmi_intf *)*c);
+	if (ret<0){ 
+		debug("opendev fails\n");
 		pthread_mutex_unlock(&ompi_lock);
 		return EAR_ERROR;
 	}
-
-	st = nm_arg((struct ipmi_intf *) *c, &out);
-	if (st != EAR_SUCCESS) {
+	st=nm_arg((struct ipmi_intf *)*c,&out);
+	if (st!=EAR_SUCCESS){ 
+		debug("nm fails\n");
 		pthread_mutex_unlock(&ompi_lock);
 		return st;
 	}
-
-	cmd_arg = out.data[CMD_ARG_BYTE];
+	cmd_arg=out.data[CMD_ARG_BYTE];
+	debug("cmd arg is %hu\n",cmd_arg);
 	pthread_mutex_unlock(&ompi_lock);
 
 	return EAR_SUCCESS;
@@ -328,9 +328,10 @@ state_t energy_dispose(void **c) {
 	pthread_mutex_unlock(&ompi_lock);
 	return EAR_SUCCESS;
 }
-
-state_t energy_datasize(size_t *size) {
-	*size = sizeof(unsigned long);
+state_t energy_datasize(size_t *size)
+{
+	debug("energy_datasize %lu\n",sizeof(unsigned long));
+	*size=sizeof(unsigned long);
 	return EAR_SUCCESS;
 }
 
@@ -345,15 +346,17 @@ state_t energy_dc_read(void *c, edata_t energy_mj) {
 	uint8_t *bytes_rs;
 	int FIRST_BYTE_EMJ;
 	state_t st;
-	ulong *penergy_mj = (ulong *) energy_mj;
+	ulong *penergy_mj=(ulong *)energy_mj;
+	
+	debug("energy_dc_read\n");
 
-	*penergy_mj = 0;
-	st = nm_ene((struct ipmi_intf *) c, &out);
-	if (st != EAR_SUCCESS) return st;
-	FIRST_BYTE_EMJ = out.data_len - 8;
-	bytes_rs = out.data;
-	energyp = (unsigned long *) &bytes_rs[FIRST_BYTE_EMJ];
-	*penergy_mj = (unsigned long) be64toh(*energyp);
+	*penergy_mj=0;
+	st=nm_ene((struct ipmi_intf *)c,&out);
+	if (st!=EAR_SUCCESS) return st;
+	FIRST_BYTE_EMJ=out.data_len-8;
+	bytes_rs=out.data;
+	energyp=(unsigned long *)&bytes_rs[FIRST_BYTE_EMJ];
+	*penergy_mj=(unsigned long)be64toh(*energyp);
 	return EAR_SUCCESS;
 }
 
@@ -385,16 +388,16 @@ state_t energy_ac_read(void *c, edata_t energy_mj) {
 	return EAR_SUCCESS;
 }
 
-unsigned long diff_node_energy(ulong init, ulong end) {
-	ulong ret = 0;
-	if (end > init) {
-		ret = end - init;
-	} else {
-		ret = ulong_diff_overflow(init, end);
-	}
-	return ret;
+unsigned long diff_node_energy(ulong init,ulong end)
+{
+  ulong ret=0;
+  if (end>=init){
+    ret=end-init;
+  } else{
+    ret=ulong_diff_overflow(init,end);
+  }
+  return ret;
 }
-
 state_t energy_units(uint *units) {
 	*units = 1000;
 	return EAR_SUCCESS;

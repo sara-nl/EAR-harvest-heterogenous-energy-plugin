@@ -42,6 +42,7 @@
 #include <common/output/verbose.h>
 #include <library/tracer/tracer.h>
 #include <common/system/symplug.h>
+#include <common/types/signature.h>
 
 #ifdef EAR_GUI
 
@@ -51,7 +52,7 @@ typedef struct traces_symbols {
   void (*traces_start)();
   void (*traces_stop)();
   void (*traces_frequency)(int global_rank, int local_rank, unsigned long f);
-  void (*traces_new_signature)(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power,double vpi);
+  void (*traces_new_signature)(int global_rank, int local_rank, signature_t *sig);
   void (*traces_PP)(int global_rank, int local_rank, double seconds, double power); 
   void (*traces_new_n_iter)(int global_rank, int local_rank, ullong period_id, int loop_size, int iterations);
   void (*traces_new_period)(int global_rank, int local_rank, ullong period_id);
@@ -182,12 +183,11 @@ void traces_end_period(int global_rank, int local_rank)
 }
 
 // ear_states.c
-void traces_new_signature(int global_rank, int local_rank, double seconds,
-	double cpi, double tpi, double gbs, double power, double vpi)
+void traces_new_signature(int global_rank, int local_rank, signature_t *sig)
 {
 	debug("traces_new_signature");
 	if (trace_plugin && trace_syms_fun.traces_new_signature!=NULL){
-		trace_syms_fun.traces_new_signature(global_rank,local_rank,seconds,cpi,tpi,gbs,power,vpi);
+		trace_syms_fun.traces_new_signature(global_rank,local_rank,sig);
 	}
 	return;
 }

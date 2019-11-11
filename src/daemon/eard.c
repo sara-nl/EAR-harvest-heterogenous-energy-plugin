@@ -1145,7 +1145,7 @@ int main(int argc, char *argv[]) {
 
 				init_eard_rt_log();
 				log_report_eard_min_interval(MIN_INTERVAL_RT_ERROR);
-
+				verbose(0,"Reading hardware topology");
         /* We initialize topology */
         s = hardware_gettopology(&node_desc);
         node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
@@ -1153,6 +1153,7 @@ int main(int argc, char *argv[]) {
                 error("topology information can't be initialized (%d)", s);
                 _exit(1);
         }
+			verbose(0,"Initializing frequency list");
 
         /* We initialize frecuency */
         if (frequency_init(node_size) < 0) {
@@ -1162,7 +1163,7 @@ int main(int argc, char *argv[]) {
 
 
 
-
+			verbose(0,"Reading ear.conf configuration");
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path) == EAR_ERROR) {
 		error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
@@ -1189,24 +1190,28 @@ int main(int argc, char *argv[]) {
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
 	}
+	verbose(0,"Initializing dynamic information and creating tmp");
 	/* This info is used for eard checkpointing */
 	eard_dyn_conf.cconf = &my_cluster_conf;
 	eard_dyn_conf.nconf = my_node_conf;
 	eard_dyn_conf.pm_app = get_powermon_app();
 	set_global_eard_variables();
+	verbose(0,"Creating tmp dir");
 	create_tmp(ear_tmp);
 	if (my_cluster_conf.eard.use_log) {
+		verbose(0,"Creating log file");
 		fd_my_log = create_log(my_cluster_conf.install.dir_temp, "eard");
 		if (fd_my_log < 0) fd_my_log = 2;
 	}
 	set_verbose_variables();
 
+	verbose(0,"Creating frequency list in shared memory");
 	/** Shared memory is used between EARD and EARL **/
 	init_frequency_list();
 
 	/**** SHARED MEMORY REGIONS ****/
 	/* This area is for shared info */
-	verbose(VCONF, "creating shared memory regions");
+	verbose(0, "creating shared memory regions");
 	get_settings_conf_path(my_cluster_conf.install.dir_temp, dyn_conf_path);
 	verbose(VCONF + 1, "Using %s as settings path (shared memory region)", dyn_conf_path);
 	dyn_conf = create_settings_conf_shared_area(dyn_conf_path);
@@ -1222,8 +1227,9 @@ int main(int argc, char *argv[]) {
 		error("Error creating shared memory between EARD & EARL\n");
 		_exit(0);
 	}
-	verbose(VCONF, "Basic shared memory regions created\n");
+	verbose(0, "Basic shared memory regions created\n");
 	/* Coefficients */
+	verbose(0,"Loading coefficients");
 	coeffs_size = read_coefficients();
 	verbose(VCONF, "Coefficients loaded");
 	get_coeffs_path(my_cluster_conf.install.dir_temp, coeffs_path);
@@ -1234,8 +1240,10 @@ int main(int argc, char *argv[]) {
 		_exit(0);
 	}
 	/* Default coefficients */
+	verbose(0,"Loading default coefficients");
 	coeffs_default_size = read_coefficients_default();
 	verbose(VCONF, "Coefficients by default loaded");
+	if ((coeffs_size==0) && (coeffs_default_size==0)) verbose(0,"No coefficients found, power policies will not be applied");
 	get_coeffs_default_path(my_cluster_conf.install.dir_temp, coeffs_default_path);
 	verbose(VCONF + 1, "Using %s as coeff by default path (shared memory region)", coeffs_default_path);
 	coeffs_default_conf = create_coeffs_default_shared_area(coeffs_default_path, my_coefficients_default,
@@ -1254,6 +1262,7 @@ int main(int argc, char *argv[]) {
 		_exit(0);
 	}
 	/**** END CREATION SHARED MEMORY REGIONS ****/
+	verbose(0,"Shared memory regions created");
 
 	/** We must control if we come from a crash **/
 	int must_recover = new_service("eard");
@@ -1278,7 +1287,7 @@ int main(int argc, char *argv[]) {
 	}
 	set_ear_verbose(verb_level);
 	VERB_SET_LV(verb_level);
-
+	verbose(0,"Catching signals");
 	// We catch signals
 	signal_catcher();
 
@@ -1307,23 +1316,29 @@ int main(int argc, char *argv[]) {
 
 	// PAST: we had here a frequency set
 
+	verbose(0,"Initializing uncore counters to compute memory bandwith");
 	// We initiaize uncore counters
 	cpu_model = get_model();
+	verbose(0,"CPU Model detected %d",cpu_model);
 	num_uncore_counters = init_uncores(cpu_model);
 	verbose(VCONF + 1, "eard %d imc uncore counters detected\n", num_uncore_counters);
-	if (num_uncore_counters == 0){
+	if (num_uncore_counters <= 0){
 		error("Uncore counters to compute memory bandwith not detected");
 		error_uncore=1;
+		num_uncore_counters=0;
 	}
+	verbose(0,"%d uncore counters detected ",num_uncore_counters);
 	reset_uncores();
 	/* Start uncore to have counters ready for reading */
 	start_uncores();
 
+	verbose(0,"Initializing RAPL counters");
 	// We initialize rapl counters
 	if (init_rapl_msr(fd_rapl)<0){ 
 		error("Error initializing rapl");
 		error_rapl=1;
 	}
+	verbose(0,"Initialzing energy plugin");
 	// We initilize energy_node
 	debug("Initializing energy in main EARD thread");
 	if (state_fail(energy_init(&my_cluster_conf, &handler_energy))) {
@@ -1337,9 +1352,9 @@ int main(int argc, char *argv[]) {
 	// Energy accuracy
   energy_frequency(&handler_energy, &energy_freq);
 
-	verbose(VCONF, "energy: detected product '%s'", handler_energy.product);
-	verbose(VCONF, "energy: detected manufacturer '%s'", handler_energy.manufacturer);
 	verbose(VCONF, "energy: power performance accuracy %lu usec", energy_freq);
+
+	verbose(0,"Creating pipe for EARL");
 
 	// HW initialized HERE...creating communication channels
 	verbose(VCONF + 1, "Creating comm in %s for node %s\n", ear_tmp, nodename);
@@ -1361,6 +1376,7 @@ int main(int argc, char *argv[]) {
 		numfds_req = max_fd + 1;
 	}
 	rfds_basic = rfds;
+	verbose(0,"Connecting with EARDBD");
 	// Database cache daemon
 #if DB_MYSQL
 	if (my_cluster_conf.eard.use_mysql)
@@ -1393,7 +1409,8 @@ int main(int argc, char *argv[]) {
 #endif
 
 	report_eard_init_error();
-
+	verbose(0,"Creating EARD threads");
+	verbose(0,"Creating power  monitor thread");
 #if POWERMON_THREAD
 	if ((ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL))){
 		errno=ret;
@@ -1401,13 +1418,14 @@ int main(int argc, char *argv[]) {
 		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,PM_CREATION_ERROR,ret);
 	}
 #endif
-
+	verbose(0,"Creating the remote connections server");
 #if EXTERNAL_COMMANDS_THREAD
 	if ((ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp))){
 		error("error creating dynamic_configuration thread \n");
 		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,DYN_CREATION_ERROR,ret);
 	}
 #endif
+	verbose(0,"Creating APP-API thread");
 #if APP_API_THREAD
 	if ((ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL))){
 		error("error creating server thread for non-earl api\n");
@@ -1428,6 +1446,7 @@ int main(int argc, char *argv[]) {
 	*	MAIN LOOP 
 	*
 	*/
+	verbose(0,"EARD initialized succesfully");
 	while (((numfds_ready = select(numfds_req, &rfds, NULL, NULL, my_to)) >= 0) ||
 		   ((numfds_ready < 0) && (errno == EINTR)))
 	{

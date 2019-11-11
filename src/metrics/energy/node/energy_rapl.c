@@ -38,8 +38,16 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <common/states.h>
-#include <common/math_operations.h>
 #include <metrics/energy/node/energy_node.h>
+#include <metrics/energy/energy_cpu.h>
+#include <common/math_operations.h>
+
+#define SHOW_DEBUGS 1
+#ifdef SHOW_DEBUGS
+#define debug(...) fprintf(stderr, __VA_ARGS__); 
+#else
+#define debug(...) 
+#endif
 
 static pthread_mutex_t rapl_lock = PTHREAD_MUTEX_INITIALIZER;
 

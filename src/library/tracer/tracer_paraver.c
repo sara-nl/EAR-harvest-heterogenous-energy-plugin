@@ -39,7 +39,9 @@
 #include <papi.h>
 #include <common/sizes.h>
 #include <common/config.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
+#include <common/types/signature.h>
 #include <library/metrics/metrics.h>
 #include <library/tracer/tracer_paraver.h>
 
@@ -77,6 +79,8 @@ static int file_pcf;
 static int file_row;
 static int enabled;
 static int working;
+
+static int trace_fin=0;
 
 
 static int my_trace_rank=0;
@@ -193,6 +197,8 @@ static void config_file_create(char *pathname, char* hostname)
 	write(file_pcf, buffer1, strlen(buffer1));
 	sprintf(buffer1, "EVENT_TYPE\n0\t60018\tRECONFIGURATION\n\n");
 	write(file_pcf, buffer1, strlen(buffer1));
+	sprintf(buffer1, "EVENT_TYPE\n0\t60019\tAVG_FREQ\n\n");
+	write(file_pcf, buffer1, strlen(buffer1));
 
 	close(file_pcf);
 }
@@ -276,13 +282,19 @@ static void trace_file_write_in_file()
 {
   int i;
   int events,pendings=num_events,ready=0;
+	if (trace_fin) debug("End trace pendings %d",pendings);
   while(pendings>0){
     if (pendings<EVENTS_IN_BUFFER) events=pendings;
     else events=EVENTS_IN_BUFFER;
     sprintf(buffer2,"");
+		if (trace_fin) debug("End trace events %d max %d limit %d",events,ready+events-1,PARAVER_EVENTS);
     for (i=0;i<events;i++){
       sprintf(buffer1,"2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank,
       events_list[ready+i].t,events_list[ready+i].event,events_list[ready+i].value);
+			if ((strlen(buffer1)+strlen(buffer2))>SZ_BUFF_BIG){
+				write(file_prv, buffer2, strlen(buffer2));
+				buffer2[0]='\0';
+			}	
       strcat(buffer2,buffer1);
     }
     write(file_prv, buffer2, strlen(buffer2));
@@ -290,6 +302,7 @@ static void trace_file_write_in_file()
     pendings-=events;
   }
   num_events=0;
+	if (trace_fin) debug("trace_file_write_in_file end");
 }
 
 static void trace_file_write(int event, ullong value)
@@ -376,12 +389,13 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 
 	//
 	config_file_create(pathname, hostname);
-	if (my_trace_rank==1) row_file_create(pathname, hostname);
+	if (my_trace_rank>=1) row_file_create(pathname, hostname);
 }
 
 // ear_api.c
 void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
+	trace_fin=1;
 	//
 	time_end = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
 
@@ -404,7 +418,6 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 	close(file_prv);
 
 
-	if (my_trace_rank>1) row_file_create(pathname, hostname);
 
 	//
 	enabled = 0;
@@ -443,9 +456,9 @@ void traces_end_period(int global_rank, int local_rank)
 }
 
 // ear_states.c
-void traces_new_signature(int global_rank, int local_rank, double seconds,
-	double cpi, double tpi, double gbs, double power, double vpi)
+void traces_new_signature(int global_rank, int local_rank, signature_t *sig)
 {
+	double seconds,cpi,gbs,power,vpi,tpi;
 	ullong lsec;
 	ullong lcpi;
 	ullong ltpi;
@@ -456,6 +469,12 @@ void traces_new_signature(int global_rank, int local_rank, double seconds,
 	if (!enabled || !working) {
 		return;
 	}
+  seconds=sig->time;
+  cpi=sig->CPI;
+  tpi=sig->TPI;
+  gbs=sig->GBS;
+  power=sig->DC_power;
+  vpi=(double)(sig->FLOPS[3]/16+sig->FLOPS[7]/8)/(double)sig->instructions;
 
     lsec = (ullong) (seconds * 1000000.0);
     lcpi = (ullong) (cpi * 1000.0);

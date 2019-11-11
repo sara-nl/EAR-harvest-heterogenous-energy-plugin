@@ -151,5 +151,5 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	#
 	# Other calls
 	#
-	X_AC_GET_LD_LIBRARY_PATHS([])
+	#X_AC_GET_LD_LIBRARY_PATHS([])
 ])

@@ -81,6 +81,7 @@ int init_node_metrics(nm_t *id,uint sockets, uint cpus_per_socket,uint cores_mod
 	id->def_f=def_freq;
 	if (frequency_uncore_init(sockets,cpus_per_socket,cores_model)!=EAR_SUCCESS) return EAR_ERROR;
 	aperf_periodic_avg_frequency_init_all_cpus();
+	init_temp_msr(nm_temp_fd);
 	id->con=NM_CONNECTED;
 	return EAR_SUCCESS;
 }
@@ -101,7 +102,6 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
         debug("init_node_metrics_data not enough memory\n");
         return EAR_ERROR;
     }
-	init_temp_msr(nm_temp_fd);
 	return EAR_SUCCESS;
 }
 

@@ -33,6 +33,7 @@
 
 #include <common/config.h>
 #include <common/types/generic.h>
+#include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 
 
@@ -48,7 +49,7 @@
 
 	/**@{ Executed when application signature is computed at EVALUATING_SIGNATURE and SIGANTURE_STABLE states */
 	void traces_frequency(int global_rank, int local_rank, unsigned long f);
-	void traces_new_signature(int global_rank, int local_rank, double seconds, double cpi, double tpi, double gbs, double power,double vpi);
+	void traces_new_signature(int global_rank, int local_rank, signature_t *sig);
 	void traces_PP(int global_rank, int local_rank, double seconds, double power); /**@}*/ 
 
 	/**@{ Executed when each time a new loop is detected, the loop ends, or a new iteration are reported */
@@ -75,7 +76,7 @@
 	#define traces_init(s,a,g,l,n,m,p)
 	#define traces_new_n_iter(g,l,p,lo,i)
 	#define traces_end(g,l,e)
-	#define traces_new_signature(g,l,s,c,t,gb,p,vpi)
+	#define traces_new_signature(g,l,s)
 	#define traces_frequency(g,l,f)
 	#define traces_PP(g,l,s,p)
 	#define traces_new_period(g,l,p)

@@ -293,10 +293,12 @@ void ear_init()
 	state_t st;
 	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
 
+
+
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
-	
+
 
 	// Environment initialization
 	ear_lib_environment();
@@ -320,6 +322,7 @@ void ear_init()
 	get_job_identification();
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
+
 
 	attach_to_master_set(my_id==0);
 
