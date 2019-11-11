@@ -25,7 +25,6 @@ Release:  %{release}
 Source:   %{name}‑%{version}.tar.gz
 Buildroot:  %{_topdir}/BUILDROOT
 Prefix:   /usr
-Requires: libmysqlclient18
 
 # Brief description of the project
 %description

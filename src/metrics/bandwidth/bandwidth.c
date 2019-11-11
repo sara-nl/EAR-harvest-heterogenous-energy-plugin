@@ -52,8 +52,6 @@
 #include <common/hardware/hardware_info.h>
 #include <metrics/bandwidth/cpu/intel_haswell.h>
 
-#define FUNCVERB(function)                               \
-    debug( "uncore: " function "\n");
 
 struct uncore_op
 {
@@ -67,11 +65,15 @@ struct uncore_op
     int (*dispose) ();
 } pmons;
 
+#define DEF_UNC_SIZE 1
+
+
+
 // Depending on the architecture delivered by cpu_model variable,
 // the pmons structure would point to its proper reading functions.
 int init_uncores(int cpu_model)
 {
-    FUNCVERB("init_uncores");
+    debug("init_uncores");
 
     switch (cpu_model) {
         case CPU_HASWELL_X:
@@ -87,49 +89,71 @@ int init_uncores(int cpu_model)
             pmons.dispose = pci_dispose_uncores;
             return pmons.init(cpu_model);
         default:
-            return -1;
+            pmons.init = NULL;
+            pmons.count = NULL;
+            pmons.check = NULL;
+            pmons.reset =NULL;
+            pmons.start = NULL;
+            pmons.stop = NULL;
+            pmons.read = NULL;
+            pmons.dispose = NULL;
+            return DEF_UNC_SIZE;
     }
 }
 
 int count_uncores()
 {
-    FUNCVERB("count_uncores");
-    return pmons.count();
+    debug("count_uncores");
+		if (pmons.count!=NULL) return pmons.count();
+		else return DEF_UNC_SIZE;
 }
 
 int check_uncores()
 {
-    return pmons.check();
+		if (pmons.check!=NULL) return pmons.check();
+		else return EAR_ERROR;
 }
 
 int reset_uncores()
 {
-    FUNCVERB("reset_uncores");
-    return pmons.reset();
+    debug("reset_uncores");
+		if (pmons.reset!=NULL) return pmons.reset();
+		else return EAR_ERROR;
 }
 
 int start_uncores()
 {
-    FUNCVERB("start_uncores");
-    return pmons.start();
+    debug("start_uncores");
+		if (pmons.start!=NULL) return pmons.start();
+		else return EAR_ERROR;
 }
 
 int stop_uncores(unsigned long long *values)
 {
-    FUNCVERB("stop_uncores");
-    return pmons.stop(values);
+    debug("stop_uncores");
+		if (pmons.stop!=NULL) return pmons.stop(values);
+		else {
+			memset(values,0,DEF_UNC_SIZE*sizeof(unsigned long long));
+			return EAR_ERROR;
+		}
 }
 
 int read_uncores(unsigned long long *values)
 {
-    FUNCVERB("read_uncore");
-    return pmons.read(values);
+    debug("read_uncore");
+		if (pmons.read!=NULL) return pmons.read(values);
+		else {
+      memset(values,0,DEF_UNC_SIZE*sizeof(unsigned long long));
+      return EAR_ERROR;
+    }
+
 }
 
 int dispose_uncores()
 {
-    FUNCVERB("dispose_uncores");
-    return pmons.dispose();
+    debug("dispose_uncores");
+   	if (pmons.dispose!=NULL) return pmons.dispose();
+		else return EAR_ERROR;
 }
 
 

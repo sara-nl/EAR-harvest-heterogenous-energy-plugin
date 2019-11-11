@@ -260,7 +260,7 @@ static int metrics_partial_stop(uint where)
 	ulong *ei,*ee;
 	ei=(ulong *)metrics_ipmi[LOO];
 	ee=(ulong *)aux_energy_stop;
-	verbose(0,"loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
+	debug("loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
 	// Manual time accumulation
 	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
@@ -402,7 +402,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	debug("DC power computed in signature %.2lf (%lu energy))",metrics->DC_power,acum_ipmi[s]);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
 	if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
-		verbose(0,"Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
+		debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
 	}
 
 	// Energy RAPL (TODO: ask for the two individual energy types separately)
