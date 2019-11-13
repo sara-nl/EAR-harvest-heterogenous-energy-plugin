@@ -5,11 +5,14 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS)
 ips_check_OBJS = \
         $(SRCDIR)/common/libcommon.a 
 
-BINS = ear_conf ips_check
+BINS = ear_conf ips_check temperature_check
 
 ######## RULES
 
 all: $(BINS)
+
+temperature_check: temperature_check.c $(SRCDIR)/metrics/libmetrics.a $(SRCDIR)/common/libcommon.a 
+	$(CC) $(CFLAGS) -o temperature_check $^
 
 ear_conf: ear_conf.c $(SRCDIR)/common/libcommon.a
 	$(CC) $(CFLAGS) -o ear_conf $^
