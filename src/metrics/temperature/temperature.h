@@ -31,4 +31,6 @@
 #define METRICS_TEMPERATURE_H
 int init_temp_msr(int *fd);
 int read_temp_msr(int *fd,unsigned long long *_values);
+int read_temp_limit_msr(int *fds, unsigned long long *_values);
+int reset_temp_limit_msr(int *fds);
 #endif //METRICS_TEMPERATURE_H

@@ -61,9 +61,40 @@ int read_temp_msr(int *fds,unsigned long long *_values)
 
 	for(j=0;j<NUM_SOCKETS;j++)
 	{
-	/* PKG reading */    
-    if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
-	_values[j] = throttling_temp[j] - ((result>>16)&0xff);
+	    /* PKG reading */    
+        if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+	    _values[j] = throttling_temp[j] - ((result>>16)&0xff);
+
+    }
+	return EAR_SUCCESS;
+}
+
+int read_temp_limit_msr(int *fds, unsigned long long *_values)
+{
+	unsigned long long result;
+	int j;
+
+	for(j=0;j<NUM_SOCKETS;j++)
+	{
+	    /* PKG reading */    
+        if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+	    _values[j] = ((result)&0x2);
+
+    }
+	return EAR_SUCCESS;
+}
+
+int reset_temp_limit_msr(int *fds)
+{
+	unsigned long long result;
+	int j;
+
+	for(j=0;j<NUM_SOCKETS;j++)
+	{
+	    /* PKG reading */    
+        if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+        result &= ~(0x2);
+        if (msr_write(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
 
     }
 	return EAR_SUCCESS;

@@ -115,6 +115,7 @@ src/tests/functionals/ping
 src/tests/functionals/read_from_file
 src/tests/functionals/signaures_avg
 src/tests/functionals/ips_check
+src/tests/functionals/temperature_check
 src/tools/coefficients_comparison
 src/tools/coeffs_compare
 src/tools/coeffs_comparison
@@ -134,5 +135,6 @@ src/tools/learn_validator
 src/tools/learning_delete
 src/tools/learning_show
 src/tools/learning_validate
+src/tools/ear_events
 src/tools/show_coefficients
 src/tools/translate_coefficients
