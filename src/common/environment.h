@@ -101,6 +101,8 @@ int getenv_ear_local_id();
 *   it. If it's not set, it tries to see if SLURM_STEP_NUM_NODES is set and returns it.
 *   Otherwise returns 1. */
 int getenv_ear_num_nodes();
+/** Sets the number of nodes explicitly */
+void set_ear_num_nodes(int num_nodes);
 /** Reads the number of dynais levels in the DYNAIS_LEVELS environment variable and
 *   returns it. If it's not set, defaults to 4 and returns. */
 int getenv_ear_dynais_levels();
