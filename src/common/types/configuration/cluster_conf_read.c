@@ -1096,7 +1096,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		error("ERROR opening file: %s\n", conf_path);
 		return EAR_ERROR;
 	}
-	memset(&my_conf, 0, sizeof(cluster_conf_t));
+	memset(my_conf, 0, sizeof(cluster_conf_t));
 	set_ear_conf_default(my_conf);
 	get_cluster_config(conf_file, my_conf);
     if ((my_conf->num_policies < 1) || (my_conf->num_islands < 1) || (my_conf->default_policy >TOTAL_POLICIES ))
