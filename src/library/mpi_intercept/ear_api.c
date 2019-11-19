@@ -161,14 +161,21 @@ void notify_eard_connection(int status)
 	if (my_master_rank==0) {
 		debug("Total number of masters connected %d",masters_connected);
 	}
-	if (masters_connected!=num_nodes){
-	/* Some of the nodes is not ok , setting off EARL */
-		if (my_master_rank==0) {
-			warning("Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
-		}
-		my_id=1;
-		return;
+  if (masters_connected!=my_master_size){
+  /* Some of the nodes is not ok , setting off EARL */
+    if (my_master_rank==0) {
+      verbose(1,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",my_master_size,masters_connected);
+    }
+    my_id=1;
+    return;
+  }else{
+    if (masters_connected!=num_nodes){
+      num_nodes=masters_connected;
+      set_ear_num_nodes(num_nodes);
+      ppnode = my_size / num_nodes;
+    }
 	}
+	return;
 	}
 	#endif
 }
