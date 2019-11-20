@@ -167,4 +167,5 @@ AC_CONFIG_FILES([Makefile
                  etc/conf/ear.conf])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_CONFIG_FILES([etc/rpms/rpmbuild.sh], [chmod +x etc/rpms/rpmbuild.sh])
+AC_CONFIG_FILES([etc/rpm_realloc_configure/rpmbuild.sh], [chmod +x etc/rpm_realloc_configure/rpmbuild.sh])
 AC_OUTPUT

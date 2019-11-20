@@ -48,7 +48,7 @@ int main(int argc,char *argv[])
         read_temp_limit_msr(fd_map, values);
         for (i = 0; i < NUM_SOCKETS; i++)
         {
-            printf("socket %d\t limit_reached: %d\n", i, values[i]);
+            printf("socket %d\t limit_reached: %llu\n", i, values[i]);
         }
         sleep(3);
     }

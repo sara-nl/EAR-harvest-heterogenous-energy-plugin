@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include <common/config.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/node_metrics.h>
@@ -72,14 +73,17 @@ ulong get_nm_cpufreq(nm_t *id,nm_data_t *nm)
 int init_node_metrics(nm_t *id,uint sockets, uint cpus_per_socket,uint cores_model,ulong def_freq)
 {
 	if ((id==NULL)	|| (sockets<=0) || (cpus_per_socket <=0) || (def_freq<=0)){
-		debug("init_node_metrics invalid argument\n");
+		debug("init_node_metrics invalid argument id null=%d sockets=%u cpus_per_socket %u def_freq %lu\n",(id==NULL),sockets,cpus_per_socket,def_freq);
 		return EAR_ERROR;
 	}
 	id->con=-1;
 	id->ncpus=cpus_per_socket;
 	id->nsockets=sockets;
 	id->def_f=def_freq;
-	if (frequency_uncore_init(sockets,cpus_per_socket,cores_model)!=EAR_SUCCESS) return EAR_ERROR;
+	if (frequency_uncore_init(sockets,cpus_per_socket,cores_model)!=EAR_SUCCESS){ 
+		debug("Error when initializing frequency_uncore_init");
+		return EAR_ERROR;
+	}
 	aperf_periodic_avg_frequency_init_all_cpus();
 	init_temp_msr(nm_temp_fd);
 	id->con=NM_CONNECTED;

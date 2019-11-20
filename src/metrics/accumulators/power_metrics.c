@@ -50,7 +50,8 @@ static size_t node_size;
 
 static uint8_t rootp=0;
 static uint8_t pm_already_connected=0;
-static uint8_t pm_connected_status=0;
+static uint8_t pm_connected_status_node=0,status_mode=1,status_rapl=1;
+static uint8_t pm_connected_status_rapl=0;
 static char my_buffer[1024];
 
 int pm_get_data_size_rapl()
@@ -102,18 +103,18 @@ int pm_node_ac_energy(ehandler_t *my_eh, node_data_t *ac)
 
 int pm_connect(ehandler_t *my_eh)
 {
-	if (pm_already_connected) return pm_connected_status;
+	if (pm_already_connected) return pm_connected_status_node+pm_connected_status_rapl;
 	if (getuid()==0)	rootp=1;
 	if (rootp){
 		debug("Initializing energy in main power_monitor  thread");
-		pm_connected_status=energy_init(NULL, my_eh);
-		if (pm_connected_status==EAR_SUCCESS){ 
+		pm_connected_status_node=energy_init(NULL, my_eh);
+		if (pm_connected_status_node==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);
-			pm_connected_status=init_rapl_msr(my_eh->fds_rapl);
 		}
+		pm_connected_status_rapl=init_rapl_msr(my_eh->fds_rapl);
 		pm_already_connected=1;
-		return pm_connected_status;
+		return pm_connected_status_node+pm_connected_status_rapl;
 	}else{
 		return EAR_ERROR;
 	}	
@@ -194,22 +195,25 @@ int init_power_ponitoring(ehandler_t *my_eh)
 	int ret;
 	unsigned long rapl_size;
 	if (power_mon_connected) return POWER_MON_OK;
-	ret=pm_connect(my_eh);
-	if (ret!=EAR_SUCCESS){
+	pm_connect(my_eh);
+	if (pm_connected_status_rapl==EAR_SUCCESS){
+		rapl_size=pm_get_data_size_rapl();
+		if (rapl_size!=sizeof(rapl_data_t)*NUM_SOCKETS*2){
+			pm_disconnect(my_eh);
+			return POWER_MON_ERROR;
+		}
+		RAPL_metrics=(rapl_data_t *)malloc(rapl_size);
+		if (RAPL_metrics==NULL){
+			pm_disconnect(my_eh);
+			return POWER_MON_ERROR;
+		}
+		memset((char *)RAPL_metrics,0,rapl_size);
+	}
+	if ((pm_connected_status_rapl==EAR_SUCCESS) && (pm_connected_status_node==EAR_SUCCESS)) power_mon_connected=1;
+	else{
+		power_mon_connected=0;
 		return POWER_MON_ERROR;
 	}
-	rapl_size=pm_get_data_size_rapl();
-	if (rapl_size!=sizeof(rapl_data_t)*NUM_SOCKETS*2){
-		pm_disconnect(my_eh);
-		return POWER_MON_ERROR;
-	}
-	RAPL_metrics=(rapl_data_t *)malloc(rapl_size);
-	if (RAPL_metrics==NULL){
-		pm_disconnect(my_eh);
-		return POWER_MON_ERROR;
-	}
-	memset((char *)RAPL_metrics,0,rapl_size);
-	power_mon_connected=1;
 	return POWER_MON_OK;
 }
 void end_power_monitoring(ehandler_t *my_eh)
@@ -235,6 +239,7 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 	if (power_mon_connected){
 		if (acc_energy==NULL) return POWER_MON_ERROR;
 		// Contacting the eards api
+
 		pm_read_rapl(my_eh,RAPL_metrics);
 		pm_node_dc_energy(my_eh,acc_energy->DC_node_energy);
 		acc_energy->AC_node_energy=ac;

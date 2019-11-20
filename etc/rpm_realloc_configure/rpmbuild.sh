@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export EAR_INSTALL_PATH="/home/xjcorbalan/ear_sc"
+export EAR_INSTALL_PATH="/home/xjcorbalan/ear_sc19"
 export EAR_SOURCE_PATH="/home/xjcorbalan/git/ear_private"
 
 #
