@@ -36,22 +36,20 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <common/config.h>
+#include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/states.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/accumulators/power_metrics.h>
-
 uint8_t power_mon_connected=0; 
 rapl_data_t *RAPL_metrics;
 static uint node_units;
 static size_t node_size;
 
-#define VERBOSE(msg) printf(msg)
 
 static uint8_t rootp=0;
 static uint8_t pm_already_connected=0;
-static uint8_t pm_connected_status_node=0,status_node=1,status_rapl=1;
-static uint8_t pm_connected_status_rapl=0;
+static uint8_t pm_connected_status=0;
 static char my_buffer[1024];
 
 int pm_get_data_size_rapl()
@@ -103,25 +101,23 @@ int pm_node_ac_energy(ehandler_t *my_eh, node_data_t *ac)
 
 int pm_connect(ehandler_t *my_eh)
 {
-	if (pm_already_connected) return pm_connected_status_node+pm_connected_status_rapl;
+	if (pm_already_connected) return pm_connected_status;
 	if (getuid()==0)	rootp=1;
 	if (rootp){
 		debug("Initializing energy in main power_monitor  thread");
-		pm_connected_status_node=energy_init(NULL, my_eh);
-		if (pm_connected_status_node==EAR_SUCCESS){ 
+		pm_connected_status=energy_init(NULL, my_eh);
+		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);
-		}else{ 
-			error("Initializing node energy readings in power metrics");
-			status_node=0;
-		}
-		pm_connected_status_rapl=init_rapl_msr(my_eh->fds_rapl);
-		if (pm_connected_status_rapl!=EAR_SUCCESS){ 
-			status_rapl=0;
-			error("Initializing RAPL energy readings in power metrics");
+			pm_connected_status=init_rapl_msr(my_eh->fds_rapl);
+			if (pm_connected_status!=EAR_SUCCESS){
+				error("Error initializing RAPl in pm_connect");
+			}
+		}else{
+			error("Initializing energy node plugin");
 		}
 		pm_already_connected=1;
-		return pm_connected_status_node+pm_connected_status_rapl;
+		return pm_connected_status;
 	}else{
 		return EAR_ERROR;
 	}	
@@ -202,25 +198,23 @@ int init_power_ponitoring(ehandler_t *my_eh)
 	int ret;
 	unsigned long rapl_size;
 	if (power_mon_connected) return POWER_MON_OK;
-	pm_connect(my_eh);
-	if (pm_connected_status_rapl==EAR_SUCCESS){
-		rapl_size=pm_get_data_size_rapl();
-		if (rapl_size!=sizeof(rapl_data_t)*NUM_SOCKETS*2){
-			pm_disconnect(my_eh);
-			return POWER_MON_ERROR;
-		}
-		RAPL_metrics=(rapl_data_t *)malloc(rapl_size);
-		if (RAPL_metrics==NULL){
-			pm_disconnect(my_eh);
-			return POWER_MON_ERROR;
-		}
-		memset((char *)RAPL_metrics,0,rapl_size);
-	}
-	if ((pm_connected_status_rapl==EAR_SUCCESS) || (pm_connected_status_node==EAR_SUCCESS)) power_mon_connected=1;
-	else{
-		power_mon_connected=0;
+	ret=pm_connect(my_eh);
+	if (ret!=EAR_SUCCESS){
+		error("Error in init_power_ponitoring");
 		return POWER_MON_ERROR;
 	}
+	rapl_size=pm_get_data_size_rapl();
+	if (rapl_size!=sizeof(rapl_data_t)*NUM_SOCKETS*2){
+		pm_disconnect(my_eh);
+		return POWER_MON_ERROR;
+	}
+	RAPL_metrics=(rapl_data_t *)malloc(rapl_size);
+	if (RAPL_metrics==NULL){
+		pm_disconnect(my_eh);
+		return POWER_MON_ERROR;
+	}
+	memset((char *)RAPL_metrics,0,rapl_size);
+	power_mon_connected=1;
 	return POWER_MON_OK;
 }
 void end_power_monitoring(ehandler_t *my_eh)
@@ -243,23 +237,16 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 	node_data_t ac=0;
 	
 	time(&acc_energy->sample_time);
-	acc_energy->DC_node_energy=acc_energy->AC_node_energy=0;
-	acc_energy->DRAM_energy[0]=acc_energy->DRAM_energy[1]=acc_energy->CPU_energy[0]=acc_energy->CPU_energy[1]=0;
 	if (power_mon_connected){
 		if (acc_energy==NULL) return POWER_MON_ERROR;
 		// Contacting the eards api
-
-		if (status_node){ 
-			pm_node_dc_energy(my_eh,acc_energy->DC_node_energy);
-			acc_energy->AC_node_energy=ac;
-		}
-		if (status_rapl){
-			pm_read_rapl(my_eh,RAPL_metrics);
-			acc_energy->DRAM_energy[0]=RAPL_metrics[0];
-			acc_energy->DRAM_energy[1]=RAPL_metrics[1];
-			acc_energy->CPU_energy[0]=RAPL_metrics[2];
-			acc_energy->CPU_energy[1]=RAPL_metrics[3];
-		}
+		pm_read_rapl(my_eh,RAPL_metrics);
+		pm_node_dc_energy(my_eh,acc_energy->DC_node_energy);
+		acc_energy->AC_node_energy=ac;
+		acc_energy->DRAM_energy[0]=RAPL_metrics[0];
+		acc_energy->DRAM_energy[1]=RAPL_metrics[1];
+		acc_energy->CPU_energy[0]=RAPL_metrics[2];
+		acc_energy->CPU_energy[1]=RAPL_metrics[3];
 		return POWER_MON_OK;
 	}else{
 		return POWER_MON_ERROR;
