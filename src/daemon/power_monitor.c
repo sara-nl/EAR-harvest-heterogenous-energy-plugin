@@ -45,7 +45,7 @@
 #include <common/config.h>
 #include <common/system/sockets.h>
 
-// #define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -923,7 +923,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		mpi = 0;
 		maxpower = minpower = 0;
 	}
-	verbose(VNODEPMON, "ID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf",
+	verbosen(VNODEPMON, "ID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf ",
 			jid, mpi, my_current_power->avg_dc, maxpower, minpower);
 	verbose_node_metrics(&my_nm_id, nm);
 
@@ -1124,7 +1124,7 @@ void *eard_power_monitoring(void *noinfo) {
 
 	memset((void *) &default_app, 0, sizeof(powermon_app_t));
 
-	verbose(VJOBPMON, " power monitoring thread created");
+	verbose(VJOBPMON, "Power monitoring thread UP");
 	if (pthread_setname_np(pthread_self(), TH_NAME)) error("Setting name for %s thread %s", TH_NAME, strerror(errno));
 	if (init_power_ponitoring(&my_eh_pm) != EAR_SUCCESS) {
 		error("Error in init_power_ponitoring");
@@ -1137,16 +1137,19 @@ void *eard_power_monitoring(void *noinfo) {
 	alloc_energy_data(&default_app.energy_init);
 
 	// current_sample is the current powermonitoring period
+	debug("init_periodic_metric");
 	init_periodic_metric(&current_sample);
 	create_powermon_out();
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
 
-
+	debug("read_enegy_data");
 	read_enegy_data(&my_eh_pm, &e_begin);
 	/* Update with the curent node conf */
+	debug("Initializing node metrics");
 	powermon_init_nm();
+	debug("Starting node metrics");
 	if (start_compute_node_metrics(&my_nm_id, &nm_init) != EAR_SUCCESS) {
 		error("start_compute_node_metrics");
 	}
@@ -1157,13 +1160,14 @@ void *eard_power_monitoring(void *noinfo) {
 	/*
 	*	MAIN LOOP
 	*/
-
+	debug("Starting power monitoring loop, reporting metrics every %d seconds",f_monitoring);
 
 	while (!eard_must_exit) {
 		// Wait for N usecs
 		sleep(f_monitoring);
 
 		// Get time and Energy
+		debug("Reading energy");
 		read_enegy_data(&my_eh_pm, &e_end);
 
 		if (e_end.DC_node_energy == 0) {
@@ -1171,6 +1175,7 @@ void *eard_power_monitoring(void *noinfo) {
 		} else {
 
 			// Get node metrics
+			debug("Reading node metrics");
 			end_compute_node_metrics(&my_nm_id, &nm_end);
 			diff_node_metrics(&my_nm_id, &nm_init, &nm_end, &nm_diff);
 			start_compute_node_metrics(&my_nm_id, &nm_init);
@@ -1187,6 +1192,7 @@ void *eard_power_monitoring(void *noinfo) {
 		}
 
 	}
+	debug("Power monitor thread EXITs");
 	if (dispose_node_metrics(&my_nm_id) != EAR_SUCCESS) {
 		error("dispose_node_metrics ");
 	}

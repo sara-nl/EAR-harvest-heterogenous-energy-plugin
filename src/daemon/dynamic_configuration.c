@@ -425,7 +425,7 @@ void *eard_dynamic_configuration(void *tmp)
 {
 	my_tmp = (char *) tmp;
 
-	verbose(VRAPI, "RemoteAPI thread created\n");
+	verbose(VRAPI, "RemoteAPI thread UP");
 
 	DC_set_sigusr1();
 

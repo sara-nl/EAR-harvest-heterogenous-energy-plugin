@@ -1227,7 +1227,7 @@ int main(int argc, char *argv[]) {
 		error("Error creating shared memory between EARD & EARL\n");
 		_exit(0);
 	}
-	verbose(0, "Basic shared memory regions created\n");
+	verbose(0, "Basic shared memory regions created");
 	/* Coefficients */
 	verbose(0,"Loading coefficients");
 	coeffs_size = read_coefficients();
@@ -1272,7 +1272,7 @@ int main(int argc, char *argv[]) {
 	}
 	/* After potential recoveries, we set the info in the shared memory */
     configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
-    verbose(VCONF,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->settings[0],resched_conf->force_rescheduling);
+    verbose(VCONF,"shared memory created max_freq %lu th %lf resched %d",dyn_conf->max_freq,dyn_conf->settings[0],resched_conf->force_rescheduling);
 
 	// Check
 	if (argc == 2) {
@@ -1297,7 +1297,7 @@ int main(int argc, char *argv[]) {
 
 	ear_node_freq = frequency_pstate_to_freq(eard_max_pstate);
 	eard_max_freq = ear_node_freq;
-	verbose(VCONF, "Default max frequency defined to %lu\n", eard_max_freq);
+	verbose(VCONF, "Default max frequency defined to %lu", eard_max_freq);
 
 	// Aperf (later on inside frequency_init(), but no more
 	uint num_cpus = frequency_get_num_online_cpus();
@@ -1310,8 +1310,8 @@ int main(int argc, char *argv[]) {
 #endif
 	// At this point, only one daemon is running
 
-	verbose(VCONF, "Starting eard...................pid %d\n", getpid());
-	verbose(VCONF + 1, "Creating comm files in %s with default freq %lu verbose set to %d\n",
+	verbose(VCONF, "Starting eard...................pid %d", getpid());
+	verbose(VCONF + 1, "Creating comm files in %s with default freq %lu verbose set to %d",
 			nodename, ear_node_freq, verb_level);
 
 	// PAST: we had here a frequency set
@@ -1321,7 +1321,7 @@ int main(int argc, char *argv[]) {
 	cpu_model = get_model();
 	verbose(0,"CPU Model detected %d",cpu_model);
 	num_uncore_counters = init_uncores(cpu_model);
-	verbose(VCONF + 1, "eard %d imc uncore counters detected\n", num_uncore_counters);
+	verbose(VCONF + 1, "eard %d imc uncore counters detected", num_uncore_counters);
 	if (num_uncore_counters <= 0){
 		error("Uncore counters to compute memory bandwith not detected");
 		error_uncore=1;
@@ -1357,7 +1357,7 @@ int main(int argc, char *argv[]) {
 	verbose(0,"Creating pipe for EARL");
 
 	// HW initialized HERE...creating communication channels
-	verbose(VCONF + 1, "Creating comm in %s for node %s\n", ear_tmp, nodename);
+	verbose(VCONF + 1, "Creating comm in %s for node %s", ear_tmp, nodename);
 	FD_ZERO(&rfds);
 	// We support a set of "types" of requests
 	for (i = 0; i < ear_daemon_client_requests; i++) {
@@ -1389,7 +1389,7 @@ int main(int argc, char *argv[]) {
 				error("Error connecting with EARDB errnum:%d errmsg:%s\n",
 					intern_error_num,intern_error_str);
 			} else {
-				verbose(VCONF,"Connecting with EARDBD\n");
+				verbose(VCONF,"Connected with EARDBD");
 				eardbd_connected=1;
 			}
 		}
@@ -1433,7 +1433,7 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
-	verbose(VCONF + 1, "Communicator for %s ON\n", nodename);
+	verbose(VCONF + 1, "Communicator for %s ON", nodename);
 	// we wait until EAR daemon receives a request
 	// We support requests realted to frequency and to uncore counters
 	// rapl support is pending to be supported
