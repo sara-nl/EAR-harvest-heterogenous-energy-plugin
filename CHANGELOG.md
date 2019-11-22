@@ -55,5 +55,6 @@
 - ereport -i "all" option now also reports avg power
 - ereport -g now can be used in conjunction with -s
 - new eacct -x option to see EAR events
+- eacct does not filter applications with high and low power values anymore
 
 - fixed an error where edb_create would not output a correct user creation query
