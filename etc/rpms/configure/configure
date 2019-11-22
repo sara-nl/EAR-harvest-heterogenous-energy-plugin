@@ -1670,7 +1670,7 @@ if test "x$localstatedir" = "x\${prefix}/var"; then
 fi
 
 
-ac_config_files="$ac_config_files etc/ear/ear.conf etc/ear/ear.conf.full etc/module/ear etc/systemd/eard.service etc/systemd/eardbd.service etc/systemd/eargmd.service etc/slurm/ear.plugstack.conf"
+ac_config_files="$ac_config_files ear/ear.conf.template ear/ear.conf.full.template module/ear systemd/system/eard.service systemd/system/eardbd.service systemd/system/eargmd.service slurm/ear.plugstack.conf"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -2377,13 +2377,13 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
-    "etc/ear/ear.conf") CONFIG_FILES="$CONFIG_FILES etc/ear/ear.conf" ;;
-    "etc/ear/ear.conf.full") CONFIG_FILES="$CONFIG_FILES etc/ear/ear.conf.full" ;;
-    "etc/module/ear") CONFIG_FILES="$CONFIG_FILES etc/module/ear" ;;
-    "etc/systemd/eard.service") CONFIG_FILES="$CONFIG_FILES etc/systemd/eard.service" ;;
-    "etc/systemd/eardbd.service") CONFIG_FILES="$CONFIG_FILES etc/systemd/eardbd.service" ;;
-    "etc/systemd/eargmd.service") CONFIG_FILES="$CONFIG_FILES etc/systemd/eargmd.service" ;;
-    "etc/slurm/ear.plugstack.conf") CONFIG_FILES="$CONFIG_FILES etc/slurm/ear.plugstack.conf" ;;
+    "ear/ear.conf.template") CONFIG_FILES="$CONFIG_FILES ear/ear.conf.template" ;;
+    "ear/ear.conf.full.template") CONFIG_FILES="$CONFIG_FILES ear/ear.conf.full.template" ;;
+    "module/ear") CONFIG_FILES="$CONFIG_FILES module/ear" ;;
+    "systemd/system/eard.service") CONFIG_FILES="$CONFIG_FILES systemd/system/eard.service" ;;
+    "systemd/system/eardbd.service") CONFIG_FILES="$CONFIG_FILES systemd/system/eardbd.service" ;;
+    "systemd/system/eargmd.service") CONFIG_FILES="$CONFIG_FILES systemd/system/eargmd.service" ;;
+    "slurm/ear.plugstack.conf") CONFIG_FILES="$CONFIG_FILES slurm/ear.plugstack.conf" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

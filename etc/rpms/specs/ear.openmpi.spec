@@ -8,7 +8,7 @@
 # Var definitions
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
-%define name    ear-realloc-conf
+%define name    ear.openmpi
 %define release   1   
 %define version   3.0 
 
@@ -21,7 +21,7 @@ URL:    https://github.com/BarcelonaSupercomputingCenter/ear_private
 License:  GPL 2.1
 Name:   %{name}
 Version:  %{version}
-Release:  %{release}
+Release:  %{release}%{?dist}
 Source:   %{name}‑%{version}.tar.gz
 Buildroot:  %{_topdir}/BUILDROOT
 Prefix:   /usr
@@ -46,6 +46,7 @@ mkdir -p  %{buildroot}/etc/ear/coeffs
 mkdir -p  %{buildroot}/etc/systemd/system
 mkdir -p  %{buildroot}/etc/module
 mkdir -p  %{buildroot}/etc/slurm
+mkdir -p  %{buildroot}/var/ear
 cp    -rp ${EAR_INSTALL_PATH}/bin/tools/coeffs_show %{buildroot}/usr/bin/tools/
 cp    -rp ${EAR_INSTALL_PATH}/bin/tools/coeffs_compute %{buildroot}/usr/bin/tools/
 cp    -rp ${EAR_INSTALL_PATH}/bin/tools/coeffs_null %{buildroot}/usr/bin/tools/
@@ -62,8 +63,7 @@ touch %{buildroot}/etc/ear/ear.conf.full.template
 cp  -p  ${EAR_SOURCE_PATH}/etc/slurm/ear.plugstack.conf.in %{buildroot}/etc/slurm/
 touch %{buildroot}/etc/slurm/ear.plugstack.conf
 cp	-rp ${EAR_INSTALL_PATH}/lib/libear.so %{buildroot}/usr/lib/
-cp	-rp ${EAR_INSTALL_PATH}/lib/libear.openmpi.4.0.0.so %{buildroot}/usr/lib/
-cp	-rp ${EAR_INSTALL_PATH}/lib/libear.openmpi.3.1.3.so %{buildroot}/usr/lib/
+cp	-rp ${EAR_INSTALL_PATH}/lib/libear.openmpi.* %{buildroot}/usr/lib/
 cp    -rp ${EAR_INSTALL_PATH}/lib/libear_api.a %{buildroot}/usr/lib/libear_api.a
 cp    -rp ${EAR_INSTALL_PATH}/lib/plugins/* %{buildroot}/usr/lib/plugins/
 cp	-rp ${EAR_INSTALL_PATH}/lib/earplug.so %{buildroot}/usr/lib/
@@ -77,7 +77,7 @@ cp	-rp ${EAR_INSTALL_PATH}/sbin/eargmd %{buildroot}/usr/sbin/
 cp	-rp ${EAR_INSTALL_PATH}/sbin/eardbd %{buildroot}/usr/sbin/
 cp	-rp ${EAR_INSTALL_PATH}/sbin/eard %{buildroot}/usr/sbin/
 cp	-rp ${EAR_INSTALL_PATH}/sbin/edb_create %{buildroot}/usr/sbin/
-cp   -p  ${EAR_SOURCE_PATH}/etc/rpm_realloc_configure/configure/configure %{buildroot}/etc/
+cp   -p  ${EAR_SOURCE_PATH}/etc/rpms/configure/configure %{buildroot}/etc/
 
 exit
 
@@ -85,6 +85,9 @@ exit
 %files
 %attr(-, -, -) /usr/*
 %attr(-, -, -) /etc/*
+
+#Comments for change log
+%changelog
 
 # RPMBuild context
 %clean
@@ -96,7 +99,7 @@ rm -rf %{_topdir}/SRPMS
 
 # RPM context
 %post
-(cd ${RPM_INSTALL_PREFIX1} && ./configure --prefix=${RPM_INSTALL_PREFIX0} --sysconfdir=${RPM_INSTALL_PREFIX1})
+(cd ${RPM_INSTALL_PREFIX1} && ./configure --prefix=${RPM_INSTALL_PREFIX0} --sysconfdir=${RPM_INSTALL_PREFIX1} )
 rm    -f ${RPM_INSTALL_PREFIX1}/config.log
 rm    -f ${RPM_INSTALL_PREFIX1}/config.status
 
