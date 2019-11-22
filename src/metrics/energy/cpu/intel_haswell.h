@@ -33,7 +33,7 @@
 
 #include <metrics/common/msr.h>
 
-#define RAPL_EVS            4
+#define RAPL_POWER_EVS            2
 #define RAPL_DRAM0          0
 #define RAPL_DRAM1          1
 #define RAPL_PACKAGE0       2

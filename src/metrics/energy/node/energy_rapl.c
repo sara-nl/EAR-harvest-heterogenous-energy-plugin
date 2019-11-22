@@ -38,6 +38,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <common/states.h>
+#include <common/hardware/hardware_info.h>
 #include <metrics/energy/node/energy_node.h>
 #include <metrics/energy/energy_cpu.h>
 #include <common/math_operations.h>
@@ -54,13 +55,15 @@ static pthread_mutex_t rapl_lock = PTHREAD_MUTEX_INITIALIZER;
 /*
  * MAIN FUNCTIONS
  */
+static int num_pack;
 state_t energy_init(void **c)
 {
 	int ret;
 	state_t st;
 	int *pfd;
 	if (c==NULL) return EAR_ERROR;
-	*c=(int  *)malloc(sizeof(int)*MAX_PACKAGES);
+	if (detect_packages(&num_pack)!=EAR_SUCCESS) return EAR_ERROR;
+	*c=(int  *)malloc(sizeof(int)*num_pack);
 	if (*c==NULL) return EAR_ERROR;
 	pthread_mutex_lock(&rapl_lock);
 	pfd=*c;
@@ -82,7 +85,7 @@ state_t energy_dispose(void **c)
 }
 state_t energy_datasize(size_t *size)
 {
-	*size=sizeof(unsigned long long)*RAPL_EVS*NUM_SOCKETS;
+	*size=sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack;
 	return EAR_SUCCESS;
 }
 state_t energy_frequency(ulong *freq_us)
@@ -98,7 +101,7 @@ state_t energy_dc_read(void *c, edata_t energy_mj)
   pfd=(int *)c;
 
 	unsigned long long *pvalues=energy_mj;
-	memset(pvalues,0,sizeof(unsigned long long)*RAPL_EVS*NUM_SOCKETS);
+	memset(pvalues,0,sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack);
 	return read_rapl_msr(pfd,pvalues);
 }
 
@@ -112,7 +115,7 @@ state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms)
 	pfd=(int *)c;
 
 	unsigned long long *pvalues=energy_mj;
-	memset(pvalues,0,sizeof(unsigned long long)*RAPL_EVS*NUM_SOCKETS);
+	memset(pvalues,0,sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack);
 	st=read_rapl_msr(pfd,pvalues);
 	*time_ms=0;
 	gettimeofday(&t, NULL);
@@ -122,7 +125,7 @@ state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms)
 state_t energy_ac_read(void *c, edata_t energy_mj)
 {
 	unsigned long long *pvalues=energy_mj;
-  memset(pvalues,0,sizeof(unsigned long long)*RAPL_EVS*NUM_SOCKETS);
+  memset(pvalues,0,sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack);
 
 	return EAR_SUCCESS;
 }
@@ -153,7 +156,7 @@ state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
 	unsigned long long *pvalues_init,*pvalues_end;
 	pvalues_init=(unsigned long long *)init;
 	pvalues_end=(unsigned long long *)end;
-	for (i=0;i<RAPL_EVS*NUM_SOCKETS;i++){
+	for (i=0;i<RAPL_POWER_EVS*num_pack;i++){
 			diff=diff_RAPL_energy(pvalues_init[i],pvalues_end[i]);
 			total+=diff;	
 	}

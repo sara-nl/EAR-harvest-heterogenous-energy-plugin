@@ -39,6 +39,7 @@
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/states.h>
+#include <common/hardware/hardware_info.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/accumulators/power_metrics.h>
 uint8_t power_mon_connected=0; 
@@ -51,6 +52,7 @@ static uint8_t rootp=0;
 static uint8_t pm_already_connected=0;
 static uint8_t pm_connected_status=0;
 static char my_buffer[1024];
+static int num_packs;
 
 int pm_get_data_size_rapl()
 {
@@ -109,6 +111,11 @@ int pm_connect(ehandler_t *my_eh)
 		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);
+			if (detect_packages(&num_packs)!=EAR_SUCCESS){
+				error("Packages cannot be detected");
+				pm_connected_status=EAR_ERROR;
+				return EAR_ERROR;
+			}
 			pm_connected_status=init_rapl_msr(my_eh->fds_rapl);
 			if (pm_connected_status!=EAR_SUCCESS){
 				error("Error initializing RAPl in pm_connect");
