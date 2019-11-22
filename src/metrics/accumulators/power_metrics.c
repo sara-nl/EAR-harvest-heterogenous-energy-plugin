@@ -52,13 +52,20 @@ static uint8_t rootp=0;
 static uint8_t pm_already_connected=0;
 static uint8_t pm_connected_status=0;
 static char my_buffer[1024];
-static int num_packs;
+static int num_packs=0;
+static int *package_map;
 
 int pm_get_data_size_rapl()
 {
 	if (rootp){
 		// Check that 
-		return RAPL_EVS*sizeof(rapl_data_t);
+		if (num_packs==0){
+			if ((num_packs=detect_packages(package_map))!=EAR_SUCCESS){
+				error("Error detecting num packages");
+				return EAR_ERROR;
+			}
+		}
+		return RAPL_POWER_EVS*sizeof(rapl_data_t)*num_packs;
 	}else{
 		return EAR_ERROR;
 		//return eards_get_data_size_rapl();
@@ -116,6 +123,7 @@ int pm_connect(ehandler_t *my_eh)
 				pm_connected_status=EAR_ERROR;
 				return EAR_ERROR;
 			}
+			my_eh->fds_rapl=(int *)malloc(sizeof(int)*num_packs);
 			pm_connected_status=init_rapl_msr(my_eh->fds_rapl);
 			if (pm_connected_status!=EAR_SUCCESS){
 				error("Error initializing RAPl in pm_connect");
@@ -211,7 +219,7 @@ int init_power_ponitoring(ehandler_t *my_eh)
 		return POWER_MON_ERROR;
 	}
 	rapl_size=pm_get_data_size_rapl();
-	if (rapl_size!=sizeof(rapl_data_t)*NUM_SOCKETS*2){
+	if (rapl_size==0){
 		pm_disconnect(my_eh);
 		return POWER_MON_ERROR;
 	}
@@ -232,9 +240,11 @@ void end_power_monitoring(ehandler_t *my_eh)
 
 void null_energy_data(energy_data_t *acc_energy)
 {
+	int i;
 	time(&acc_energy->sample_time);
 	memset((char *)acc_energy->DC_node_energy,0,node_size);
 	acc_energy->AC_node_energy=0;
+	for (i=0;i<num_packs
 	acc_energy->DRAM_energy[0]=acc_energy->DRAM_energy[1]=acc_energy->CPU_energy[0]=acc_energy->CPU_energy[1]=0;
 }
 
