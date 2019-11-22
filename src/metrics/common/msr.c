@@ -42,7 +42,7 @@
 
 /* */
 static int total_cores=0,total_packages=0;
-static int package_map[MAX_PACKAGES];
+static int *package_map;
 static int msr_initialised = 0;
 static int fd_map[MAX_PACKAGES];
 
@@ -68,61 +68,23 @@ int get_total_packages()
 	return total_packages;
 }
 
-static int detect_packages(void) {
-
-	char filename[BUFSIZ];
-	FILE *fff;
-	int package;
-	int i;
-	int num_cpus,num_cores;
-  topology_t topo;
-  hardware_gettopology(&topo);
-  num_cpus = topo.sockets;
-  num_cores = topo.cores*topo.sockets;
-    
-	if (num_cpus < 1 || num_cores < 1) {
-        return EAR_ERROR;
-	}
-
-	for(i=0;i<MAX_PACKAGES;i++) {
-		package_map[i]=-1;
-	}
-
-	for(i=0;i<num_cores;i++)
-	{
-		sprintf(filename,"/sys/devices/system/cpu/cpu%d/topology/physical_package_id",i);
-		fff=fopen(filename,"r");
-		if (fff==NULL) break;
-		fscanf(fff,"%d",&package);
-		fclose(fff);
-
-		if (package_map[package]==-1) {
-		total_packages++;
-		package_map[package]=i;
-	}
-	}
-	total_cores=i;
-
-	return 0;
-}
-
 /* It is supposed to be checked it is not already initialized before calling it */
 int init_msr(int *dest_fd_map)
 {
-  if (detect_packages() == EAR_ERROR)
-  {
+    if (detect_packages(package_map) == EAR_ERROR)
+    {
         return EAR_ERROR;
-  }
+    }
 	unsigned long long result;
 	int j;
-	for(j=0;j<NUM_SOCKETS;j++) {
-    int ret;
-    fd_map[j] = -1;
-		if ((ret = msr_open(package_map[j], &fd_map[j])) != EAR_SUCCESS)
-  	{
-  		return EAR_ERROR;
-  	}
-
+	for(j=0;j<NUM_SOCKETS;j++) 
+    {
+        int ret;
+        fd_map[j] = -1;
+        if ((ret = msr_open(package_map[j], &fd_map[j])) != EAR_SUCCESS)
+      	{   
+  	    	return EAR_ERROR;
+  	    }
 	}
 	memcpy(dest_fd_map,fd_map,sizeof(int)*MAX_PACKAGES);
   msr_initialised = 1;

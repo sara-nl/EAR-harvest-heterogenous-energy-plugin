@@ -65,22 +65,24 @@ double power_units, cpu_energy_units, time_units, dram_energy_units;
 
 int init_rapl_msr(int *fd_map)
 {	
-		int j;
-		unsigned long long result;
-		/* If it is not initialized, I do it, else, I get the ids */
+    int j;
+    unsigned long long result;
+	/* If it is not initialized, I do it, else, I get the ids */
     if (is_msr_initialized()==0){ 
-			init_msr(fd_map);
-		}else get_msr_ids(fd_map);
-		/* Ask for msr info */
-		for(j=0;j<NUM_SOCKETS;j++) {
-			if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT)) return EAR_ERROR;
-			power_units=pow(0.5,(double)(result&0xf));
-			cpu_energy_units=pow(0.5,(double)((result>>8)&0x1f));
-			time_units=pow(0.5,(double)((result>>16)&0xf));
-			dram_energy_units=pow(0.5,(double)16);
+	    init_msr(fd_map);
+    }else get_msr_ids(fd_map);
+	
+    /* Ask for msr info */
+    for(j=0;j<NUM_SOCKETS;j++) 
+    {
+        if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT)) return EAR_ERROR;
 
-		}
-		return EAR_SUCCESS;
+        power_units=pow(0.5,(double)(result&0xf));
+        cpu_energy_units=pow(0.5,(double)((result>>8)&0x1f));
+        time_units=pow(0.5,(double)((result>>16)&0xf));
+        dram_energy_units=pow(0.5,(double)16);
+    }
+    return EAR_SUCCESS;
 }
 
 

@@ -40,6 +40,45 @@ static int file_is_accessible(const char *path)
 	return (access(path, F_OK) == 0);
 }
 
+int detect_packages(int *package_map) 
+{
+	char filename[BUFSIZ];
+	FILE *fff;
+	int package;
+	int i;
+	int num_cpus,num_cores, num_packages = 0;
+    topology_t topo;
+    hardware_gettopology(&topo);
+    num_cpus = topo.sockets;
+    num_cores = topo.cores*topo.sockets;
+    package_map = calloc(num_cores, sizeof(int));
+    
+	if (num_cpus < 1 || num_cores < 1) {
+        return EAR_ERROR;
+	}
+
+	for(i=0;i<num_cores;i++) {
+		package_map[i]=-1;
+	}
+
+	for(i=0;i<num_cores;i++)
+	{
+		sprintf(filename,"/sys/devices/system/cpu/cpu%d/topology/physical_package_id",i);
+		fff=fopen(filename,"r");
+		if (fff==NULL) break;
+		fscanf(fff,"%d",&package);
+		fclose(fff);
+
+		if (package_map[package]==-1) {
+		    num_packages++;
+	    	package_map[package]=i;
+	    }
+	}
+
+	return num_packages;
+}
+
+
 static state_t hardware_sibling_read(const char *path, int *result)
 {
 	char cbuf[2];

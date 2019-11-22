@@ -40,18 +40,19 @@ static int my_fd_map[MAX_PACKAGES];
 
 int init_temp_msr(int *fd_map)
 {
-		int j;
-		unsigned long long result;
+    int j;
+    unsigned long long result;
     if (is_msr_initialized()==0){
-			debug("Temperature: msr was not initialized, initializing");
-      init_msr(fd_map);
+        debug("Temperature: msr was not initialized, initializing");
+        init_msr(fd_map);
     }else get_msr_ids(fd_map);
+
     for(j=0;j<NUM_SOCKETS;j++) {
-    	if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
-       throttling_temp[j] = (result >> 16);
+        if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
+            throttling_temp[j] = (result >> 16);
     }
 
-		return EAR_SUCCESS;
+    return EAR_SUCCESS;
 }
 
 int read_temp_msr(int *fds,unsigned long long *_values)
