@@ -56,14 +56,13 @@ static pthread_mutex_t rapl_lock = PTHREAD_MUTEX_INITIALIZER;
  * MAIN FUNCTIONS
  */
 static int num_pack;
-static int *package_map;
 state_t energy_init(void **c)
 {
 	int ret;
 	state_t st;
 	int *pfd;
 	if (c==NULL) return EAR_ERROR;
-	if ((num_pack=detect_packages(package_map))!=EAR_SUCCESS) return EAR_ERROR;
+	if ((num_pack=detect_packages(NULL))!=EAR_SUCCESS) return EAR_ERROR;
 	*c=(int  *)malloc(sizeof(int)*num_pack);
 	if (*c==NULL) return EAR_ERROR;
 	pthread_mutex_lock(&rapl_lock);

@@ -70,7 +70,7 @@ ulong get_nm_cpufreq(nm_t *id,nm_data_t *nm)
 	return nm->avg_cpu_freq;
 }
 
-int init_node_metrics(nm_t *id,uint sockets, uint cpus_per_socket,uint cores_model,ulong def_freq)
+int init_node_metrics(nm_t *id,int sockets, int cpus_per_socket,int cores_model,ulong def_freq)
 {
 	if ((id==NULL)	|| (sockets<=0) || (cpus_per_socket <=0) || (def_freq<=0)){
 		debug("init_node_metrics invalid argument id null=%d sockets=%u cpus_per_socket %u def_freq %lu\n",(id==NULL),sockets,cpus_per_socket,def_freq);

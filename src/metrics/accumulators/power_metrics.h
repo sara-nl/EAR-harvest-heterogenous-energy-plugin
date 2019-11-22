@@ -104,4 +104,13 @@ void null_energy_data(energy_data_t *acc_energy);
 void alloc_energy_data(energy_data_t *e);
 void free_energy_data(energy_data_t *e);
 
+
+void alloc_power_data(power_data_t *p);
+void free_power_data(power_data_t *p);
+void copy_power_data(power_data_t *dest,power_data_t *src);
+void null_power_data(power_data_t *p);
+double accum_node_power(power_data_t *p);
+double accum_dram_power(power_data_t *p);
+double accum_cpu_power(power_data_t *p);
+
 #endif

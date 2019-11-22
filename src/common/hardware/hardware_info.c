@@ -40,11 +40,12 @@ static int file_is_accessible(const char *path)
 	return (access(path, F_OK) == 0);
 }
 
-int detect_packages(int *package_map) 
+int detect_packages(int **mypackage_map) 
 {
 	char filename[BUFSIZ];
 	FILE *fff;
 	int package;
+	int *package_map;
 	int i;
 	int num_cpus,num_cores, num_packages = 0;
     topology_t topo;
@@ -74,6 +75,8 @@ int detect_packages(int *package_map)
 	    	package_map[package]=i;
 	    }
 	}
+	if (mypackage_map!=NULL) *mypackage_map=package_map;
+	else free(package_map);
 
 	return num_packages;
 }

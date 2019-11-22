@@ -72,6 +72,7 @@
 static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 static ehandler_t my_eh_pm;
 static char *TH_NAME = "PowerMon";
+static int num_packs;
 
 nm_t my_nm_id;
 nm_data_t nm_init, nm_end, nm_diff, last_nm;
@@ -413,6 +414,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 
 void job_end_powermon_app(ehandler_t *ceh) {
 	power_data_t app_power;
+	alloc_power_data(&app_power);
 	check_context("job_end_powermon_app");
 	time(&current_ear_app[ccontext]->app.job.end_time);
 	if (current_ear_app[ccontext]->app.job.end_time == current_ear_app[ccontext]->app.job.start_time) {
@@ -422,19 +424,20 @@ void job_end_powermon_app(ehandler_t *ceh) {
 	read_enegy_data(ceh, &c_energy);
 	compute_power(&current_ear_app[ccontext]->energy_init, &c_energy, &app_power);
 
-	current_ear_app[ccontext]->app.power_sig.DC_power = app_power.avg_dc;
+	current_ear_app[ccontext]->app.power_sig.DC_power = accum_node_power(&app_power);
 	if (app_power.avg_dc > current_ear_app[ccontext]->app.power_sig.max_DC_power)
 		current_ear_app[ccontext]->app.power_sig.max_DC_power = app_power.avg_dc;
 	if (app_power.avg_dc < current_ear_app[ccontext]->app.power_sig.min_DC_power)
 		current_ear_app[ccontext]->app.power_sig.min_DC_power = app_power.avg_dc;
-	current_ear_app[ccontext]->app.power_sig.DRAM_power = app_power.avg_dram[0] + app_power.avg_dram[1];
-	current_ear_app[ccontext]->app.power_sig.PCK_power = app_power.avg_cpu[0] + app_power.avg_cpu[1];
+	current_ear_app[ccontext]->app.power_sig.DRAM_power = accum_dram_power(&app_power);
+	current_ear_app[ccontext]->app.power_sig.PCK_power = accum_cpu_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
 	current_ear_app[ccontext]->app.power_sig.avg_f = aperf_job_avg_frequency_end_all_cpus();
 
 	// nominal is still pending
 
 	// Metrics are not reported in this function
+	free_power_data(&app_power);
 }
 
 void report_powermon_app(powermon_app_t *app) {
@@ -944,8 +947,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	current_sample.start_time = my_current_power->begin;
 	current_sample.end_time = my_current_power->end;
 	corrected_power = my_current_power->avg_dc;
-	RAPL = my_current_power->avg_dram[0] + my_current_power->avg_dram[1] + my_current_power->avg_cpu[0] +
-		   my_current_power->avg_cpu[1];
+	RAPL =accum_dram_power(my_current_power)+accum_cpu_power(my_current_power); 
 	if (my_current_power->avg_dc < RAPL) {
 		corrected_power = RAPL;
 	}
@@ -1122,6 +1124,10 @@ void *eard_power_monitoring(void *noinfo) {
 
 	init_contexts();
 
+	if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS){
+		error("Packages cannot be detected");
+	}
+
 	memset((void *) &default_app, 0, sizeof(powermon_app_t));
 
 	verbose(VJOBPMON, "Power monitoring thread UP");
@@ -1133,6 +1139,7 @@ void *eard_power_monitoring(void *noinfo) {
 	alloc_energy_data(&c_energy);
 	alloc_energy_data(&e_begin);
 	alloc_energy_data(&e_end);
+	alloc_power_data(&my_current_power);
 
 	alloc_energy_data(&default_app.energy_init);
 

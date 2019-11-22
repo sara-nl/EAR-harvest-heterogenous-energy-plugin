@@ -66,6 +66,8 @@ static ulong node_energy_datasize;
 static edata_t node_energy_data;
 unsigned int power_mon_freq = POWERMON_FREQ;
 static int fd_rapl[MAX_PACKAGES];
+static int num_packs=0;
+static unsigned long long *values_rapl;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 cluster_conf_t my_cluster_conf;
@@ -719,7 +721,6 @@ int eard_uncore(int must_read) {
 int eard_rapl(int must_read) {
 	unsigned long comm_req = rapl_req;
 	unsigned long ack = 0;
-	unsigned long long values[RAPL_EVS];
 	if (must_read) {
 		if (read(ear_fd_req[comm_req], &req, sizeof(req)) != sizeof(req))
 			error("error when reading info at eard_rapl\n");
@@ -738,12 +739,12 @@ int eard_rapl(int must_read) {
 			write(ear_fd_ack[comm_req], &ack, sizeof(ack));
 			break;
 		case READ_RAPL:
-			if (read_rapl_msr(fd_rapl,values)<0) error("Error reading rapl msr counters");
+			if (read_rapl_msr(fd_rapl,values_rapl)<0) error("Error reading rapl msr counters");
 			RAPL_counting = 0;
-			write(ear_fd_ack[comm_req], values, sizeof(unsigned long long) * RAPL_EVS);
+			write(ear_fd_ack[comm_req], values_rapl, sizeof(unsigned long long) * RAPL_POWER_EVS*num_packs);
 			break;
 		case DATA_SIZE_RAPL:
-			ack = sizeof(unsigned long long) * RAPL_EVS;
+			ack = sizeof(unsigned long long) * RAPL_POWER_EVS*num_packs;
 			write(ear_fd_ack[comm_req], &ack, sizeof(unsigned long));
 			break;
 		default:
@@ -1153,7 +1154,12 @@ int main(int argc, char *argv[]) {
                 error("topology information can't be initialized (%d)", s);
                 _exit(1);
         }
-			verbose(0,"Initializing frequency list");
+				if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS) error("Num packages cannot be detected");
+				verbose(0,"Topology detected: packages %d Sockets %d, cores_per_sockets %d threads %d",
+					num_packs,node_desc.sockets,node_desc.cores,node_desc.threads);
+				verbose(0,"Initializing frequency list");
+				values_rapl=(unsigned long long*)calloc(num_packs*RAPL_POWER_EVS,sizeof(unsigned long long));
+				if (values_rapl==NULL) error("values_rapl returns NULL in eard initialization");
 
         /* We initialize frecuency */
         if (frequency_init(node_size) < 0) {

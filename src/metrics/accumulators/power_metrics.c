@@ -53,14 +53,13 @@ static uint8_t pm_already_connected=0;
 static uint8_t pm_connected_status=0;
 static char my_buffer[1024];
 static int num_packs=0;
-static int *package_map;
 
 int pm_get_data_size_rapl()
 {
 	if (rootp){
 		// Check that 
 		if (num_packs==0){
-			if ((num_packs=detect_packages(package_map))!=EAR_SUCCESS){
+			if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS){
 				error("Error detecting num packages");
 				return EAR_ERROR;
 			}
@@ -118,12 +117,11 @@ int pm_connect(ehandler_t *my_eh)
 		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);
-			if (detect_packages(&num_packs)!=EAR_SUCCESS){
+			if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS){
 				error("Packages cannot be detected");
 				pm_connected_status=EAR_ERROR;
 				return EAR_ERROR;
 			}
-			my_eh->fds_rapl=(int *)malloc(sizeof(int)*num_packs);
 			pm_connected_status=init_rapl_msr(my_eh->fds_rapl);
 			if (pm_connected_status!=EAR_SUCCESS){
 				error("Error initializing RAPl in pm_connect");
@@ -144,13 +142,15 @@ void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_
 {
     double t_diff;
 		unsigned long curr_node_energy;
-		rapl_data_t		dram0,dram1,cpue0,cpue1;
+		rapl_data_t		*dram,*pack;
+		int p;
+
+		dram=(rapl_data_t*)calloc(num_packs,sizeof(rapl_data_t));
+		pack=(rapl_data_t*)calloc(num_packs,sizeof(rapl_data_t));
 
     // Compute the difference
-    dram0=diff_RAPL_energy(e_end->DRAM_energy[0],e_begin->DRAM_energy[0]);
-    dram1=diff_RAPL_energy(e_end->DRAM_energy[1],e_begin->DRAM_energy[1]);
-    cpue0=diff_RAPL_energy(e_end->CPU_energy[0],e_begin->CPU_energy[0]);
-    cpue1=diff_RAPL_energy(e_end->CPU_energy[1],e_begin->CPU_energy[1]);
+    for (p=0;p<num_packs;p++) dram[p]=diff_RAPL_energy(e_end->DRAM_energy[p],e_begin->DRAM_energy[p]);
+		for (p=0;p<num_packs;p++) pack[p]=diff_RAPL_energy(e_end->CPU_energy[p],e_begin->CPU_energy[p]);
 		// eh is not needed here
 		energy_accumulated(NULL,&curr_node_energy,e_begin->DC_node_energy,e_end->DC_node_energy);
 		t_diff=difftime(e_end->sample_time,e_begin->sample_time);
@@ -159,35 +159,53 @@ void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_
     my_power->end=e_end->sample_time;
     my_power->avg_ac=0;
     my_power->avg_dc=(double)(curr_node_energy)/(t_diff*node_units);
-    my_power->avg_dram[0]=(double)(dram0)/(t_diff*1000000000);
-    my_power->avg_dram[1]=(double)(dram1)/(t_diff*1000000000);
-    my_power->avg_cpu[0]=(double)(cpue0)/(t_diff*1000000000);
-    my_power->avg_cpu[1]=(double)(cpue1)/(t_diff*1000000000);
+		for (p=0;p<num_packs;p++) my_power->avg_dram[p]=(double)(dram[p])/(t_diff*1000000000);
+    for (p=0;p<num_packs;p++) my_power->avg_cpu[p]=(double)(pack[p])/(t_diff*1000000000);
+		free(dram);
+		free(pack);
 }
 void print_power(power_data_t *my_power)
 {
     struct tm *current_t;
-    char s[64];
+    char s[64],spdram[256],spcpu[256],s1dram[64],s1cpu[64];;
+		int p;
+		double dram_power=0,pack_power=0;
+		for (p=0;p<num_packs;p++) dram_power=dram_power+my_power->avg_dram[p];
+		for (p=0;p<num_packs;p++) pack_power=pack_power+my_power->avg_cpu[num_packs+p];
     // We format the end time into localtime and string
     current_t=localtime(&(my_power->end));
     strftime(s, sizeof(s), "%c", current_t);
 
-    printf("%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf\n",s,my_power->avg_dc,
-    my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_cpu[0]+my_power->avg_cpu[1]);
+    printf("%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf\n",s,my_power->avg_dc,dram_power,pack_power); 
 }
 
 void report_periodic_power(int fd,power_data_t *my_power)
 {
     struct tm *current_t;
-    char s[64];
+		double dram_power=0,pack_power=0;
+    char s[64],spdram[256],spcpu[256],s1dram[64],s1cpu[64];
+		int p;
+		for (p=0;p<num_packs;p++) dram_power=dram_power+my_power->avg_dram[p];
+		for (p=0;p<num_packs;p++) pack_power=pack_power+my_power->avg_cpu[num_packs+p];
     // We format the end time into localtime and string
     current_t=localtime(&(my_power->end));
     strftime(s, sizeof(s), "%c", current_t);
 
-    sprintf(my_buffer,"%s : Avg. DC node power %.2lf Avg. DRAM %.2lf[%.2lf,%.2lf] Avg. CPU %.2lf[%.2lf,%.2lf]\n",s,my_power->avg_dc,
-    my_power->avg_dram[0]+my_power->avg_dram[1],my_power->avg_dram[0],my_power->avg_dram[1],
-	my_power->avg_cpu[0]+my_power->avg_cpu[1],my_power->avg_cpu[0],my_power->avg_cpu[1]);
-	write(fd,my_buffer,strlen(my_buffer));
+		sprintf(spdram,"Avg. DRAM %.2lf[",dram_power);
+		for (p=0;p<num_packs;p++){
+			if (p<(num_packs-1)) sprintf(s1dram,"%.2lf,",my_power->avg_dram[p]);
+			else sprintf(s1dram,"%.2lf]",my_power->avg_dram[p]);
+			strcat(spdram,s1dram);
+		}
+		sprintf(spcpu,"Avg. CPU %.2lf[",pack_power);
+    for (p=0;p<num_packs;p++){
+      if (p<(num_packs-1)) sprintf(s1cpu,"%.2lf,",my_power->avg_cpu[num_packs+p]);
+      else sprintf(s1cpu,"%.2lf]\n",my_power->avg_cpu[num_packs+p]);
+      strcat(spcpu,s1cpu);
+    }
+
+    sprintf(my_buffer,"%s : Avg. DC node power %.2lf %s %s\n",s,my_power->avg_dc,spdram,spcpu);
+		write(fd,my_buffer,strlen(my_buffer));
 }
 
 // END POWER
@@ -244,8 +262,19 @@ void null_energy_data(energy_data_t *acc_energy)
 	time(&acc_energy->sample_time);
 	memset((char *)acc_energy->DC_node_energy,0,node_size);
 	acc_energy->AC_node_energy=0;
-	for (i=0;i<num_packs
-	acc_energy->DRAM_energy[0]=acc_energy->DRAM_energy[1]=acc_energy->CPU_energy[0]=acc_energy->CPU_energy[1]=0;
+	memset(acc_energy->DRAM_energy,0,num_packs*sizeof(rapl_data_t));
+	memset(acc_energy->CPU_energy,0,num_packs*sizeof(rapl_data_t));
+}
+
+void null_power_data(power_data_t *p)
+{
+	p->begin=0;
+	p->end=0;
+	p->avg_dc=0;
+	p->avg_ac=0;
+	memset(p->avg_dram,0,num_packs*sizeof(double));
+	memset(p->avg_cpu,0,num_packs*sizeof(double));
+	
 }
 
 
@@ -260,10 +289,8 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 		pm_read_rapl(my_eh,RAPL_metrics);
 		pm_node_dc_energy(my_eh,acc_energy->DC_node_energy);
 		acc_energy->AC_node_energy=ac;
-		acc_energy->DRAM_energy[0]=RAPL_metrics[0];
-		acc_energy->DRAM_energy[1]=RAPL_metrics[1];
-		acc_energy->CPU_energy[0]=RAPL_metrics[2];
-		acc_energy->CPU_energy[1]=RAPL_metrics[3];
+		memcpy(acc_energy->DRAM_energy,RAPL_metrics,num_packs*sizeof(rapl_data_t));
+		memcpy(acc_energy->CPU_energy,&RAPL_metrics[num_packs],num_packs*sizeof(rapl_data_t));
 		return POWER_MON_OK;
 	}else{
 		return POWER_MON_ERROR;
@@ -276,10 +303,18 @@ void copy_energy_data(energy_data_t *dest,energy_data_t *src)
 	dest->sample_time=src->sample_time;
 	dest->AC_node_energy=src->AC_node_energy;
 	memcpy(dest->DC_node_energy,src->DC_node_energy,node_size);
-	dest->DRAM_energy[0]=src->DRAM_energy[0];
-	dest->DRAM_energy[1]=src->DRAM_energy[1];
-	dest->CPU_energy[0]=src->CPU_energy[0];
-	dest->CPU_energy[1]=src->CPU_energy[1];
+	memcpy(dest->DRAM_energy,src->DRAM_energy,num_packs*sizeof(rapl_data_t));
+	memcpy(dest->CPU_energy,src->CPU_energy,num_packs*sizeof(rapl_data_t));
+}
+
+void copy_power_data(power_data_t *dest,power_data_t *src)
+{
+	dest->begin=src->begin;
+	dest->end=src->end;
+	dest->avg_dc=src->avg_dc;
+	dest->avg_ac=src->avg_ac;
+	memcpy(dest->avg_dram,src->avg_dram,num_packs*sizeof(double));
+	memcpy(dest->avg_cpu,src->avg_cpu,num_packs*sizeof(double));
 }
 
 void print_energy_data(energy_data_t *e)
@@ -287,13 +322,50 @@ void print_energy_data(energy_data_t *e)
     struct tm *current_t;
     char s[64];
 		char nodee[256];
+		int i,j;
     // We format the end time into localtime and string
     current_t=localtime(&(e->sample_time));
     strftime(s, sizeof(s), "%c", current_t);
 		energy_to_str(NULL,nodee,e->DC_node_energy);	
 
-	printf("time %s DC %s DRAM (%llu+%llu) CPU (%llu+%llu) \n",s,nodee,e->DRAM_energy[0],e->DRAM_energy[1],
-	e->CPU_energy[0],e->CPU_energy[1]);
+	printf("time %s DC %s",s,nodee); 
+	for (i=0;i<RAPL_POWER_EVS;i++){
+		if (i==0){
+			printf("DRAM (");
+		}else{
+			printf(" CPU(");
+		}
+		for (j=0;j<num_packs;j++){
+			if (i==0){
+				if (j<(num_packs-1)) printf("%llu,",e->DRAM_energy[j]); 
+				else printf("%llu)",e->DRAM_energy[j]); 
+			}else{
+				if (j<(num_packs-1)) printf("%llu,",e->CPU_energy[num_packs+j]);
+				else printf("%llu)",e->CPU_energy[num_packs+j]);
+			}
+		}
+	}
+	printf("\n");
+}
+
+double accum_node_power(power_data_t *p)
+{
+	return p->avg_dc;
+}
+
+double accum_dram_power(power_data_t *p)
+{
+	double dram_power=0;
+	int pid;
+	for (pid=0;pid<num_packs;pid++) dram_power=dram_power+p->avg_dram[pid];	
+	return dram_power;
+}
+double accum_cpu_power(power_data_t *p)
+{
+	double pack_power;
+	int pid;
+	for (pid=0;pid<num_packs;pid++) pack_power=pack_power+p->avg_cpu[num_packs+pid];
+	return pack_power;
 }
 
 
@@ -301,10 +373,27 @@ void alloc_energy_data(energy_data_t *e)
 {
 	e->DC_node_energy=(edata_t*)malloc(node_size);
 	e->AC_node_energy=(edata_t*)malloc(node_size);
+	e->DRAM_energy=(rapl_data_t *)calloc(num_packs,sizeof(rapl_data_t));
+	e->CPU_energy=(rapl_data_t *)calloc(num_packs,sizeof(rapl_data_t));
+}
+
+void alloc_power_data(power_data_t *p)
+{
+	p->avg_dram=(double*)calloc(num_packs,sizeof(double));
+	p->avg_cpu=(double*)calloc(num_packs,sizeof(double));
+}
+
+void free_power_data(power_data_t *p)
+{
+	free(p->avg_dram);
+	free(p->avg_cpu);
 }
 
 void free_energy_data(energy_data_t *e)
 {
 	free(e->DC_node_energy);
 	free(e->AC_node_energy);
+	free(e->DRAM_energy);
+	free(e->CPU_energy);
+	
 }
