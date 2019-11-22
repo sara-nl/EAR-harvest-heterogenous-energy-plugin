@@ -73,7 +73,7 @@ int init_rapl_msr(int *fd_map)
     }else get_msr_ids(fd_map);
 	
     /* Ask for msr info */
-    for(j=0;j<NUM_SOCKETS;j++) 
+    for(j=0;j<get_total_packages();j++) 
     {
         if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT)) return EAR_ERROR;
 
@@ -91,7 +91,7 @@ int read_rapl_msr(int *fd_map,unsigned long long *_values)
 	unsigned long long result;
 	int j;
 
-	for(j=0;j<NUM_SOCKETS;j++) {
+	for(j=0;j<get_total_packages();j++) {
 		/* PKG reading */	    
 	    if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_PKG_ENERGY_STATUS))
 			return EAR_ERROR;
