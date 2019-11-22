@@ -78,7 +78,7 @@ int init_msr(int *dest_fd_map)
     }
 	unsigned long long result;
 	int j;
-	for(j=0;j<NUM_SOCKETS;j++) 
+	for(j=0;j<total_packages;j++) 
     {
         int ret;
         fd_map[j] = -1;
