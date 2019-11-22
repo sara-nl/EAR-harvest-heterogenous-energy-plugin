@@ -36,6 +36,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <common/config.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/states.h>
@@ -153,6 +154,8 @@ void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_
     // Compute the difference
     for (p=0;p<num_packs;p++) dram[p]=diff_RAPL_energy(e_end->DRAM_energy[p],e_begin->DRAM_energy[p]);
 		for (p=0;p<num_packs;p++) pack[p]=diff_RAPL_energy(e_end->CPU_energy[p],e_begin->CPU_energy[p]);
+		for (p=0;p<num_packs;p++) debug("energy dram pack %d %llu\n",p,dram[p]);
+		for (p=0;p<num_packs;p++) debug("energy cpu pack %d %llu\n",p,pack[p]);
 		// eh is not needed here
 		energy_accumulated(NULL,&curr_node_energy,e_begin->DC_node_energy,e_end->DC_node_energy);
 		t_diff=difftime(e_end->sample_time,e_begin->sample_time);
@@ -163,6 +166,8 @@ void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_
     my_power->avg_dc=(double)(curr_node_energy)/(t_diff*node_units);
 		for (p=0;p<num_packs;p++) my_power->avg_dram[p]=(double)(dram[p])/(t_diff*1000000000);
     for (p=0;p<num_packs;p++) my_power->avg_cpu[p]=(double)(pack[p])/(t_diff*1000000000);
+		for (p=0;p<num_packs;p++) debug("power dram p=%d %lf\n",p,my_power->avg_dram[p]);
+		for (p=0;p<num_packs;p++) debug("power pack p=%d %lf\n",p,my_power->avg_cpu[p]);
 		free(dram);
 		free(pack);
 }
@@ -173,7 +178,7 @@ void print_power(power_data_t *my_power)
 		int p;
 		double dram_power=0,pack_power=0;
 		for (p=0;p<num_packs;p++) dram_power=dram_power+my_power->avg_dram[p];
-		for (p=0;p<num_packs;p++) pack_power=pack_power+my_power->avg_cpu[num_packs+p];
+		for (p=0;p<num_packs;p++) pack_power=pack_power+my_power->avg_cpu[p];
     // We format the end time into localtime and string
     current_t=localtime(&(my_power->end));
     strftime(s, sizeof(s), "%c", current_t);
@@ -188,7 +193,7 @@ void report_periodic_power(int fd,power_data_t *my_power)
     char s[64],spdram[256],spcpu[256],s1dram[64],s1cpu[64];
 		int p;
 		for (p=0;p<num_packs;p++) dram_power=dram_power+my_power->avg_dram[p];
-		for (p=0;p<num_packs;p++) pack_power=pack_power+my_power->avg_cpu[num_packs+p];
+		for (p=0;p<num_packs;p++) pack_power=pack_power+my_power->avg_cpu[p];
     // We format the end time into localtime and string
     current_t=localtime(&(my_power->end));
     strftime(s, sizeof(s), "%c", current_t);
@@ -201,8 +206,8 @@ void report_periodic_power(int fd,power_data_t *my_power)
 		}
 		sprintf(spcpu,"Avg. CPU %.2lf[",pack_power);
     for (p=0;p<num_packs;p++){
-      if (p<(num_packs-1)) sprintf(s1cpu,"%.2lf,",my_power->avg_cpu[num_packs+p]);
-      else sprintf(s1cpu,"%.2lf]\n",my_power->avg_cpu[num_packs+p]);
+      if (p<(num_packs-1)) sprintf(s1cpu,"%.2lf,",my_power->avg_cpu[p]);
+      else sprintf(s1cpu,"%.2lf]",my_power->avg_cpu[p]);
       strcat(spcpu,s1cpu);
     }
 
@@ -283,6 +288,7 @@ void null_power_data(power_data_t *p)
 int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 {
 	node_data_t ac=0;
+	int p;
 	
 	time(&acc_energy->sample_time);
 	if (power_mon_connected){
@@ -291,6 +297,14 @@ int read_enegy_data(ehandler_t *my_eh,energy_data_t *acc_energy)
 		pm_read_rapl(my_eh,RAPL_metrics);
 		pm_node_dc_energy(my_eh,acc_energy->DC_node_energy);
 		acc_energy->AC_node_energy=ac;
+		#if 0
+		for (p=0;p<num_packs;p++){
+			debug("DRAM pack %d =%llu\n",p,RAPL_metrics[p]);
+		}
+		for (p=0;p<num_packs;p++){
+			debug("CPU pack %d =%llu\n",p,RAPL_metrics[num_packs+p]);
+		}
+		#endif
 		memcpy(acc_energy->DRAM_energy,RAPL_metrics,num_packs*sizeof(rapl_data_t));
 		memcpy(acc_energy->CPU_energy,&RAPL_metrics[num_packs],num_packs*sizeof(rapl_data_t));
 		return POWER_MON_OK;
@@ -364,9 +378,9 @@ double accum_dram_power(power_data_t *p)
 }
 double accum_cpu_power(power_data_t *p)
 {
-	double pack_power;
+	double pack_power=0;
 	int pid;
-	for (pid=0;pid<num_packs;pid++) pack_power=pack_power+p->avg_cpu[num_packs+pid];
+	for (pid=0;pid<num_packs;pid++) pack_power=pack_power+p->avg_cpu[pid];
 	return pack_power;
 }
 

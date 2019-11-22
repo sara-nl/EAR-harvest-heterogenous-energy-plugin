@@ -1124,7 +1124,8 @@ void *eard_power_monitoring(void *noinfo) {
 
 	init_contexts();
 
-	if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS){
+	num_packs=detect_packages(NULL);
+	if (num_packs==0){
 		error("Packages cannot be detected");
 	}
 
@@ -1190,6 +1191,8 @@ void *eard_power_monitoring(void *noinfo) {
 
 			// Compute the power
 			compute_power(&e_begin, &e_end, &my_current_power);
+
+			print_power(&my_current_power);
 
 			// Save current power
 			update_historic_info(&my_current_power, &nm_diff);
