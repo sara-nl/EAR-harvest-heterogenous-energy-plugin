@@ -1154,7 +1154,9 @@ int main(int argc, char *argv[]) {
                 error("topology information can't be initialized (%d)", s);
                 _exit(1);
         }
-				if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS) error("Num packages cannot be detected");
+				num_packs=detect_packages(NULL);
+				if (num_packs==0) error("Num packages cannot be detected");
+
 				verbose(0,"Topology detected: packages %d Sockets %d, cores_per_sockets %d threads %d",
 					num_packs,node_desc.sockets,node_desc.cores,node_desc.threads);
 				verbose(0,"Initializing frequency list");

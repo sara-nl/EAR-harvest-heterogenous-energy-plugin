@@ -62,7 +62,8 @@ state_t energy_init(void **c)
 	state_t st;
 	int *pfd;
 	if (c==NULL) return EAR_ERROR;
-	if ((num_pack=detect_packages(NULL))!=EAR_SUCCESS) return EAR_ERROR;
+	num_pack=detect_packages(NULL);
+	if (num_pack==0) return EAR_ERROR;
 	*c=(int  *)malloc(sizeof(int)*num_pack);
 	if (*c==NULL) return EAR_ERROR;
 	pthread_mutex_lock(&rapl_lock);

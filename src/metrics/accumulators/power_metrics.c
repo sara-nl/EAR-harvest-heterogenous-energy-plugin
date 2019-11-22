@@ -59,7 +59,8 @@ int pm_get_data_size_rapl()
 	if (rootp){
 		// Check that 
 		if (num_packs==0){
-			if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS){
+			num_packs=detect_packages(NULL);
+			if (num_packs==0){
 				error("Error detecting num packages");
 				return EAR_ERROR;
 			}
@@ -117,7 +118,8 @@ int pm_connect(ehandler_t *my_eh)
 		if (pm_connected_status==EAR_SUCCESS){ 
 			energy_units(my_eh,&node_units);
 			energy_datasize(my_eh,&node_size);
-			if ((num_packs=detect_packages(NULL))!=EAR_SUCCESS){
+			num_packs=detect_packages(NULL);
+			if (num_packs==0){
 				error("Packages cannot be detected");
 				pm_connected_status=EAR_ERROR;
 				return EAR_ERROR;

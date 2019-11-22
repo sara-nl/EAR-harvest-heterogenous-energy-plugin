@@ -123,6 +123,7 @@ static uint node_energy_units;
 #define SIG_BEGIN 	0
 #define SIG_END		1
 
+static int num_packs=0;
 static long long *metrics_flops[2]; // (vec)
 static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[3]; // ops (vec)
@@ -148,11 +149,6 @@ static long long metrics_l3[2];
 
 static int NI=0;
 
-//TODO: remove when all metrics were unified
-#define RAPL_DRAM0 			0
-#define RAPL_DRAM1 			1
-#define RAPL_PACKAGE0 		2
-#define RAPL_PACKAGE1 		3
 
 long long metrics_time()
 {
@@ -405,12 +401,12 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
 	}
 
-	// Energy RAPL (TODO: ask for the two individual energy types separately)
-	metrics->PCK_power   = (double) metrics_rapl[s][RAPL_PACKAGE0];
-	metrics->PCK_power  += (double) metrics_rapl[s][RAPL_PACKAGE1];
+	int p;
+	metrics->PCK_power=0;
+	metrics->DRAM_power=0;
+	for (p=0;p<num_packs;p++) metrics->DRAM_power=metrics->DRAM_power+(double) metrics_rapl[s][p];
+	for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
 	metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
-	metrics->DRAM_power  = (double) metrics_rapl[s][RAPL_DRAM0];
-	metrics->DRAM_power += (double) metrics_rapl[s][RAPL_DRAM1];
 	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 }
 
@@ -424,6 +420,10 @@ int metrics_init()
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
 	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	num_packs=detect_packages(NULL);
+	if (num_packs==0){
+		verbose(0,"Error detecting number of packges");
+	}
 
 	st=energy_lib_init(system_conf);
 	if (st!=EAR_SUCCESS){
@@ -462,7 +462,7 @@ int metrics_init()
 
 	// Daemon metrics allocation (TODO: standarize data size)
 	rapl_size = eards_get_data_size_rapl();
-	rapl_elements = rapl_size / sizeof(long long);
+	rapl_elements = rapl_size / sizeof(unsigned long long);
 
 	// Allocating data for energy node metrics
 	// node_energy_datasize=eards_node_energy_data_size();
@@ -514,7 +514,7 @@ int metrics_init()
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
-	debug( "detected %d RAPL counter", rapl_elements);
+	debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);
 	debug( "detected %d bandwith counter", bandwith_elements);
 
 	metrics_reset();

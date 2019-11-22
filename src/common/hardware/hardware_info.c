@@ -55,7 +55,7 @@ int detect_packages(int **mypackage_map)
     package_map = calloc(num_cores, sizeof(int));
     
 	if (num_cpus < 1 || num_cores < 1) {
-        return EAR_ERROR;
+        return 0;
 	}
 
 	for(i=0;i<num_cores;i++) {
