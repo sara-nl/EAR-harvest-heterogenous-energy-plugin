@@ -71,7 +71,7 @@ int get_total_packages()
 /* It is supposed to be checked it is not already initialized before calling it */
 int init_msr(int *dest_fd_map)
 {
-    if ((total_packages = detect_packages(package_map)) == EAR_ERROR)
+    if ((total_packages = detect_packages(&package_map)) == EAR_ERROR)
     {
         return EAR_ERROR;
     }
