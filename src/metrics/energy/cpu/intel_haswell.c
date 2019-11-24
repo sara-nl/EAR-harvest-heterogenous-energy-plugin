@@ -90,13 +90,15 @@ int read_rapl_msr(int *fd_map,unsigned long long *_values)
 {
 	unsigned long long result;
 	int j;
+	int nump;
+	nump=get_total_packages();
 
-	for(j=0;j<get_total_packages();j++) {
+	for(j=0;j<nump;j++) {
 		/* PKG reading */	    
 	    if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_PKG_ENERGY_STATUS))
 			return EAR_ERROR;
 		result &= 0xffffffff;
-		_values[j+2] = (unsigned long long)result*(cpu_energy_units*1000000000);
+		_values[nump+j] = (unsigned long long)result*(cpu_energy_units*1000000000);
 
 		/* DRAM reading */
 	    if (msr_read(&fd_map[j], &result, sizeof result, MSR_DRAM_ENERGY_STATUS))
