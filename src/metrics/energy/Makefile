@@ -28,7 +28,7 @@ all:  $(ener_BINS) all.components
 
 install: install.components;
 
-%.install: %.install.components;
+%.install: ;
 
 clean: rclean clean.components;
 

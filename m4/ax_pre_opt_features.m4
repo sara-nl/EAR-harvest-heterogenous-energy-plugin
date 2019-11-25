@@ -71,7 +71,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		MPICC=mpicc
 	fi
 
-	if echo "$CC" | grep -q "icc"; then
+	if echo "$CC" | grep -q "icc" && test -z "$CC_FLAGS"; then
 		CC_FLAGS=-static-intel
 	fi
 
@@ -86,7 +86,11 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	if echo "$MPICC" | grep -q "/"; then
 		echo nothing &> /dev/null
 	else
-		MPICC="`which $MPICC`"
+		if which $MPICC &> /dev/null; then
+			MPICC="`which $MPICC`"
+		else
+			MPICC="mpicaca"
+		fi
 	fi
 	if echo "$CC" | grep -q "/"; then
 		echo nothing &> /dev/null
