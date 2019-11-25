@@ -5,6 +5,7 @@
 *.so
 */bin/
 */lib/
+etc/rpms/rpmbuild.sh
 
 # Autotools
 *aclocal.m4
@@ -19,14 +20,6 @@ cmake*
 CMake*
 *_trash
 *.idea
-
-# Kernels
-npbparams.h
-setparams
-kernels/NPB3.3.1/NPB3.3-OMP/bin/
-kernels/NPB3.3.1/NPB3.3-MPI/bin/
-kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/
-kernels/DGEMM/mkl_c_samples_09072016.tgz
 
 # Julita's
 DB/
@@ -43,6 +36,9 @@ coefficients_list.csv
 *accepted_intel_ptu_license
 *.csv
 *TOOLADMIN_NOTES.txt
+
+# Jordi's
+bench/
 
 # Build files
 etc/module/ear
@@ -79,6 +75,7 @@ tests/check/check.sh
 *ear_dbd_stress_test
 *ear_end_job
 *ear_energy_over_time
+*ear_events
 *ear_get_node_freq
 *ear_gm
 *ear_inc_th
@@ -108,6 +105,7 @@ tests/check/check.sh
 *ping
 *remove_learning
 *traces_to_paraver
+
 src/daemon/commands/ear_check_node_test
 src/database_cache/tmpi
 src/tests/app_api/app_api_test
@@ -138,4 +136,3 @@ src/tools/learning_validate
 src/tools/ear_events
 src/tools/show_coefficients
 src/tools/translate_coefficients
-src/tools/ear_events
