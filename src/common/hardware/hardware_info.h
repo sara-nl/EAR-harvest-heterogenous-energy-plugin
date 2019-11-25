@@ -99,4 +99,7 @@ int is_cpu_hyperthreading_capable();
 /** Returns true if turbo is enabled */
 int is_cpu_boost_enabled();
 
+/** Returns the number of packages detected*/
+int detect_packages(int **package_map);
+
 #endif

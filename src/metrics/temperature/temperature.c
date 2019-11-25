@@ -27,31 +27,35 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/config.h>
+#include <stdlib.h>
+
 #define SHOW_DEBUGS 1
+
+#include <common/config.h>
 #include <metrics/common/msr.h>
 #include <common/output/verbose.h>
 /* Thermal Domain */
 #define IA32_THERM_STATUS               0x19C
 #define IA32_PKG_THERM_STATUS           0x1B1
 #define MSR_TEMPERATURE_TARGET          0x1A2
-int throttling_temp[NUM_SOCKETS];
-static int my_fd_map[MAX_PACKAGES];
+int *throttling_temp;
 
 int init_temp_msr(int *fd_map)
 {
-		int j;
-		unsigned long long result;
+    int j;
+    unsigned long long result;
     if (is_msr_initialized()==0){
-			debug("Temperature: msr was not initialized, initializing");
-      init_msr(fd_map);
+        debug("Temperature: msr was not initialized, initializing");
+        init_msr(fd_map);
     }else get_msr_ids(fd_map);
-    for(j=0;j<NUM_SOCKETS;j++) {
-    	if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
-       throttling_temp[j] = (result >> 16);
+
+    throttling_temp = calloc(get_total_packages(), sizeof(int));
+    for(j=0;j<get_total_packages();j++) {
+        if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
+            throttling_temp[j] = (result >> 16);
     }
 
-		return EAR_SUCCESS;
+    return EAR_SUCCESS;
 }
 
 int read_temp_msr(int *fds,unsigned long long *_values)
@@ -59,7 +63,7 @@ int read_temp_msr(int *fds,unsigned long long *_values)
 	unsigned long long result;
 	int j;
 
-	for(j=0;j<NUM_SOCKETS;j++)
+	for(j=0;j<get_total_packages();j++)
 	{
 	    /* PKG reading */    
         if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
@@ -74,7 +78,7 @@ int read_temp_limit_msr(int *fds, unsigned long long *_values)
 	unsigned long long result;
 	int j;
 
-	for(j=0;j<NUM_SOCKETS;j++)
+	for(j=0;j<get_total_packages();j++)
 	{
 	    /* PKG reading */    
         if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
@@ -89,7 +93,7 @@ int reset_temp_limit_msr(int *fds)
 	unsigned long long result;
 	int j;
 
-	for(j=0;j<NUM_SOCKETS;j++)
+	for(j=0;j<get_total_packages();j++)
 	{
 	    /* PKG reading */    
         if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;

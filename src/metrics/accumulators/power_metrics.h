@@ -54,15 +54,15 @@ typedef struct energy_mon_data{
 	time_t 		sample_time;
 	node_data_t AC_node_energy;
 	node_data_t DC_node_energy;
-	rapl_data_t DRAM_energy[NUM_SOCKETS];
-	rapl_data_t CPU_energy[NUM_SOCKETS];
+	rapl_data_t *DRAM_energy;
+	rapl_data_t *CPU_energy;
 }energy_data_t;
 
 typedef struct power_data{
     time_t begin,end;
     double avg_dc,avg_ac;
-    double avg_dram[NUM_SOCKETS];
-    double avg_cpu[NUM_SOCKETS];
+    double *avg_dram;
+    double *avg_cpu;
 }power_data_t;
 
 /**  Starts power monitoring */
@@ -103,5 +103,14 @@ void null_energy_data(energy_data_t *acc_energy);
 
 void alloc_energy_data(energy_data_t *e);
 void free_energy_data(energy_data_t *e);
+
+
+void alloc_power_data(power_data_t *p);
+void free_power_data(power_data_t *p);
+void copy_power_data(power_data_t *dest,power_data_t *src);
+void null_power_data(power_data_t *p);
+double accum_node_power(power_data_t *p);
+double accum_dram_power(power_data_t *p);
+double accum_cpu_power(power_data_t *p);
 
 #endif

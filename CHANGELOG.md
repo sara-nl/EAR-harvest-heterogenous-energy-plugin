@@ -1,4 +1,8 @@
 ## Unreleased
+- ecct modififed to remove MAX_SIG_POWER and MIN_SIG_POWER
+- error fixed when using short ear.conf files
+- rpms folder modified to support rellocatable rpms /usr and /etc paths 
+- energy_nm had an error when energy_init = energy_end
 - bandwith.c modified to include NULL pointers when architecture is not detected. It is pending to migrate it to a plugin
 - energy_nm updated to be the same installed in lennox
 - metrics folder modified by topics, msr common for rapl and temperature included in msr
