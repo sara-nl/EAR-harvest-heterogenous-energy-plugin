@@ -5,6 +5,7 @@
 *.so
 */bin/
 */lib/
+etc/rpms/rpmbuild.sh
 
 # Autotools
 *aclocal.m4
