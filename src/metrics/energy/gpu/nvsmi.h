@@ -63,7 +63,7 @@ state_t nvsmi_gpu_data_alloc(pcontext_t *c, gpu_power_t **data_read);
 state_t nvsmi_gpu_data_free(pcontext_t *c, gpu_power_t **data_read);
 
 /** **/
-state_t nvsmi_gpu_data_null(pcontext_t *c, gpu_power_t **data_read);
+state_t nvsmi_gpu_data_null(pcontext_t *c, gpu_power_t *data_read);
 
 /** **/
 state_t nvsmi_gpu_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg);

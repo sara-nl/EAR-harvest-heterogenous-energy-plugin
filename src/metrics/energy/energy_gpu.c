@@ -81,7 +81,7 @@ state_t energy_gpu_count(pcontext_t *c, uint *count)
 	return ops.count(c, count);
 }
 
-state_t energy_gpu_data_alloc(pcontext_t *c, gpu_power_t **data)
+state_t energy_gpu_data_alloc(pcontext_t *c, gpu_power_t **data_read)
 {
 	return ops.data_alloc(c, data_read);
 }
@@ -91,7 +91,7 @@ state_t energy_gpu_data_free(pcontext_t *c, gpu_power_t **data_read)
 	return ops.data_free(c, data_read);
 }
 
-state_t energy_gpu_data_null(pcontext_t *c, gpu_power_t **data)
+state_t energy_gpu_data_null(pcontext_t *c, gpu_power_t *data_read)
 {
 	return ops.data_null(c, data_read);
 }

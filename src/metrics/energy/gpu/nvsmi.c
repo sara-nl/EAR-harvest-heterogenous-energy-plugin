@@ -35,7 +35,7 @@
 #include <metrics/energy/gpu/nvsmi.h>
 
 #define SZ_BUFF_BIG     4096
-#define GPU_METRICS     7
+#define GPU_METRICS     8
 
 static char buffer[SZ_BUFF_BIG];
 static uint ok = 1;
@@ -44,6 +44,7 @@ static uint ko = 0;
 typedef struct nvsmi_context_s {
 	FILE *stream;
 	uint num_gpus;
+	uint loop_ms;
 } nvsmi_context_t;
 
 state_t nvsmi_gpu_status()
@@ -53,7 +54,7 @@ state_t nvsmi_gpu_status()
 	return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_init(pcontext_t *c, uint sampling_ms)
+state_t nvsmi_gpu_init(pcontext_t *c)
 {
 	nvsmi_context_t *nvsmi_c;
 	uint num_gpus;
@@ -77,14 +78,16 @@ state_t nvsmi_gpu_init(pcontext_t *c, uint sampling_ms)
 
 state_t nvsmi_gpu_dispose(pcontext_t *c)
 {
-    if (c->context != NULL) {
-        free(c->context);
-    }
-    if (c->stream != NULL) {
-    	pclose(c->stream);
-    }
+	nvsmi_context_t *nvsmi_c;
+	if (c->context == NULL) {
+		return EAR_ERROR;
+	}
+	nvsmi_c = (nvsmi_context_t *) c->context;
+    if (nvsmi_c->stream != NULL) {
+    	pclose(nvsmi_c->stream);
+	}
+	free(c->context);
 	c->context = NULL;
-    c->stream  = NULL;
     return EAR_SUCCESS;
 }
 
@@ -113,32 +116,75 @@ state_t nvsmi_gpu_count(pcontext_t *c, uint *count)
 	return EAR_SUCCESS;
 }
 
-static state_t nvsmi_gpu_sampling_start(pcontext_t *c, uint loop_ms)
+static state_t nvsmi_gpu_sample_start(pcontext_t *c, uint loop_ms)
 {
 	static const char *command = "nvidia-smi"                                   \
-					" --query-gpu='power.draw,clocks.current.sm,"               \
+					" --query-gpu='index,power.draw,clocks.current.sm,"         \
 					"clocks.current.memory,utilization.gpu,utilization.memory," \
 					"temperature.gpu,temperature.memory'"                       \
  					" --format='csv,noheader,nounits'";
-	sprintf(buffer, "%s --loop-ms='%u'", command, loop_ms);
+	nvsmi_context_t *nvsmi_c;
 
 	//
 	if (c == NULL) {
 		return EAR_ERROR;
 	}
-	if ((c->stream = popen(command, "r")) == NULL) {
+		
+	sprintf(buffer, "%s --loop-ms='%u'", command, loop_ms);
+	nvsmi_c = (nvsmi_context_t *) c->context;
+
+	if (loop_ms == 0) {
+		nvsmi_c->loop_ms = 1000;
+	} else {
+		nvsmi_c->loop_ms = loop_ms;
+	}
+	if ((nvsmi_c->stream = popen(buffer, "r")) == NULL) {
 		return EAR_ERROR;
 	}
+
 	return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_sampling_start(pcontext_t *c, uint loop_ms)
+state_t nvsmi_gpu_sample(pcontext_t *c, uint loop_ms)
 {
-	return nvsmi_gpu_sampling_start(c, loop_ms);
+	return nvsmi_gpu_sample_start(c, loop_ms);
+}
+
+static void nvsmi_gpu_read_add(uint i, gpu_power_t *data_read, gpu_power_t *data_aux)
+{
+    data_read[i].freq_gpu_mhz += data_aux->freq_gpu_mhz;
+    data_read[i].freq_mem_mhz += data_aux->freq_mem_mhz;
+    data_read[i].util_gpu     += data_aux->util_gpu;
+    data_read[i].util_mem     += data_aux->util_mem;
+    data_read[i].temp_gpu     += data_aux->temp_gpu;
+    data_read[i].temp_mem     += data_aux->temp_mem;
+    data_read[i].power_w      += data_aux->power_w;
+	data_read[i].samples      += 1;
+}
+
+static void nvsmi_gpu_read_avrg(uint i, uint loop_ms, gpu_power_t *data_read)
+{
+	float fsamples = (float) data_read[i].samples;
+	float floop_ms = (float) loop_ms;
+
+	if (data_read[i].samples == 0 || loop_ms == 0) {
+		return;
+	}
+
+    data_read[i].freq_gpu_mhz /= data_read[i].samples;
+    data_read[i].freq_mem_mhz /= data_read[i].samples;
+    data_read[i].util_gpu     /= data_read[i].samples;
+    data_read[i].util_mem     /= data_read[i].samples;
+    data_read[i].temp_gpu     /= data_read[i].samples;
+    data_read[i].temp_mem     /= data_read[i].samples;
+	data_read[i].energy_j      = data_read[i].power_w / (fsamples * floop_ms / 1000.0);
+    data_read[i].power_w      /= fsamples;
 }
 
 state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *data_read)
 {
+	nvsmi_context_t *nvsmi_c;
+	gpu_power_t data_aux;
 	FILE *stream;
 	int num_gpus;
     int i;
@@ -149,18 +195,18 @@ state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *data_read)
     	return EAR_ERROR;
     }
 
-	num_gpus = ((nvsmi_context_t *) c->context)->num_gpus;
-	stream   = ((nvsmi_context_t *) c->context)->stream;
+	nvsmi_c  = (nvsmi_context_t *) c->context;
 
-    if (num_gpus == 0) {
+    if (nvsmi_c->num_gpus == 0) {
         return EAR_ERROR;
     }
-	if (stream == NULL) {
-		nvsmi_gpu_sampling_start(c, 1000);
+	if (nvsmi_c->stream == NULL) {
+		nvsmi_gpu_sample_start(c, 1000);
     }
 
-	#define gprint(d, i) \
-		printf("correct: %u, ", d[i].correct); \
+	#define gprint(d, i, s) \
+		printf("i: %u, ", i); \
+		printf("correct: %u (%d), ", d[i].correct, s); \
 		printf("c_g: %u, ", d[i].freq_gpu_mhz); \
 		printf("c_m: %u, ", d[i].freq_mem_mhz); \
    		printf("u_g: %u, ", d[i].util_gpu); \
@@ -170,19 +216,29 @@ state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *data_read)
 		printf("power is: %f, ", d[i].power_w); \
 		printf("energy is: %f\n", d[i].energy_j);
 
+    // Getting time
+	timestamp time;
+	timestamp_getprecise(&time);
+
 	do {
-    	i = 0;
-		s = fscanf(file, "%f, %u, %u, %u, %u, %u, %u",
-				   &data_read[i].power_w, &data_read[i].freq_gpu_mhz, &data_read[i].freq_mem_mhz,
-				   &data_read[i].util_gpu, &data_read[i].util_mem,
-				   &data_read[i].temp_gpu, &data_read[i].temp_mem);
+		s = fscanf(nvsmi_c->stream, "%u, %f, %u, %u, %u, %u, %u, %u", &i,
+				   &data_aux.power_w , &data_aux.freq_gpu_mhz, &data_aux.freq_mem_mhz,
+				   &data_aux.util_gpu, &data_aux.util_mem,
+				   &data_aux.temp_gpu, &data_aux.temp_mem);
 
-		data_read[i].correct = (s == GPU_METRICS);
-		data_read[i].time = time;
+		printf("%u %u\n", i, data_aux.power_w);
+		data_aux.time = time;
 
-		gprint(data_read, 0);
+		if (s == GPU_METRICS) {
+			nvsmi_gpu_read_add(i, data_read, &data_aux);
+		}
 	}
 	while (s == GPU_METRICS);
+
+	for (i = 0; i < nvsmi_c->num_gpus; ++i) {
+		nvsmi_gpu_read_avrg(i, nvsmi_c->loop_ms, data_read);
+		gprint(data_read, i, 0);
+	}
 
 	return EAR_SUCCESS;
 /*
@@ -276,6 +332,7 @@ state_t nvsmi_gpu_data_null(pcontext_t *c, gpu_power_t *data_read)
 	return EAR_SUCCESS;
 }
 
+/*
 static void power_gpu_read_diff(gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg, int i)
 {
 	// Averages
@@ -295,9 +352,11 @@ static void power_gpu_read_diff(gpu_power_t *data_read1, gpu_power_t *data_read2
 	data_avrg[i].power_w      = (data_read1[i].power_w + data_read2[i].power_w) / 2.0;
 	data_avrg[i].energy_j     = (data_avrg[i].power_w / time_s);
 }
+*/
 
 state_t nvsmi_gpu_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg)
 {
+	nvsmi_context_t *nvsmi_c;
 	int i;
 
 	if (c == NULL) {
@@ -306,14 +365,14 @@ state_t nvsmi_gpu_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t 
 	if ((nvsmi_c = (nvsmi_context_t *) c->context) == NULL) {
 		return EAR_ERROR;
 	}
-	if ((num_gpus = nvsmi_c->num_gpus) == 0) {
+	if (nvsmi_c->num_gpus == 0) {
 		return EAR_ERROR;
 	}
 	if (data_read1 == NULL || data_read2 == NULL || data_avrg == NULL) {
 		return EAR_ERROR;
 	}
-	for (i = 0; i < num_gpus; i++) {
-		power_gpu_read_diff(data_read1, data_read2, data_avrg, i);
+	for (i = 0; i < nvsmi_c->num_gpus; i++) {
+		//power_gpu_read_diff(data_read1, data_read2, data_avrg, i);
 	}
 
 	return EAR_SUCCESS;

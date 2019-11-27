@@ -47,6 +47,7 @@ typedef struct gpu_power_s
 	float energy_j;
 	float power_w;
 	uint correct;
+	uint samples;
 } gpu_power_t;
 
 state_t energy_gpu_init(pcontext_t *c);

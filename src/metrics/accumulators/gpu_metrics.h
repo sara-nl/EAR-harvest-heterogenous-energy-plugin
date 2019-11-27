@@ -32,12 +32,22 @@
 
 #include <metrics/energy/energy_gpu.h>
 
-state_t acc_gpu_metrics_init(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
+state_t acc_gpu_metrics_init(pcontext_t *c);
 
-state_t acc_gpu_metrics_disclose(pcontext_t *c, gpu_power_t **data_read, gpu_power_t **data_avrg);
-
-state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read, gpu_power_t *data_avrg);
+state_t acc_gpu_metrics_disclose(pcontext_t *c);
 
 state_t acc_gpu_metrics_count(pcontext_t *c, uint *count);
+
+state_t acc_gpu_mertics_sample(pcontext_t *c, uint loop_ms);
+
+state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read);
+
+state_t acc_gpu_metrics_data_alloc(pcontext_t *c, gpu_power_t **data_read);
+
+state_t acc_gpu_metrics_data_free(pcontext_t *c, gpu_power_t **data_read);
+
+state_t acc_gpu_metrics_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg);
+
+state_t acc_gpu_metrics_data_null(pcontext_t *c, gpu_power_t *data_read);
 
 #endif // ACCUMULATORS_GPU_METRICS_H

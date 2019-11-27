@@ -29,23 +29,48 @@
 
 #include <metrics/accumulators/gpu_metrics.h>
 
-state_t acc_gpu_metrics_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t acc_gpu_metrics_init(pcontext_t *c)
 {
-	// Count GPUS
-	return energy_gpu_init(c, dread, davrg);
+	return energy_gpu_init(c);
 }
 
-state_t acc_gpu_metrics_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t acc_gpu_metrics_dispose(pcontext_t *c)
 {
-	return energy_gpu_dispose(c, dread, davrg);
-}
-
-state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg)
-{
-	return energy_gpu_read(c, dread, davrg);
+	return energy_gpu_dispose(c);
 }
 
 state_t acc_gpu_metrics_count(pcontext_t *c, uint *count)
 {
 	return energy_gpu_count(c, count);
 }
+
+state_t acc_gpu_mertics_sample(pcontext_t *c, uint loop_ms)
+{
+	return energy_gpu_sample(c, loop_ms);
+}
+
+state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read)
+{
+	return energy_gpu_read(c, data_read);
+}
+
+state_t acc_gpu_metrics_data_alloc(pcontext_t *c, gpu_power_t **data_read)
+{
+	return energy_gpu_data_alloc(c, data_read);
+}
+
+state_t acc_gpu_metrics_data_free(pcontext_t *c, gpu_power_t **data_read)
+{
+	return energy_gpu_data_free(c, data_read);
+}
+
+state_t acc_gpu_metrics_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg)
+{
+	return energy_gpu_data_diff(c, data_read1, data_read2, data_avrg);
+}
+
+state_t acc_gpu_metrics_data_null(pcontext_t *c, gpu_power_t *data_read)
+{
+	return energy_gpu_data_null(c, data_read);
+}
+

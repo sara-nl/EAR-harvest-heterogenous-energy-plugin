@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	int s;
 	int i;
 
-	s = acc_gpu_metrics_init(&c, &pr, &pd);
+	s = acc_gpu_metrics_init(&c);
 	printf("power_gpu_init: %d\n", s);
 
 	if (state_fail(s)) {
@@ -32,12 +32,15 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
+	s = acc_gpu_metrics_data_alloc(&c, &pr);
+	printf("power_gpu_data_alloc: %d\n", s);
+
 	while (n > 0)
 	{ 
-		s = acc_gpu_metrics_read(&c, pr, pd);
+		s = acc_gpu_metrics_read(&c, pr);
 		printf("power_gpu_read: %d\n", s);
 
-#if 1
+#if 0
 		#define gprint(d, i) \
 		printf("correct: %u, ", d[i].correct); \
 		printf("c_g: %u, ", d[i].freq_gpu_mhz); \
@@ -61,7 +64,7 @@ int main(int argc, char *argv[])
 		n--;
 	}
 
-	acc_gpu_metrics_dispose(&c, &pr, &pd);
+	acc_gpu_metrics_dispose(&c);
 	
 	return 0;
 }
