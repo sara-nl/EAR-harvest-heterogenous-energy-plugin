@@ -50,8 +50,7 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 
 		if (new_job) {
 			eards_new_job(&sd->job.app);
-			plug_verbose(sp, 3, "application after new job:");
-			plug_print_application(&sd->job.app);
+			plug_print_application(sp, &sd->job.app);
 		} else {
 			eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
 		}
