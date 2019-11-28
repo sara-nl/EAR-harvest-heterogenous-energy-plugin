@@ -38,8 +38,6 @@ state_t acc_gpu_metrics_disclose(pcontext_t *c);
 
 state_t acc_gpu_metrics_count(pcontext_t *c, uint *count);
 
-state_t acc_gpu_mertics_sample(pcontext_t *c, uint loop_ms);
-
 state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read);
 
 state_t acc_gpu_metrics_data_alloc(pcontext_t *c, gpu_power_t **data_read);

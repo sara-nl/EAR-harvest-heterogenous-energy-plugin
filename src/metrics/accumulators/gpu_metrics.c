@@ -44,11 +44,6 @@ state_t acc_gpu_metrics_count(pcontext_t *c, uint *count)
 	return energy_gpu_count(c, count);
 }
 
-state_t acc_gpu_mertics_sample(pcontext_t *c, uint loop_ms)
-{
-	return energy_gpu_sample(c, loop_ms);
-}
-
 state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read)
 {
 	return energy_gpu_read(c, data_read);

@@ -38,6 +38,7 @@
 typedef struct gpu_power_s
 {
 	timestamp time;
+	ulong samples;
 	ulong freq_gpu_mhz;
 	ulong freq_mem_mhz;
 	ulong util_gpu; // percent
@@ -54,8 +55,6 @@ state_t energy_gpu_init(pcontext_t *c);
 state_t energy_gpu_dispose(pcontext_t *c);
 
 state_t energy_gpu_count(pcontext_t *c, uint *count);
-
-state_t energy_gpu_sample(pcontext_t *c, uint loop_ms);
 
 state_t energy_gpu_read(pcontext_t *c, gpu_power_t *data_read);
 

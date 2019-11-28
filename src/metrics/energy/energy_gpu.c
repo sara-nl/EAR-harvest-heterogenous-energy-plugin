@@ -35,7 +35,6 @@ struct energy_gpu_ops
 	state_t (*init)			(pcontext_t *c);
 	state_t (*dispose)		(pcontext_t *c);
 	state_t (*count)		(pcontext_t *c, uint *count);
-	state_t (*sample)		(pcontext_t *c, uint loop_ms);
 	state_t (*read)			(pcontext_t *c, gpu_power_t  *dr);
 	state_t (*data_alloc)	(pcontext_t *c, gpu_power_t **dr);
 	state_t (*data_free)	(pcontext_t *c, gpu_power_t **dr);
@@ -48,7 +47,6 @@ state_t energy_gpu_init(pcontext_t *c)
 	if (state_ok(nvsmi_gpu_status())) {
 		ops.init		= nvsmi_gpu_init;
 		ops.dispose		= nvsmi_gpu_dispose;
-		ops.sample      = nvsmi_gpu_sample;
 		ops.read		= nvsmi_gpu_read;
 		ops.count		= nvsmi_gpu_count;
 		ops.data_alloc	= nvsmi_gpu_data_alloc;
@@ -64,11 +62,6 @@ state_t energy_gpu_init(pcontext_t *c)
 state_t energy_gpu_dispose(pcontext_t *c)
 {
 	return ops.dispose(c);
-}
-
-state_t energy_gpu_sample(pcontext_t *c, uint loop_ms)
-{
-	return ops.sample(c, loop_ms);
 }
 
 state_t energy_gpu_read(pcontext_t *c, gpu_power_t *data_read)
