@@ -139,6 +139,15 @@ static int frequency_exists(spank_t sp, ulong *freqs, int n_freqs, ulong freq)
 	return 0;
 }
 
+int plug_print_application(spank_t sp, application_t *app)
+{
+	plug_verbose(sp, 3, "application summary");
+	plug_verbose(sp, 3, "job/step/name '%lu'/'%lu'/'%s'", app->job.id, app->job.step_id, app->job.app_id);
+	plug_verbose(sp, 3, "user/group/acc '%s'/'%s'/'%s'", app->job.user_id, app->job.group_id, app->job.user_acc);
+	plug_verbose(sp, 3, "policy/th/freq '%s'/'%f'/'%lu'", app->job.policy, app->job.th, app->job.def_f);
+	plug_verbose(sp, 3, "learning/tag '%u'/'%s'", app->is_learning, app->job.energy_tag);
+}
+
 int plug_read_application(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_read_application");
@@ -198,11 +207,7 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 		strcpy(app->job.energy_tag, "");
 	}
 
-	plug_verbose(sp, 3, "application summary");
-	plug_verbose(sp, 3, "job/step/name '%lu'/'%lu'/'%s'", app->job.id, app->job.step_id, app->job.app_id);
-	plug_verbose(sp, 3, "user/group/acc '%s'/'%s'/'%s'", app->job.user_id, app->job.group_id, app->job.user_acc);
-	plug_verbose(sp, 3, "policy/th/freq '%s'/'%f'/'%lu'", app->job.policy, app->job.th, app->job.def_f);
-	plug_verbose(sp, 3, "learning/tag '%u'/'%s'", app->is_learning, app->job.energy_tag);
+	plug_print_application(app);
 
 	return ESPANK_SUCCESS;
 }
