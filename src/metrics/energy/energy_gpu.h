@@ -38,16 +38,15 @@
 typedef struct gpu_power_s
 {
 	timestamp time;
-	uint freq_gpu_mhz;
-	uint freq_mem_mhz;
-	uint util_gpu; // percent
-	uint util_mem; // percent
-	uint temp_gpu; // celsius
-	uint temp_mem; // celsius
-	float energy_j;
-	float power_w;
+	ulong freq_gpu_mhz;
+	ulong freq_mem_mhz;
+	ulong util_gpu; // percent
+	ulong util_mem; // percent
+	ulong temp_gpu; // celsius
+	ulong temp_mem; // celsius
+	double energy_j;
+	double power_w;
 	uint correct;
-	uint samples;
 } gpu_power_t;
 
 state_t energy_gpu_init(pcontext_t *c);
