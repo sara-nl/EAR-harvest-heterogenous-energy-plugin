@@ -9,8 +9,8 @@
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
 %define name    ear-lennox
-%define release   1   
-%define version   3.0 
+%define release   0   
+%define version   3.1
 
 # Information
 # Prefix  Just for when missing any prefix
@@ -56,8 +56,8 @@ cp    -rp ${EAR_INSTALL_PATH}/bin/econtrol %{buildroot}/usr/bin/
 cp    -rp ${EAR_INSTALL_PATH}/include/ear.h %{buildroot}/usr/include/
 cp    -p  ${EAR_SOURCE_PATH}/etc/module/ear.in %{buildroot}/etc/module/
 touch %{buildroot}/etc/module/ear
-cp    -p  ${EAR_SOURCE_PATH}/etc/conf/ear.conf.in %{buildroot}/etc/ear/ear.conf.template.in
-cp    -p  ${EAR_SOURCE_PATH}/etc/conf/ear.conf.full.in %{buildroot}/etc/ear/ear.conf.full.template.in
+cp    -p  ${EAR_SOURCE_PATH}/etc/conf/ear.conf.template.in %{buildroot}/etc/ear/ear.conf.template.in
+cp    -p  ${EAR_SOURCE_PATH}/etc/conf/ear.conf.full.template.in %{buildroot}/etc/ear/ear.conf.full.template.in
 touch %{buildroot}/etc/ear/ear.conf.template
 touch %{buildroot}/etc/ear/ear.conf.full.template
 cp  -p  ${EAR_SOURCE_PATH}/etc/slurm/ear.plugstack.conf.in %{buildroot}/etc/slurm/
@@ -86,7 +86,22 @@ exit
 %attr(-, -, -) /etc/*
 
 #Comments for change log
+# * [dow mon dd yyyy] [packager [email address]] [RPM version]-list of changes
 %changelog
+* Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
+-Plugins for energy, power policies, power models and traces
+* Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
+-ear.conf policy definition modified
+* Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
+-Support for multiple EAR library versions more automatic. SLURM_EAR_MPI_VERSION for automatic selection.
+* Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
+-Support for N sockets per node
+* Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
+-Support for Multiple profiling libraries using LD_PRELOAD mechanism
+* Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
+-CPUpower nd Freeipmi dependency removed
+* Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
+-Temperature reported with node_metrics. Not in DB
 
 # RPMBuild context
 %clean
