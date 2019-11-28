@@ -2,7 +2,14 @@ CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS)
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 ######## RULES
 
-all: tracer.o tracer_dynais.o tracer_paraver.o tracer_dynais.so tracer_paraver.so tracer_debug.o tracer_debug.so tracer_cache.o tracer_cache.so
+tracer_BINS = \
+	tracer_paraver.so
+tracer_PATH = $(DESTDIR)/lib/plugins/tracer
+tracer_OBJ = \
+  tracer_paraver.o
+tracer_PERM = 0775
+
+all: $(tracer_OBJS) $(tracer_BINS)
 
 allt: DEFINES=-DEAR_GUI
 allt: tracer.o tracer_dynais.o tracer_paraver.o
@@ -19,7 +26,7 @@ tracer_cache.so:tracer_cache.o $(SRCDIR)/metrics/cache/cpu/papi.o
 
 ######## OPTIONS
 
-install: ;
+install: tracer.ginstall;
 
 clean: rclean;
 
