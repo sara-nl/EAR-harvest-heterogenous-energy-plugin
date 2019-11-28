@@ -140,7 +140,7 @@ static state_t nvsmi_gpu_sample_create(pcontext_t *c, uint loop_ms)
 	return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_init(pcontext_t *c)
+state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms)
 {
 	// Getting the total GPUs (it works also as init flag)
 	if (samp_num_gpus == 0) {

@@ -50,7 +50,7 @@ typedef struct gpu_power_s
 	uint correct;
 } gpu_power_t;
 
-state_t energy_gpu_init(pcontext_t *c);
+state_t energy_gpu_init(pcontext_t *c, uint loop_ms);
 
 state_t energy_gpu_dispose(pcontext_t *c);
 

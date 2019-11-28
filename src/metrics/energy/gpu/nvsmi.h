@@ -39,16 +39,13 @@ state_t nvsmi_gpu_status();
   * Also the data average structure (data_avrg) is allocated if its pointer it is not NULL.
   * This data computes the average of the current read metric and the previous one, and also
   * computes the energy and time between two different readings. **/
-state_t nvsmi_gpu_init(pcontext_t *c);
+state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms);
 
 /** Frees the allocated memory of the context and data readings structures. **/
 state_t nvsmi_gpu_dispose(pcontext_t *c);
 
 /** Counts the number of GPUs. **/
 state_t nvsmi_gpu_count(pcontext_t *c, uint *count);
-
-/** */
-state_t nvsmi_gpu_sample(pcontext_t *c, uint loop_ms);
 
 /** Reads the GPU metrics and returns its values (data_read). If previous data reading is
   * given (data_read), the averages of the current reading and the previous is computed and

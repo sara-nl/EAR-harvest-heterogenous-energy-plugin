@@ -32,7 +32,7 @@
 
 struct energy_gpu_ops
 {
-	state_t (*init)			(pcontext_t *c);
+	state_t (*init)			(pcontext_t *c, uint loop_ms);
 	state_t (*dispose)		(pcontext_t *c);
 	state_t (*count)		(pcontext_t *c, uint *count);
 	state_t (*read)			(pcontext_t *c, gpu_power_t  *dr);
@@ -42,7 +42,7 @@ struct energy_gpu_ops
 	state_t (*data_diff)	(pcontext_t *c, gpu_power_t  *dr1, gpu_power_t *dr2, gpu_power_t *da);
 } ops;
 
-state_t energy_gpu_init(pcontext_t *c)
+state_t energy_gpu_init(pcontext_t *c, uint loop_ms)
 {
 	if (state_ok(nvsmi_gpu_status())) {
 		ops.init		= nvsmi_gpu_init;
@@ -53,7 +53,7 @@ state_t energy_gpu_init(pcontext_t *c)
 		ops.data_free	= nvsmi_gpu_data_free;
 		ops.data_null	= nvsmi_gpu_data_null;
 		ops.data_diff	= nvsmi_gpu_data_diff;
-		return ops.init(c);
+		return ops.init(c, loop_ms);
 	} else {
 		return EAR_INCOMPATIBLE;
 	}
