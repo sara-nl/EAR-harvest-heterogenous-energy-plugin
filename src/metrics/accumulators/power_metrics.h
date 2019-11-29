@@ -41,24 +41,29 @@
 #include <metrics/accumulators/types.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/energy/energy_cpu.h>
+#include <metrics/energy/energy_gpu.h>
 
 typedef long long rapl_data_t;
-typedef edata_t node_data_t;
+typedef edata_t   node_data_t;
 
 typedef struct energy_mon_data {
-	time_t 		sample_time;
-	node_data_t AC_node_energy;
-	node_data_t DC_node_energy;
-	rapl_data_t *DRAM_energy;
-	rapl_data_t *CPU_energy;
+	time_t 		 sample_time;
+	node_data_t  AC_node_energy;
+	node_data_t  DC_node_energy;
+	rapl_data_t  *DRAM_energy;
+	rapl_data_t  *CPU_energy;
+	ulong        *GPU_energy;
 } energy_data_t;
 
-typedef struct power_data{
-    time_t begin, end;
-    double avg_dc, avg_ac;
+typedef struct power_data {
+    time_t begin;
+	time_t end;
+    double avg_dc; // node power (AC)
+    double avg_ac; // node power (DC)
     double *avg_dram;
     double *avg_cpu;
-}power_data_t;
+    double *avg_gpu;
+} power_data_t;
 
 
 /**  Starts power monitoring */

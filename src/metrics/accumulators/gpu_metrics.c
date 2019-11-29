@@ -44,27 +44,27 @@ state_t acc_gpu_metrics_count(pcontext_t *c, uint *count)
 	return energy_gpu_count(c, count);
 }
 
-state_t acc_gpu_metrics_read(pcontext_t *c, gpu_power_t *data_read)
+state_t acc_gpu_metrics_read(pcontext_t *c, gpu_energy_t *data_read)
 {
 	return energy_gpu_read(c, data_read);
 }
 
-state_t acc_gpu_metrics_data_alloc(pcontext_t *c, gpu_power_t **data_read)
+state_t acc_gpu_metrics_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
 {
 	return energy_gpu_data_alloc(c, data_read);
 }
 
-state_t acc_gpu_metrics_data_free(pcontext_t *c, gpu_power_t **data_read)
+state_t acc_gpu_metrics_data_free(pcontext_t *c, gpu_energy_t **data_read)
 {
 	return energy_gpu_data_free(c, data_read);
 }
 
-state_t acc_gpu_metrics_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg)
+state_t acc_gpu_metrics_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
 {
 	return energy_gpu_data_diff(c, data_read1, data_read2, data_avrg);
 }
 
-state_t acc_gpu_metrics_data_null(pcontext_t *c, gpu_power_t *data_read)
+state_t acc_gpu_metrics_data_null(pcontext_t *c, gpu_energy_t *data_read)
 {
 	return energy_gpu_data_null(c, data_read);
 }

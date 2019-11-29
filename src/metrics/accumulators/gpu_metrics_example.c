@@ -10,7 +10,7 @@
 
 int main(int argc, char *argv[])
 {
-	gpu_power_t *dr1, *dr2, *dra;
+	gpu_energy_t *dr1, *dr2, *dra;
 	pcontext_t c;
 	int n = 100;
 	int m; 

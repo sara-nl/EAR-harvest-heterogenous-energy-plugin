@@ -44,7 +44,7 @@ static pthread_t       samp_t_accumu;
 static FILE           *samp_t_stream;
 static uint            samp_num_gpus;
 static uint            samp_enabled;
-static gpu_power_t    *samp_data;
+static gpu_energy_t    *samp_data;
 static uint            samp_ms;
 
 typedef struct nvsmi_context_s {
@@ -57,7 +57,7 @@ state_t nvsmi_gpu_status()
 	return EAR_SUCCESS;
 }
 
-static void nvsmi_gpu_sample_add(uint i, gpu_power_t *data_aux)
+static void nvsmi_gpu_sample_add(uint i, gpu_energy_t *data_aux)
 {
     timestamp_getprecise(&samp_data[i].time);
 	samp_data[i].freq_gpu_mhz += data_aux->freq_gpu_mhz;
@@ -73,7 +73,7 @@ static void nvsmi_gpu_sample_add(uint i, gpu_power_t *data_aux)
 
 static void *nvsmi_gpu_sample_main(void *p)
 {
-	static gpu_power_t data_aux;
+	static gpu_energy_t data_aux;
 	int i;
 	int s;
 	
@@ -153,7 +153,7 @@ state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms)
 	}
 	// Allocating internal accumulators
 	if (samp_data == NULL){
-		samp_data = calloc(samp_num_gpus, sizeof(gpu_power_t));
+		samp_data = calloc(samp_num_gpus, sizeof(gpu_energy_t));
 		if (samp_data == NULL) {
 			return EAR_ERROR;
 		}
@@ -198,6 +198,7 @@ state_t nvsmi_gpu_count(pcontext_t *c, uint *count)
 
 	if (samp_num_gpus > 0) {
 		*count = samp_num_gpus;
+		return EAR_SUCCESS;
 	}
 
 	//
@@ -214,24 +215,24 @@ state_t nvsmi_gpu_count(pcontext_t *c, uint *count)
 	return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *data_read)
+state_t nvsmi_gpu_read(pcontext_t *c, gpu_energy_t *data_read)
 {
 	if (samp_enabled == 0) {
-		memset(data_read, 0, sizeof(gpu_power_t) * samp_num_gpus);
+		memset(data_read, 0, sizeof(gpu_energy_t) * samp_num_gpus);
 		return EAR_ERROR;
 	}
 
 	pthread_mutex_lock(&samp_lock);
-	memcpy(data_read, samp_data, samp_num_gpus * sizeof(gpu_power_t));
+	memcpy(data_read, samp_data, samp_num_gpus * sizeof(gpu_energy_t));
 	pthread_mutex_unlock(&samp_lock);
 
 	return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_data_alloc(pcontext_t *c, gpu_power_t **data_read)
+state_t nvsmi_gpu_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
 {
 	if (data_read != NULL) {
-		*data_read = calloc(samp_num_gpus, sizeof(gpu_power_t));
+		*data_read = calloc(samp_num_gpus, sizeof(gpu_energy_t));
 		if (*data_read == NULL) {
 			return EAR_ERROR;
 		}
@@ -239,28 +240,28 @@ state_t nvsmi_gpu_data_alloc(pcontext_t *c, gpu_power_t **data_read)
 	return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_data_free(pcontext_t *c, gpu_power_t **data_read)
+state_t nvsmi_gpu_data_free(pcontext_t *c, gpu_energy_t **data_read)
 {
 	if (data_read != NULL) {
 		free(*data_read);
 	}
 }
 
-state_t nvsmi_gpu_data_null(pcontext_t *c, gpu_power_t *data_read)
+state_t nvsmi_gpu_data_null(pcontext_t *c, gpu_energy_t *data_read)
 {
 	if (data_read != NULL) {
-		memset(data_read, 0, samp_num_gpus * sizeof(gpu_power_t));
+		memset(data_read, 0, samp_num_gpus * sizeof(gpu_energy_t));
 	}
 	return EAR_SUCCESS;
 }
 
-static void nvsmi_gpu_read_diff(gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg, int i)
+static void nvsmi_gpu_read_diff(gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg, int i)
 {
 	ulong  usamps = data_read2[i].samples - data_read1[i].samples; 
 	double fsamps = (double) usamps; 
 
 	if (data_read2[i].samples <= data_read1[i].samples) {
-		memset(&data_avrg[i], 0, sizeof(gpu_power_t));
+		memset(&data_avrg[i], 0, sizeof(gpu_energy_t));
 		return;		
 	}
 
@@ -277,7 +278,7 @@ static void nvsmi_gpu_read_diff(gpu_power_t *data_read1, gpu_power_t *data_read2
 
 
 // TODO: Overflow control.
-state_t nvsmi_gpu_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg)
+state_t nvsmi_gpu_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
 {
 	int i;
 

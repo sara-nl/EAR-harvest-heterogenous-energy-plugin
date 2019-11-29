@@ -35,11 +35,11 @@ struct energy_gpu_ops
 	state_t (*init)			(pcontext_t *c, uint loop_ms);
 	state_t (*dispose)		(pcontext_t *c);
 	state_t (*count)		(pcontext_t *c, uint *count);
-	state_t (*read)			(pcontext_t *c, gpu_power_t  *dr);
-	state_t (*data_alloc)	(pcontext_t *c, gpu_power_t **dr);
-	state_t (*data_free)	(pcontext_t *c, gpu_power_t **dr);
-	state_t (*data_null)	(pcontext_t *c, gpu_power_t  *dr);
-	state_t (*data_diff)	(pcontext_t *c, gpu_power_t  *dr1, gpu_power_t *dr2, gpu_power_t *da);
+	state_t (*read)			(pcontext_t *c, gpu_energy_t  *dr);
+	state_t (*data_alloc)	(pcontext_t *c, gpu_energy_t **dr);
+	state_t (*data_free)	(pcontext_t *c, gpu_energy_t **dr);
+	state_t (*data_null)	(pcontext_t *c, gpu_energy_t  *dr);
+	state_t (*data_diff)	(pcontext_t *c, gpu_energy_t  *dr1, gpu_energy_t *dr2, gpu_energy_t *da);
 } ops;
 
 state_t energy_gpu_init(pcontext_t *c, uint loop_ms)
@@ -64,7 +64,7 @@ state_t energy_gpu_dispose(pcontext_t *c)
 	return ops.dispose(c);
 }
 
-state_t energy_gpu_read(pcontext_t *c, gpu_power_t *data_read)
+state_t energy_gpu_read(pcontext_t *c, gpu_energy_t *data_read)
 {
 	return ops.read(c, data_read);
 }
@@ -74,22 +74,27 @@ state_t energy_gpu_count(pcontext_t *c, uint *count)
 	return ops.count(c, count);
 }
 
-state_t energy_gpu_data_alloc(pcontext_t *c, gpu_power_t **data_read)
+state_t energy_gpu_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
 {
 	return ops.data_alloc(c, data_read);
 }
 
-state_t energy_gpu_data_free(pcontext_t *c, gpu_power_t **data_read)
+state_t energy_gpu_data_free(pcontext_t *c, gpu_energy_t **data_read)
 {
 	return ops.data_free(c, data_read);
 }
 
-state_t energy_gpu_data_null(pcontext_t *c, gpu_power_t *data_read)
+state_t energy_gpu_data_null(pcontext_t *c, gpu_energy_t *data_read)
 {
 	return ops.data_null(c, data_read);
 }
 
-state_t energy_gpu_data_diff(pcontext_t *c, gpu_power_t *data_read1, gpu_power_t *data_read2, gpu_power_t *data_avrg)
+state_t energy_gpu_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
 {
 	return ops.data_diff(c, data_read1, data_read2, data_avrg);
+}
+
+state_t energy_gpu_data_copy(pcontext_t *c, gpu_energy_t *data_dst, gpu_energy_t *data_src)
+{
+	return EAR_SUCCESS;
 }
