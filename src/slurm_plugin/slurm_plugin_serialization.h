@@ -37,6 +37,8 @@
  */
 int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd);
 
+int plug_print_application(spank_t sp, application_t *app);
+
 int plug_read_application(spank_t sp, plug_serialization_t *sd);
 
 int plug_read_hostlist(spank_t sp, plug_serialization_t *sd);

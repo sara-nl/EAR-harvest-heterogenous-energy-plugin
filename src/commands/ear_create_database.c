@@ -84,10 +84,17 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
 {
     char query[256];
     if (strlen(db_user_pass) > 1)
-        sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", db_user, db_user_pass);
-    else
+    {
         sprintf(query, "CREATE USER '%s'@'%%'", db_user);
-    run_query(connection, query);
+        run_query(connection, query);
+        sprintf(query, "SET PASSWORD FOR '%s'@'%%' = PASSWORD('%s')", db_user, db_user_pass);
+        run_query(connection, query);
+    }
+    else
+    {
+        sprintf(query, "CREATE USER '%s'@'%%'", db_user);
+        run_query(connection, query);
+    }
 
     sprintf(query, "GRANT SELECT, INSERT ON %s.* TO '%s'@'%%'", db_name, db_user);
     run_query(connection, query);
@@ -95,10 +102,17 @@ void create_users(MYSQL *connection, char *db_name, char *db_user, char *db_user
     if (strlen(commands_user))
     {       
         if (strlen(commands_pass) > 1)
-            sprintf(query, "CREATE USER '%s'@'%%' IDENTIFIED BY '%s'", commands_user, commands_pass);
-        else
+        {
             sprintf(query, "CREATE USER '%s'@'%%'", commands_user);
-        run_query(connection, query);
+            run_query(connection, query);
+            sprintf(query, "SET PASSWORD FOR '%s'@'%%' = PASSWORD('%s')", commands_user, commands_pass);
+            run_query(connection, query);
+        }
+        else
+        {
+            sprintf(query, "CREATE USER '%s'@'%%'", commands_user);
+            run_query(connection, query);
+        }
     
         sprintf(query, "GRANT SELECT ON %s.* TO '%s'@'%%'", db_name, commands_user);
         run_query(connection, query);

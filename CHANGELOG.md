@@ -1,4 +1,6 @@
 ## Unreleased
+- ear.conf and ear.conf.full replaced by ear.conf.template and ear.conf.full.template
+- More info with SLURM_COMP_VERBOSE env var
 - ecct modififed to remove MAX_SIG_POWER and MIN_SIG_POWER
 - error fixed when using short ear.conf files
 - rpms folder modified to support rellocatable rpms /usr and /etc paths 

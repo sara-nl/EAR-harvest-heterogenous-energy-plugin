@@ -32,6 +32,7 @@
 
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
+#include <slurm_plugin/slurm_plugin_serialization.h>
 
 int plug_shared_readservs(spank_t sp, plug_serialization_t *sd);
 int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd);

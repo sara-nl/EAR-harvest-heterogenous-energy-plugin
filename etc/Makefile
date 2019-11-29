@@ -10,6 +10,7 @@ gen_FOLDERS = $(DESTDIR)/bin \
               $(DESTDIR)/lib/plugins/energy \
               $(DESTDIR)/lib/plugins/models \
               $(DESTDIR)/lib/plugins/policies \
+              $(DESTDIR)/lib/plugins/tracer \
               $(DESTDIR)/sbin
 
 etc_FOLDERS = $(ETCDIR) \
@@ -19,7 +20,7 @@ etc_FOLDERS = $(ETCDIR) \
               $(ETCDIR)/systemd \
               $(ETCDIR)/slurm 
 
-conf_BINS = ear.conf
+conf_BINS = ear.conf.template ear.conf.full.template
 conf_FOLD = conf
 conf_PATH = $(ETCDIR)/ear
 conf_PERM = 0660
