@@ -185,7 +185,8 @@ int _opt_register(spank_t sp, int ac, char **av)
 	{
 		if ((s = spank_option_register(sp, &spank_options_manual[i])) != ESPANK_SUCCESS)
 		{
-			plug_verbose(NULL, 2, "unable to register SPANK option %s", spank_options_manual[i].name);
+			plug_verbose(NULL_C, 2, "unable to register SPANK option %s",
+						 spank_options_manual[i].name);
 			return s;
 		}
 	}
@@ -201,7 +202,7 @@ int _opt_register(spank_t sp, int ac, char **av)
 
 int _opt_ear (int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_ear");
+	plug_verbose(NULL_C, 2, "function _opt_ear");
 
 	if (!remote)
 	{
@@ -213,11 +214,11 @@ int _opt_ear (int val, const char *optarg, int remote)
 		strtoup(buffer);
 
 		if (strcmp(buffer, "ON") == 0) {
-			setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+			setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 		} else if (strcmp(buffer, "OFF") == 0) {
-			setenv_agnostic(NULL, Var.comp_libr.cmp, "0", 1);
+			setenv_agnostic(NULL_C, Var.comp_libr.cmp, "0", 1);
 		} else {
-			plug_verbose(NULL, 2, "Invalid enabling value '%s'", buffer);
+			plug_verbose(NULL_C, 2, "Invalid enabling value '%s'", buffer);
 			return ESPANK_BAD_ARG;
 		}
 	}
@@ -227,7 +228,7 @@ int _opt_ear (int val, const char *optarg, int remote)
 
 int _opt_ear_learning (int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_ear_learning");
+	plug_verbose(NULL_C, 2, "function _opt_ear_learning");
 
 	int ioptarg;
 
@@ -241,8 +242,8 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 		}
 
 		snprintf(buffer, 4, "%d", ioptarg);
-		setenv_agnostic(NULL, Var.learning.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.learning.loc, buffer, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -250,7 +251,7 @@ int _opt_ear_learning (int val, const char *optarg, int remote)
 
 int _opt_ear_policy (int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_ear_policy");
+	plug_verbose(NULL_C, 2, "function _opt_ear_policy");
 
 	if (!remote)
 	{
@@ -266,12 +267,12 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 			return ESPANK_STOP;
 		}*/
         if (strlen(buffer) < 1) {
-			plug_verbose(NULL, 2, "Invalid policy '%s'", buffer);
+			plug_verbose(NULL_C, 2, "Invalid policy '%s'", buffer);
 			return ESPANK_STOP;
         }
 
-		setenv_agnostic(NULL, Var.policy.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.policy.loc, buffer, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -279,7 +280,7 @@ int _opt_ear_policy (int val, const char *optarg, int remote)
 
 int _opt_ear_frequency (int val, const char *optarg, int remote)
 {
-    plug_verbose(NULL, 2, "function _opt_ear_threshold");
+    plug_verbose(NULL_C, 2, "function _opt_ear_threshold");
 
     ulong loptarg;
 
@@ -291,8 +292,8 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
 		
 		loptarg = (ulong) atol(optarg);
 		snprintf(buffer, 16, "%lu", loptarg);
-		setenv_agnostic(NULL, Var.frequency.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.frequency.loc, buffer, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
     }
 
     return ESPANK_SUCCESS;
@@ -300,7 +301,7 @@ int _opt_ear_frequency (int val, const char *optarg, int remote)
 
 int _opt_ear_threshold (int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_ear_threshold");
+	plug_verbose(NULL_C, 2, "function _opt_ear_threshold");
 
 	double foptarg = -1;
 
@@ -314,8 +315,8 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 		}
 
 		snprintf(buffer, 8, "%0.2f", foptarg);
-		setenv_agnostic(NULL, Var.policy_th.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.policy_th.loc, buffer, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -323,7 +324,7 @@ int _opt_ear_threshold (int val, const char *optarg, int remote)
 
 int _opt_ear_user_db (int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_ear_user_db");
+	plug_verbose(NULL_C, 2, "function _opt_ear_user_db");
 
 	if (!remote)
 	{
@@ -331,8 +332,8 @@ int _opt_ear_user_db (int val, const char *optarg, int remote)
 			return ESPANK_BAD_ARG;
 		}
 
-		setenv_agnostic(NULL, Var.path_usdb.loc, optarg, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.path_usdb.loc, optarg, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -340,7 +341,7 @@ int _opt_ear_user_db (int val, const char *optarg, int remote)
 
 int _opt_ear_verbose (int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_ear_verbose");
+	plug_verbose(NULL_C, 2, "function _opt_ear_verbose");
 
 	int ioptarg;
 
@@ -355,8 +356,8 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 		if (ioptarg > 4) ioptarg = 4;
 		snprintf(buffer, 4, "%d", ioptarg);
 
-		setenv_agnostic(NULL, Var.verbose.loc, buffer, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.verbose.loc, buffer, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -364,7 +365,7 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 int _opt_ear_traces (int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_ear_traces");
+	plug_verbose(NULL_C, 2, "function _opt_ear_traces");
 
 	if (!remote)
 	{
@@ -372,8 +373,8 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 			return ESPANK_BAD_ARG;
 		}
 
-		setenv_agnostic(NULL, Var.path_trac.loc, optarg, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.path_trac.loc, optarg, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -381,7 +382,7 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 
 int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_mpi_dist");
+	plug_verbose(NULL_C, 2, "function _opt_mpi_dist");
 
 	if (!remote)
 	{
@@ -390,9 +391,9 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 		}
 
 		if (strcmp(optarg, "default") != 0) {
-			setenv_agnostic(NULL, Var.version.loc, optarg, 1);
+			setenv_agnostic(NULL_C, Var.version.loc, optarg, 1);
 		}
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 
 	return (ESPANK_SUCCESS);
@@ -400,7 +401,7 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 
 int _opt_ear_tag(int val, const char *optarg, int remote)
 {
-	plug_verbose(NULL, 2, "function _opt_tag");
+	plug_verbose(NULL_C, 2, "function _opt_tag");
 
 	if (!remote)
 	{
@@ -408,8 +409,8 @@ int _opt_ear_tag(int val, const char *optarg, int remote)
 			return ESPANK_BAD_ARG;
 		}
 
-		setenv_agnostic(NULL, Var.tag.loc, optarg, 1);
-		setenv_agnostic(NULL, Var.comp_libr.cmp, "1", 1);
+		setenv_agnostic(NULL_C, Var.tag.loc, optarg, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
 	return ESPANK_SUCCESS;
 }

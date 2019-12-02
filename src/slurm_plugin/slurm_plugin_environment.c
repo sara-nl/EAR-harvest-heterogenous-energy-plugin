@@ -188,7 +188,7 @@ int unsetenv_agnostic(spank_t sp, char *var)
 
 int setenv_agnostic(spank_t sp, char *var, const char *val, int ow)
 {
-	if (sp == NULL || plug_context_is(sp, Context.local)) {
+	if (sp == NULL_C || plug_context_is(sp, Context.local)) {
 		return setenv_local(var, val, ow);
 	} else {
 		return setenv_remote(sp, var, val, ow);
@@ -259,7 +259,7 @@ int apenv_agnostic(char *dst, char *src, int dst_capacity)
 
 int exenv_agnostic(spank_t sp, char *var)
 {
-	if (sp == NULL || plug_context_is(sp, Context.local)) {
+	if (sp == NULL_C || plug_context_is(sp, Context.local)) {
 		return exenv_local(var);
         } else {
 		return exenv_remote(sp, var);

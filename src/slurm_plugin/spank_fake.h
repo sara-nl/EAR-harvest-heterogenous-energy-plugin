@@ -35,8 +35,21 @@
  *  with SLURM; if not, write to the Free Software Foundation, Inc.,
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301  USA.
 \*****************************************************************************/
+
 #ifndef SPANK_H
 #define SPANK_H
+
+/*
+ * SLURM fakes
+ */
+
+#define NO_VAL     (0xfffffffe)
+
+typedef hostlist_t *char;
+
+char *slurm_hostlist_create(hostlist_t *hostlist);
+
+char *slurm_hostlist_shift(hostlist_t *hostlist);
 
 /*  SPANK handle. Plug-in's context for running SLURM job
  */
