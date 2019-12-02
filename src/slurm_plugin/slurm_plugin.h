@@ -30,8 +30,13 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
+#if 0
 #include <slurm/spank.h>
 #include <slurm/slurm.h>
+#else
+#include <slurm_plugin/spank.h>
+//#include <slurm_plugin/slurm_plugin_fake.h>
+#endif
 #include <common/sizes.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
