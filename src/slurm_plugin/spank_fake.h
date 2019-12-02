@@ -45,11 +45,11 @@
 
 #define NO_VAL     (0xfffffffe)
 
-typedef hostlist_t *char;
+typedef char *hostlist_t;
 
-char *slurm_hostlist_create(hostlist_t *hostlist);
+char *slurm_hostlist_create(hostlist_t hostlist);
 
-char *slurm_hostlist_shift(hostlist_t *hostlist);
+char *slurm_hostlist_shift(hostlist_t hostlist);
 
 /*  SPANK handle. Plug-in's context for running SLURM job
  */
