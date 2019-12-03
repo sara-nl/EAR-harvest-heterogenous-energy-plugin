@@ -40,7 +40,17 @@
 #define SPANK_H
 
 /*
- * SLURM fakes
+ * CUSTOM
+ */
+
+enum spank_action {
+    S_ACT_ERROR,
+    S_ACT_INIT,
+    S_ACT_EXIT,
+};
+
+/*
+ * SLURM
  */
 
 #define NO_VAL     (0xfffffffe)
@@ -50,6 +60,10 @@ typedef char *hostlist_t;
 char *slurm_hostlist_create(hostlist_t hostlist);
 
 char *slurm_hostlist_shift(hostlist_t hostlist);
+
+/*
+ * SPANK
+ */
 
 /*  SPANK handle. Plug-in's context for running SLURM job
  */
