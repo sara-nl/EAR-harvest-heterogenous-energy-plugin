@@ -81,7 +81,7 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 
 static int _opt_register_mpi(spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "function _opt_register_pol");
+	plug_verbose(sp, 2, "function _opt_register_mpi");
 
 	folder_t folder;
 	char *file;

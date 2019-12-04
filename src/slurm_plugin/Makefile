@@ -35,16 +35,19 @@ plug_HDRS = \
 
 ######## RULES
 
-all: earplug.o $(plug_BINS)
+all: fakeslurm $(plug_BINS)
 #all: slurm_plugin.o slurm_plugin_environment.o slurm_plugin_options.o \
 	slurm_plugin_rcom_eard.o slurm_plugin_rcom_eargmd.o slurm_plugin_rcom_shared.o \
 	slurm_plugin_serialization.o
 
-earplug.o: $(plug_SRCS) $(plug_HDRS)
-	$(CC) $(CFLAGS) -c $(plug_SRCS)
-
 earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
+
+slurm_plugin.o: $(plug_SRCS) $(plug_HDRS)
+	$(CC) $(CFLAGS) -c $(plug_SRCS)
+
+fakeslurm: spank_fake.c spank_fake.h slurm_plugin.o
+	$(CC) $(CFLAGS) -o $@ $< $(plug_SRCS) $(plug_OBJS)
 
 ######## OPTIONS
 

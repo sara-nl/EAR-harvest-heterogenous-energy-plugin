@@ -56,6 +56,7 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 		}
 
 		eards_remote_disconnect();
+		
 		free(node);
 	}
 

@@ -31,14 +31,30 @@
 #define EAR_SLURM_PLUGIN_ENVIRONMENT_H
 
 // Verbosity
-#define plug_verbose(sp, level, ...) \
-        if (plug_verbosity_test(sp, level) == 1) { \
-                slurm_error("EARPLUG, " __VA_ARGS__); \
+#ifdef SLURM_FAKE
+	#define plug_verbose(sp, level, ...) \
+        	if (plug_verbosity_test(sp, level) == 1) { \
+			printf("%s ", plug_context_str(sp)); \
+			printf(__VA_ARGS__); \
+			printf("\n"); \
         }
-#define plug_error(sp, ...) \
-        if (plug_verbosity_test(sp, 1) == 1) { \
-                slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
-        }
+	#define plug_error(sp, ...) \
+        	if (plug_verbosity_test(sp, 1) == 1) { \
+			printf("%s ", plug_context_str(sp)); \
+			printf(__VA_ARGS__); \
+			printf("\n"); \
+        	}
+#else
+	#define plug_verbose(sp, level, ...) \
+        	if (plug_verbosity_test(sp, level) == 1) { \
+                	slurm_error("EARPLUG, " __VA_ARGS__); \
+        	}
+	#define plug_error(sp, ...) \
+        	if (plug_verbosity_test(sp, 1) == 1) { \
+			slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
+        	}
+#endif
+
 
 typedef char *plug_component_t;
 typedef int   plug_context_t;
@@ -58,11 +74,13 @@ struct component_s {
 };
 
 struct context_s {
+	plug_context_t error;
 	plug_context_t srun;
 	plug_context_t sbatch;
 	plug_context_t remote;
 	plug_context_t local;
 } Context __attribute__((weak)) = {
+	.error  = S_CTX_ERROR,
 	.srun   = S_CTX_LOCAL,
 	.sbatch = S_CTX_ALLOCATOR,
 	.remote = S_CTX_REMOTE,
@@ -137,7 +155,7 @@ struct variables_s {
 .path_inst = { .rem = "SLURM_ERINST",        .ear = "" },
 .node_list = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
 .context   = { .rem = "SLURM_ERCNTX",        .ear = "" },
-.ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"      }s,
+.ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"      },
 .ld_libr   = { .rem = "",                    .ear = "LD_LIBRARY_PATH" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
 .version   = { .loc = "SLURM_EAR_MPI_VERSION", .ear = ""              }
@@ -170,6 +188,8 @@ void printenv_agnostic(spank_t sp, char *var);
 int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled);
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp);
+
+char *plug_context_str(spank_t sp);
 
 int plug_context_is(spank_t sp, plug_context_t ctxt);
 

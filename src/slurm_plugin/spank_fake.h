@@ -43,10 +43,14 @@
  * CUSTOM
  */
 
-enum spank_action {
-    S_ACT_ERROR,
-    S_ACT_INIT,
-    S_ACT_EXIT,
+struct action_s {
+        int error;
+        int init;
+        int exit;
+} Action __attribute__((weak)) = {
+        .error = 0,
+        .init  = 1,
+        .exit  = 2,
 };
 
 /*
@@ -432,8 +436,6 @@ spank_err_t spank_job_control_unsetenv (spank_t sp, const char *name);
  *  SLURM logging functions which are exported to plugins.
  */
 extern void slurm_info (const char *format, ...)
-  __attribute__ ((format (printf, 1, 2)));
-extern void slurm_error (const char *format, ...)
   __attribute__ ((format (printf, 1, 2)));
 extern void slurm_verbose (const char *format, ...)
   __attribute__ ((format (printf, 1, 2)));

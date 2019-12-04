@@ -303,6 +303,19 @@ int plug_component_isenabled(spank_t sp, plug_component_t comp)
  * Context
  */
 
+char *plug_context_str(spank_t sp)
+{
+        if (plug_context_is(sp, Context.srun)) {
+                return "srun";
+        } else if (plug_context_is(sp, Context.sbatch)) {
+                return "sbatch";
+        } else if (plug_context_is(sp, Context.remote)) {
+                return "remote";
+        } else {
+                return "unknown";
+        }
+}
+
 int plug_context_is(spank_t sp, plug_context_t ctxt)
 {
 	int cur = spank_context();
