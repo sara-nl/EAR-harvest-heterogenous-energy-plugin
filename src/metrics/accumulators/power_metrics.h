@@ -80,7 +80,7 @@ void end_power_monitoring(ehandler_t *eh);
 int read_enegy_data(ehandler_t *eh,energy_data_t *acc_energy);
 
 /** Computes the power between two energy measurements */
-void compute_power(energy_data_t *e_begin,energy_data_t *e_end,power_data_t *my_power);
+void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *my_power);
 
 /*
  *
@@ -136,5 +136,7 @@ double accum_node_power(power_data_t *p);
 double accum_dram_power(power_data_t *p);
 
 double accum_cpu_power(power_data_t *p);
+
+double accum_gpu_power(power_data_t *p);
 
 #endif

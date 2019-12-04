@@ -40,6 +40,7 @@ struct energy_gpu_ops
 	state_t (*data_free)	(pcontext_t *c, gpu_energy_t **dr);
 	state_t (*data_null)	(pcontext_t *c, gpu_energy_t  *dr);
 	state_t (*data_diff)	(pcontext_t *c, gpu_energy_t  *dr1, gpu_energy_t *dr2, gpu_energy_t *da);
+	state_t (*data_copy)	(pcontext_t *c, gpu_energy_t  *dst, gpu_energy_t *src);
 } ops;
 
 state_t energy_gpu_init(pcontext_t *c, uint loop_ms)
@@ -53,45 +54,46 @@ state_t energy_gpu_init(pcontext_t *c, uint loop_ms)
 		ops.data_free	= nvsmi_gpu_data_free;
 		ops.data_null	= nvsmi_gpu_data_null;
 		ops.data_diff	= nvsmi_gpu_data_diff;
+		ops.data_copy   = NULL;
 		return ops.init(c, loop_ms);
 	} else {
-		return EAR_INCOMPATIBLE;
+		state_return_msg(EAR_INCOMPATIBLE, 0, "no energy GPU API available");
 	}
 }
 
 state_t energy_gpu_dispose(pcontext_t *c)
 {
-	return ops.dispose(c);
+	preturn(ops.dispose, c);
 }
 
 state_t energy_gpu_read(pcontext_t *c, gpu_energy_t *data_read)
 {
-	return ops.read(c, data_read);
+	preturn(ops.read, c, data_read);
 }
 
 state_t energy_gpu_count(pcontext_t *c, uint *count)
 {
-	return ops.count(c, count);
+	preturn(ops.count, c, count);
 }
 
 state_t energy_gpu_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
 {
-	return ops.data_alloc(c, data_read);
+	preturn(ops.data_alloc, c, data_read);
 }
 
 state_t energy_gpu_data_free(pcontext_t *c, gpu_energy_t **data_read)
 {
-	return ops.data_free(c, data_read);
+	preturn(ops.data_free, c, data_read);
 }
 
 state_t energy_gpu_data_null(pcontext_t *c, gpu_energy_t *data_read)
 {
-	return ops.data_null(c, data_read);
+	preturn(ops.data_null, c, data_read);
 }
 
 state_t energy_gpu_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
 {
-	return ops.data_diff(c, data_read1, data_read2, data_avrg);
+	preturn(ops.data_diff, c, data_read1, data_read2, data_avrg);
 }
 
 state_t energy_gpu_data_copy(pcontext_t *c, gpu_energy_t *data_dst, gpu_energy_t *data_src)

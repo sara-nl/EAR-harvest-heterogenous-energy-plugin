@@ -58,12 +58,15 @@ static int 		num_packs = 0;
 gpu_energy_t *gpu_data;
 pcontext_t gpu_context;
 uint       gpu_loop_ms;
+uint       gpu_init;
 uint       gpu_num;
 
 // Things to do
 //	1: replace time calls by our common/system/time.
 //  2: do not accept any context parameter (they are internal).
 //	3: add the word 'node' to the node energy API.
+//	4: 'ponitoring' o 'read_enegy'.
+//	5: return state_t
 
 /*
  *
@@ -88,9 +91,13 @@ static int pm_get_data_size_rapl()
 
 static void pm_disconnect(ehandler_t *my_eh)
 {
-	if (rootp) {
+	if (rootp)
+	{
 		energy_dispose(my_eh);
-		energy_gpu_dispose(gpu_context);
+
+		if (gpu_init == 1) {
+			energy_gpu_dispose(&gpu_context);
+		}
 	}
 }
 
@@ -170,11 +177,20 @@ static int pm_connect(ehandler_t *my_eh)
 	memset((char *) RAPL_metrics, 0, rapl_size);
 
 	// Initializing GPU energy
-	energy_gpu_init(&gpu_context, gpu_loop_ms);
+	state_t s = energy_gpu_init(&gpu_context, gpu_loop_ms);
 
-	// Allocating GPU energy data
-	energy_gpu_count(&gpu_context, &gpu_num);
-	energy_gpu_data_alloc(&gpu_context, &gpu_data);
+	if (state_ok(s))
+	{
+		// Allocating GPU energy data
+		s = energy_gpu_count(&gpu_context, &gpu_num);
+		s = energy_gpu_data_alloc(&gpu_context, &gpu_data);
+		
+		gpu_init = state_ok(s) && gpu_num > 0;
+	}
+
+	if (gpu_init == 0) {
+		error("GPU initialization APIs failed (%s)", intern_error_str);
+	}
 
 	return pm_connected_status;
 }
@@ -238,16 +254,19 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 	energy_gpu_read(&gpu_context, gpu_data);
 
 	for (p = 0; p < gpu_num; ++p) {
-		acc_energy->GPU_energy = gpu_data[i].energy_j;
+		acc_energy->GPU_energy[p] = (ulong) gpu_data[p].energy_j;
 	}
 
 	// Debugging data
 	#ifdef SHOW_DEBUGS
 	for (p = 0; p < num_packs; p++) {
-		debug("DRAM pack %d =%llu\n", p, RAPL_metrics[p]);
+		debug("DRAM pack %d = %llu", p, RAPL_metrics[p]);
 	}
 	for (p = 0; p < num_packs; p++) {
-		debug("CPU pack %d =%llu\n", p, RAPL_metrics[num_packs + p]);
+		debug("CPU pack %d = %llu", p, RAPL_metrics[num_packs + p]);
+	}
+	for (p = 0; p < gpu_num  ; p++) {
+		debug("GPU pack %d = %lu", p, gpu_data[p].energy_j);
 	}
 	#endif
 
@@ -258,24 +277,29 @@ void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *m
 {
 	unsigned long curr_node_energy;
 	rapl_data_t *dram, *pack;
+	ulong *gpus;
 	double t_diff;
 	int p;
 
 	// CPU/DRAM
 	dram = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
 	pack = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
+	gpus = (ulong *) calloc(gpu_num, sizeof(ulong));
 
 	// Compute the difference
 	for (p = 0; p < num_packs; p++) dram[p] = diff_RAPL_energy(e_end->DRAM_energy[p], e_begin->DRAM_energy[p]);
 	for (p = 0; p < num_packs; p++) pack[p] = diff_RAPL_energy(e_end->CPU_energy[p] , e_begin->CPU_energy[p]);
+	for (p = 0; p < gpu_num  ; p++) gpus[p] = e_end->GPU_energy[p] - e_begin->GPU_energy[p];
 
 	#ifdef SHOW_DEBUGS
 	for (p = 0; p < num_packs; p++) debug("energy dram pack %d %llu", p, dram[p]);
 	for (p = 0; p < num_packs; p++) debug("energy cpu pack %d %llu" , p, pack[p]);
+	for (p = 0; p < gpu_num  ; p++) debug("energy gpu pack %d %llu" , p, pack[p]);
 	#endif
 
 	// eh is not needed here
 	energy_accumulated(NULL, &curr_node_energy, e_begin->DC_node_energy, e_end->DC_node_energy);
+
 
 	t_diff           = difftime(e_end->sample_time, e_begin->sample_time);
 	my_power->begin  = e_begin->sample_time;
@@ -286,15 +310,17 @@ void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *m
 
 	for (p = 0; p < num_packs; p++) my_power->avg_dram[p] = (double) (dram[p]) / (t_diff * 1000000000);
 	for (p = 0; p < num_packs; p++) my_power->avg_cpu[p]  = (double) (pack[p]) / (t_diff * 1000000000);
-	for (p = 0; p < num_packs; p++) my_power->avg_gpu[p]  = 0;
+	for (p = 0; p < gpu_num  ; p++) my_power->avg_gpu[p]  = (double) (gpus[p]) / (t_diff);
 
 	#ifdef SHOW_DEBUGS
-	for (p = 0; p < num_packs; p++) debug("power dram p=%d %lf\n", p, my_power->avg_dram[p]);
-	for (p = 0; p < num_packs; p++) debug("power pack p=%d %lf\n", p, my_power->avg_cpu[p]);
+	for (p = 0; p < num_packs; p++) debug("power dram p = %d %lf", p, my_power->avg_dram[p]);
+	for (p = 0; p < num_packs; p++) debug("power pack p = %d %lf", p, my_power->avg_cpu[p]);
+	for (p = 0; p < gpu_num  ; p++) debug("power gpu  p = %d %lf", p, my_power->avg_gpu[p]);
 	#endif
 
 	free(dram);
 	free(pack);
+	free(gpus);
 }
 
 /*
@@ -314,10 +340,10 @@ void print_energy_data(energy_data_t *e)
 
 	// Node
 	energy_to_str(NULL, nodee, e->DC_node_energy);
-	printf("time %s DC %s", s, nodee);
+	printf("%s: energy (J) for node (%s)", s, nodee);
 
 	//
-	printf("DRAM (");
+	printf(", DRAM (");
 	for (j = 0; j < num_packs; j++) {
 		if (j < (num_packs - 1)) {
 			printf("%llu,", e->DRAM_energy[j]);
@@ -327,7 +353,7 @@ void print_energy_data(energy_data_t *e)
 	}
 
 	//
-	printf("CPU( ");
+	printf(", CPU (");
 	for (j = 0; j < num_packs; j++) {
 		if (j < (num_packs - 1)) {
 			printf("%llu,", e->CPU_energy[j]);
@@ -335,10 +361,12 @@ void print_energy_data(energy_data_t *e)
 			printf("%llu)", e->CPU_energy[j]);
 		}
 	}
+	
 	//
-	printf("GPU( ");
-	for (j = 0; j < gpus_num; j++) {
-		if (j < (gpus_num - 1)) {
+	for (j = 0; j < gpu_num; j++) {
+		if (j == 0) {
+			printf(", GPU (");
+		} if (j < (gpu_num - 1)) {
 			printf("%llu,", e->GPU_energy[j]);
 		} else {
 			printf("%llu)", e->GPU_energy[j]);
@@ -350,8 +378,9 @@ void print_energy_data(energy_data_t *e)
 
 void print_power(power_data_t *my_power)
 {
-	struct tm *current_t;
 	double dram_power = 0, pack_power = 0, gpu_power = 0;
+	struct tm *current_t;
+	char s[64];
 	int p;
 
 	// CPU/DRAM
@@ -363,7 +392,7 @@ void print_power(power_data_t *my_power)
 	current_t = localtime(&(my_power->end));
 	strftime(s, sizeof(s), "%c", current_t);
 
-	printf("%s : Avg. DC node power %.2lf Avg. DRAM %.2lf Avg. CPU %.2lf, Avg. GPU %.2lf\n",
+	printf("%s: avg. power (W) for node %.2lf, for DRAM %.2lf, for CPU %.2lf, for GPU %.2lf\n",
 		   s, my_power->avg_dc, dram_power, pack_power, gpu_power);
 }
 
@@ -383,28 +412,29 @@ void report_periodic_power(int fd, power_data_t *my_power)
 	strftime(s, sizeof(s), "%c", current_t);
 
 	//
-	sprintf(spdram, "Avg. DRAM %.2lf[", dram_power);
+	sprintf(spdram, ", for DRAM %.2lf (", dram_power);
 	for (p = 0; p < num_packs; p++) {
-		if (p < (num_packs - 1)) sprintf(s1dram, "%.2lf,", my_power->avg_dram[p]);
-		else sprintf(s1dram, "%.2lf]", my_power->avg_dram[p]);
+		if (p < (num_packs - 1)) sprintf(s1dram, "%.2lf, ", my_power->avg_dram[p]);
+		else sprintf(s1dram, "%.2lf)", my_power->avg_dram[p]);
 		strcat(spdram, s1dram);
 	}
 	//
-	sprintf(spcpu, "Avg. CPU %.2lf[", pack_power);
+	sprintf(spcpu, ", for CPU %.2lf (", pack_power);
 	for (p = 0; p < num_packs; p++) {
-		if (p < (num_packs - 1)) sprintf(s1cpu, "%.2lf,", my_power->avg_cpu[p]);
-		else sprintf(s1cpu, "%.2lf]", my_power->avg_cpu[p]);
+		if (p < (num_packs - 1)) sprintf(s1cpu, "%.2lf, ", my_power->avg_cpu[p]);
+		else sprintf(s1cpu, "%.2lf)", my_power->avg_cpu[p]);
 		strcat(spcpu, s1cpu);
 	}
 	//
-	sprintf(spgpu, "Avg. GPU %.2lf[", gpu_power);
+	spgpu[0] = '\0';
 	for (p = 0; p < gpu_num; p++) {
-		if (p < (gpu_num - 1)) sprintf(s1gpu, "%.2lf,", my_power->avg_gpu[p]);
-		else sprintf(s1gpu, "%.2lf]", my_power->avg_gpu[p]);
+		if (p == 0) sprintf(spgpu, ", for GPU %.2lf (", gpu_power);
+		if (p < (gpu_num - 1)) sprintf(s1gpu, "%.2lf, ", my_power->avg_gpu[p]);
+		else sprintf(s1gpu, "%.2lf)", my_power->avg_gpu[p]);
 		strcat(spgpu, s1gpu);
 	}
 
-	sprintf(my_buffer, "%s : Avg. DC node power %.2lf %s %s %s\n",
+	sprintf(my_buffer, "%s: avg. power (W) for node %.2lf%s%s%s\n",
 			s, my_power->avg_dc, spdram, spcpu, spgpu);
 	write(fd, my_buffer, strlen(my_buffer));
 }
@@ -548,7 +578,7 @@ double accum_dram_power(power_data_t *p)
 	double dram_power = 0;
 	int pid;
 	for (pid = 0; pid < num_packs; pid++) {
-		debug("Acuum_dram %d %lf total %lf", pid, p->avg_dram[pid], dram_power);
+		debug("accum_dram %d %lf total %lf", pid, p->avg_dram[pid], dram_power);
 		dram_power = dram_power + p->avg_dram[pid];
 	}
 	return dram_power;
@@ -559,7 +589,7 @@ double accum_cpu_power(power_data_t *p)
 	double pack_power = 0;
 	int pid;
 	for (pid = 0; pid < num_packs; pid++) {
-		debug("Acuum_cpu %d %lf total %lf", pid, p->avg_cpu[pid], pack_power);
+		debug("accum_cpu %d %lf total %lf", pid, p->avg_cpu[pid], pack_power);
 		pack_power = pack_power + p->avg_cpu[pid];
 	}
 	return pack_power;
@@ -570,7 +600,7 @@ double accum_gpu_power(power_data_t *p)
 	double gpu_power = 0;
 	int pid;
 	for (pid = 0; pid < gpu_num; pid++) {
-		debug("Acuum_gpu %d %lf total %lf", pid, p->avg_gpu[pid], gpu_power);
+		debug("accum_gpu %d %lf total %lf", pid, p->avg_gpu[pid], gpu_power);
 		gpu_power = gpu_power + p->avg_gpu[pid];
 	}
 	return gpu_power;

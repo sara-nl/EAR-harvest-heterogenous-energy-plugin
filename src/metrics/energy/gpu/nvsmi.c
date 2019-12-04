@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#include <common/output/verbose.h>
 #include <metrics/energy/energy_gpu.h>
 #include <metrics/energy/gpu/nvsmi.h>
 
@@ -53,7 +54,9 @@ typedef struct nvsmi_context_s {
 
 state_t nvsmi_gpu_status()
 {
-	static const char *command = "nvidia-smi";
+	if (system("which nvidia-smi &> /dev/null")) {
+		return EAR_ERROR;
+	}
 	return EAR_SUCCESS;
 }
 
@@ -132,7 +135,7 @@ static state_t nvsmi_gpu_sample_create(pcontext_t *c, uint loop_ms)
 	samp_enabled = 2;
 
 	if (pthread_create(&samp_t_accumu, NULL, nvsmi_gpu_sample_main, NULL)) {
-		debug"thread accumulator (pthread) failed");
+		debug("thread accumulator (pthread) failed");
 		return EAR_ERROR;
 	}
 	samp_enabled = 3;
@@ -145,10 +148,10 @@ state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms)
 	// Getting the total GPUs (it works also as init flag)
 	if (samp_num_gpus == 0) {
 		if (state_fail(nvsmi_gpu_count(c, &samp_num_gpus))) {
-			return EAR_ERROR;
+			state_return_msg(EAR_ERROR, 0, "impossible to connect with NVIDIA-SMI");
 		}
 		if (samp_num_gpus == 0) {
-			return EAR_ERROR;
+			state_return_msg(EAR_ERROR, 0, "no GPUs detected");
 		}
 	}
 	// Allocating internal accumulators
@@ -162,6 +165,7 @@ state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms)
 	if (samp_enabled == 0) {
 		if (state_fail(nvsmi_gpu_sample_create(c, 1000))) {
 			nvsmi_gpu_dispose(c);
+			state_return_msg(EAR_ERROR, 0, "impossible to open monitor threads");
 		}
 	}
 	return EAR_SUCCESS;
@@ -175,11 +179,11 @@ static state_t nvsmi_gpu_sample_cancel()
 
 	if (stream_enabled) {
 		pclose(samp_t_stream);
-		samp_t_stream = NULL;
 	}
 	if (accumu_enabled) {
 		pthread_join(samp_t_accumu, NULL);
 	}
+	samp_t_stream = NULL;
 	return EAR_SUCCESS;
 }
 
@@ -217,8 +221,9 @@ state_t nvsmi_gpu_count(pcontext_t *c, uint *count)
 
 state_t nvsmi_gpu_read(pcontext_t *c, gpu_energy_t *data_read)
 {
+	memset(data_read, 0, sizeof(gpu_energy_t) * samp_num_gpus);
+	
 	if (samp_enabled == 0) {
-		memset(data_read, 0, sizeof(gpu_energy_t) * samp_num_gpus);
 		return EAR_ERROR;
 	}
 
