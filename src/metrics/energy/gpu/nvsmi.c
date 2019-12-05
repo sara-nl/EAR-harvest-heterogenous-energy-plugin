@@ -250,6 +250,7 @@ state_t nvsmi_gpu_data_free(pcontext_t *c, gpu_energy_t **data_read)
 	if (data_read != NULL) {
 		free(*data_read);
 	}
+	return EAR_SUCCESS;
 }
 
 state_t nvsmi_gpu_data_null(pcontext_t *c, gpu_energy_t *data_read)
