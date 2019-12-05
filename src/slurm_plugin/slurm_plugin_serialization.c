@@ -148,6 +148,7 @@ int plug_print_application(spank_t sp, application_t *app)
 	plug_verbose(sp, 3, "policy/th/freq '%s'/'%f'/'%lu'", app->job.policy, app->job.th, app->job.def_f);
 	plug_verbose(sp, 3, "learning/tag '%u'/'%s'", app->is_learning, app->job.energy_tag);
 	plug_verbose(sp, 3, "------------------------------");
+	return EAR_SUCCESS;
 }
 
 int plug_read_application(spank_t sp, plug_serialization_t *sd)

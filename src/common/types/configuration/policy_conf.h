@@ -58,7 +58,7 @@ typedef struct policy_conf
     //uint num_settings;
    	float def_freq;
     uint p_state;
-    char is_available; //default at 0, not available
+    uint is_available; //default at 0, not available
 } policy_conf_t;
 
 

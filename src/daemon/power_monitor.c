@@ -484,27 +484,29 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		my_policy = &default_policy_context;
 		return my_policy;
 	}
-	verbose(VJOBPMON+1,"configuring policy for user %u policy %s freq %lu th %lf is_learning %u",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
+	debug("configuring policy for user %u policy %s freq %lu th %lf is_learning %u",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
+		debug("Policy requested %s",appID->job.policy);
     p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
+		debug("Policy %s is ID %d",appID->job.policy,p_id);
     /* Use cluster conf function */
     if (p_id!=EAR_ERROR){
     	    my_policy=get_my_policy_conf(my_node_conf,p_id);
 			if (!my_policy->is_available){
-				verbose(VJOBPMON+1,"User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
+				debug("User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
 				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
 			}
 			copy_policy_conf(&per_job_conf,my_policy);
 			my_policy=&per_job_conf;
     }else{
-		verbose(VJOBPMON+1,"Invalid policy %s ",appID->job.policy);
+			debug("Invalid policy %s ",appID->job.policy);
         my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
 		if (my_policy==NULL){
 			error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 		    authorized_context.p_state=1;
-            int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+            int mo_pid = policy_name_to_id("monitoring", &my_cluster_conf);
             if (mo_pid != EAR_ERROR)
                 authorized_context.policy = mo_pid;
             else

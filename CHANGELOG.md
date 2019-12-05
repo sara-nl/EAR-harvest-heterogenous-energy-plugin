@@ -1,4 +1,5 @@
 ## Unreleased
+- cluster_conf_read error fixed when reading "privileged" specification for policies
 - ear.conf and ear.conf.full replaced by ear.conf.template and ear.conf.full.template
 - More info with SLURM_COMP_VERBOSE env var
 - ecct modififed to remove MAX_SIG_POWER and MIN_SIG_POWER
