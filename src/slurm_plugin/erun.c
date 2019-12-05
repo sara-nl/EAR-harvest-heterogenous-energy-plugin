@@ -51,8 +51,11 @@ spank_context_t spank_context (void)
 	return _sp;
 }
 
-spank_err_t spank_option_register (spank_t spank, struct spank_option *opt)
+spank_err_t spank_option_register (spank_t sd, struct spank_option *opt)
 {
+	plug_verbose(sd, 0, "--%s\t%s",
+				 opt->name, opt->usage);
+
 	return ESPANK_SUCCESS;
 }
 
@@ -188,8 +191,13 @@ int execute(int argc, char *argv[])
 int main(int argc, char *argv[])
 {
 	//
-	if (arguments(argc, argv)) {
-		return help(argc, argv);
+	if (arguments(argc, argv))
+	{
+		help(argc, argv);
+
+		pipeline(argc, argv, Context.error, Action.init);
+
+		return 0;
 	}
 
 	//

@@ -31,18 +31,18 @@
 #define EAR_SLURM_PLUGIN_ENVIRONMENT_H
 
 // Verbosity
-#ifdef SLURM_FAKE
+#ifdef ERUN
 	#define plug_verbose(sp, level, ...) \
         	if (plug_verbosity_test(sp, level) == 1) { \
-			printf("%s ", plug_context_str(sp)); \
-			printf(__VA_ARGS__); \
-			printf("\n"); \
+				printf("%s ", plug_context_str(sp)); \
+				printf(__VA_ARGS__); \
+				printf("\n"); \
         }
 	#define plug_error(sp, ...) \
         	if (plug_verbosity_test(sp, 1) == 1) { \
-			printf("%s ", plug_context_str(sp)); \
-			printf(__VA_ARGS__); \
-			printf("\n"); \
+				printf("%s ERROR, ", plug_context_str(sp)); \
+				printf(__VA_ARGS__); \
+				printf("\n"); \
         	}
 #else
 	#define plug_verbose(sp, level, ...) \
@@ -51,7 +51,7 @@
         	}
 	#define plug_error(sp, ...) \
         	if (plug_verbosity_test(sp, 1) == 1) { \
-			slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
+				slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
         	}
 #endif
 

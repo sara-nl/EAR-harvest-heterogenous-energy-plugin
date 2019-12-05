@@ -30,11 +30,11 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
-#ifndef SLURM_FAKE
+#ifndef ERUN
 #include <slurm/slurm.h>
 #include <slurm/spank.h>
 #else
-#include <slurm_plugin/spank_fake.h>
+#include <slurm_plugin/erun.h>
 #endif
 
 #include <common/sizes.h>
@@ -46,13 +46,12 @@
 #include <daemon/shared_configuration.h>
 #include <global_manager/eargm_rapi.h>
 
-#define ESPANK_STOP	-1
-
 #ifndef SLURM_FAKE
 #define NULL_C NULL
 #else
 #define NULL_C 0
 #endif
+#define ESPANK_STOP	-1
 
 /*
  * Job data

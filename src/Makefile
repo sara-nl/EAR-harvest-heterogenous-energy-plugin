@@ -5,20 +5,19 @@ ifdef DB_BASE
 	COMPONENTS += database_cache
 endif
 ifdef PAPI_BASE
-	COMPONENTS += metrics \
-                      daemon \
-                      commands \
-                      tests
-	COMPONENTS += library
+	COMPONENTS += \
+	              metrics \
+                  daemon \
+                  commands \
+                  tests \
+	              library \
+	              slurm_plugin
 endif
 ifdef GSL_BASE
 	COMPONENTS += tools
 endif
 ifdef DB_BASE
 	COMPONENTS += global_manager
-endif
-ifdef SLURM_BASE
-	COMPONENTS += slurm_plugin
 endif
 
 ######## RULES

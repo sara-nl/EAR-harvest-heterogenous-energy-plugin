@@ -1,9 +1,14 @@
-CFLAGS  = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS) -DSLURM_FAKE
+CFLAGS  = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) $(SLURM_CFLAGS)
 LDFLAGS = 
 
 ######## INSTALLATION
 
+ifdef SLURM_BASE
 plug_BINS = earplug.so
+else
+plug_BINS = erun
+endif
+
 plug_PATH = $(DESTDIR)/lib
 plug_PERM = 0775
 
@@ -35,19 +40,13 @@ plug_HDRS = \
 
 ######## RULES
 
-all: fakeslurm $(plug_BINS)
-#all: slurm_plugin.o slurm_plugin_environment.o slurm_plugin_options.o \
-	slurm_plugin_rcom_eard.o slurm_plugin_rcom_eargmd.o slurm_plugin_rcom_shared.o \
-	slurm_plugin_serialization.o
+all: $(plug_BINS)
 
 earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
-slurm_plugin.o: $(plug_SRCS) $(plug_HDRS)
-	$(CC) $(CFLAGS) -c $(plug_SRCS)
-
-fakeslurm: spank_fake.c spank_fake.h slurm_plugin.o
-	$(CC) $(CFLAGS) -o $@ $< $(plug_SRCS) $(plug_OBJS)
+erun: spank_fake.c spank_fake.h
+	$(CC) $(CFLAGS) -DERUN -o $@ $< $(plug_SRCS) $(plug_OBJS)
 
 ######## OPTIONS
 
