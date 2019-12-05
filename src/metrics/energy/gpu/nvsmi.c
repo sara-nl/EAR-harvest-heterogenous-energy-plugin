@@ -31,184 +31,268 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <pthread.h>
+#include <common/output/verbose.h>
 #include <metrics/energy/energy_gpu.h>
 #include <metrics/energy/gpu/nvsmi.h>
 
 #define SZ_BUFF_BIG     4096
-#define GPU_METRICS     7
+#define GPU_METRICS     8
 
 static char buffer[SZ_BUFF_BIG];
-static uint ok = 1;
-static uint ko = 0;
+static pthread_mutex_t samp_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_t       samp_t_accumu;
+static FILE           *samp_t_stream;
+static uint            samp_num_gpus;
+static uint            samp_enabled;
+static gpu_energy_t    *samp_data;
+static uint            samp_ms;
 
 typedef struct nvsmi_context_s {
-	uint num_gpus;
+	uint correct;
 } nvsmi_context_t;
 
 state_t nvsmi_gpu_status()
 {
-	static const char *command = "nvidia-smi";
-
+	if (system("which nvidia-smi &> /dev/null")) {
+		return EAR_ERROR;
+	}
 	return EAR_SUCCESS;
 }
 
-state_t nvsmi_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **ddiff)
+static void nvsmi_gpu_sample_add(uint i, gpu_energy_t *data_aux)
 {
-	nvsmi_context_t *nvsmi_c;
-	uint num_gpus;
-
-	if (state_fail(nvsmi_gpu_count(c, &num_gpus))) {
-		return EAR_ERROR;
-	}	
-
-    if (dread != NULL) {
-		*dread = malloc(num_gpus * sizeof(gpu_power_t));
-		if (*dread == NULL) {
-        	nvsmi_gpu_dispose(c, dread, ddiff);
-        	return EAR_ERROR;
-		}
-	} else {
-		return EAR_ERROR;
-	}
-
-    if (ddiff != NULL) {
-        *ddiff = malloc(num_gpus * sizeof(gpu_power_t));
-    	if (ddiff == NULL) {
-        	nvsmi_gpu_dispose(c, dread, ddiff);
-        	return EAR_ERROR;
-    	}
-    }
-
-    if (c != NULL) {
-        c->context = malloc(sizeof(nvsmi_c));
-    	if (c->context == NULL) {
-        	nvsmi_gpu_dispose(c, dread, ddiff);
-        	return EAR_ERROR;
-		}
-		nvsmi_c = (nvsmi_context_t *) c->context;
-		nvsmi_c->num_gpus = num_gpus;
-	}
-    
-    return EAR_SUCCESS;
+    timestamp_getprecise(&samp_data[i].time);
+	samp_data[i].freq_gpu_mhz += data_aux->freq_gpu_mhz;
+	samp_data[i].freq_mem_mhz += data_aux->freq_mem_mhz;
+	samp_data[i].util_gpu     += data_aux->util_gpu;
+	samp_data[i].util_mem     += data_aux->util_mem;
+	samp_data[i].temp_gpu     += data_aux->temp_gpu;
+	samp_data[i].temp_mem     += data_aux->temp_mem;
+	samp_data[i].power_w      += data_aux->power_w;
+	samp_data[i].energy_j     += data_aux->power_w / (((float) samp_ms) / 1000.0);
+	samp_data[i].samples      += 1;
 }
 
-state_t nvsmi_gpu_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+static void *nvsmi_gpu_sample_main(void *p)
 {
-    if (c->context != NULL) {
-        free(c->context);
-    }
-	if (dread != NULL) {
-		if (*dread != NULL) {
-        	free(*dread);
-		}
+	static gpu_energy_t data_aux;
+	int i;
+	int s;
+	
+	do {
+		s = fscanf(samp_t_stream, "%u, %lf, %lu, %lu, %lu, %lu, %lu, %lu", &i,
+				&data_aux.power_w , &data_aux.freq_gpu_mhz, &data_aux.freq_mem_mhz,
+				&data_aux.util_gpu, &data_aux.util_mem,
+				&data_aux.temp_gpu, &data_aux.temp_mem);
+		debug("readed gpu %u: %d elements (w: %lf)\n", i, s, data_aux.power_w);
+
+		if (s == GPU_METRICS)
+		{
+			pthread_mutex_lock(&samp_lock);
+			nvsmi_gpu_sample_add(i, &data_aux);
+			pthread_mutex_unlock(&samp_lock);
+		} 
 	}
-	if (davrg != NULL) {
-		if (*davrg != NULL) {
-        	free(*davrg);
-		}
-	}
-	c->context = NULL;
-	dread = NULL;
-	davrg = NULL;
-    return EAR_SUCCESS;
+	while (s == GPU_METRICS && samp_enabled);
+	
+	return EAR_SUCCESS;
 }
 
-static void power_gpu_read_diff(gpu_power_t *dread, gpu_power_t *ddiff, int i)
-{
-    // Averages
-    ddiff[i].freq_gpu_mhz = (ddiff[i].freq_gpu_mhz + dread[i].freq_gpu_mhz) / 2;
-    ddiff[i].freq_mem_mhz = (ddiff[i].freq_mem_mhz + dread[i].freq_mem_mhz) / 2;
-    ddiff[i].util_gpu     = (ddiff[i].util_gpu     + dread[i].util_gpu) / 2;
-    ddiff[i].util_mem     = (ddiff[i].util_mem     + dread[i].util_mem) / 2;
-    ddiff[i].temp_gpu     = (ddiff[i].temp_gpu     + dread[i].temp_gpu) / 2;
-    ddiff[i].temp_mem     = (ddiff[i].temp_mem     + dread[i].temp_mem) / 2;
-
-    // Time difference to float
-    ullong time_us        = timestamp_diff(&dread[i].time, &ddiff[i].time, TIME_USECS);
-    float  time_s         = (float) time_us;
-           time_s         = (time_s / 1000000.0);
-
-    // Getting energy
-    ddiff[i].power_w      = (ddiff[i].power_w + dread[i].power_w) / 2.0;
-    ddiff[i].energy_j     = (ddiff[i].power_w / time_s);
-}
-
-state_t nvsmi_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *ddiff)
+static state_t nvsmi_gpu_sample_create(pcontext_t *c, uint loop_ms)
 {
 	static const char *command = "nvidia-smi"                                   \
-					" --query-gpu='power.draw,clocks.current.sm,"               \
+					" --query-gpu='index,power.draw,clocks.current.sm,"         \
 					"clocks.current.memory,utilization.gpu,utilization.memory," \
 					"temperature.gpu,temperature.memory'"                       \
  					" --format='csv,noheader,nounits'";
+	int i;
+
+	if (loop_ms == 0) {
+		samp_ms = 1000;
+	} else {
+		samp_ms = loop_ms;
+	}
+
+	if (samp_enabled) {
+		return EAR_ERROR;
+	}
 	
-    FILE* file = popen(command, "r");
-	int num_gpus;
-    int i;
-    int s;
-    int r;
+	for (i = 0; i < samp_num_gpus; i++) {
+		nvsmi_gpu_data_null(c, &samp_data[i]);
+	}
 
-	num_gpus = ((nvsmi_context_t *) c->context)->num_gpus;
+	// Enabling sampling
+	samp_enabled = 1;
 	
-    if (num_gpus == 0) {
-        return EAR_ERROR;
-    }
+	sprintf(buffer, "%s --loop-ms='%u'", command, samp_ms);
+	debug("thread nvidia monitor using command '%s'", buffer);
 
-    // Copying and cleaning
-    memcpy(ddiff, dread, sizeof(gpu_power_t) * num_gpus);
-    memset(dread,     0, sizeof(gpu_power_t) * num_gpus);
+	if ((samp_t_stream = popen(buffer, "r")) == NULL) {
+		debug("thread nvidia monitor (popen) failed");
+		return EAR_ERROR;
+	}
+	samp_enabled = 2;
 
-    // Getting time
-    timestamp time;
-    timestamp_getprecise(&time);
+	if (pthread_create(&samp_t_accumu, NULL, nvsmi_gpu_sample_main, NULL)) {
+		debug("thread accumulator (pthread) failed");
+		return EAR_ERROR;
+	}
+	samp_enabled = 3;
+	debug("threads nvidia monitor and accumulator ok");
+	return EAR_SUCCESS;
+}
 
-    // Getting GPU data
-    r = EAR_SUCCESS;
-    i = 0;
+state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms)
+{
+	// Getting the total GPUs (it works also as init flag)
+	if (samp_num_gpus == 0) {
+		if (state_fail(nvsmi_gpu_count(c, &samp_num_gpus))) {
+			state_return_msg(EAR_ERROR, 0, "impossible to connect with NVIDIA-SMI");
+		}
+		if (samp_num_gpus == 0) {
+			state_return_msg(EAR_ERROR, 0, "no GPUs detected");
+		}
+	}
+	// Allocating internal accumulators
+	if (samp_data == NULL){
+		samp_data = calloc(samp_num_gpus, sizeof(gpu_energy_t));
+		if (samp_data == NULL) {
+			return EAR_ERROR;
+		}
+	}
+	//
+	if (samp_enabled == 0) {
+		if (state_fail(nvsmi_gpu_sample_create(c, 1000))) {
+			nvsmi_gpu_dispose(c);
+			state_return_msg(EAR_ERROR, 0, "impossible to open monitor threads");
+		}
+	}
+	return EAR_SUCCESS;
+}
 
-    do {
-        s = fscanf(file, "%f, %u, %u, %u, %u, %u, %u",
-            &dread[i].power_w , &dread[i].freq_gpu_mhz, &dread[i].freq_mem_mhz,
-            &dread[i].util_gpu, &dread[i].util_mem,
-            &dread[i].temp_gpu, &dread[i].temp_mem);
+static state_t nvsmi_gpu_sample_cancel()
+{
+	uint stream_enabled = samp_enabled >= 2;
+	uint accumu_enabled = samp_enabled == 3;
+	samp_enabled = 0;
 
-        dread[i].correct = (s == GPU_METRICS);
-        dread[i].time = time;
+	if (stream_enabled) {
+		pclose(samp_t_stream);
+	}
+	if (accumu_enabled) {
+		pthread_join(samp_t_accumu, NULL);
+	}
+	samp_t_stream = NULL;
+	return EAR_SUCCESS;
+}
 
-        if (dread[i].correct && ddiff != NULL) {
-            if (ddiff[i].correct) {
-                power_gpu_read_diff(dread, ddiff, i);
-            }
-        } else {
-            memset(&dread[i], 0, sizeof(gpu_power_t));
-            r = EAR_WARNING;
-        }
-
-        i += 1;
-    }
-    while (i < num_gpus);
-
-    pclose(file);
-
-    return r;
+state_t nvsmi_gpu_dispose(pcontext_t *c)
+{
+	if (samp_enabled == 0) {
+		return EAR_ERROR;
+	}
+    return nvsmi_gpu_sample_cancel();
 }
 
 state_t nvsmi_gpu_count(pcontext_t *c, uint *count)
 {
 	static const char *command = "nvidia-smi -L";
-    FILE* file = popen(command, "r");
-	int s;
-	
-	//
-	*count = 0;
+	FILE* file;
 
+	if (samp_num_gpus > 0) {
+		*count = samp_num_gpus;
+		return EAR_SUCCESS;
+	}
+
+	//
+	file = popen(command, "r");
+	*count = 0;
+	
+	if (file == NULL) {
+		return EAR_ERROR;
+	}
 	while (fgets(buffer, SZ_BUFF_BIG, file)) {
 		*count += 1;
 	}
+	pclose(file);
+	return EAR_SUCCESS;
+}
 
-	if (*count == 0) { 
+state_t nvsmi_gpu_read(pcontext_t *c, gpu_energy_t *data_read)
+{
+	memset(data_read, 0, sizeof(gpu_energy_t) * samp_num_gpus);
+	
+	if (samp_enabled == 0) {
 		return EAR_ERROR;
 	}
+
+	pthread_mutex_lock(&samp_lock);
+	memcpy(data_read, samp_data, samp_num_gpus * sizeof(gpu_energy_t));
+	pthread_mutex_unlock(&samp_lock);
 
 	return EAR_SUCCESS;
 }
 
+state_t nvsmi_gpu_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
+{
+	if (data_read != NULL) {
+		*data_read = calloc(samp_num_gpus, sizeof(gpu_energy_t));
+		if (*data_read == NULL) {
+			return EAR_ERROR;
+		}
+	}
+	return EAR_SUCCESS;
+}
+
+state_t nvsmi_gpu_data_free(pcontext_t *c, gpu_energy_t **data_read)
+{
+	if (data_read != NULL) {
+		free(*data_read);
+	}
+}
+
+state_t nvsmi_gpu_data_null(pcontext_t *c, gpu_energy_t *data_read)
+{
+	if (data_read != NULL) {
+		memset(data_read, 0, samp_num_gpus * sizeof(gpu_energy_t));
+	}
+	return EAR_SUCCESS;
+}
+
+static void nvsmi_gpu_read_diff(gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg, int i)
+{
+	ulong  usamps = data_read2[i].samples - data_read1[i].samples; 
+	double fsamps = (double) usamps; 
+
+	if (data_read2[i].samples <= data_read1[i].samples) {
+		memset(&data_avrg[i], 0, sizeof(gpu_energy_t));
+		return;		
+	}
+
+	// Averages
+	data_avrg[i].freq_gpu_mhz = (data_read2[i].freq_gpu_mhz - data_read1[i].freq_gpu_mhz) / usamps;
+	data_avrg[i].freq_mem_mhz = (data_read2[i].freq_mem_mhz - data_read1[i].freq_mem_mhz) / usamps;
+	data_avrg[i].util_gpu     = (data_read2[i].util_gpu     - data_read1[i].util_gpu)     / usamps;
+	data_avrg[i].util_mem     = (data_read2[i].util_mem     - data_read1[i].util_mem)     / usamps;
+	data_avrg[i].temp_gpu     = (data_read2[i].temp_gpu     - data_read1[i].temp_gpu)     / usamps;
+	data_avrg[i].temp_mem     = (data_read2[i].temp_mem     - data_read1[i].temp_mem)     / usamps;
+	data_avrg[i].power_w      = (data_read2[i].power_w      - data_read1[i].power_w)      / fsamps;
+	data_avrg[i].energy_j     = (data_read2[i].energy_j     - data_read1[i].energy_j);
+}
+
+
+// TODO: Overflow control.
+state_t nvsmi_gpu_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
+{
+	int i;
+
+	if (data_read1 == NULL || data_read2 == NULL || data_avrg == NULL) {
+		return EAR_ERROR;
+	}
+	for (i = 0; i < samp_num_gpus; i++) {
+		nvsmi_gpu_read_diff(data_read1, data_read2, data_avrg, i);
+	}
+
+	return EAR_SUCCESS;
+}

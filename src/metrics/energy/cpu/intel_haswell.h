@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
 #ifndef _RAPL_METRICS_H_
 #define _RAPL_METRICS_H_
 
@@ -39,15 +38,15 @@
 #define RAPL_PACKAGE0       2
 #define RAPL_PACKAGE1       3
 
-
-/** Opens the necessary fds to read the MSR registers. Returns 0 on success 
+/** Opens the necessary fds to read the MSR registers. Returns 0 on success
 * 	and -1 on error. */
 int init_rapl_msr(int *fd_map);
+
+/** */
 void dispose_rapl_msr(int *fd_map);
 
 /** Reads rapl counters and stores them in values array. Returns 0 on success 
 *	and -1 on error. */
 int read_rapl_msr(int *fd_map,unsigned long long *_values);
 
-#else
 #endif

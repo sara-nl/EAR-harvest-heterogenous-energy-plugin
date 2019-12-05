@@ -30,8 +30,16 @@
 #ifndef COMMON_PLUGINS_H
 #define COMMON_PLUGINS_H
 
+#include <common/states.h>
+
 typedef struct pcontext_s {
 	void *context;
 } pcontext_t;
+
+#define preturn(call, ...) \
+	if (call == NULL) { \
+		return EAR_UNDEFINED; \
+	} \
+	return call (__VA_ARGS__);
 
 #endif //EAR_PRIVATE_PLUGINS_H
