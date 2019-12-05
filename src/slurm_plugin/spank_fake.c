@@ -1,9 +1,11 @@
+#include <common/system/file.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 
+char *program;
+int _fd;
 int _sp;
 int _at;
-int _fu;
 
 spank_err_t spank_getenv (spank_t spank, const char *var, char *buf, int len)
 {
@@ -84,8 +86,7 @@ int help(int argc, char *argv[])
 	// --plugstack args
 	printf("Usage: %s [OPTIONS]\n", argv[0]);
 	printf("\nOptions:\n");
-	printf("\t--context=<arg>\t\tSets the SLURM like context [srun,remote,full]\n");
-	printf("\t--action=<arg>\t\tSets the action [init,exit]\n");
+	printf("\t--program=<arg>\t\tSets the program to run.\n");
 	printf("\t--plugstack [ARGS]\tSet the SLUSM's plugstack arguments. I.e:\n");
 	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
 	printf("\n");
@@ -108,50 +109,20 @@ int arguments(int ac, char *av[])
 
 	for (i = 0; i < ac; ++i)
 	{
-		if ((strlen(av[i]) > 8) && (strncmp("--context=", av[i], 10) == 0))
+		if ((strlen(av[i]) > 8) && (strncmp("--program=", av[i], 10) == 0))
 		{
-			if (strncmp ("--context=srun", av[i], 14) == 0) {
-				_sp = Context.srun;
-			} else if (strncmp ("--context=full", av[i], 14) == 0) {
-				_fu = 1;
-			} else if (strncmp ("--context=remote", av[i], 16) == 0) {
-				_sp = Context.remote;
-			} else {
-				return 1;
-			}
+			program = &av[i][10];
 		}
-		if ((strlen(av[i]) > 8) && (strncmp("--action=", av[i], 9) == 0))
-		{
-			if (strncmp ("--action=init", av[i], 13) == 0) {
-				_at = Action.init;
-			} else if (strncmp ("--action=exit", av[i], 13) == 0) {
-				_at = Action.exit;
-			} else {
-				return 1;
-			}
-		}
-	}
-
-
-	plug_verbose(_sp, 2, "arguments %d %d %d", _sp, _at, _fu);
-
-	if (_fu == 1 && _at == Action.init) {
-		_sp = Context.srun;
-		_fu = Context.remote;
-	} else if (_fu == 1 && _at == Action.exit) {
-		_sp = Context.remote;
-		_fu = Context.srun;
-	} else if (_fu == 1) {
-		return 1;
-	} if (_sp == Context.error || _at == Action.error) {
-		return 1;
 	}
 
 	return 0;
 }
 
-int pipeline(int argc, char *argv[])
+int pipeline(int argc, char *argv[], int sp, int at)
 {
+	_sp = sp;
+	_at = at;
+
 	if (plug_action_is(_at, Action.init))
 	{
 		slurm_spank_init(_sp, argc, argv);
@@ -179,6 +150,41 @@ int pipeline(int argc, char *argv[])
 	return ESPANK_SUCCESS;
 }
 
+int lock(int argc, char *argv[])
+{
+	_fd = file_lock_master("fake_slurm.lock");
+
+	if (_fd > 0) {
+		plug_verbose(_sp, 2, "got the lock file, pipelining");
+		return 1;
+	}
+	
+	_fd = 0;
+	plug_verbose(_sp, 2, "file locked, skipping");
+	
+	return 0;
+}
+
+int unlock(int argc, char *argv[])
+{
+	if (_fd == 0) {
+		return 0;
+	}
+	
+	plug_verbose(_sp, 2, "sleeping 2 seconds to avoid fast programs to take the lock file");
+	sleep(2);	
+
+	file_unlock_master(_fd, "fake_slurm.lock");
+	
+	return 1;
+}
+
+int execute(int argc, char *argv[])
+{
+	system(program);
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	//
@@ -187,12 +193,22 @@ int main(int argc, char *argv[])
 	}
 
 	//
-	pipeline(argc, argv);
-
-	if (_fu) {
-		_sp = _fu;
-		pipeline(argc, argv);
+	if (lock(argc, argv))
+	{
+		//
+		pipeline(argc, argv, Context.srun, Action.init);
+		//
+		pipeline(argc, argv, Context.remote, Action.init);
 	}
 
+	execute(argc, argv);
+
+	if (unlock(argc, argv)) {
+		//
+		pipeline(argc, argv, Context.remote, Action.exit);
+		//
+		pipeline(argc, argv, Context.srun, Action.exit);
+	}
+	
 	return 0;
 }
