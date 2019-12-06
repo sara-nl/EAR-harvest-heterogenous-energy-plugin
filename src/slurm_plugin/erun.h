@@ -359,7 +359,7 @@ spank_err_t spank_option_getopt (spank_t spank, struct spank_option *opt,
  *   is called from an invalid context, and ESPANK_NOT_REMOTE
  *   if not called from slurmstepd context or spank_local_user_init.
  */
-spank_err_t spank_get_item (spank_t spank, spank_item_t item, ...);
+spank_err_t spank_get_item (spank_t spank, spank_item_t item, int *p);
 
 /*  Place a copy of environment variable "var" from the job's environment
  *   into buffer "buf" of size "len."

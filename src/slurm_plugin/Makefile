@@ -45,7 +45,7 @@ all: $(plug_BINS)
 earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
-erun: spank_fake.c spank_fake.h
+erun: erun.c erun.h $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -DERUN -o $@ $< $(plug_SRCS) $(plug_OBJS)
 
 ######## OPTIONS

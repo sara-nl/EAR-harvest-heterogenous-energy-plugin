@@ -38,7 +38,7 @@
 SPANK_PLUGIN(EAR_PLUGIN, 1)
 
 //
-static plug_serialization_t sd;
+plug_serialization_t sd;
 
 // Function order:
 // 	- Local 1

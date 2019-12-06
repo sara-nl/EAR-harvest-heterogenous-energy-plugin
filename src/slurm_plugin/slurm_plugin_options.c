@@ -56,14 +56,14 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  1, 0, (spank_opt_cb_f) _opt_ear_threshold
 	},
 	{ "ear-user-db", "file",
-	  "Specifies the file to save the user applications metrics summary" \
+	  "Specifies the file to save the user applications metrics summary " \
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
 	  1, 0, (spank_opt_cb_f) _opt_ear_user_db
 	},
 	{ "ear-mpi-dist", "dist", opt_mpi,
 	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
 	},
-	{ "ear-verbose", "value", "Specifies the level of the verbosity\n" \
+	{ "ear-verbose", "value", "Specifies the level of the verbosity" \
 	  "{value=[0..5]}; default is 0",
 	  1, 0, (spank_opt_cb_f) _opt_ear_verbose
 	},

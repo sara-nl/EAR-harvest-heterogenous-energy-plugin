@@ -46,7 +46,7 @@
 #include <daemon/shared_configuration.h>
 #include <global_manager/eargm_rapi.h>
 
-#ifndef SLURM_FAKE
+#ifndef ERUN
 #define NULL_C NULL
 #else
 #define NULL_C 0

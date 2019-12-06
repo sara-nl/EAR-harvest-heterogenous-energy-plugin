@@ -6,12 +6,11 @@ ifdef DB_BASE
 endif
 ifdef PAPI_BASE
 	COMPONENTS += \
-	              metrics \
+                  metrics \
                   daemon \
                   commands \
                   tests \
-	              library \
-	              slurm_plugin
+                  library
 endif
 ifdef GSL_BASE
 	COMPONENTS += tools
@@ -19,6 +18,7 @@ endif
 ifdef DB_BASE
 	COMPONENTS += global_manager
 endif
+COMPONENTS += slurm_plugin
 
 ######## RULES
 
