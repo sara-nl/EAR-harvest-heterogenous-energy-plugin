@@ -37,8 +37,16 @@
 #include <common/types/log.h>
 #include <common/config.h>
 #include <mysql/mysql.h>
+#include "libpq-fe.h"
 
 #if DB_MYSQL
+MYSQL *mysql_create_connection();
+#elif DB_PSQL
+PGconn *postgresql_create_connection();
+#endif
+
+
+#if DB_MYSQL || DB_PSQL
 
 void init_db_helper(db_conf_t *conf);
 
@@ -87,9 +95,17 @@ ulong get_num_applications(char is_learning, char *node_name);
 
 int db_run_query(char *query, char *user, char *passw);
 
+#if DB_MYSQL
 MYSQL_RES *db_run_query_result(char *query);
+#elif DB_PSQL
+PGresult *db_run_query_result(char *query);
+
+int get_num_rows(PGconn *connection, char *query);
+#endif
 
 int run_query_int_result(char *query);
+
+int get_num_columns(char *query);
 
 int db_read_applications_query(application_t **apps, char *query);
 
