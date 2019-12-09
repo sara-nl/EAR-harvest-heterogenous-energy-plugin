@@ -34,15 +34,15 @@
 #ifdef ERUN
 	#define plug_verbose(sp, level, ...) \
         	if (plug_verbosity_test(sp, level) == 1) { \
-				printf("%s ", plug_context_str(sp)); \
-				printf(__VA_ARGS__); \
-				printf("\n"); \
+				fprintf(stderr, "%s %s ", plug_host(sp), plug_context_str(sp)); \
+				fprintf(stderr, __VA_ARGS__); \
+				fprintf(stderr, "\n"); \
         }
 	#define plug_error(sp, ...) \
         	if (plug_verbosity_test(sp, 1) == 1) { \
-				printf("%s ERROR, ", plug_context_str(sp)); \
-				printf(__VA_ARGS__); \
-				printf("\n"); \
+				fprintf(stderr, "%s %s ERROR, ", plug_host(sp), plug_context_str(sp)); \
+				fprintf(stderr, __VA_ARGS__); \
+				fprintf(stderr, "\n"); \
         	}
 #else
 	#define plug_verbose(sp, level, ...) \
@@ -189,11 +189,15 @@ int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled);
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp);
 
+char *plug_host(spank_t sp);
+
 char *plug_context_str(spank_t sp);
 
 int plug_context_is(spank_t sp, plug_context_t ctxt);
 
 int plug_verbosity_test(spank_t sp, int level);
+
+int plug_verbosity_silence(spank_t sp);
 
 char *plug_acav_get(int ac, char *av[], char *string);
 

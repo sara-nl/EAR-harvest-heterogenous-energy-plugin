@@ -41,7 +41,7 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 	//
 	while ((node = slurm_hostlist_shift(hostlist)) != NULL)
 	{
-		plug_verbose(sp, 2, "connecting to EARD: '%s:%d'", node, port);
+		plug_verbose(sp, 2, "message connecting to EARD: '%s:%d'", node, port);
 
 		if (eards_remote_connect(node, port) < 0) {
 			plug_error(sp, "while connecting with EAR daemon");

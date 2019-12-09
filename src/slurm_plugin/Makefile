@@ -46,7 +46,7 @@ earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
 erun: erun.c erun.h $(plug_SRCS) $(plug_HDRS)
-	$(CC) $(CFLAGS) -DERUN -o $@ $< $(plug_SRCS) $(plug_OBJS)
+	$(CC) $(CFLAGS) -DERUN -g -o $@ $< $(plug_SRCS) $(plug_OBJS)
 
 ######## OPTIONS
 
@@ -54,7 +54,7 @@ install: plug.ginstall;
 
 %.install: ;
 
-clean: rclean
+clean: plug.gclean rclean;
 
 ######## DEPENDENCIES
 

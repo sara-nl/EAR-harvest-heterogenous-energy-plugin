@@ -217,7 +217,7 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 
 int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "slurm_spank_exit");
+	plug_verbose(sp, 2, "function slurm_spank_exit");
 
 	// EARD disconnection
 	if (plug_context_is(sp, Context.remote))

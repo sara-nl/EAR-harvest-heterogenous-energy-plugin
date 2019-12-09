@@ -4,6 +4,7 @@
 #include <slurm_plugin/slurm_plugin_serialization.h>
 
 extern plug_serialization_t sd;
+char path_lock[SZ_PATH];
 int    _master;
 char **_argv;
 int    _argc;
@@ -94,26 +95,26 @@ spank_err_t spank_option_register_print(spank_t sp, struct spank_option *opt)
 	int o = 0;
 	char c;
 
-	printf("\t--%s\t\t", opt->name);
+	plug_verbose(sp, 0, "\t--%s\t\t", opt->name);
 	if (strlen(opt->name) < 5) {
-		printf("\t");
+		plug_verbose(sp, 0, "\t");
 	}
 	if (n < 64) {
-		printf("%s\n", opt->usage);
+		plug_verbose(sp, 0, "%s\n", opt->usage);
 		return ESPANK_SUCCESS;
 	}
 	while (i < n)
 	{
 		c = opt->usage[i];
-		printf("%c", c);
+		plug_verbose(sp, 0, "%c", c);
 		o = (o == 1) | (i != 0 && (i % 64) == 0);
 		if (o && (c == ' ' || c == ',')) {
-			printf("\n\t\t\t\t");
+			plug_verbose(sp, 0, "\n\t\t\t\t");
 			o = 0;
 		}
 		i += 1;
 	}
-	printf("\n");
+	plug_verbose(sp, 0, "\n");
 
 	return ESPANK_SUCCESS;
 }
@@ -149,12 +150,12 @@ spank_err_t spank_option_register(spank_t sp, struct spank_option *opt)
 
 int help(int argc, char *argv[])
 {
-	printf("Usage: %s [OPTIONS]\n", argv[0]);
-	printf("\nOptions:\n");
-	printf("\t--program=<arg>\t\tSets the program to run.\n");
-	printf("\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
-	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
-	printf("SLURM options:\n");
+	plug_verbose(_sp, 0, "Usage: %s [OPTIONS]\n", argv[0]);
+	plug_verbose(_sp, 0, "\nOptions:\n");
+	plug_verbose(_sp, 0, "\t--program=<arg>\t\tSets the program to run.\n");
+	plug_verbose(_sp, 0, "\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
+	plug_verbose(_sp, 0, "\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
+	plug_verbose(_sp, 0, "SLURM options:\n");
 
 	return 0;
 }
@@ -191,17 +192,21 @@ int arguments(int ac, char *av[])
 
 int lock(int argc, char *argv[])
 {
-	_fd = file_lock_master("fake_slurm.lock");
+	sprintf(path_lock, "/tmp/earplug.lock");
+
+	_fd = file_lock_master(path_lock);
 
 	if (_fd > 0) {
-		plug_verbose(_sp, 2, "got the lock file, pipelining");
 		return 1;
 	}
 	
 	_fd = 0;
-	plug_verbose(_sp, 2, "file locked, skipping");
-	
 	return 0;
+}
+
+int spinlock(int argc, char *argv[])
+{
+	while (access(path_lock, F_OK) == 0);
 }
 
 int unlock(int argc, char *argv[])
@@ -210,7 +215,7 @@ int unlock(int argc, char *argv[])
 		return 0;
 	}
 	
-	file_unlock_master(_fd, "fake_slurm.lock");
+	file_unlock_master(_fd, path_lock);
 	
 	return 1;
 }
@@ -258,13 +263,12 @@ int pipeline(int argc, char *argv[], int sp, int at)
 		}
 		else if (plug_context_is(_sp, Context.remote))
 		{
-			if (lock(argc, argv)) {
+			if (_master) {
 				slurm_spank_user_init(_sp, argc, argv);
 			} else {
-				sleep(1);
-		
 				fake_slurm_spank_user_init(_sp, argc, argv);
 			}
+
 		}
 	}
 	else if(plug_action_is(_at, Action.exit))
@@ -273,13 +277,7 @@ int pipeline(int argc, char *argv[], int sp, int at)
 		{
 			slurm_spank_task_exit(_sp, argc, argv);
 			
-			if (unlock(argc, argv))
-			{
-				plug_verbose(_sp, 2, "sleeping 2 seconds to avoid fast programs to take the lock file");
-				sleep(2);
-		
-				slurm_spank_exit(_sp, argc, argv);
-			}
+			slurm_spank_exit(_sp, argc, argv);
 		}
 			
 		if (plug_context_is(_sp, Context.srun)) {
@@ -294,13 +292,40 @@ int job(int argc, char *argv[])
 {
 	setenv("SLURM_JOB_ID", "1", 1);
 	setenv("SLURM_STEP_ID", "0", 1);
+	setenv("SLURM_JOB_NAME", _pr, 1);
+
+	//	
+	char *nnodes = getenv("SLURM_NNODES");
+	
+	if (nnodes == NULL)
+	{
+		char *size_world = getenv("OMPI_COMM_WORLD_SIZE");
+		char *size_local = getenv("OMPI_COMM_WORLD_LOCAL_SIZE");
+		char nnodes_b[8];
+		int  nnodes_i;
+
+		if (size_world != NULL && size_local != NULL) {
+			nnodes_i = atoi(size_world) / atoi(size_local);
+			sprintf(nnodes_b, "%d", nnodes_i);
+			nnodes = nnodes_b;
+		}
+	}
+
+	
+	if (nnodes != NULL) {
+		setenv("SLURM_STEP_NUM_NODES", nnodes, 1);
+	}
+	
+	//setenv("EAR_DYNAIS_WINDOW_SIZE", "200", 1);
+	//setenv("EAR_DYNAIS_LEVELS", "10", 1);
+	//setenv("SLURM_STEP_NODELIST", "cmp2545", 1);
+	//setenv("SLURM_JOB_ACCOUNT", "xbsc", 1);
 	//setenv("SLURM_STEPID", "0", 1);
 	//setenv("SLURM_NNODES", "1", 1);
 	//setenv("EAR_NUM_NODES", "1", 1);
-	//setenv("SLURM_STEP_NUM_NODES", "1", 1);
-	//setenv("SLURM_JOB_NAME", _pr, 1);
-	//setenv("SLURM_STEP_NODELIST", "cmp2545", 1);
-	//setenv("SLURM_JOB_ACCOUNT", "xbsc", 1);
+	//setenv("SLURM_COMP_LIBRARY", "1", 1);
+	//setenv("SLURM_COMP_PLUGIN", "1", 1);
+
 	return 0;
 }
 
@@ -324,17 +349,35 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	job(argc, argv);
 
-	//if (lock()) {
-	//}
+	job(argc, argv);
+	
+	if (lock(argc, argv)) {
+		plug_verbose(_sp, 2, "got the lock file");
+		
+		_master = 1;
+	} else {
+		plug_verbosity_silence(_sp);
+		
+		spinlock(argc, argv);
+		
+		//fprintf(stderr, "skipping spinlock\n");
+	}
 
 	//
 	pipeline(argc, argv, Context.srun, Action.init);
 	//
 	pipeline(argc, argv, Context.remote, Action.init);
 
+	if (_master) {
+		unlock(argc, argv);
+	}
+
 	execute(argc, argv);
+
+	if (_master) {
+		sleep(2);
+	}
 
 	//
 	pipeline(argc, argv, Context.remote, Action.exit);

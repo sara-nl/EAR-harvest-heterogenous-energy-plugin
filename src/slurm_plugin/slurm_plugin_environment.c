@@ -33,6 +33,9 @@
 // Buffers
 static char buffer[SZ_PATH];
 
+//
+static int verbosity = -1;
+
 static int setenv_local(const char *var, const char *val, int ow)
 {
 	if (var == NULL || val == NULL) {
@@ -300,8 +303,21 @@ int plug_component_isenabled(spank_t sp, plug_component_t comp)
 }
 
 /*
- * Context
+ * Subject
  */
+
+char *plug_host(spank_t sp)
+{
+	static char  host_b[SZ_NAME_LARGE];
+	static char *host_p = NULL;
+
+	if (host_p == NULL) {
+		host_p = host_b;
+		gethostname(host_p, SZ_NAME_MEDIUM);
+	}
+
+	return host_p;
+}
 
 char *plug_context_str(spank_t sp)
 {
@@ -332,9 +348,7 @@ int plug_context_is(spank_t sp, plug_context_t ctxt)
  */
 
 int plug_verbosity_test(spank_t sp, int level)
-{
-	static int verbosity = -1;
-	
+{	
 	if (verbosity == -1)
 	{
 		if (getenv_agnostic(sp, Var.comp_verb.cmp, buffer, 8) == 1) {
@@ -345,6 +359,12 @@ int plug_verbosity_test(spank_t sp, int level)
 	}
 
 	return verbosity >= level;
+}
+
+int plug_verbosity_silence(spank_t sp)
+{
+	verbosity = 0;
+	return 0;
 }
 
 /*
