@@ -1173,6 +1173,7 @@ void *eard_power_monitoring(void *noinfo) {
 	debug("Starting power monitoring loop, reporting metrics every %d seconds",f_monitoring);
 
 	while (!eard_must_exit) {
+		debug("------------------- NEW PERIOD -------------------");
 		// Wait for N usecs
 		sleep(f_monitoring);
 

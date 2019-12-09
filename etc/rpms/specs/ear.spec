@@ -9,7 +9,7 @@
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
 %define name    ear-lennox
-%define release   0   
+%define release   1
 %define version   3.1
 
 # Information
@@ -88,6 +88,11 @@ exit
 #Comments for change log
 # * [dow mon dd yyyy] [packager [email address]] [RPM version]-list of changes
 %changelog
+* Mon Dec 09 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.1
+- energy_to_str function in energy_rapl
+- msr read and write with do_while loop
+* Thu Dec 05 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.1
+- Policy privilege specification modified from Y/N to 0/1
 * Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0
 -Plugins for energy, power policies, power models and traces
 * Thu Nov 28 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.0

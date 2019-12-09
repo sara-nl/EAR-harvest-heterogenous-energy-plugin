@@ -38,17 +38,13 @@
 #include <pthread.h>
 #include <sys/time.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
 #include <metrics/energy/node/energy_node.h>
 #include <metrics/energy/energy_cpu.h>
 #include <common/math_operations.h>
 
-#define SHOW_DEBUGS 1
-#ifdef SHOW_DEBUGS
-#define debug(...) fprintf(stderr, __VA_ARGS__); 
-#else
-#define debug(...) 
-#endif
 
 static pthread_mutex_t rapl_lock = PTHREAD_MUTEX_INITIALIZER;
 
@@ -61,16 +57,23 @@ state_t energy_init(void **c)
 	int ret;
 	state_t st;
 	int *pfd;
+	debug("energy_rapl");
 	if (c==NULL) return EAR_ERROR;
 	num_pack=detect_packages(NULL);
-	if (num_pack==0) return EAR_ERROR;
+	if (num_pack==0){ 
+		debug("No packages detected in energy_init");
+		return EAR_ERROR;
+	}
 	*c=(int  *)malloc(sizeof(int)*num_pack);
 	if (*c==NULL) return EAR_ERROR;
 	pthread_mutex_lock(&rapl_lock);
 	pfd=*c;
 	*pfd=init_rapl_msr(pfd);
 	pthread_mutex_unlock(&rapl_lock);
-	if (*pfd<0)	return EAR_ERROR;
+	if (*pfd<0){ 
+		debug("init_rapl_msr returns error in energy_init");
+		return EAR_ERROR;
+	}
 	return EAR_SUCCESS;
 }
 state_t energy_dispose(void **c)
@@ -86,6 +89,7 @@ state_t energy_dispose(void **c)
 }
 state_t energy_datasize(size_t *size)
 {
+	debug("energy_rapl");
 	*size=sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack;
 	return EAR_SUCCESS;
 }
@@ -100,9 +104,11 @@ state_t energy_dc_read(void *c, edata_t energy_mj)
 	state_t st;
 	int *pfd;
   pfd=(int *)c;
+	debug("energy_dc_read energy_rapl");
 
 	unsigned long long *pvalues=energy_mj;
 	memset(pvalues,0,sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack);
+	debug("Calling read_rapl_msr in energy_dc_read");
 	return read_rapl_msr(pfd,pvalues);
 }
 
@@ -135,7 +141,7 @@ unsigned long long diff_RAPL_energy(unsigned long long init,unsigned long long e
 {
   unsigned long long ret=0;
 
-  if (end>init){
+  if (end>=init){
     ret=end-init;
   }else{
     ret = ullong_diff_overflow(init, end);
@@ -161,8 +167,32 @@ state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
 			diff=diff_RAPL_energy(pvalues_init[i],pvalues_end[i]);
 			total+=diff;	
 	}
+	debug("energy_accumulated in plugin %lu",total);
 	*e=total;
 	return EAR_SUCCESS;
 }
 
 
+state_t energy_to_str(char *str,edata_t e)
+{
+  ulong *pe=(ulong *)e;
+	int j;
+	debug("energy_to_str energy_rapl");
+  sprintf(str,"DRAM-PLUGIN (");
+  for (j = 0; j < num_pack; j++) {
+    if (j < (num_pack - 1)) {
+      sprintf(str,"%llu,", pe[j]);
+    } else {
+      sprintf(str,"%llu)", pe[j]);
+    }
+  }
+  sprintf(str,", CPU-PLUGIN (");
+  for (j = 0; j < num_pack; j++) {
+  	if (j < (num_pack - 1)) {
+  		sprintf(str,"%llu,", pe[j]);
+  	} else {
+  		sprintf(str,"%llu)", pe[j]);
+  	}
+  }
+  return EAR_SUCCESS;
+}

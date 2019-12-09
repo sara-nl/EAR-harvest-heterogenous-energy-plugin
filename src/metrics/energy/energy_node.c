@@ -29,6 +29,7 @@
 
 #include <common/config.h>
 #include <common/includes.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>
 #include <common/hardware/hardware_info.h>

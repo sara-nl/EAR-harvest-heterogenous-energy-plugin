@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
@@ -202,6 +203,7 @@ static int pm_connect(ehandler_t *my_eh)
 int init_power_ponitoring(ehandler_t *my_eh)
 {
 	int ret;
+	debug("init_power_ponitoring");
 	if (power_mon_connected) {
 		return EAR_SUCCESS;
 	}
@@ -229,7 +231,9 @@ void end_power_monitoring(ehandler_t *my_eh)
 int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 {
 	int p;
+	char buffer[512];
 
+	debug("read_enegy_data");
 	time(&acc_energy->sample_time);
 
 	if (!power_mon_connected) {
@@ -259,6 +263,8 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 
 	// Debugging data
 	#ifdef SHOW_DEBUGS
+	energy_to_str(my_eh,buffer,acc_energy->DC_node_energy);
+	debug("Node %s",buffer);
 	for (p = 0; p < num_packs; p++) {
 		debug("DRAM pack %d = %llu", p, RAPL_metrics[p]);
 	}
@@ -266,7 +272,7 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 		debug("CPU pack %d = %llu", p, RAPL_metrics[num_packs + p]);
 	}
 	for (p = 0; p < gpu_num  ; p++) {
-		debug("GPU pack %d = %lu", p, gpu_data[p].energy_j);
+		debug("GPU pack %d = %lu", p, (ulong) gpu_data[p].energy_j);
 	}
 	#endif
 
