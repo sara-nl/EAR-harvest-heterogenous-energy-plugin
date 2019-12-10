@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#if DB_PSQL
 #include "libpq-fe.h"
 #include <common/config.h>
 #include <common/types/log.h>
@@ -207,3 +208,6 @@ int postgresql_batch_insert_avg_signatures(PGconn *connection, application_t *ap
 
 /** PENDING */
 int postgresql_retrieve_power_signatures(PGconn *connection, char *query, power_signature_t **pow_sigs);
+
+
+#endif

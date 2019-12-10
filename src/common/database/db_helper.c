@@ -927,6 +927,7 @@ int db_insert_gm_warning(gm_warning_t *warning)
     return EAR_SUCCESS;
 }
 
+#if DB_MYSQL
 int stmt_error(MYSQL *connection, MYSQL_STMT *statement)
 {
     verbose(VMYSQL, "Error preparing statement (%d): %s\n",
@@ -935,12 +936,14 @@ int stmt_error(MYSQL *connection, MYSQL_STMT *statement)
     mysql_close(connection);
     return -1;
 }
+#endif
 
 #define PSQL_METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
                                      ">= %d AND end_time <= %d AND DC_energy <= %d"
 #define PSQL_AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                      ">= %d AND end_time <= %d"
 
+#if DB_PSQL
 int postgresql_select_acum_energy(PGconn *connection, int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
     char query[256];
@@ -966,6 +969,7 @@ int postgresql_select_acum_energy(PGconn *connection, int start_time, int end_ti
     PQclear(res);
     return EAR_SUCCESS;
 }
+#endif
 
 #define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
                                 ">= ? AND end_time <= ? AND DC_energy <= %d"
@@ -1152,6 +1156,7 @@ int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uin
 #define AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
                                 "id > %d"
 
+#if DB_MYSQL
 int mysql_select_acum_energy_idx(MYSQL *connection, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
     char query[256];
@@ -1211,12 +1216,14 @@ int mysql_select_acum_energy_idx(MYSQL *connection, ulong divisor, char is_aggre
     return EAR_SUCCESS;
 
 }
+#endif
 
 #define PSQL_METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
                                         "id > %d AND DC_energy <= %d"
 #define PSQL_AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
                                         "id > %d"
 
+#if DB_PSQL
 int postgresql_select_acum_energy_idx(PGconn *connection, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
     char query[256];
@@ -1242,6 +1249,7 @@ int postgresql_select_acum_energy_idx(PGconn *connection, ulong divisor, char is
     PQclear(res);
     return EAR_SUCCESS;
 }
+#endif
 
 int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
