@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#if DB_PSQL
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -1722,4 +1721,3 @@ int postgresql_insert_application(PGconn *connection, application_t *app)
     return result;
 }
 
-#endif
