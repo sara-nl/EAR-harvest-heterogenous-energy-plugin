@@ -38,8 +38,11 @@
 #include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
+#if DB_MYSQL
 #include <common/database/mysql_io_functions.h>
+#elif DB_PSQL
 #include <common/database/postgresql_io_functions.h>
+#endif
 
 db_conf_t *db_config = NULL;
 int current_step_id = -1;
