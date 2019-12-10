@@ -34,8 +34,10 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <common/database/postgresql_io_functions.h>
 #include <common/types/configuration/cluster_conf.h>
+
+#if DB_PSQL
+#include <common/database/postgresql_io_functions.h>
 
 #define APPLICATION_PSQL_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES "
 
@@ -1720,4 +1722,4 @@ int postgresql_insert_application(PGconn *connection, application_t *app)
     reverse_power_signature_bytes(&app->power_sig, 1);
     return result;
 }
-
+#endif

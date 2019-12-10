@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,6 +36,8 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+
+#if DB_MYSQL
 #include <common/database/mysql_io_functions.h>
 
 
@@ -2115,3 +2118,6 @@ int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
     return EAR_SUCCESS;
 
 }
+
+
+#endif
