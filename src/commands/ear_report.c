@@ -152,6 +152,7 @@ void usage(char *app)
 }
 
 
+#if DB_MYSQL
 long long ereport_stmt_error(MYSQL_STMT *statement)
 {
     printf( "Error preparing statement (%d): %s\n",
@@ -159,6 +160,7 @@ long long ereport_stmt_error(MYSQL_STMT *statement)
     mysql_stmt_close(statement);
     return -1;
 }
+#endif
 
 #if DB_MYSQL
 long long get_sum(MYSQL *connection, int start_time, int end_time, unsigned long long divisor)

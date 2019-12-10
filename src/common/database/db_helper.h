@@ -36,8 +36,11 @@
 #include <common/types/loop.h>
 #include <common/types/log.h>
 #include <common/config.h>
+#if DB_MYSQL
 #include <mysql/mysql.h>
+#elif DB_PSQL
 #include "libpq-fe.h"
+#endif
 
 #if DB_MYSQL
 MYSQL *mysql_create_connection();

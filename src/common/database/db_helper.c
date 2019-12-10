@@ -1065,6 +1065,7 @@ int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_a
                                 ">= ? AND end_time <= ?"
 #endif
 
+#if DB_MYSQL
 int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uint *last_index, ulong *energy, long num_nodes, char **nodes)
 {
     char query[1024];
@@ -1141,6 +1142,7 @@ int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uin
     return EAR_SUCCESS;
 
 }
+#endif
 
 #define METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
                                 "id > %d AND DC_energy <= %d"
