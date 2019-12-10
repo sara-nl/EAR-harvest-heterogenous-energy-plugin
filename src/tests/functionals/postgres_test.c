@@ -59,7 +59,7 @@ int main(int argc,char *argv[])
 	
     int i;
     for (i = 0; i < num_apps; i++)
-        printf("current app id: %d\t step_id: %d\t node_id: %s\t\n", apps[i].job.id, apps[i].job.step_id, apps[i].node_id);
+        printf("current app id: %lu\t step_id: %lu\t node_id: %s\t\n", apps[i].job.id, apps[i].job.step_id, apps[i].node_id);
     free_cluster_conf(&my_cluster);
     
 	return 0;
