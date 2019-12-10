@@ -39,7 +39,7 @@
 #include <common/sizes.h>
 #include <metrics/common/msr.h>
 #include <common/hardware/hardware_info.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 
 /* */
@@ -58,9 +58,9 @@ int get_msr_ids(int *dest_fd_map)
 	/* If msr was not initialized, we initialize and made a local copy of fds */
 	if (!msr_initialised){
 		init_msr(dest_fd_map);
-		memcpy(fd_map,dest_fd_map,sizeof(int)*MAX_PACKAGES);
+		memcpy(fd_map,dest_fd_map,sizeof(int)*get_total_packages());
 	}else{	
-		memcpy(dest_fd_map,fd_map,sizeof(int)*MAX_PACKAGES);
+		memcpy(dest_fd_map,fd_map,sizeof(int)*get_total_packages());
 	}
 	return EAR_SUCCESS;
 }
@@ -90,7 +90,7 @@ int init_msr(int *dest_fd_map)
   	    	return EAR_ERROR;
   	    }
 	}
-	memcpy(dest_fd_map,fd_map,sizeof(int)*MAX_PACKAGES);
+	memcpy(dest_fd_map,fd_map,sizeof(int)*total_packages);
     msr_initialised = 1;
 	return EAR_SUCCESS;
 }

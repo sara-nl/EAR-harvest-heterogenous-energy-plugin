@@ -32,10 +32,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <pthread.h>
 
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
 #include <common/math_operations.h>
@@ -58,7 +59,8 @@
 #define MSR_DRAM_PERF_STATUS			0x61B
 #define MSR_DRAM_POWER_INFO				0x61C
 
-
+static pthread_mutex_t rapl_msr_lock = PTHREAD_MUTEX_INITIALIZER;
+static int rapl_msr_instances=0;
 
 
 
@@ -69,15 +71,18 @@ int init_rapl_msr(int *fd_map)
     int j;
     unsigned long long result;
 	/* If it is not initialized, I do it, else, I get the ids */
+		pthread_mutex_lock(&rapl_msr_lock);
     if (is_msr_initialized()==0){ 
 	    init_msr(fd_map);
     }else get_msr_ids(fd_map);
+		rapl_msr_instances++;
 	
     /* Ask for msr info */
     for(j=0;j<get_total_packages();j++) 
     {
         if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT)){ 
 					debug("Error in msr_read init_rapl_msr");
+					pthread_mutex_unlock(&rapl_msr_lock);
 					return EAR_ERROR;
 				}
 
@@ -86,6 +91,7 @@ int init_rapl_msr(int *fd_map)
         time_units=pow(0.5,(double)((result>>16)&0xf));
         dram_energy_units=pow(0.5,(double)16);
     }
+		pthread_mutex_unlock(&rapl_msr_lock);
     return EAR_SUCCESS;
 }
 
@@ -122,8 +128,12 @@ int read_rapl_msr(int *fd_map,unsigned long long *_values)
 void dispose_rapl_msr(int *fd_map)
 {
 	int j,tp;
-	tp=get_total_packages();
-	for (j = 0; j < tp; j++)
-		msr_close(&fd_map[j]);
+	pthread_mutex_lock(&rapl_msr_lock);
+  rapl_msr_instances--;
+	if (rapl_msr_instances==0){
+		tp=get_total_packages();
+		for (j = 0; j < tp; j++) msr_close(&fd_map[j]);
+	}
+	pthread_mutex_unlock(&rapl_msr_lock);
 }
 
