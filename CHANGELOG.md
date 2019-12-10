@@ -1,7 +1,26 @@
 ## Unreleased
-- First version of cpupower included 
+- cluster_conf_read error fixed when reading "privileged" specification for policies
+- ear.conf and ear.conf.full replaced by ear.conf.template and ear.conf.full.template
+- More info with SLURM_COMP_VERBOSE env var
+- ecct modififed to remove MAX_SIG_POWER and MIN_SIG_POWER
+- error fixed when using short ear.conf files
+- rpms folder modified to support rellocatable rpms /usr and /etc paths 
+- energy_nm had an error when energy_init = energy_end
+- bandwith.c modified to include NULL pointers when architecture is not detected. It is pending to migrate it to a plugin
+- energy_nm updated to be the same installed in lennox
+- metrics folder modified by topics, msr common for rapl and temperature included in msr
+- Added '--disable-avx512' flag to configure to use AVX2 symbols instead of AVX512. It is required when working with Haswell/Broadwell systems or older. Also added '--with-fortran' flag to configure to add Fortran symbols to the EAR library. It is required when working with some MPI distributions such as OpenMPI. Finally, configure accepts PostgreSQL flags.
+- Three new functions in ear_api for manual utilization of EAR (requires application modification)
+- Option in EARPlug to specify trace pathname changed to SLURM_EAR_TRACE_PATH.
+- new trace plugin mechamism. EAR_GUI is set to on by default. SLURM_EAR_TRACE_PLUGIN env var defines trace path (no default location). Paraver plugin uses SLURM_EAR_TRACE_PATH env var. Pending to check the plugin.
+- EARD INIT and RT errors reported as events to the DB: Not fully tested
+- rpms3 folder included for rpm testing
+- EARplug including SLURM_HACK_LIBRARY for local EARL utilization
+- Support for multiple LD_PRELOAD libraries in EARplug
+- Default plugins included in EAR
+- EAR cpupower included 
 - Merge with new_policies branch: rapl plugin for energy supported
-- Added SLURM_EAR_MPI_VERSION to automatic selection of ear library 
+- Added SLURM_EAR_MPI_VERSION to automatic selection of ear library  in EARplug
 - IPMI finder removed from energy loading. Default is not supported
 - power_cap and power_cap_type included in island for power_capping policies
 - New policies and power models included for testing
@@ -43,5 +62,6 @@
 - ereport -i "all" option now also reports avg power
 - ereport -g now can be used in conjunction with -s
 - new eacct -x option to see EAR events
+- eacct does not filter applications with high and low power values anymore
 
 - fixed an error where edb_create would not output a correct user creation query

@@ -73,8 +73,8 @@ typedef struct varname_s {
 	char *loc;
 	char *rem;
 	char *ear;
-	char *tes;
 	char *cmp;
+	char *hck;
 } varnames_t;
 
 struct variables_s {
@@ -83,6 +83,7 @@ struct variables_s {
 	varnames_t comp_moni;
 	varnames_t comp_test;
 	varnames_t comp_verb;
+	varnames_t hack_libr;
 	varnames_t verbose;
 	varnames_t policy;
 	varnames_t policy_th;
@@ -115,6 +116,7 @@ struct variables_s {
 .comp_moni = { .cmp = "SLURM_COMP_MONITOR" },
 .comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
+.hack_libr = { .hck = "SLURM_HACK_LIBRARY" },
 .verbose   = { .loc = "SLURM_EOVERB", .ear = "EAR_VERBOSE"          },
 .policy    = { .loc = "SLURM_EOPOLI", .ear = "EAR_POWER_POLICY"     },
 .policy_th = { .loc = "SLURM_EOPOTH", .ear = "EAR_POWER_POLICY_TH"  },
@@ -123,19 +125,19 @@ struct variables_s {
 .learning  = { .loc = "SLURM_EOLERN", .ear = "EAR_LEARNING_PHASE"   },
 .tag       = { .loc = "SLURM_EOETAG", .ear = "EAR_ENERGY_TAG"       },
 .path_usdb = { .loc = "SLURM_EOUSDB", .ear = "EAR_USER_DB_PATHNAME" },
-.path_trac = { .loc = "SLURM_EOTRAC", .ear = "EAR_PATH_TRACE"       },
-.perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                     },
-.eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"         },
-.name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME"  },
+.path_trac = { .loc = "SLURM_EOTRAC", .ear = "SLURM_EAR_TRACE_PATH"       },
+.perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                       },
+.eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"           },
+.name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME"    },
 .user      = { .rem = "SLURM_ERUSER",        .ear = "" },
 .group     = { .rem = "SLURM_ERGRUP",        .ear = "" },
 .account   = { .rem = "SLURM_JOB_ACCOUNT",   .ear = "" },
-.path_temp = { .rem = "SLURM_ERTEMP",        .ear = "EAR_TMP"       },
+.path_temp = { .rem = "SLURM_ERTEMP",        .ear = "EAR_TMP"         },
 .path_inst = { .rem = "SLURM_ERINST",        .ear = "" },
 .node_list = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
 .context   = { .rem = "SLURM_ERCNTX",        .ear = "" },
-.ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"    },
-.ld_libr   = { .rem = "",                    .ear = "" },
+.ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"      },
+.ld_libr   = { .rem = "",                    .ear = "LD_LIBRARY_PATH" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
 .version   = { .loc = "SLURM_EAR_MPI_VERSION",   .ear = "" },
 .gm_secure = { .loc = "SLURM_EGM_SECURED",   .ear = "" }

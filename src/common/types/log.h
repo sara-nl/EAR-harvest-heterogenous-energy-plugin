@@ -34,20 +34,14 @@
 #include <common/config.h>
 #include <common/types/generic.h>
 #include <common/types/job.h>
-
-typedef struct ear_event {
-	job_id jid;
-    job_id step_id;
-	char node_id[GENERIC_NAME];
-	uint event;
-	ulong freq;
-	time_t timestamp;
-} ear_event_t;
+#include <common/types/event_type.h>
 
 #define ENERGY_POLICY_NEW_FREQ	0
 #define GLOBAL_ENERGY_POLICY	1
 #define ENERGY_POLICY_FAILS		2
 #define DYNAIS_OFF				3
+
+
 
 
 
@@ -71,4 +65,7 @@ void log_report_max_tries(job_id id,job_id step_id,ulong newf);
 /** Given a job id and a frequency value, reports to the log file the change
 *   of frequency because of Energy Budget*/
 void log_report_global_policy_freq(job_id id,job_id step_id,ulong newf);
+
+
+
 #endif

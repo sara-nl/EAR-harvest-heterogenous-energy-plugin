@@ -97,18 +97,18 @@ X_AC_GSL
 X_AC_SLURM
 
 #########
-# MYSQL #
-#########
-#
-
-X_AC_MYSQL
-
-#########
 # PGSQL #
 #########
 #
 
 X_AC_PGSQL
+
+#########
+# MYSQL #
+#########
+#
+
+X_AC_MYSQL
 
 ############
 # FEATURES #
@@ -164,7 +164,8 @@ AC_CONFIG_FILES([Makefile
                  etc/systemd/eardbd.service
                  etc/systemd/eargmd.service
                  src/common/config/config_install.h
-                 etc/conf/ear.conf])
+								 etc/conf/ear.conf.full.template
+                 etc/conf/ear.conf.template])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_CONFIG_FILES([etc/rpms/rpmbuild.sh], [chmod +x etc/rpms/rpmbuild.sh])
 AC_OUTPUT

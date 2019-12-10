@@ -32,7 +32,7 @@
 #include <common/states.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 
 #include <library/models/models_api.h>
 
@@ -43,13 +43,11 @@ static int num_coeffs;
 static uint num_pstates;
 static uint basic_model_init=0;
 
-#define SHOW_DEBUGS 1
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
 #else
 #define debug(...) 
 #endif
-
 
 static int valid_range(ulong from,ulong to)
 {

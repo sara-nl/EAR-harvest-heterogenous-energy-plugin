@@ -46,7 +46,7 @@
 #define POWERMON_THREAD						1
 /* When set to 1 , creates a thread in EARD for external commands, do not set to
  * 0 except for debug purposes */
-#define EXTERNAL_COMMANDS_THREAD 			1
+#define EXTERNAL_COMMANDS_THREAD 				1
 /* Just for ear.conf reading. */
 #define EARDBD_TYPES						7
 /** Specifies if the new version of the commands propagation is used and the number
@@ -59,5 +59,7 @@
 #define MAX_SOCKET_COMM_TRIES 	10000000
 
 #define EAR_CPUPOWER	1
+#define EARL_RESEARCH 1
+#define ONLY_MASTER 1
 
 #endif //EAR_CONFIG_DEV_H

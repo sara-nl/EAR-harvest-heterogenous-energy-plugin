@@ -31,7 +31,7 @@
 #include <assert.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <metrics/custom/hardware_info.h>
+#include <common/hardware/hardware_info.h>
 
 int main ()
 {

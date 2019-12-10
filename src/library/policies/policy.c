@@ -28,10 +28,9 @@
 */
 
 #include <dlfcn.h>
-#define SHOW_DEBUGS 1
 #include <common/includes.h>
-#include <common/symplug.h>
-#include <control/frequency.h>
+#include <common/system/symplug.h>
+#include <common/hardware/frequency.h>
 #include <library/policies/policy_ctx.h>
 #include <library/policies/policy.h>
 #include <library/common/externs.h>
@@ -40,6 +39,14 @@
 
 // external symbols
 extern MPI_Comm masters_comm,new_world_comm;
+
+#ifdef EARL_RESEARCH
+extern unsigned long ext_def_freq;
+#define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
+#else
+#define DEa_FREQF(f) f
+#endif
+
 
 typedef struct policy_symbols {
 	state_t (*init)        (polctx_t *c);
@@ -93,10 +100,10 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	}
   debug("loading policy %s",obj_path);
 	policy_load(obj_path);
-	ear_frequency=app_settings->def_freq;
+	ear_frequency=DEF_FREQ(app_settings->def_freq);
 	my_pol_ctx.app=app_settings;
 	my_pol_ctx.reconfigure=res;
-	my_pol_ctx.user_selected_freq=app_settings->def_freq;
+	my_pol_ctx.user_selected_freq=DEF_FREQ(app_settings->def_freq);
 	my_pol_ctx.reset_freq_opt=get_ear_reset_freq();
 	my_pol_ctx.ear_frequency=&ear_frequency;
 	my_pol_ctx.num_pstates=frequency_get_num_pstates();
@@ -137,7 +144,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
     	*(c->ear_frequency) =  eards_change_freq(*freq_set);
 		}
   } else{
-		if (c!=NULL) *freq_set=c->app->def_freq;
+		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
 	}
 	return st;
 }
@@ -148,7 +155,7 @@ state_t policy_get_default_freq(ulong *freq_set)
 	if (polsyms_fun.get_default_freq!=NULL){
 		return polsyms_fun.get_default_freq( c, freq_set);
 	}else{
-		if (c!=NULL) *freq_set=c->app->def_freq;
+		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
 		return EAR_SUCCESS;
 	}
 }
@@ -246,7 +253,7 @@ void print_policy_ctx(polctx_t *p)
 	fprintf(stderr,"user_type %u\n",p->app->user_type);
 	fprintf(stderr,"policy_name %s\n",p->app->policy_name);
 	fprintf(stderr,"setting 0 %lf\n",p->app->settings[0]);
-	fprintf(stderr,"def_freq %lu\n",p->app->def_freq);
+	fprintf(stderr,"def_freq %lu\n",DEF_FREQ(p->app->def_freq));
 	fprintf(stderr,"def_pstate %u\n",p->app->def_p_state);
 	fprintf(stderr,"reconfigure %d\n",p->reconfigure->force_rescheduling);
 	fprintf(stderr,"user_selected_freq %lu\n",p->user_selected_freq);

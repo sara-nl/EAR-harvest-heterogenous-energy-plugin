@@ -32,24 +32,23 @@
 #include <stdlib.h>
 #include <string.h>
 #include <papi.h>
+// #define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>
-// #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
-#include <metrics/metrics_earl.h>
-#if 0
-#include <metrics/papi/flops.h>
-#include <metrics/papi/cache.h>
-#include <metrics/papi/generics.h>
-#include <metrics/papi/instructions.h>
+#ifdef CACHE_METRICS
+#include <metrics/cache/cache.h>
 #endif
-#include <metrics/custom/bandwidth_notpriv.h>
-#include <daemon/eard_api.h>
+#include <common/hardware/hardware_info.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
-#include <metrics/api/energy_lib.h>
+#include <metrics/cpi/cpi.h>
+#include <metrics/flops/flops.h>
+#include <metrics/energy/energy_node_lib.h>
+#include <metrics/bandwidth/cpu/utils.h>
+#include <daemon/eard_api.h>
 
 //#define TEST_MB 0
 
@@ -124,6 +123,7 @@ static uint node_energy_units;
 #define SIG_BEGIN 	0
 #define SIG_END		1
 
+static int num_packs=0;
 static long long *metrics_flops[2]; // (vec)
 static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[3]; // ops (vec)
@@ -149,11 +149,6 @@ static long long metrics_l3[2];
 
 static int NI=0;
 
-//TODO: remove when all metrics were unified
-#define RAPL_DRAM0 			0
-#define RAPL_DRAM1 			1
-#define RAPL_PACKAGE0 		2
-#define RAPL_PACKAGE1 		3
 
 long long metrics_time()
 {
@@ -235,9 +230,9 @@ static int metrics_partial_stop(uint where)
 
 	// Manual IPMI accumulation
 	eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
-	energy_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
-	energy_to_str(start_energy_str,metrics_ipmi[LOO]);	
-	energy_to_str(stop_energy_str,aux_energy_stop);	
+	energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
+	energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
+	energy_lib_to_str(stop_energy_str,aux_energy_stop);	
 	if ((where==SIG_END) && (c_energy==0)){ 
 		debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
 		return EAR_NOT_READY;
@@ -258,6 +253,10 @@ static int metrics_partial_stop(uint where)
 
 	acum_ipmi[LOO] = c_energy;
 	acum_ipmi[APP] += acum_ipmi[LOO];
+	ulong *ei,*ee;
+	ei=(ulong *)metrics_ipmi[LOO];
+	ee=(ulong *)aux_energy_stop;
+	debug("loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
 	// Manual time accumulation
 	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
@@ -341,7 +340,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	metrics->time = time_s / (double) iterations;
 	metrics->avg_f = metrics_avg_frequency[s];
 
-	#if 0
+	#if CACHE_METRICS
 	metrics->L1_misses = metrics_l1[s];
 	metrics->L2_misses = metrics_l2[s];
 	metrics->L3_misses = metrics_l3[s];
@@ -399,15 +398,15 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	debug("DC power computed in signature %.2lf (%lu energy))",metrics->DC_power,acum_ipmi[s]);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
 	if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
-		verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
+		debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
 	}
 
-	// Energy RAPL (TODO: ask for the two individual energy types separately)
-	metrics->PCK_power   = (double) metrics_rapl[s][RAPL_PACKAGE0];
-	metrics->PCK_power  += (double) metrics_rapl[s][RAPL_PACKAGE1];
+	int p;
+	metrics->PCK_power=0;
+	metrics->DRAM_power=0;
+	for (p=0;p<num_packs;p++) metrics->DRAM_power=metrics->DRAM_power+(double) metrics_rapl[s][p];
+	for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
 	metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
-	metrics->DRAM_power  = (double) metrics_rapl[s][RAPL_DRAM0];
-	metrics->DRAM_power += (double) metrics_rapl[s][RAPL_DRAM1];
 	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 }
 
@@ -421,8 +420,12 @@ int metrics_init()
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
 	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	num_packs=detect_packages(NULL);
+	if (num_packs==0){
+		verbose(0,"Error detecting number of packges");
+	}
 
-	st=energy_init(system_conf);
+	st=energy_lib_init(system_conf);
 	if (st!=EAR_SUCCESS){
 		verbose(1,"Error loading energy plugin");
 	}
@@ -459,13 +462,13 @@ int metrics_init()
 
 	// Daemon metrics allocation (TODO: standarize data size)
 	rapl_size = eards_get_data_size_rapl();
-	rapl_elements = rapl_size / sizeof(long long);
+	rapl_elements = rapl_size / sizeof(unsigned long long);
 
 	// Allocating data for energy node metrics
 	// node_energy_datasize=eards_node_energy_data_size();
-	energy_datasize(&node_energy_datasize);
+	energy_lib_datasize(&node_energy_datasize);
 	debug("Node energy data size %lu",node_energy_datasize);
-	energy_units(&node_energy_units);
+	energy_lib_units(&node_energy_units);
 	debug("Node energy units %u",node_energy_units);
 	aux_energy=(edata_t)malloc(node_energy_datasize);
 	aux_energy_stop=(edata_t)malloc(node_energy_datasize);
@@ -511,7 +514,7 @@ int metrics_init()
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
-	debug( "detected %d RAPL counter", rapl_elements);
+	debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);
 	debug( "detected %d bandwith counter", bandwith_elements);
 
 	metrics_reset();

@@ -86,6 +86,8 @@ int db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_
 
 int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index, ulong *energy);
 
+int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uint *last_index, ulong *energy, long num_nodes, char **nodes);
+
 /** Reads applications from the normal DB or the learning DB depending on is_learning. It allocates 
 *   memory for apps. Returns the number of applications readed */
 int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name);

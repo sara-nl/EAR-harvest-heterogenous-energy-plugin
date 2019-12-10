@@ -45,7 +45,6 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/job.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/eard_rapi.h>
 #include <daemon/eard_conf_rapi.h>
@@ -407,6 +406,7 @@ int get_self_ip()
             return saddr->sin_addr.s_addr;
         }
     }
+	return EAR_ERROR;
 }
 
 #if USE_NEW_PROP

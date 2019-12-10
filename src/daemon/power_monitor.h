@@ -45,12 +45,12 @@
 #include <cpufreq.h>
 #endif
 #else
-#include <control/cpupower.h>
+#include <common/hardware/cpupower.h>
 #endif
 
 #include <common/types/application.h>
-#include <metrics/handler/energy.h>
-#include <metrics/power_metrics/power_metrics.h>
+#include <metrics/energy/energy_node.h>
+#include <metrics/accumulators/power_metrics.h>
 #include <daemon/node_metrics.h>
 #include <daemon/eard_conf_rapi.h>
 

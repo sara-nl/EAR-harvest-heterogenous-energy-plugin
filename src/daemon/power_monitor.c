@@ -43,19 +43,19 @@
 #include <sys/types.h>
 
 #include <common/config.h>
-#include <common/sockets.h>
+#include <common/system/sockets.h>
 
-// #define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/periodic_metric.h>
+#include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <metrics/custom/frequency.h>
-#include <metrics/power_metrics/power_metrics.h>
-#include <metrics/custom/hardware_info.h>
-#include <control/frequency.h>
+#include <metrics/frequency/frequency_cpu.h>
+#include <common/hardware/hardware_info.h>
+#include <common/hardware/frequency.h>
 #include <daemon/power_monitor.h>
 #include <daemon/node_metrics.h>
 #include <daemon/eard_checkpoint.h>
@@ -72,6 +72,7 @@
 static pthread_mutex_t app_lock = PTHREAD_MUTEX_INITIALIZER;
 static ehandler_t my_eh_pm;
 static char *TH_NAME = "PowerMon";
+static int num_packs;
 
 nm_t my_nm_id;
 nm_data_t nm_init, nm_end, nm_diff, last_nm;
@@ -413,6 +414,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 
 void job_end_powermon_app(ehandler_t *ceh) {
 	power_data_t app_power;
+	alloc_power_data(&app_power);
 	check_context("job_end_powermon_app");
 	time(&current_ear_app[ccontext]->app.job.end_time);
 	if (current_ear_app[ccontext]->app.job.end_time == current_ear_app[ccontext]->app.job.start_time) {
@@ -422,19 +424,20 @@ void job_end_powermon_app(ehandler_t *ceh) {
 	read_enegy_data(ceh, &c_energy);
 	compute_power(&current_ear_app[ccontext]->energy_init, &c_energy, &app_power);
 
-	current_ear_app[ccontext]->app.power_sig.DC_power = app_power.avg_dc;
+	current_ear_app[ccontext]->app.power_sig.DC_power = accum_node_power(&app_power);
 	if (app_power.avg_dc > current_ear_app[ccontext]->app.power_sig.max_DC_power)
 		current_ear_app[ccontext]->app.power_sig.max_DC_power = app_power.avg_dc;
 	if (app_power.avg_dc < current_ear_app[ccontext]->app.power_sig.min_DC_power)
 		current_ear_app[ccontext]->app.power_sig.min_DC_power = app_power.avg_dc;
-	current_ear_app[ccontext]->app.power_sig.DRAM_power = app_power.avg_dram[0] + app_power.avg_dram[1];
-	current_ear_app[ccontext]->app.power_sig.PCK_power = app_power.avg_cpu[0] + app_power.avg_cpu[1];
+	current_ear_app[ccontext]->app.power_sig.DRAM_power = accum_dram_power(&app_power);
+	current_ear_app[ccontext]->app.power_sig.PCK_power = accum_cpu_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
 	current_ear_app[ccontext]->app.power_sig.avg_f = aperf_job_avg_frequency_end_all_cpus();
 
 	// nominal is still pending
 
 	// Metrics are not reported in this function
+	free_power_data(&app_power);
 }
 
 void report_powermon_app(powermon_app_t *app) {
@@ -481,27 +484,29 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		my_policy = &default_policy_context;
 		return my_policy;
 	}
-	verbose(VJOBPMON+1,"configuring policy for user %u policy %s freq %lu th %lf is_learning %u",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
+	debug("configuring policy for user %u policy %s freq %lu th %lf is_learning %u",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
+		debug("Policy requested %s",appID->job.policy);
     p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
+		debug("Policy %s is ID %d",appID->job.policy,p_id);
     /* Use cluster conf function */
     if (p_id!=EAR_ERROR){
     	    my_policy=get_my_policy_conf(my_node_conf,p_id);
 			if (!my_policy->is_available){
-				verbose(VJOBPMON+1,"User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
+				debug("User type %d is not alloweb to use policy %s",user_type,appID->job.policy);
 				my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
 			}
 			copy_policy_conf(&per_job_conf,my_policy);
 			my_policy=&per_job_conf;
     }else{
-		verbose(VJOBPMON+1,"Invalid policy %s ",appID->job.policy);
+			debug("Invalid policy %s ",appID->job.policy);
         my_policy=get_my_policy_conf(my_node_conf,my_cluster_conf.default_policy);
 		if (my_policy==NULL){
 			error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 		    authorized_context.p_state=1;
-            int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+            int mo_pid = policy_name_to_id("monitoring", &my_cluster_conf);
             if (mo_pid != EAR_ERROR)
                 authorized_context.policy = mo_pid;
             else
@@ -906,19 +911,24 @@ void powermon_reload_conf() {
 
 // Each sample is processed by this function
 void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
-	ulong jid, mpi;
+	ulong jid, mpi,sid;
+	uint usedb,useeardbd;
 	double maxpower, minpower, RAPL, corrected_power;
+	usedb=my_cluster_conf.eard.use_mysql;
+	useeardbd=my_cluster_conf.eard.use_eardbd;
 	if (ccontext >= 0) {
 		jid = current_ear_app[ccontext]->app.job.id;
+		sid = current_ear_app[ccontext]->app.job.step_id; 
 		mpi = current_ear_app[ccontext]->app.is_mpi;
 		maxpower = current_ear_app[ccontext]->app.power_sig.max_DC_power;
 		minpower = current_ear_app[ccontext]->app.power_sig.min_DC_power;
 	} else {
 		jid = 0;
+		sid = 0;
 		mpi = 0;
 		maxpower = minpower = 0;
 	}
-	verbose(VNODEPMON, "ID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf",
+	verbosen(VNODEPMON, "ID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf ",
 			jid, mpi, my_current_power->avg_dc, maxpower, minpower);
 	verbose_node_metrics(&my_nm_id, nm);
 
@@ -939,8 +949,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	current_sample.start_time = my_current_power->begin;
 	current_sample.end_time = my_current_power->end;
 	corrected_power = my_current_power->avg_dc;
-	RAPL = my_current_power->avg_dram[0] + my_current_power->avg_dram[1] + my_current_power->avg_cpu[0] +
-		   my_current_power->avg_cpu[1];
+	RAPL =accum_dram_power(my_current_power)+accum_cpu_power(my_current_power); 
 	if (my_current_power->avg_dc < RAPL) {
 		corrected_power = RAPL;
 	}
@@ -957,9 +966,17 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 #if SYSLOG_MSG
 	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< my_node_conf->min_sig_power) || (my_current_power->avg_dc>my_node_conf->max_sig_power)){
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %.2lf as avg power in last period\n",nodename,my_current_power->avg_dc);
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,DC_POWER_ERROR,my_current_power->avg_dc);
 	}
 	if (current_sample.temp>my_node_conf->max_temp){
 		syslog(LOG_DAEMON|LOG_ERR,"Node %s reports %lu degress (max %lu)\n",nodename,current_sample.temp,my_node_conf->max_temp);
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,TEMP_ERROR,current_sample.temp);
+	}
+	if (RAPL == 0) {
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,RAPL_ERROR,RAPL);
+	}
+	if ((current_sample.avg_f==0) || (current_sample.avg_f>frequency_get_nominal_freq())){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,FREQ_ERROR,current_sample.avg_f);
 	}
 #endif
 	if ((my_current_power->avg_dc == 0) || (my_current_power->avg_dc > my_node_conf->max_error_power)) {
@@ -1037,12 +1054,36 @@ void create_powermon_out() {
 	umask(my_mask);
 }
 
+void check_rt_error_for_signature(application_t *app)
+{
+	uint usedb,useeardbd;
+	job_id jid,sid;
+	jid=app->job.id;
+	sid=app->job.step_id;
+	usedb=my_cluster_conf.eard.use_mysql;
+	useeardbd=my_cluster_conf.eard.use_eardbd;
+	if (app->signature.GBS==0)
+	{
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,GBS_ERROR,0);
+	}
+	if (app->signature.CPI==0){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,CPI_ERROR,0);
+	}
+	if (app->signature.DC_power==0){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,DC_POWER_ERROR,0);
+	}
+	if (app->signature.avg_f==0){
+		log_report_eard_rt_error(usedb,useeardbd,jid,sid,FREQ_ERROR,0);
+	}
+}
+
 void powermon_mpi_signature(application_t *app) {
 	check_context("powermon_mpi_signature and not current context");
 	if (app == NULL) {
 		error("powermon_mpi_signature: and NULL app provided");
 		return;
 	}
+	check_rt_error_for_signature(app);
 	signature_copy(&current_ear_app[ccontext]->app.signature, &app->signature);
 	current_ear_app[ccontext]->app.job.def_f = app->job.def_f;
 	current_ear_app[ccontext]->app.job.th = app->job.th;
@@ -1085,9 +1126,14 @@ void *eard_power_monitoring(void *noinfo) {
 
 	init_contexts();
 
+	num_packs=detect_packages(NULL);
+	if (num_packs==0){
+		error("Packages cannot be detected");
+	}
+
 	memset((void *) &default_app, 0, sizeof(powermon_app_t));
 
-	verbose(VJOBPMON, " power monitoring thread created");
+	verbose(VJOBPMON, "Power monitoring thread UP");
 	if (pthread_setname_np(pthread_self(), TH_NAME)) error("Setting name for %s thread %s", TH_NAME, strerror(errno));
 	if (init_power_ponitoring(&my_eh_pm) != EAR_SUCCESS) {
 		error("Error in init_power_ponitoring");
@@ -1096,20 +1142,24 @@ void *eard_power_monitoring(void *noinfo) {
 	alloc_energy_data(&c_energy);
 	alloc_energy_data(&e_begin);
 	alloc_energy_data(&e_end);
+	alloc_power_data(&my_current_power);
 
 	alloc_energy_data(&default_app.energy_init);
 
 	// current_sample is the current powermonitoring period
+	debug("init_periodic_metric");
 	init_periodic_metric(&current_sample);
 	create_powermon_out();
 
 	// We will collect and report avg power until eard finishes
 	// Get time and Energy
 
-
+	debug("read_enegy_data");
 	read_enegy_data(&my_eh_pm, &e_begin);
 	/* Update with the curent node conf */
+	debug("Initializing node metrics");
 	powermon_init_nm();
+	debug("Starting node metrics");
 	if (start_compute_node_metrics(&my_nm_id, &nm_init) != EAR_SUCCESS) {
 		error("start_compute_node_metrics");
 	}
@@ -1120,13 +1170,14 @@ void *eard_power_monitoring(void *noinfo) {
 	/*
 	*	MAIN LOOP
 	*/
-
+	debug("Starting power monitoring loop, reporting metrics every %d seconds",f_monitoring);
 
 	while (!eard_must_exit) {
 		// Wait for N usecs
 		sleep(f_monitoring);
 
 		// Get time and Energy
+		debug("Reading energy");
 		read_enegy_data(&my_eh_pm, &e_end);
 
 		if (e_end.DC_node_energy == 0) {
@@ -1134,6 +1185,7 @@ void *eard_power_monitoring(void *noinfo) {
 		} else {
 
 			// Get node metrics
+			debug("Reading node metrics");
 			end_compute_node_metrics(&my_nm_id, &nm_end);
 			diff_node_metrics(&my_nm_id, &nm_init, &nm_end, &nm_diff);
 			start_compute_node_metrics(&my_nm_id, &nm_init);
@@ -1141,6 +1193,8 @@ void *eard_power_monitoring(void *noinfo) {
 
 			// Compute the power
 			compute_power(&e_begin, &e_end, &my_current_power);
+
+			print_power(&my_current_power);
 
 			// Save current power
 			update_historic_info(&my_current_power, &nm_diff);
@@ -1150,6 +1204,7 @@ void *eard_power_monitoring(void *noinfo) {
 		}
 
 	}
+	debug("Power monitor thread EXITs");
 	if (dispose_node_metrics(&my_nm_id) != EAR_SUCCESS) {
 		error("dispose_node_metrics ");
 	}

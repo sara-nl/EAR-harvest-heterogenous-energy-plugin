@@ -1,6 +1,6 @@
 ######## FILES
 
-COMPONENTS = common control
+COMPONENTS = common 
 ifdef DB_BASE
 	COMPONENTS += database_cache
 endif

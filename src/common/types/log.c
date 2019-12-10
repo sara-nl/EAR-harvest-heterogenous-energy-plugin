@@ -50,8 +50,11 @@ typedef struct ear_event{
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/types/log.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/eard_api.h>
+
+
 
 #define LOG_FILE 1
 
@@ -206,3 +209,4 @@ void log_report_global_policy_freq(job_id job,job_id sid,ulong newf)
 #endif
 }
 
+	

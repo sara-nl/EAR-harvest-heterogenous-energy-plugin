@@ -37,7 +37,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <common/file.h>
+#include <common/system/file.h>
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         verbose(0, "Usage: %s coeffs_file",argv[0]);
         exit(1);
     }
-
+	VERB_SET_LV(5);
 	size = file_size(argv[1]);
 
 	if (size < 0) {

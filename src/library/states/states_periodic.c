@@ -47,7 +47,7 @@
 #include <library/states/states.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
-#include <control/frequency.h>
+#include <common/hardware/frequency.h>
 #include <daemon/eard_api.h>
 
 extern uint mpi_calls_in_period;
@@ -201,7 +201,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
 
-					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER, VPI);
+					traces_new_signature(ear_my_rank, my_id,&loop_signature.signature);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);

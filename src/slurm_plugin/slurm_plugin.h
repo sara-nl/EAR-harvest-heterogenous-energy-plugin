@@ -48,8 +48,8 @@
  */
 
 typedef struct plug_vars {
-	char ld_preload[SZ_PATH];
-	char ld_library[SZ_PATH];
+	char ld_preload[SZ_BUFF_EXTRA];
+	char ld_library[SZ_BUFF_EXTRA];
 } plug_vars_t;
 
 typedef struct plug_user {

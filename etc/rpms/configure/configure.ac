@@ -10,11 +10,11 @@ fi
 
 
 AC_CONFIG_FILES([
-	etc/ear/ear.conf
-	etc/ear/ear.conf.full
-	etc/module/ear
-	etc/systemd/eard.service
-	etc/systemd/eardbd.service
-	etc/systemd/eargmd.service
-	etc/slurm/ear.plugstack.conf])
+	${sysconfdir}/ear/ear.conf.template
+	${sysconfdir}/ear/ear.conf.full.template
+	${sysconfdir}/module/ear
+	${sysconfdir}/systemd/system/eard.service
+	${sysconfdir}/systemd/system/eardbd.service
+	${sysconfdir}/systemd/system/eargmd.service
+	${sysconfdir}/slurm/ear.plugstack.conf])
 AC_OUTPUT

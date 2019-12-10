@@ -282,6 +282,11 @@ int getenv_ear_num_nodes()
 
 	return conf_ear_num_nodes;
 }
+void set_ear_num_nodes(int num_nodes)
+{
+	conf_ear_num_nodes=num_nodes;
+}
+
 
 
 

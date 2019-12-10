@@ -41,8 +41,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <common/config.h>
-#include <common/process.h>
-#include <common/sockets.h>
+#include <common/system/process.h>
+#include <common/system/sockets.h>
 #include <common/types/types.h>
 #include <common/string_enhanced.h>
 

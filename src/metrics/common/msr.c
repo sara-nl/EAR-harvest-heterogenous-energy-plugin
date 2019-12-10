@@ -34,11 +34,64 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include <common/sizes.h>
 #include <metrics/common/msr.h>
+#include <common/hardware/hardware_info.h>
 
 /* */
+static int total_cores=0,total_packages=0;
+static int *package_map;
+static int msr_initialised = 0;
+static int fd_map[MAX_PACKAGES];
+
+int is_msr_initialized()
+{
+	return msr_initialised;
+}
+
+int get_msr_ids(int *dest_fd_map)
+{
+	/* If msr was not initialized, we initialize and made a local copy of fds */
+	if (!msr_initialised){
+		init_msr(dest_fd_map);
+		memcpy(fd_map,dest_fd_map,sizeof(int)*MAX_PACKAGES);
+	}else{	
+		memcpy(dest_fd_map,fd_map,sizeof(int)*MAX_PACKAGES);
+	}
+	return EAR_SUCCESS;
+}
+
+int get_total_packages()
+{
+	return total_packages;
+}
+
+/* It is supposed to be checked it is not already initialized before calling it */
+int init_msr(int *dest_fd_map)
+{
+    total_packages = detect_packages(&package_map);
+		if (total_packages==0)
+    {
+        return EAR_ERROR;
+    }
+	unsigned long long result;
+	int j;
+	for(j=0;j<total_packages;j++) 
+    {
+        int ret;
+        fd_map[j] = -1;
+        if ((ret = msr_open(package_map[j], &fd_map[j])) != EAR_SUCCESS)
+      	{   
+  	    	return EAR_ERROR;
+  	    }
+	}
+	memcpy(dest_fd_map,fd_map,sizeof(int)*MAX_PACKAGES);
+    msr_initialised = 1;
+	return EAR_SUCCESS;
+}
+
 state_t msr_open(uint cpu, int *fd)
 {
 	char msr_file_name[SZ_PATH_KERNEL];
@@ -55,7 +108,7 @@ state_t msr_open(uint cpu, int *fd)
 		*fd = -1;
 		return EAR_OPEN_ERROR;
 	}
-
+	msr_initialised++;
 	return EAR_SUCCESS;
 }
 
@@ -65,7 +118,7 @@ state_t msr_close(int *fd)
 	if (*fd < 0) {
 		return EAR_ALREADY_CLOSED;
 	}
-
+	if (msr_initialised>0) msr_initialised--;
 	close(*fd);
 	*fd = -1;
 

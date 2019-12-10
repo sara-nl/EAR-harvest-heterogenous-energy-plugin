@@ -31,12 +31,14 @@
 #include <string.h>
 
 #include <common/config.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/node_metrics.h>
-#include <metrics/custom/frequency.h>
-#include <metrics/custom/frequency_uncore.h>
-#include <metrics/msr/energy_cpu.h>
+#include <metrics/frequency/frequency_cpu.h>
+#include <metrics/frequency/frequency_imc.h>
+#include <metrics/energy/energy_cpu.h>
+#include <metrics/temperature/temperature.h>
 
 #define NM_CONNECTED	100
 
@@ -47,6 +49,8 @@ uint64_t *uncore_freq;
 uint64_t *temp;
 }nm_data_t;
 */
+
+static int nm_temp_fd[MAX_PACKAGES];
 
 unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
 {
@@ -66,18 +70,22 @@ ulong get_nm_cpufreq(nm_t *id,nm_data_t *nm)
 	return nm->avg_cpu_freq;
 }
 
-int init_node_metrics(nm_t *id,uint sockets, uint cpus_per_socket,uint cores_model,ulong def_freq)
+int init_node_metrics(nm_t *id,int sockets, int cpus_per_socket,int cores_model,ulong def_freq)
 {
 	if ((id==NULL)	|| (sockets<=0) || (cpus_per_socket <=0) || (def_freq<=0)){
-		debug("init_node_metrics invalid argument\n");
+		debug("init_node_metrics invalid argument id null=%d sockets=%u cpus_per_socket %u def_freq %lu\n",(id==NULL),sockets,cpus_per_socket,def_freq);
 		return EAR_ERROR;
 	}
 	id->con=-1;
 	id->ncpus=cpus_per_socket;
 	id->nsockets=sockets;
 	id->def_f=def_freq;
-	if (frequency_uncore_init(sockets,cpus_per_socket,cores_model)!=EAR_SUCCESS) return EAR_ERROR;
+	if (frequency_uncore_init(sockets,cpus_per_socket,cores_model)!=EAR_SUCCESS){ 
+		debug("Error when initializing frequency_uncore_init");
+		return EAR_ERROR;
+	}
 	aperf_periodic_avg_frequency_init_all_cpus();
+	init_temp_msr(nm_temp_fd);
 	id->con=NM_CONNECTED;
 	return EAR_SUCCESS;
 }
@@ -124,7 +132,7 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
 	nm->avg_cpu_freq=aperf_periodic_avg_frequency_end_all_cpus();
 	if (frequency_uncore_counters_stop(nm->uncore_freq)!=EAR_SUCCESS) return EAR_ERROR;
-	if (read_temp_msr(nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
+	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
 	return EAR_SUCCESS;
 }
 

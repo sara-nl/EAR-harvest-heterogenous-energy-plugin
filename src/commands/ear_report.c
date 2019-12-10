@@ -37,9 +37,9 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include <common/user.h>
 #include <common/states.h>
 #include <common/config.h>
+#include <common/system/user.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -115,9 +115,15 @@
                     "INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id " \
                     "WHERE start_time >= %d AND end_time <= %d GROUP BY Jobs.e_tag ORDER BY energy"
 
+#if EXP_EARGM
+#define GLOB_ENERGY "SELECT ROUND(energy_percent, 2),warning_level,time,inc_th,p_state,GlobEnergyConsumedT1, " \
+                    "GlobEnergyConsumedT2,GlobEnergyLimit,GlobEnergyPeriodT1,GlobEnergyPeriodT2,GlobEnergyPolicy " \
+                    "FROM Global_energy2 WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
+#else
 #define GLOB_ENERGY "SELECT ROUND(energy_percent, 2),warning_level,time,inc_th,p_state,GlobEnergyConsumedT1, " \
                     "GlobEnergyConsumedT2,GlobEnergyLimit,GlobEnergyPeriodT1,GlobEnergyPeriodT2,GlobEnergyPolicy " \
                     "FROM Global_energy WHERE UNIX_TIMESTAMP(time) >= (UNIX_TIMESTAMP(NOW())-%d) ORDER BY time desc "
+#endif
 
 
 char *node_name = NULL;
@@ -332,7 +338,11 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
             else strcpy(query, AGGR_TIME);
         }
         else
+#if AGGREGATED
+            strcpy(query, AGGR_TIME);
+#else
             strcpy(query, MET_TIME);
+#endif
 
         if (verbose) {
             printf( "QUERY: %s\n", query);

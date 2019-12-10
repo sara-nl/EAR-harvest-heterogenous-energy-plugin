@@ -58,6 +58,8 @@
 #define EAR_NO_RESOURCES		-22
 #define EAR_NOT_FOUND			-23
 #define EAR_UNDEFINED			-24
+#define EAR_DL_ERROR			-25
+#define EAR_INCOMPATIBLE		-26
 
 // TODO: this is a config not a state
 #define DYNAIS_ENABLED      1

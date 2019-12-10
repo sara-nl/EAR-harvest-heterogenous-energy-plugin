@@ -2,66 +2,50 @@ CFLAGS = $(CC_FLAGS) -fPIC -shared -O2 -Wextra
 
 ######## INSTALLATION
 
-stat_BINS = libmetrics.a libmetrics_lib.a
-dyna_BINS = libmetrics.so libmetrics_lib.so
+stat_BINS = libmetrics.a
+dyna_BINS = libmetrics.so
 
 ######## FILES
 
-metrics_OBJS = $(SRCDIR)/metrics/common/msr.o \
-    $(SRCDIR)/metrics/common/cpuid.o \
-    $(SRCDIR)/metrics/handler/energy.o \
-    $(SRCDIR)/metrics/custom/frequency.o \
-    $(SRCDIR)/metrics/custom/frequency_uncore.o \
-    $(SRCDIR)/metrics/custom/hardware_info.o \
-    $(SRCDIR)/metrics/papi/energy_cpu.o \
-    $(SRCDIR)/metrics/papi/generics.o \
-    $(SRCDIR)/metrics/papi/cache.o \
-    $(SRCDIR)/metrics/papi/flops.o \
-    $(SRCDIR)/metrics/papi/instructions.o \
-    $(SRCDIR)/metrics/papi/stalls.o \
-    $(SRCDIR)/metrics/custom/bandwidth.o \
-    $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
-    $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
-    $(SRCDIR)/metrics/power_metrics/power_metrics.o \
-    $(SRCDIR)/metrics/msr/energy_cpu.o
+mets_OBJS = \
+    $(SRCDIR)/metrics/common/pci.o \
+    $(SRCDIR)/metrics/common/msr.o \
+    $(SRCDIR)/metrics/common/papi.o \
+    $(SRCDIR)/metrics/accumulators/power_metrics.o \
+    $(SRCDIR)/metrics/bandwidth/bandwidth.o \
+    $(SRCDIR)/metrics/bandwidth/cpu/intel_haswell.o \
+    $(SRCDIR)/metrics/bandwidth/cpu/utils.o \
+    $(SRCDIR)/metrics/cache/cache.o \
+    $(SRCDIR)/metrics/cache/cpu/papi.o \
+    $(SRCDIR)/metrics/cpi/cpi.o \
+    $(SRCDIR)/metrics/cpi/cpu/papi.o \
+    $(SRCDIR)/metrics/energy/energy_cpu.o \
+    $(SRCDIR)/metrics/energy/energy_gpu.o \
+    $(SRCDIR)/metrics/energy/energy_node.o \
+    $(SRCDIR)/metrics/energy/energy_node_lib.o \
+    $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
+    $(SRCDIR)/metrics/energy/gpu/nvsmi.o \
+    $(SRCDIR)/metrics/flops/flops.o \
+    $(SRCDIR)/metrics/flops/cpu/papi.o \
+    $(SRCDIR)/metrics/frequency/frequency_imc.o \
+    $(SRCDIR)/metrics/frequency/frequency_cpu.o \
+    $(SRCDIR)/metrics/frequency/cpu/intel_haswell.o \
+    $(SRCDIR)/metrics/frequency/imc/intel_haswell.o \
+    $(SRCDIR)/metrics/stalls/stalls.o \
+    $(SRCDIR)/metrics/stalls/cpu/papi.o \
+    $(SRCDIR)/metrics/temperature/temperature.o
 
-metrics_lib_OBJS = $(SRCDIR)/metrics/common/msr.o \
-    $(SRCDIR)/metrics/common/cpuid.o \
-    $(SRCDIR)/metrics/handler/energy_lib.o \
-    $(SRCDIR)/metrics/custom/frequency.o \
-    $(SRCDIR)/metrics/custom/frequency_uncore.o \
-    $(SRCDIR)/metrics/custom/hardware_info.o \
-    $(SRCDIR)/metrics/papi/energy_cpu.o \
-    $(SRCDIR)/metrics/papi/generics.o \
-    $(SRCDIR)/metrics/papi/cache.o \
-    $(SRCDIR)/metrics/papi/flops.o \
-    $(SRCDIR)/metrics/papi/instructions.o \
-    $(SRCDIR)/metrics/papi/stalls.o \
-    $(SRCDIR)/metrics/custom/bandwidth.o \
-    $(SRCDIR)/metrics/custom/bandwidth_notpriv.o \
-    $(SRCDIR)/metrics/custom/bandwidth/uncores_pci.o \
-    $(SRCDIR)/metrics/power_metrics/power_metrics.o \
-    $(SRCDIR)/metrics/msr/energy_cpu.o
-
-
-
+# $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
 
 ######## RULES
 
 all: all.components $(stat_BINS) $(dyna_BINS)
 
-libmetrics.a: $(metrics_OBJS)
-	$(AR) rvs $@ $(metrics_OBJS)
+libmetrics.a: $(mets_OBJS)
+	$(AR) rvs $@ $(mets_OBJS)
 
-libmetrics.so: $(metrics_OBJS)
-	$(CC) $(CFLAGS) -o $@ $(metrics_OBJS)
-
-
-libmetrics_lib.a: $(metrics_lib_OBJS)
-	$(AR) rvs $@ $(metrics_lib_OBJS)
-
-libmetrics_lib.so: $(metrics_lib_OBJS)
-	$(CC) $(CFLAGS) -o $@ $(metrics_lib_OBJS)
+libmetrics.so: $(mets_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(mets_OBJS)
 
 ######## OPTIONS
 
@@ -71,17 +55,21 @@ devel.install: devel.install.components;
 
 %.install: %.install.components;
 
-clean: clean.components;
+clean: clean.components rclean;
 
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'common' $* || exit
-	@ $(MAKE) -C 'custom' $* || exit
-	@ $(MAKE) -C 'handler' $* || exit
-	@ $(MAKE) -C 'papi' $* || exit
-	@ $(MAKE) -C 'msr' $* || exit
-	@ $(MAKE) -C 'power_metrics' $* || exit
+	@ $(MAKE) -C 'common'       $* || exit
+	@ $(MAKE) -C 'bandwidth'    $* || exit
+	@ $(MAKE) -C 'cache'        $* || exit
+	@ $(MAKE) -C 'cpi'          $* || exit
+	@ $(MAKE) -C 'energy'       $* || exit
+	@ $(MAKE) -C 'flops'        $* || exit
+	@ $(MAKE) -C 'frequency'    $* || exit
+	@ $(MAKE) -C 'stalls'       $* || exit
+	@ $(MAKE) -C 'accumulators' $* || exit
+	@ $(MAKE) -C 'temperature' $* || exit
 
 ######## DEPENDENCIES
 

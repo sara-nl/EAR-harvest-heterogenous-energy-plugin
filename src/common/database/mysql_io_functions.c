@@ -96,9 +96,15 @@
 
 #define EAR_EVENT_MYSQL_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES (?, ?, ?, ?, ?, ?)"
 
-#define EAR_WARNING_MYSQL_QUERY       "INSERT INTO Global_energy (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
+#if EXP_EARGM
+#define EAR_WARNING_MYSQL_QUERY "INSERT INTO Global_energy2 (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
                                 "GlobEnergyConsumedT2, GlobEnergyLimit, GlobEnergyPeriodT1, GlobEnergyPeriodT2, GlobEnergyPolicy) "\
                                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#else
+#define EAR_WARNING_MYSQL_QUERY "INSERT INTO Global_energy (energy_percent, warning_level, inc_th, p_state, GlobEnergyConsumedT1, "\
+                                "GlobEnergyConsumedT2, GlobEnergyLimit, GlobEnergyPeriodT1, GlobEnergyPeriodT2, GlobEnergyPolicy) "\
+                                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+#endif
 
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_MYSQL_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\

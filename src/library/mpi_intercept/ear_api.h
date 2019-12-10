@@ -45,6 +45,12 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest);
 *   closing the connection to the daemon and releasing the memory from DynAIS. */
 void ear_finalize();
 
+
+/***** API for manual application modification *********/
+void ear_new_iteration(unsigned long loop_id);
+void ear_end_loop(unsigned long loop_id);
+unsigned long ear_new_loop();
+
 #else
 #endif
 

@@ -12,11 +12,11 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	#
 	#
 	#
-	AC_ARG_VAR([TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear) (you can alo use --localstatedir=DIR)])
-	AC_ARG_VAR([ETC],[Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc) (you can also use --sharedstatedir=DIR)])
+	AC_ARG_VAR([EAR_TMP],[Defines the node local storage as 'var', 'tmp' or other tempfs file system (default: /var/ear) (you can alo use --localstatedir=DIR)])
+	AC_ARG_VAR([EAR_ETC],[Defines the read-only single-machine data as 'etc' (default: EPREFIX/etc) (you can also use --sharedstatedir=DIR)])
 	AC_ARG_VAR([MAN],[Defines the documentation directory (default: PREFIX/man) (you can use also --mandir=DIR)])
 	AC_ARG_VAR([COEFFS],[Defines the coefficients store directory (default: EPREFIX/etc)])
-
+	
 	if test "x$prefix" = "xNONE";then
 		prefix=/usr/local
 	fi
@@ -32,14 +32,14 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	if test "x$sbindir" = "x\${exec_prefix}/sbin"; then
 		sbindir=$exec_prefix/sbin
 	fi
-	if test -n "$ETC"; then
-		sysconfdir=$ETC	
+	if test -n "$EAR_ETC"; then
+		sysconfdir=$EAR_ETC	
 	fi
 	if test "x$sysconfdir" = "x\${exec_prefix}/etc" || test "x$sysconfdir" = "x\${prefix}/etc"; then
 		sysconfdir=$prefix/etc
 	fi
-	if test -n "$TMP"; then
-		localstatedir=$TMP
+	if test -n "$EAR_TMP"; then
+		localstatedir=$EAR_TMP
 	fi
 	if test "x$localstatedir" = "x\${prefix}/var"; then
         	localstatedir=/var/ear
@@ -50,8 +50,6 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	if test "x$docdir" = "x\${datarootdir}/doc/\${PACKAGE_TARNAME}"; then
 		docdir=/share/doc/ear
 	fi
-
-	AC_SUBST(TMP)
 
 	#
 	# Disable RPATH
@@ -73,20 +71,50 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		MPICC=mpicc
 	fi
 
-	if echo "$CC" | grep -q "icc"; then
+	if echo "$CC" | grep -q "icc" && test -z "$CC_FLAGS"; then
 		CC_FLAGS=-static-intel
 	fi
 
-	if echo "$MPICC" | grep -q "mpiicc"; then	
+	if echo "$MPICC" | grep -q "mpiicc" && test -z "$MPICC_FLAGS"; then	
 		MPICC_FLAGS="-static-intel"
+		
 		if test "x$enable_rpath" = "xno"; then
 			MPICC_FLAGS="$MPICC_FLAGS -norpath"
 		fi
 	fi
+	
+	if echo "$MPICC" | grep -q "/"; then
+		echo nothing &> /dev/null
+	else
+		if which $MPICC &> /dev/null; then
+			MPICC="`which $MPICC`"
+		else
+			MPICC="mpicaca"
+		fi
+	fi
+	if echo "$CC" | grep -q "/"; then
+		echo nothing &> /dev/null
+	else
+		CC="`which $CC`"
+	fi
 
-	dnl Getting full path
-	MPICC="`which $MPICC`"
-	CC="`which $CC`"
+    #
+    # Fortran
+    #
+	
+	AC_ARG_WITH(
+		[fortran],
+		AS_HELP_STRING(--with-fortran,Adds MPI Fortran symbols.),
+		[
+           	enable_fort="$withval"
+		]
+	)
+	
+	FEAT_FORT=0
+
+	if test -n "$enable_fort"; then
+		FEAT_FORT=1
+	fi
 
 	#
 	# Architecture
@@ -127,5 +155,5 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	#
 	# Other calls
 	#
-	X_AC_GET_LD_LIBRARY_PATHS([])
+	#X_AC_GET_LD_LIBRARY_PATHS([])
 ])

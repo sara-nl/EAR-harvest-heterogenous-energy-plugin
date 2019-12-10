@@ -38,286 +38,63 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/config.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/tracer/tracer.h>
+#include <common/system/symplug.h>
+#include <common/types/signature.h>
 
 #ifdef EAR_GUI
 
-#define TRA_ID		60001
-#define TRA_LEN		60002
-#define TRA_ITS		60003
-#define TRA_TIM		60004
-#define TRA_CPI		60005
-#define TRA_TPI		60006
-#define TRA_GBS		60007
-#define TRA_POW		60008
-#define TRA_PTI		60009
-#define TRA_PCP		60010
-#define TRA_PPO		60011
-#define TRA_FRQ		60012
-#define TRA_ENE		60013
-#define TRA_DYN		60014
-#define TRA_STA		60015
-#define TRA_MOD		60016
-#define TRA_VPI		60017
-#define TRA_REC		60018
-
-static char buffer1[SZ_BUFF_BIG];
-static char buffer2[SZ_BUFF_BIG];
-
-static long long time_sta;
-static long long time_end;
-
-static int edit_time_header;
-static int edit_time_states;
-static int file_prv;
-static int file_pcf;
-static int file_row;
-static int enabled;
-static int working;
+typedef struct traces_symbols {
+  void (*traces_init)(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn);
+  void (*traces_end)(int global_rank,int local_rank, unsigned long int total_ener);
+  void (*traces_start)();
+  void (*traces_stop)();
+  void (*traces_frequency)(int global_rank, int local_rank, unsigned long f);
+  void (*traces_new_signature)(int global_rank, int local_rank, signature_t *sig);
+  void (*traces_PP)(int global_rank, int local_rank, double seconds, double power); 
+  void (*traces_new_n_iter)(int global_rank, int local_rank, ullong period_id, int loop_size, int iterations);
+  void (*traces_new_period)(int global_rank, int local_rank, ullong period_id);
+  void (*traces_end_period)(int global_rank, int local_rank); 
+  void (*traces_policy_state)(int global_rank, int local_rank, int state);
+  void (*traces_dynais)(int global_rank, int local_rank, int state);
+  void (*traces_earl_mode_dynais)(int global_rank, int local_rank);
+  void (*traces_earl_mode_periodic)(int global_rank, int local_rank);
+  void (*traces_reconfiguration)(int global_rank, int local_rank);
+  int (*traces_are_on)();
+  void (*traces_mpi_init)();
+  void (*traces_mpi_call)(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
+  void (*traces_mpi_end)();
+} trace_sym_t;
 
 
-static int my_trace_rank=0;
-static int my_num_nodes=0;
-static char my_app[GENERIC_NAME];
-static char  hostname[256];
-static char *pathname;
+static trace_sym_t trace_syms_fun;
+static int trace_plugin=0;
+static void    *trace_syms_obj = NULL;
+const int       trace_syms_n = 19;
+const char     *trace_syms_nam[] = {
+  "traces_init",
+  "traces_end",
+  "traces_start",
+  "traces_stop",
+  "traces_frequency",
+  "traces_new_signature",
+  "traces_PP",
+  "traces_new_n_iter",
+  "traces_new_loop",
+  "traces_end_loop",
+  "traces_policy_state",
+  "traces_dynais",
+  "traces_earl_mode_dynais",
+  "traces_earl_mode_periodic",
+  "traces_reconfiguration",
+  "traces_are_on",
+	"traces_mpi_init",
+	"traces_mpi_call",
+	"traces_mpi_end"
+};
 
-#define PARAVER_EVENTS  400 
-#define EVENTS_IN_BUFFER 200 
-typedef struct paraver_events{
-  long long t;
-  int event; 
-  ullong value;
-}paraver_events_t;
-static paraver_events_t events_list[PARAVER_EVENTS];
-static int num_events=0;
-
-
-#define TRA_VER	2
-
-static void row_file_create(char *pathname, char *hostname)
-{
-	sprintf(buffer1, "%s/%d_%s.%d.row", pathname, my_trace_rank,my_app,getpid());
-	if (my_trace_rank==1){
-		file_row=open(buffer1,
-               O_WRONLY | O_CREAT | O_TRUNC,
-               S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-		if (file_row<0) return;
-		sprintf(buffer1,"LEVEL TASK SIZE %d\n",my_num_nodes);
-		write(file_row, buffer1, strlen(buffer1));
-	}else{
-		file_row=open(buffer1,
-               O_WRONLY | O_CREAT | O_APPEND,
-               S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-		if (file_row<0) return;
-	}
-	sprintf(buffer1,"%s %d\n",hostname,my_trace_rank);
-	write(file_row, buffer1, strlen(buffer1));
-	close(file_row);
-	
-
-}
-
-static void config_file_create(char *pathname, char* hostname)
-{
-	//
-	if (my_trace_rank>1) return;
-	sprintf(buffer1, "%s/%d_%s.%d.pcf", pathname, my_trace_rank,my_app,getpid());
-
-	//
-	file_pcf = open(buffer1,
-			   O_WRONLY | O_CREAT | O_TRUNC,
-			   S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	if (file_pcf<0) return;
-
-	sprintf(buffer1, "GRADIENT_COLOR\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "0\t{255,255,255}\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "GRADIENT_NAMES\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "0\twhite\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t1\tRUN\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60001\tPERIOD_ID\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60002\tPERIOD_LENGTH\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60003\tPERIOD_ITERATIONS\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60004\tPERIOD_TIME\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60005\tPERIOD_CPI\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60006\tPERIOD_TPI\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60007\tPERIOD_GBS\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60008\tPERIOD_POWER\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60009\tPERIOD_TIME_PROJECTION\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60010\tPERIOD_CPI_PROJECTION\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60011\tPERIOD_POWER_PROJECTION\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60012\tFREQUENCY\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60013\tENERGY\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60014\tDYNAIS_ON_OFF\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60015\tEARL_STATE\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "VALUES\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"2\tEVALUATING_POLICY\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"3\tVALIDATING_POLICY\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"4\tPOLICY_ERROR\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60016\tEARL_MODE\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "VALUES\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"1\tDYNAIS\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1,"2\tPERIODIC\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60017\tVPI\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-	sprintf(buffer1, "EVENT_TYPE\n0\t60018\tRECONFIGURATION\n\n");
-	write(file_pcf, buffer1, strlen(buffer1));
-
-	close(file_pcf);
-}
-
-static void trace_file_open(char *pathname, char *hostname)
-{
-	//
-	sprintf(buffer1, "%s/%d_%s.%d.prv", pathname, my_trace_rank,my_app,getpid());
-	verbose(TRA_VER,"Generating trace file %s\n",buffer1);
-
-	//
-	file_prv = open(buffer1,
-		O_WRONLY | O_CREAT | O_TRUNC,
-		S_IRUSR  | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-
-	//printf("FD: %s %d %s %s %s\n", buffer1, file_prv, strerror(errno), pathname, hostname);
-}
-
-static void trace_file_init(int n_nodes)
-{
-	char *buffer = buffer1;
-	char *b;
-	int i, j;
-   
-	time_t curr_time;
-	struct tm *current_t;
-	char s[256];
-
-	if (!enabled) {
-		return;
-	}
-	time(&curr_time);
-	current_t = localtime(&curr_time);
-	strftime(s, 256, "%d/%m/%Y at %H:%M", current_t);
-
-	// Buffer position 0
-	// Trace file header only generated by master_rank 0
-	if (my_trace_rank==1)
-	{
-		i = sprintf(buffer, "#Paraver (%s):%020llu:%d(", s, (unsigned long long) 0, n_nodes);
-		edit_time_header = 31;
-
-		//
-		for (b = &buffer[i], i = 0, j = 0; i < n_nodes; ++i, j += 2)
-		{
-			b[j+0] = '1';
-			b[j+1] = ',';
-		}
-
-		// Buffer position 2
-		b = &b[j-1];
-		i = sprintf(b, "):1:%d(", n_nodes);
-
-		// Buffer position 3
-		for (b = &b[i], i = 0, j = 1; i < n_nodes; ++i, ++j)
-		{
-			sprintf(b, "1:%d,", j);
-			b = &b[strlen(b)];
-		}
-
-		b = &b[strlen(b)-1];
-		b[0] = ')';
-		b[1] = '\n';
-		b[2] = '\0';
-
-		write(file_prv, buffer, strlen(buffer));
-	}
-	// 1:cpu:app:task:thread:b_time:e_time:state
-	i = sprintf(buffer, "1:%d:1:%d:1:0:", my_trace_rank, my_trace_rank);
-	write(file_prv, buffer, strlen(buffer));
-
-	//
-	edit_time_states = lseek(file_prv, 0, SEEK_CUR);
-
-	//
-	sprintf(buffer, "%020llu:1\n", (unsigned long long) 0);
-	write(file_prv, buffer, strlen(buffer));
-}
-
-static void trace_file_write_in_file()
-{
-  int i;
-  int events,pendings=num_events,ready=0;
-  while(pendings>0){
-    if (pendings<EVENTS_IN_BUFFER) events=pendings;
-    else events=EVENTS_IN_BUFFER;
-    sprintf(buffer2,"");
-    for (i=0;i<events;i++){
-      sprintf(buffer1,"2:%d:1:%d:1:%llu:%d:%llu\n", my_trace_rank, my_trace_rank,
-      events_list[ready+i].t,events_list[ready+i].event,events_list[ready+i].value);
-      strcat(buffer2,buffer1);
-    }
-    write(file_prv, buffer2, strlen(buffer2));
-    ready+=events;
-    pendings-=events;
-  }
-  num_events=0;
-}
-
-static void trace_file_write(int event, ullong value)
-{
-  if (num_events==PARAVER_EVENTS){
-    trace_file_write_in_file();
-  }
-  long long my_time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
-  events_list[num_events].t=my_time;
-  events_list[num_events].event=event;
-  events_list[num_events].value=value;
-  num_events++;
-
-}
-static void trace_file_write_simple_event(int event)
-{
-  if (num_events==PARAVER_EVENTS-2){
-    trace_file_write_in_file();
-  }
-  long long my_time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
-  events_list[num_events].t=my_time;
-  events_list[num_events].event=event;
-  events_list[num_events].value=1;
-  num_events++;
-  events_list[num_events].t=my_time+10;
-  events_list[num_events].event=event;
-  events_list[num_events].value=0;
-  num_events++;
-
-}
 
 /*
  *
@@ -327,221 +104,209 @@ static void trace_file_write_simple_event(int event)
  *
  */
 
-void traces_start()
+static int traces_plugin_loaded=0;
+
+
+void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
-	verbose(TRA_VER,"traces start");
-	working = 1;
-}
+  int found=0,ret;
+	char *traces_plugin;
+	traces_plugin=getenv("SLURM_EAR_TRACE_PLUGIN");
+	if (traces_plugin==NULL) trace_plugin=0;
+	else trace_plugin=1;
 
-void traces_stop()
-{
-	verbose(TRA_VER,"traces stop");
-	working = 0;
-}
-
-void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn)
-{
-	pathname = getenv("EAR_TRACE_PATH");
-
-	//
-	file_prv = -1;
-	file_pcf = -1;
-	file_row = -1;
-
-	if (pathname == NULL) {
-		enabled = 0;
-		return;
-	}
-	my_trace_rank = global_rank+1;
-	strcpy(my_app,app);
-
-	//
-	time_sta = PAPI_get_real_usec();
-
-	//
-	gethostname(hostname, SZ_BUFF_BIG);
-	strtok(hostname,".");
-
-	//
-	trace_file_open(pathname, hostname);
-	enabled = (file_prv >= 0);
-
-	//
-	my_num_nodes=nodes;
-	trace_file_init(nodes);
-
-	if(!enabled) {
+	if (trace_plugin==0){ 
+		debug("traces OFF");
 		return;
 	}
 
-	//
-	config_file_create(pathname, hostname);
-	if (my_trace_rank==1) row_file_create(pathname, hostname);
+  debug("traces library");
+  if (conf == NULL) {
+		debug("NULL configuration in traces_init");
+		return;
+  }
+	debug("loading %s",traces_plugin);
+
+  ret = symplug_open(traces_plugin, (void **) &trace_syms_fun, trace_syms_nam, trace_syms_n);
+  if (ret!=EAR_SUCCESS){ 
+		debug("symplug_open() in library/traces returned %d (%s)", ret, intern_error_str);
+		trace_plugin=0;
+		return;
+	}
+	if (trace_syms_fun.traces_init!=NULL){
+		debug("trace_syms_fun.traces_init");
+		trace_syms_fun.traces_init(app,global_rank,local_rank,nodes,mpis,ppn);
+	}
+	return;
+	
+
 }
 
 // ear_api.c
 void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
-	//
-	time_end = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
-
-	//
-	trace_file_write(TRA_ENE, total_energy);	
-	trace_file_write_in_file();
-
-	// Post process
-	sprintf(buffer1, "%020llu", time_end);
-	
-	if (my_trace_rank==1){
-	lseek(file_prv, edit_time_header, SEEK_SET);
-	write(file_prv, buffer1, 20);
+	debug("trace_end");
+	if (trace_plugin && trace_syms_fun.traces_end!=NULL){
+		trace_syms_fun.traces_end(global_rank,local_rank,total_energy);	
 	}
-
-	lseek(file_prv, edit_time_states, SEEK_SET);
-	write(file_prv, buffer1, 20);
-
-	//
-	close(file_prv);
-
-
-	if (my_trace_rank>1) row_file_create(pathname, hostname);
-
-	//
-	enabled = 0;
-	working = 0;
+	return;
 }
 
 // ear_states.c
 void traces_new_period(int global_rank, int local_rank, ullong loop_id)
 {
+	debug("traces_new_period");
+	if (trace_plugin && trace_syms_fun.traces_new_period!=NULL){
+		trace_syms_fun.traces_new_period(global_rank,local_rank,loop_id);
+	}
+	return;
 }
 
 // ear_api.c
 void traces_new_n_iter(int global_rank, int local_rank, ullong loop_id, int loop_size, int iterations)
 {
-	#if 0
-	if (!enabled || !working) {
-		return;
+	debug("traces_new_n_iter");
+	if (trace_plugin && trace_syms_fun.traces_new_n_iter!=NULL){
+		trace_syms_fun.traces_new_n_iter(global_rank,local_rank,loop_id,loop_size,iterations);
 	}
-
-	trace_file_write(TRA_ID, (ullong) loop_id);
-	trace_file_write(TRA_LEN, (ullong) loop_size);
-	trace_file_write(TRA_ITS, (ullong) iterations);
-	#endif
+	return;
 }
 
 // ear_api.c
 void traces_end_period(int global_rank, int local_rank)
 {
-	if (!enabled || !working) {
-		return;
+	debug("traces_end_period");
+	if (trace_plugin && trace_syms_fun.traces_end_period!=NULL){
+		trace_syms_fun.traces_end_period(global_rank,local_rank);
 	}
-
-	trace_file_write(TRA_ID, 0ll);
-	trace_file_write(TRA_LEN, 0ll);
-	trace_file_write(TRA_ITS, 0ll);
+	return;
 }
 
 // ear_states.c
-void traces_new_signature(int global_rank, int local_rank, double seconds,
-	double cpi, double tpi, double gbs, double power, double vpi)
+void traces_new_signature(int global_rank, int local_rank, signature_t *sig)
 {
-	ullong lsec;
-	ullong lcpi;
-	ullong ltpi;
-	ullong lgbs;
-	ullong lpow;
-    ullong lvpi;
-
-	verbose(TRA_VER,"traces new signature");
-	if (!enabled || !working) {
-		return;
+	debug("traces_new_signature");
+	if (trace_plugin && trace_syms_fun.traces_new_signature!=NULL){
+		trace_syms_fun.traces_new_signature(global_rank,local_rank,sig);
 	}
-
-    lsec = (ullong) (seconds * 1000000.0);
-    lcpi = (ullong) (cpi * 1000.0);
-    ltpi = (ullong) (tpi * 1000.0);
-    lgbs = (ullong) (gbs * 1000.0);
-    lpow = (ullong) (power);
-    lvpi = (ullong) (vpi * 1000.0);
-
-	trace_file_write(TRA_TIM, lsec);
-	trace_file_write(TRA_CPI, lcpi);
-	trace_file_write(TRA_TPI, ltpi);
-	trace_file_write(TRA_GBS, lgbs);
-	trace_file_write(TRA_POW, lpow);
-	trace_file_write(TRA_VPI, lvpi);
+	return;
 }
 
 // ear_states.c
 void traces_PP(int global_rank, int local_rank, double seconds, double power)
 {
-	ullong lpsec;
-    ullong lpcpi;
-    ullong lppow;
-
-	if (!enabled || !working) {
-		return;
+	debug("traces_PP");
+	if (trace_plugin && trace_syms_fun.traces_PP!=NULL){
+		trace_syms_fun.traces_PP(global_rank,local_rank,seconds,power);
 	}
+	return;
 
-	lpsec = (ullong) (seconds * 1000000.0);
-    lppow = (ullong) (power);
-
-	trace_file_write(TRA_PTI, lpsec);
-	trace_file_write(TRA_PPO, lppow);
 }
 
 // ear_api.c, ear_states.c
 void traces_frequency(int global_rank, int local_rank, unsigned long f)
 {
-	if (!enabled || !working) {
-		return;
+	debug("traces_frequency");
+	if (trace_plugin && trace_syms_fun.traces_frequency!=NULL){
+		trace_syms_fun.traces_frequency(global_rank,local_rank,f);
 	}
-	verbose(TRA_VER,"traces frequency");
-
-	trace_file_write(TRA_FRQ, f);
+	return;
 }
 
 
 void traces_policy_state(int global_rank, int local_rank, int state)
 {
-    if (!enabled || !working) {
-        return;
+	debug("traces_policy_state");
+	if (trace_plugin && trace_syms_fun.traces_policy_state!=NULL){
+		trace_syms_fun.traces_policy_state(global_rank,local_rank,state);
 	}
-	trace_file_write(TRA_STA,state);
+	return;
 }
 
 void traces_dynais(int global_rank, int local_rank, int state)
 {
-    if (!enabled || !working) {
-        return;
+	debug("traces_dynais");
+	if (trace_plugin && trace_syms_fun.traces_dynais!=NULL){
+		trace_syms_fun.traces_dynais(global_rank,local_rank,state);
 	}
+	return;
 }
 void traces_earl_mode_dynais(int global_rank, int local_rank)
 {
-    if (!enabled || !working) {
-        return;
+	debug("traces_earl_mode_dynais");
+	if (trace_plugin && trace_syms_fun.traces_earl_mode_dynais!=NULL){
+		trace_syms_fun.traces_earl_mode_dynais(global_rank,local_rank);
 	}
+	return;
 }
 void traces_earl_mode_periodic(int global_rank, int local_rank)
 {
-    if (!enabled || !working) {
-        return;
+	debug("traces_earl_mode_periodic");
+	if (trace_plugin && trace_syms_fun.traces_earl_mode_periodic!=NULL){
+		trace_syms_fun.traces_earl_mode_periodic(global_rank,local_rank);
 	}
+	return;
 }
 
 void traces_reconfiguration(int global_rank, int local_rank)
 {
-    if (!enabled || !working) {
-        return;
-    }
-
-    trace_file_write_simple_event(TRA_REC);
+	debug("traces_reconfiguration");
+	if (trace_plugin && trace_syms_fun.traces_reconfiguration!=NULL){
+		trace_syms_fun.traces_reconfiguration(global_rank,local_rank);
+	}
+	return;
 }
 
 int traces_are_on()
 {
-	return enabled;
+	debug("traces_are_on");
+	if (trace_plugin && trace_syms_fun.traces_are_on!=NULL){
+		return trace_syms_fun.traces_are_on();
+	}
+	return 0;	
 }
+void traces_start()
+{
+	debug("traces_start");
+	if (trace_plugin && trace_syms_fun.traces_start!=NULL){
+		trace_syms_fun.traces_start();
+	}
+	return;
+}
+
+void traces_stop()
+{
+	debug("traces_stop");
+	if (trace_plugin && trace_syms_fun.traces_stop!=NULL){
+		trace_syms_fun.traces_stop();
+	}
+	return;
+}
+
+
+void traces_mpi_init()
+{
+	debug("traces_mpi_init");
+  if (trace_plugin && trace_syms_fun.traces_mpi_init!=NULL){
+    trace_syms_fun.traces_mpi_init();
+  }
+  return;
+}
+void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3)
+{
+  if (trace_plugin && trace_syms_fun.traces_mpi_call!=NULL){
+		trace_syms_fun.traces_mpi_call(global_rank,local_rank,time,ev,a1,a2,a3);
+	}
+	return;
+}
+void traces_mpi_end()
+{
+	debug("traces_mpi_end");
+  if (trace_plugin && trace_syms_fun.traces_mpi_end!=NULL){
+		trace_syms_fun.traces_mpi_end();
+	}
+	return;
+}
+
 
 #endif
