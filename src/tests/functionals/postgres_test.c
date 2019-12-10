@@ -26,27 +26,41 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING
 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <common/config.h>
+#include <common/states.h>
+#include <common/database/db_helper.h>
+#include <common/types/configuration/cluster_conf.h>
 
-#ifndef EAR_PATHS_H
-#define EAR_PATHS_H
+int main(int argc,char *argv[])
+{
+	cluster_conf_t my_cluster;
+	my_node_conf_t *my_node_conf;
+	char nodename[256];
+	char ear_path[256];
+    int num_apps;
+   
+	if (argc>1){
+		strcpy(ear_path,argv[1]);
+	}else{
+		if (get_ear_conf_path(ear_path)==EAR_ERROR){
+			printf("Error getting ear.conf path\n");
+			exit(0);
+		}
+	}
+	read_cluster_conf(ear_path,&my_cluster);
+//	print_cluster_conf(&my_cluster);
+    
+    init_db_helper(&my_cluster.database);
 
-// Library paths
-#define SLURM_LIB_PATH		"@SLURM_LIBDIR@"
-#define PAPI_LIB_PATH		"@PAPI_LIBDIR@"
-#define GSL_LIB_PATH		"@GSL_LIBDIR@"
-#define EAR_INSTALL_PATH	"@prefix@"
-
-// File paths
-#define EAR_DAEMON_PATH		""
-#define EAR_CONF_FILE		""
-#define MPI_C_LIB_PATH		"lib/libear"
-#define MPI_F_LIB_PATH		""
-
-// Database
-#define DB_MYSQL		@DB_MYSQL@
-#define DB_PSQL	    	@DB_PGSQL@
-
-// Features
-#define FEAT_AVX512		@FEAT_AVX512@
-
-#endif //EAR_PATHS_H
+    application_t *apps;
+    num_apps = db_read_applications_query(&apps, "SELECT * FROM Applications");
+	
+    int i;
+    for (i = 0; i < num_apps; i++)
+        printf("current app id: %d\t step_id: %d\t node_id: %s\t\n", apps[i].job.id, apps[i].job.step_id, apps[i].node_id);
+    free_cluster_conf(&my_cluster);
+    
+	return 0;
+}

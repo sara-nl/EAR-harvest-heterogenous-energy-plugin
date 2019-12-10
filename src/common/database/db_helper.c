@@ -32,12 +32,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <arpa/inet.h>
 #include <mysql/mysql.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
+#include <common/database/postgresql_io_functions.h>
 
 db_conf_t *db_config = NULL;
 int current_step_id = -1;
@@ -70,8 +72,13 @@ void init_db_helper(db_conf_t *conf)
     char query[256];
     int num_sig_args, num_per_args;
 
+#if DB_MYSQL
     sprintf(query, IS_SIG_FULL_QUERY, db_config->database);
     num_sig_args = run_query_int_result(query);
+#elif DB_PSQL
+    strcpy(query, "SELECT * FROM Signatures LIMIT 5");
+    num_sig_args = get_num_columns(query);
+#endif
     if (num_sig_args == EAR_ERROR)
         set_signature_simple(db_config->report_sig_detail);
     else if (num_sig_args < 20)
@@ -80,8 +87,13 @@ void init_db_helper(db_conf_t *conf)
         set_signature_simple(1);
 
 
+#if DB_MYSQL
     sprintf(query, IS_NODE_FULL_QUERY, db_config->database);
     num_per_args = run_query_int_result(query);
+#elif DB_PSQL
+    strcpy(query, "SELECT * FROM Periodic_metrics LIMIT 5");
+    num_per_args = get_num_columns(query);
+#endif
     if (num_per_args == EAR_ERROR)
         set_node_detail(db_config->report_node_detail);
     else if (num_per_args < 8)
@@ -91,7 +103,7 @@ void init_db_helper(db_conf_t *conf)
 
 }
 
-
+#if DB_MYSQL
 int run_query_int_result(char *query)
 {
     MYSQL_RES *result = db_run_query_result(query);
@@ -114,7 +126,53 @@ int run_query_int_result(char *query)
     }
     return num_indexes;
 }
+#elif DB_PSQL
+int get_num_columns(char *query)
+{
+    PGconn *connection = postgresql_create_connection();
 
+    if (connection == NULL)
+    {
+        verbose(VDBH, "ERROR connecting to database");
+        return EAR_ERROR;
+    }
+
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) //-> if it returned data
+    {
+        PQclear(res);
+        return EAR_ERROR;
+    }
+   
+    int num_columns = PQnfields(res);
+    PQclear(res);
+
+    return num_columns;
+
+}
+#endif
+
+#if DB_PSQL
+int get_num_rows(PGconn *connection, char *query)
+{
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) //-> if it returned data
+    {
+        PQclear(res);
+        return EAR_ERROR;
+    }
+   
+    int num_rows = PQntuples(res);
+    PQclear(res);
+
+    return num_rows;
+
+}
+#endif
+
+#if DB_MYSQL
 MYSQL *mysql_create_connection()
 {
     MYSQL *connection = mysql_init(NULL);
@@ -140,23 +198,86 @@ MYSQL *mysql_create_connection()
 
     return connection;
 }
+#endif
+
+#if DB_PSQL
+PGconn *postgresql_create_connection()
+{
+    char **keys, **values, temp[32];
+    PGconn *connection;
+
+    keys = calloc(5, sizeof(const char *));
+    values = calloc(5, sizeof(const char *));
+    sprintf(temp, "%d", db_config->port);
+
+    keys[0] = "dbname";
+    keys[1] = "user";
+    keys[2] = "password";
+    keys[3] = "host";
+    if (db_config->port > 0)
+    {
+        keys[4] = "port";
+        values[4] = temp;
+    }
+
+    strtolow(db_config->database);
+    strtolow(db_config->user);
+    strtolow(db_config->pass);
+    strtolow(db_config->ip);
+
+    values[0] = db_config->database;
+    values[1] = db_config->user;
+    values[2] = db_config->pass;
+    values[3] = db_config->ip;
+
+    connection = PQconnectdbParams((const char * const *)keys, (const char * const *)values, 0);
+
+    free(keys);
+    free(values);
+    if (PQstatus(connection) != CONNECTION_OK)
+    {
+        verbose(VDBH, "ERROR connecting to the database: %s", PQerrorMessage(connection));
+        PQfinish(connection);
+        return NULL;
+    }
+
+    return connection;
+
+}
+#endif
 
 int db_insert_application(application_t *application)
 {
+#if DB_MYSQL
     MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+    PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     if (mysql_insert_application(connection, application) < 0)
+#elif DB_PSQL
+    if (postgresql_insert_application(connection, application) < 0)
+#endif
     {
         verbose(VDBH, "ERROR while writing application to database.");
+#if DB_MYSQL
         mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 
@@ -168,7 +289,11 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
 	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
 	int e, s;
 
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+    PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -177,24 +302,44 @@ int db_batch_insert_applications(application_t *applications, int num_apps)
     // Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
     {
+#if DB_MYSQL
     	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
         	verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
         	return EAR_ERROR;
     	}
+#elif DB_PSQL
+        if (postgresql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
+            verbose(VDBH, "ERROR while batch writing applications to database.");
+            PQfinish(connection);
+            return EAR_ERROR;
+        }
+#endif
 	}
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_apps)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
             verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
             return EAR_ERROR;
         }
+#elif DB_PSQL
+        if (postgresql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
+            verbose(VDBH, "ERROR while batch writing applications to database.");
+            PQfinish(connection);
+            return EAR_ERROR;
+        }
+#endif
 	}	 
 
 	//
+#if DB_MYSQL
 	mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
 
     return EAR_SUCCESS;
 }
@@ -205,7 +350,11 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
 	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
 	int e, s;
 
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -214,24 +363,44 @@ int db_batch_insert_applications_learning(application_t *applications, int num_a
     // Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
     {
+#if DB_MYSQL
     	if (mysql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
         	verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
         	return EAR_ERROR;
     	}
+#elif DB_PSQL
+    	if (postgresql_batch_insert_applications(connection, &applications[e], bulk_elms) < 0) {
+        	verbose(VDBH, "ERROR while batch writing applications to database.");
+            PQfinish(connection);
+        	return EAR_ERROR;
+    	}
+#endif
 	}
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_apps)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
             verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
             return EAR_ERROR;
         }
+#elif DB_PSQL
+		if (postgresql_batch_insert_applications(connection, &applications[e], num_apps - e) < 0) {
+            verbose(VDBH, "ERROR while batch writing applications to database.");
+            PQfinish(connection);
+            return EAR_ERROR;
+        }
+#endif
 	}	 
 
 	//
+#if DB_MYSQL
 	mysql_close(connection);
+#elif DB_PSQL
+	PQfinish(connection);
+#endif
 
     return EAR_SUCCESS;
 }
@@ -243,7 +412,11 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 	int bulk_sets = _BULK_SETS(num_apps, bulk_elms);
 	int e, s;
 
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -252,23 +425,43 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 	// Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], bulk_elms) < 0) {
 			verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_applications_no_mpi(connection, &applications[e], bulk_elms) < 0) {
+			verbose(VDBH, "ERROR while batch writing applications to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_apps)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_applications_no_mpi(connection, &applications[e], num_apps - e) < 0) {
 			verbose(VDBH, "ERROR while batch writing applications to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_applications_no_mpi(connection, &applications[e], num_apps - e) < 0) {
+			verbose(VDBH, "ERROR while batch writing applications to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 
@@ -276,20 +469,37 @@ int db_batch_insert_applications_no_mpi(application_t *applications, int num_app
 
 int db_insert_loop(loop_t *loop)
 {    
+
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     if (mysql_insert_loop(connection, loop) < 0)
+#elif DB_PSQL
+    if (postgresql_insert_loop(connection, loop) < 0)
+#endif
     {
         verbose(VDBH, "ERROR while writing loop signature to database.");
+#if DB_MYSQL
         mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
@@ -300,7 +510,11 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
 	int bulk_sets = _BULK_SETS(num_loops, bulk_elms);
 	int e, s;
 
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -309,82 +523,151 @@ int db_batch_insert_loops(loop_t *loops, int num_loops)
 	// Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_loops(connection, &loops[e], bulk_elms) < 0) {
 			verbose(VDBH, "ERROR while batch writing loop signature to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_loops(connection, &loops[e], bulk_elms) < 0) {
+			verbose(VDBH, "ERROR while batch writing loop signature to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_loops)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_loops(connection, &loops[e], num_loops - e) < 0) {
 			verbose(VDBH, "ERROR while batch writing loop signature to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_loops(connection, &loops[e], num_loops - e) < 0) {
+			verbose(VDBH, "ERROR while batch writing loop signature to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
 
 int db_insert_power_signature(power_signature_t *pow_sig)
 {
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     if (mysql_insert_power_signature(connection, pow_sig) < 0)
+#elif DB_PSQL
+    if (postgresql_insert_power_signature(connection, pow_sig) < 0)
+#endif
     {
         verbose(VDBH, "ERROR while writing power_signature to database.");
+#if DB_MYSQL
         mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
 
 int db_insert_periodic_aggregation(periodic_aggregation_t *per_agg)
 {
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     if (mysql_insert_periodic_aggregation(connection, per_agg) < 0)
+#elif DB_PSQL
+    if (postgresql_insert_periodic_aggregation(connection, per_agg) < 0)
+#endif
     {
         verbose(VDBH, "ERROR while writing periodic_aggregation to database.");
+#if DB_MYSQL
         mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
 
 int db_insert_periodic_metric(periodic_metric_t *per_met)
 {
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     if (mysql_insert_periodic_metric(connection, per_met) < 0)
+#elif DB_PSQL
+    if (postgresql_insert_periodic_metric(connection, per_met) < 0)
+#endif
     {
         verbose(VDBH, "ERROR while writing periodic_metric to database.");
+#if DB_MYSQL
+        mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
@@ -395,8 +678,11 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	int bulk_sets = _BULK_SETS(num_mets, bulk_elms);
 	int e, s;
 
-	//
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -405,24 +691,43 @@ int db_batch_insert_periodic_metrics(periodic_metric_t *per_mets, int num_mets)
 	// Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], bulk_elms) < 0) {
 			verbose(VDBH, "ERROR while batch writing periodic metrics to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_periodic_metrics(connection, &per_mets[e], bulk_elms) < 0) {
+			verbose(VDBH, "ERROR while batch writing periodic metrics to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_mets)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_periodic_metrics(connection, &per_mets[e], num_mets - e) < 0) {
 			verbose(VDBH, "ERROR while batch writing periodic metrics to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_periodic_metrics(connection, &per_mets[e], num_mets - e) < 0) {
+			verbose(VDBH, "ERROR while batch writing periodic metrics to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 
-	//
+#if DB_MYSQL	
 	mysql_close(connection);
+#elif DB_PSQL
+	PQfinish(connection);
+#endif
 
     return EAR_SUCCESS;
 }
@@ -433,7 +738,11 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 	int bulk_sets = _BULK_SETS(num_aggs, bulk_elms);
 	int e, s;
 
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -442,42 +751,79 @@ int db_batch_insert_periodic_aggregations(periodic_aggregation_t *per_aggs, int 
 	// Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], bulk_elms) < 0) {
 			verbose(VDBH, "ERROR while batch writing aggregations to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_periodic_aggregations(connection, &per_aggs[e], bulk_elms) < 0) {
+			verbose(VDBH, "ERROR while batch writing aggregations to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_aggs)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_periodic_aggregations(connection, &per_aggs[e], num_aggs - e) < 0) {
 			verbose(VDBH, "ERROR while batch writing aggregations to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_periodic_aggregations(connection, &per_aggs[e], num_aggs - e) < 0) {
+			verbose(VDBH, "ERROR while batch writing aggregations to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
 
     return EAR_SUCCESS;
 }
 
 int db_insert_ear_event(ear_event_t *ear_ev)
 {
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     if (mysql_insert_ear_event(connection, ear_ev) < 0)
+#elif DB_PSQL
+    if (postgresql_insert_ear_event(connection, ear_ev) < 0)
+#endif
     {
         verbose(VDBH, "ERROR while writing ear_event to database.");
+#if DB_MYSQL
+        mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
@@ -488,7 +834,11 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 	int bulk_sets = _BULK_SETS(num_events, bulk_elms);
 	int e, s;
 
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -497,43 +847,79 @@ int db_batch_insert_ear_event(ear_event_t *ear_evs, int num_events)
 	// Inserting full bulks one by one
 	for (e = 0, s = 0; s < bulk_sets; e += bulk_elms, s += 1)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], bulk_elms) < 0) {
 			verbose(VDBH, "ERROR while batch writing ear_event to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_ear_events(connection, &ear_evs[e], bulk_elms) < 0) {
+			verbose(VDBH, "ERROR while batch writing ear_event to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 	// Inserting the lagging bulk, the incomplete last one
 	if (e < num_events)
 	{
+#if DB_MYSQL
 		if (mysql_batch_insert_ear_events(connection, &ear_evs[e], num_events - e) < 0) {
 			verbose(VDBH, "ERROR while batch writing ear_event to database.");
             mysql_close(connection);
 			return EAR_ERROR;
 		}
+#elif DB_PSQL
+		if (postgresql_batch_insert_ear_events(connection, &ear_evs[e], num_events - e) < 0) {
+			verbose(VDBH, "ERROR while batch writing ear_event to database.");
+            PQfinish(connection);
+			return EAR_ERROR;
+		}
+#endif
 	}
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
 
 int db_insert_gm_warning(gm_warning_t *warning)
 {
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     if (mysql_insert_gm_warning(connection, warning) < 0)
+#elif DB_PSQL
+    if (postgresql_insert_gm_warning(connection, warning) < 0)
+#endif
     {
         verbose(VDBH, "ERROR while writing gm_warning to database.");
+#if DB_MYSQL
         mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
     
     return EAR_SUCCESS;
 }
@@ -547,21 +933,46 @@ int stmt_error(MYSQL *connection, MYSQL_STMT *statement)
     return -1;
 }
 
+#define PSQL_METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
+                                     ">= %d AND end_time <= %d AND DC_energy <= %d"
+#define PSQL_AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
+                                     ">= %d AND end_time <= %d"
+
+int postgresql_select_acum_energy(PGconn *connection, int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
+{
+    char query[256];
+
+    if (is_aggregated)
+        sprintf(query, PSQL_AGGREGATED_SUM_QUERY, divisor, start_time, end_time);
+    else
+        sprintf(query, PSQL_METRICS_SUM_QUERY, divisor, start_time, end_time, MAX_ENERGY);
+
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    {
+       verbose(VMYSQL, "ERROR while reading signature id: %s\n", PQresultErrorMessage(res));
+        PQclear(res);
+        return EAR_ERROR;
+    }
+
+
+    *energy = htonl( *((uint *)PQgetvalue(res, 0, 0)));
+    *last_index = htonl( *((uint *)PQgetvalue(res, 0, 1)));
+    
+    PQclear(res);
+    return EAR_SUCCESS;
+}
+
 #define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
                                 ">= ? AND end_time <= ? AND DC_energy <= %d"
 #define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
 
-int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
+int mysql_select_acum_energy(MYSQL *connection, int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
+
     char query[256];
-    *energy = 0;
-	MYSQL *connection = mysql_create_connection();
-
-    if (connection == NULL) {
-        return EAR_ERROR;
-    }
-
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement)
     {
@@ -616,9 +1027,34 @@ int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_a
     }
 
     mysql_stmt_close(statement);
-    mysql_close(connection);
-
     return EAR_SUCCESS;
+
+}
+
+int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
+{
+    *energy = 0;
+    int ret = EAR_ERROR;
+
+#if DB_MYSQL
+	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+    PGconn *connection = postgresql_create_connection();
+#endif
+
+    if (connection == NULL) {
+        return EAR_ERROR;
+    }
+
+#if DB_MYSQL
+    ret = mysql_select_acum_energy(connection, start_time, end_time, divisor, is_aggregated, last_index, energy);
+    mysql_close(connection);
+#elif DB_PSQL
+    ret = postgresql_select_acum_energy(connection, start_time, end_time, divisor, is_aggregated, last_index, energy);
+    PQfinish(connection);
+#endif
+
+    return ret;
 
 }
 
@@ -711,15 +1147,10 @@ int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uin
 #define AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
                                 "id > %d"
 
-int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
+int mysql_select_acum_energy_idx(MYSQL *connection, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
     char query[256];
     *energy = 0;
-	MYSQL *connection = mysql_create_connection();
-
-    if (connection == NULL) {
-        return EAR_ERROR;
-    }
 
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement)
@@ -738,7 +1169,7 @@ int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_inde
     }
     else
     {
-        sprintf(query, METRICS_ID_SUM_QUERY, MAX_ENERGY, *last_index);
+        sprintf(query, METRICS_ID_SUM_QUERY, *last_index, MAX_ENERGY);
         if (mysql_stmt_prepare(statement, query, strlen(query)))
             return stmt_error(connection, statement);
     }
@@ -771,9 +1202,66 @@ int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_inde
     }
 
     mysql_stmt_close(statement);
-    mysql_close(connection);
 
     return EAR_SUCCESS;
+
+}
+
+#define PSQL_METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
+                                        "id > %d AND DC_energy <= %d"
+#define PSQL_AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
+                                        "id > %d"
+
+int postgresql_select_acum_energy_idx(PGconn *connection, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
+{
+    char query[256];
+
+    if (is_aggregated)
+        sprintf(query, PSQL_AGGREGATED_ID_SUM_QUERY, divisor, *last_index);
+    else
+        sprintf(query, PSQL_METRICS_ID_SUM_QUERY, divisor, *last_index, MAX_ENERGY);
+
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    {
+       verbose(VMYSQL, "ERROR while reading signature id: %s\n", PQresultErrorMessage(res));
+        PQclear(res);
+        return EAR_ERROR;
+    }
+
+
+    *energy = htonl( *((uint *)PQgetvalue(res, 0, 0)));
+    *last_index = htonl( *((uint *)PQgetvalue(res, 0, 1)));
+    
+    PQclear(res);
+    return EAR_SUCCESS;
+}
+
+int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
+{
+    *energy = 0;
+    int ret = EAR_ERROR;
+
+#if DB_MYSQL
+	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+    PGconn *connection = postgresql_create_connection();
+#endif
+
+    if (connection == NULL) {
+        return EAR_ERROR;
+    }
+
+#if DB_MYSQL
+    ret = mysql_select_acum_energy_idx(connection, divisor, is_aggregated, last_index, energy);
+    mysql_close(connection);
+#elif DB_PSQL
+    ret = postgresql_select_acum_energy_idx(connection, divisor, is_aggregated, last_index, energy);
+    PQfinish(connection);
+#endif
+
+    return ret;
 
 }
 
@@ -781,35 +1269,44 @@ int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_inde
 int db_read_applications_query(application_t **apps, char *query)
 {
     int num_apps = 0;
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+    PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
 
+#if DB_MYSQL
    	num_apps = mysql_retrieve_applications(connection, query, apps, 0);
+#elif DB_PSQL
+   	num_apps = postgresql_retrieve_applications(connection, query, apps, 0);
+#endif
     
    
   	if (num_apps == EAR_MYSQL_ERROR){
+#if DB_MYSQL
         verbose(VDBH, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
 		return num_apps;
     }
 
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
 
     return num_apps;
 }
 
 int db_run_query(char *query, char *user, char *passw)
 {
-    MYSQL *connection = mysql_init(NULL);
-
-    if (connection == NULL)
-    {
-        verbose(VDBH, "Error creating MYSQL object: %s \n", mysql_error(connection));
-        exit(1);
-    }
 
     if (db_config == NULL)
     {
@@ -820,6 +1317,15 @@ int db_run_query(char *query, char *user, char *passw)
         user = db_config->user;
     if (passw == NULL)
         passw = db_config->pass;
+
+#if DB_MYSQL
+    MYSQL *connection = mysql_init(NULL);
+
+    if (connection == NULL)
+    {
+        verbose(VDBH, "Error creating MYSQL object: %s \n", mysql_error(connection));
+        exit(1);
+    }
 
     if (!mysql_real_connect(connection, db_config->ip, user, passw, db_config->database, db_config->port, NULL, 0))
     {
@@ -837,9 +1343,26 @@ int db_run_query(char *query, char *user, char *passw)
 
     mysql_close(connection);
 
+#elif DB_PSQL
+    strcpy(db_config->user, user);
+    strcpy(db_config->pass, passw);
+    PGconn *connection = postgresql_create_connection();
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 0);
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        verbose(VDBH, "%s\n", PQresultErrorMessage(res));
+        PQclear(res);
+        PQfinish(connection);
+        return EAR_MYSQL_ERROR;
+    }
+    PQclear(res);
+    PQfinish(connection);
+    
+#endif
     return EAR_SUCCESS;
 }
 
+#if DB_MYSQL
 MYSQL_RES *db_run_query_result(char *query)
 {
 	MYSQL *connection = mysql_create_connection();
@@ -861,13 +1384,46 @@ MYSQL_RES *db_run_query_result(char *query)
     mysql_close(connection);
 
     return result;
+}
 
+#elif DB_PSQL
+PGresult *db_run_query_result(char *query)
+{
+	PGconn *connection = postgresql_create_connection();
+
+    if (connection == NULL) {
+        return NULL;
+    }
+
+    PGresult *result;
+    result = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 0); 
+    if (PQresultStatus(result) != PGRES_TUPLES_OK)
+    {
+        verbose(VDBH, "Error when executing query: %s\n", PQerrorMessage(connection));
+        PQfinish(connection);
+        return NULL;
+    }
+
+    PQfinish(connection);
+
+    return result;
+}
+#endif
+
+void db_reset_counters()
+{
+    current_job_id = 0;
+    current_step_id = -1;
 }
 
 int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name)
 {
     int num_apps = 0;
+#if DB_MYSQL
 	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+	PGconn *connection = postgresql_create_connection();
+#endif
 
     if (connection == NULL) {
         return EAR_ERROR;
@@ -917,11 +1473,20 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
     }
 
 
+#if DB_MYSQL
    	num_apps = mysql_retrieve_applications(connection, query, apps, is_learning);
+#elif DB_PSQL
+   	num_apps = postgresql_retrieve_applications(connection, query, apps, is_learning);
+#endif
    
   	if (num_apps == EAR_MYSQL_ERROR){
+#if DB_MYSQL
         verbose(VDBH, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
         mysql_close(connection);
+#elif DB_PSQL
+        verbose(VDBH, "Error retrieving information from database: %s\n", PQerrorMessage(connection));
+        PQfinish(connection);
+#endif
 		return num_apps;
     }
     if (num_apps > 0)
@@ -933,14 +1498,12 @@ int db_read_applications(application_t **apps,uint is_learning, int max_apps, ch
         db_reset_counters();
     else
         verbose(VDBH, "EAR's mysql internal error: %d\n", num_apps);
+#if DB_MYSQL
     mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
 	return num_apps;
-}
-
-void db_reset_counters()
-{
-    current_job_id = 0;
-    current_step_id = -1;
 }
 
 #define LEARNING_APPS_QUERY     "SELECT COUNT(*) FROM Learning_applications WHERE node_id = '%s'"
@@ -951,15 +1514,43 @@ void db_reset_counters()
 #define APPS_ALL_QUERY          "SELECT COUNT(*) FROM (SELECT * FROM Applications GROUP BY job_id, step_id) AS t1"
 //#define APPS_ALL_QUERY          "SELECT COUNT(*) FROM Applications"
 
-ulong get_num_applications(char is_learning, char *node_name)
+#if DB_PSQL
+ulong postgresql_get_num_applications(char *query)
 {
-    
-	MYSQL *connection = mysql_create_connection();
+   
+    ulong result = 0;
+	PGconn *connection = postgresql_create_connection();
 
     if (connection == NULL) {
         return EAR_ERROR;
     }
-    char query[256];
+
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    {
+        verbose(VMYSQL, "ERROR while reading signature id: %s\n", PQresultErrorMessage(res));
+        PQclear(res);
+        return EAR_ERROR;
+    }
+
+    result = htonl( *((uint *)PQgetvalue(res, 0, 0)));
+    
+    PQclear(res);
+
+    return result;
+}
+#endif
+
+#if DB_MYSQL
+ulong mysql_get_num_applications(char *query)
+{
+   
+	MYSQL *connection = mysql_create_connection();
+
+    if (connection == NULL) {
+        return 0;
+    }
 
     MYSQL_STMT *statement = mysql_stmt_init(connection);
     if (!statement)
@@ -967,18 +1558,8 @@ ulong get_num_applications(char is_learning, char *node_name)
         verbose(VDBH, "Error creating statement (%d): %s\n", mysql_errno(connection),
                 mysql_error(connection));
         mysql_close(connection);
-        return -1;
+        return 0;
     }
-
-    if (is_learning && node_name != NULL)
-        sprintf(query, LEARNING_APPS_QUERY, node_name);
-    else if (!is_learning && node_name != NULL)
-        sprintf(query, APPS_QUERY, node_name);
-    else if (is_learning && node_name == NULL)
-        sprintf(query, LEARNING_APPS_ALL_QUERY);
-    else if (!is_learning && node_name == NULL)
-        sprintf(query, APPS_ALL_QUERY);
-
 
     if (mysql_stmt_prepare(statement, query, strlen(query)))
                                       return mysql_statement_error(statement);
@@ -995,12 +1576,36 @@ ulong get_num_applications(char is_learning, char *node_name)
 
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
-        result = -2;
+        result = 0;
 
     mysql_stmt_close(statement);
     mysql_close(connection);
 
     return result;
+}
+#endif
 
+ulong get_num_applications(char is_learning, char *node_name)
+{
+    
+    ulong ret = 0;
+    char query[256];
+
+    if (is_learning && node_name != NULL)
+        sprintf(query, LEARNING_APPS_QUERY, node_name);
+    else if (!is_learning && node_name != NULL)
+        sprintf(query, APPS_QUERY, node_name);
+    else if (is_learning && node_name == NULL)
+        sprintf(query, LEARNING_APPS_ALL_QUERY);
+    else if (!is_learning && node_name == NULL)
+        sprintf(query, APPS_ALL_QUERY);
+
+#if DB_MYSQL
+    ret = mysql_get_num_applications(query);
+#elif DB_PSQL
+    ret = postgresql_get_num_applications(query);
+#endif
+
+    return ret;
 }
 
