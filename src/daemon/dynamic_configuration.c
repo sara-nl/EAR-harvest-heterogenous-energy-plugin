@@ -84,7 +84,7 @@ static ehandler_t my_eh_rapi;
 void print_f_list(uint p_states, ulong *freql) {
 	int i;
 	for (i = 0; i < p_states; i++) {
-		verbose(VCONF + 2, "Freq %u= %lu\n", i, freql[i]);
+		verbose(VCONF + 2, "Freq %u= %lu", i, freql[i]);
 	}
 }
 
@@ -113,7 +113,7 @@ ulong lower_valid_freq(ulong f, uint p_states, ulong *f_list) {
 }
 
 static void DC_my_sigusr1(int signun) {
-	verbose(VCONF, "thread %u receives sigusr1\n", (uint) pthread_self());
+	verbose(VCONF, "thread %u receives sigusr1", (uint) pthread_self());
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);
 }
@@ -331,7 +331,7 @@ void process_remote_requests(int clientfd) {
 	request_t command;
 	uint req;
 	long ack = EAR_SUCCESS;
-	verbose(VRAPI, "connection received\n");
+	verbose(VRAPI, "connection received");
 	req = read_command(clientfd, &command);
 	/* New job and end job are different */
 	if (req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB) {
@@ -352,52 +352,52 @@ void process_remote_requests(int clientfd) {
 
 	switch (req) {
 		case EAR_RC_NEW_JOB:
-			verbose(VRAPI, "*******************************************\n");
-			verbose(VRAPI, "new_job command received %lu\n", command.my_req.new_job.job.id);
+			verbose(VRAPI, "*******************************************");
+			verbose(VRAPI, "new_job command received %lu", command.my_req.new_job.job.id);
 			powermon_new_job(&my_eh_rapi, &command.my_req.new_job, 0);
 			break;
 		case EAR_RC_END_JOB:
 			powermon_end_job(&my_eh_rapi, command.my_req.end_job.jid, command.my_req.end_job.sid);
-			verbose(VRAPI, "end_job command received %lu\n", command.my_req.end_job.jid);
-			verbose(VRAPI, "*******************************************\n");
+			verbose(VRAPI, "end_job command received %lu", command.my_req.end_job.jid);
+			verbose(VRAPI, "*******************************************");
 			break;
 		case EAR_RC_MAX_FREQ:
-			verbose(VRAPI, "max_freq command received %lu\n", command.my_req.ear_conf.max_freq);
+			verbose(VRAPI, "max_freq command received %lu", command.my_req.ear_conf.max_freq);
 			ack = dynconf_max_freq(command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_NEW_TH:
-			verbose(VRAPI, "new_th command received %lu\n", command.my_req.ear_conf.th);
+			verbose(VRAPI, "new_th command received %lu", command.my_req.ear_conf.th);
 			ack = dynconf_set_th(command.my_req.ear_conf.p_id, command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_INC_TH:
-			verbose(VRAPI, "inc_th command received, %lu\n", command.my_req.ear_conf.th);
+			verbose(VRAPI, "inc_th command received, %lu", command.my_req.ear_conf.th);
 			ack = dynconf_inc_th(command.my_req.ear_conf.p_id, command.my_req.ear_conf.th);
 			break;
 		case EAR_RC_RED_PSTATE:
-			verbose(VRAPI, "red_max_and_def_p_state command received\n");
+			verbose(VRAPI, "red_max_and_def_p_state command received");
 			ack = dynconf_red_pstates(command.my_req.ear_conf.p_states);
 			break;
 		case EAR_RC_SET_FREQ:
-			verbose(VRAPI, "set freq command received\n");
+			verbose(VRAPI, "set freq command received");
 			ack = dynconf_set_freq(command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_DEF_FREQ:
-			verbose(VRAPI, "set def freq command received\n");
+			verbose(VRAPI, "set def freq command received");
 			ack = dynconf_def_freq(command.my_req.ear_conf.p_id, command.my_req.ear_conf.max_freq);
 			break;
 		case EAR_RC_REST_CONF:
-			verbose(VRAPI, "restore conf command received\n");
+			verbose(VRAPI, "restore conf command received");
 			ack = dyncon_restore_conf();
 			break;
 	  case EAR_RC_SET_POLICY:
-			verbose(VRAPI,"set policy received\n");
+			verbose(VRAPI,"set policy received");
 			ack = dyncon_set_policy(&command.my_req.pol_conf);
 			break;
 		case EAR_RC_PING:
-			verbose(VRAPI + 1, "ping received\n");
+			verbose(VRAPI + 1, "ping received");
 			break;
 		case EAR_RC_STATUS:
-			verbose(VRAPI + 1, "Status received\n");
+			verbose(VRAPI + 1, "Status received");
 			dyncon_get_status(clientfd, &command);
 			return;
 			break;
@@ -440,15 +440,15 @@ void *eard_dynamic_configuration(void *tmp)
 	num_f = frequency_get_num_pstates();
 	f_list = frequency_get_freq_rank_list();
 	print_f_list(num_f, f_list);
-	verbose(VRAPI + 2, "We have %u valid p_states\n", num_f);
+	verbose(VRAPI + 2, "We have %u valid p_states", num_f);
 #if USE_NEW_PROP
-	verbose(0, "Init for ips\n");
+	verbose(0, "Init for ips");
 	node_found = init_ips(&my_cluster_conf);
-    if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file\n");
+    if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file");
 #endif
 
 
-	verbose(VRAPI, "Creating socket for remote commands\n");
+	verbose(VRAPI, "Creating socket for remote commands");
 	eards_remote_socket = create_server_socket(my_cluster_conf.eard.port);
 	if (eards_remote_socket < 0) {
 		error("Error creating socket, exiting eard_dynamic_configuration thread\n");
@@ -459,7 +459,7 @@ void *eard_dynamic_configuration(void *tmp)
 	*	MAIN LOOP
 	*/
 	do {
-		verbose(VRAPI + 1, "waiting for remote commands\n");
+		verbose(VRAPI + 1, "waiting for remote commands");
 		eards_client = wait_for_client(eards_remote_socket, &eards_remote_client);
 		if (eards_client < 0) {
 			error(" wait_for_client returns error\n");

@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
@@ -46,6 +47,7 @@
 
 uint8_t 		power_mon_connected = 0;
 rapl_data_t 	*RAPL_metrics;
+node_data_t		*Node_metrics;
 static uint 	node_units;
 static size_t 	node_size;
 static uint8_t 	rootp = 0;
@@ -145,6 +147,8 @@ static int pm_connect(ehandler_t *my_eh)
 	// Getting data size (this could be delegated to the node energy API)
 	energy_units(my_eh, &node_units);
 	energy_datasize(my_eh, &node_size);
+
+
 	num_packs = detect_packages(NULL);
 
 	if (num_packs == 0) {
@@ -202,6 +206,7 @@ static int pm_connect(ehandler_t *my_eh)
 int init_power_ponitoring(ehandler_t *my_eh)
 {
 	int ret;
+	debug("init_power_ponitoring");
 	if (power_mon_connected) {
 		return EAR_SUCCESS;
 	}
@@ -229,7 +234,9 @@ void end_power_monitoring(ehandler_t *my_eh)
 int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 {
 	int p;
+	char buffer[512];
 
+	debug("read_enegy_data");
 	time(&acc_energy->sample_time);
 
 	if (!power_mon_connected) {
@@ -242,7 +249,6 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 	// Node
 	pm_node_dc_energy(my_eh, acc_energy->DC_node_energy);
 
-	acc_energy->AC_node_energy = 0;
 
 	// CPU/DRAM
 	pm_read_rapl(my_eh, RAPL_metrics);
@@ -259,6 +265,8 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 
 	// Debugging data
 	#ifdef SHOW_DEBUGS
+	energy_to_str(my_eh,buffer,acc_energy->DC_node_energy);
+	debug("Node %s",buffer);
 	for (p = 0; p < num_packs; p++) {
 		debug("DRAM pack %d = %llu", p, RAPL_metrics[p]);
 	}
@@ -266,7 +274,7 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 		debug("CPU pack %d = %llu", p, RAPL_metrics[num_packs + p]);
 	}
 	for (p = 0; p < gpu_num  ; p++) {
-		debug("GPU pack %d = %lu", p, gpu_data[p].energy_j);
+		debug("GPU pack %d = %lu", p, (ulong) gpu_data[p].energy_j);
 	}
 	#endif
 
@@ -464,7 +472,6 @@ void alloc_energy_data(energy_data_t *e)
 {
 	// Node
 	e->DC_node_energy = (edata_t *) malloc(node_size);
-	e->AC_node_energy = (edata_t *) malloc(node_size);
 	// CPU/DRAM
 	e->DRAM_energy = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
 	e->CPU_energy  = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
@@ -476,7 +483,6 @@ void free_energy_data(energy_data_t *e)
 {
 	// Node
 	free(e->DC_node_energy);
-	free(e->AC_node_energy);
 	// CPU/DRAM
 	free(e->DRAM_energy);
 	free(e->CPU_energy);
@@ -489,7 +495,6 @@ void copy_energy_data(energy_data_t *dest, energy_data_t *src)
 	// Time
 	dest->sample_time = src->sample_time;
 	// Node
-	dest->AC_node_energy = src->AC_node_energy;
 	memcpy(dest->DC_node_energy, src->DC_node_energy, node_size);
 	// CPU/DRAM
 	memcpy(dest->DRAM_energy, src->DRAM_energy, num_packs * sizeof(rapl_data_t));
@@ -503,7 +508,6 @@ void null_energy_data(energy_data_t *acc_energy)
 	// Time
 	time(&acc_energy->sample_time);
 	// Node
-	acc_energy->AC_node_energy = 0;
 	memset(acc_energy->DC_node_energy, 0, node_size);
 	// CPU/DRAM
 	memset(acc_energy->DRAM_energy, 0, num_packs * sizeof(rapl_data_t));
