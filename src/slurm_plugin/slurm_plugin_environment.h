@@ -34,7 +34,7 @@
 #ifdef ERUN
 	#define plug_verbose(sp, level, ...) \
         	if (plug_verbosity_test(sp, level) == 1) { \
-				fprintf(stderr, "%s %s ", plug_host(sp), plug_context_str(sp)); \
+				if (level > 0) fprintf(stderr, "%s %s ", plug_host(sp), plug_context_str(sp)); \
 				fprintf(stderr, __VA_ARGS__); \
 				fprintf(stderr, "\n"); \
         }

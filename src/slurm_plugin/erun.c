@@ -95,26 +95,26 @@ spank_err_t spank_option_register_print(spank_t sp, struct spank_option *opt)
 	int o = 0;
 	char c;
 
-	plug_verbose(sp, 0, "\t--%s\t\t", opt->name);
+	printf("\t--%s\t\t", opt->name);
 	if (strlen(opt->name) < 5) {
-		plug_verbose(sp, 0, "\t");
+		printf("\t");
 	}
 	if (n < 64) {
-		plug_verbose(sp, 0, "%s\n", opt->usage);
+		printf("%s\n", opt->usage);
 		return ESPANK_SUCCESS;
 	}
 	while (i < n)
 	{
 		c = opt->usage[i];
-		plug_verbose(sp, 0, "%c", c);
+		printf("%c", c);
 		o = (o == 1) | (i != 0 && (i % 64) == 0);
 		if (o && (c == ' ' || c == ',')) {
-			plug_verbose(sp, 0, "\n\t\t\t\t");
+			printf("\n\t\t\t\t");
 			o = 0;
 		}
 		i += 1;
 	}
-	plug_verbose(sp, 0, "\n");
+	printf("\n");
 
 	return ESPANK_SUCCESS;
 }
@@ -150,12 +150,13 @@ spank_err_t spank_option_register(spank_t sp, struct spank_option *opt)
 
 int help(int argc, char *argv[])
 {
-	plug_verbose(_sp, 0, "Usage: %s [OPTIONS]\n", argv[0]);
-	plug_verbose(_sp, 0, "\nOptions:\n");
-	plug_verbose(_sp, 0, "\t--program=<arg>\t\tSets the program to run.\n");
-	plug_verbose(_sp, 0, "\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
-	plug_verbose(_sp, 0, "\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
-	plug_verbose(_sp, 0, "SLURM options:\n");
+	printf("Usage: %s [OPTIONS]\n", argv[0]);
+	printf("\nOptions:\n");
+	printf("\t--nodes=<arg>\t\tSets the number of nodes.\n");
+	printf("\t--program=<arg>\t\tSets the program to run.\n");
+	printf("\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
+	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
+	printf("SLURM options:\n");
 
 	return 0;
 }
@@ -174,15 +175,16 @@ int arguments(int ac, char *av[])
 			return 1;
 		}
 	}
-
-	for (i = 0; i < ac; ++i)
-	{
-		if ((strlen(av[i]) > 8) && (strncmp("--program=", av[i], 10) == 0))
-		{
+	for (i = 0; i < ac; ++i) {
+		if ((strlen(av[i]) > 8) && (strncmp("--program=", av[i], 10) == 0)) {
 			_pr = &av[i][10];
 		}
 	}
-
+	for (i = 0; i < ac; ++i) {
+		if ((strlen(av[i]) > 7) && (strncmp("--nodes=", av[i], 8) == 0)) {
+			setenv("SLURM_NNODES", &av[i][8], 1);
+		}
+	}
 	if (_pr == NULL) {
 		return 1;
 	}

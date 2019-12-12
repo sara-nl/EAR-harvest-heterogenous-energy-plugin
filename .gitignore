@@ -105,6 +105,7 @@ tests/check/check.sh
 *ping
 *remove_learning
 *traces_to_paraver
+*erun
 
 src/daemon/commands/ear_check_node_test
 src/database_cache/tmpi
