@@ -26,6 +26,8 @@ CONSTANTS    = -DSEC_KEY=10001
 REPLACE      =
 FEAT_AVX512  = @FEAT_AVX512@
 FEAT_FORT    = @FEAT_FORT@
+EAR_VERSION  = 3
+EAR_SUBV     = 1
 
 ######## VARS
 
@@ -57,6 +59,8 @@ export CONSTANTS
 export REPLACE
 export FEAT_AVX512
 export FEAT_FORT
+export EAR_SUBV
+export EAR_VERSION
 
 
 ######## RULES
