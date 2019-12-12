@@ -30,38 +30,73 @@
 #include <metrics/energy/energy_gpu.h>
 #include <metrics/energy/gpu/nvsmi.h>
 
-struct uncore_op
+struct energy_gpu_ops
 {
-	state_t (*init)    (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
-	state_t (*dispose) (pcontext_t *c, gpu_power_t **dr, gpu_power_t **da);
-	state_t (*read)    (pcontext_t *c, gpu_power_t  *dr, gpu_power_t  *da);
-	state_t (*count)   (pcontext_t *c, uint *co);
+	state_t (*init)			(pcontext_t *c, uint loop_ms);
+	state_t (*dispose)		(pcontext_t *c);
+	state_t (*count)		(pcontext_t *c, uint *count);
+	state_t (*read)			(pcontext_t *c, gpu_energy_t  *dr);
+	state_t (*data_alloc)	(pcontext_t *c, gpu_energy_t **dr);
+	state_t (*data_free)	(pcontext_t *c, gpu_energy_t **dr);
+	state_t (*data_null)	(pcontext_t *c, gpu_energy_t  *dr);
+	state_t (*data_diff)	(pcontext_t *c, gpu_energy_t  *dr1, gpu_energy_t *dr2, gpu_energy_t *da);
+	state_t (*data_copy)	(pcontext_t *c, gpu_energy_t  *dst, gpu_energy_t *src);
 } ops;
 
-state_t energy_gpu_init(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t energy_gpu_init(pcontext_t *c, uint loop_ms)
 {
 	if (state_ok(nvsmi_gpu_status())) {
-		ops.init    = nvsmi_gpu_init;
-		ops.dispose = nvsmi_gpu_dispose;
-		ops.read    = nvsmi_gpu_read;
-		ops.count   = nvsmi_gpu_count;
-		return ops.init(c, dread, davrg);
+		ops.init		= nvsmi_gpu_init;
+		ops.dispose		= nvsmi_gpu_dispose;
+		ops.read		= nvsmi_gpu_read;
+		ops.count		= nvsmi_gpu_count;
+		ops.data_alloc	= nvsmi_gpu_data_alloc;
+		ops.data_free	= nvsmi_gpu_data_free;
+		ops.data_null	= nvsmi_gpu_data_null;
+		ops.data_diff	= nvsmi_gpu_data_diff;
+		ops.data_copy   = NULL;
+		return ops.init(c, loop_ms);
 	} else {
-		return EAR_INCOMPATIBLE;
+		state_return_msg(EAR_INCOMPATIBLE, 0, "no energy GPU API available");
 	}
 }
 
-state_t energy_gpu_dispose(pcontext_t *c, gpu_power_t **dread, gpu_power_t **davrg)
+state_t energy_gpu_dispose(pcontext_t *c)
 {
-	return nvsmi_gpu_dispose(c, dread, davrg);
+	preturn(ops.dispose, c);
 }
 
-state_t energy_gpu_read(pcontext_t *c, gpu_power_t *dread, gpu_power_t *davrg)
+state_t energy_gpu_read(pcontext_t *c, gpu_energy_t *data_read)
 {
-	return nvsmi_gpu_read(c, dread, davrg);
+	preturn(ops.read, c, data_read);
 }
 
 state_t energy_gpu_count(pcontext_t *c, uint *count)
 {
-	return nvsmi_gpu_count(c, count);
+	preturn(ops.count, c, count);
+}
+
+state_t energy_gpu_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
+{
+	preturn(ops.data_alloc, c, data_read);
+}
+
+state_t energy_gpu_data_free(pcontext_t *c, gpu_energy_t **data_read)
+{
+	preturn(ops.data_free, c, data_read);
+}
+
+state_t energy_gpu_data_null(pcontext_t *c, gpu_energy_t *data_read)
+{
+	preturn(ops.data_null, c, data_read);
+}
+
+state_t energy_gpu_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
+{
+	preturn(ops.data_diff, c, data_read1, data_read2, data_avrg);
+}
+
+state_t energy_gpu_data_copy(pcontext_t *c, gpu_energy_t *data_dst, gpu_energy_t *data_src)
+{
+	return EAR_SUCCESS;
 }

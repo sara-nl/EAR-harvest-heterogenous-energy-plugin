@@ -67,6 +67,9 @@ void tprintf_close();
 /** Cleans the character pointed by 'chr', adding an '\0' in its position. */
 char* strclean(char *string, char chr);
 
+/** Converts a string to lower case. */
+void strtolow(char *string);
+
 /** Converts a string to upper case. */
 void strtoup(char *string);
 

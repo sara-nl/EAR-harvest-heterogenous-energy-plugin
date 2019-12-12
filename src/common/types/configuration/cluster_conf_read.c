@@ -317,11 +317,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 }
                 else if (!strcmp(key, "PRIVILEGED"))
                 {
-                    strtoup(value);
-                    if (!(strcmp(value, "Y") & strcmp(value, "YES")))
-                        curr_policy->is_available = 1;
-                    else
-                        curr_policy->is_available = 0;
+									curr_policy->is_available=(atoi(value)==0);
                 }
                                 
 			    token = strtok_r(NULL, " ", &primary_ptr);

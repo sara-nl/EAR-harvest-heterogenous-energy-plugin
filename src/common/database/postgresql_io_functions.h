@@ -28,7 +28,7 @@
 */
 
 #include <common/config.h>
-#if DB_MYSQL
+#if DB_PSQL
 #include <common/types/log.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
@@ -39,7 +39,7 @@
 #include <common/types/power_signature.h>
 #include <common/types/periodic_aggregation.h>
 
-#include <mysql/mysql.h>
+#include "libpq-fe.h"
 
 //
 #define EAR_TYPE_APPLICATION    1
@@ -68,14 +68,6 @@
 
 
 
-
-typedef struct
-{
-    char type;
-    application_t *app;
-    loop_t *loop;
-} signature_container_t;
-
 /** Sets the database layer to operate with full signatures or simplified one. */
 void set_signature_simple(char full_sig);
 
@@ -85,140 +77,138 @@ void set_node_detail(char node_det);
 /** Sets the database layer to operate with full periodic_metrics or simplified one. */
 void set_periodic_metrics_simple(char full_periodic);
 
-/** Given a MYSQL connection and an application, inserts said application into
+/** Given a PGconn connection and an application, inserts said application into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_application(MYSQL *connection, application_t *app);
+int postgresql_insert_application(PGconn *connection, application_t *app);
 
-/** Given a MYSQL connection and an array of applications, insert said applications
+/** Given a PGconn connection and an array of applications, insert said applications
 *   into the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR
 *   or EAR_MYSQL_STMT_ERROR on error. */ 
-int mysql_batch_insert_applications(MYSQL *connection, application_t *apps, int num_apps);
+int postgresql_batch_insert_applications(PGconn *connection, application_t *apps, int num_apps);
 
 
-/** Given a MYSQL connection and an array of applications, insert said applications
+/** Given a PGconn connection and an array of applications, insert said applications
 *   into the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR
 *   or EAR_MYSQL_STMT_ERROR on error. Used for non-mpi applications. */ 
-int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *apps, int num_apps);
+int postgresql_batch_insert_applications_no_mpi(PGconn *connection, application_t *apps, int num_apps);
 
-/** Given a MYSQL connection and a valid MYSQL query, stores in apps the 
+/** Given a PGconn connection and a valid MYSQL query, stores in apps the 
 *   applications found in the database corresponding to the query. Returns the 
 *   number of applications found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
-int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps, char is_learning);
+int postgresql_retrieve_applications(PGconn *connection, char *query, application_t **apps, char is_learning);
 
-/** Given a MYSQL connection and a loop, inserts said loop into
+/** Given a PGconn connection and a loop, inserts said loop into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_loop(MYSQL *connection, loop_t *loop);
+int postgresql_insert_loop(PGconn *connection, loop_t *loop);
 
-/** Given a MYSQL connection and an array of loops, inserts said loops into
+/** Given a PGconn connection and an array of loops, inserts said loops into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops);
+int postgresql_batch_insert_loops(PGconn *connection, loop_t *loop, int num_loops);
 
-/** Given a MYSQL connection and a valid MYSQL query, stores in loops the 
+/** Given a PGconn connection and a valid MYSQL query, stores in loops the 
 *   loops found in the database corresponding to the query. Returns the 
 *   number of loops found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
-int mysql_retrieve_loops(MYSQL *connection, char *query, loop_t **loops);
+int postgresql_retrieve_loops(PGconn *connection, char *query, loop_t **loops);
 
-/** Given a MYSQL connection and a job, inserts said job into
+/** Given a PGconn connection and a job, inserts said job into
 *   the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning);
+int postgresql_insert_job(PGconn *connection, job_t *job, char is_learning);
 
-/** Given a MYSQL connection and an array of applications, insert said applications' jobs
+/** Given a PGconn connection and an array of applications, insert said applications' jobs
 *   into the database. Returns EAR_SUCCESS on success, and either EAR_MYSQL_ERROR
 *   or EAR_MYSQL_STMT_ERROR on error.  */ 
-int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps);
+int postgresql_batch_insert_jobs(PGconn *connection, application_t *app, int num_apps);
 
-/** Given a MYSQL connection and a valid MYSQL query, stores in jobs the 
+/** Given a PGconn connection and a valid MYSQL query, stores in jobs the 
 *   jobs found in the database corresponding to the query. Returns the 
 *   number of jobs found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
-int mysql_retrieve_jobs(MYSQL *connection, char *query, job_t **jobs);
+int postgresql_retrieve_jobs(PGconn *connection, char *query, job_t **jobs);
 
 
-/** Given a MYSQL connection and a valid MYSQL query, stores in applications the 
+/** Given a PGconn connection and a valid MYSQL query, stores in applications the 
 *   applications found in the database corresponding to the query. It looks in learning
 *   or "normal" tables depending on is_learning. Returns the 
 *   number of applications found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
-int mysql_retrieve_applications(MYSQL *connection, char *query, application_t **apps, char is_learning);
+int postgresql_retrieve_applications(PGconn *connection, char *query, application_t **apps, char is_learning);
 
-/** Given a MYSQL connection and a signature, inserts said signature into
+/** Given a PGconn connection and a signature, inserts said signature into
 *   the database. Returns the signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning);
+int postgresql_insert_signature(PGconn *connection, signature_t *sig, char is_learning);
 
-/** Given a MYSQL connection and an array of applications, inserts said application's
+/** Given a PGconn connection and an array of applications, inserts said application's
 *   signatures into the database. Returns the first signature's database id on 
 *   success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont, char is_learning, int num_sigs);
+int postgresql_batch_insert_signatures(PGconn *connection, signature_t *sigs, char is_learning, int num_sigs);
 
-/** Given a MYSQL connection and a valid MYSQL query, stores in sigs the 
+/** Given a PGconn connection and a valid MYSQL query, stores in sigs the 
 *   signatures found in the database corresponding to the query. Returns the 
 *   number of signatures found on success, and either EAR_MYSQL_ERROR or
 *   EAR_MYSQL_STMT_ERROR on error. */
-int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs);
+int postgresql_retrieve_signatures(PGconn *connection, char *query, signature_t **sigs);
 
-/** Given a MYSQL connection and a power_signature, inserts said power_signature into
+/** Given a PGconn connection and a power_signature, inserts said power_signature into
 *   the database. Returns the power_signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_power_signature(MYSQL *connection, power_signature_t *pow_sig);
+int postgresql_insert_power_signature(PGconn *connection, power_signature_t *pow_sig);
 
-/** Given a MYSQL connection and an array of aplications , inserts said application's
+/** Given a PGconn connection and an array of aplications , inserts said application's
 *   power_signatures into the database. Returns the first power_signature's database
 *   id on success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_power_signatures(MYSQL *connection, application_t *pow_sig, int num_sigs);
+int postgresql_batch_insert_power_signatures(PGconn *connection, power_signature_t *sigs, int num_sigs);
 
-/** Given a MYSQL connection and a periodic_metric, inserts said periodic_metric into
+/** Given a PGconn connection and a periodic_metric, inserts said periodic_metric into
 *   the database. Returns the periodic_metric's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met);
+int postgresql_insert_periodic_metric(PGconn *connection, periodic_metric_t *per_met);
 
-/** Given a MYSQL connection and num_mets periodic_metrics, inserts said 
+/** Given a PGconn connection and num_mets periodic_metrics, inserts said 
 *   periodic_metrics into the database. Returns EAR_SUCCESS on success, and either
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
-int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *per_mets, int num_mets);
+int postgresql_batch_insert_periodic_metrics(PGconn *connection, periodic_metric_t *per_mets, int num_mets);
 
-/** Given a MYSQL connection and a periodic_aggregation, inserts said periodic_aggregation
+/** Given a PGconn connection and a periodic_aggregation, inserts said periodic_aggregation
 *   into the database. Returns the periodic_aggregation's database id on success, and 
 *   either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t *per_agg);
+int postgresql_insert_periodic_aggregation(PGconn *connection, periodic_aggregation_t *per_agg);
 
-/** Given a MYSQL connection and num_aggs periodic_aggregations, inserts said 
+/** Given a PGconn connection and num_aggs periodic_aggregations, inserts said 
 *   periodic_agregations into the database. Returns EAR_SUCCESS on success, and either
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error. */
-int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggregation_t *per_aggs, int num_aggs);
+int postgresql_batch_insert_periodic_aggregations(PGconn *connection, periodic_aggregation_t *per_aggs, int num_aggs);
 
-/** Given a MYSQL connection and an EAR event, inserts said event into
+/** Given a PGconn connection and an EAR event, inserts said event into
 *   the database. Returns the event's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev);
+int postgresql_insert_ear_event(PGconn *connection, ear_event_t *ear_ev);
 
-/** Given a MYSQL connection and num_evs EAR events, inserts said events into
+/** Given a PGconn connection and num_evs EAR events, inserts said events into
 *   the database. Returns the EAR_SUCCESS success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int num_evs);
+int postgresql_batch_insert_ear_events(PGconn *connection, ear_event_t *ear_ev, int num_evs);
 
 
-/** Given a MYSQL connection and an global manager warning, inserts said 
+/** Given a PGconn connection and an global manager warning, inserts said 
 *   warning into the database. Returns EAR_SUCCESS on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning);
+int postgresql_insert_gm_warning(PGconn *connection, gm_warning_t *warning);
 
-/** Given a MYSQL connection and num_sigs applications, inserts the application's signatures
+/** Given a PGconn connection and num_sigs applications, inserts the application's signatures
 *   to the database using a query to calculate the moving average of all the signatures in 
 *   a job. Returns EAR_SUCCESS on succkess, and either EAR_MYSQL_ERROR
 *   or EAR_MYSQL_STMT_ERROR on error.*/
-int mysql_batch_insert_avg_signatures(MYSQL *connection, application_t *app, int num_sigs);
+int postgresql_batch_insert_avg_signatures(PGconn *connection, application_t *app, int num_sigs);
 
 /** PENDING */
-int mysql_statement_error(MYSQL_STMT *statement);
-/** PENDING */
-int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signature_t **pow_sigs);
+int postgresql_retrieve_power_signatures(PGconn *connection, char *query, power_signature_t **pow_sigs);
 
 
 #endif

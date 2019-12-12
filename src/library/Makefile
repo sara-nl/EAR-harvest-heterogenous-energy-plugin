@@ -10,9 +10,9 @@ export LDFLAGS
 ########
 
 ifdef MPI_VERSION
-ext = ${MPI_VERSION}.so
+ext = ${MPI_VERSION}.${VERSION}.${SUBVERSION}.${RELEASE}.so
 else
-ext = so
+ext = ${VERSION}.${SUBVERSION}.${RELEASE}.so
 endif
 
 ifdef MPICC

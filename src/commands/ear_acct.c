@@ -39,11 +39,11 @@
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 
-#if DB_MYSQL
-#include <mysql/mysql.h>
+#if DB_MYSQL || DB_PSQL
 #include <common/states.h>
-#include <common/types/configuration/cluster_conf.h>
+#include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
+#include <common/types/configuration/cluster_conf.h>
 cluster_conf_t my_conf;
 #endif
 
@@ -601,9 +601,9 @@ void add_string_filter(char *query, char *addition, char *value)
 
     strcat(query, addition);
     strcat(query, "=");
-    strcat(query, "\"");
+    strcat(query, "'");
     strcat(query, value);
-    strcat(query, "\"");
+    strcat(query, "'");
 //    sprintf(query, query, value);
     query_filters ++;
 }
@@ -670,61 +670,11 @@ void print_event_type(int type)
     }
 }
 
-#define EVENTS_QUERY "SELECT id, FROM_UNIXTIME(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
-
-void read_events(char *user, int job_id, int limit, int step_id, char *job_ids) 
+#if DB_MYSQL
+void mysql_print_events(MYSQL_RES *result)
 {
-    char query[512];
-    char subquery[128];
+
     int i;
-    MYSQL *connection = mysql_init(NULL);
-
-    if (connection == NULL)
-    {
-        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
-        exit(1);
-    }
-    if (strlen(my_conf.database.user_commands) < 1) 
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
-
-    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands, my_conf.database.pass_commands, my_conf.database.database, my_conf.database.port, NULL, 0))
-    {
-        verbose(0, "Error connecting to the database(%d):%s", mysql_errno(connection), mysql_error(connection)); //error
-        mysql_close(connection);
-        exit(1);
-    }
-    strcpy(query, EVENTS_QUERY);
-
-    if (job_id >= 0)
-        add_int_filter(query, "job_id", job_id);
-    else if (strlen(job_ids) > 0)
-        add_int_list_filter(query, "job_id", job_ids);
-    if (step_id >= 0)
-        add_int_filter(query, "step_id", step_id);
-    if (user != NULL)
-        add_string_filter(query, "node_id", user);
-
-    if (limit > 0)
-    {
-        sprintf(subquery, " ORDER BY timestamp desc LIMIT %d", limit);
-        strcat(query, subquery);
-    }
-
-    if (verbose) printf("QUERY: %s\n", query);
-  
-    if (mysql_query(connection, query))
-    {
-        printf( "MYSQL error: %s\n", mysql_error(connection));
-        return;
-    }
-    MYSQL_RES *result = mysql_store_result(connection);
-  
-    if (result == NULL) 
-    {
-        printf( "MYSQL error\n");
-        return;
-    }
-
     int num_fields = mysql_num_fields(result);
 
     MYSQL_ROW row;
@@ -756,33 +706,116 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
         printf("There are no events with the specified properties.\n\n");
     }
 
+}
+#elif DB_PSQL
+void postgresql_print_events(PGresult *res)
+{
+    int i, j, num_fields, has_records = 0;
+    num_fields = PQnfields(res);
 
-    mysql_close(connection);
+    for (i = 0; i < PQntuples(res); i++)
+    {
+        if (!has_records)
+        {
+            printf("%12s %22s %15s %8s %8s %20s %12s\n",
+               "Event ID", "Timestamp", "Event type", "Job id", "Step id", "Freq.", "node_id");
+            has_records = 1;
+        }
+        for (j = 0; j < num_fields; j++) {
+            if (j == 2)
+                print_event_type(atoi(PQgetvalue(res, i, j)));
+            else if (i == 1)
+               printf("%22s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+            else if (i == 4 || i == 3)
+               printf("%8s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+            else if (i == 5)
+               printf("%20s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+            else
+               printf("%12s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+        }
+        printf("\n");
+    }
+}
+#endif
+
+#if DB_MYSQL
+#define EVENTS_QUERY "SELECT id, FROM_UNIXTIME(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
+#elif DB_PSQL
+#define EVENTS_QUERY "SELECT id, to_timestamp(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
+#endif
+
+void read_events(char *user, int job_id, int limit, int step_id, char *job_ids) 
+{
+    char query[512];
+    char subquery[128];
+
+    if (strlen(my_conf.database.user_commands) < 1) 
+    {
+        verbose(0, "Warning: commands' user is not defined in ear.conf");
+    }
+    else
+    {
+        strcpy(my_conf.database.user, my_conf.database.user_commands);
+        strcpy(my_conf.database.pass, my_conf.database.pass_commands);
+    }
+    init_db_helper(&my_conf.database);
+
+
+    strcpy(query, EVENTS_QUERY);
+
+    if (job_id >= 0)
+        add_int_filter(query, "job_id", job_id);
+    else if (strlen(job_ids) > 0)
+        add_int_list_filter(query, "job_id", job_ids);
+    if (step_id >= 0)
+        add_int_filter(query, "step_id", step_id);
+    if (user != NULL)
+        add_string_filter(query, "node_id", user);
+
+    if (limit > 0)
+    {
+        sprintf(subquery, " ORDER BY timestamp desc LIMIT %d", limit);
+        strcat(query, subquery);
+    }
+
+    if (verbose) printf("QUERY: %s\n", query);
+  
+#if DB_MYSQL
+    MYSQL_RES *result = db_run_query_result(query);
+#elif DB_PSQL
+    PGresult *result = db_run_query_result(query);
+#endif
+  
+    if (result == NULL) 
+    {
+        printf("Database error\n");
+        return;
+    }
+
+#if DB_MYSQL
+    mysql_print_events(result);
+#elif DB_PSQL
+    postgresql_print_events(result);
+#endif
 }
 
 
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
-#if DB_MYSQL
+#if DB_MYSQL || DB_PSQL
 void read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag, char *job_ids) 
 {
     int num_apps = 0;
-    MYSQL *connection = mysql_init(NULL);
-
-    if (connection == NULL)
-    {
-        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
-        exit(1);
-    }
     if (strlen(my_conf.database.user_commands) < 1) 
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
-
-    if(!mysql_real_connect(connection, my_conf.database.ip, my_conf.database.user_commands, my_conf.database.pass_commands, my_conf.database.database, my_conf.database.port, NULL, 0))
     {
-        verbose(0, "Error connecting to the database(%d):%s", mysql_errno(connection), mysql_error(connection)); //error
-        mysql_close(connection);
-        exit(1);
+        verbose(0, "Warning: commands' user is not defined in ear.conf");
     }
+    else
+    {
+        strcpy(my_conf.database.user, my_conf.database.user_commands);
+        strcpy(my_conf.database.pass, my_conf.database.pass_commands);
+    }
+    init_db_helper(&my_conf.database);
 
     set_signature_simple(my_conf.database.report_sig_detail);
 
@@ -833,22 +866,20 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
         verbose(0, "QUERY: %s", query);
     }
 
-    num_apps = mysql_retrieve_applications(connection, query, &apps, 0);
+    num_apps = db_read_applications_query(&apps, query);
+
     if (verbose) {
         verbose(0, "Finalized retrieving applications");
     }
 
     if (num_apps == EAR_MYSQL_ERROR)
     {
-        verbose(0, "Error retrieving information from database (%d): %s", mysql_errno(connection), mysql_error(connection));
-        mysql_close(connection);
         exit(1); //error
     }
 
     if (num_apps < 1)
     {
         printf("No jobs found.\n");
-        mysql_close(connection);
         return;
     }
 
@@ -880,7 +911,6 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
 
     free(apps);
 
-    mysql_close(connection);
 }
 #endif
 
