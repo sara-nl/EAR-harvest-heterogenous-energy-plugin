@@ -80,13 +80,6 @@ int main(int argc,char *argv[])
     {
         verbose(0, "Invalid number of days."); //error
     }
-    MYSQL *connection = mysql_init(NULL); 
-
-    if (connection == NULL)
-    {
-        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
-        exit(1);
-    }
 
     cluster_conf_t my_cluster;
     char ear_path[256];

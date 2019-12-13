@@ -54,11 +54,13 @@ void usage(char *app)
 	exit(0);
 }
 
+#if DB_MYSQL
 void execute_on_error(MYSQL *connection)
 {
     fprintf(stdout, "Error: %s\n", mysql_error(connection)); //error
     return;
 }
+#endif
 
 int get_num_indexes(void *connection, char *table)
 {
