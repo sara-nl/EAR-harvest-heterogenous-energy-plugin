@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#if DB_PSQL
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -35,8 +34,10 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <common/database/postgresql_io_functions.h>
 #include <common/types/configuration/cluster_conf.h>
+
+#if DB_PSQL
+#include <common/database/postgresql_io_functions.h>
 
 #define APPLICATION_PSQL_QUERY   "INSERT INTO Applications (job_id, step_id, node_id, signature_id, power_signature_id) VALUES "
 
@@ -123,30 +124,24 @@ char *PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_DETAIL;
 char *PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_SIMPLE;
 #endif
 
-#define PERIODIC_AGGREGATION_ARGS   4
-#define EAR_EVENTS_ARGS             6
-#define POWER_SIGNATURE_ARGS        9
-#define APPLICATION_ARGS            5
-#define LOOP_ARGS                   8
-#define JOB_ARGS                    16
+/*
 #if DEMO
-#define PERIODIC_METRIC_ARGS        7
+int PERIODIC_METRIC_ARGS = 8;
 #else
-#define PERIODIC_METRIC_ARGS        6
+int PERIODIC_METRIC_ARGS = 6;
 #endif
 #if !DB_SIMPLE
-#define SIGNATURE_ARGS              21
-#define AVG_SIGNATURE_ARGS          24
+int SIGNATURE_ARGS       = 21;
+int AVG_SIGNATURE_ARGS   = 24;
 #else
-#define SIGNATURE_ARGS              11
-#define AVG_SIGNATURE_ARGS          14
-#endif
+int SIGNATURE_ARGS       = 11;
+int AVG_SIGNATURE_ARGS   = 14;
+#endif*/
 
 
 void exit_connection(PGconn *conn)
 {
-    //anything here
-   verbose(VMYSQL, "%s\n", PQerrorMessage(conn));
+    verbose(VMYSQL, "%s\n", PQerrorMessage(conn));
     PQfinish(conn);
     exit(0);
 }
@@ -159,6 +154,30 @@ void exit_connection(PGconn *conn)
 // the procedure to workaround the lack of INSERT IGNORE in postgres <9.5 is: create a temp table, insert into it, filter repetitions and insert into actual table
 //
 
+void set_signature_simple(char full_sig)
+{
+    full_signature = full_sig;
+    if (full_signature)
+    {
+        LEARNING_SIGNATURE_PSQL_QUERY = LEARNING_SIGNATURE_QUERY_FULL;
+        SIGNATURE_PSQL_QUERY = SIGNATURE_QUERY_FULL;    
+    }
+    else
+    {
+        LEARNING_SIGNATURE_PSQL_QUERY = LEARNING_SIGNATURE_QUERY_SIMPLE;
+        SIGNATURE_PSQL_QUERY = SIGNATURE_QUERY_SIMPLE;    
+    }
+
+}
+
+void set_node_detail(char node_det)
+{
+    node_detail = node_det;
+    if (node_detail)
+        PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_DETAIL;
+    else
+        PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_SIMPLE;
+}
 
 double double_swap(double d)
 {
@@ -179,8 +198,6 @@ double double_swap(double d)
     dest.bytes[7] = src.bytes[0];
     return dest.d;
 }
-
-PGconn *postgresql_open_connection(cluster_conf_t *cluster_conf); //TODO: implement with cluster_conf_t
 
 void reverse_loop_bytes(loop_t *loops, int num_loops)
 {
@@ -370,8 +387,6 @@ int postgresql_retrieve_jobs(PGconn *connection, char *query, job_t **jobs)
         strcpy(jobs_aux[i].group_id, PQgetvalue(res, i, 14));
         strcpy(jobs_aux[i].energy_tag, PQgetvalue(res, i, 15));
 
-        //printf("job_id: %ld\t step_id: %ld\t user_id: %s\t app_id: %s\t th: %lf\t procs: %ld\t start_time: %ld\n\n", jobs_aux[i].id, jobs_aux[i].step_id, jobs_aux[i].user_id, jobs_aux[i].app_id,
-        //                                                                                                jobs_aux[i].th, jobs_aux[i].procs, jobs_aux[i].start_time);
     }
    
     *jobs = jobs_aux;
@@ -1721,5 +1736,4 @@ int postgresql_insert_application(PGconn *connection, application_t *app)
     reverse_power_signature_bytes(&app->power_sig, 1);
     return result;
 }
-
 #endif

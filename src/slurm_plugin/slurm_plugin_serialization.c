@@ -83,6 +83,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 		if ((strlen(av[i]) > 14) && (strncmp ("localstatedir=", av[i], 14) == 0))
 		{
 			strncpy(sd->pack.path_temp, &av[i][14], SZ_NAME_MEDIUM);
+	
 			found_path_temp = 1;
 
 			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", sd->pack.path_temp);
@@ -352,6 +353,11 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	strncpy(sd->job.user.group, gpw->gr_name, SZ_NAME_MEDIUM);
 	plug_verbose(sp, 2, "user '%u' ('%s')", uid, sd->job.user.user);
 	plug_verbose(sp, 2, "user group '%u' ('%s')", gid, sd->job.user.group);
+
+	/*
+	 * Subject
+	 */
+	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
 	return ESPANK_SUCCESS;
 }

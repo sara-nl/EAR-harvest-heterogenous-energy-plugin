@@ -63,7 +63,7 @@ uint *samples_per_app;
 uint num_diff_apps;
 
 char nodename[256],*coeff_root;
-uint *node_freq_list;
+unsigned long *node_freq_list;
 uint num_node_p_states;
 uint min_freq;
 uint nom_freq;
@@ -85,11 +85,11 @@ uint *samples_f, i, *current;
     }
 
 
-uint p_state_to_freq(int i) {
+unsigned long p_state_to_freq(int i) {
     return node_freq_list[i];
 }
 
-uint freq_to_p_state(uint freq)
+uint freq_to_p_state(ulong freq)
 {
     int is_greater;
     int is_equal;
@@ -122,7 +122,7 @@ uint fill_list_p_states()
         num_pstates++;
     }
 
-    MALLOC(node_freq_list, uint, num_pstates);
+    MALLOC(node_freq_list, unsigned long, num_pstates);
     list_freqs = first_freq;
 
     for (i = 0; i < num_pstates; i++)
@@ -137,7 +137,7 @@ uint fill_list_p_states()
 	  unsigned long num_pstates = 0;
 		unsigned long *flist;
 		flist=CPUfreq_get_available_frequencies(0,&num_pstates);
-		MALLOC(node_freq_list, uint, num_pstates);
+		MALLOC(node_freq_list, unsigned long, num_pstates);
 		memcpy(node_freq_list,flist,sizeof(unsigned long)*num_pstates);
 		CPUfreq_put_available_frequencies(flist);
 		#endif

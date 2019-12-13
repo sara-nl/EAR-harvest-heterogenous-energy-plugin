@@ -206,37 +206,16 @@ MYSQL *mysql_create_connection()
 #if DB_PSQL
 PGconn *postgresql_create_connection()
 {
-    char **keys, **values, temp[32];
+    char temp[32];
     PGconn *connection;
 
-    keys = calloc(5, sizeof(const char *));
-    values = calloc(5, sizeof(const char *));
     sprintf(temp, "%d", db_config->port);
 
-    keys[0] = "dbname";
-    keys[1] = "user";
-    keys[2] = "password";
-    keys[3] = "host";
     if (db_config->port > 0)
-    {
-        keys[4] = "port";
-        values[4] = temp;
-    }
+        connection = PQsetdbLogin(db_config->ip, temp, NULL,NULL, db_config->database, db_config->user, db_config->pass);
+    else
+        connection = PQsetdbLogin(db_config->ip, NULL, NULL,NULL, db_config->database, db_config->user, db_config->pass);
 
-    strtolow(db_config->database);
-    strtolow(db_config->user);
-    strtolow(db_config->pass);
-    strtolow(db_config->ip);
-
-    values[0] = db_config->database;
-    values[1] = db_config->user;
-    values[2] = db_config->pass;
-    values[3] = db_config->ip;
-
-    connection = PQconnectdbParams((const char * const *)keys, (const char * const *)values, 0);
-
-    free(keys);
-    free(values);
     if (PQstatus(connection) != CONNECTION_OK)
     {
         verbose(VDBH, "ERROR connecting to the database: %s", PQerrorMessage(connection));
@@ -976,6 +955,7 @@ int postgresql_select_acum_energy(PGconn *connection, int start_time, int end_ti
 #define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
 
+#if DB_MYSQL
 int mysql_select_acum_energy(MYSQL *connection, int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {
 
@@ -1037,6 +1017,7 @@ int mysql_select_acum_energy(MYSQL *connection, int start_time, int end_time, ul
     return EAR_SUCCESS;
 
 }
+#endif
 
 int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_aggregated, uint *last_index, ulong *energy)
 {

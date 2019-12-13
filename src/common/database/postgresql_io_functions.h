@@ -27,9 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#if DB_PSQL
-#include "libpq-fe.h"
 #include <common/config.h>
+#if DB_PSQL
 #include <common/types/log.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
@@ -39,6 +38,8 @@
 #include <common/types/periodic_metric.h>
 #include <common/types/power_signature.h>
 #include <common/types/periodic_aggregation.h>
+
+#include "libpq-fe.h"
 
 //
 #define EAR_TYPE_APPLICATION    1

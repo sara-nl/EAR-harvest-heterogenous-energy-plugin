@@ -843,7 +843,7 @@ void ear_end_loop(unsigned long loop_id)
 		switch(ear_status){
 			case IN_LOOP:
 				if (loop_id==manual_loopid){
-					debug("END_LOOP event %u\n",ear_event_l);
+					//debug("END_LOOP event %u\n",ear_event_l);
 					if (loop_with_signature) {
 						debug("loop ends with %d iterations detected", ear_iterations);
 					}

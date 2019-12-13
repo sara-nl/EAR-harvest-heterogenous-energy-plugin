@@ -10,17 +10,15 @@ export LDFLAGS
 ########
 
 ifdef MPI_VERSION
-ext_ver = ${MPI_VERSION}.${EAR_VERSION}.${EAR_SUBV}.so
 ext = ${MPI_VERSION}.so
 else
-ext_ver = ${EAR_VERSION}.${EAR_SUBV}.so
 ext = so
 endif
 
 ifdef MPICC
-libs_BINS += libear.$(ext_ver)
+libs_BINS += libear.$(ext)
 libs_PATH  = $(DESTDIR)/lib
-libs_OBJS  = all.components libear.$(ext_ver)
+libs_OBJS  = all.components libear.so
 libs_PERM  = 0755
 endif
 
@@ -58,11 +56,10 @@ endif
 
 all: all.components $(libs_OBJS)
 
-libear.$(ext_ver): $(mpix_OBJS) $(comm_OBJS)
-	rm  -f libear.$(ext)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o libear.$(ext_ver) $(mpix_OBJS) $(mpic_OBJS) $(mpif_OBJS) \
+%.so: $(mpix_OBJS) $(comm_OBJS)
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.$(ext) $(mpix_OBJS) $(mpic_OBJS) $(mpif_OBJS) \
 	$(comm_OBJS) $(LDFLAGS)
-	ln -s libear.$(ext_ver) libear.$(ext)
+
 
 ######## OPTIONS
 
