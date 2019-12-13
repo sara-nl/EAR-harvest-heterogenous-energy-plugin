@@ -40,6 +40,7 @@
 #include <common/types/signature.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/coefficient.h>
+#include <common/hardware/architecture.h>
 
 typedef struct projection
 {
@@ -47,7 +48,7 @@ typedef struct projection
 	double Power;
 } projection_t;
 
-state_t projections_init(uint user_type,conf_install_t *data,uint pstates);
+state_t projections_init(uint user_type,conf_install_t *data,architecture_t *myarch);
 
 // Projections
 

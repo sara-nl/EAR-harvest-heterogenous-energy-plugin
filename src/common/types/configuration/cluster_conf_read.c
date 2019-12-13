@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/config.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 
@@ -60,6 +61,10 @@ static int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 	token = strtok_r(NULL, ",", &buffer_ptr);
 
 	conf->nodes = realloc(conf->nodes, sizeof(node_conf_t)*(conf->num_nodes+1));
+	if (conf->nodes==NULL){
+		error("NULL pointer in set_nodes_conf");
+		return 0;
+	}
 	memset(&conf->nodes[conf->num_nodes], 0, sizeof(node_conf_t));
 
 	//in this case, only one node is specified in the line
@@ -67,6 +72,10 @@ static int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 	{
 
 		conf->nodes[conf->num_nodes].range = realloc(conf->nodes[conf->num_nodes].range, sizeof(node_range_t)*(conf->nodes[conf->num_nodes].range_count+1));
+		if (conf->nodes[conf->num_nodes].range==NULL){
+			error("NULL pointer in set_nodes_conf for nodes range");
+			return 0;
+		}
 		memset(&conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count], 0, sizeof(node_range_t));
 		sprintf(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "%s", start);
 		conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].start =
@@ -81,6 +90,10 @@ static int set_nodes_conf(cluster_conf_t *conf, char *namelist)
 	{
 
 		conf->nodes[conf->num_nodes].range = realloc(conf->nodes[conf->num_nodes].range, sizeof(node_range_t)*(conf->nodes[conf->num_nodes].range_count+1));
+		if (conf->nodes[conf->num_nodes].range==NULL){
+			error("NULL pointer in set_nodes_conf for nodes range");
+			return 0;
+		}
 		memset(&conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count], 0, sizeof(node_range_t));
 		sprintf(conf->nodes[conf->num_nodes].range[conf->nodes[conf->num_nodes].range_count].prefix, "%s", start);
 
@@ -154,6 +167,10 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
         while (token != NULL)
         {
 	    	island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+1));
+				if (island->ranges==NULL){
+					error("NULL pointer in generate_node_ranges");
+					return;
+				}
     		memset(&island->ranges[island->num_ranges], 0, sizeof(node_range_t));
 		    sprintf(island->ranges[island->num_ranges].prefix, "%s", token);
     		island->ranges[island->num_ranges].start = island->ranges[island->num_ranges].end = -1;
@@ -167,6 +184,10 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 	while (token != NULL)
 	{
 		island->ranges = realloc(island->ranges, sizeof(node_range_t)*(island->num_ranges+range_count+1));
+		if (island->ranges==NULL){
+			error("NULL pointer in generate_node_ranges");
+			return;
+		}
 		memset(&island->ranges[island->num_ranges+range_count], 0, sizeof(node_range_t));
 		strcpy(island->ranges[island->num_ranges+range_count].prefix, start);
 		if (strchr(token, ']'))
@@ -216,7 +237,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	char *token;
 
 	//filling the default policies before starting
+	debug("get_cluster_config");
   conf->num_policies=0;
+	conf->num_tags=0;
   conf->power_policies = calloc(TOTAL_POLICIES, sizeof(policy_conf_t));
 	fill_policies(conf);
 	while (fgets(line, 256, conf_file) != NULL)
@@ -289,6 +312,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok_r(line, " ", &primary_ptr);
 			if (conf->num_policies>=TOTAL_POLICIES){
       	conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*(conf->num_policies + 1));
+				if (conf->power_policies==NULL){
+					error("NULL pointer in get_cluster_config");
+					return ;
+				}
 			}
       curr_policy = &conf->power_policies[conf->num_policies];
       init_policy_conf(curr_policy);
@@ -338,6 +365,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			{
 				conf->num_priv_users++;
 				conf->priv_users = realloc(conf->priv_users, sizeof(char *)*conf->num_priv_users);
+				if (conf->priv_users==NULL){
+					error("NULL pointer reading authorized users");
+					return;
+				}
 				strclean(token, '\n');
 				conf->priv_users[conf->num_priv_users-1] = malloc(strlen(token)+1);
                 remove_chars(token, ' ');
@@ -353,6 +384,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             {
                 conf->num_priv_groups++;
                 conf->priv_groups = realloc(conf->priv_groups, sizeof(char *)*conf->num_priv_groups);
+								if (conf->priv_groups==NULL){
+									error("NULL pointer reading authorized groups");
+									return;
+								}
                 strclean(token, '\n');
                 conf->priv_groups[conf->num_priv_groups-1] = malloc(strlen(token)+1);
                 remove_chars(token, ' ');
@@ -368,6 +403,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			{
 				conf->num_acc++;
 				conf->priv_acc = realloc(conf->priv_acc, sizeof(char *)*conf->num_acc);
+				if (conf->priv_acc==NULL){
+					error("NULLL pointer when reading privileges accounts");
+					return;
+				}
 				strclean(token, '\n');
 				conf->priv_acc[conf->num_acc-1] = malloc(strlen(token)+1);
                 remove_chars(token, ' ');
@@ -377,6 +416,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 		else if (!strcmp(token, "ENERGYTAG"))
 		{
+			debug("ENERGYTAG");
 			line[strlen(line)] = '=';
 			char *primary_ptr;
 			char *secondary_ptr;
@@ -389,15 +429,21 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				//this must always be the first one
 				if (!strcmp(token, "ENERGYTAG"))
 				{
-					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags+1));
-					token = strtok_r(NULL, "=", &secondary_ptr);
-					memset(&conf->e_tags[conf->num_tags], 0, sizeof(energy_tag_t));
-                    remove_chars(token, ' ');
-					strcpy(conf->e_tags[conf->num_tags].tag, token);
-					conf->e_tags[conf->num_tags].users = NULL;
-					conf->e_tags[conf->num_tags].groups = NULL;
-					conf->e_tags[conf->num_tags].accounts = NULL;
 					conf->num_tags++;
+					if (conf->num_tags==1) conf->e_tags=NULL;
+					debug("Allocating etag %d\n",conf->num_tags);
+					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags));
+					if (conf->e_tags==NULL){
+						error("NULL pointer reading energy tags");
+						return;
+					}
+					token = strtok_r(NULL, "=", &secondary_ptr);
+					memset(&conf->e_tags[conf->num_tags-1], 0, sizeof(energy_tag_t));
+          remove_chars(token, ' ');
+					strcpy(conf->e_tags[conf->num_tags-1].tag, token);
+					conf->e_tags[conf->num_tags-1].users = NULL;
+					conf->e_tags[conf->num_tags-1].groups = NULL;
+					conf->e_tags[conf->num_tags-1].accounts = NULL;
 				}
 				else if (!strcmp(token, "PSTATE"))
 				{
@@ -412,6 +458,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					{
 						conf->e_tags[conf->num_tags-1].users = realloc(conf->e_tags[conf->num_tags-1].users,
 																	   sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_users+1));
+						if (conf->e_tags[conf->num_tags-1].users==NULL){
+							error("NULL pointer in allocating etags");
+							return;
+						}
 						conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
 						remove_chars(token, '\n');
@@ -428,6 +478,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					{
 						conf->e_tags[conf->num_tags-1].groups = realloc(conf->e_tags[conf->num_tags-1].groups,
 																		sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_groups+1));
+						if (conf->e_tags[conf->num_tags-1].groups==NULL){
+							error("NULL pointer in allocating etags");
+							return;
+						}
 						conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
 						remove_chars(token, '\n');
@@ -444,6 +498,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					{
 						conf->e_tags[conf->num_tags-1].accounts = realloc(conf->e_tags[conf->num_tags-1].accounts,
 																		  sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_accounts+1));
+						if (conf->e_tags[conf->num_tags-1].accounts==NULL){
+							error("NULL pointer in allocating etags");
+							return;
+						}
 						conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
 						remove_chars(token, '\n');
@@ -848,6 +906,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                     if (idx < 0)
                     {
 			            conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
+									if (conf->islands==NULL){
+										error("NULL pointer in allocating islands");
+										return;
+									}
 						set_default_island_conf(&conf->islands[conf->num_islands],atoi(token));
 						#if 0
             			memset(&conf->islands[conf->num_islands], 0, sizeof(node_island_t));
@@ -896,6 +958,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                         {
                             conf->islands[conf->num_islands].db_ips = realloc(conf->islands[conf->num_islands].db_ips,
                                                                             (conf->islands[conf->num_islands].num_ips+1)*sizeof(char *));
+														if (conf->islands[conf->num_islands].db_ips==NULL){
+															error("NULL pointer in DB IPS definition");
+															return;
+														}
                             conf->islands[conf->num_islands].db_ips[conf->islands[conf->num_islands].num_ips] = malloc(strlen(token)+1);
                             remove_chars(token, ' ');
                             strcpy(conf->islands[conf->num_islands].db_ips[conf->islands[conf->num_islands].num_ips], token);
@@ -920,6 +986,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                         {
                             conf->islands[idx].db_ips = realloc(conf->islands[idx].db_ips,
                                                                             (conf->islands[idx].num_ips+1)*sizeof(char *));
+														if (conf->islands[idx].db_ips==NULL){
+															error("NULL pointer in DB IPS definition");
+															return;
+														}
                             conf->islands[idx].db_ips[conf->islands[idx].num_ips] = malloc(strlen(token)+1);
                             remove_chars(token, ' ');
                             strcpy(conf->islands[idx].db_ips[conf->islands[idx].num_ips], token);
@@ -952,6 +1022,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             {
                                 conf->islands[conf->num_islands].backup_ips = realloc(conf->islands[conf->num_islands].backup_ips,
                                                                                 (conf->islands[conf->num_islands].num_backups+1)*sizeof(char *));
+																if (conf->islands[conf->num_islands].backup_ips==NULL){
+																	error("NULL pointer in DB backup ip");
+																	return;
+																}
                                 conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups] = malloc(strlen(token)+1);
                                 strcpy(conf->islands[conf->num_islands].backup_ips[conf->islands[conf->num_islands].num_backups], token);
                                 for (i = current_ranges; i < conf->islands[conf->num_islands].num_ranges; i++)
@@ -979,6 +1053,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                             {
                                 conf->islands[idx].backup_ips = realloc(conf->islands[idx].backup_ips,
                                                                                 (conf->islands[idx].num_backups+1)*sizeof(char *));
+																if (conf->islands[idx].backup_ips==NULL){
+																	error("NULL pointer in DB backup ip");
+																	return;
+																}
                                 conf->islands[idx].backup_ips[conf->islands[idx].num_backups] = malloc(strlen(token)+1);
                                 strcpy(conf->islands[idx].backup_ips[conf->islands[idx].num_backups], token);
                                 for (i = current_ranges; i < conf->islands[idx].num_ranges; i++)

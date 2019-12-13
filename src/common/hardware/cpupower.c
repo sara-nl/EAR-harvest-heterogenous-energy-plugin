@@ -35,7 +35,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <linux/version.h>
-// #define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/config.h>
 #ifdef EAR_CPUPOWER
 #include <common/sizes.h>
@@ -304,7 +304,12 @@ unsigned long *CPUfreq_get_available_frequencies(int cpu,unsigned long *num_freq
 		f=read_one_freq(fd);	
 		if (f>0){
 			num_f++;
+			debug("Allocting memory for frequency %d",num_f);
 			my_freq=realloc(my_freq,num_f*sizeof(unsigned long));
+			if (my_freq==NULL){
+				debug("Error allocating memory for frequency list");
+				return 0;
+			}
 			my_freq[num_f-1]=f;
 		}
 	}while(f>0);

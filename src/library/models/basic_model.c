@@ -33,6 +33,7 @@
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 #include <common/hardware/frequency.h>
+#include <common/hardware/architecture.h>
 
 #include <library/models/models_api.h>
 
@@ -56,7 +57,7 @@ static int valid_range(ulong from,ulong to)
 }
 
 /* This function loads any information needed by the energy model */
-state_t model_init(char *etc,char *tmp,uint pstates)
+state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 {
   char coeff_file[128];
   char coeff_default_file[128];
@@ -65,7 +66,7 @@ state_t model_init(char *etc,char *tmp,uint pstates)
   int i, ref;
 
 	debug("Using basic_model\n");
-	num_pstates=pstates;
+	num_pstates=myarch->pstates;
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
   if (coefficients == NULL) {

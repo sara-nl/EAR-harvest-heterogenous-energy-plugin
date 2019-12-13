@@ -27,16 +27,32 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#ifndef _ARCH_INFO_H_
+#define _ARCH_INFO_H_
 
+#include <common/sizes.h>
+#include <common/states.h>
+#include <common/hardware/hardware_info.h>
 
-#ifndef EAR_MODELS_H_
-#define EAR_MODELS_H_
+#define MAX_FREQ_AVX2 2600000
+#define MAX_FREQ_AVX512 2200000
 
-#include <common/environment.h>
-#include <daemon/shared_configuration.h>
-#include <common/hardware/architecture.h>
+typedef struct architecture{
+	topology_t 		top;
+	unsigned long max_freq_avx512;
+	unsigned long max_freq_avx2;
+	int 					pstates;
+}architecture_t;
+/** Fills the current architecture in arch*/
+state_t get_arch_desc(architecture_t *arch);
 
-state_t init_power_models(uint user_type,conf_install_t *data,architecture_t *myarch);
+/** Copy src in dest */
+state_t copy_arch_desc(architecture_t *dest,architecture_t *src);
 
+/** Prints in stdout the current architecture*/
+void print_arch_desc(architecture_t *arch);
+
+/** Uses the verbose to print the current architecture*/
+void verbose_architecture(int v, architecture_t *arch);
 
 #endif

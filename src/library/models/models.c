@@ -37,6 +37,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+#include <common/hardware/architecture.h>
 #include <common/types/projection.h>
 #include <common/types/application.h>
 #include <library/common/externs.h>
@@ -54,13 +55,17 @@ static ulong user_selected_freq;
 static int model_nominal=1;
 
 
-state_t init_power_models(uint user_type,conf_install_t *data,uint pstates)
+state_t init_power_models(uint user_type,conf_install_t *data,architecture_t *arch_desc)
 {
 	state_t st;
-	st=projections_init(user_type,data,pstates);
-	ear_models_pstates = pstates;
-	projection_create(pstates);
-	projection_reset(pstates);
+	if ((st=get_arch_desc(arch_desc))!=EAR_SUCCESS){
+		error("Retrieving architecture");
+		return st;
+	}
+	st=projections_init(user_type,data,arch_desc);
+	ear_models_pstates = arch_desc->pstates;
+	projection_create(arch_desc->pstates);
+	projection_reset(arch_desc->pstates);
 	return EAR_SUCCESS;
 }
 
