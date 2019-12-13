@@ -65,7 +65,7 @@ void print_arch_desc(architecture_t *arch)
 		return;
 	}
 	printf("cores %d threads %d sockets %d numas %d ", arch->top.cores,arch->top.threads,arch->top.sockets,arch->top.numas);
-	printf("max avx512 %lu max freq for avx2 instructions %lu num pstates %lu\n",arch->max_freq_avx512,
+	printf("max avx512 %lu max freq for avx2 instructions %lu num pstates %d\n",arch->max_freq_avx512,
 	arch->max_freq_avx2,arch->pstates);
 	
 }
@@ -78,7 +78,7 @@ void verbose_architecture(int v, architecture_t *arch)
 		return;
 	}
 	verbose(v,"cores %d threads %d sockets %d numas %d ", arch->top.cores,arch->top.threads,arch->top.sockets,arch->top.numas);
-	verbose(v,"max avx512 %lu max freq for avx2 instructions %lu num pstates %lu\n",arch->max_freq_avx512,
+	verbose(v,"max avx512 %lu max freq for avx2 instructions %lu num pstates %d\n",arch->max_freq_avx512,
 	arch->max_freq_avx2,arch->pstates);
 }
 

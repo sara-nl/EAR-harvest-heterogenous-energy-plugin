@@ -299,6 +299,7 @@ void ear_init()
 	char *summary_pathname;
 	state_t st;
 	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
+	architecture_t arch_desc;
 
 
 
@@ -417,8 +418,13 @@ void ear_init()
 
 
 	// Policies && models
+	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+    error("Retrieving architecture description");
+		/* How to proceeed here ? */
+  }
+
 	init_power_policy(system_conf,resched_conf);
-	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
+	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
 
 	if (ext_def_freq==0){
 		EAR_default_frequency=system_conf->def_freq;
@@ -843,7 +849,7 @@ void ear_end_loop(unsigned long loop_id)
 		switch(ear_status){
 			case IN_LOOP:
 				if (loop_id==manual_loopid){
-					debug("END_LOOP event %u\n",ear_event_l);
+					//debug("END_LOOP event %u\n",ear_event_l);
 					if (loop_with_signature) {
 						debug("loop ends with %d iterations detected", ear_iterations);
 					}

@@ -1,9 +1,10 @@
 ######## FILES
 
 modl_OBJS = models.o \
-       basic_model.o 
+       basic_model.o \
+			avx512_model.o
 
-modl_BINS = basic_model.so
+modl_BINS = basic_model.so avx512_model.so
 modl_PATH = $(DESTDIR)/lib/plugins/models
 modl_PERM = 0775
 

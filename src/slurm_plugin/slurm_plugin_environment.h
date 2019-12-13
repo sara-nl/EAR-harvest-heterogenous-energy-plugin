@@ -31,14 +31,30 @@
 #define EAR_SLURM_PLUGIN_ENVIRONMENT_H
 
 // Verbosity
-#define plug_verbose(sp, level, ...) \
-        if (plug_verbosity_test(sp, level) == 1) { \
-                slurm_error("EARPLUG, " __VA_ARGS__); \
+#ifdef ERUN
+	#define plug_verbose(sp, level, ...) \
+        	if (plug_verbosity_test(sp, level) == 1) { \
+				if (level > 0) fprintf(stderr, "%s %s ", plug_host(sp), plug_context_str(sp)); \
+				fprintf(stderr, __VA_ARGS__); \
+				fprintf(stderr, "\n"); \
         }
-#define plug_error(sp, ...) \
-        if (plug_verbosity_test(sp, 1) == 1) { \
-                slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
-        }
+	#define plug_error(sp, ...) \
+        	if (plug_verbosity_test(sp, 1) == 1) { \
+				fprintf(stderr, "%s %s ERROR, ", plug_host(sp), plug_context_str(sp)); \
+				fprintf(stderr, __VA_ARGS__); \
+				fprintf(stderr, "\n"); \
+        	}
+#else
+	#define plug_verbose(sp, level, ...) \
+        	if (plug_verbosity_test(sp, level) == 1) { \
+                	slurm_error("EARPLUG, " __VA_ARGS__); \
+        	}
+	#define plug_error(sp, ...) \
+        	if (plug_verbosity_test(sp, 1) == 1) { \
+				slurm_error("EARPLUG ERROR, " __VA_ARGS__); \
+        	}
+#endif
+
 
 typedef char *plug_component_t;
 typedef int   plug_context_t;
@@ -58,11 +74,13 @@ struct component_s {
 };
 
 struct context_s {
+	plug_context_t error;
 	plug_context_t srun;
 	plug_context_t sbatch;
 	plug_context_t remote;
 	plug_context_t local;
 } Context __attribute__((weak)) = {
+	.error  = S_CTX_ERROR,
 	.srun   = S_CTX_LOCAL,
 	.sbatch = S_CTX_ALLOCATOR,
 	.remote = S_CTX_REMOTE,
@@ -117,15 +135,16 @@ struct variables_s {
 .comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
 .hack_libr = { .hck = "SLURM_HACK_LIBRARY" },
-.verbose   = { .loc = "SLURM_EOVERB", .ear = "EAR_VERBOSE"          },
-.policy    = { .loc = "SLURM_EOPOLI", .ear = "EAR_POWER_POLICY"     },
-.policy_th = { .loc = "SLURM_EOPOTH", .ear = "EAR_POWER_POLICY_TH"  },
-.frequency = { .loc = "SLURM_EOFREQ", .ear = "EAR_FREQUENCY"        },
-.p_state   = { .loc = "SLURM_EOPSTA", .ear = "EAR_P_STATE"          },
-.learning  = { .loc = "SLURM_EOLERN", .ear = "EAR_LEARNING_PHASE"   },
-.tag       = { .loc = "SLURM_EOETAG", .ear = "EAR_ENERGY_TAG"       },
-.path_usdb = { .loc = "SLURM_EOUSDB", .ear = "EAR_USER_DB_PATHNAME" },
-.path_trac = { .loc = "SLURM_EOTRAC", .ear = "SLURM_EAR_TRACE_PATH"       },
+.verbose   = { .loc = "SLURM_LOC_VERB", .ear = "EAR_VERBOSE"          },
+.policy    = { .loc = "SLURM_LOC_POLI", .ear = "EAR_POWER_POLICY"     },
+.policy_th = { .loc = "SLURM_LOC_POTH", .ear = "EAR_POWER_POLICY_TH"  },
+.frequency = { .loc = "SLURM_LOC_FREQ", .ear = "EAR_FREQUENCY"        },
+.p_state   = { .loc = "SLURM_LOC_PSTA", .ear = "EAR_P_STATE"          },
+.learning  = { .loc = "SLURM_LOC_LERN", .ear = "EAR_LEARNING_PHASE"   },
+.tag       = { .loc = "SLURM_LOC_ETAG", .ear = "EAR_ENERGY_TAG"       },
+.path_usdb = { .loc = "SLURM_LOC_USDB", .ear = "EAR_USER_DB_PATHNAME" },
+.path_trac = { .loc = "SLURM_LOC_TRAC", .ear = "SLURM_EAR_TRACE_PATH" },
+.gm_secure = { .loc = "SLURM_LOC_GMSC", .ear = ""                     },
 .perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                       },
 .eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"           },
 .name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME"    },
@@ -139,8 +158,7 @@ struct variables_s {
 .ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"      },
 .ld_libr   = { .rem = "",                    .ear = "LD_LIBRARY_PATH" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
-.version   = { .loc = "SLURM_EAR_MPI_VERSION",   .ear = "" },
-.gm_secure = { .loc = "SLURM_EGM_SECURED",   .ear = "" }
+.version   = { .loc = "SLURM_EAR_MPI_VERSION", .ear = ""              }
 };
 
 /*
@@ -171,9 +189,15 @@ int plug_component_setenabled(spank_t sp, plug_component_t comp, int enabled);
 
 int plug_component_isenabled(spank_t sp, plug_component_t comp);
 
+char *plug_host(spank_t sp);
+
+char *plug_context_str(spank_t sp);
+
 int plug_context_is(spank_t sp, plug_context_t ctxt);
 
 int plug_verbosity_test(spank_t sp, int level);
+
+int plug_verbosity_silence(spank_t sp);
 
 char *plug_acav_get(int ac, char *av[], char *string);
 

@@ -58,10 +58,6 @@ static int model_nominal=1;
 state_t init_power_models(uint user_type,conf_install_t *data,architecture_t *arch_desc)
 {
 	state_t st;
-	if ((st=get_arch_desc(arch_desc))!=EAR_SUCCESS){
-		error("Retrieving architecture");
-		return st;
-	}
 	st=projections_init(user_type,data,arch_desc);
 	ear_models_pstates = arch_desc->pstates;
 	projection_create(arch_desc->pstates);
