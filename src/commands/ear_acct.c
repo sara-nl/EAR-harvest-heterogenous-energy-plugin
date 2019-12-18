@@ -39,7 +39,7 @@
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 
-#if DB_MYSQL || DB_PSQL
+#if USE_DB
 #include <common/states.h>
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
@@ -802,7 +802,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 
 //select Applications.* from Applications join Jobs on job_id = id where Jobs.end_time in (select end_time from (select end_time from Jobs where user_id = "xjcorbalan" and id = 284360 order by end_time desc limit 25) as t1) order by Jobs.end_time desc;
 //select Applications.* from Applications join Jobs on job_id=id where Jobs.user_id = "xjcorbalan" group by job_id order by Jobs.end_time desc limit 5;
-#if DB_MYSQL || DB_PSQL
+#if USE_DB
 void read_from_database(char *user, int job_id, int limit, int step_id, char *e_tag, char *job_ids) 
 {
     int num_apps = 0;

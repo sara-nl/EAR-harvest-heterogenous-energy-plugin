@@ -47,7 +47,7 @@
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
-#if DB_MYSQL
+#if USE_DB
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
 #endif
@@ -540,7 +540,7 @@ int eard_system(int must_read) {
 		case WRITE_EVENT:
 			ack = EAR_COM_OK;
 			ret1 = EAR_SUCCESS;
-#if DB_MYSQL
+#if USE_DB
 		if (my_cluster_conf.eard.use_mysql)
 		{
 			if (!my_cluster_conf.eard.use_eardbd) {
@@ -567,7 +567,7 @@ int eard_system(int must_read) {
 			ret1 = EAR_SUCCESS;
 			// print_loop_fd(1,&req.req_data.loop);
 			if (my_cluster_conf.database.report_loops) {
-#if DB_MYSQL
+#if USE_DB
 				if (my_cluster_conf.eard.use_mysql)
 				{
 					if (!my_cluster_conf.eard.use_eardbd){
@@ -843,7 +843,7 @@ void signal_handler(int sig) {
 				save_eard_conf(&eard_dyn_conf);
 			}
 
-#if DB_MYSQL
+#if USE_DB 
 			if (!my_cluster_conf.eard.use_eardbd && eardbd_connected){
 					eardbd_disconnect();
 					eardbd_connected=0;
@@ -1177,7 +1177,7 @@ int main(int argc, char *argv[]) {
 		error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
 		_exit(0);
 	}
-#if DB_MYSQL
+#if USE_DB
 #ifdef USE_EARDBD_CONF
 	if (get_eardbd_conf_path(my_eardbd_conf_path)==EAR_ERROR){
 		error("Error opening eardbd.conf file, not available at regular path ( $EAR_ETC/ear/eardbd.conf)");
@@ -1386,7 +1386,7 @@ int main(int argc, char *argv[]) {
 	rfds_basic = rfds;
 	verbose(0,"Connecting with EARDBD");
 	// Database cache daemon
-#if DB_MYSQL
+#if USE_DB
 	if (my_cluster_conf.eard.use_mysql)
 	{
 		if (my_cluster_conf.eard.use_eardbd)
