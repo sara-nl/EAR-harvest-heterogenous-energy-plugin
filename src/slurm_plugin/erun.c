@@ -4,12 +4,13 @@
 #include <slurm_plugin/slurm_plugin_serialization.h>
 
 //
-char buffer[SZ_PATH];	
-char path_lock[SZ_PATH];
 char plug_tmp[SZ_NAME_LARGE];
 char plug_etc[SZ_NAME_LARGE];
 char plug_pfx[SZ_NAME_LARGE];
 char plug_def[SZ_NAME_LARGE];
+char path_lock[SZ_PATH];
+char path_prog[SZ_PATH];
+char buffer[SZ_PATH];
 
 //
 char **_argv;
@@ -20,7 +21,6 @@ extern plug_serialization_t sd;
 
 //
 int   _master;
-char *_pr;
 int   _fd;
 int   _sp;
 int   _at;
@@ -172,39 +172,6 @@ int help(int argc, char *argv[])
 	return 0;
 }
 
-int arguments(int ac, char *av[])
-{
-	char **_argv;
-	int    _argc;
-	int i;
-
-	_argc = ac;
-	_argv = av;
-	_sp = Context.error;
-	_at = Action.error;
-
-	for (i = 0; i < ac; ++i) {
-		if ((strlen(av[i]) >= 6) && (strncmp("--help", av[i], 6) == 0)) {
-			return 1;
-		}
-	}
-	for (i = 0; i < ac; ++i) {
-		if ((strlen(av[i]) > 8) && (strncmp("--program=", av[i], 10) == 0)) {
-			_pr = &av[i][10];
-		}
-	}
-	for (i = 0; i < ac; ++i) {
-		if ((strlen(av[i]) > 7) && (strncmp("--nodes=", av[i], 8) == 0)) {
-			setenv("SLURM_NNODES", &av[i][8], 1);
-		}
-	}
-	if (_pr == NULL) {
-		return 1;
-	}
-
-	return 0;
-}
-
 int lock(int argc, char *argv[])
 {
 	sprintf(path_lock, "/tmp/earplug.lock");
@@ -303,54 +270,47 @@ int pipeline(int argc, char *argv[], int sp, int at)
 	return ESPANK_SUCCESS;
 }
 
-int step_create(int argc, char *argv[], char *job_id)
+int print_argv(int argc, char *argv[])
 {
-	char path_file[SZ_PATH_SHORT];
-	char command[SZ_PATH_SHORT];
-	int step_id = 0;
-	char *tmp;
+	int j;
 
-	if ((tmp = plug_acav_get(argc, argv, "localstatedir=")) == NULL) {
-		tmp = "/var/run";
+	for (i = 0; i < argc; ++i) {
+		strcpy(&buffer[j], argv[i]);
+		buffer[j+1] = ' ';
+		j += strlen(argv[i])+1;
 	}
-
-	sprintf(command, "rm %s/*.erun", tmp);
-	sprintf(path_file, "%s/%s.erun", tmp, job_id);
-	plug_verbose(_sp, 2, "reading/writing step file '%s'", path_file);
-
-	if (file_read(path_file, (char *) &step_id, sizeof(int)) == EAR_SUCCESS) {
-		step_id = step_id + 1;
-	}
-
-	// Cleaning folder	
-	system(command);
-
-	// Saving the new step id
-	file_write(path_file, (char *) &step_id, sizeof(int));
-}
-
-int step_read(int argc, char *argv[], char *job_id)
-{
-	char path_file[SZ_PATH_SHORT];
-        char command[SZ_PATH_SHORT];
-        int step_id = 0;
-        char *tmp;
-
-        if ((tmp = plug_acav_get(argc, argv, "localstatedir=")) == NULL) {
-                tmp = "/var/run";
-        }
-        sprintf(path_file, "%s/%s.erun", tmp, job_id);
-	plug_verbose(_sp, 2, "reading step file '%s'", path_file);
-
-        file_read(path_file, (char *) &step_id, sizeof(int));
-
-	return step_id;
+	plug_verbose(_sp, 2, "input: %s", buffer);
 }
 
 int job(int argc, char *argv[])
 {
 	char *p;
 	int i;
+
+	// Input parameters initial
+	print_argv(argc, argv);
+
+	// Help?
+	for (i = 0; i < argc; ++i) {
+		if ((strlen(argv[i]) >= 6) && (strncmp("--help", argv[i], 6) == 0)) {
+			return 1;
+		}
+	}
+
+	// Setting the program and the job name
+	for (i = 0; i < argc; ++i) {
+		if ((strlen(argv[i]) > 8) && (strncmp("--program=", argv[i], 10) == 0)) {
+			p = &argv[i][10];
+		}
+	}
+
+	if (p == NULL) {
+		return 1;
+	}
+
+	// Setting the job name
+	sprintf(path_prog, "%s", p);
+	setenv("SLURM_JOB_NAME", p, 1);
 
 	//
 	_argc = argc + 4;
@@ -382,41 +342,20 @@ int job(int argc, char *argv[])
 
 	// Getting the job id (it cant be created,
 	// depends on the queue manager:
-	// 	 JOB_ID &  STEP_ID: nothing
-	// 	 JOB_ID & !STEP_ID: files
-	// 	!JOB_ID &         : 0,0
-	if ((p = getenv("SLURM_JOB_ID")) != NULL)
-	{
-		if (getenv("SLURM_STEP_ID" == NULL))
-		{
-			#if 0
-			// Creating the step id
-			if (lock(_argc, _argv)) {
-				step_create(_argc, _argv, p);
-				unlock(_argc, _argv);
-			} else {
-				spinlock(_argc, _argv);
-			}
-	
-			// Setting the step id
-			i = step_read(_argc, _argv, p);
-		
-			sprintf(buffer, "%d", i);
-			setenv("SLURM_STEP_ID", buffer, 1);
-	
-			plug_verbose(_sp, 2, "job id '%s'", p);
-			plug_verbose(_sp, 2, "step id '%d'", i);
-			#endif
-		}
-	} else {
-		setenv("SLURM_JOB_ID" , "0", 1);
+	if ((p = getenv("SLURM_JOB_ID")) != NULL) {
+		setenv("SLURM_JOB_ID", "0", 1);
+	}
+	if (getenv("SLURM_STEP_ID" == NULL)) {
 		setenv("SLURM_STEP_ID", "0", 1);
 	}
 
-	// Setting the job name
-	setenv("SLURM_JOB_NAME", _pr, 1);
+	// Getting the number of nodes
+	for (i = 0; i < argc; ++i) {
+		if ((strlen(av[i]) > 7) && (strncmp("--nodes=", argv[i], 8) == 0)) {
+			setenv("SLURM_NNODES", &argv[i][8], 1);
+		}
+	}
 
-	// Getting the number of nodes	
 	char *nnodes = getenv("SLURM_NNODES");
 	
 	if (nnodes == NULL)
@@ -436,22 +375,23 @@ int job(int argc, char *argv[])
 	if (nnodes != NULL) {
 		setenv("SLURM_STEP_NUM_NODES", nnodes, 1);
 	}
-	
+
+	// Input parameters final
+	print_argv(_argc, _argv);
+	plug_verbose(_sp, 2, "program '%s'", path_prog);
+
 	return 0;
 }
 
 int execute(int argc, char *argv[])
 {
-	system(_pr);
+	system(path_prog);
 	return 0;
 }
 
 int main(int argc, char *argv[])
 {
-	job(argc, argv);
-
-	//
-	if (arguments(_argc, _argv))
+	if (job(argc, argv))
 	{
 		help(_argc, _argv);
 		//
