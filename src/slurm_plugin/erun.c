@@ -258,8 +258,10 @@ int pipeline(int argc, char *argv[], int sp, int at)
 		if (plug_context_is(_sp, Context.remote))
 		{
 			slurm_spank_task_exit(_sp, argc, argv);
-			
-			slurm_spank_exit(_sp, argc, argv);
+
+			if (_master) {
+				slurm_spank_exit(_sp, argc, argv);
+			}
 		}
 			
 		if (plug_context_is(_sp, Context.srun)) {
@@ -393,34 +395,42 @@ int execute(int argc, char *argv[])
 	return 0;
 }
 
+int plugin_enabled(int argc, char *argv[])
+{
+	return getenv(Var.context) != NULL;
+}
+
 int main(int argc, char *argv[])
 {
+	// Arguments reading
 	if (job(argc, argv))
 	{
 		help(_argc, _argv);
-		//
+		// No context initializations
 		pipeline(_argc, _argv, Context.error, Action.init);
-		//
+		// no context finalization
 		pipeline(_argc, _argv, Context.error, Action.exit);
 
 		return 0;
 	}
 
+	// In case the plugin was enabled, just execute
+	if (plugin_enabled(_argc, _argv)) {
+		return execute(_argc, _argv);
+	}
+
+	// The master simulation
 	if (lock(_argc, _argv)) {
 		plug_verbose(_sp, 2, "got the lock file");
-		
 		_master = 1;
 	} else {
 		plug_verbosity_silence(_sp);
-		
 		spinlock(_argc, _argv);
-		
-		//fprintf(stderr, "skipping spinlock\n");
 	}
 
-	//
+	// Local context initialization
 	pipeline(_argc, _argv, Context.srun, Action.init);
-	//
+	// Remote context initialization
 	pipeline(_argc, _argv, Context.remote, Action.init);
 
 	if (_master) {
@@ -433,9 +443,9 @@ int main(int argc, char *argv[])
 		sleep(2);
 	}
 
-	//
+	// Remote context finalization
 	pipeline(_argc, _argv, Context.remote, Action.exit);
-	//
+	// Local context finalization
 	pipeline(_argc, _argv, Context.srun, Action.exit);
 	
 	return 0;
