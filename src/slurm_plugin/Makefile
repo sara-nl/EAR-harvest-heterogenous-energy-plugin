@@ -3,12 +3,10 @@ LDFLAGS =
 
 ######## INSTALLATION
 
-ifdef SLURM_BASE
-plug_BINS = earplug.so
-else
 plug_BINS = erun
+ifdef SLURM_BASE
+plug_BINS += earplug.so
 endif
-
 plug_PATH = $(DESTDIR)/lib
 plug_PERM = 0775
 
