@@ -272,20 +272,23 @@ int pipeline(int argc, char *argv[], int sp, int at)
 
 int print_argv(int argc, char *argv[])
 {
+	int i;
 	int j;
 
-	for (i = 0; i < argc; ++i) {
+	for (i = 0, j = 0; i < argc; ++i) {
 		strcpy(&buffer[j], argv[i]);
-		buffer[j+1] = ' ';
 		j += strlen(argv[i])+1;
+		buffer[j-1] = ' ';
 	}
-	plug_verbose(_sp, 2, "input: %s", buffer);
+	buffer[j] = '\0';
+	plug_verbose(_sp, 3, "input: %s", buffer);
 }
 
 int job(int argc, char *argv[])
 {
-	char *p;
-	int i;
+	char *p = NULL;
+	int i = 0;
+	int h = 0;
 
 	// Input parameters initial
 	print_argv(argc, argv);
@@ -293,7 +296,7 @@ int job(int argc, char *argv[])
 	// Help?
 	for (i = 0; i < argc; ++i) {
 		if ((strlen(argv[i]) >= 6) && (strncmp("--help", argv[i], 6) == 0)) {
-			return 1;
+			h = 1;
 		}
 	}
 
@@ -304,15 +307,16 @@ int job(int argc, char *argv[])
 		}
 	}
 
-	if (p == NULL) {
-		return 1;
+	if (p != NULL) {
+		// Setting the job name
+		sprintf(path_prog, "%s", p);
+		setenv("SLURM_JOB_NAME", p, 1);
+	} else {
+		h = 1;
 	}
 
-	// Setting the job name
-	sprintf(path_prog, "%s", p);
-	setenv("SLURM_JOB_NAME", p, 1);
-
-	//
+	// Converting configuration enrivonment variables 
+	// (INSTALL_PATH, ETC, TMP) in input parameters.
 	_argc = argc + 4;
 	_argv = malloc(sizeof(char **) * _argc);
 
@@ -342,16 +346,16 @@ int job(int argc, char *argv[])
 
 	// Getting the job id (it cant be created,
 	// depends on the queue manager:
-	if ((p = getenv("SLURM_JOB_ID")) != NULL) {
+	if ((p = getenv("SLURM_JOB_ID")) == NULL) {
 		setenv("SLURM_JOB_ID", "0", 1);
 	}
-	if (getenv("SLURM_STEP_ID" == NULL)) {
+	if (getenv("SLURM_STEP_ID") == NULL) {
 		setenv("SLURM_STEP_ID", "0", 1);
 	}
 
 	// Getting the number of nodes
 	for (i = 0; i < argc; ++i) {
-		if ((strlen(av[i]) > 7) && (strncmp("--nodes=", argv[i], 8) == 0)) {
+		if ((strlen(argv[i]) > 7) && (strncmp("--nodes=", argv[i], 8) == 0)) {
 			setenv("SLURM_NNODES", &argv[i][8], 1);
 		}
 	}
@@ -378,9 +382,9 @@ int job(int argc, char *argv[])
 
 	// Input parameters final
 	print_argv(_argc, _argv);
-	plug_verbose(_sp, 2, "program '%s'", path_prog);
+	plug_verbose(_sp, 3, "program: '%s'", path_prog);
 
-	return 0;
+	return h;
 }
 
 int execute(int argc, char *argv[])
