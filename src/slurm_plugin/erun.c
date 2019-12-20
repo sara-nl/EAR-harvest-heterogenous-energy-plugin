@@ -397,7 +397,7 @@ int execute(int argc, char *argv[])
 
 int plugin_enabled(int argc, char *argv[])
 {
-	return getenv(Var.context) != NULL;
+	return getenv(Var.context.rem) != NULL;
 }
 
 int main(int argc, char *argv[])
@@ -421,9 +421,11 @@ int main(int argc, char *argv[])
 
 	// The master simulation
 	if (lock(_argc, _argv)) {
+fprintf(stderr, "MASTER\n");
 		plug_verbose(_sp, 2, "got the lock file");
 		_master = 1;
 	} else {
+fprintf(stderr, "NO MASTER\n");
 		plug_verbosity_silence(_sp);
 		spinlock(_argc, _argv);
 	}
@@ -434,6 +436,7 @@ int main(int argc, char *argv[])
 	pipeline(_argc, _argv, Context.remote, Action.init);
 
 	if (_master) {
+		sleep(1);
 		unlock(_argc, _argv);
 	}
 
