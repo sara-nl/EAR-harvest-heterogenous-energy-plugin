@@ -27,11 +27,13 @@
 *   The GNU LEsser General Public License is contained in the file COPYING  
 */
 
+#if DB_MYSQL
+#include <mysql/mysql.h>
+#endif
 
 #include <stdio.h>
 #include <getopt.h>
 #include <unistd.h>
-#include <mysql/mysql.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <common/database/db_helper.h>
@@ -41,6 +43,7 @@
 
 int _verbose = 0;
 
+#if DB_MYSQL
 void show_query_result(cluster_conf_t my_conf, char *query)
 {
     int i;
@@ -68,7 +71,7 @@ void show_query_result(cluster_conf_t my_conf, char *query)
     }
     
     MYSQL_RES *result = mysql_store_result(connection);
-int my_event;
+    int my_event;
   
     if (result == NULL) 
     {
@@ -86,26 +89,28 @@ int my_event;
     { 
         for(i = 0; i < num_fields; i++) 
         {
-if (i==2){
-my_event=atoi(row[i]);
-switch(my_event){
-case 0:printf("%15s ","ENERGY_POLICY_NEW_FREQ");break;
-case 1:printf("%15s ","GLOBAL_ENERGY_POLICY");break;
-case 2:printf("%15s ","ENERGY_POLICY_FAILS");break;
-case 3:printf("%15s ","DYNAIS_OFF");break;
-default: printf("%15s ","uknown event");break;
-}
-
-}else{
-            printf("%15s ", row[i] ? row[i] : "NULL"); 
-}
-
+            if (i==2){
+                my_event=atoi(row[i]);
+                switch(my_event){
+                    case 0:printf("%15s ","ENERGY_POLICY_NEW_FREQ"); break;
+                    case 1:printf("%15s ","GLOBAL_ENERGY_POLICY"); break;
+                    case 2:printf("%15s ","ENERGY_POLICY_FAILS"); break;
+                    case 3:printf("%15s ","DYNAIS_OFF"); break;
+                    default: printf("%15s ","uknown event"); break;
+                }
+            }else{
+                printf("%15s ", row[i] ? row[i] : "NULL"); 
+            }
         }
-
         printf("\n"); 
     }
     mysql_free_result(result);
 }
+#else
+void show_query_result(cluster_conf_t my_conf, char *query)
+{
+}
+#endif
 
 int main(int argc,char *argv[])
 {

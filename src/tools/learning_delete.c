@@ -27,10 +27,13 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#if DB_MYSQL
+#include <mysql/mysql.h>
+#endif
+
 #include <stdio.h>
 #include <unistd.h>
 #include <termios.h>
-#include <mysql/mysql.h>
 #include <common/sizes.h>
 #include <common/output/verbose.h>
 #include <common/string_enhanced.h>
@@ -96,6 +99,7 @@ int main(int argc,char *argv[])
 	else
 		sprintf(query, NODE_QUERY, argv[1]);
 
+#if DB_MYSQL
     MYSQL *connection = mysql_init(NULL);
     
     if (connection == NULL)
@@ -145,6 +149,9 @@ int main(int argc,char *argv[])
 	} else {
 		printf("Successfully deleted all records for node %s.\n", argv[1]);
 	}
+#else
+    printf("The learning_delete tool has only been implemented for MySQL databases.\n");
+#endif
 
 	return 0;
 }

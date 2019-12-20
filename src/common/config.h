@@ -44,4 +44,6 @@
 /* When defined, activates dynamic traces on EARL */
 #define EAR_GUI 1
 
+#define USE_DB  DB_MYSQL || DB_PSQL
+
 #endif

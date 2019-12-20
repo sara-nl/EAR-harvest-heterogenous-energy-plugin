@@ -65,7 +65,7 @@
 #include <syslog.h>
 #endif
 
-#if DB_MYSQL
+#if USE_DB
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
 #endif
@@ -454,7 +454,7 @@ void report_powermon_app(powermon_app_t *app) {
 	verbose_application_data(0, &app->app);
 	report_application_in_file(&app->app);
 
-#if DB_MYSQL
+#if USE_DB
 	if (my_cluster_conf.eard.use_mysql)
 	{
 		if (!my_cluster_conf.eard.use_eardbd) {
@@ -991,7 +991,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		}
 	}
 
-#if DB_MYSQL
+#if USE_DB
 	if ((my_current_power->avg_dc>=0) && (my_current_power->avg_dc<my_node_conf->max_error_power)){
 	if (my_cluster_conf.eard.use_mysql)
 	{

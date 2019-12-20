@@ -102,7 +102,7 @@ void states_periodic_end_period(uint iterations)
 		#if DB_FILES
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		#endif
-		#if DB_MYSQL
+		#if USE_DB
 		eards_write_loop_signature(&loop);
 		#endif
 	}
@@ -127,7 +127,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
    #if DB_FILES
    append_loop_text_file(loop_summary_path, loop,&loop_signature.job);
 	#endif
-	#if DB_MYSQL
+	#if USE_DB
     eards_write_loop_signature(loop);
     #endif
 	

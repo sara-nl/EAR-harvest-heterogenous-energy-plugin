@@ -102,6 +102,7 @@ tests/check/check.sh
 *get_app_list
 *get_ear_events
 *ips
+*postgres_test
 *ping
 *remove_learning
 *traces_to_paraver
@@ -115,6 +116,7 @@ src/tests/functionals/read_from_file
 src/tests/functionals/signaures_avg
 src/tests/functionals/ips_check
 src/tests/functionals/temperature_check
+src/tests/functionals/postgres_test
 src/tools/coefficients_comparison
 src/tools/coeffs_compare
 src/tools/coeffs_comparison
@@ -137,4 +139,3 @@ src/tools/learning_validate
 src/tools/ear_events
 src/tools/show_coefficients
 src/tools/translate_coefficients
-src/tests/functionals/postgres_test

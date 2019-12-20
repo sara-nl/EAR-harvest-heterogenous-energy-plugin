@@ -608,7 +608,7 @@ int main(int argc,char *argv[])
 	sigdelset(&set,SIGTERM);
 	sigdelset(&set,SIGINT);
 
-    #if DB_MYSQL
+    #if USE_DB
     verbose(VGM+1,"Connecting with EAR DB");
 	/*strcpy(my_cluster_conf.database.database,"Report2");*/
     init_db_helper(&my_cluster_conf.database);
@@ -734,7 +734,7 @@ int main(int argc,char *argv[])
 				set_gm_grace_period_values(&my_warning);
 			}
 		}// ALARM
-		#if DB_MYSQL
+		#if USE_DB
 		db_insert_gm_warning(&my_warning);
 		#endif
 		if (must_refill){

@@ -40,7 +40,7 @@
 #include <common/types/log_eard.h>
 #include <common/output/verbose.h>
 
-#if DB_MYSQL
+#if USE_DB
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
 #endif

@@ -33,6 +33,7 @@
 #include <database_cache/eardbd_signals.h>
 #include <database_cache/eardbd_storage.h>
 #if !OFFLINE
+#include <common/config.h>
 #include <common/database/db_helper.h>
 #endif
 
