@@ -3,7 +3,7 @@ LDFLAGS =
 
 ######## INSTALLATION
 
-plug_BINS = erun
+plug_BINS = 
 ifdef SLURM_BASE
 plug_BINS += earplug.so
 endif
