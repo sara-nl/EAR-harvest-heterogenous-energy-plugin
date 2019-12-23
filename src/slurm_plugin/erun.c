@@ -1,6 +1,7 @@
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
+#include <slurm_plugin/erun_lock.h>
 
 //
 extern plug_serialization_t sd;
@@ -305,7 +306,7 @@ int main(int argc, char *argv[])
 		plug_verbosity_silence(_sp);
 
 		//
-		_step = spinlock_step(_argc, _argv);
+		_step = spinlock_step(_argc, _argv, _step);
 	}
 
 	// Creating step
