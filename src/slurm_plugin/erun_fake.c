@@ -27,6 +27,20 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <slurm_plugin/slurm_plugin.h>
+#include <slurm_plugin/slurm_plugin_environment.h>
+#include <slurm_plugin/slurm_plugin_serialization.h>
+
+// Buffers
+extern char buffer[SZ_PATH];
+
+//
+extern char **_argv;
+extern int    _argc;
+
+//
+extern int _sp;
+
 spank_err_t spank_getenv (spank_t spank, const char *var, char *buf, int len)
 {
 	char *c;

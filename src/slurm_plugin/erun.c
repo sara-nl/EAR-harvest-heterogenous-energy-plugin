@@ -1,4 +1,3 @@
-#include <common/system/file.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
@@ -44,12 +43,12 @@ int help(int argc, char *argv[])
 {
 	printf("Usage: %s [OPTIONS]\n", argv[0]);
 	printf("\nOptions:\n");
-	printf("\t--job-id=<arg>\tSet the JOB_ID.\n");
+	printf("\t--job-id=<arg>\t\tSet the JOB_ID.\n");
 	printf("\t--nodes=<arg>\t\tSets the number of nodes.\n");
 	printf("\t--program=<arg>\t\tSets the program to run.\n");
 	printf("\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
 	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
-	printf("\t--clean\t\tCleans the internal files.\n");
+	printf("\t--clean\t\t\tRemoves the internal files.\n");
 	printf("SLURM options:\n");
 
 	return 0;
@@ -57,8 +56,8 @@ int help(int argc, char *argv[])
 
 int clean(int argc, char *argv[])
 {
-	plug_verbose(0, "cleaning temporal folder");
-	system("/tmp/erun.*.lock");
+	plug_verbose(_sp, 0, "cleaning temporal folder");
+	system("rm /tmp/erun.*.lock &> /dev/null");
 	return 0;
 }
 
@@ -143,16 +142,13 @@ int print_argv(int argc, char *argv[])
 		buffer[j-1] = ' ';
 	}
 	buffer[j] = '\0';
-	plug_verbose(_sp, 3, "input: %s", buffer);
+	plug_verbose(_sp, 4, "input: %s", buffer);
 }
 
 int job(int argc, char *argv[])
 {
 	char *p = NULL;
 	int i = 0;
-
-	// Input parameters initial
-	print_argv(argc, argv);
 
 	// Clean
 	for (i = 0; i < argc; ++i) {
@@ -178,7 +174,7 @@ int job(int argc, char *argv[])
 		sprintf(path_prog, "%s", p);
 		setenv("SLURM_JOB_NAME", p, 1);
 	} else {
-		_helph = !_clean;
+		_help = !_clean;
 	}
 
 	// Converting configuration enrivonment variables 
@@ -252,15 +248,18 @@ int job(int argc, char *argv[])
 
 	// Input parameters final
 	print_argv(_argc, _argv);
-	plug_verbose(_sp, 3, "program: '%s'", path_prog);
 
 	return 0;
 }
 
-int step(int argc, char *argv[], int step_id)
+int step(int argc, char *argv[], int job_id, int step_id)
 {
 	sprintf(buffer, "%d", step_id);
 	setenv("SLURM_STEP_ID", buffer, 1);
+	
+	
+	plug_verbose(_sp, 2, "program: '%s'", path_prog);
+	plug_verbose(_sp, 2, "job/step id: '%d/%d'", job_id, step_id);
 }
 
 int execute(int argc, char *argv[])
@@ -276,7 +275,7 @@ int main(int argc, char *argv[])
 
 	// Clean
 	if (_clean) {
-		return clean();
+		return clean(_argc, _argv);
 	}
 
 	// Help
@@ -310,7 +309,7 @@ int main(int argc, char *argv[])
 	}
 
 	// Creating step
-	step(_argc, _argv, _step);
+	step(_argc, _argv, _job, _step);
 
 	// Local context initialization
 	pipeline(_argc, _argv, Context.srun, Action.init);
@@ -322,6 +321,10 @@ int main(int argc, char *argv[])
 	}
 
 	execute(_argc, _argv);
+
+	if (_master) {
+		sleep(1);
+	}
 
 	// Remote context finalization
 	pipeline(_argc, _argv, Context.remote, Action.exit);
