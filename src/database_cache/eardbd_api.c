@@ -211,10 +211,8 @@ edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_sta
 		edb_state_return_msg(state_con, EAR_NOT_INITIALIZED, "server and mirror are not enabled");
 	}
 
-verbose(0, "eardbd_reconnect");
 	//
-	timestamp_getfast(&ts);
-	time_now = timestamp_convert(&ts, TIME_SECS);
+	time_now = timestamp_getfast_convert(&ts, TIME_SECS);
 
 	if((time_now - time_rec) < 60) {
 		edb_state_return_msg(state_con, EAR_NOT_READY, "to many reconnections, wait a little longer");
@@ -257,8 +255,7 @@ verbose(0, "eardbd_reconnect");
 	}
 
 	//
-	timestamp_getfast(&ts);
-	time_rec = timestamp_convert(&ts, TIME_SECS);
+	time_rec = timestamp_getfast_convert(&ts, TIME_SECS);
 
 	return state_con;
 }
