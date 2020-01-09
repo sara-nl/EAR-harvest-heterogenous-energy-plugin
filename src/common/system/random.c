@@ -36,12 +36,12 @@ uint random_get()
 	unsigned int i;
 	unsigned int v;
 
+	// It is supported in AMD architectures too
 	i = _rdrand32_step(&v);
 	
 	if (i == 0)
 	{
 		debug("hardware did not generate a random number");
-		fprintf(stderr, "hardware did not generate a random number");
 		clock_t c = clock();
 		v = (unsigned int) c;
 	}

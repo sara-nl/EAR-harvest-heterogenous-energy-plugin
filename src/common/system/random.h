@@ -32,8 +32,12 @@
 
 #include <common/types/generic.h>
 
+/* Gets a 32 bits random number, it uses hardware functions which
+ * spends up to 300 cycles, so use it carefully. */
 uint random_get();
 
+/* Gets a 32 bits random number between min and min + offset, it uses
+ * random_get() internally, so use it carefully. */
 uint random_getrank(uint min, uint offset);
 
 #endif //EAR_COMMON_TIME_H
