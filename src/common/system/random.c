@@ -30,6 +30,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
+#include <immintrin.h>
 
 uint random_get()
 {
