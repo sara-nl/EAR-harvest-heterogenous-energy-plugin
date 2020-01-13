@@ -10,6 +10,9 @@ libc_OBJS = $(patsubst %.c, %.o, $(shell find -maxdepth 1 -type f -name '*.c'))
 
 all: $(libc_OBJS)
 
+random.o: random.c random.h
+	$(CC) $(CFLAGS) -c $< -mrdrnd
+
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 

@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#include <common/system/file.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
@@ -81,7 +82,7 @@ int lock_step(int argc, char *argv[], int job_id, int step_id)
 	// 3. Create erun.1394394.lock with the step_id
 	// 4. Return step_id
 	if (step_id == 0) {
-		if (state_ok(file_read(path_jobs, &step_id, sizeof(int)))) {
+		if (state_ok(file_read(path_jobs, (char *) &step_id, sizeof(int)))) {
 			plug_verbose(_sp, 2, "read %d step_id in the file '%s'", step_id, path_jobs);
 			step_id += 1;
 		} else {
@@ -90,7 +91,7 @@ int lock_step(int argc, char *argv[], int job_id, int step_id)
 	}
 
 	file_clean(path_jobs);
-	file_write(path_jobs, &step_id, sizeof(int));
+	file_write(path_jobs, (char *) &step_id, sizeof(int));
 
 	return step_id;
 }
@@ -99,7 +100,7 @@ int unlock_step(int argc, char *argv[], int step_id)
 {
 	plug_verbose(_sp, 2, "function unlock_step");
 	// 1. Create and write erun.step.lock
-	file_write(path_step, &step_id, sizeof(int));
+	file_write(path_step, (char *) &step_id, sizeof(int));
 	return step_id;
 }
 
@@ -111,7 +112,7 @@ int spinlock_step(int argc, char *argv[], int step_id)
 	// 3. Return step_id
 	while (access(path_step, F_OK) != 0);
 
-	file_read(path_step, &step_id, sizeof(int));
+	file_read(path_step, (char *) &step_id, sizeof(int));
 	plug_verbose(_sp, 2, "read %d step_id in the file '%s'", step_id, path_jobs);
 
 	return step_id;

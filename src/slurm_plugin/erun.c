@@ -1,6 +1,7 @@
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
+#include <slurm_plugin/erun_lock.h>
 
 //
 extern plug_serialization_t sd;
@@ -169,6 +170,7 @@ int job(int argc, char *argv[])
 		}
 	}
 
+	//
 	if (p != NULL) {
 		// Setting the job name
 		sprintf(path_prog, "%s", p);
@@ -248,6 +250,13 @@ int job(int argc, char *argv[])
 
 	// Input parameters final
 	print_argv(_argc, _argv);
+	
+	//
+	_inactive = isenv_agnostic(_sp, Var.context.rem, "SRUN");
+
+	if (_inactive) {
+		plug_verbose(_sp, 3, "detected SRUN");
+	}
 
 	return 0;
 }
@@ -305,7 +314,7 @@ int main(int argc, char *argv[])
 		plug_verbosity_silence(_sp);
 
 		//
-		_step = spinlock_step(_argc, _argv);
+		_step = spinlock_step(_argc, _argv, _step);
 	}
 
 	// Creating step

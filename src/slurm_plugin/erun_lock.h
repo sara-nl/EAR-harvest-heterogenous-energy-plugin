@@ -26,3 +26,13 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
+
+int lock_clean(int argc, char *argv[]);
+
+int lock_master(int argc, char *argv[]);
+
+int lock_step(int argc, char *argv[], int job_id, int step_id);
+
+int unlock_step(int argc, char *argv[], int step_id);
+
+int spinlock_step(int argc, char *argv[], int step_id);
