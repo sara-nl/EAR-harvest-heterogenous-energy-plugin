@@ -170,6 +170,7 @@ int job(int argc, char *argv[])
 		}
 	}
 
+	//
 	if (p != NULL) {
 		// Setting the job name
 		sprintf(path_prog, "%s", p);
@@ -249,6 +250,13 @@ int job(int argc, char *argv[])
 
 	// Input parameters final
 	print_argv(_argc, _argv);
+	
+	//
+	_inactive = isenv_agnostic(_sp, Var.context.rem, "SRUN");
+
+	if (_inactive) {
+		plug_verbose(_sp, 3, "detected SRUN");
+	}
 
 	return 0;
 }
