@@ -45,21 +45,22 @@
                             "(?, ?, ?, ?, ?)"
 
 
-#define LOOP_MYSQL_QUERY              "INSERT INTO Loops (event, size, level, job_id, step_id, node_id, total_iterations," \
+#define LOOP_MYSQL_QUERY        "INSERT INTO Loops (event, size, level, job_id, step_id, node_id, total_iterations," \
                                 "signature_id) VALUES (?, ?, ?, ?, ?, ?, ? ,?)"
 
 
-#define JOB_MYSQL_QUERY               "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
+#define JOB_MYSQL_QUERY         "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
                                 "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
                                 "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-#define SIGNATURE_QUERY_FULL    "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+#define SIGNATURE_QUERY_FULL    "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, GPU_power, EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                 "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
-                                "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+                                "instructions, cycles, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,"\
                                 "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-#define SIGNATURE_QUERY_SIMPLE  "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
-                                "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
+
+#define SIGNATURE_QUERY_SIMPLE  "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, GPU_power, EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "\
                                 "?, ?, ?)"
 
 #define AVG_SIGNATURE_QUERY_FULL        "INSERT INTO Signatures_avg (DC_power, DRAM_power, PCK_power, EDP,"\
@@ -1296,13 +1297,13 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
     int num_params;
     if (full_signature)
     {
-        params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        num_params = 21;
+        params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        num_params = 22;
     }
     else
     {
-        params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        num_params = 11;
+        params = ", (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        num_params = 12;
     }
 
     char *query;
@@ -1334,14 +1335,14 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
     {
         int offset = i*num_params;
         //double storage
-        for (j = 0; j < 9; j++)
+        for (j = 0; j < 10; j++)
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_DOUBLE;
             bind[offset+j].length = 0;
         }
 
         //unsigned long long storage
-        for (j = 9; j < num_params; j++)
+        for (j = 10; j < num_params; j++)
         {
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
             bind[offset+j].length = 0;
@@ -1356,31 +1357,32 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[0+offset].buffer = (char *)&cont.app[i].signature.DC_power;
             bind[1+offset].buffer = (char *)&cont.app[i].signature.DRAM_power;
             bind[2+offset].buffer = (char *)&cont.app[i].signature.PCK_power;
-            bind[3+offset].buffer = (char *)&cont.app[i].signature.EDP;
-            bind[4+offset].buffer = (char *)&cont.app[i].signature.GBS;
-            bind[5+offset].buffer = (char *)&cont.app[i].signature.TPI;
-            bind[6+offset].buffer = (char *)&cont.app[i].signature.CPI;
-            bind[7+offset].buffer = (char *)&cont.app[i].signature.Gflops;
-            bind[8+offset].buffer = (char *)&cont.app[i].signature.time;
+            bind[3+offset].buffer = (char *)&cont.app[i].signature.GPU_power;
+            bind[4+offset].buffer = (char *)&cont.app[i].signature.EDP;
+            bind[5+offset].buffer = (char *)&cont.app[i].signature.GBS;
+            bind[6+offset].buffer = (char *)&cont.app[i].signature.TPI;
+            bind[7+offset].buffer = (char *)&cont.app[i].signature.CPI;
+            bind[8+offset].buffer = (char *)&cont.app[i].signature.Gflops;
+            bind[9+offset].buffer = (char *)&cont.app[i].signature.time;
             if (full_signature)
             {
-                bind[9+offset].buffer = (char *)&cont.app[i].signature.FLOPS[0];
-                bind[10+offset].buffer = (char *)&cont.app[i].signature.FLOPS[1];
-                bind[11+offset].buffer = (char *)&cont.app[i].signature.FLOPS[2];
-                bind[12+offset].buffer = (char *)&cont.app[i].signature.FLOPS[3];
-                bind[13+offset].buffer = (char *)&cont.app[i].signature.FLOPS[4];
-                bind[14+offset].buffer = (char *)&cont.app[i].signature.FLOPS[5];
-                bind[15+offset].buffer = (char *)&cont.app[i].signature.FLOPS[6];
-                bind[16+offset].buffer = (char *)&cont.app[i].signature.FLOPS[7];
-                bind[17+offset].buffer = (char *)&cont.app[i].signature.instructions;
-                bind[18+offset].buffer = (char *)&cont.app[i].signature.cycles;
-                bind[19+offset].buffer = (char *)&cont.app[i].signature.avg_f;
-                bind[20+offset].buffer = (char *)&cont.app[i].signature.def_f;
+                bind[10+offset].buffer = (char *)&cont.app[i].signature.FLOPS[0];
+                bind[11+offset].buffer = (char *)&cont.app[i].signature.FLOPS[1];
+                bind[12+offset].buffer = (char *)&cont.app[i].signature.FLOPS[2];
+                bind[13+offset].buffer = (char *)&cont.app[i].signature.FLOPS[3];
+                bind[14+offset].buffer = (char *)&cont.app[i].signature.FLOPS[4];
+                bind[15+offset].buffer = (char *)&cont.app[i].signature.FLOPS[5];
+                bind[16+offset].buffer = (char *)&cont.app[i].signature.FLOPS[6];
+                bind[17+offset].buffer = (char *)&cont.app[i].signature.FLOPS[7];
+                bind[18+offset].buffer = (char *)&cont.app[i].signature.instructions;
+                bind[19+offset].buffer = (char *)&cont.app[i].signature.cycles;
+                bind[20+offset].buffer = (char *)&cont.app[i].signature.avg_f;
+                bind[21+offset].buffer = (char *)&cont.app[i].signature.def_f;
             }
             else
             {
-                bind[9+offset].buffer = (char *)&cont.app[i].signature.avg_f;
-                bind[10+offset].buffer = (char *)&cont.app[i].signature.def_f;
+                bind[10+offset].buffer = (char *)&cont.app[i].signature.avg_f;
+                bind[11+offset].buffer = (char *)&cont.app[i].signature.def_f;
             }
         }
         else if (cont.type == EAR_TYPE_LOOP)
@@ -1388,31 +1390,32 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[0+offset].buffer = (char *)&cont.loop[i].signature.DC_power;
             bind[1+offset].buffer = (char *)&cont.loop[i].signature.DRAM_power;
             bind[2+offset].buffer = (char *)&cont.loop[i].signature.PCK_power;
-            bind[3+offset].buffer = (char *)&cont.loop[i].signature.EDP;
-            bind[4+offset].buffer = (char *)&cont.loop[i].signature.GBS;
-            bind[5+offset].buffer = (char *)&cont.loop[i].signature.TPI;
-            bind[6+offset].buffer = (char *)&cont.loop[i].signature.CPI;
-            bind[7+offset].buffer = (char *)&cont.loop[i].signature.Gflops;
-            bind[8+offset].buffer = (char *)&cont.loop[i].signature.time;
+            bind[3+offset].buffer = (char *)&cont.loop[i].signature.GPU_power;
+            bind[4+offset].buffer = (char *)&cont.loop[i].signature.EDP;
+            bind[5+offset].buffer = (char *)&cont.loop[i].signature.GBS;
+            bind[6+offset].buffer = (char *)&cont.loop[i].signature.TPI;
+            bind[7+offset].buffer = (char *)&cont.loop[i].signature.CPI;
+            bind[8+offset].buffer = (char *)&cont.loop[i].signature.Gflops;
+            bind[9+offset].buffer = (char *)&cont.loop[i].signature.time;
             if (full_signature)
             {
-                bind[9+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[0];
-                bind[10+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[1];
-                bind[11+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[2];
-                bind[12+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[3];
-                bind[13+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[4];
-                bind[14+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[5];
-                bind[15+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[6];
-                bind[16+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[7];
-                bind[17+offset].buffer = (char *)&cont.loop[i].signature.instructions;
-                bind[18+offset].buffer = (char *)&cont.loop[i].signature.cycles;
-                bind[19+offset].buffer = (char *)&cont.loop[i].signature.avg_f;
-                bind[20+offset].buffer = (char *)&cont.loop[i].signature.def_f;
+                bind[10+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[0];
+                bind[11+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[1];
+                bind[12+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[2];
+                bind[13+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[3];
+                bind[14+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[4];
+                bind[15+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[5];
+                bind[16+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[6];
+                bind[17+offset].buffer = (char *)&cont.loop[i].signature.FLOPS[7];
+                bind[18+offset].buffer = (char *)&cont.loop[i].signature.instructions;
+                bind[19+offset].buffer = (char *)&cont.loop[i].signature.cycles;
+                bind[20+offset].buffer = (char *)&cont.loop[i].signature.avg_f;
+                bind[21+offset].buffer = (char *)&cont.loop[i].signature.def_f;
             }
             else
             {
-                bind[9+offset].buffer = (char *)&cont.loop[i].signature.avg_f;
-                bind[10+offset].buffer = (char *)&cont.loop[i].signature.def_f;
+                bind[10+offset].buffer = (char *)&cont.loop[i].signature.avg_f;
+                bind[11+offset].buffer = (char *)&cont.loop[i].signature.def_f;
             }
         }
     }
@@ -1477,14 +1480,14 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[0].is_unsigned = 1;
 
     //double recievers
-    for (i = 1; i < 10; i++)
+    for (i = 1; i < 11; i++)
     {
         bind[i].buffer_type = MYSQL_TYPE_DOUBLE;
         bind[i].buffer_length = 8;
     }
 
     //unsigned long long recievers
-    for (i = 10; i < num_params; i++)
+    for (i = 11; i < num_params; i++)
     {
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[i].buffer_length = 8;
@@ -1496,31 +1499,32 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[1].buffer = &sig_aux->DC_power;
     bind[2].buffer = &sig_aux->DRAM_power;
     bind[3].buffer = &sig_aux->PCK_power;
-    bind[4].buffer = &sig_aux->EDP;
-    bind[5].buffer = &sig_aux->GBS;
-    bind[6].buffer = &sig_aux->TPI;
-    bind[7].buffer = &sig_aux->CPI;
-    bind[8].buffer = &sig_aux->Gflops;
-    bind[9].buffer = &sig_aux->time;
+    bind[4].buffer = &sig_aux->GPU_power;
+    bind[5].buffer = &sig_aux->EDP;
+    bind[6].buffer = &sig_aux->GBS;
+    bind[7].buffer = &sig_aux->TPI;
+    bind[8].buffer = &sig_aux->CPI;
+    bind[9].buffer = &sig_aux->Gflops;
+    bind[10].buffer = &sig_aux->time;
     if (full_signature)
     {
-        bind[10].buffer = &sig_aux->FLOPS[0];
-        bind[11].buffer = &sig_aux->FLOPS[1];
-        bind[12].buffer = &sig_aux->FLOPS[2];
-        bind[13].buffer = &sig_aux->FLOPS[3];
-        bind[14].buffer = &sig_aux->FLOPS[4];
-        bind[15].buffer = &sig_aux->FLOPS[5];
-        bind[16].buffer = &sig_aux->FLOPS[6];
-        bind[17].buffer = &sig_aux->FLOPS[7];
-        bind[18].buffer = &sig_aux->instructions;
-        bind[19].buffer = &sig_aux->cycles;
-        bind[20].buffer = &sig_aux->avg_f;
-        bind[21].buffer = &sig_aux->def_f;
+        bind[11].buffer = &sig_aux->FLOPS[0];
+        bind[12].buffer = &sig_aux->FLOPS[1];
+        bind[13].buffer = &sig_aux->FLOPS[2];
+        bind[14].buffer = &sig_aux->FLOPS[3];
+        bind[15].buffer = &sig_aux->FLOPS[4];
+        bind[16].buffer = &sig_aux->FLOPS[5];
+        bind[17].buffer = &sig_aux->FLOPS[6];
+        bind[18].buffer = &sig_aux->FLOPS[7];
+        bind[19].buffer = &sig_aux->instructions;
+        bind[20].buffer = &sig_aux->cycles;
+        bind[21].buffer = &sig_aux->avg_f;
+        bind[22].buffer = &sig_aux->def_f;
     }
     else
     {
-        bind[10].buffer = &sig_aux->avg_f;
-        bind[11].buffer = &sig_aux->def_f;
+        bind[11].buffer = &sig_aux->avg_f;
+        bind[12].buffer = &sig_aux->def_f;
     }
 
     if (mysql_stmt_bind_result(statement, bind)) 

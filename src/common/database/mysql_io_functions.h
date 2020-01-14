@@ -58,10 +58,10 @@
 #define PERIODIC_METRIC_ARGS        6
 #endif
 #if !DB_SIMPLE
-#define SIGNATURE_ARGS              21
+#define SIGNATURE_ARGS              22
 #define AVG_SIGNATURE_ARGS          24
 #else
-#define SIGNATURE_ARGS              11
+#define SIGNATURE_ARGS              12
 #define AVG_SIGNATURE_ARGS          14
 #endif
 
