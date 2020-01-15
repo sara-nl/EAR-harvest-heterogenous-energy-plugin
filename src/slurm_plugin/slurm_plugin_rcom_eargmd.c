@@ -40,7 +40,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	//return ESPANK_SUCCESS;
 
 	// Pack deserialization
-	sprintf(buffer, "\0");
+	buffer[0] = '\0';
 	getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH);
 	sd->pack.eargmd.secured = atoi(buffer);
 
