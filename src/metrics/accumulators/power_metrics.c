@@ -136,8 +136,6 @@ static int pm_connect(ehandler_t *my_eh)
 		for (i=0;i<num_packs;i++) my_eh->fds_rapl[i]=pm_fds_rapl[i];
 		/* Nothing for GPUS */
 		return EAR_SUCCESS;
-	}else{
-		return pm_connected_status;
 	}
 
 	rootp = (getuid() == 0);
