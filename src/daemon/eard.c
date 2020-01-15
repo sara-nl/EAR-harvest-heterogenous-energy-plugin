@@ -61,7 +61,7 @@
 pthread_t app_eard_api_th;
 #endif
 
-static ehandler_t handler_energy;
+static ehandler_t eard_handler_energy,handler_energy;
 static ulong node_energy_datasize;
 static edata_t node_energy_data;
 unsigned int power_mon_freq = POWERMON_FREQ;
@@ -398,7 +398,7 @@ void eard_exit(uint restart) {
 	verbose(VCONF, "Releasing node resources");
 
 	// More disposes
-	if (state_fail(energy_dispose(&handler_energy))) {
+	if (state_fail(energy_dispose(&eard_handler_energy))) {
 		error("Error disposing energy for eard");
 	}
 	dispose_uncores();
@@ -1349,10 +1349,14 @@ int main(int argc, char *argv[]) {
 	verbose(0,"Initialzing energy plugin");
 	// We initilize energy_node
 	debug("Initializing energy in main EARD thread");
-	if (state_fail(energy_init(&my_cluster_conf, &handler_energy))) {
+	if (state_fail(energy_init(&my_cluster_conf, &eard_handler_energy))) {
 		error("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
 		error_energy=1;
 	}
+  if (init_power_ponitoring(&handler_energy) != EAR_SUCCESS) {
+    error("Error initializing pm_energy in %s thread", "EARD main");
+		_exit(0);	
+  }
 	energy_datasize(&handler_energy,&node_energy_datasize);
 	debug("EARD main thread: node_energy_datasize %lu",node_energy_datasize);
 	node_energy_data=(edata_t)malloc(node_energy_datasize);

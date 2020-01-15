@@ -36,7 +36,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
-// #define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
 #include <common/math_operations.h>
@@ -73,6 +73,7 @@ int init_rapl_msr(int *fd_map)
 	/* If it is not initialized, I do it, else, I get the ids */
 		pthread_mutex_lock(&rapl_msr_lock);
     if (is_msr_initialized()==0){ 
+			debug("MSR registers already initialized");
 	    init_msr(fd_map);
     }else get_msr_ids(fd_map);
 		rapl_msr_instances++;

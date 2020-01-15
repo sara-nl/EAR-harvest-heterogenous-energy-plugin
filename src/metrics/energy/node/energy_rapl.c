@@ -85,7 +85,7 @@ state_t energy_init(void **c)
 		plug_debug("init_rapl_msr returns error in energy_init");
 		return EAR_ERROR;
 	}
-	plug_debug("init_rapl_msr in energy_init successfully initialized");
+	plug_debug("init_rapl_msr in energy_init successfully initialized in enery_rapl");
 	return EAR_SUCCESS;
 }
 state_t energy_dispose(void **c)
