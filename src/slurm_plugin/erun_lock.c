@@ -60,7 +60,7 @@ int lock_master(int argc, char *argv[])
 	plug_verbose(_sp, 4, "function lock_master");
 	_fd_mast = file_lock_master(path_mast);
 
-	if (_fd_mast > 0) {
+	if (_fd_mast >= 0) {
 		return 1;
 	}
 
