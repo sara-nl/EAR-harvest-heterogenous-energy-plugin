@@ -125,19 +125,9 @@ static int pm_node_dc_energy(ehandler_t *my_eh, node_data_t *dc)
 
 static int pm_connect(ehandler_t *my_eh)
 {
-	int status_enode,i;
-	if ((pm_already_connected) && (pm_connected_status==EAR_SUCCESS)){
+	int status_enode;
+	if (pm_already_connected) {
 		status_enode=energy_init(NULL, my_eh);
-		if (status_enode!=EAR_SUCCESS){ 
-			pm_connected_status=status_enode;
-			return status_enode;
-		}
-		/* We reuse RAPL fdds */
-		for (i=0;i<num_packs;i++) my_eh->fds_rapl[i]=pm_fds_rapl[i];
-		/* Nothing for GPUS */
-		return EAR_SUCCESS;
-	}else{
-		return pm_connected_status;
 	}
 
 	rootp = (getuid() == 0);
@@ -168,12 +158,7 @@ static int pm_connect(ehandler_t *my_eh)
 		pm_connected_status = EAR_ERROR;
 		return EAR_ERROR;
 	}
-	/* We will use this vector for fd reutilization */
-	pm_fds_rapl=calloc(num_packs,sizeof(int));
-	if (pm_fds_rapl==NULL){
-		error("Allocating memory for RAPL fds in power_metrics");
-		return EAR_ERROR;
-	}
+	pm_fds_rapl=calloc();
 
 	// Initializing CPU/DRAM energy
 	unsigned long rapl_size;
@@ -185,7 +170,6 @@ static int pm_connect(ehandler_t *my_eh)
 		error("Error initializing RAPl in pm_connect");
 	}
 
-	for (i=0;i<num_packs;i++) pm_fds_rapl[i]=my_eh->fds_rapl[i];
 	// Allocating CPU/DRAM energy data
 	rapl_size = pm_get_data_size_rapl();
 	if (rapl_size == 0) {

@@ -187,22 +187,25 @@ state_t energy_to_str(char *str,edata_t e)
 {
   ulong *pe=(ulong *)e;
 	int j;
+	char msg[4096];
 	plug_debug("energy_to_str energy_rapl");
   sprintf(str,"DRAM-PLUGIN (");
   for (j = 0; j < num_pack; j++) {
     if (j < (num_pack - 1)) {
-      sprintf(str,"%llu,", pe[j]);
+      sprintf(msg,"%llu,", pe[j]);
     } else {
-      sprintf(str,"%llu)", pe[j]);
+      sprintf(msg,"%llu)", pe[j]);
     }
+		strcat(str,msg);
   }
-  sprintf(str,", CPU-PLUGIN (");
+  strcat(str,", CPU-PLUGIN (");
   for (j = 0; j < num_pack; j++) {
   	if (j < (num_pack - 1)) {
-  		sprintf(str,"%llu,", pe[j]);
+  		sprintf(msg,"%llu,", pe[j]);
   	} else {
-  		sprintf(str,"%llu)", pe[j]);
+  		sprintf(msg,"%llu)", pe[j]);
   	}
+		strcat(str,msg);
   }
   return EAR_SUCCESS;
 }
