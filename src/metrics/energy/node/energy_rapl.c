@@ -61,7 +61,14 @@ static pthread_mutex_t rapl_lock = PTHREAD_MUTEX_INITIALIZER;
 /*
  * MAIN FUNCTIONS
  */
-static int num_pack;
+static int num_pack=-1;
+
+void check_num_packs()
+{
+	if (num_pack<0){
+		num_pack=detect_packages(NULL);
+	}
+}
 state_t energy_init(void **c)
 {
 	int ret;
@@ -101,6 +108,7 @@ state_t energy_dispose(void **c)
 }
 state_t energy_datasize(size_t *size)
 {
+	check_num_packs();
 	plug_debug("size %lu",sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack);
 	*size=sizeof(unsigned long long)*RAPL_POWER_EVS*num_pack;
 	return EAR_SUCCESS;
@@ -173,6 +181,7 @@ state_t energy_accumulated(unsigned long *e,edata_t init,edata_t end)
 	unsigned long long *pvalues_init,*pvalues_end;
 	pvalues_init=(unsigned long long *)init;
 	pvalues_end=(unsigned long long *)end;
+	check_num_packs();
 	for (i=0;i<RAPL_POWER_EVS*num_pack;i++){
 			diff=diff_RAPL_energy(pvalues_init[i],pvalues_end[i]);
 			total+=diff;	
@@ -189,6 +198,7 @@ state_t energy_to_str(char *str,edata_t e)
 	int j;
 	char msg[4096];
 	plug_debug("energy_to_str energy_rapl");
+	check_num_packs();
   sprintf(str,"DRAM-PLUGIN (");
   for (j = 0; j < num_pack; j++) {
     if (j < (num_pack - 1)) {
