@@ -302,7 +302,7 @@ void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *m
 	#ifdef SHOW_DEBUGS
 	for (p = 0; p < num_packs; p++) debug("energy dram pack %d %llu", p, dram[p]);
 	for (p = 0; p < num_packs; p++) debug("energy cpu pack %d %llu" , p, pack[p]);
-	for (p = 0; p < gpu_num  ; p++) debug("energy gpu pack %d %llu" , p, pack[p]);
+	for (p = 0; p < gpu_num  ; p++) debug("energy gpu pack %d %llu" , p, gpus[p]);
 	#endif
 
 	// eh is not needed here
