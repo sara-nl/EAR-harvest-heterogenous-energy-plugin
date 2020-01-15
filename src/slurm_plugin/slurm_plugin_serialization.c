@@ -447,7 +447,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.group.rem);
 	unsetenv_agnostic(sp, Var.path_temp.rem);
 	unsetenv_agnostic(sp, Var.path_inst.rem);
-	unsetenv_agnostic(sp, Var.context.rem);
+	//unsetenv_agnostic(sp, Var.context.rem);
 
 	return ESPANK_SUCCESS;
 }
