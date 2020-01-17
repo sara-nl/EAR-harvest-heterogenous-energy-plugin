@@ -30,7 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/config.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 
@@ -237,7 +237,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	char *token;
 
 	//filling the default policies before starting
-	debug("get_cluster_config");
   conf->num_policies=0;
 	conf->num_tags=0;
   conf->power_policies = calloc(TOTAL_POLICIES, sizeof(policy_conf_t));
@@ -416,7 +415,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}
 		else if (!strcmp(token, "ENERGYTAG"))
 		{
-			debug("ENERGYTAG");
 			line[strlen(line)] = '=';
 			char *primary_ptr;
 			char *secondary_ptr;
@@ -431,7 +429,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				{
 					conf->num_tags++;
 					if (conf->num_tags==1) conf->e_tags=NULL;
-					debug("Allocating etag %d\n",conf->num_tags);
 					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags));
 					if (conf->e_tags==NULL){
 						error("NULL pointer reading energy tags");

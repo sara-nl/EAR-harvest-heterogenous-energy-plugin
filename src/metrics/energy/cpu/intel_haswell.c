@@ -36,7 +36,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
 #include <common/math_operations.h>

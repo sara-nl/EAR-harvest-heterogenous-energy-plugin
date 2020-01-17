@@ -43,7 +43,7 @@ static coefficient_t *coefficients_sm;
 static int num_coeffs;
 static uint num_pstates;
 static uint basic_model_init=0;
-
+//#define SHOW_DEBUGS 1
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
 #else
@@ -66,7 +66,8 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
   int i, ref;
 
 	debug("Using basic_model\n");
-	num_pstates=myarch->pstates;
+	num_pstates=(uint)myarch->pstates;
+	debug("Using %u pstates",num_pstates);
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
   if (coefficients == NULL) {

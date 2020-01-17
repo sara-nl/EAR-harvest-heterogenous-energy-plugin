@@ -31,7 +31,7 @@
 #include <string.h>
 
 #include <common/config.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/node_metrics.h>
