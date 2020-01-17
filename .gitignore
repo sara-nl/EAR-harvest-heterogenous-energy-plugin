@@ -102,6 +102,7 @@ tests/check/check.sh
 *get_app_list
 *get_ear_events
 *ips
+*postgres_test
 *ping
 *remove_learning
 *traces_to_paraver

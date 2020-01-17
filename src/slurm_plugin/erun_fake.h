@@ -27,58 +27,22 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <common/system/time.h>
+spank_err_t spank_getenv (spank_t spank, const char *var, char *buf, int len)
 
-void timestamp_get(timestamp *ts)
-{
-	timestamp_getfast(ts);
-}
+spank_err_t spank_setenv (spank_t spank, const char *var, const char *val, int overwrite)
 
-void timestamp_getprecise(timestamp *ts)
-{
-	clock_gettime(CLOCK_MONOTONIC, ts);
-}
+spank_err_t spank_unsetenv (spank_t spank, const char *var)
 
-void timestamp_getfast(timestamp *ts)
-{
-	clock_gettime(CLOCK_MONOTONIC_COARSE, ts);
-}
+spank_context_t spank_context (void)
 
-void timestamp_getreal(timestamp *ts)
-{
-	clock_gettime(CLOCK_REALTIME_COARSE, ts);
-}
+spank_err_t spank_get_item (spank_t spank, spank_item_t item, int *p)
 
-ullong timestamp_convert(timestamp *ts, ullong time_unit)
-{
-	ullong stamp;
-	stamp  = (ullong) (ts->tv_sec * 1000000000);
-	stamp += (ullong) (ts->tv_nsec);
-	stamp /= time_unit;
-	return stamp;
-}
+char *slurm_hostlist_shift (hostlist_t host_list)
 
-ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
-{
-	ullong stamp;
+hostlist_t slurm_hostlist_create (char *node_list)
 
-	if (ts2->tv_nsec < ts1->tv_nsec) {
-		ts2->tv_sec   = ts2->tv_sec - 1;
-		ts2->tv_nsec += 1000000000;
-		ts2->tv_sec=ts2->tv_sec-1;
-	}
+spank_err_t spank_option_register_print(spank_t sp, struct spank_option *opt)
 
-	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);
-	stamp += (ullong) ((ts2->tv_nsec - ts1->tv_nsec));
-	stamp /= time_unit;
+spank_err_t spank_option_register_call(int argc, char *argv[], spank_t sp, struct spank_option *opt)
 
-	return stamp;
-}
-
-ullong timestamp_getfast_convert(timestamp_t *ts, ullong time_unit)
-{
-	timestamp_getfast(ts);
-	return timestamp_convert(ts, time_unit);
-}
+spank_err_t spank_option_register(spank_t sp, struct spank_option *opt)

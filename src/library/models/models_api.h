@@ -31,10 +31,11 @@
 #define MODEL_API_H
 #include <common/states.h>
 #include <common/types/signature.h>
+#include <common/hardware/architecture.h>
 
 
 /* This function loads any information needed by the energy model */
-state_t model_init(char *etc,char *tmp,uint pstates);
+state_t model_init(char *etc,char *tmp,architecture_t * arch_desc);
 
 state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime);
 

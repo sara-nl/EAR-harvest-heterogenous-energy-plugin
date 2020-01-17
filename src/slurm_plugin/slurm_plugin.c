@@ -57,6 +57,8 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 // 	- Remote 0
 int slurm_spank_init_post_opt_fini(spank_t sp)
 {
+	plug_verbose(sp, 2, "function slurm_spank_init_post_opt_fini");
+	
 	//
 	plug_print_variables(sp);
 
@@ -137,7 +139,9 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 // 	- Remote 2
 int slurm_spank_user_init_fini(spank_t sp)
 {
-        //
+	plug_verbose(sp, 2, "function slurm_spank_user_init_fini");
+        
+	//
         plug_print_variables(sp);
 
         return ESPANK_SUCCESS;

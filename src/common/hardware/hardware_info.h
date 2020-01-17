@@ -62,6 +62,7 @@
 #define INTEL_VENDOR_NAME       "GenuineIntel"
 #define AMD_VENDOR_NAME         "AuthenticAMD"
 
+
 typedef struct topology {
 	int cores;
 	int threads;

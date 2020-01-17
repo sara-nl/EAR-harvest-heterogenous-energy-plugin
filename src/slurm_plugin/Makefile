@@ -3,16 +3,19 @@ LDFLAGS =
 
 ######## INSTALLATION
 
+plug_BINS = erun 
 ifdef SLURM_BASE
-plug_BINS = earplug.so
-else
-plug_BINS = erun
+plug_BINS += earplug.so
 endif
-
 plug_PATH = $(DESTDIR)/lib
 plug_PERM = 0775
 
 ######## FILES
+
+erun_SRCS = \
+        erun.c \
+        erun_fake.c \
+        erun_lock.c
 
 plug_OBJS = \
         $(SRCDIR)/daemon/eard_rapi.o \
@@ -45,8 +48,8 @@ all: $(plug_BINS)
 earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
-erun: erun.c erun.h $(plug_SRCS) $(plug_HDRS)
-	$(CC) $(CFLAGS) -DERUN -g -o $@ $< $(plug_SRCS) $(plug_OBJS)
+erun: $(erun_SRCS) erun.h $(plug_SRCS) $(plug_HDRS)
+	$(CC) $(CFLAGS) -DERUN -g -o $@ $(erun_SRCS) $(plug_SRCS) $(plug_OBJS)
 
 ######## OPTIONS
 

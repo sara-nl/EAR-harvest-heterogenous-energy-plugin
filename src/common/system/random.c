@@ -27,58 +27,31 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <common/system/time.h>
+#include <time.h>
+#include <stdlib.h>
+#include <common/output/debug.h>
+#include <immintrin.h>
 
-void timestamp_get(timestamp *ts)
+uint random_get()
 {
-	timestamp_getfast(ts);
-}
+	unsigned int i;
+	unsigned int v;
 
-void timestamp_getprecise(timestamp *ts)
-{
-	clock_gettime(CLOCK_MONOTONIC, ts);
-}
-
-void timestamp_getfast(timestamp *ts)
-{
-	clock_gettime(CLOCK_MONOTONIC_COARSE, ts);
-}
-
-void timestamp_getreal(timestamp *ts)
-{
-	clock_gettime(CLOCK_REALTIME_COARSE, ts);
-}
-
-ullong timestamp_convert(timestamp *ts, ullong time_unit)
-{
-	ullong stamp;
-	stamp  = (ullong) (ts->tv_sec * 1000000000);
-	stamp += (ullong) (ts->tv_nsec);
-	stamp /= time_unit;
-	return stamp;
-}
-
-ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
-{
-	ullong stamp;
-
-	if (ts2->tv_nsec < ts1->tv_nsec) {
-		ts2->tv_sec   = ts2->tv_sec - 1;
-		ts2->tv_nsec += 1000000000;
-		ts2->tv_sec=ts2->tv_sec-1;
+	// It is supported in AMD architectures too
+	i = _rdrand32_step(&v);
+	
+	if (i == 0)
+	{
+		debug("hardware did not generate a random number");
+		clock_t c = clock();
+		v = (unsigned int) c;
 	}
 
-	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);
-	stamp += (ullong) ((ts2->tv_nsec - ts1->tv_nsec));
-	stamp /= time_unit;
-
-	return stamp;
+	return v;
 }
 
-ullong timestamp_getfast_convert(timestamp_t *ts, ullong time_unit)
+uint random_getrank(uint min, uint offset)
 {
-	timestamp_getfast(ts);
-	return timestamp_convert(ts, time_unit);
+	uint v = random_get();
+	return min + (v % offset);
 }

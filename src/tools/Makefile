@@ -29,7 +29,7 @@ comm_OBJS = $(ROOTDIR)/src/common/libcommon.a
 all: $(tool_BINS)
 
 coeffs_compute: coeffs_compute.c $(comm_OBJS)
-	$(CCC) -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
+	$(CCC) -g -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
 
 coeffs_jobproj: coeffs_jobproj.c $(comm_OBJS)
 	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl

@@ -675,17 +675,18 @@ void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
 {
     //each policy could have a short name stored in the cluster_conf section and we could just return that here
     int pol = policy_name_to_id(policy, conf);
-    if (!strcmp(policy, "MIN_ENERGY_TO_SOLUTION"))
+    strtolow(policy);
+    if (!strcmp(policy, "min_energy_to_solution") || !strcmp(policy, "MIN_ENERGY"))
     {
         strcpy(buf, "ME");
         return;
     }
-    else if (!strcmp(policy, "MIN_TIME_TO_SOLUTION"))
+    else if (!strcmp(policy, "min_time_to_solution") || !strcmp(policy, "min_time"))
     {
         strcpy(buf, "MT");
         return;
     }
-    else if (!strcmp(policy, "MONITORING_ONLY"))
+    else if (!strcmp(policy, "monitoring_only") || !strcmp(policy, "monitoring"))
     {
         strcpy(buf, "MO");
         return;

@@ -42,6 +42,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/environment.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <library/common/externs_alloc.h>
@@ -299,6 +300,7 @@ void ear_init()
 	char *summary_pathname;
 	state_t st;
 	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
+	architecture_t arch_desc;
 
 
 
@@ -306,6 +308,7 @@ void ear_init()
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
 
+	debug("Reading the environment");
 
 	// Environment initialization
 	ear_lib_environment();
@@ -319,6 +322,8 @@ void ear_init()
 	gethostname(node_name, sizeof(node_name));
 	strtok(node_name, ".");
 
+	debug("Running in %s",node_name);
+
 	verb_level = get_ear_verbose();
 	verb_channel=2;
 	set_ear_total_processes(my_size);
@@ -330,6 +335,7 @@ void ear_init()
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
 
+	debug("attach to master %d",my_id);
 
 	attach_to_master_set(my_id==0);
 
@@ -367,6 +373,7 @@ void ear_init()
 
 
 	// Application static data and metrics
+	debug("init application");
 	init_application(&application);
 	init_application(&loop_signature);
 	application.is_mpi=1;
@@ -417,8 +424,17 @@ void ear_init()
 
 
 	// Policies && models
+	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+    error("Retrieving architecture description");
+		/* How to proceeed here ? */
+  }
+
+	#if SHOW_DEBUGS
+	print_arch_desc(&arch_desc);
+	#endif
+
 	init_power_policy(system_conf,resched_conf);
-	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
+	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
 
 	if (ext_def_freq==0){
 		EAR_default_frequency=system_conf->def_freq;
@@ -679,7 +695,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				debug("NEW_LOOP event %u level %hu size %hu\n",ear_event_l,ear_level,ear_size);
+				debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
 				ear_iterations=0;
 				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				ear_loop_size=(uint)ear_size;
@@ -688,7 +704,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_NEW_LOOP:
-				debug("END_LOOP - NEW_LOOP event %u level %hu\n",ear_event_l,ear_level);
+				debug("END_LOOP - NEW_LOOP event %lu level %hu\n",ear_event_l,ear_level);
 				if (loop_with_signature) {
 					debug("loop ends with %d iterations detected", ear_iterations);
 				}
@@ -707,7 +723,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					debug("new iteration detected for level %u, event %u, size %u and iterations %u",
+					debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
 							  ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
@@ -716,7 +732,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_LOOP:
-				debug("END_LOOP event %u\n",ear_event_l);
+				debug("END_LOOP event %lu\n",ear_event_l);
 				if (loop_with_signature) {
 					debug("loop ends with %d iterations detected", ear_iterations);
 				}
@@ -781,7 +797,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					debug("new iteration detected for level %hu, event %u, size %u and iterations %u",
+					debug("new iteration detected for level %hu, event %lu, size %u and iterations %u",
 							  ear_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
@@ -876,7 +892,7 @@ void ear_new_iteration(unsigned long loop_id)
 				ear_iterations++;
 				if (loop_with_signature)
 				{
-				debug("new iteration detected for level %u, event %u, size %u and iterations %u",
+				debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
   				1, loop_id,1, ear_iterations);
 				}
 				traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
