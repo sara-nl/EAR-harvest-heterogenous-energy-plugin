@@ -37,6 +37,7 @@
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/hardware/architecture.h>
 
 
 #define freturn(call, ...) \
@@ -48,7 +49,7 @@
    }
 
 typedef struct model_symbols {
-  state_t (*init)        (char *etc,char *tmp,uint pstates);
+  state_t (*init)        (char *etc,char *tmp,void *arch_desc);
   state_t (*project_time)     (signature_t *sign,ulong from,ulong to,double *ptime);
   state_t (*project_power)    (signature_t *sign,ulong from,ulong to,double *ppower);
   state_t (*projection_available)    (ulong from,ulong to);
@@ -72,7 +73,7 @@ static state_t models_load(char *obj_path)
 	return symplug_open(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
 }
 
-state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
+state_t projections_init(uint user_type, conf_install_t *data, architecture_t * arch_desc)
 {
 	char basic_path[SZ_PATH_INCOMPLETE];
 	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
@@ -95,7 +96,7 @@ state_t projections_init(uint user_type, conf_install_t *data, uint pstates)
 	st = models_load(obj_path);
 	
 	if (st == EAR_SUCCESS) {
-		freturn(models_syms_fun.init,data->dir_conf, data->dir_temp, pstates);
+		freturn(models_syms_fun.init,data->dir_conf, data->dir_temp, arch_desc);
 	}else{
 		debug("Error when loading shared object %s",obj_path);
 	}

@@ -8,7 +8,7 @@
 # Var definitions
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
-%define name    ear-lennox
+%define name    ear-lennox-mysql-intel
 %define release   1
 %define version   3.1
 
@@ -47,9 +47,7 @@ mkdir -p  %{buildroot}/etc/systemd/system
 mkdir -p  %{buildroot}/etc/module
 mkdir -p  %{buildroot}/etc/slurm
 mkdir -p  %{buildroot}/var/ear
-cp    -rp ${EAR_INSTALL_PATH}/bin/tools/coeffs_show %{buildroot}/usr/bin/tools/
-cp    -rp ${EAR_INSTALL_PATH}/bin/tools/coeffs_compute %{buildroot}/usr/bin/tools/
-cp    -rp ${EAR_INSTALL_PATH}/bin/tools/coeffs_null %{buildroot}/usr/bin/tools/
+cp    -rp ${EAR_INSTALL_PATH}/bin/tools/* %{buildroot}/usr/bin/tools/
 cp    -rp ${EAR_INSTALL_PATH}/bin/eacct %{buildroot}/usr/bin/
 cp    -rp ${EAR_INSTALL_PATH}/bin/ereport %{buildroot}/usr/bin/
 cp    -rp ${EAR_INSTALL_PATH}/bin/econtrol %{buildroot}/usr/bin/
@@ -88,6 +86,10 @@ exit
 #Comments for change log
 # * [dow mon dd yyyy] [packager [email address]] [RPM version]-list of changes
 %changelog
+* Wed Jan 16 2020 Julita Corbalan <julita.corbalan@bsc.es> 3.1.2
+- init_power_monitoring in dynamic_configuration
+- gpu support included
+- new power_models or avx512
 * Mon Dec 09 2019 Julita Corbalan <julita.corbalan@bsc.es> 3.1.1
 - energy_to_str function in energy_rapl
 - msr read and write with do_while loop

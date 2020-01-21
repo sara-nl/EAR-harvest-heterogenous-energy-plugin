@@ -43,7 +43,9 @@ static coefficient_t *coefficients_sm;
 static int num_coeffs;
 static uint num_pstates;
 static uint basic_model_init=0;
-//#define SHOW_DEBUGS 1
+static architecture_t arch;
+static int avx512_pstate=1,avx2_pstate=1;
+
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
 #else
@@ -66,8 +68,12 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
   int i, ref;
 
 	debug("Using basic_model\n");
-	num_pstates=(uint)myarch->pstates;
-	debug("Using %u pstates",num_pstates);
+	num_pstates=myarch->pstates;
+	copy_arch_desc(&arch,myarch);
+	print_arch_desc(&arch);
+	avx512_pstate=frequency_freq_to_pstate(arch.max_freq_avx512);
+	avx2_pstate=frequency_freq_to_pstate(arch.max_freq_avx2);
+	debug("Pstate for maximum freq avx512 %d Pstate for maximum freq avx2 %d",avx512_pstate,avx2_pstate);
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
   if (coefficients == NULL) {
@@ -108,27 +114,39 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 	basic_model_init=1;	
 	return EAR_SUCCESS;
 }
-
-double default_project_cpi(signature_t *sign, coefficient_t *coeff)
+double avx512_vpi(signature_t *my_app);
+double proj_cpi(coefficient_t *coeff,signature_t *sign)
 {
 	return (coeff->D * sign->CPI) +
 		   (coeff->E * sign->TPI) +
 		   (coeff->F);
 }
 
+double proj_time(coefficient_t *coeff,signature_t *sign,unsigned long freq_src,unsigned long freq_dst)
+{
+	double pcpi=proj_cpi(coeff,sign);
+	return ((sign->time * pcpi) / sign->CPI) * ((double)freq_src / (double)freq_dst);
+	
+}
+
 state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 {
 	state_t st=EAR_SUCCESS;
-	coefficient_t *coeff;
+	double ctime,time_nosimd,time_avx2=0,time_avx512=0,perc_avx512=0,perc_avx2=0;
+	coefficient_t *coeff,*avx512_coeffs;
+	unsigned long nominal;
 	if ((basic_model_init) && (valid_range(from,to))){
 		coeff=&coefficients[from][to];
 		if (coeff->available){
-			double proj_cpi = default_project_cpi(sign, coeff);
-			double freq_src = (double) coeff->pstate_ref;
-			double freq_dst = (double) coeff->pstate;
-
-			*ptime= ((sign->time * proj_cpi) / sign->CPI) *
-		   (freq_src / freq_dst);
+			time_nosimd=proj_time(coeff,sign,coeff->pstate_ref,coeff->pstate);
+      if (to<=avx512_pstate){
+					unsigned long nominal=frequency_get_nominal_freq();
+					avx512_coeffs=&coefficients[from][1];
+          perc_avx512=avx512_vpi(sign);
+          time_avx512=proj_time(avx512_coeffs,sign,coeff->pstate_ref,nominal);
+      }
+			ctime=time_nosimd*(1-perc_avx512)+time_avx512*perc_avx512;
+			*ptime=ctime;
 		}else{
 			*ptime=0;
 			st=EAR_ERROR;
@@ -137,16 +155,48 @@ state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 	return st;
 }
 
+/*
+				st=project_power(my_app,curr_pstate,i,&power_proj);
+				st=project_time(my_app,curr_pstate,i,&time_proj);
+				if (i>=max_pstate_512){
+					st=project_power(my_app,curr_pstate,min_pstate,&power_proj_avx512);
+					st=project_time(my_app,curr_pstate,min_pstate,&time_proj_avx512);
+				}else{
+					power_proj_avx512=power_proj;
+					time_proj_avx512=time_proj;	
+				}
+				perc_avx512=(double)((my_app->FLOPS[3]/(unsigned long long)16)+(my_app->FLOPS[7]/(unsigned long long)8))/(double)my_app->instructions;
+				time_proj_comb=(time_proj*(1-perc_avx512)+time_proj_avx512*perc_avx512);
+				power_proj_comb=(power_proj*(1-perc_avx512)+power_proj_avx512*perc_avx512);
+
+*/
+
+double avx512_vpi(signature_t *my_app)
+{
+	return (double)((my_app->FLOPS[3]/(unsigned long long)16)+(my_app->FLOPS[7]/(unsigned long long)8))/(double)my_app->instructions;
+}
+double proj_power(coefficient_t *coeff,signature_t *sign)
+{
+	return (coeff->A * sign->DC_power) + (coeff->B * sign->TPI) + (coeff->C);	
+}
 state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppower)
 {
 	state_t st=EAR_SUCCESS;
-	coefficient_t *coeff;
+	coefficient_t *coeff,*avx512_coeffs;
+	double power_nosimd,power_avx2=0,power_avx512=0,cpower;
+	double perc_avx512=0,perc_avx2=0;
 	if ((basic_model_init) && (valid_range(from,to))){
 		coeff=&coefficients[from][to];
 		if (coeff->available){
-			*ppower= (coeff->A * sign->DC_power) +
-		   (coeff->B * sign->TPI) +
-		   (coeff->C);
+				power_nosimd=proj_power(coeff,sign);
+				// Is this <= or >= ?? :(
+				if (to<=avx512_pstate){
+					avx512_coeffs=&coefficients[from][1];
+					perc_avx512=avx512_vpi(sign);	
+					power_avx512=proj_power(avx512_coeffs,sign);
+				}
+				cpower=power_nosimd*(1-perc_avx512)+power_avx512*perc_avx512;
+				*ppower=cpower;
 		}else{
 			*ppower=0;
 			st=EAR_ERROR;

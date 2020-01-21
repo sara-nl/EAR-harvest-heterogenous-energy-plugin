@@ -55,6 +55,7 @@ static uint8_t 	pm_already_connected = 0;
 static uint8_t 	pm_connected_status = 0;
 static char 	my_buffer[1024];
 static int 		num_packs = 0;
+static int 		*pm_fds_rapl;
 
 // GPU
 gpu_energy_t *gpu_data;
@@ -124,8 +125,17 @@ static int pm_node_dc_energy(ehandler_t *my_eh, node_data_t *dc)
 
 static int pm_connect(ehandler_t *my_eh)
 {
-	if (pm_already_connected) {
-		return pm_connected_status;
+	int status_enode,i;
+	if ((pm_already_connected) && (pm_connected_status==EAR_SUCCESS)){
+		status_enode=energy_init(NULL, my_eh);
+		if (status_enode!=EAR_SUCCESS){ 
+			pm_connected_status=status_enode;
+			return status_enode;
+		}
+		/* We reuse RAPL fdds */
+		for (i=0;i<num_packs;i++) my_eh->fds_rapl[i]=pm_fds_rapl[i];
+		/* Nothing for GPUS */
+		return EAR_SUCCESS;
 	}
 
 	rootp = (getuid() == 0);
@@ -156,6 +166,12 @@ static int pm_connect(ehandler_t *my_eh)
 		pm_connected_status = EAR_ERROR;
 		return EAR_ERROR;
 	}
+	/* We will use this vector for fd reutilization */
+	pm_fds_rapl=calloc(num_packs,sizeof(int));
+	if (pm_fds_rapl==NULL){
+		error("Allocating memory for RAPL fds in power_metrics");
+		return EAR_ERROR;
+	}
 
 	// Initializing CPU/DRAM energy
 	unsigned long rapl_size;
@@ -167,6 +183,7 @@ static int pm_connect(ehandler_t *my_eh)
 		error("Error initializing RAPl in pm_connect");
 	}
 
+	for (i=0;i<num_packs;i++) pm_fds_rapl[i]=my_eh->fds_rapl[i];
 	// Allocating CPU/DRAM energy data
 	rapl_size = pm_get_data_size_rapl();
 	if (rapl_size == 0) {
@@ -207,9 +224,6 @@ int init_power_ponitoring(ehandler_t *my_eh)
 {
 	int ret;
 	debug("init_power_ponitoring");
-	if (power_mon_connected) {
-		return EAR_SUCCESS;
-	}
 	ret = pm_connect(my_eh);
 	if (ret != EAR_SUCCESS) {
 		error("Error in init_power_ponitoring");
@@ -302,7 +316,7 @@ void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *m
 	#ifdef SHOW_DEBUGS
 	for (p = 0; p < num_packs; p++) debug("energy dram pack %d %llu", p, dram[p]);
 	for (p = 0; p < num_packs; p++) debug("energy cpu pack %d %llu" , p, pack[p]);
-	for (p = 0; p < gpu_num  ; p++) debug("energy gpu pack %d %llu" , p, pack[p]);
+	for (p = 0; p < gpu_num  ; p++) debug("energy gpu pack %d %llu" , p, gpus[p]);
 	#endif
 
 	// eh is not needed here

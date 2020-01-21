@@ -210,6 +210,7 @@ PGconn *postgresql_create_connection()
     PGconn *connection;
 
     sprintf(temp, "%d", db_config->port);
+    strtolow(db_config->database);
 
     if (db_config->port > 0)
         connection = PQsetdbLogin(db_config->ip, temp, NULL,NULL, db_config->database, db_config->user, db_config->pass);

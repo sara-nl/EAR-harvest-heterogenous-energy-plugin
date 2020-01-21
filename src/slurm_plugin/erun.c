@@ -144,6 +144,7 @@ int print_argv(int argc, char *argv[])
 	}
 	buffer[j] = '\0';
 	plug_verbose(_sp, 4, "input: %s", buffer);
+	return 0;
 }
 
 int job(int argc, char *argv[])
@@ -266,9 +267,9 @@ int step(int argc, char *argv[], int job_id, int step_id)
 	sprintf(buffer, "%d", step_id);
 	setenv("SLURM_STEP_ID", buffer, 1);
 	
-	
 	plug_verbose(_sp, 2, "program: '%s'", path_prog);
 	plug_verbose(_sp, 2, "job/step id: '%d/%d'", job_id, step_id);
+	return 0;
 }
 
 int execute(int argc, char *argv[])

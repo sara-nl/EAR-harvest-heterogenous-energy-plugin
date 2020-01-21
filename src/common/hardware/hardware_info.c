@@ -141,6 +141,7 @@ state_t hardware_gettopology(topology_t *topo)
 	topo->sockets = 0;
 	topo->numas = 0;
 
+
 	/* Number of CPUs */
 	do {
 		aux1 += 1;
