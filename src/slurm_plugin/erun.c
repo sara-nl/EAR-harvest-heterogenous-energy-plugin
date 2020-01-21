@@ -11,7 +11,9 @@ char plug_tmp[SZ_NAME_LARGE];
 char plug_etc[SZ_NAME_LARGE];
 char plug_pfx[SZ_NAME_LARGE];
 char plug_def[SZ_NAME_LARGE];
-char path_prog[SZ_PATH];
+char path_app[SZ_PATH];
+char path_tmp[SZ_PATH];
+char path_sys[SZ_PATH];
 char buffer[SZ_PATH];
 
 //
@@ -20,6 +22,7 @@ int    _argc;
 
 //
 int _inactive;
+int _error;
 int _clean;
 int _help;
 
@@ -58,7 +61,11 @@ int help(int argc, char *argv[])
 int clean(int argc, char *argv[])
 {
 	plug_verbose(_sp, 0, "cleaning temporal folder");
-	system("rm /tmp/erun.*.lock &> /dev/null");
+	//
+	sprintf(path_sys, "rm %s/erun.*.lock &> /dev/null", path_tmp);
+	//
+	system(path_sys);
+	
 	return 0;
 }
 
@@ -149,6 +156,10 @@ int print_argv(int argc, char *argv[])
 
 int job(int argc, char *argv[])
 {
+	int err_pfx = 1;
+	int err_tmp = 1;
+	int err_etc = 1;
+	int err_def = 1;
 	char *p = NULL;
 	int i = 0;
 
@@ -174,7 +185,7 @@ int job(int argc, char *argv[])
 	//
 	if (p != NULL) {
 		// Setting the job name
-		sprintf(path_prog, "%s", p);
+		sprintf(path_app, "%s", p);
 		setenv("SLURM_JOB_NAME", p, 1);
 	} else {
 		_help = !_clean;
@@ -194,15 +205,22 @@ int job(int argc, char *argv[])
 		_argv[i] = argv[i];
 	}
 
-	sprintf(plug_def, "default=on");
 	if ((p = getenv("EAR_INSTALL_PATH")) != NULL) {
 		sprintf(plug_pfx, "prefix=%s", p);
+		err_pfx = 0;
 	}
 	if ((p = getenv("EAR_ETC")) != NULL) {
 		sprintf(plug_etc, "sysconfdir=%s", p);
+		err_etc = 0;
 	}
 	if ((p = getenv("EAR_TMP")) != NULL) {
 		sprintf(plug_tmp, "localstatedir=%s", p);
+		sprintf(path_tmp, "%s", p);
+		err_tmp = 0;
+	}
+	if ((p = getenv("EAR_DEFAULT")) != NULL) {
+		sprintf(plug_def, "default=%s", p);
+		err_def = 0;
 	}
 	
 	for (i = 0; i < argc; ++i) {
@@ -252,11 +270,15 @@ int job(int argc, char *argv[])
 	// Input parameters final
 	print_argv(_argc, _argv);
 	
-	//
+	// Going inactive?
 	_inactive = isenv_agnostic(_sp, Var.context.rem, "SRUN");
 
 	if (_inactive) {
-		plug_verbose(_sp, 3, "detected SRUN");
+		plug_verbose(_sp, 3, "detected SRUN, going inactive");
+	}
+	
+	if (err_pfx | err_etc | err_tmp | err_def) {
+		_error = 1;
 	}
 
 	return 0;
@@ -267,14 +289,14 @@ int step(int argc, char *argv[], int job_id, int step_id)
 	sprintf(buffer, "%d", step_id);
 	setenv("SLURM_STEP_ID", buffer, 1);
 	
-	plug_verbose(_sp, 2, "program: '%s'", path_prog);
+	plug_verbose(_sp, 2, "program: '%s'", path_app);
 	plug_verbose(_sp, 2, "job/step id: '%d/%d'", job_id, step_id);
 	return 0;
 }
 
 int execute(int argc, char *argv[])
 {
-	system(path_prog);
+	system(path_app);
 	return 0;
 }
 
@@ -298,6 +320,19 @@ int main(int argc, char *argv[])
 
 		return 0;
 	}
+	
+	if (_error)
+	{
+		if ((_master = lock_master(path_tmp)))
+		{
+			plug_verbose(_sp, 0, "missing environment vars, is the EAR module loaded?");
+			
+			sleep(2);
+			
+			lock_clean(path_tmp);
+		}
+		return 0;	
+	}
 
 	// Inactive
 	if (_inactive) {
@@ -305,17 +340,17 @@ int main(int argc, char *argv[])
 	}
 
 	// Simulating the single pipeline
-	if ((_master = lock_master(_argc, _argv)))
+	if ((_master = lock_master(path_tmp)))
 	{
 		plug_verbose(_sp, 2, "got the lock file");
 
-		_step = lock_step(_argc, _argv, _job, _step);
+		_step = lock_step(path_tmp, _job, _step);
 	} else {
 		plug_verbose(_sp, 4, "missed the lock file, spinlock");
 		plug_verbosity_silence(_sp);
 
 		//
-		_step = spinlock_step(_argc, _argv, _step);
+		_step = spinlock_step(path_tmp, _step);
 	}
 
 	// Creating step
@@ -327,7 +362,7 @@ int main(int argc, char *argv[])
 	pipeline(_argc, _argv, Context.remote, Action.init);
 
 	if (_master) {
-		unlock_step(_argc, _argv, _step);
+		unlock_step(path_tmp, _step);
 	}
 
 	execute(_argc, _argv);
@@ -342,7 +377,7 @@ int main(int argc, char *argv[])
 	pipeline(_argc, _argv, Context.srun, Action.exit);
 
 	if (_master) {
-		lock_clean(_argc, _argv);
+		lock_clean(path_tmp);
 	}
 
 	return 0;
