@@ -40,7 +40,7 @@
  * values. AVG power less than MIN_SIG_POWER or greather than MAX_SIG_POWER
  * generates a warning and a syslog message when activated. Values greather
  * than MAX_ERROR_POWER are considered an error and not reported into the DB */
-#define MIN_SIG_POWER                       50.0
+#define MIN_SIG_POWER                       30.0
 #define MAX_SIG_POWER                       600.0
 #define MAX_ERROR_POWER                     1000.0
 #define MAX_TEMP							150

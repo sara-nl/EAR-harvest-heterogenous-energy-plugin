@@ -56,6 +56,7 @@
 #include <library/mpi_intercept/ear_api.h>
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
+#include <library/common/library_shared_data.h>
 #include <common/hardware/frequency.h>
 #include <metrics/common/papi.h>
 #include <daemon/eard_api.h>
@@ -107,11 +108,15 @@ int masters_connected=0;
 unsigned masters_comm_created=0;
 #endif
 
+char lib_shared_region_path[GENERIC_NAME];
+char shsignature_region_path[GENERIC_NAME];
+char block_file[GENERIC_NAME];
+
 //
 static void print_local_data()
 {
 	#if EAR_LIB_SYNC 
-	if (my_master_rank==0) {
+	if (ear_my_rank>=0) {
 	#endif
 	verbose(1, "--------------------------------");
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
@@ -180,12 +185,101 @@ void notify_eard_connection(int status)
 	}
 	#endif
 }
+
+
+void create_shared_regions()
+{
+	char *tmp=get_ear_tmp();
+	int bfd=-1;
+	debug("Master creating shared regions for node synchro");
+  sprintf(block_file,"%s/.my_local_lock_2",tmp);
+  if ((bfd=file_lock_create(block_file))<0){
+    error("Creating lock file for shared memory");
+  }
+
+	
+	if (get_lib_shared_data_path(tmp,lib_shared_region_path)!=EAR_SUCCESS){
+		error("Getting the lib_shared_region_path");
+	}else{
+		lib_shared_region=create_lib_shared_data_area(lib_shared_region_path);
+		if (lib_shared_region==NULL){
+			error("Creating the lib_shared_data region");
+		}
+		my_node_id=0;
+		lib_shared_region->num_processes=1;
+		lib_shared_region->num_signatures=0;
+	}
+	debug("Node connected %u",my_node_id);
+	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+		error("MPI_Barrier");
+		return;
+	}
+	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+		error("MPI_Barrier");
+		return;
+	}
+	//print_lib_shared_data(lib_shared_region);
+	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
+    error("Getting the shsignature_region_path	");
+	}else{
+		debug("Master node creating the signatures with %d processes",lib_shared_region->num_processes);
+		sig_shared_region=create_shared_signatures_area(shsignature_region_path,lib_shared_region->num_processes);
+		if (sig_shared_region==NULL){
+			error("NULL pointer returned in create_shared_signatures_area");
+		}
+	}
+	sig_shared_region[my_node_id].master=1;
+	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+		error("MPI_Barrier");
+		return;
+	}
+}
+
+void attach_shared_regions()
+{
+	int bfd=-1,i;
+	char *tmp=get_ear_tmp();
+	sprintf(block_file,"%s/.my_local_lock",tmp);
+	if ((bfd=file_lock_create(block_file))<0){
+		error("Creating lock file for shared memory");
+	}
+	if (get_lib_shared_data_path(tmp,lib_shared_region_path)!=EAR_SUCCESS){
+    error("Getting the lib_shared_region_path");
+  }else{
+		if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+			error("MPI_Barrier");
+			return;
+		}
+		do{
+			lib_shared_region=attach_lib_shared_data_area(lib_shared_region_path);
+		}while(lib_shared_region==NULL);
+		while(file_lock(bfd)<0);
+		my_node_id=lib_shared_region->num_processes;
+    lib_shared_region->num_processes=lib_shared_region->num_processes+1;
+		file_unlock(bfd);
+  }
+  if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){	
+		error("In MPI_BARRIER");
+	}
+  if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){	
+		error("In MPI_BARRIER");
+	}
+	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
+    error("Getting the shsignature_region_path  ");
+  }else{
+			sig_shared_region=attach_shared_signatures_area(shsignature_region_path,lib_shared_region->num_processes);
+			if (sig_shared_region==NULL){
+				error("NULL pointer returned in attach_shared_signatures_area");
+			}
+	}
+	sig_shared_region[my_node_id].master=0;
+}
 /* Connects the mpi process to a new communicator composed by masters */
 void attach_to_master_set(int master)
 {
 	#if EAR_LIB_SYNC
 	int color;
-	my_master_rank=0;
+	//my_master_rank=0;
 	if (master) color=0;
 	else color=MPI_UNDEFINED;
 	PMPI_Comm_dup(MPI_COMM_WORLD,&new_world_comm);
@@ -298,6 +392,7 @@ void update_configuration()
 void ear_init()
 {
 	char *summary_pathname;
+	char *tmp;
 	state_t st;
 	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
 	architecture_t arch_desc;
@@ -312,6 +407,12 @@ void ear_init()
 
 	// Environment initialization
 	ear_lib_environment();
+
+	tmp=get_ear_tmp();
+	if (get_lib_shared_data_path(tmp,lib_shared_region_path)==EAR_SUCCESS){
+		unlink(lib_shared_region_path);
+	}
+	
 
 	if (ext_def_freq_str!=NULL){
 		ext_def_freq=(unsigned long)atol(ext_def_freq_str);
@@ -345,6 +446,7 @@ void ear_init()
 		return;
 	}
 #endif
+	debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	debug("system_conf_path %s",system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
@@ -356,14 +458,18 @@ void ear_init()
 	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
 		update_configuration();	
 	}else{
+		eard_ok=0;
 		debug("Shared memory not present");
 #if USE_LOCK_FILES
     debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
     if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
-		notify_eard_connection(0);
+		/* Only the node master will notify the problem to the other masters */
+		if (!my_id) notify_eard_connection(0);
 		my_id=1;
 	}	
+
+	if (!eard_ok) return;
 
 #if ONLY_MASTER
 	if (my_id != 0) {
@@ -397,19 +503,34 @@ void ear_init()
 	start_job(&application.job);
 
 	if (!my_id){ //only the master will connect with eard
-	verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
-	if (eards_connect(&application) == EAR_SUCCESS) {
-		debug("Rank %d connected with EARD", ear_my_rank);
-		notify_eard_connection(1);
-	}else{   
-		notify_eard_connection(0);
+		verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
+		if (eards_connect(&application) == EAR_SUCCESS) {
+			debug("Rank %d connected with EARD", ear_my_rank);
+			notify_eard_connection(1);
+		}else{   
+			eard_ok=0;
+			notify_eard_connection(0);
+		}
 	}
+
+	if (!eard_ok) return;
+
+
+	if (!my_id){
+		create_shared_regions();
+	}else{
+		attach_shared_regions();
 	}
-	
+
+	/* Processes in same node connectes each other*/
+
+	debug("Dynais init");	
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
-	
+
+	debug("Metrics init");	
 	metrics_init();
+	debug("frequency_init");
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
 
 	if (ear_my_rank == 0)
@@ -433,7 +554,9 @@ void ear_init()
 	print_arch_desc(&arch_desc);
 	#endif
 
+	debug("init_power_policy");
 	init_power_policy(system_conf,resched_conf);
+	debug("init_power_models");
 	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
 
 	if (ext_def_freq==0){
@@ -512,10 +635,12 @@ void ear_finalize()
 		return;
 	}	
 #endif
-
+	if (!eard_ok) return;
 #if USE_LOCK_FILES
-	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-	if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
+	if (!my_id){
+		debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+		file_unlock_master(fd_master_lock,fd_lock_filename);
+	}
 #endif
 
 	// Tracing
@@ -525,13 +650,15 @@ void ear_finalize()
 	traces_mpi_end();
 
 	// Closing and obtaining global metrics
+	debug("metrics dispose");
 	metrics_dispose(&application.signature, get_total_resources());
 	dynais_dispose();
-	frequency_dispose();
+	if (!my_id) frequency_dispose();
 
 	// Writing application data
 	if (!my_id) 
 	{
+		debug("Reporting application data");
 		eards_write_app_signature(&application);
 		append_application_text_file(app_summary_path, &application, 1);
 		report_mpi_application_data(&application);
@@ -564,8 +691,11 @@ void ear_finalize()
 	dettach_settings_conf_shared_area();
 	dettach_resched_shared_area();
 
-	// Cest fini
-	if (!my_id) eards_disconnect();
+	// C'est fini
+	if (!my_id){ 
+		debug("Disconnecting");
+		eards_disconnect();
+	}
 }
 
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest);
@@ -576,7 +706,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 #if EAR_OVERHEAD_CONTROL
 	time_t curr_time;
 	double time_from_mpi_init;
-
+	if (!eard_ok) return;
 #if ONLY_MASTER
 	if (my_id) return;
 #endif
@@ -676,7 +806,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
 
-		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
+		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 		/*traces_mpi_call(ear_my_rank, my_id,
 						(ulong) PAPI_get_real_usec(),
@@ -723,8 +853,8 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
-							  ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
+					//debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
+					//		  ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
@@ -769,7 +899,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		//ear_event_s = dynais_sample_convert(ear_event_l);
 
-		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
+		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) PAPI_get_real_usec(),
@@ -797,8 +927,8 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					debug("new iteration detected for level %hu, event %lu, size %u and iterations %u",
-							  ear_level, ear_event_l, ear_loop_size, ear_iterations);
+					//debug("new iteration detected for level %hu, event %lu, size %u and iterations %u",
+							  //ear_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
@@ -892,8 +1022,8 @@ void ear_new_iteration(unsigned long loop_id)
 				ear_iterations++;
 				if (loop_with_signature)
 				{
-				debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
-  				1, loop_id,1, ear_iterations);
+				//debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
+  				//1, loop_id,1, ear_iterations);
 				}
 				traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
 				states_new_iteration(my_id, 1, ear_iterations, 1, loop_id, mpi_calls_per_loop);

@@ -38,6 +38,7 @@
 #define _SHARED_CONF_H
 
 #include <common/config.h>
+#include <common/system/shared_areas.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/coefficient.h>

@@ -44,7 +44,6 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/shared_configuration.h>
 
-static int fd;
 static int fd_settings,fd_resched,fd_coeffs,fd_services,fd_freq;
 static coefficient_t null_coeffs[1],null_coeffs_default[1];
 
@@ -81,95 +80,6 @@ int get_coeffs_default_path(char *tmp,char *path)
 }
 
 
-/** BASIC FUNCTIONS */
-
-void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int must_clean)
-{
-	/* This function creates a shared memory region based on files and mmap */
-	int ret;
-	void * my_shared_region=NULL;		
-	char buff[256];
-	mode_t my_mask;
-	if ((area_size==0) || (data==NULL) || (path==NULL)){
-		error("creatinf shared region, invalid arguments. Not created\n");
-		return NULL;
-	}
-	my_mask=umask(0);
-	strcpy(buff,path);
-	verbose(VCONF+2,"creating file %s for shared memory\n",buff);
-	fd=open(buff,O_CREAT|O_RDWR|O_TRUNC,S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-	if (fd<0){
-		error("error creating sharing memory (%s)\n",strerror(errno));
-		umask(my_mask);
-		return NULL;
-	}
-	verbose(VCONF+2,"shared file for mmap created\n");
-	umask(my_mask);
-	// Default values
-	if (must_clean) bzero(data,area_size);
-	verbose(VCONF+2,"writting default values\n");
-	ret=write(fd,data,area_size);
-	if (ret<0){
-		error("error creating sharing memory (%s)\n",strerror(errno));
-		close(fd);
-		return NULL;
-	}
-	verbose(VCONF+2,"mapping shared memory\n");
-	my_shared_region= mmap(NULL, area_size,PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);                                     
-	if ((my_shared_region == MAP_FAILED) || (my_shared_region == NULL)){
-		error(" error creating sharing memory (%s)\n",strerror(errno));
-		close(fd);
-		return NULL;
-	}
-	*shared_fd=fd;
-	return my_shared_region;
-}
-
-void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd,int *s)
-{
-    void * my_shared_region=NULL;
-		char buff[256];
-		int flags;
-		int size;
-		strcpy(buff,path);
-    fd=open(buff,perm);
-    if (fd<0){
-        error("error attaching to sharing memory (%s)\n",strerror(errno));
-        return NULL;
-    }
-	if (area_size==0){
-		size=lseek(fd,0,SEEK_END);
-		if (size<0){
-			error("Error computing shared memory size (%s) ",strerror(errno));
-		}else area_size=size;
-		if (s!=NULL) *s=size;
-	}
-	if (perm==O_RDWR){
-		flags=PROT_READ|PROT_WRITE;
-	}else{
-		flags=PROT_READ;
-	}
-    my_shared_region= mmap(NULL, area_size,flags, MAP_SHARED, fd, 0);
-    if ((my_shared_region == MAP_FAILED) || (my_shared_region == NULL)){
-        error("error attaching to sharing memory (%s)\n",strerror(errno));
-        close(fd);
-        return NULL;
-    }
-	*shared_fd=fd;
-    return my_shared_region;
-}
-
-void dettach_shared_area(int fd)
-{
-	close(fd);
-}
-void dispose_shared_area(char *path,int fd)
-{
-	close(fd);
-	unlink(path);
-}
-
-/***** SPECIFIC FUNCTIONS *******************/
 
 
 //// SETTINGS

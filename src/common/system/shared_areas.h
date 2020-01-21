@@ -28,50 +28,12 @@
 */
 
 
-#include <linux/limits.h>
-#include <common/types/application.h>
-#include <common/types/loop.h>
-#include <common/states.h>
-#include <daemon/shared_configuration.h>
-#include <library/common/library_shared_data.h>
 
-loop_t loop;
-application_t loop_signature;
-application_t application;
-settings_conf_t *system_conf=NULL;
-resched_t *resched_conf=NULL;
-char system_conf_path[PATH_MAX];
-char resched_conf_path[PATH_MAX];
-char node_name[PATH_MAX];
+#ifndef _SHARED_AREAS_H
+#define _SHARED_AREAS_H
 
-char loop_summary_path[PATH_MAX];
-char app_summary_path[PATH_MAX];
-char ear_app_name[PATH_MAX]; //TODO: use application.app_id
-
-// Common variables
-ulong ear_frequency; 
-ulong EAR_default_frequency; 
-uint EAR_default_pstate;
-
-int ear_use_turbo = USE_TURBO; 
-int ear_whole_app;
-int ear_my_rank;
-int my_master_rank=-1;
-int my_job_id;
-int my_step_id;
-char my_account[GENERIC_NAME];
-int eard_ok=1;
-
-// DynAIS
-uint loop_with_signature;
-ulong last_first_event;
-ulong last_calls_in_loop;
-ulong last_loop_size;
-ulong last_loop_level;
-uint dynais_enabled = DYNAIS_ENABLED;
-uint check_periodic_mode=1;
-
-lib_shared_data_t *lib_shared_region=NULL;
-shsignature_t *sig_shared_region=NULL;
-int my_node_id;
-
+void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int must_clean);
+void * attach_shared_area(char *path,int area_size,uint perm,int *shared_fd,int *s);
+void dettach_shared_area(int fd);
+void dispose_shared_area(char *path,int fd);
+#endif

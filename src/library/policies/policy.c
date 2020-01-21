@@ -134,7 +134,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 	state_t st=EAR_ERROR;
 	*ready=1;
 	if (polsyms_fun.apply!=NULL){
-		if (!eards_connected()){
+		if (!eards_connected() || (my_master_rank<0)){
 			*ready=0;
 			return EAR_SUCCESS;
 		}
@@ -165,7 +165,7 @@ state_t policy_set_default_freq()
 	state_t st;
 	if (polsyms_fun.get_default_freq!=NULL){
   	st=polsyms_fun.get_default_freq(c,c->ear_frequency);
-  	eards_change_freq(*(c->ear_frequency));
+  	if (my_master_rank>=0) eards_change_freq(*(c->ear_frequency));
 		return st;
 	}else{ 
 		return EAR_ERROR;
@@ -244,7 +244,7 @@ state_t policy_configure()
 state_t policy_force_global_frequency(ulong new_f)
 {
   ear_frequency=new_f;
-  eards_change_freq(ear_frequency);
+  if (my_master_rank>=0) eards_change_freq(ear_frequency);
 	return EAR_SUCCESS;
 }
 

@@ -1,0 +1,158 @@
+/**************************************************************
+*	Energy Aware Runtime (EAR)
+*	This program is part of the Energy Aware Runtime (EAR).
+*
+*	EAR provides a dynamic, transparent and ligth-weigth solution for
+*	Energy management.
+*
+*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+*
+*       Copyright (C) 2017  
+*	BSC Contact 	mailto:ear-support@bsc.es
+*	Lenovo contact 	mailto:hpchelp@lenovo.com
+*
+*	EAR is free software; you can redistribute it and/or
+*	modify it under the terms of the GNU Lesser General Public
+*	License as published by the Free Software Foundation; either
+*	version 2.1 of the License, or (at your option) any later version.
+*	
+*	EAR is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+*	Lesser General Public License for more details.
+*	
+*	You should have received a copy of the GNU Lesser General Public
+*	License along with EAR; if not, write to the Free Software
+*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+*	The GNU LEsser General Public License is contained in the file COPYING	
+*/
+
+#include <fcntl.h>
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <strings.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <common/config.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/types/configuration/cluster_conf.h>
+#include <library/common/library_shared_data.h>
+
+static int fd_conf,fd_signatures;
+
+int  get_lib_shared_data_path(char *tmp,char *path)
+{
+	if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
+	sprintf(path,"%s/.ear_lib_shared_data",tmp);
+	return EAR_SUCCESS;	
+}
+int  get_shared_signatures_path(char *tmp,char *path)
+{
+	if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
+	sprintf(path,"%s/.ear_shared_signatures",tmp);
+	return EAR_SUCCESS;	
+}
+
+
+
+
+/***** SPECIFIC FUNCTIONS *******************/
+
+
+
+lib_shared_data_t * create_lib_shared_data_area(char * path)  
+{      	
+	lib_shared_data_t sh_data,*my_area;
+	my_area=(lib_shared_data_t *)create_shared_area(path,(char *)&sh_data,sizeof(lib_shared_data_t),&fd_conf,1);
+	return my_area;
+}
+
+lib_shared_data_t * attach_lib_shared_data_area(char * path)
+{
+    return (lib_shared_data_t *)attach_shared_area(path,sizeof(lib_shared_data_t),O_RDWR,&fd_conf,NULL);
+}                                
+void dettach_lib_shared_data_area()
+{
+	dettach_shared_area(fd_conf);
+}
+
+void lib_shared_data_area_dispose(char * path)
+{
+	dispose_shared_area(path,fd_conf);
+}
+
+
+void print_lib_shared_data(lib_shared_data_t *sh_data)
+{
+	fprintf(stderr,"sh_data num_processes %lu\n",sh_data->num_processes);
+
+}
+
+/// SIGNATURES
+
+// Creates a shared memory region between eard and ear_lib. returns NULL if error.
+shsignature_t * create_shared_signatures_area(char * path, int np)  
+{      	
+	shsignature_t *my_sig,*p2;
+
+	fprintf(stderr,"Creating region size=%d",sizeof(shsignature_t)*np);	
+	my_sig=(shsignature_t*)malloc(sizeof(shsignature_t)*np);
+	p2=create_shared_area(path,(char *)my_sig,sizeof(shsignature_t)*np,&fd_signatures,1);
+	free(my_sig);
+	fprintf(stderr,"after create_shared_area\n");
+	return p2;
+}
+
+shsignature_t * attach_shared_signatures_area(char * path,int np)
+{
+    return (shsignature_t *)attach_shared_area(path,sizeof(shsignature_t)*np,O_RDWR,&fd_signatures,NULL);
+}                                
+void dettach_shared_signatures_area()
+{
+	dettach_shared_area(fd_signatures);
+}
+void shared_signatures_area_dispose(char * path)
+{
+	dispose_shared_area(path,fd_signatures);
+}
+
+
+void signature_ready(shsignature_t *sig)
+{
+	sig->ready=1;
+}
+
+int compute_total_signatures_ready(lib_shared_data_t *data,shsignature_t *sig)
+{
+	int i,total=0;
+  for (i=0;i<data->num_processes;i++) total=total+sig[i].ready;
+	data->num_signatures=total;
+	return total;
+}
+int are_signatures_ready(lib_shared_data_t *data,shsignature_t *sig)
+{
+	int i;
+	compute_total_signatures_ready(data,sig);
+	return(data->num_signatures==data->num_processes);
+}
+
+void clean_signatures(lib_shared_data_t *data,shsignature_t *sig)
+{
+	int i,total=0;
+  for (i=0;i<data->num_processes;i++) sig[i].ready=0;
+}
+
+void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
+{
+	int i;
+	for (i=0;i<data->num_processes;i++){
+		fprintf(stdout,"signature[%d]={cpi %.3lf tpi %.3lf time %.3lf dc_power %.3lf}\n",i,sig[i].sig.CPI,sig[i].sig.TPI,
+		sig[i].sig.time,sig[i].sig.DC_power);
+	}
+}
+

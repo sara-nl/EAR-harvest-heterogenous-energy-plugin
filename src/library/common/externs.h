@@ -35,6 +35,7 @@
 #include <common/types/application.h>
 #include <common/types/loop.h>
 #include <daemon/shared_configuration.h>
+#include <library/common/library_shared_data.h>
 
 extern loop_t loop;
 extern application_t loop_signature;
@@ -58,6 +59,7 @@ extern unsigned int EAR_default_pstate;
 extern int ear_use_turbo;
 extern int ear_whole_app;
 extern int ear_my_rank;
+extern int eard_ok;
 extern int my_master_rank;
 extern int my_job_id;
 extern int my_step_id;
@@ -71,5 +73,11 @@ extern ulong last_loop_size;
 extern ulong last_loop_level;
 extern uint dynais_enabled;
 extern uint check_periodic_mode;
+
+// Shared regions for processes in same node
+extern lib_shared_data_t *lib_shared_region;
+extern shsignature_t *sig_shared_region;
+extern int my_node_id;
+
 
 #endif

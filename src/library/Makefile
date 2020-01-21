@@ -39,7 +39,8 @@ mpix_OBJS = \
     tracer/tracer.o \
     mpi_intercept/ear_api.o \
     mpi_intercept/process_MPI.o \
-    dynais/dynais.a
+    dynais/dynais.a \
+		common/library_shared_data.o
 
 mpic_OBJS = \
     mpi_intercept/mpi_definitions.o \

@@ -35,6 +35,7 @@
 // #define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
@@ -150,6 +151,18 @@ static long long metrics_l3[2];
 static int NI=0;
 
 
+void set_null_dc_energy(edata_t e)
+{
+	memset((void *)e,0,node_energy_datasize);
+}
+void set_null_rapl(ull *erapl)
+{
+	memset((void*)erapl,0,rapl_elements*sizeof(ull));
+}
+void set_null_uncores(ull *band)
+{
+	memset(band,0,bandwith_elements*sizeof(ull));
+}
 long long metrics_time()
 {
 	return PAPI_get_real_usec();
@@ -158,13 +171,20 @@ long long metrics_time()
 static void metrics_global_start()
 {
 	//
-	eards_begin_app_compute_turbo_freq();
-	// New
-  eards_node_dc_energy(aux_energy,node_energy_datasize);
   aux_time = metrics_time();
-  eards_read_rapl(aux_rapl);
-	eards_start_uncore();
-	eards_read_uncore(metrics_bandwith_init[APP]);
+	if (my_master_rank>=0){
+		eards_begin_app_compute_turbo_freq();
+	// New
+  	eards_node_dc_energy(aux_energy,node_energy_datasize);
+  	eards_read_rapl(aux_rapl);
+		eards_start_uncore();
+		eards_read_uncore(metrics_bandwith_init[APP]);
+	}else{
+		debug("Node metrics not available for process %d, setting it to 0 for now",my_master_rank);
+		set_null_dc_energy(aux_energy);
+		set_null_rapl(aux_rapl);
+		set_null_uncores(metrics_bandwith_init[APP]);
+	}
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
 	//eards_start_uncore();
 
@@ -173,7 +193,11 @@ static void metrics_global_start()
 static void metrics_global_stop()
 {
 	//
-	metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
+	if (my_master_rank>=0){ 
+		metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
+	}else{
+		metrics_avg_frequency[APP]=0;
+	}
 
 	// Accum calls
 	#if CACHE_METRICS
@@ -181,7 +205,11 @@ static void metrics_global_stop()
 	#endif
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
 	get_total_fops(metrics_flops[APP]);
-	eards_read_uncore(metrics_bandwith_end[APP]);
+	if (my_master_rank>=0){
+		eards_read_uncore(metrics_bandwith_end[APP]);
+	}else{
+		set_null_uncores(metrics_bandwith_end[APP]);
+	}
 	//eards_start_uncore();
 	diff_uncores(metrics_bandwith[APP],metrics_bandwith_end[APP],metrics_bandwith_init[APP],bandwith_elements);
 	
@@ -204,7 +232,9 @@ static void metrics_partial_start()
 	memcpy(metrics_ipmi[LOO],aux_energy,node_energy_datasize);
 	metrics_usecs[LOO]=aux_time;
 	
-	eards_begin_compute_turbo_freq();
+	if (my_master_rank>=0){ 
+		eards_begin_compute_turbo_freq();
+	}
 	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
 	copy_uncores(metrics_bandwith_init[LOO],metrics_bandwith_end[LOO],bandwith_elements);
 	for (i = 0; i < rapl_elements; i++) {
@@ -229,13 +259,18 @@ static int metrics_partial_stop(uint where)
 	char stop_energy_str[256],start_energy_str[256];
 
 	// Manual IPMI accumulation
-	eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
-	energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
-	energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
-	energy_lib_to_str(stop_energy_str,aux_energy_stop);	
-	if ((where==SIG_END) && (c_energy==0)){ 
-		debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
-		return EAR_NOT_READY;
+	if (my_master_rank>=0){
+		eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
+		energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
+		energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
+		energy_lib_to_str(stop_energy_str,aux_energy_stop);	
+		if ((where==SIG_END) && (c_energy==0) && (my_master_rank>=0)){ 
+			debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
+			return EAR_NOT_READY;
+		}
+	}else{
+		set_null_dc_energy(aux_energy_stop);
+		c_energy=0;
 	}
 	aux_time_stop = metrics_time();
 	/* Sometimes energy is not zero but power is not correct */
@@ -244,7 +279,8 @@ static int metrics_partial_stop(uint where)
 	debug("Energy computed %lu, time %lld",c_energy,c_time);
 	c_power=(float)(c_energy*(1000000.0/(double)node_energy_units))/(float)c_time;
 
-	if ((where==SIG_END) && (c_power<system_conf->min_sig_power)){ 
+	/* If we are not the node master, we will continue */
+	if ((where==SIG_END) && (c_power<system_conf->min_sig_power) && (my_master_rank>=0)){ 
 		debug("EAR_NOT_READY because of power %f\n",c_power);
 		return EAR_NOT_READY;
 	}
@@ -262,16 +298,21 @@ static int metrics_partial_stop(uint where)
 	metrics_usecs[APP] += metrics_usecs[LOO];
 	
 	// Daemon metrics
-	metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
+	if (my_master_rank>=0) metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
 	/* This code needs to be adapted to read , compute the difference, and copy begin=end 
  	* diff_uncores(values,values_end,values_begin,num_counters);
  	* copy_uncores(values_begin,values_end,num_counters);
  	*/
-	eards_read_uncore(metrics_bandwith_end[LOO]);
+	if (my_master_rank>=0){
+		eards_read_uncore(metrics_bandwith_end[LOO]);
+		eards_read_rapl(aux_rapl);
+	}else{
+		set_null_uncores(metrics_bandwith_end[LOO]);
+		set_null_rapl(aux_rapl);
+	}
 	//eards_start_uncore();
 	diff_uncores(metrics_bandwith[LOO],metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
 
-	eards_read_rapl(aux_rapl);
 
 	// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
 	for (i = 0; i < bandwith_elements; i++) {
@@ -322,6 +363,17 @@ ull metrics_vec_inst(signature_t *metrics)
     if (metrics->FLOPS[3]>0) VI = metrics->FLOPS[3] / metrics_flops_weights[3];
     if (metrics->FLOPS[7]>0) VI = VI + (metrics->FLOPS[7] / metrics_flops_weights[7]);
 	return VI;
+}
+
+void copy_node_data(signature_t *dest,signature_t *src)
+{
+	dest->DC_power=src->DC_power;
+	dest->DRAM_power=src->DRAM_power;
+	dest->PCK_power=src->PCK_power;
+	dest->GBS=src->GBS;
+	dest->TPI=src->TPI;
+	dest->avg_f=src->avg_f;
+	dest->EDP=src->EDP;
 }
 
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
@@ -408,6 +460,13 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
 	metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
 	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
+	/* This part is new to share with other processes */
+	debug("Sharing my signature with the others %d",my_node_id);
+	signature_ready(&sig_shared_region[my_node_id]);
+	if (sig_shared_region[0].ready){
+		copy_node_data(&sig_shared_region[my_node_id].sig,&sig_shared_region[0].sig);
+	}
+	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
 }
 
 int metrics_init()
@@ -461,8 +520,15 @@ int metrics_init()
 	}
 
 	// Daemon metrics allocation (TODO: standarize data size)
-	rapl_size = eards_get_data_size_rapl();
+	if (my_master_rank>=0){
+		rapl_size = eards_get_data_size_rapl();
+		bandwith_size = eards_get_data_size_uncore();
+	}else{
+		rapl_size=sizeof(unsigned long long);
+		bandwith_size=sizeof(long long);
+	}
 	rapl_elements = rapl_size / sizeof(unsigned long long);
+	bandwith_elements = bandwith_size / sizeof(long long);
 
 	// Allocating data for energy node metrics
 	// node_energy_datasize=eards_node_energy_data_size();
@@ -479,8 +545,6 @@ int metrics_init()
 	acum_ipmi[0]=0;acum_ipmi[1]=0;
 	
 
-	bandwith_size = eards_get_data_size_uncore();
-	bandwith_elements = bandwith_size / sizeof(long long);
 
 	metrics_bandwith[LOO] = malloc(bandwith_size);
 	metrics_bandwith[APP] = malloc(bandwith_size);

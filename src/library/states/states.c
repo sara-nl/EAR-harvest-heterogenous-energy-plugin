@@ -149,7 +149,11 @@ void states_begin_job(int my_id,  char *app_name)
 	/* LOOP WAS CREATED HERE BEFORE */
 
 	perf_accuracy_min_time = get_ear_performance_accuracy();
-	architecture_min_perf_accuracy_time=eards_node_energy_frequency();
+	if (my_master_rank>=0){
+		architecture_min_perf_accuracy_time=eards_node_energy_frequency();
+	}else{
+		architecture_min_perf_accuracy_time=1000000;
+	}
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
 	
 	EAR_STATE = NO_PERIOD;
@@ -192,7 +196,7 @@ void states_end_period(uint iterations)
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		if (system_conf->report_loops){
 		#if USE_DB
-		eards_write_loop_signature(&loop);
+		if (my_master_rank>=0) eards_write_loop_signature(&loop);
 		#endif
 		}
 	}
@@ -222,7 +226,7 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
     	#if DYNAIS_CUTOFF
     	dynais_enabled=DYNAIS_DISABLED;
     	#endif
-    	log_report_dynais_off(application.job.id,application.job.step_id);
+    	if (my_master_rank>=0) log_report_dynais_off(application.job.id,application.job.step_id);
     }
 	if (dynais_enabled==DYNAIS_DISABLED){
     	debug("DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
@@ -261,7 +265,7 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
    	append_loop_text_file(loop_summary_path, my_loop,job);
 	#endif
 	#if USE_DB
-    eards_write_loop_signature(my_loop);
+    if (my_master_rank>=0) eards_write_loop_signature(my_loop);
     #endif
 }
 
@@ -455,7 +459,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					tries_current_loop++;
 					comp_N_begin = metrics_time();
 					EAR_STATE = RECOMPUTING_N;
-					log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+					if (my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 				}
 				else
 				{
@@ -545,7 +549,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			/* We must report a problem and go to the default configuration*/
 			if (tries_current_loop>=MAX_POLICY_TRIES){
-				log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
+				if (my_master_rank>=0) log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 				EAR_STATE = PROJECTION_ERROR;
 				traces_policy_state(ear_my_rank, my_id,PROJECTION_ERROR);
 				pst=policy_get_default_freq(&policy_freq);

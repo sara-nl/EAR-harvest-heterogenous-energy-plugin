@@ -60,6 +60,6 @@
 
 #define EAR_CPUPOWER	1
 #define EARL_RESEARCH 1
-#define ONLY_MASTER 1
+#define ONLY_MASTER 0
 
 #endif //EAR_CONFIG_DEV_H
