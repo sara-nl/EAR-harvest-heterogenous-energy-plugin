@@ -77,6 +77,11 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 	return stamp;
 }
 
+void print_timestamp(timestamp *ts)
+{
+	fprintf(stdout,"Secs %llu nsec %llu\n",ts->tv_sec,ts->tv_nsec);
+}
+
 ullong timestamp_getfast_convert(timestamp_t *ts, ullong time_unit)
 {
 	timestamp_getfast(ts);

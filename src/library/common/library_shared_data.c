@@ -89,7 +89,7 @@ void lib_shared_data_area_dispose(char * path)
 
 void print_lib_shared_data(lib_shared_data_t *sh_data)
 {
-	fprintf(stderr,"sh_data num_processes %lu\n",sh_data->num_processes);
+	fprintf(stderr,"sh_data num_processes %lu signatures %d cas_counters %lf\n",sh_data->num_processes,sh_data->num_signatures,sh_data->cas_counters);
 
 }
 
@@ -100,11 +100,9 @@ shsignature_t * create_shared_signatures_area(char * path, int np)
 {      	
 	shsignature_t *my_sig,*p2;
 
-	fprintf(stderr,"Creating region size=%d",sizeof(shsignature_t)*np);	
 	my_sig=(shsignature_t*)malloc(sizeof(shsignature_t)*np);
 	p2=create_shared_area(path,(char *)my_sig,sizeof(shsignature_t)*np,&fd_signatures,1);
 	free(my_sig);
-	fprintf(stderr,"after create_shared_area\n");
 	return p2;
 }
 
@@ -147,10 +145,37 @@ void clean_signatures(lib_shared_data_t *data,shsignature_t *sig)
   for (i=0;i<data->num_processes;i++) sig[i].ready=0;
 }
 
+void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig)
+{
+  int i,total=0;
+  for (i=0;i<data->num_processes;i++){ 
+		sig[i].mpi_info.mpi_time=0;
+		sig[i].mpi_info.total_mpi_calls=0;
+		sig[i].mpi_info.perc_mpi=0;
+		sig[i].mpi_info.exec_time=0;
+	}
+}
+
+int select_cp(lib_shared_data_t *data,shsignature_t *sig)
+{
+  int i,rank=1;
+	double minp=sig[i].mpi_info.perc_mpi;
+  for (i=1;i<data->num_processes;i++){
+    if (sig[i].mpi_info.perc_mpi<minp) rank=sig[i].mpi_info.rank;
+  }
+	return rank;
+}
+
+
+
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
 {
 	int i;
+	double percmpi;
+
 	for (i=0;i<data->num_processes;i++){
+		fprintf(stdout,"RANK %d mpi_data[%d]={total_mpi_calls %u mpi_time %llu exec_time %llu PercTime %lf}\n",
+		sig[i].mpi_info.rank,i,sig[i].mpi_info.total_mpi_calls,sig[i].mpi_info.mpi_time,sig[i].mpi_info.exec_time,sig[i].mpi_info.perc_mpi);
 		fprintf(stdout,"signature[%d]={cpi %.3lf tpi %.3lf time %.3lf dc_power %.3lf}\n",i,sig[i].sig.CPI,sig[i].sig.TPI,
 		sig[i].sig.time,sig[i].sig.DC_power);
 	}

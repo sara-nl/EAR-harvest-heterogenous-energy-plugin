@@ -118,7 +118,7 @@ static void print_local_data()
 	#if EAR_LIB_SYNC 
 	if (ear_my_rank>=0) {
 	#endif
-	verbose(1, "--------------------------------");
+	verbose(1, "MASTER=%d-----------------------",(my_master_rank>=0));
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
@@ -825,7 +825,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
+				verbose(1,"NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
 				ear_iterations=0;
 				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				ear_loop_size=(uint)ear_size;

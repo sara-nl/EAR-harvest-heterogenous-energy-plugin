@@ -144,7 +144,9 @@ void states_begin_job(int my_id,  char *app_name)
 		sig_ready[i]=0;
 	}
 	//init_application(&last_signature);
+#if ONLY_MASTER
 	if (my_id) return;
+#endif
 
 	/* LOOP WAS CREATED HERE BEFORE */
 
@@ -156,10 +158,12 @@ void states_begin_job(int my_id,  char *app_name)
 	}
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
 	
+	verbose(1,"Using %lu as performance accuracy",perf_accuracy_min_time);
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 	init_log();
 	pst=policy_max_tries(&MAX_POLICY_TRIES);
+	
 }
 
 int states_my_state()
@@ -317,6 +321,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		}
 	}
 	}
+	/* If the master signature is ready we check the others */
+	if ((my_master_rank>=0) && sig_shared_region[0].ready){
+		if (are_signatures_ready(lib_shared_region,sig_shared_region)){
+			print_shared_signatures(lib_shared_region,sig_shared_region);
+			clean_signatures(lib_shared_region,sig_shared_region);
+			verbose(1,"RANK %d is the CP",select_cp(lib_shared_region,sig_shared_region));
+		}
+	}
 
 	switch (EAR_STATE)
 	{
@@ -417,6 +429,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period++;
 				return;
 			}
+			verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
+			signature_ready(&sig_shared_region[my_node_id]);
 			//print_loop_signature("signature computed", &loop_signature.signature);
             /* Included for dynais test */
             if (loop_with_signature==0){
@@ -490,6 +504,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period++;
 				return;
 			}
+      verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
+      signature_ready(&sig_shared_region[my_node_id]);
+
 			/*print_loop_signature("signature refreshed", &loop_signature.signature);*/
 
 			SET_VARIABLES();

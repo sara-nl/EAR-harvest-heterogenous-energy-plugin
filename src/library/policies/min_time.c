@@ -40,6 +40,10 @@
 #include <daemon/eard_api.h>
 #include <library/policies/policy_api.h>
 #include <common/math_operations.h>
+#include <library/common/externs.h>
+#include <common/system/time.h>
+
+static timestamp init;
 
 typedef unsigned long ulong;
 
@@ -52,8 +56,13 @@ extern unsigned long ext_def_freq;
 
 state_t policy_init(polctx_t *c)
 {
-	if (c!=NULL) return EAR_SUCCESS;
-	else return EAR_ERROR;
+	if (c!=NULL){ 
+	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
+  	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
+		sig_shared_region[my_node_id].mpi_info.exec_time=0;
+
+		return EAR_SUCCESS;
+	}else return EAR_ERROR;
 }
 
 
@@ -217,5 +226,21 @@ state_t policy_max_tries(polctx_t *c,int *intents)
 {
   *intents=2;
   return EAR_SUCCESS;
+}
+
+state_t policy_mpi_init(polctx_t *c)
+{
+	timestamp_getfast(&init);	
+	return EAR_SUCCESS;
+}
+state_t policy_mpi_end(polctx_t *c)
+{
+	timestamp end;
+	ullong elap;
+	timestamp_getfast(&end);
+	elap=timestamp_diff(&end,&init,(ullong)1);
+	sig_shared_region[my_node_id].mpi_info.mpi_time+=elap;
+	sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
+	return EAR_SUCCESS;
 }
 

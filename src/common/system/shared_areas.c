@@ -39,7 +39,7 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/shared_areas.h>
 
@@ -68,7 +68,6 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int 
 		umask(my_mask);
 		return NULL;
 	}
-	debug("File created");
 	verbose(VCONF+2,"shared file for mmap created\n");
 	umask(my_mask);
 	// Default values
@@ -80,7 +79,6 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int 
 		close(fd);
 		return NULL;
 	}
-	debug("File written with 0,size %d",area_size);
 	verbose(VCONF+2,"mapping shared memory\n");
 	my_shared_region= mmap(NULL, area_size,PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);                                     
 	if ((my_shared_region == MAP_FAILED) || (my_shared_region == NULL)){
@@ -89,7 +87,6 @@ void *create_shared_area(char *path,char *data,int area_size,int *shared_fd,int 
 		return NULL;
 	}
 	*shared_fd=fd;
-	debug("Region created at %p",my_shared_region);
 	return my_shared_region;
 }
 

@@ -23,6 +23,9 @@ all: $(poli_OBJS) $(modl_BINS)
 %.so: %.o 
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	
 
+min_time.so: min_time.o 
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
+
 ######## OPTIONS 
 
 install: modl.ginstall;
