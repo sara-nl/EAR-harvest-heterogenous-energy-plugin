@@ -67,7 +67,6 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 	if (ts2->tv_nsec < ts1->tv_nsec) {
 		ts2->tv_sec   = ts2->tv_sec - 1;
 		ts2->tv_nsec += 1000000000;
-		ts2->tv_sec=ts2->tv_sec-1;
 	}
 
 	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);

@@ -123,6 +123,7 @@ int are_signatures_ready(lib_shared_data_t *data,shsignature_t *sig);
 void clean_signatures(lib_shared_data_t *data,shsignature_t *sig);
 void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig);
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig);
+void clean_my_mpi_info(mpi_information_t *info);
 
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);
 #endif

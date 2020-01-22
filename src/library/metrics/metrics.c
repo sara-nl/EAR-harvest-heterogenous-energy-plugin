@@ -201,6 +201,7 @@ static void metrics_global_start()
 
 static void metrics_global_stop()
 {
+	timestamp end_mpi_time;
 	//
 	if (my_master_rank>=0){ 
 		metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
@@ -225,7 +226,7 @@ static void metrics_global_stop()
   unsigned long long extime;
   extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);
   sig_shared_region[my_node_id].mpi_info.exec_time=extime;
-	sig[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
+	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 
 	
 }
@@ -474,7 +475,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	unsigned long long extime;
 	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);	
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
-  sig[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
+  sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
 	signature_ready(&sig_shared_region[my_node_id]);
 }

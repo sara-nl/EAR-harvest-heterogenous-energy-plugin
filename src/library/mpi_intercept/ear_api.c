@@ -229,6 +229,9 @@ void create_shared_regions()
 		}
 	}
 	sig_shared_region[my_node_id].master=1;
+	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
+	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
+
 	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 		error("MPI_Barrier");
 		return;
@@ -273,6 +276,8 @@ void attach_shared_regions()
 			}
 	}
 	sig_shared_region[my_node_id].master=0;
+	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
+	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
 }
 /* Connects the mpi process to a new communicator composed by masters */
 void attach_to_master_set(int master)

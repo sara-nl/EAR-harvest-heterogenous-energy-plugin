@@ -156,12 +156,23 @@ void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig)
 	}
 }
 
+void clean_my_mpi_info(mpi_information_t *info)
+{
+	info->mpi_time=0;
+	info->total_mpi_calls=0;
+	info->perc_mpi=0;
+	info->exec_time=0;
+}
+
 int select_cp(lib_shared_data_t *data,shsignature_t *sig)
 {
-  int i,rank=1;
-	double minp=sig[i].mpi_info.perc_mpi;
+  int i,rank=sig[0].mpi_info.rank;
+	double minp=sig[0].mpi_info.perc_mpi;
   for (i=1;i<data->num_processes;i++){
-    if (sig[i].mpi_info.perc_mpi<minp) rank=sig[i].mpi_info.rank;
+    if (sig[i].mpi_info.perc_mpi<minp){ 
+			rank=sig[i].mpi_info.rank;
+			minp=sig[i].mpi_info.perc_mpi;
+		}
   }
 	return rank;
 }

@@ -43,7 +43,7 @@
 #include <library/common/externs.h>
 #include <common/system/time.h>
 
-static timestamp init;
+static timestamp pol_time_init;
 
 typedef unsigned long ulong;
 
@@ -60,6 +60,7 @@ state_t policy_init(polctx_t *c)
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
   	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
 		sig_shared_region[my_node_id].mpi_info.exec_time=0;
+		sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
 
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
@@ -230,7 +231,7 @@ state_t policy_max_tries(polctx_t *c,int *intents)
 
 state_t policy_mpi_init(polctx_t *c)
 {
-	timestamp_getfast(&init);	
+	timestamp_getfast(&pol_time_init);	
 	return EAR_SUCCESS;
 }
 state_t policy_mpi_end(polctx_t *c)
@@ -238,8 +239,8 @@ state_t policy_mpi_end(polctx_t *c)
 	timestamp end;
 	ullong elap;
 	timestamp_getfast(&end);
-	elap=timestamp_diff(&end,&init,(ullong)1);
-	sig_shared_region[my_node_id].mpi_info.mpi_time+=elap;
+	elap=timestamp_diff(&end,&pol_time_init,(ullong)1);
+	sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
 	sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
 	return EAR_SUCCESS;
 }
