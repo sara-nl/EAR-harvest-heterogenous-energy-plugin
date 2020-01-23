@@ -67,6 +67,7 @@ int lock_master(char *path_tmp)
 	//
 	sprintf(path_mas, "%s/erun.master.lock", path_tmp);
 	fd_mas = file_lock_master(path_mas);
+fprintf(stderr, "path_mas %s and %d\n", path_mas, fd_mas);
 
 	if (fd_mas >= 0) {
 		return 1;

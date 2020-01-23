@@ -217,6 +217,8 @@ int job(int argc, char *argv[])
 		sprintf(plug_tmp, "localstatedir=%s", p);
 		sprintf(path_tmp, "%s", p);
 		err_tmp = 0;
+	} else {
+		sprintf(path_tmp, "/tmp", p);
 	}
 	if ((p = getenv("EAR_DEFAULT")) != NULL) {
 		sprintf(plug_def, "default=%s", p);
