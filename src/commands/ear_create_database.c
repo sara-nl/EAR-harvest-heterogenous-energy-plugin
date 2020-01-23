@@ -256,6 +256,7 @@ id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,\
+GPU_power FLOAT,\
 EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
@@ -281,6 +282,7 @@ id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,\
+GPU_power FLOAT,\
 EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
@@ -303,6 +305,9 @@ job_id INT unsigned NOT NULL, \
 step_id INT unsigned NOT NULL, \
 avg_f INT, \
 temp INT, \
+DRAM_power FLOAT, \
+PCK_power FLOAT, \
+GPU_power FLOAT, \
 PRIMARY KEY (id))");
 }else{
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
