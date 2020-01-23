@@ -52,8 +52,9 @@
 #define APPLICATION_ARGS            5
 #define LOOP_ARGS                   8
 #define JOB_ARGS                    16
+
 #if DEMO
-#define PERIODIC_METRIC_ARGS        7
+#define PERIODIC_METRIC_ARGS        8
 #else
 #define PERIODIC_METRIC_ARGS        6
 #endif
@@ -64,7 +65,6 @@
 #define SIGNATURE_ARGS              11
 #define AVG_SIGNATURE_ARGS          14
 #endif
-
 
 
 
