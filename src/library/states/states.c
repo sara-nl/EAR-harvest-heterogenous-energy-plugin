@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <mpi.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,6 +44,7 @@
 #include <common/types/log.h>
 #include <common/types/application.h>
 #include <library/common/externs.h>
+#include <library/common/global_comm.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
@@ -51,6 +52,9 @@
 #include <common/hardware/frequency.h>
 #include <daemon/eard_api.h>
 #include <common/environment.h>
+
+extern masters_info_t masters_info;
+
 
 
 
@@ -104,14 +108,14 @@ extern uint check_periodic_mode;
 
 
 #define  REPORT_TRACES() \
-			if (my_master_rank>=0){\
+			if (masters_info.my_master_rank>=0){\
       	traces_new_signature(ear_my_rank, my_id, &loop.signature); \
       	traces_frequency(ear_my_rank, my_id, policy_freq); \
 			}
       // traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
 #define VERBOSE_SIG() \
-			if (my_master_rank>=0){\
+			if (masters_info.my_master_rank>=0){\
       	verbose(1,"EAR(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
       	verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, EDP,policy_freq);\
 			}
@@ -155,7 +159,7 @@ void states_begin_job(int my_id,  char *app_name)
 	/* LOOP WAS CREATED HERE BEFORE */
 
 	perf_accuracy_min_time = get_ear_performance_accuracy();
-	if (my_master_rank>=0){
+	if (masters_info.my_master_rank>=0){
 		architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 	}else{
 		architecture_min_perf_accuracy_time=1000000;
@@ -203,7 +207,7 @@ void states_end_period(uint iterations)
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		if (system_conf->report_loops){
 		#if USE_DB
-		if (my_master_rank>=0) eards_write_loop_signature(&loop);
+		if (masters_info.my_master_rank>=0) eards_write_loop_signature(&loop);
 		#endif
 		}
 	}
@@ -233,7 +237,7 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
     	#if DYNAIS_CUTOFF
     	dynais_enabled=DYNAIS_DISABLED;
     	#endif
-    	if (my_master_rank>=0) log_report_dynais_off(application.job.id,application.job.step_id);
+    	if (masters_info.my_master_rank>=0) log_report_dynais_off(application.job.id,application.job.step_id);
     }
 	if (dynais_enabled==DYNAIS_DISABLED){
     	debug("DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
@@ -272,10 +276,22 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
    	append_loop_text_file(loop_summary_path, my_loop,job);
 	#endif
 	#if USE_DB
-    if (my_master_rank>=0) eards_write_loop_signature(my_loop);
+    if (masters_info.my_master_rank>=0) eards_write_loop_signature(my_loop);
     #endif
 }
 
+
+void check_node_signatures()
+{
+	  /* If the master signature is ready we check the others */
+  if ((masters_info.my_master_rank>=0) && sig_shared_region[0].ready){
+    if (are_signatures_ready(lib_shared_region,sig_shared_region)){
+      print_shared_signatures(lib_shared_region,sig_shared_region);
+      clean_signatures(lib_shared_region,sig_shared_region);
+      verbose(1,"RANK %d is the CP",select_cp(lib_shared_region,sig_shared_region));
+    }
+  }
+}
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC;
@@ -324,14 +340,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		}
 	}
 	}
-	/* If the master signature is ready we check the others */
-	if ((my_master_rank>=0) && sig_shared_region[0].ready){
-		if (are_signatures_ready(lib_shared_region,sig_shared_region)){
-			print_shared_signatures(lib_shared_region,sig_shared_region);
-			clean_signatures(lib_shared_region,sig_shared_region);
-			verbose(1,"RANK %d is the CP",select_cp(lib_shared_region,sig_shared_region));
-		}
-	}
+
+	check_node_signatures();
 
 	switch (EAR_STATE)
 	{
@@ -476,7 +486,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					tries_current_loop++;
 					comp_N_begin = metrics_time();
 					EAR_STATE = RECOMPUTING_N;
-					if (my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+					if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 				}
 				else
 				{
@@ -569,7 +579,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			/* We must report a problem and go to the default configuration*/
 			if (tries_current_loop>=MAX_POLICY_TRIES){
-				if (my_master_rank>=0) log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
+				if (masters_info.my_master_rank>=0) log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 				EAR_STATE = PROJECTION_ERROR;
 				traces_policy_state(ear_my_rank, my_id,PROJECTION_ERROR);
 				pst=policy_get_default_freq(&policy_freq);

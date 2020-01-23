@@ -1,7 +1,7 @@
 all: metrics.o
 
 metrics.o: metrics.c metrics.h
-	$(CC) $(CC_FLAGS) $(CFLAGS) -c metrics.c
+	$(MPICC) $(CC_FLAGS) $(CFLAGS) -c metrics.c
 
 ######## OPTIONS 
 

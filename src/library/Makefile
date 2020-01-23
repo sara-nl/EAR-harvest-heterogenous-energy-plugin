@@ -40,12 +40,13 @@ mpix_OBJS = \
     mpi_intercept/ear_api.o \
     mpi_intercept/process_MPI.o \
     dynais/dynais.a \
-		common/library_shared_data.o
+		common/library_shared_data.o \
 
 mpic_OBJS = \
     mpi_intercept/mpi_definitions.o \
     mpi_intercept/mpi_interception.o \
     mpi_intercept/MPI_interface.o \
+		common/global_comm.o
 
 ifeq ($(FEAT_FORT), 1)
 mpif_OBJS = \
@@ -80,6 +81,7 @@ clean: clean.components rclean;
 	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'states' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'tracer' $* MPICC='$(MPICC)' || exit
+	@ $(MAKE) -B -C 'common' $* MPICC='$(MPICC)' || exit
 
 ######## DEPENDENCIES
 

@@ -60,7 +60,7 @@ extern int ear_use_turbo;
 extern int ear_whole_app;
 extern int ear_my_rank;
 extern int eard_ok;
-extern int my_master_rank;
+//extern int my_master_rank;
 extern int my_job_id;
 extern int my_step_id;
 extern char my_account[GENERIC_NAME];

@@ -46,6 +46,7 @@
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <library/common/externs_alloc.h>
+#include <library/common/global_comm.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
@@ -99,15 +100,14 @@ static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
 static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #endif
-#if EAR_LIB_SYNC
 #define MASTERS_SYNC_VERBOSE 1
+masters_info_t masters_info;
 MPI_Comm new_world_comm,masters_comm;
 int num_masters;
 int my_master_size;
 int masters_connected=0;
 unsigned masters_comm_created=0;
-#endif
-
+mpi_information_t *per_node_mpi_info, *global_mpi_info;
 char lib_shared_region_path[GENERIC_NAME];
 char shsignature_region_path[GENERIC_NAME];
 char block_file[GENERIC_NAME];
@@ -115,10 +115,8 @@ char block_file[GENERIC_NAME];
 //
 static void print_local_data()
 {
-	#if EAR_LIB_SYNC 
-	if (my_master_rank>=0) {
-	#endif
-	verbose(1, "MASTER=%d-----------------------",(my_master_rank>=0));
+	if (masters_info.my_master_rank>=0) {
+	verbose(1, "MASTER=%d-----------------------",(masters_info.my_master_rank>=0));
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
@@ -129,22 +127,19 @@ static void print_local_data()
 	verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
 	verbose(1, "VAR path: %s", get_ear_tmp());
 	verbose(1, "--------------------------------");
-	#if EAR_LIB_SYNC
 	}
-	#endif
 }
 
 
 /* notifies mpi process has succesfully connected with EARD */
 void notify_eard_connection(int status)
 {
-	#if EAR_LIB_SYNC
 	char *buffer_send;
 	char *buffer_recv;
 	int i;
 	if (masters_comm_created){
 	buffer_send = calloc(    1, sizeof(char));
-	buffer_recv = calloc(my_master_size, sizeof(char));
+	buffer_recv = calloc(masters_info.my_master_size, sizeof(char));
 	if ((buffer_send==NULL) || (buffer_recv==NULL)){
 			error("Error, memory not available for synchronization\n");
 			my_id=1;
@@ -154,23 +149,23 @@ void notify_eard_connection(int status)
 	buffer_send[0] = (char)status; 
 
 	/* Not clear the error values */
-	if (my_master_rank==0) {
-		debug("Number of nodes expected %d\n",my_master_size);
+	if (masters_info.my_master_rank==0) {
+		debug("Number of nodes expected %d\n",masters_info.my_master_size);
 	}
-	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_comm);
+	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_info.masters_comm);
 
 
-	for (i = 0; i < my_master_size; ++i)
+	for (i = 0; i < masters_info.my_master_size; ++i)
 	{       
 		masters_connected+=(int)buffer_recv[i];
 	}
-	if (my_master_rank==0) {
+	if (masters_info.my_master_rank==0) {
 		debug("Total number of masters connected %d",masters_connected);
 	}
-  if (masters_connected!=my_master_size){
+  if (masters_connected!=masters_info.my_master_size){
   /* Some of the nodes is not ok , setting off EARL */
-    if (my_master_rank==0) {
-      verbose(1,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",my_master_size,masters_connected);
+    if (masters_info.my_master_rank==0) {
+      verbose(1,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",masters_info.my_master_size,masters_connected);
     }
     my_id=1;
     return;
@@ -183,7 +178,6 @@ void notify_eard_connection(int status)
 	}
 	return;
 	}
-	#endif
 }
 
 
@@ -236,6 +230,18 @@ void create_shared_regions()
 		error("MPI_Barrier");
 		return;
 	}
+	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
+	if (share_global_info(masters_info.masters_comm,(char *)&lib_shared_region->num_processes,sizeof(int),(char*)masters_info.ppn,sizeof(int))!=EAR_SUCCESS){
+		error("Sharing the number of processes per node");
+	}
+	int i;
+	masters_info.max_ppn=masters_info.ppn[0];
+	for (i=1;i<masters_info.my_master_size;i++){ 
+		if (masters_info.ppn[i]>masters_info.max_ppn) masters_info.max_ppn=masters_info.ppn[i];
+		verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
+	}
+	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
+	
 }
 
 void attach_shared_regions()
@@ -278,24 +284,29 @@ void attach_shared_regions()
 	sig_shared_region[my_node_id].master=0;
 	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
 	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
+	
 }
 /* Connects the mpi process to a new communicator composed by masters */
 void attach_to_master_set(int master)
 {
-	#if EAR_LIB_SYNC
 	int color;
 	//my_master_rank=0;
 	if (master) color=0;
 	else color=MPI_UNDEFINED;
-	PMPI_Comm_dup(MPI_COMM_WORLD,&new_world_comm);
-	PMPI_Comm_split(new_world_comm, color, my_master_rank, &masters_comm);
+	if (master) masters_info.my_master_rank=0;
+	else masters_info.my_master_rank=-1;
+	if (PMPI_Comm_dup(MPI_COMM_WORLD,&masters_info.new_world_comm)!=MPI_SUCCESS){
+		error("Duplicating MPI_COMM_WORLD");
+	}
+	if (PMPI_Comm_split(masters_info.new_world_comm, color, masters_info.my_master_rank, &masters_info.masters_comm)!=MPI_SUCCESS){
+    error("Splitting MPI_COMM_WORLD");
+  }
 	masters_comm_created=1;
 	if ((masters_comm_created) && (!color)){
-		PMPI_Comm_rank(masters_comm,&my_master_rank);
-		PMPI_Comm_size(masters_comm,&my_master_size);
-		debug("New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
+		PMPI_Comm_rank(masters_info.masters_comm,&masters_info.my_master_rank);
+		PMPI_Comm_size(masters_info.masters_comm,&masters_info.my_master_size);
+		debug("New master communicator created with %d masters. My master rank %d\n",masters_info.my_master_size,masters_info.my_master_rank);
 	}
-	#endif
 }
 /* returns the local id in the node */
 static int get_local_id(char *node_name)
@@ -608,11 +619,7 @@ void ear_init()
 	fflush(stderr);
 
 	// Tracing init
-	#if EAR_LIB_SYNC	
-	traces_init(system_conf,application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
-	#else
-	traces_init(system_conf,application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
-	#endif
+	traces_init(system_conf,application.job.app_id,masters_info.my_master_rank, my_id, num_nodes, my_size, ppnode);
 
 	traces_start();
 	traces_frequency(ear_my_rank, my_id, EAR_default_frequency);
@@ -621,15 +628,9 @@ void ear_init()
 	traces_mpi_init();
 	
 	// All is OK :D
-	#if EAR_LIB_SYNC
-	if (my_master_rank==0) {
+	if (masters_info.my_master_rank==0) {
 		verbose(1, "EAR initialized successfully ");
 	}
-	#else
-	if (ear_my_rank==0) {
-		verbose(1, "EAR initialized successfully ");
-	}
-	#endif
 }
 
 void ear_finalize()

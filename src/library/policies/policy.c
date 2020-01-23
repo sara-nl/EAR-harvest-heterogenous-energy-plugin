@@ -26,7 +26,7 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
-
+#include <mpi.h>
 #include <dlfcn.h>
 #include <common/includes.h>
 #include <common/system/symplug.h>
@@ -34,12 +34,14 @@
 #include <library/policies/policy_ctx.h>
 #include <library/policies/policy.h>
 #include <library/common/externs.h>
+#include <library/common/global_comm.h>
 #include <common/environment.h>
 #include <daemon/eard_api.h>
 
-// external symbols
+extern masters_info_t masters_info;
+/*
 extern MPI_Comm masters_comm,new_world_comm;
-
+*/
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
@@ -108,8 +110,14 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	my_pol_ctx.ear_frequency=&ear_frequency;
 	my_pol_ctx.num_pstates=frequency_get_num_pstates();
 	my_pol_ctx.use_turbo=ear_use_turbo;
-	my_pol_ctx.mpi.comm=new_world_comm;
-	my_pol_ctx.mpi.master_comm=masters_comm;
+	if (PMPI_Comm_dup(masters_info.new_world_comm,&my_pol_ctx.mpi.comm)!=MPI_SUCCESS){
+		error("Duplicating COMM_WORLD in policy");
+	}
+	if (masters_info.my_master_rank>=0){
+	if (PMPI_Comm_dup(masters_info.masters_comm, &my_pol_ctx.mpi.master_comm)!=MPI_SUCCESS){
+    error("Duplicating master_comm in policy");
+  }
+	}
 	return policy_init();
 }
 
@@ -134,7 +142,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 	state_t st=EAR_ERROR;
 	*ready=1;
 	if (polsyms_fun.apply!=NULL){
-		if (!eards_connected() || (my_master_rank<0)){
+		if (!eards_connected() || (masters_info.my_master_rank<0)){
 			*ready=0;
 			return EAR_SUCCESS;
 		}
@@ -165,7 +173,7 @@ state_t policy_set_default_freq()
 	state_t st;
 	if (polsyms_fun.get_default_freq!=NULL){
   	st=polsyms_fun.get_default_freq(c,c->ear_frequency);
-  	if (my_master_rank>=0) eards_change_freq(*(c->ear_frequency));
+  	if (masters_info.my_master_rank>=0) eards_change_freq(*(c->ear_frequency));
 		return st;
 	}else{ 
 		return EAR_ERROR;
@@ -244,7 +252,7 @@ state_t policy_configure()
 state_t policy_force_global_frequency(ulong new_f)
 {
   ear_frequency=new_f;
-  if (my_master_rank>=0) eards_change_freq(ear_frequency);
+  if (masters_info.my_master_rank>=0) eards_change_freq(ear_frequency);
 	return EAR_SUCCESS;
 }
 

@@ -46,11 +46,13 @@
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/common/externs.h>
+#include <library/common/global_comm.h>
 #include <library/metrics/metrics.h>
 #include <common/hardware/frequency.h>
 #include <daemon/eard_api.h>
 
 extern uint mpi_calls_in_period;
+extern masters_info_t masters_info;
 
 // static defines
 #define FIRST_ITERATION			1
@@ -77,7 +79,7 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	if (my_id) return;
 	policy_freq = EAR_default_frequency;
     perf_accuracy_min_time = get_ear_performance_accuracy();
-    if (my_master_rank>=0) {
+    if (masters_info.my_master_rank>=0) {
 			architecture_min_perf_accuracy_time=eards_node_energy_frequency();
 		}else{	
 			architecture_min_perf_accuracy_time=1000000;
@@ -107,7 +109,7 @@ void states_periodic_end_period(uint iterations)
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		#endif
 		#if USE_DB
-		if (my_master_rank>=0) eards_write_loop_signature(&loop);
+		if (masters_info.my_master_rank>=0) eards_write_loop_signature(&loop);
 		#endif
 	}
 
@@ -132,7 +134,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
    append_loop_text_file(loop_summary_path, loop,&loop_signature.job);
 	#endif
 	#if USE_DB
-    if (my_master_rank>=0) eards_write_loop_signature(loop);
+    if (masters_info.my_master_rank>=0) eards_write_loop_signature(loop);
     #endif
 	
 	
@@ -202,7 +204,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					PP = projection_get(frequency_freq_to_pstate(policy_freq));
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
-						if (my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+						if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
 
 					traces_new_signature(ear_my_rank, my_id,&loop_signature.signature);
