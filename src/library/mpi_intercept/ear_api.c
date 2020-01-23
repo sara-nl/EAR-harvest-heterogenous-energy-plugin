@@ -116,7 +116,7 @@ char block_file[GENERIC_NAME];
 static void print_local_data()
 {
 	#if EAR_LIB_SYNC 
-	if (ear_my_rank>=0) {
+	if (my_master_rank>=0) {
 	#endif
 	verbose(1, "MASTER=%d-----------------------",(my_master_rank>=0));
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
@@ -795,10 +795,11 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 {
 	short ear_status;
-
+#if ONLY_MASTER
 	if (my_id) {
 		return;
 	}
+#endif
 	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
 	if (!ear_whole_app)
 	{
@@ -830,7 +831,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				verbose(1,"NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
+				debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
 				ear_iterations=0;
 				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				ear_loop_size=(uint)ear_size;
@@ -887,10 +888,11 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 {
 	short ear_status;
-
+#if ONLY_MASTER
 	if (my_id) {
 		return;
 	}
+#endif
 
 	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
 	if (!ear_whole_app)

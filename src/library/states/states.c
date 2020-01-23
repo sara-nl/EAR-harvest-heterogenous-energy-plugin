@@ -104,13 +104,17 @@ extern uint check_periodic_mode;
 
 
 #define  REPORT_TRACES() \
-      traces_new_signature(ear_my_rank, my_id, &loop.signature); \
-      traces_frequency(ear_my_rank, my_id, policy_freq); 
+			if (my_master_rank>=0){\
+      	traces_new_signature(ear_my_rank, my_id, &loop.signature); \
+      	traces_frequency(ear_my_rank, my_id, policy_freq); \
+			}
       // traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
 #define VERBOSE_SIG() \
-      verbose(1,"EAR(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
-      verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, EDP,policy_freq);
+			if (my_master_rank>=0){\
+      	verbose(1,"EAR(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
+      	verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, EDP,policy_freq);\
+			}
 
 
 
@@ -158,7 +162,6 @@ void states_begin_job(int my_id,  char *app_name)
 	}
 	if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
 	
-	verbose(1,"Using %lu as performance accuracy",perf_accuracy_min_time);
 	EAR_STATE = NO_PERIOD;
 	policy_freq = EAR_default_frequency;
 	init_log();
@@ -429,7 +432,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period++;
 				return;
 			}
-			verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
+			//verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
 			signature_ready(&sig_shared_region[my_node_id]);
 			//print_loop_signature("signature computed", &loop_signature.signature);
             /* Included for dynais test */

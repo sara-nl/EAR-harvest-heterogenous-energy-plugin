@@ -526,7 +526,7 @@ int metrics_init()
 
 		get_weigth_fops_instructions(metrics_flops_weights);
 
-		debug( "detected %d FLOP counter", flops_elements);
+		//debug( "detected %d FLOP counter", flops_elements);
 	}
 
 	// Daemon metrics allocation (TODO: standarize data size)

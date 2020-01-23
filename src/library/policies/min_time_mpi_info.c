@@ -229,4 +229,19 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   return EAR_SUCCESS;
 }
 
+state_t policy_mpi_init(polctx_t *c)
+{
+	timestamp_getfast(&pol_time_init);	
+	return EAR_SUCCESS;
+}
+state_t policy_mpi_end(polctx_t *c)
+{
+	timestamp end;
+	ullong elap;
+	timestamp_getfast(&end);
+	elap=timestamp_diff(&end,&pol_time_init,(ullong)1);
+	sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
+	sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
+	return EAR_SUCCESS;
+}
 

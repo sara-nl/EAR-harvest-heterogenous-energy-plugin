@@ -9,7 +9,8 @@ modl_BINS = \
        min_energy_no_models.so \
 			 min_time_avx512.so \
 			 min_energy_avx512.so \
-       monitoring.so
+       monitoring.so \
+			 min_time_mpi_info.so
 modl_PATH = $(DESTDIR)/lib/plugins/policies
 modl_PERM = 0775
 
@@ -23,7 +24,7 @@ all: $(poli_OBJS) $(modl_BINS)
 %.so: %.o 
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	
 
-min_time.so: min_time.o 
+min_time_mpi_info.so: min_time_mpi_info.o 
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
 
 ######## OPTIONS 
