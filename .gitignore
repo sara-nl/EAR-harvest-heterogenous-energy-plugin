@@ -43,8 +43,8 @@ bench/
 # Build files
 etc/module/ear
 etc/conf/ear.conf
-etc/conf/ear.conf.full.template
 etc/conf/ear.conf.template
+etc/conf/ear.conf.full.template
 etc/slurm/ear.plugstack.conf
 etc/systemd/eard.service
 etc/systemd/eardbd.service

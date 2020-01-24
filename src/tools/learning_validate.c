@@ -369,7 +369,7 @@ static void init()
 	}
 	
 	max_pow = conf_node->max_error_power;
-	// min_pow = ;
+	min_pow = conf_node->min_sig_power;
 	top_pow = conf_node->max_sig_power;
 	cei_pow = conf_node->min_sig_power;
 

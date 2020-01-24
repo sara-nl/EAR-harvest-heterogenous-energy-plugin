@@ -85,10 +85,10 @@
 #define POWER_SIGNATURE_PSQL_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES "
 
-#define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f, temp)"\
+#define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f, temp) "\
                                         "VALUES " 
 
-#define PERIODIC_METRIC_QUERY_SIMPLE    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
+#define PERIODIC_METRIC_QUERY_SIMPLE    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id) "\
                                         "VALUES "
 
 #define EAR_EVENT_PSQL_QUERY         "INSERT INTO Events (timestamp, event_type, job_id, step_id, freq, node_id) VALUES "
@@ -124,19 +124,9 @@ char *PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_DETAIL;
 char *PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_SIMPLE;
 #endif
 
-/*
-#if DEMO
-int PERIODIC_METRIC_ARGS = 8;
-#else
-int PERIODIC_METRIC_ARGS = 6;
-#endif
-#if !DB_SIMPLE
-int SIGNATURE_ARGS       = 21;
-int AVG_SIGNATURE_ARGS   = 24;
-#else
-int SIGNATURE_ARGS       = 11;
-int AVG_SIGNATURE_ARGS   = 14;
-#endif*/
+
+int per_met_args = PERIODIC_METRIC_ARGS;
+int sig_args = SIGNATURE_ARGS;
 
 
 void exit_connection(PGconn *conn)
@@ -161,11 +151,13 @@ void set_signature_simple(char full_sig)
     {
         LEARNING_SIGNATURE_PSQL_QUERY = LEARNING_SIGNATURE_QUERY_FULL;
         SIGNATURE_PSQL_QUERY = SIGNATURE_QUERY_FULL;    
+        sig_args = 21;
     }
     else
     {
         LEARNING_SIGNATURE_PSQL_QUERY = LEARNING_SIGNATURE_QUERY_SIMPLE;
         SIGNATURE_PSQL_QUERY = SIGNATURE_QUERY_SIMPLE;    
+        sig_args = 11;
     }
 
 }
@@ -174,9 +166,15 @@ void set_node_detail(char node_det)
 {
     node_detail = node_det;
     if (node_detail)
+    {
         PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_DETAIL;
+        per_met_args = 8;
+    }
     else
+    {
         PERIODIC_METRIC_PSQL_QUERY = PERIODIC_METRIC_QUERY_SIMPLE;
+        per_met_args = 6;
+    }
 }
 
 double double_swap(double d)
@@ -910,10 +908,10 @@ int postgresql_batch_insert_periodic_metrics(PGconn *connection, periodic_metric
     reverse_periodic_metric_bytes(per_mets, num_mets);
 
     /* Memory allocation */
-    param_values = calloc(PERIODIC_METRIC_ARGS*num_mets, sizeof(char *));
-    param_lengths = calloc(PERIODIC_METRIC_ARGS*num_mets, sizeof(int));
-    param_formats = calloc(PERIODIC_METRIC_ARGS*num_mets, sizeof(int));
-    query = calloc((strlen(PERIODIC_METRIC_PSQL_QUERY)+(num_mets*PERIODIC_METRIC_ARGS * 10)), sizeof(char));
+    param_values = calloc(per_met_args*num_mets, sizeof(char *));
+    param_lengths = calloc(per_met_args*num_mets, sizeof(int));
+    param_formats = calloc(per_met_args*num_mets, sizeof(int));
+    query = calloc((strlen(PERIODIC_METRIC_PSQL_QUERY)+(num_mets*per_met_args* 10)), sizeof(char));
 
     strcpy(query, PERIODIC_METRIC_PSQL_QUERY);
     
@@ -929,7 +927,7 @@ int postgresql_batch_insert_periodic_metrics(PGconn *connection, periodic_metric
 
         sprintf(arg_number, "$%d", offset+1);
         strcat(query, arg_number);
-        for (j = offset + 2; j < offset + PERIODIC_METRIC_ARGS + 1 ; j++)
+        for (j = offset + 2; j < offset + per_met_args + 1 ; j++)
         {
             sprintf(arg_number, ", $%d", j);
             strcat(query, arg_number);
@@ -964,15 +962,15 @@ int postgresql_batch_insert_periodic_metrics(PGconn *connection, periodic_metric
 
 
         /* Parameter formats, 1 is binary 0 is string */
-        for (j = 0; j < PERIODIC_METRIC_ARGS; j++)
+        for (j = 0; j < per_met_args; j++)
             param_formats[j + offset] = 1;
         param_formats[offset + 3] = 0; //node_id
 
-        offset += PERIODIC_METRIC_ARGS;
+        offset += per_met_args;
     }
 
 
-    PGresult *res = PQexecParams(connection, query, PERIODIC_METRIC_ARGS * num_mets, NULL, (const char * const *)param_values, param_lengths, param_formats, 1); //0 indicates text mode, 1 is binary
+    PGresult *res = PQexecParams(connection, query, per_met_args* num_mets, NULL, (const char * const *)param_values, param_lengths, param_formats, 1); //0 indicates text mode, 1 is binary
 
     free(param_values);
     free(param_lengths);
@@ -1108,10 +1106,10 @@ int postgresql_batch_insert_signatures(PGconn *connection, signature_t *sigs, ch
     reverse_signature_bytes(sigs, num_sigs);
 
     /* Memory allocation */
-    param_values = calloc(SIGNATURE_ARGS*num_sigs, sizeof(char *));
-    param_lengths = calloc(SIGNATURE_ARGS*num_sigs, sizeof(int));
-    param_formats = calloc(SIGNATURE_ARGS*num_sigs, sizeof(int));
-    query = calloc((strlen(SIGNATURE_QUERY_FULL)+(num_sigs*SIGNATURE_ARGS*10)+strlen("ON CONFLICT DO NOTHING")), sizeof(char));
+    param_values = calloc(sig_args*num_sigs, sizeof(char *));
+    param_lengths = calloc(sig_args*num_sigs, sizeof(int));
+    param_formats = calloc(sig_args*num_sigs, sizeof(int));
+    query = calloc((strlen(SIGNATURE_QUERY_FULL)+(num_sigs*sig_args*10)+strlen("ON CONFLICT DO NOTHING")), sizeof(char));
 
     if (is_learning)
         strcpy(query, LEARNING_SIGNATURE_PSQL_QUERY);
@@ -1130,7 +1128,7 @@ int postgresql_batch_insert_signatures(PGconn *connection, signature_t *sigs, ch
 
         sprintf(arg_number, "$%d", offset+1);
         strcat(query, arg_number);
-        for (j = offset + 2; j < offset + SIGNATURE_ARGS + 1 ; j++)
+        for (j = offset + 2; j < offset + sig_args + 1 ; j++)
         {
             sprintf(arg_number, ", $%d", j);
             strcat(query, arg_number);
@@ -1201,13 +1199,13 @@ int postgresql_batch_insert_signatures(PGconn *connection, signature_t *sigs, ch
         }
 
         /* Parameter formats, 1 is binary 0 is string */
-        for (j = 0; j < SIGNATURE_ARGS; j++)
+        for (j = 0; j < sig_args; j++)
             param_formats[j + offset] = 1;
 
-        offset += SIGNATURE_ARGS;
+        offset += sig_args;
     }
 
-    PGresult *res = PQexecParams(connection, query, SIGNATURE_ARGS * num_sigs, NULL, (const char * const *)param_values, param_lengths, param_formats, 1); //0 indicates text mode, 1 is binary
+    PGresult *res = PQexecParams(connection, query, sig_args * num_sigs, NULL, (const char * const *)param_values, param_lengths, param_formats, 1); //0 indicates text mode, 1 is binary
 
     free(param_values);
     free(param_lengths);
