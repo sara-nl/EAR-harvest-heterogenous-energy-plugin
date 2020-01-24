@@ -33,6 +33,7 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <library/common/library_shared_data.h>
 
 typedef struct masters_info{
 	MPI_Comm masters_comm;
@@ -41,6 +42,10 @@ typedef struct masters_info{
 	int my_master_size;
 	int *ppn;
 	int max_ppn;
+	mpi_information_t *my_mpi_info;
+	mpi_information_t *nodes_info;
+	int node_info_pending;
+	MPI_Request req;
 }masters_info_t;
 
 state_t ishare_global_info(MPI_Comm comm,char * data_send, int size_send,char * data_recv, int size_recv,MPI_Request *req);

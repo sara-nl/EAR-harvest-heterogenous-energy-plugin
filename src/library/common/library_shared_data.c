@@ -177,6 +177,24 @@ int select_cp(lib_shared_data_t *data,shsignature_t *sig)
 	return rank;
 }
 
+int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info)
+{
+	int i,j;
+	int rank;
+	double minp=100.0;
+	/* Node loop */
+	for (i=0;i<size;i++){
+		/* Inside node */
+		for (j=0;j<ppn[i];j++){
+			if (minp>my_mpi_info[i*max+j].perc_mpi){
+				rank=my_mpi_info[i*max+j].rank;
+				minp=my_mpi_info[i*max+j].perc_mpi;
+			}
+		}
+	}
+	return rank;
+}
+
 
 
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
@@ -191,4 +209,14 @@ void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
 		sig[i].sig.time,sig[i].sig.DC_power);
 	}
 }
+
+
+void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info)
+{
+	int i;
+	for (i=0;i<data->num_processes;i++){
+		memcpy(&my_mpi_info[i],&sig[i].mpi_info,sizeof(mpi_information_t));
+	}
+}
+
 

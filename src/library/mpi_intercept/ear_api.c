@@ -241,7 +241,22 @@ void create_shared_regions()
 		verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
 	}
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
-	
+	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(mpi_information_t);
+	int total_elements=masters_info.max_ppn*masters_info.my_master_size;
+	masters_info.nodes_info=(mpi_information_t *)calloc(total_elements,sizeof(mpi_information_t));
+	if (masters_info.nodes_info==NULL){ 
+		error("Allocating memory for node_info");
+	}else{ 
+		verbose(1,"%d Bytes (%d x %lu)  allocated for masters_info node_info",total_size,total_elements,sizeof(mpi_information_t));
+	}
+	masters_info.my_mpi_info=(mpi_information_t *)calloc(masters_info.max_ppn,sizeof(mpi_information_t));
+  if (masters_info.my_mpi_info==NULL){
+    error("Allocating memory for my_mpi_info");
+  }else{
+    verbose(1,"%lu Bytes allocated for masters_info my_mpi_info",masters_info.max_ppn*sizeof(mpi_information_t));
+  }
+	memset(masters_info.my_mpi_info,0,sizeof(mpi_information_t)*masters_info.max_ppn);
+
 }
 
 void attach_shared_regions()
