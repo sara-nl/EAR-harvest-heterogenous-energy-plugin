@@ -120,7 +120,8 @@ struct variables_s {
 	varnames_t path_temp;
 	varnames_t path_inst;
 	varnames_t node_list;
-	varnames_t context;
+	varnames_t ctx_sbac;
+	varnames_t ctx_srun;
 	varnames_t ld_prel;
 	varnames_t ld_libr;
 	varnames_t node_num;

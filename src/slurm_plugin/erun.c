@@ -21,6 +21,9 @@ char **_argv;
 int    _argc;
 
 //
+char *_errstr;
+
+//
 int _inactive;
 int _error;
 int _clean;
@@ -268,10 +271,10 @@ int job(int argc, char *argv[])
 	print_argv(_argc, _argv);
 	
 	// Going inactive?
-	_inactive = !isenv_agnostic(_sp, Var.ctx_srun.rem, "1");
+	_inactive = isenv_agnostic(_sp, Var.ctx_srun.rem, "1");
 
 	if (_inactive) {
-		plug_verbose(_sp, 3, "detected SRUN, going inactive");
+		_error = 2;
 	}
 	
 	if (err_pfx | err_etc | err_tmp | err_def) {
@@ -320,20 +323,30 @@ int main(int argc, char *argv[])
 	
 	if (_error)
 	{
-		if ((_master = lock_master(path_tmp)))
+		if (_error == 1)
 		{
-			plug_verbose(_sp, 0, "missing environment vars, is the EAR module loaded?");
-			
-			sleep(2);
-			
-			lock_clean(path_tmp);
+			if ((_master = lock_master(path_tmp)))
+			{
+				plug_verbose(_sp, 0, "missing environment vars, is the EAR module loaded?");
+				//
+				sleep(2);
+				//
+				lock_clean(path_tmp);
+			}
+			return 0;	
 		}
-		return 0;	
-	}
-
-	// Inactive
-	if (_inactive) {
-		return execute(_argc, _argv);
+		if (_error == 2) {
+			if ((_master = lock_master(path_tmp))) {
+				plug_verbose(_sp, 0, "detected SRUN, going inactive");	
+			}
+		
+			execute(_argc, _argv);
+		
+			if (_master) {	
+				lock_clean(path_tmp);
+			}
+			return 0;	
+		}
 	}
 
 	// Simulating the single pipeline

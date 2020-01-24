@@ -334,8 +334,10 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.tag.ear);
 	unsetenv_agnostic(sp, Var.path_usdb.ear);
 	unsetenv_agnostic(sp, Var.path_trac.ear);
-	unsetenv_agnostic(sp, Var.path_temp.ear);
 	unsetenv_agnostic(sp, Var.name_app.ear);
+
+	// Exception (in testing)
+	//unsetenv_agnostic(sp, Var.path_temp.ear);
 
 	/*
 	 * User information
@@ -399,6 +401,10 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 		setenv_agnostic(sp, Var.ctx_sbac.rem, "1", 1);
 	}
 
+//fprintf(stderr, "TEMP OIGAN %s\n", sd->pack.path_temp);
+//printenv_agnostic(sp, Var.path_temp.rem);
+//setenv_agnostic(sp, "EAR_CACA", "CACA", 1);
+
 	return ESPANK_SUCCESS;
 }
 
@@ -443,13 +449,21 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	}
 
 	/*
+	 * The .ear variables are set during the APP serialization. But APP
+	 * serialization happens if the library is ON. But now we have ERUN.
+	 * With ERUN in mind we need a small set of variables definitions
+	 * out of APP serialization.
+	 */ 	
+	repenv_agnostic(sp, Var.path_temp.rem, Var.path_temp.ear);
+
+	/*
 	 * Clean
 	 */
 	unsetenv_agnostic(sp, Var.user.rem);
 	unsetenv_agnostic(sp, Var.group.rem);
 	unsetenv_agnostic(sp, Var.path_temp.rem);
 	unsetenv_agnostic(sp, Var.path_inst.rem);
-
+	
 	return ESPANK_SUCCESS;
 }
 
@@ -492,11 +506,6 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	if (getenv_agnostic(sp, Var.name_app.rem, buffer1, sizeof(buffer1)) == 1) {
 		setenv_agnostic(sp, Var.name_app.ear, buffer1, 1);
 	}
-
-	/*
-	 * EAR_ETC
-	 */
-	setenv_agnostic(sp, Var.path_temp.ear, sd->pack.path_temp, 1);
 
 	/*
 	 * LD_PRELOAD

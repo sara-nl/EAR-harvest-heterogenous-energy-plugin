@@ -47,7 +47,7 @@ int fd_job = -1;
 
 int lock_clean(char *path_tmp)
 {
-	plug_verbose(_sp, 2, "function lock_clean");
+	plug_verbose(_sp, 3, "function lock_clean");
 
 	// 1. Clean erun.master.lock
 	// 2. Clean erun.step.lock
@@ -62,7 +62,7 @@ int lock_clean(char *path_tmp)
 
 int lock_master(char *path_tmp)
 {
-	plug_verbose(_sp, 4, "function lock_master");
+	plug_verbose(_sp, 3, "function lock_master");
 
 	//
 	sprintf(path_mas, "%s/erun.master.lock", path_tmp);
@@ -78,7 +78,7 @@ int lock_master(char *path_tmp)
 
 int lock_step(char *path_tmp, int job_id, int step_id)
 {
-	plug_verbose(_sp, 2, "function lock_step (%d,%d)", job_id, step_id);
+	plug_verbose(_sp, 3, "function lock_step (%d,%d)", job_id, step_id);
 
 	sprintf(path_job, "%s/erun.%d.lock", path_tmp, job_id);
 
@@ -107,7 +107,7 @@ int lock_step(char *path_tmp, int job_id, int step_id)
 
 int unlock_step(char *path_tmp, int step_id)
 {
-	plug_verbose(_sp, 2, "function unlock_step");
+	plug_verbose(_sp, 3, "function unlock_step");
 
 	//
 	sprintf(path_stp, "%s/erun.step.lock", path_tmp);
@@ -120,7 +120,7 @@ int unlock_step(char *path_tmp, int step_id)
 
 int spinlock_step(char *path_tmp, int step_id)
 {
-	plug_verbose(_sp, 2, "function spinlock_step");
+	plug_verbose(_sp, 3, "function spinlock_step");
 	
 	//
 	sprintf(path_stp, "%s/erun.step.lock", path_tmp);
