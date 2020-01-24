@@ -282,12 +282,10 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 
 void check_mpi_info()
 {
-	if (masters_info.node_info_pending && is_info_ready(&masters_info.req)){
+	if ((masters_info.my_master_rank>=0) && masters_info.node_info_pending && (is_info_ready(&masters_info.req)==EAR_SUCCESS)){
+		verbose(1,"Info received in master %d",masters_info.my_master_rank);
 		int global_cp=select_global_cp(masters_info.my_master_size,masters_info.max_ppn,masters_info.ppn,masters_info.nodes_info);
 		verbose(1,"Global CP is rank %d",global_cp);
-		if (global_cp==ear_my_rank){
-			verbose(1,"I'M THE CRITICAL PATH!!!!");
-		}
 		masters_info.node_info_pending=0;
 	}
 }
@@ -297,17 +295,18 @@ void check_node_signatures()
 	  /* If the master signature is ready we check the others */
   if ((masters_info.my_master_rank>=0) && sig_shared_region[0].ready){
     if (are_signatures_ready(lib_shared_region,sig_shared_region)){
-      print_shared_signatures(lib_shared_region,sig_shared_region);
+      // print_shared_signatures(lib_shared_region,sig_shared_region);
       clean_signatures(lib_shared_region,sig_shared_region);
-      verbose(1,"RANK %d is the CP",select_cp(lib_shared_region,sig_shared_region));
-			copy_my_mpi_info(lib_shared_region,sig_shared_region,masters_info.my_mpi_info);
-			if (ishare_global_info(masters_info.masters_comm,(char *)masters_info.my_mpi_info,
-				sizeof(mpi_information_t)*masters_info.max_ppn,
-				(char *)masters_info.nodes_info,sizeof(mpi_information_t)*masters_info.max_ppn,&masters_info.req)!=EAR_SUCCESS){
-				error("Sending node mpi_info_t to other masters master_rank %d",masters_info.my_master_rank);
-			}else{ 
-				verbose(1,"mpi_info for master_rank %d sent to other nodes",masters_info.my_master_rank);
-				masters_info.node_info_pending=1;
+			if (!masters_info.node_info_pending){
+				copy_my_mpi_info(lib_shared_region,sig_shared_region,masters_info.my_mpi_info);
+				if (ishare_global_info(masters_info.masters_comm,(char *)masters_info.my_mpi_info,
+					sizeof(mpi_information_t)*masters_info.max_ppn,
+					(char *)masters_info.nodes_info,sizeof(mpi_information_t)*masters_info.max_ppn,&masters_info.req)!=EAR_SUCCESS){
+					error("Sending node mpi_info_t to other masters master_rank %d",masters_info.my_master_rank);
+				}else{ 
+					verbose(1,"mpi_info for master_rank %d sent to other nodes",masters_info.my_master_rank);
+					masters_info.node_info_pending=1;
+				}
 			}
     }
   }
@@ -360,7 +359,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		}
 	}
 	}
-
+	check_mpi_info();
 	check_node_signatures();
 
 	switch (EAR_STATE)

@@ -255,7 +255,6 @@ void create_shared_regions()
   }else{
     verbose(1,"%lu Bytes allocated for masters_info my_mpi_info",masters_info.max_ppn*sizeof(mpi_information_t));
   }
-	memset(masters_info.my_mpi_info,0,sizeof(mpi_information_t)*masters_info.max_ppn);
 
 }
 
@@ -580,6 +579,16 @@ void ear_init()
     error("Retrieving architecture description");
 		/* How to proceeed here ? */
   }
+
+	if (masters_info.my_master_rank>=0){
+		print_affinity_mask(&arch_desc.top);
+		int is_set;
+		if (is_affinity_set(&arch_desc.top,getpid(),&is_set)!=EAR_SUCCESS){
+			error("Checking the affinity mask");
+		}else{
+			if (is_set)	verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
+		}
+	}
 
 	#if SHOW_DEBUGS
 	print_arch_desc(&arch_desc);

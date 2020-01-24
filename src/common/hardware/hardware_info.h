@@ -103,4 +103,9 @@ int is_cpu_boost_enabled();
 /** Returns the number of packages detected*/
 int detect_packages(int **package_map);
 
+/** Prints the affinity mask of the current process */
+void print_affinity_mask(topology_t *topo);
+/** Checks if process with pid=pid has some cpu forbiden to run , then is_set is set to 1 */
+state_t is_affinity_set(topology_t *topo,int pid,int *is_set);
+
 #endif

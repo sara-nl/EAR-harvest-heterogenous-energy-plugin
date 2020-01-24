@@ -216,7 +216,7 @@ int job(int argc, char *argv[])
 		sprintf(path_tmp, "%s", p);
 		err_tmp = 0;
 	} else {
-		sprintf(path_tmp, "/tmp", p);
+		sprintf(path_tmp, "/tmp");
 	}
 	if ((p = getenv("EAR_DEFAULT")) != NULL) {
 		sprintf(plug_def, "default=%s", p);
