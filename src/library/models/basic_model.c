@@ -44,7 +44,7 @@ static coefficient_t *coefficients_sm;
 static int num_coeffs;
 static uint num_pstates;
 static uint basic_model_init=0;
-#define SHOW_DEBUGS 0
+//#define SHOW_DEBUGS 0
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
 #else
