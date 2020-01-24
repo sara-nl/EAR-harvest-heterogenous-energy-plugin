@@ -256,7 +256,8 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.group.rem);
 	printenv_agnostic(sp, Var.path_temp.rem);
 	printenv_agnostic(sp, Var.path_inst.rem);
-	printenv_agnostic(sp, Var.context.rem);
+	printenv_agnostic(sp, Var.ctx_sbac.rem);
+	printenv_agnostic(sp, Var.ctx_srun.rem);
 	printenv_agnostic(sp, Var.node_num.loc);
 	printenv_agnostic(sp, Var.name_app.rem);
 	printenv_agnostic(sp, Var.account.rem);
@@ -392,9 +393,10 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	 */
 
 	if (plug_context_is(sp, Context.srun)) {
-		setenv_agnostic(sp, Var.context.rem, "SRUN", 1);
-	} else if (plug_context_is(sp, Context.sbatch)) {
-		setenv_agnostic(sp, Var.context.rem, "SBATCH", 1);
+		setenv_agnostic(sp, Var.ctx_srun.rem, "1", 1);
+	}
+	if (plug_context_is(sp, Context.sbatch)) {
+		setenv_agnostic(sp, Var.ctx_sbac.rem, "1", 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -434,9 +436,9 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
   	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
-	if (isenv_agnostic(sp, Var.context.rem, "SRUN")) {
+	if (isenv_agnostic(sp, Var.ctx_srun.rem, "1")) {
 		sd->subject.context_local = Context.srun;
-	} else if (isenv_agnostic(sp, Var.context.rem, "SBATCH")) {
+	} else if (isenv_agnostic(sp, Var.ctx_sbac.rem, "1")) {
 		sd->subject.context_local = Context.sbatch;
 	}
 
@@ -447,7 +449,6 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.group.rem);
 	unsetenv_agnostic(sp, Var.path_temp.rem);
 	unsetenv_agnostic(sp, Var.path_inst.rem);
-	//unsetenv_agnostic(sp, Var.context.rem);
 
 	return ESPANK_SUCCESS;
 }

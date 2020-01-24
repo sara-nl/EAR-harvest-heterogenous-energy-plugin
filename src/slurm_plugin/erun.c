@@ -38,11 +38,6 @@ int plug_is_action(int _ac, int action)
 	return _ac == action;
 }
 
-int plug_is_enabled(int argc, char *argv[])
-{
-	return getenv(Var.context.rem) != NULL;
-}
-
 int help(int argc, char *argv[])
 {
 	printf("Usage: %s [OPTIONS]\n", argv[0]);
@@ -273,7 +268,7 @@ int job(int argc, char *argv[])
 	print_argv(_argc, _argv);
 	
 	// Going inactive?
-	_inactive = isenv_agnostic(_sp, Var.context.rem, "SRUN");
+	_inactive = !isenv_agnostic(_sp, Var.ctx_srun.rem, "1");
 
 	if (_inactive) {
 		plug_verbose(_sp, 3, "detected SRUN, going inactive");
