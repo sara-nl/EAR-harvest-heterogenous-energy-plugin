@@ -90,7 +90,7 @@
 #define POWER_SIGNATURE_MYSQL_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-#define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f, temp, DRAM_power, PCK_power, GPU_power)"\
+#define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f, temp, DRAM_energy, PCK_energy, GPU_energy)"\
                                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
 #define PERIODIC_METRIC_QUERY_SIMPLE    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id)"\
@@ -1802,10 +1802,11 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
         bind[7].is_unsigned = 1;
         bind[7].buffer = (char *)&per_met->temp;
         
-        bind[8].buffer_type = bind[9].buffer_type = bind[10].buffer_type = MYSQL_TYPE_DOUBLE;
-        bind[8].buffer = (char *)&per_met->DRAM_power;
-        bind[9].buffer = (char *)&per_met->PCK_power;
-        bind[10].buffer = (char *)&per_met->GPU_power;
+        bind[8].buffer_type = bind[9].buffer_type = bind[10].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[8].is_unsigned = bind[9].is_unsigned = bind[10].is_unsigned = 1;
+        bind[8].buffer = (char *)&per_met->DRAM_energy;
+        bind[9].buffer = (char *)&per_met->PCK_energy;
+        bind[10].buffer = (char *)&per_met->GPU_energy;
     }
         
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
@@ -1906,13 +1907,14 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
         bind[5+offset].buffer = (char *)&per_mets[i].step_id;
         if (node_detail)
         {
-            bind[8 + offset].buffer_type = bind[9 + offset].buffer_type = bind[10 + offset].buffer_type = MYSQL_TYPE_DOUBLE;
+            bind[8 + offset].buffer_type = bind[9 + offset].buffer_type = bind[10 + offset].buffer_type = MYSQL_TYPE_LONGLONG;
+            bind[8 + offset].is_unsigned = bind[9 + offset].is_unsigned = bind[10 + offset].is_unsigned = 1;
 
             bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
             bind[7+offset].buffer = (char *)&per_mets[i].temp;   
-            bind[8+offset].buffer = (char *)&per_mets[i].DRAM_power;
-            bind[9+offset].buffer = (char *)&per_mets[i].PCK_power;
-            bind[10+offset].buffer = (char *)&per_mets[i].GPU_power;
+            bind[8+offset].buffer = (char *)&per_mets[i].DRAM_energy;
+            bind[9+offset].buffer = (char *)&per_mets[i].PCK_energy;
+            bind[10+offset].buffer = (char *)&per_mets[i].GPU_energy;
         }
     }
 

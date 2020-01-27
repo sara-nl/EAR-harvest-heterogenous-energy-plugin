@@ -305,9 +305,9 @@ job_id INT unsigned NOT NULL, \
 step_id INT unsigned NOT NULL, \
 avg_f INT, \
 temp INT, \
-DRAM_power FLOAT, \
-PCK_power FLOAT, \
-GPU_power FLOAT, \
+DRAM_energy INT, \
+PCK_energy INT, \
+GPU_energy INT, \
 PRIMARY KEY (id))");
 }else{
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
