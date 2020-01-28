@@ -52,6 +52,10 @@
 #define NULL_C 0
 #endif
 
+#ifdef ERUN
+#define SPANK_PLUGIN(name, version)
+#endif
+
 /*
  * Types
  */
@@ -69,6 +73,15 @@ struct action_s {
 
 typedef int spank_t;
 
+enum erun_context {
+	S_CTX_ERROR,
+	S_CTX_LOCAL,
+	S_CTX_REMOTE,
+	S_CTX_ALLOCATOR,
+};
+
+typedef int spank_context_t;
+
 enum spank_item {
 	S_JOB_ID,
 	S_JOB_STEPID,
@@ -84,14 +97,14 @@ enum spank_err {
 	ESPANK_NOSPACE     = 6,
 };
 
-typedef enum spank_context spank_context_t;
+typedef enum spank_err spank_err_t;
 
 typedef int (*spank_opt_cb_f) (int val, const char *optarg, int remote);
 
 struct spank_option {
-	char *          name;
-	char *          arginfo;
-	char *          usage;
+	char *name;
+	char *arginfo;
+	char *usage;
 	int has_arg;
 	int val;
 	spank_opt_cb_f cb;
@@ -101,24 +114,24 @@ typedef char *hostlist_t;
 #endif
 
 #ifdef ERUN
-int slurm_spank_init(erun_t sp, int ac, char *argv[]);
-int slurm_spank_slurmd_init(erun_t sp, int ac, char *argv[]);
-int slurm_spank_job_prolog(erun_t sp, int ac, char *argv[]);
-int slurm_spank_init_post_opt(erun_t sp, int ac, char *argv[]);
-int slurm_spank_local_user_init(erun_t sp, int ac, char *argv[]);
-int slurm_spank_user_init(erun_t sp, int ac, char *argv[]);
-int slurm_spank_task_init_privileged(erun_t sp, int ac, char *argv[]);
-int slurm_spank_task_init(erun_t sp, int ac, char *argv[]);
-int slurm_spank_task_post_fork(erun_t sp, int ac, char *argv[]);
-int slurm_spank_task_exit(erun_t sp, int ac, char *argv[]);
-int slurm_spank_job_epilog(erun_t sp, int ac, char *argv[]);
-int slurm_spank_slurmd_exit(erun_t sp, int ac, char *argv[]);
-int slurm_spank_exit(erun_t sp, int ac, char *argv[]);
+int slurm_spank_init(spank_t sp, int ac, char *argv[]);
+int slurm_spank_slurmd_init(spank_t sp, int ac, char *argv[]);
+int slurm_spank_job_prolog(spank_t sp, int ac, char *argv[]);
+int slurm_spank_init_post_opt(spank_t sp, int ac, char *argv[]);
+int slurm_spank_local_user_init(spank_t sp, int ac, char *argv[]);
+int slurm_spank_user_init(spank_t sp, int ac, char *argv[]);
+int slurm_spank_task_init_privileged(spank_t sp, int ac, char *argv[]);
+int slurm_spank_task_init(spank_t sp, int ac, char *argv[]);
+int slurm_spank_task_post_fork(spank_t sp, int ac, char *argv[]);
+int slurm_spank_task_exit(spank_t sp, int ac, char *argv[]);
+int slurm_spank_job_epilog(spank_t sp, int ac, char *argv[]);
+int slurm_spank_slurmd_exit(spank_t sp, int ac, char *argv[]);
+int slurm_spank_exit(spank_t sp, int ac, char *argv[]);
 #endif
 
 #ifdef ERUN
-spank_context_t  spank_context (void);
-spank_err_t 	 spank_getenv (spank_t spank, const char *var, char *buf, int len);
+spank_context_t	 spank_context (void);
+spank_err_t	 spank_getenv (spank_t spank, const char *var, char *buf, int len);
 spank_err_t		 spank_setenv (spank_t spank, const char *var, const char *val, int overwrite);
 spank_err_t		 spank_unsetenv (spank_t spank, const char *var);
 spank_err_t		 spank_get_item (spank_t spank, spank_item_t item, int *p);

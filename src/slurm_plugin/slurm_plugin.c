@@ -35,7 +35,7 @@
 #include <slurm_plugin/slurm_plugin_serialization.h>
 
 // Spank
-SPANK_PLUGIN(EAR_PLUGIN, 1)
+SPANK_PLUGIN(EAR_PLUGIN, 1);
 
 //
 plug_serialization_t sd;
