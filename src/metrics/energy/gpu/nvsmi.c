@@ -74,10 +74,10 @@ static void nvsmi_gpu_sample_add(uint i, gpu_energy_t *data_aux)
 	samp_data[i].samples      += 1;
 }
 
-static char bs[256];
 static void *nvsmi_gpu_sample_main(void *p)
 {
 	static gpu_energy_t data_aux;
+	static char bs[256];
 	int i;
 	int s;
 	
