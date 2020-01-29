@@ -14,7 +14,7 @@ plug_PERM = 0775
 
 erun_SRCS = \
         erun.c \
-        erun_fake.c \
+        erun_sim.c \
         erun_lock.c
 
 plug_OBJS = \
@@ -48,7 +48,7 @@ all: $(plug_BINS)
 earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
-erun: $(erun_SRCS) erun.h $(plug_SRCS) $(plug_HDRS)
+erun: $(erun_SRCS) $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -DERUN -g -o $@ $(erun_SRCS) $(plug_SRCS) $(plug_OBJS)
 
 ######## OPTIONS
