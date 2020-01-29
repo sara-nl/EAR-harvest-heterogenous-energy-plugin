@@ -97,7 +97,7 @@ static int dynais_alloc(uint **c, size_t o)
 
 	o = sizeof(int) * (_window + o) * _levels;
 
-	if (posix_memalign((void *) &p, sizeof(__m512i), sizeof(int) * (_window + o) * _levels) != 0) {
+	if (posix_memalign((void *) &p, sizeof(__m256i), sizeof(int) * (_window + o) * _levels) != 0) {
 		return -1;
 	}
 

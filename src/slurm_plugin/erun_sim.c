@@ -77,7 +77,7 @@ spank_err_t spank_unsetenv (spank_t spank, const char *var)
 
 spank_context_t spank_context (void)
 {
-	return (spank_context_t)_sp;
+	return (spank_context_t) _sp;
 }
 
 spank_err_t spank_get_item (spank_t spank, spank_item_t item, int *p)

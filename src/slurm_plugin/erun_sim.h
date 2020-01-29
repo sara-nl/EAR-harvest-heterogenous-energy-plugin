@@ -27,22 +27,3 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-spank_err_t spank_getenv (spank_t spank, const char *var, char *buf, int len)
-
-spank_err_t spank_setenv (spank_t spank, const char *var, const char *val, int overwrite)
-
-spank_err_t spank_unsetenv (spank_t spank, const char *var)
-
-spank_context_t spank_context (void)
-
-spank_err_t spank_get_item (spank_t spank, spank_item_t item, int *p)
-
-char *slurm_hostlist_shift (hostlist_t host_list)
-
-hostlist_t slurm_hostlist_create (char *node_list)
-
-spank_err_t spank_option_register_print(spank_t sp, struct spank_option *opt)
-
-spank_err_t spank_option_register_call(int argc, char *argv[], spank_t sp, struct spank_option *opt)
-
-spank_err_t spank_option_register(spank_t sp, struct spank_option *opt)
