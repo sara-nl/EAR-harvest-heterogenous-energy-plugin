@@ -38,4 +38,6 @@ void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned lon
 /** Copies DEST=SRC */
 void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N);
 
+int uncore_are_frozen(unsigned long long * DEST,int N);
+
 #endif

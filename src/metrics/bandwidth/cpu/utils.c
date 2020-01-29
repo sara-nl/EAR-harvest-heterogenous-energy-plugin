@@ -64,3 +64,15 @@ void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N)
 	memcpy((void *)DEST, (void *)SRC, N*sizeof(unsigned long long));
 }
 
+int uncore_are_frozen(unsigned long long * DEST,int N)
+{
+	int i,frozen=1;
+	for (i=0;i<N;i++){
+		if (DEST[i]>0){ 
+			frozen=0;	
+			break;
+		}
+	}
+	return frozen;
+}
+

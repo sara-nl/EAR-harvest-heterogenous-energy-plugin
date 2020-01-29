@@ -35,7 +35,7 @@ DBDaemonMemorySize=120
 #---------------------------------------------------------------------------------------------------
 # EAR Library (EARL)
 #---------------------------------------------------------------------------------------------------
-CoefficientsDir=/home/xjcorbalan/my_ear/etc/ear/coeffs
+CoefficientsDir=/home/xjcorbalan/ear/etc/ear/coeffs
 
 #---------------------------------------------------------------------------------------------------
 # Power policies
@@ -66,9 +66,9 @@ GlobalManagerMode=0
 # Common configuration
 #---------------------------------------------------------------------------------------------------
 TmpDir=/var/ear
-EtcDir=/home/xjcorbalan/my_ear/etc
+EtcDir=/home/xjcorbalan/ear/etc
 InstDir=/home/xjcorbalan/ear
-DataBasePathName=/home/xjcorbalan/my_ear/etc/ear/dbs/dbs.
+DataBasePathName=/home/xjcorbalan/ear/etc/ear/dbs/dbs.
 #---------------------------------------------------------------------------------------------------
 # Plugin configuration
 #---------------------------------------------------------------------------------------------------
