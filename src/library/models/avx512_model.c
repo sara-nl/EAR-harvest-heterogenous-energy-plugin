@@ -208,6 +208,6 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 state_t model_projection_available(ulong from,ulong to)
 {
 	if (coefficients[from][to].available) return EAR_SUCCESS;
-	else EAR_ERROR;
+	else return EAR_ERROR;
 }
 

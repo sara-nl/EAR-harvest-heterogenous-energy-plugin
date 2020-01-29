@@ -120,7 +120,8 @@ struct variables_s {
 	varnames_t path_temp;
 	varnames_t path_inst;
 	varnames_t node_list;
-	varnames_t context;
+	varnames_t ctx_sbac;
+	varnames_t ctx_srun;
 	varnames_t ld_prel;
 	varnames_t ld_libr;
 	varnames_t node_num;
@@ -154,7 +155,8 @@ struct variables_s {
 .path_temp = { .rem = "SLURM_ERTEMP",        .ear = "EAR_TMP"         },
 .path_inst = { .rem = "SLURM_ERINST",        .ear = "" },
 .node_list = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
-.context   = { .rem = "SLURM_ERCNTX",        .ear = "" },
+.ctx_sbac  = { .rem = "SLURM_ERSBAC",        .ear = "" },
+.ctx_srun  = { .rem = "SLURM_ERSRUN",        .ear = "" },
 .ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"      },
 .ld_libr   = { .rem = "",                    .ear = "LD_LIBRARY_PATH" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },

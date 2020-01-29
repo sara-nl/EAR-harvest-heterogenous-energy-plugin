@@ -21,6 +21,9 @@ char **_argv;
 int    _argc;
 
 //
+char *_errstr;
+
+//
 int _inactive;
 int _error;
 int _clean;
@@ -36,11 +39,6 @@ int _at;
 int plug_is_action(int _ac, int action)
 {
 	return _ac == action;
-}
-
-int plug_is_enabled(int argc, char *argv[])
-{
-	return getenv(Var.context.rem) != NULL;
 }
 
 int help(int argc, char *argv[])
@@ -217,6 +215,8 @@ int job(int argc, char *argv[])
 		sprintf(plug_tmp, "localstatedir=%s", p);
 		sprintf(path_tmp, "%s", p);
 		err_tmp = 0;
+	} else {
+		sprintf(path_tmp, "/tmp");
 	}
 	if ((p = getenv("EAR_DEFAULT")) != NULL) {
 		sprintf(plug_def, "default=%s", p);
@@ -271,10 +271,10 @@ int job(int argc, char *argv[])
 	print_argv(_argc, _argv);
 	
 	// Going inactive?
-	_inactive = isenv_agnostic(_sp, Var.context.rem, "SRUN");
+	_inactive = isenv_agnostic(_sp, Var.ctx_srun.rem, "1");
 
 	if (_inactive) {
-		plug_verbose(_sp, 3, "detected SRUN, going inactive");
+		_error = 2;
 	}
 	
 	if (err_pfx | err_etc | err_tmp | err_def) {
@@ -323,20 +323,30 @@ int main(int argc, char *argv[])
 	
 	if (_error)
 	{
-		if ((_master = lock_master(path_tmp)))
+		if (_error == 1)
 		{
-			plug_verbose(_sp, 0, "missing environment vars, is the EAR module loaded?");
-			
-			sleep(2);
-			
-			lock_clean(path_tmp);
+			if ((_master = lock_master(path_tmp)))
+			{
+				plug_verbose(_sp, 0, "missing environment vars, is the EAR module loaded?");
+				//
+				sleep(2);
+				//
+				lock_clean(path_tmp);
+			}
+			return 0;	
 		}
-		return 0;	
-	}
-
-	// Inactive
-	if (_inactive) {
-		return execute(_argc, _argv);
+		if (_error == 2) {
+			if ((_master = lock_master(path_tmp))) {
+				plug_verbose(_sp, 0, "detected SRUN, going inactive");	
+			}
+		
+			execute(_argc, _argv);
+		
+			if (_master) {	
+				lock_clean(path_tmp);
+			}
+			return 0;	
+		}
 	}
 
 	// Simulating the single pipeline
