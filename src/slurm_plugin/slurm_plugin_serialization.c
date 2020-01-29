@@ -256,7 +256,8 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.group.rem);
 	printenv_agnostic(sp, Var.path_temp.rem);
 	printenv_agnostic(sp, Var.path_inst.rem);
-	printenv_agnostic(sp, Var.context.rem);
+	printenv_agnostic(sp, Var.ctx_sbac.rem);
+	printenv_agnostic(sp, Var.ctx_srun.rem);
 	printenv_agnostic(sp, Var.node_num.loc);
 	printenv_agnostic(sp, Var.name_app.rem);
 	printenv_agnostic(sp, Var.account.rem);
@@ -333,8 +334,10 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.tag.ear);
 	unsetenv_agnostic(sp, Var.path_usdb.ear);
 	unsetenv_agnostic(sp, Var.path_trac.ear);
-	unsetenv_agnostic(sp, Var.path_temp.ear);
 	unsetenv_agnostic(sp, Var.name_app.ear);
+
+	// Exception (in testing)
+	//unsetenv_agnostic(sp, Var.path_temp.ear);
 
 	/*
 	 * User information
@@ -392,10 +395,15 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	 */
 
 	if (plug_context_is(sp, Context.srun)) {
-		setenv_agnostic(sp, Var.context.rem, "SRUN", 1);
-	} else if (plug_context_is(sp, Context.sbatch)) {
-		setenv_agnostic(sp, Var.context.rem, "SBATCH", 1);
+		setenv_agnostic(sp, Var.ctx_srun.rem, "1", 1);
 	}
+	if (plug_context_is(sp, Context.sbatch)) {
+		setenv_agnostic(sp, Var.ctx_sbac.rem, "1", 1);
+	}
+
+//fprintf(stderr, "TEMP OIGAN %s\n", sd->pack.path_temp);
+//printenv_agnostic(sp, Var.path_temp.rem);
+//setenv_agnostic(sp, "EAR_CACA", "CACA", 1);
 
 	return ESPANK_SUCCESS;
 }
@@ -434,11 +442,19 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
   	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
-	if (isenv_agnostic(sp, Var.context.rem, "SRUN")) {
+	if (isenv_agnostic(sp, Var.ctx_srun.rem, "1")) {
 		sd->subject.context_local = Context.srun;
-	} else if (isenv_agnostic(sp, Var.context.rem, "SBATCH")) {
+	} else if (isenv_agnostic(sp, Var.ctx_sbac.rem, "1")) {
 		sd->subject.context_local = Context.sbatch;
 	}
+
+	/*
+	 * The .ear variables are set during the APP serialization. But APP
+	 * serialization happens if the library is ON. But now we have ERUN.
+	 * With ERUN in mind we need a small set of variables definitions
+	 * out of APP serialization.
+	 */ 	
+	repenv_agnostic(sp, Var.path_temp.rem, Var.path_temp.ear);
 
 	/*
 	 * Clean
@@ -447,8 +463,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.group.rem);
 	unsetenv_agnostic(sp, Var.path_temp.rem);
 	unsetenv_agnostic(sp, Var.path_inst.rem);
-	//unsetenv_agnostic(sp, Var.context.rem);
-
+	
 	return ESPANK_SUCCESS;
 }
 
@@ -491,11 +506,6 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	if (getenv_agnostic(sp, Var.name_app.rem, buffer1, sizeof(buffer1)) == 1) {
 		setenv_agnostic(sp, Var.name_app.ear, buffer1, 1);
 	}
-
-	/*
-	 * EAR_ETC
-	 */
-	setenv_agnostic(sp, Var.path_temp.ear, sd->pack.path_temp, 1);
 
 	/*
 	 * LD_PRELOAD
