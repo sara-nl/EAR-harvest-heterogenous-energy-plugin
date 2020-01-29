@@ -255,6 +255,7 @@ static int metrics_partial_stop(uint where)
 	eards_read_uncore(metrics_bandwith_end[LOO]);
 	diff_uncores(diff_uncore_value,metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
 	if (uncore_are_frozen(diff_uncore_value,bandwith_elements)){
+		verbose(1,"Doing reset of uncore counters becuase they were frozen");
 		eards_reset_uncore();
 		return EAR_NOT_READY;
 	}else{
