@@ -74,6 +74,7 @@ static void nvsmi_gpu_sample_add(uint i, gpu_energy_t *data_aux)
 	samp_data[i].samples      += 1;
 }
 
+static char bs[256];
 static void *nvsmi_gpu_sample_main(void *p)
 {
 	static gpu_energy_t data_aux;
@@ -81,11 +82,29 @@ static void *nvsmi_gpu_sample_main(void *p)
 	int s;
 	
 	do {
-		s = fscanf(samp_t_stream, "%u, %lf, %lu, %lu, %lu, %lu, %lu, %lu", &i,
-				&data_aux.power_w , &data_aux.freq_gpu_mhz, &data_aux.freq_mem_mhz,
-				&data_aux.util_gpu, &data_aux.util_mem,
-				&data_aux.temp_gpu, &data_aux.temp_mem);
-		debug("readed gpu %u: %d elements (w: %lf)\n", i, s, data_aux.power_w);
+		memset(bs, 0, 256);
+
+		s = fscanf(samp_t_stream, "%s%s%s%s%s%s%s%s",
+			&bs[  0], &bs[ 32], &bs[ 64], &bs[ 96],
+			&bs[128], &bs[160], &bs[192], &bs[224]);
+		debug("gpu data read <- %s %s %s %s %s %s %s %s",
+			&bs[  0], &bs[ 32], &bs[ 64], &bs[ 96],
+			&bs[128], &bs[160], &bs[192], &bs[224]);
+
+		i                     =          atoi(&bs[  0]);
+		data_aux.power_w      = (double) atof(&bs[ 32]);
+		data_aux.freq_gpu_mhz = (ulong)  atol(&bs[ 64]);
+		data_aux.freq_mem_mhz = (ulong)  atol(&bs[ 96]);
+		data_aux.util_gpu     = (ulong)  atol(&bs[128]);
+		data_aux.util_mem     = (ulong)  atol(&bs[160]);
+		data_aux.temp_gpu     = (ulong)  atol(&bs[192]);
+		data_aux.temp_mem     = (ulong)  atol(&bs[224]);
+
+		debug("gpu data read -> %u %0.2lf %lu %lu %lu %lu %lu %lu",
+			i                    , data_aux.power_w,
+			data_aux.freq_gpu_mhz, data_aux.freq_mem_mhz,
+			data_aux.util_gpu    , data_aux.util_mem,
+			data_aux.temp_gpu    , data_aux.temp_mem);
 
 		if (s == GPU_METRICS)
 		{
