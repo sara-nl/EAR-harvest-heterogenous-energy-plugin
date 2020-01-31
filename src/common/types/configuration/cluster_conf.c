@@ -231,7 +231,7 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
-	int i=0, j=0;
+	int i=0, j=0, range_found=0;
 	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
     n->num_policies = my_conf->num_policies;
 		n->policies=malloc(sizeof(policy_conf_t)*n->num_policies);
@@ -249,6 +249,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     i = 0;
     do{ // At least one node is assumed
 		if ((range_id = island_range_conf_contains_node(&my_conf->islands[i], nodename)) >= 0) {
+            range_found = 1;
             n->island = my_conf->islands[i].id;
             int num_ips = my_conf->islands[i].ranges[range_id].db_ip;
             if (my_conf->islands[i].num_ips > num_ips && num_ips >= 0)
@@ -270,6 +271,12 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 		}
 		i++;
 	}while(i<my_conf->num_islands);
+    
+    if (!range_found)
+    {
+        free(n);
+        return NULL;
+    }
 
 
     //pending checks for policies
