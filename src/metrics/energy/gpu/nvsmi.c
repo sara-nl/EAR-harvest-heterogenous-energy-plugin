@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <metrics/energy/energy_gpu.h>
 #include <metrics/energy/gpu/nvsmi.h>
@@ -45,7 +46,7 @@ static pthread_t       samp_t_accumu;
 static FILE           *samp_t_stream;
 static uint            samp_num_gpus;
 static uint            samp_enabled;
-static gpu_energy_t    *samp_data;
+static gpu_energy_t    *samp_data=NULL;
 static uint            samp_ms;
 
 typedef struct nvsmi_context_s {
@@ -173,10 +174,12 @@ state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms)
 			state_return_msg(EAR_ERROR, 0, "no GPUs detected");
 		}
 	}
+	debug("%d GPUS detected",samp_num_gpus);
 	// Allocating internal accumulators
 	if (samp_data == NULL){
 		samp_data = calloc(samp_num_gpus, sizeof(gpu_energy_t));
 		if (samp_data == NULL) {
+			debug("Allocating memory for GPU");
 			return EAR_ERROR;
 		}
 	}

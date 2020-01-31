@@ -281,9 +281,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	pst=policy_new_iteration(&loop.id);
 
 	prev_f = ear_frequency;
-	curr_pstate=frequency_freq_to_pstate(ear_frequency);
+	curr_pstate=frequency_closest_pstate(ear_frequency);
 	pst=policy_get_default_freq(&policy_def_freq);
-	def_pstate=frequency_freq_to_pstate(policy_def_freq);
+	def_pstate=frequency_closest_pstate(policy_def_freq);
 
 	if (system_conf!=NULL){
 	if (resched_conf->force_rescheduling){

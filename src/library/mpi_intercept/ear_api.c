@@ -441,7 +441,7 @@ void ear_init()
 		EAR_default_pstate=system_conf->def_p_state;
 	}else{
 		EAR_default_frequency=ext_def_freq;
-		EAR_default_pstate=frequency_freq_to_pstate(EAR_default_pstate);
+		EAR_default_pstate=frequency_closest_pstate(EAR_default_pstate);
 		if (EAR_default_frequency!=system_conf->def_freq) {
 			if (!my_id) eards_change_freq(EAR_default_frequency);
 		}
