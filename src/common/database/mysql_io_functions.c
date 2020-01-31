@@ -52,7 +52,6 @@
 #define JOB_MYSQL_QUERY         "INSERT IGNORE INTO Jobs (id, step_id, user_id, app_id, start_time, end_time, start_mpi_time," \
                                 "end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
                                 "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
 #define SIGNATURE_QUERY_FULL    "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, GPU_power, EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                 "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
@@ -89,7 +88,6 @@
 
 #define POWER_SIGNATURE_MYSQL_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
-
 #define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f, temp, DRAM_energy, PCK_energy, GPU_energy)"\
                                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
@@ -1135,7 +1133,12 @@ int mysql_insert_signature(MYSQL *connection, signature_t *sig, char is_learning
     bind[0].buffer = (char *)&sig->DC_power;
     bind[1].buffer = (char *)&sig->DRAM_power;
     bind[2].buffer = (char *)&sig->PCK_power;
+#if USE_GPUS
     bind[3].buffer = (char *)&sig->GPU_power;
+#else
+    bind[3].buffer_type = MYSQL_TYPE_NULL;
+    bind[3].is_null = (my_bool*) 1;
+#endif
     bind[4].buffer = (char *)&sig->EDP;
     bind[5].buffer = (char *)&sig->GBS;
     bind[6].buffer = (char *)&sig->TPI;
@@ -1358,7 +1361,12 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[0+offset].buffer = (char *)&cont.app[i].signature.DC_power;
             bind[1+offset].buffer = (char *)&cont.app[i].signature.DRAM_power;
             bind[2+offset].buffer = (char *)&cont.app[i].signature.PCK_power;
+#if USE_GPUS
             bind[3+offset].buffer = (char *)&cont.app[i].signature.GPU_power;
+#else
+    				bind[3+offset].buffer_type = MYSQL_TYPE_NULL;
+    				bind[3+offset].is_null = (my_bool*) 1;
+#endif
             bind[4+offset].buffer = (char *)&cont.app[i].signature.EDP;
             bind[5+offset].buffer = (char *)&cont.app[i].signature.GBS;
             bind[6+offset].buffer = (char *)&cont.app[i].signature.TPI;
@@ -1391,7 +1399,12 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[0+offset].buffer = (char *)&cont.loop[i].signature.DC_power;
             bind[1+offset].buffer = (char *)&cont.loop[i].signature.DRAM_power;
             bind[2+offset].buffer = (char *)&cont.loop[i].signature.PCK_power;
+#if USE_GPUS
             bind[3+offset].buffer = (char *)&cont.loop[i].signature.GPU_power;
+#else
+            bind[3+offset].buffer_type = MYSQL_TYPE_NULL;
+            bind[3+offset].is_null = (my_bool*) 1;
+#endif
             bind[4+offset].buffer = (char *)&cont.loop[i].signature.EDP;
             bind[5+offset].buffer = (char *)&cont.loop[i].signature.GBS;
             bind[6+offset].buffer = (char *)&cont.loop[i].signature.TPI;
@@ -1500,7 +1513,12 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[1].buffer = &sig_aux->DC_power;
     bind[2].buffer = &sig_aux->DRAM_power;
     bind[3].buffer = &sig_aux->PCK_power;
+#if USE_GPUS
     bind[4].buffer = &sig_aux->GPU_power;
+#else
+    bind[4].buffer_type = MYSQL_TYPE_NULL;
+    bind[4].is_null = (my_bool*) 1;
+#endif
     bind[5].buffer = &sig_aux->EDP;
     bind[6].buffer = &sig_aux->GBS;
     bind[7].buffer = &sig_aux->TPI;
@@ -1801,12 +1819,20 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
         bind[7].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[7].is_unsigned = 1;
         bind[7].buffer = (char *)&per_met->temp;
-        
         bind[8].buffer_type = bind[9].buffer_type = bind[10].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[8].is_unsigned = bind[9].is_unsigned = bind[10].is_unsigned = 1;
+#if USE_GPUS
         bind[8].buffer = (char *)&per_met->DRAM_energy;
         bind[9].buffer = (char *)&per_met->PCK_energy;
         bind[10].buffer = (char *)&per_met->GPU_energy;
+#else
+        bind[8].buffer_type = MYSQL_TYPE_NULL;
+        bind[9].buffer_type = MYSQL_TYPE_NULL;
+        bind[10].buffer_type = MYSQL_TYPE_NULL;
+        bind[8].is_null = (my_bool*) 1;
+        bind[9].is_null = (my_bool*) 1;
+        bind[10].is_null = (my_bool*) 1;
+#endif
     }
         
     if (mysql_stmt_bind_param(statement, bind)) return mysql_statement_error(statement);
@@ -1912,9 +1938,19 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
 
             bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
             bind[7+offset].buffer = (char *)&per_mets[i].temp;   
+#if USE_GPUS
             bind[8+offset].buffer = (char *)&per_mets[i].DRAM_energy;
             bind[9+offset].buffer = (char *)&per_mets[i].PCK_energy;
             bind[10+offset].buffer = (char *)&per_mets[i].GPU_energy;
+#else
+            bind[8+offset].buffer_type = MYSQL_TYPE_NULL;
+            bind[8+offset].is_null = (my_bool*) 1;
+            bind[9+offset].buffer_type = MYSQL_TYPE_NULL;
+            bind[9+offset].is_null = (my_bool*) 1;
+            bind[10+offset].buffer_type = MYSQL_TYPE_NULL;
+            bind[10+offset].is_null = (my_bool*) 1;
+
+#endif
         }
     }
 

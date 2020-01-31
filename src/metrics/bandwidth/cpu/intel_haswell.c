@@ -345,6 +345,7 @@ int pci_count_uncores()
 int pci_reset_uncores()
 {
 	int n_cmd, n_ctl;
+	printf("pci_reset_uncores\n");
 	if (n_functions<=0) return 0;
 	int *cmd = get_arch_reset_commands(&n_cmd);
 	char *ctl = get_arch_reset_controls(&n_ctl);

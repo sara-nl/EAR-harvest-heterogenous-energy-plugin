@@ -49,7 +49,9 @@ typedef struct signature
     double DC_power;
     double DRAM_power;
     double PCK_power;
+#if USE_GPUS
     double GPU_power;
+#endif
     double EDP;
     double GBS;
     double TPI;

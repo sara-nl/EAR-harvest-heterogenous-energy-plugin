@@ -685,6 +685,7 @@ int eard_uncore(int must_read) {
 			write(ear_fd_ack[uncore_req], &ack, sizeof(ack));
 			break;
 		case RESET_UNCORE:
+			printf("RESET_UNCORE in eard\n");
 			reset_uncores();
 			write(ear_fd_ack[uncore_req], &ack, sizeof(ack));
 			break;
@@ -966,6 +967,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 	policy_conf_t *my_policy;
 	ulong deff;
 	eard_max_pstate = node->max_pstate;
+	verbose(1,"Max pstate for this node is %d",eard_max_pstate);
 	// Default policy is just in case
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -980,6 +982,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 		default_policy_context.p_state=my_policy->p_state;
 		default_policy_context.settings[0]=my_policy->settings[0];
 	}
+		verbose(1,"configure_default_values. Looking for pstate %d\n",my_policy->p_state);
     deff=frequency_pstate_to_freq(my_policy->p_state);
     dyn->user_type=NORMAL;
 	dyn->learning=0;

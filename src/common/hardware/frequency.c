@@ -328,7 +328,7 @@ ulong frequency_pstate_to_freq(uint pstate)
 {
 	if (pstate >= num_freqs) {
 		error("higher P_STATE (%u) than the maximum (%lu), returning nominal", pstate, num_freqs);
-		return 1;
+		return freq_list_rank[1];
 	}
 	return freq_list_rank[pstate];
 }
