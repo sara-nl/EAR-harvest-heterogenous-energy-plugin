@@ -383,6 +383,18 @@ uint close_ps_to_freq(ulong freq,uint *ps)
 
 }
 
+ulong frequency_closest_frequency(ulong freq)
+{
+	int i=0;
+	if (freq>freq_list_rank[0]) return freq_list_rank[1];
+	if (freq<freq_list_rank[num_freqs-1]) return freq_list_rank[num_freqs-1];
+	for (i=0;i<num_freqs;i++){
+		if (freq>freq_list_rank[i]) return freq_list_rank[i];
+	}
+	return freq_list_rank[num_freqs-1];
+	
+}
+
 uint frequency_closest_pstate(ulong freq)
 {
 	uint ps;
