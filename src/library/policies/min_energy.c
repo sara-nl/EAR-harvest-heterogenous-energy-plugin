@@ -84,7 +84,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	double power_ref,time_ref,max_penalty,time_max;
 
   ulong best_freq,best_pstate,freq_ref;
-	ulong curr_freq;
+	ulong curr_freq,nominal;
 	ulong curr_pstate,def_pstate,def_freq;
 	state_t st;
 
@@ -93,6 +93,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_closest_pstate(c->app->max_freq);
+
+		nominal=frequency_pstate_to_freq(min_pstate);
 
 	// Default values
 
@@ -128,9 +130,24 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		// is not needed, so the signature will be enough as a reference. 
 		else
 		{ // we are running at default frequency , signature is our reference
-			time_ref=my_app->time;
-			power_ref=my_app->DC_power;
-			best_freq=curr_freq;
+			if (curr_freq == nominal){
+				/* And we are the nominal freq */
+				time_ref=my_app->time;
+				power_ref=my_app->DC_power;
+				best_freq=curr_freq;
+			}else{
+				/* Nominal is the reference , if projections are ready, we project time and power */
+				if (projection_available(curr_pstate,min_pstate)){
+					project_power(my_app,curr_pstate,min_pstate,&power_ref);
+					project_time(my_app,curr_pstate,min_pstate,&time_ref);
+					best_freq=nominal;
+				}else{
+        	time_ref=my_app->time;
+        	power_ref=my_app->DC_power;
+        	best_freq=curr_freq;
+				}
+			}
+
 		}
 		energy_ref=power_ref*time_ref;
 		best_solution=energy_ref;
