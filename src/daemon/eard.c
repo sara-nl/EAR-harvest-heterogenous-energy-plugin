@@ -1197,8 +1197,7 @@ int main(int argc, char *argv[]) {
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 		if (my_node_conf == NULL) {
-			error( " Node %s not found in ear.conf, exiting\n", nodename);
-			_exit(0);
+			error( " Error in cluster configuration, node %s not found\n", nodename);
 		}
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);

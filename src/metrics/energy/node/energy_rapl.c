@@ -45,7 +45,7 @@
 
 // #define SHOW_DEBUGS 1
 #ifdef SHOW_DEBUGS
-#define plug_debug(...) \ 
+#define plug_debug(...) \
 { \
 fprintf(stderr,__VA_ARGS__); \
 fprintf(stderr,"\n"); \

@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <metrics/energy/energy_gpu.h>
 #include <metrics/energy/gpu/nvsmi.h>
@@ -138,9 +138,7 @@ static state_t nvsmi_gpu_sample_create(pcontext_t *c, uint loop_ms)
 		return EAR_ERROR;
 	}
 	
-	for (i = 0; i < samp_num_gpus; i++) {
-		nvsmi_gpu_data_null(c, &samp_data[i]);
-	}
+	nvsmi_gpu_data_null(c, samp_data);
 
 	// Enabling sampling
 	samp_enabled = 1;
