@@ -195,7 +195,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					st=policy_apply(&loop_signature.signature,&policy_freq,&ready);
-					PP = projection_get(frequency_freq_to_pstate(policy_freq));
+					PP = projection_get(frequency_closest_pstate(policy_freq));
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);

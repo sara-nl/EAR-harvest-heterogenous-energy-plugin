@@ -139,11 +139,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		if (c->app==NULL) return EAR_ERROR;
 
     if (c->use_turbo) min_pstate=0;
-    else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
+    else min_pstate=frequency_closest_pstate(c->app->max_freq);
 
     // This is the frequency at which we were running
 	curr_freq=*(c->ear_frequency);
-    curr_pstate = frequency_freq_to_pstate(curr_freq);
+    curr_pstate = frequency_closest_pstate(curr_freq);
 
 		// New signature ready
 		sig_ready[curr_pstate]=1;
@@ -154,7 +154,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		
 		max_penalty=c->app->settings[0];
 		def_freq=FREQ_DEF(c->app->def_freq);
-		def_pstate=frequency_freq_to_pstate(def_freq);
+		def_pstate=frequency_closest_pstate(def_freq);
 
 
 	// ref=1 is nominal 0=turbo, we are not using it

@@ -99,8 +99,8 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
     num_coeffs=num_coeffs/sizeof(coefficient_t);
     int ccoeff;
     for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
-      ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);
-      i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
+      ref=frequency_closest_pstate(coefficients_sm[ccoeff].pstate_ref);
+      i=frequency_closest_pstate(coefficients_sm[ccoeff].pstate);
       if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
                 debug("initializing coeffs for ref: %d i: %d\n", ref, i);
