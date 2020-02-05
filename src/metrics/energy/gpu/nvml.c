@@ -35,12 +35,27 @@
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 
+#define EAR_INITIALIZED		-1
+#define EAR_SYSCALL_ERROR	-1
+
+#define return_msg(error_no, error_str) \
+	intern_error_str = error_str; \
+	return error_no;
+
 static struct error_s {
+	char *init;
+	char *init_not;
+	char *init_cant;
 	char *null_context;
 	char *null_data;
+	char *gpus_not;
 } Error = {
+	.init         = "context already initialized or not empty",
+	.init_not     = "context not initialized",
+	.init_cant    = "error during NVML initialization",
 	.null_context = "context pointer is NULL",
-	.null_data = "data pointer is NULL",
+	.null_data    = "data pointer is NULL",
+	.gpus_not     = "no GPUs detected"
 };
 
 typedef struct nvsml_s {
@@ -52,13 +67,13 @@ state_t nvml_status()
 	int n_gpus;
 
 	if (nvmlInit() != NVML_SUCCESS) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.init_cant);
 	}
 	if (nvmlDeviceGetCount(&n_gpus) != NVML_SUCCESS) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.gpus_not);
 	}
 	if (n_gpus <= 0) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.gpus_not);
 	}
 
 	nvmlShutdown();
@@ -69,22 +84,24 @@ state_t nvml_init(pcontext_t *c)
 {
 	nvsml_t *n;
 
-	if (c->initialized == 1) {
-		return EAR_ERROR;
+	if (c->initialized != 0) {
+		return_msg(EAR_INITIALIZED, Error.init);
 	}
 	if (nvmlInit() != NVML_SUCCESS) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.init_cant);
 	}
 
 	c->initialized = 1;
 	c->context = calloc(1, sizeof(nvsml_t));
 	n = (nvsml_t *) c->context;
 
-	if (c->context == NULL) {
-		return nvml_dispose(c);
+	if (c->context == NULL){
+		nvml_dispose(c);
+		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
 	}
 	if (state_fail(nvml_count(c, &n->num_gpus))) {
-		return nvml_dispose(c);
+		nvml_dispose(c);
+		return_msg(EAR_ERROR, Error.gpus_not);
 	}
 
 	return EAR_SUCCESS;
@@ -273,25 +290,29 @@ int main(int argc, char *argv[])
     uint k;
     uint i;
 
-    s = nvml_init(&c);
-    debug("nvml_init %d", s);
+ 	if (xtate_fail(s, nvml_init(&c))) {
+		error("nvml_init returned '%s' (%d)", intern_error_str, s);
+	}
 
-    s = nvml_data_alloc(&c, &data_aux);
-    debug("nvml_data_alloc %d", s);
+    if (xtate_fail(s, nvml_data_alloc(&c, &data_aux))) {
+		error("nvml_data_alloc returned '%s' (%d)", intern_error_str, s);
+	}
 
-    s = nvml_count(&c, &k);
-    debug("nvml_count %d", s);
+    if (xtate_fail(s, nvml_count(&c, &k))) {
+		error("nvml_count returned '%s' (%d)", intern_error_str, s);
+	}
 
     while (1)
     {
         sleep(1);
 
-        s = nvml_read(&c, data_aux);
-        debug("nvml_read %d", s);
+    	if (xtate_fail(s, nvml_read(&c, data_aux))) {
+			error("nvml_read returned '%s' (%d)", intern_error_str, s);
+		}
 
         for (i = 0; i < k; ++i)
         {
-            debug("######## %u %0.2lf %lu %lu %lu %lu %lu %lu",
+            verbose(0, "######## %u %0.2lf %lu %lu %lu %lu %lu %lu",
                 i                       , data_aux[i].power_w,
                 data_aux[i].freq_gpu_mhz, data_aux[i].freq_mem_mhz,
                 data_aux[i].util_gpu    , data_aux[i].util_mem,
