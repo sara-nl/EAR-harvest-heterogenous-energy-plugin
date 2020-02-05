@@ -42,11 +42,11 @@ static struct error_s {
 	char *null_data;
 	char *gpus_not;
 } Error = {
-	.init         = "context already initialized or not empty",
-	.init_not     = "context not initialized",
-	.null_context = "context pointer is NULL",
-	.null_data    = "data pointer is NULL",
-	.gpus_not     = "no GPUs detected"
+		.init         = "context already initialized or not empty",
+		.init_not     = "context not initialized",
+		.null_context = "context pointer is NULL",
+		.null_data    = "data pointer is NULL",
+		.gpus_not     = "no GPUs detected"
 };
 
 typedef struct nvsml_s {
@@ -139,7 +139,7 @@ state_t nvml_count(pcontext_t *c, uint *count)
 
 state_t nvml_read(pcontext_t *c, gpu_energy_t *data_read)
 {
-	#define OK NVML_SUCCESS
+#define OK NVML_SUCCESS
 	nvmlReturn_t s0, s1, s2, s3, s4;
 	nvsml_t *n = c->context;
 	nvmlUtilization_t util;
