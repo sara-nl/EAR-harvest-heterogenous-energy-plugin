@@ -27,9 +27,21 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <metrics/energy/energy_gpu.h>
+#include <nvml.h>
+#include <stdlib.h>
+#include <string.h>
+#include <metrics/energy/gpu/nvml.h>
 
-static uint samp_num_gpus;
+#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
+
+static struct error_s {
+	char *null_context;
+	char *null_data;
+} Error = {
+	.null_context = "context pointer is NULL",
+	.null_data = "data pointer is NULL",
+};
 
 typedef struct nvsml_s {
 	uint num_gpus;
@@ -37,22 +49,19 @@ typedef struct nvsml_s {
 
 state_t nvml_status()
 {
-	uint n_gpus;
+	int n_gpus;
 
-	if (!c->initialized) {
-		if (nvmlInit() != NVML_SUCCESS) {
-			return EAR_ERROR;
-		}
+	if (nvmlInit() != NVML_SUCCESS) {
+		return EAR_ERROR;
 	}
-
 	if (nvmlDeviceGetCount(&n_gpus) != NVML_SUCCESS) {
-		return n_gpus > 0 && ((int) n_gpus) < 100;
+		return EAR_ERROR;
+	}
+	if (n_gpus <= 0) {
+		return EAR_ERROR;
 	}
 
-	if (!c->initialized) {
-		nvmlShutdown();
-	}
-
+	nvmlShutdown();
 	return EAR_SUCCESS;
 }
 
@@ -60,10 +69,9 @@ state_t nvml_init(pcontext_t *c)
 {
 	nvsml_t *n;
 
-	if (c->initialized) {
-		return EAR_ALREADY_INITIALIZED;
+	if (c->initialized == 1) {
+		return EAR_ERROR;
 	}
-
 	if (nvmlInit() != NVML_SUCCESS) {
 		return EAR_ERROR;
 	}
@@ -73,11 +81,10 @@ state_t nvml_init(pcontext_t *c)
 	n = (nvsml_t *) c->context;
 
 	if (c->context == NULL) {
-		return nvsml_gpu_dispose(c);
+		return nvml_dispose(c);
 	}
-
-	if (state_fail(nvml_count(n->num_gpus))) {
-		return nvsml_gpu_dispose(c);
+	if (state_fail(nvml_count(c, &n->num_gpus))) {
+		return nvml_dispose(c);
 	}
 
 	return EAR_SUCCESS;
@@ -85,10 +92,9 @@ state_t nvml_init(pcontext_t *c)
 
 state_t nvml_dispose(pcontext_t *c)
 {
-	if (c->initialized) {
-		return EAR_NOT_INITIALIZED;
+	if (c->initialized != 1) {
+		return EAR_ERROR;
 	}
-
 	if (c->context != NULL) {
 		free(c->context);
 	}
@@ -102,10 +108,9 @@ state_t nvml_dispose(pcontext_t *c)
 
 state_t nvml_count(pcontext_t *c, uint *count)
 {
-	if (c->initialized) {
-		return EAR_NOT_INITIALIZED;
+	if (c->initialized != 1) {
+		return EAR_ERROR;
 	}
-
 	if (nvmlDeviceGetCount(count) != NVML_SUCCESS) {
 		*count = 0;
 		return EAR_ERROR;
@@ -119,7 +124,7 @@ state_t nvml_count(pcontext_t *c, uint *count)
 
 state_t nvml_read(pcontext_t *c, gpu_energy_t *data_read)
 {
-#define OK NVML_SUCCESS
+	#define OK NVML_SUCCESS
 	nvmlReturn_t s0, s1, s2, s3, s4, s5;
 	nvsml_t *n = c->context;
 	nvmlUtilization_t util;
@@ -131,11 +136,11 @@ state_t nvml_read(pcontext_t *c, gpu_energy_t *data_read)
 	uint power_mw;
 	int i;
 
-	if (c->initialized) {
-		return EAR_NOT_INITIALIZED;
+	if (c->initialized != 1) {
+		return EAR_ERROR;
 	}
 	if (c->context == NULL) {
-		return EAR_IS_NULL;
+		return_msg(EAR_ERROR, Error.null_context);
 	}
 
 	for (i = 0; i < n->num_gpus; ++i)
@@ -181,16 +186,15 @@ state_t nvml_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
 {
 	nvsml_t *n = c->context;
 
-	if (c->initialized) {
-		return EAR_NOT_INITIALIZED;
+	if (c->initialized != 1) {
+		return EAR_ERROR;
 	}
 	if (c->context == NULL) {
-		return EAR_IS_NULL;
+		return EAR_ERROR;
 	}
-	if (data_read != NULL) {
-		return EAR_NOT_NULL;
+	if (*data_read != NULL) {
+		return EAR_ERROR;
 	}
-
 	*data_read = calloc(n->num_gpus, sizeof(gpu_energy_t));
 	if (*data_read == NULL) {
 		return EAR_ERROR;
@@ -211,13 +215,13 @@ state_t nvml_data_null(pcontext_t *c, gpu_energy_t *data_read)
 {
 	nvsml_t *n = c->context;
 	if (c->initialized != 1) {
-		return EAR_NOT_INITIALIZED;
+		return EAR_ERROR;
 	}
 	if (c->context == NULL) {
-		return EAR_IS_NULL;
+		return EAR_ERROR;
 	}
 	if (data_read == NULL) {
-		return EAR_IS_NULL;
+		return EAR_ERROR;
 	}
 	memset(data_read, 0, n->num_gpus * sizeof(gpu_energy_t));
 
@@ -240,32 +244,36 @@ static void nvml_read_diff(gpu_energy_t *data_read1, gpu_energy_t *data_read2, g
 state_t nvml_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
 {
 	nvsml_t *n = c->context;
+	int i;
 
 	if (c->initialized != 1) {
-		return EAR_NOT_INITIALIZED;
+		return EAR_ERROR;
 	}
 	if (c->context == NULL) {
-		return EAR_IS_NULL;
+		return EAR_ERROR;
 	}
 	if (data_read1 == NULL || data_read2 == NULL || data_avrg == NULL) {
-		return EAR_IS_NULL;
+		return EAR_ERROR;
 	}
 
-	for (i = 0; i < samp_num_gpus; i++) {
+	for (i = 0; i < n->num_gpus; i++) {
 		nvml_read_diff(data_read1, data_read2, data_avrg, i);
 	}
 }
 
 #if MAIN
+// gcc -O3 -DMAIN -I /hpc/base/cuda/cuda-10.1/targets/x86_64-linux/include/ -I ../../../ -g -o nvml nvml.c ../../../common/libcommon.a -L/hpc/base/cuda/cuda-10.1/lib64/stubs/ -lnvidia-ml
+// ln -s /hpc/base/cuda/cuda-10.1/lib64/stubs/libnvidia-ml.so ./libnvidia-ml.so.1
+// LD_LIBRARY_PATH=$PWD:$LD_LIBRARY_PATH ./nvml
 int main(int argc, char *argv[])
 {
+    gpu_energy_t *data_aux = NULL;
 	pcontext_t c;
-    gpu_energy_t *data_aux;
     state_t s;
     uint k;
     uint i;
 
-    s = nvml_init(&c, 1000);
+    s = nvml_init(&c);
     debug("nvml_init %d", s);
 
     s = nvml_data_alloc(&c, &data_aux);
@@ -293,3 +301,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+#endif

@@ -33,6 +33,7 @@
 #include <common/states.h>
 
 typedef struct pcontext_s {
+	int initialized;
 	void *context;
 } pcontext_t;
 
