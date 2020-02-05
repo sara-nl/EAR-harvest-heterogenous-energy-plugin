@@ -36,11 +36,17 @@
 #include <common/output/verbose.h>
 
 static struct error_s {
+	char *init;
+	char *not_init;
 	char *null_context;
 	char *null_data;
+	char *gpus_not;
 } Error = {
+	.init         = "context already initialized or not empty",
+	.init_not     = "context not initialized",
 	.null_context = "context pointer is NULL",
-	.null_data = "data pointer is NULL",
+	.null_data    = "data pointer is NULL",
+	.gpus_not     = "no GPUs detected"
 };
 
 typedef struct nvsml_s {
@@ -49,16 +55,17 @@ typedef struct nvsml_s {
 
 state_t nvml_status()
 {
+	nvmlReturn_t r;
 	int n_gpus;
 
-	if (nvmlInit() != NVML_SUCCESS) {
-		return EAR_ERROR;
+	if ((r = nvmlInit()) != NVML_SUCCESS) {
+		return_msg(EAR_ERROR, nvmlErrorString(r));
 	}
-	if (nvmlDeviceGetCount(&n_gpus) != NVML_SUCCESS) {
-		return EAR_ERROR;
+	if ((r = nvmlDeviceGetCount(&n_gpus)) != NVML_SUCCESS) {
+		return_msg(EAR_ERROR, nvmlErrorString(r));
 	}
 	if (n_gpus <= 0) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.gpus_not);
 	}
 
 	nvmlShutdown();
@@ -67,24 +74,27 @@ state_t nvml_status()
 
 state_t nvml_init(pcontext_t *c)
 {
+	nvmlReturn_t r;
 	nvsml_t *n;
 
-	if (c->initialized == 1) {
-		return EAR_ERROR;
+	if (c->initialized != 0) {
+		return_msg(EAR_INITIALIZED, Error.init);
 	}
-	if (nvmlInit() != NVML_SUCCESS) {
-		return EAR_ERROR;
+	if ((r = nvmlInit()) != NVML_SUCCESS) {
+		return_msg(EAR_ERROR, nvmlErrorString(r));
 	}
 
 	c->initialized = 1;
 	c->context = calloc(1, sizeof(nvsml_t));
 	n = (nvsml_t *) c->context;
 
-	if (c->context == NULL) {
-		return nvml_dispose(c);
+	if (c->context == NULL){
+		nvml_dispose(c);
+		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
 	}
 	if (state_fail(nvml_count(c, &n->num_gpus))) {
-		return nvml_dispose(c);
+		nvml_dispose(c);
+		return_msg(EAR_ERROR, Error.gpus_not);
 	}
 
 	return EAR_SUCCESS;
@@ -93,7 +103,7 @@ state_t nvml_init(pcontext_t *c)
 state_t nvml_dispose(pcontext_t *c)
 {
 	if (c->initialized != 1) {
-		return EAR_ERROR;
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (c->context != NULL) {
 		free(c->context);
@@ -108,16 +118,21 @@ state_t nvml_dispose(pcontext_t *c)
 
 state_t nvml_count(pcontext_t *c, uint *count)
 {
+	nvmlReturn_t r;
+
 	if (c->initialized != 1) {
-		return EAR_ERROR;
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
-	if (nvmlDeviceGetCount(count) != NVML_SUCCESS) {
+	if (c->context == NULL) {
+		return_msg(EAR_ERROR, Error.null_context);
+	}
+	if ((r = nvmlDeviceGetCount(count)) != NVML_SUCCESS) {
 		*count = 0;
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, nvmlErrorString(r));
 	}
 	if (((int) *count) <= 0) {
 		*count = 0;
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.gpus_not);
 	}
 	return EAR_SUCCESS;
 }
@@ -125,11 +140,12 @@ state_t nvml_count(pcontext_t *c, uint *count)
 state_t nvml_read(pcontext_t *c, gpu_energy_t *data_read)
 {
 	#define OK NVML_SUCCESS
-	nvmlReturn_t s0, s1, s2, s3, s4, s5;
+	nvmlReturn_t s0, s1, s2, s3, s4;
 	nvsml_t *n = c->context;
 	nvmlUtilization_t util;
 	nvmlEnableState_t mode;
 	nvmlDevice_t device;
+	timestamp_t time;
 	uint freq_gpu_mhz;
 	uint freq_mem_mhz;
 	uint temp_gpu;
@@ -137,46 +153,42 @@ state_t nvml_read(pcontext_t *c, gpu_energy_t *data_read)
 	int i;
 
 	if (c->initialized != 1) {
-		return EAR_ERROR;
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (c->context == NULL) {
 		return_msg(EAR_ERROR, Error.null_context);
 	}
 
+	timestamp_getfast(&time);
+
 	for (i = 0; i < n->num_gpus; ++i)
 	{
+		// Cleaning
+		memset(&data_read[i], 0, sizeof(gpu_energy_t));
+		// Testing if all is right
 		if ((s0 = nvmlDeviceGetHandleByIndex(i, &device)) != OK) {
-			memset(&data_read[i], 0, sizeof(gpu_energy_t));
 			continue;
 		}
 		if ((s0 = nvmlDeviceGetPowerManagementMode(device, &mode)) != OK) {
-			memset(&data_read[i], 0, sizeof(gpu_energy_t));
 			continue;
 		}
 		if (mode != NVML_FEATURE_ENABLED) {
-			memset(&data_read[i], 0, sizeof(gpu_energy_t));
 			continue;
 		}
-
+		// Getting the metrics by calling NVML (no MEM temp)
 		s0 = nvmlDeviceGetPowerUsage(device, &power_mw);
 		s1 = nvmlDeviceGetClockInfo(device, NVML_CLOCK_MEM, &freq_mem_mhz);
 		s2 = nvmlDeviceGetClockInfo(device, NVML_CLOCK_SM , &freq_gpu_mhz);
 		s3 = nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp_gpu);
 		s4 = nvmlDeviceGetUtilizationRates(device, &util);
-
+		// Setting the data
+		data_read[i].time         = time;
 		data_read[i].power_w      = ((double) power_mw) / 1000.0;
 		data_read[i].freq_mem_mhz = (ulong) freq_mem_mhz;
 		data_read[i].freq_gpu_mhz = (ulong) freq_gpu_mhz;
 		data_read[i].util_mem     = (ulong) util.memory;
 		data_read[i].util_gpu     = (ulong) util.gpu;
 		data_read[i].temp_gpu     = (ulong) temp_gpu;
-		data_read[i].temp_mem     = 0LU;
-
-		data_read[i].correct = (s0 == OK) &&
-							   (s1 == OK) &&
-							   (s2 == OK) &&
-							   (s3 == OK) &&
-							   (s4 == OK);
 	}
 
 	return EAR_SUCCESS;
@@ -187,17 +199,17 @@ state_t nvml_data_alloc(pcontext_t *c, gpu_energy_t **data_read)
 	nvsml_t *n = c->context;
 
 	if (c->initialized != 1) {
-		return EAR_ERROR;
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (c->context == NULL) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.null_context);
 	}
 	if (*data_read != NULL) {
 		return EAR_ERROR;
 	}
 	*data_read = calloc(n->num_gpus, sizeof(gpu_energy_t));
 	if (*data_read == NULL) {
-		return EAR_ERROR;
+		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
 	}
 
 	return EAR_SUCCESS;
@@ -215,13 +227,13 @@ state_t nvml_data_null(pcontext_t *c, gpu_energy_t *data_read)
 {
 	nvsml_t *n = c->context;
 	if (c->initialized != 1) {
-		return EAR_ERROR;
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (c->context == NULL) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.null_context);
 	}
 	if (data_read == NULL) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.null_data);
 	}
 	memset(data_read, 0, n->num_gpus * sizeof(gpu_energy_t));
 
@@ -230,15 +242,17 @@ state_t nvml_data_null(pcontext_t *c, gpu_energy_t *data_read)
 
 static void nvml_read_diff(gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg, int i)
 {
+	ullong utime = timestamp_diff(&data_read2[i].time, &data_read1[i].time, TIME_SECS);
+	double dtime = (double) utime;
+
 	// Averages
 	data_avrg[i].freq_gpu_mhz = (data_read2[i].freq_gpu_mhz - data_read1[i].freq_gpu_mhz);
 	data_avrg[i].freq_mem_mhz = (data_read2[i].freq_mem_mhz - data_read1[i].freq_mem_mhz);
 	data_avrg[i].util_gpu = (data_read2[i].util_gpu - data_read1[i].util_gpu);
 	data_avrg[i].util_mem = (data_read2[i].util_mem - data_read1[i].util_mem);
 	data_avrg[i].temp_gpu = (data_read2[i].temp_gpu - data_read1[i].temp_gpu);
-	data_avrg[i].temp_mem = (data_read2[i].temp_mem - data_read1[i].temp_mem);
 	data_avrg[i].power_w  = (data_read2[i].power_w  - data_read1[i].power_w);
-	data_avrg[i].energy_j = (data_read2[i].energy_j - data_read1[i].energy_j);
+	data_avrg[i].energy_j = (data_avrg[i].power_w)  / dtime;
 }
 
 state_t nvml_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg)
@@ -247,18 +261,19 @@ state_t nvml_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *da
 	int i;
 
 	if (c->initialized != 1) {
-		return EAR_ERROR;
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (c->context == NULL) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.null_context);
 	}
 	if (data_read1 == NULL || data_read2 == NULL || data_avrg == NULL) {
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, Error.null_data);
 	}
-
 	for (i = 0; i < n->num_gpus; i++) {
 		nvml_read_diff(data_read1, data_read2, data_avrg, i);
 	}
+
+	return EAR_SUCCESS;
 }
 
 #if MAIN

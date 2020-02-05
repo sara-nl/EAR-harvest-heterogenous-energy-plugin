@@ -284,7 +284,7 @@ static void body_connections()
 				{
 					if (state_is(s, EAR_SOCK_DISCONNECTED)) {
 						soc_discn += 1;
-					} if (state_is(s, EAR_SOCK_TIMEOUT)) {
+					} if (state_is(s, EAR_TIMEOUT)) {
 						soc_tmout += 1;
 					} else {
 						soc_unkwn += 1;

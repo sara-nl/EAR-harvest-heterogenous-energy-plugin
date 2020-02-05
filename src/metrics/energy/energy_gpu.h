@@ -37,7 +37,7 @@
 
 typedef struct gpu_power_s
 {
-	timestamp time;
+	timestamp_t time;
 	ulong samples;
 	ulong freq_gpu_mhz;
 	ulong freq_mem_mhz;
