@@ -44,7 +44,7 @@ extern MPI_Comm masters_comm,new_world_comm;
 extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
 #else
-#define DEa_FREQF(f) f
+#define DEF_FREQ(f) f
 #endif
 
 

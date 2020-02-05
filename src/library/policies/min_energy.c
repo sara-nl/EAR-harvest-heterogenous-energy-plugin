@@ -91,10 +91,15 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 	if ((c!=NULL) && (c->app!=NULL)){
 
+		fprintf(stderr,"Max_freq set to %lu\n",c->app->max_freq);
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_closest_pstate(c->app->max_freq);
 
+		fprintf(stderr,"min_pstate = %d \n",min_pstate);	
+
 		nominal=frequency_pstate_to_freq(min_pstate);
+
+		fprintf(stderr,"nominal %lu\n",nominal);
 
 	// Default values
 
@@ -199,7 +204,7 @@ state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *o
 state_t  policy_get_default_freq(polctx_t *c, ulong *freq_set)
 {
 		if (c!=NULL){
-			if (*freq_set>c->app->max_freq)  *freq_set=c->app->max_freq;
+			*freq_set=c->app->max_freq;
 		}else EAR_ERROR;
 		return EAR_SUCCESS;
 }
