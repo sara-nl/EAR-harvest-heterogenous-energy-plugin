@@ -919,7 +919,7 @@ int stmt_error(MYSQL *connection, MYSQL_STMT *statement)
 #endif
 
 #define PSQL_METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
-                                     ">= %d AND end_time <= %d AND DC_energy <= %d"
+                                     ">= %d AND end_time <= %d"
 #define PSQL_AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                      ">= %d AND end_time <= %d"
 
@@ -931,7 +931,7 @@ int postgresql_select_acum_energy(PGconn *connection, int start_time, int end_ti
     if (is_aggregated)
         sprintf(query, PSQL_AGGREGATED_SUM_QUERY, divisor, start_time, end_time);
     else
-        sprintf(query, PSQL_METRICS_SUM_QUERY, divisor, start_time, end_time, MAX_ENERGY);
+        sprintf(query, PSQL_METRICS_SUM_QUERY, divisor, start_time, end_time);
 
     PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
 
@@ -952,7 +952,7 @@ int postgresql_select_acum_energy(PGconn *connection, int start_time, int end_ti
 #endif
 
 #define METRICS_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE end_time" \
-                                ">= ? AND end_time <= ? AND DC_energy <= %d"
+                                ">= ? AND end_time <= ?"
 #define AGGREGATED_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE end_time"\
                                 ">= ? AND end_time <= ?"
 
@@ -977,7 +977,7 @@ int mysql_select_acum_energy(MYSQL *connection, int start_time, int end_time, ul
     }
     else
     {
-        sprintf(query, METRICS_SUM_QUERY, MAX_ENERGY);
+        sprintf(query, METRICS_SUM_QUERY);
         if (mysql_stmt_prepare(statement, query, strlen(query)))
             return stmt_error(connection, statement);
     }
@@ -1075,7 +1075,7 @@ int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uin
         return EAR_ERROR;
     }
 
-    sprintf(query, METRICS_SUM_QUERY, MAX_ENERGY);
+    sprintf(query, METRICS_SUM_QUERY);
     if (num_nodes > 0)
     {
         strcat(query, " AND node_id IN (");
@@ -1134,7 +1134,7 @@ int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uin
 #endif
 
 #define METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
-                                "id > %d AND DC_energy <= %d"
+                                "id > %d"
 #define AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/? DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
                                 "id > %d"
 
@@ -1161,7 +1161,7 @@ int mysql_select_acum_energy_idx(MYSQL *connection, ulong divisor, char is_aggre
     }
     else
     {
-        sprintf(query, METRICS_ID_SUM_QUERY, *last_index, MAX_ENERGY);
+        sprintf(query, METRICS_ID_SUM_QUERY, *last_index);
         if (mysql_stmt_prepare(statement, query, strlen(query)))
             return stmt_error(connection, statement);
     }
@@ -1201,7 +1201,7 @@ int mysql_select_acum_energy_idx(MYSQL *connection, ulong divisor, char is_aggre
 #endif
 
 #define PSQL_METRICS_ID_SUM_QUERY       "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_metrics WHERE " \
-                                        "id > %d AND DC_energy <= %d"
+                                        "id > %d "
 #define PSQL_AGGREGATED_ID_SUM_QUERY    "SELECT SUM(DC_energy)/%lu DIV 1, MAX(id) FROM Periodic_aggregations WHERE "\
                                         "id > %d"
 
@@ -1213,7 +1213,7 @@ int postgresql_select_acum_energy_idx(PGconn *connection, ulong divisor, char is
     if (is_aggregated)
         sprintf(query, PSQL_AGGREGATED_ID_SUM_QUERY, divisor, *last_index);
     else
-        sprintf(query, PSQL_METRICS_ID_SUM_QUERY, divisor, *last_index, MAX_ENERGY);
+        sprintf(query, PSQL_METRICS_ID_SUM_QUERY, divisor, *last_index);
 
     PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
 
