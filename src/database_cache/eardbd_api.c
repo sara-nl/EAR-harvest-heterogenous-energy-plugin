@@ -164,7 +164,7 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 
 	//
 	if (eardbd_is_initialized()) {
-		edb_state_return_msg(state, EAR_ALREADY_INITIALIZED, "it's already initialized");
+		edb_state_return_msg(state, EAR_INITIALIZED, "it's already initialized");
 	}
 
 #if 1

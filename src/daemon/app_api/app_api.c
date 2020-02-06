@@ -169,7 +169,7 @@ static int wait_answer(app_recv_t *rec)
         if (retval<0) return EAR_ERROR;
 	if (retval==0){
 		debug("timeout expired");
-		return EAR_SOCK_TIMEOUT;
+		return EAR_TIMEOUT;
 	}
 
         /* we can read now */

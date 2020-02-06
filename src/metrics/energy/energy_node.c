@@ -114,15 +114,12 @@ state_t energy_dispose(ehandler_t *eh)
 		s = energy_ops.dispose(&eh->context);
 	}
 
-	energy_handler_clean(eh);
-
-
 	return s;
 }
 
 state_t energy_handler_clean(ehandler_t *eh)
 {
-	memset(eh, 0, sizeof(ehandler_t));
+	memset(eh, 0, sizeof(eh->context));
 	return EAR_SUCCESS;
 }
 
