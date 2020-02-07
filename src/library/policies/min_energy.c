@@ -27,6 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -35,6 +37,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
@@ -109,7 +112,9 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// This is the frequency at which we were running
 		curr_freq=*(c->ear_frequency);
+        debug("curr_frequency %lu", curr_freq);
 		curr_pstate = frequency_closest_pstate(curr_freq);
+        debug("curr_pstate %i", curr_pstate);
 
 
 		*ready=1;
@@ -123,6 +128,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				st=project_power(my_app,curr_pstate,def_pstate,&power_ref);
 				st=project_time(my_app,curr_pstate,def_pstate,&time_ref);
 				best_freq=def_freq;
+                debug("projecting from %d to %d\t time: %.2lf\t power: %.2lf\n", curr_pstate, i, time_proj, power_proj);
 		}
 		else
 		{
@@ -142,10 +148,13 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				best_freq=curr_freq;
 			}else{
 				/* Nominal is the reference , if projections are ready, we project time and power */
-				if (projection_available(curr_pstate,min_pstate)){
+                debug("current_freq is not the nominal\n");
+
+				if (projection_available(curr_pstate,min_pstate) == EAR_SUCCESS){
 					project_power(my_app,curr_pstate,min_pstate,&power_ref);
 					project_time(my_app,curr_pstate,min_pstate,&time_ref);
 					best_freq=nominal;
+                    debug("projecting to nominal\t time: %.2lf\t power: %.2lf\n", time_ref, power_ref);
 				}else{
         	time_ref=my_app->time;
         	power_ref=my_app->DC_power;
@@ -160,6 +169,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * max_penalty);
 
+    debug("time_max: %.2lf\n", time_max);
 
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	for (i = min_pstate; i < c->num_pstates;i++)
@@ -170,8 +180,10 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
+                debug("projected from %d to %d\t time: %.2lf\t power: %.2lf energy: %.2lf\n", curr_pstate, i, time_proj, power_proj, energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
+                    debug("new best solution found\n");
 					best_freq = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
 			}
