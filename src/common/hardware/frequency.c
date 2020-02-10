@@ -328,7 +328,7 @@ ulong frequency_pstate_to_freq(uint pstate)
 {
 	if (pstate >= num_freqs) {
 		error("higher P_STATE (%u) than the maximum (%lu), returning nominal", pstate, num_freqs);
-		return 1;
+		return freq_list_rank[1];
 	}
 	return freq_list_rank[pstate];
 }
@@ -347,6 +347,64 @@ uint frequency_freq_to_pstate(ulong freq)
 	verbose(VMETRICS, "the P_STATE of the frequency %lu is %d", freq, i);
 
 	return i;
+}
+
+uint freq_to_ps(ulong freq,uint *ps)
+{
+	uint p=frequency_freq_to_pstate(freq);
+	if (frequency_is_valid_pstate(p)){
+		*ps=p;
+		return EAR_SUCCESS;
+	}else{
+		return EAR_ERROR;
+	}
+}
+
+uint close_ps_to_freq(ulong freq,uint *ps)
+{
+  int i=0;
+	if ((freq<freq_list_rank[0]) && (freq>freq_list_rank[num_freqs-1])){
+		i=0;
+  	while (i < num_freqs)
+  	{
+  	  if (freq_list_rank[i] > freq){ i++;
+  	  }else{
+				verbose(1,"selecting closest frequency to %lu=%lu",freq,freq_list_rank[i-1]);
+				*ps=i-1;
+				return EAR_SUCCESS;	
+			}
+  	}
+	}else{
+		error("Frequency %lu out of range for this architecture",freq);
+		*ps=1;
+		return EAR_ERROR;
+	}
+	return EAR_SUCCESS;
+
+}
+
+ulong frequency_closest_frequency(ulong freq)
+{
+	int i=0;
+	if (freq>freq_list_rank[0]) return freq_list_rank[1];
+	if (freq<freq_list_rank[num_freqs-1]) return freq_list_rank[num_freqs-1];
+	for (i=0;i<num_freqs;i++){
+		if (freq>freq_list_rank[i]) return freq_list_rank[i];
+	}
+	return freq_list_rank[num_freqs-1];
+	
+}
+
+uint frequency_closest_pstate(ulong freq)
+{
+	uint ps;
+	if (freq_to_ps(freq,&ps)==EAR_SUCCESS){
+		return ps;
+	}else{
+			error("Invalid frequency %lu, looking for closest frequency",freq);
+			close_ps_to_freq(freq,&ps);
+			return ps;
+	}
 }
 
 // Privileged function

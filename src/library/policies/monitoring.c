@@ -39,6 +39,13 @@
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 
+#ifdef EARL_RESEARCH
+extern unsigned long ext_def_freq;
+#define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
+#else
+#define DEF_FREQ(f) f
+#endif
+
 
 
 state_t policy_init(polctx_t *c)
@@ -48,7 +55,7 @@ state_t policy_init(polctx_t *c)
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
 	*ready=1;
-	*new_freq=c->app->def_freq;
+	*new_freq=DEF_FREQ(c->app->def_freq);
 	return EAR_SUCCESS;
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
@@ -60,7 +67,7 @@ state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *
 
 state_t policy_get_default_freq(polctx_t *c, ulong *freq_set)
 {
-	*freq_set=c->app->def_freq;
+	*freq_set=DEF_FREQ(c->app->def_freq);
 	return EAR_SUCCESS;
 }
 

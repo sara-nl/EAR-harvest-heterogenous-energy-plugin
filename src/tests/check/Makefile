@@ -15,7 +15,7 @@ chck_BINS = cpu_examinable \
     papi_comp_enabled   \
     ear_types
 ifdef SLURM_BASE
-	chck_BINS += slurm_version
+#	chck_BINS += slurm_version
 endif
 
 ######## FILES

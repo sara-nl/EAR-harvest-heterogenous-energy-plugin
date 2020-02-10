@@ -93,7 +93,7 @@
 
 /** Database Daemon Deaults */
 /* Enabling it, the output of EARDBD is sended to the log file stored in TMP */
-#define DEF_DBD_FILE_LOG					0
+#define DEF_DBD_FILE_LOG					1
 #define DEF_DBD_AGGREGATION_TIME			60
 #define DEF_DBD_INSERTION_TIME				30
 #define DEF_DBD_SERVER_PORT					4711

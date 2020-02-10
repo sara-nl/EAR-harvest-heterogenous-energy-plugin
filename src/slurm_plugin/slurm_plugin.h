@@ -30,8 +30,6 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
-#include <slurm/spank.h>
-#include <slurm/slurm.h>
 #include <common/sizes.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
@@ -40,7 +38,13 @@
 #include <daemon/eard_rapi.h>
 #include <daemon/shared_configuration.h>
 #include <global_manager/eargm_rapi.h>
+#include <slurm_plugin/spank_interposer.h>
 
+#ifndef ERUN
+#define NULL_C NULL
+#else
+#define NULL_C 0
+#endif
 #define ESPANK_STOP	-1
 
 /*

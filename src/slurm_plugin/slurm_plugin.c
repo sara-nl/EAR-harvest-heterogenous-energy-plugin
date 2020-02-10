@@ -35,10 +35,10 @@
 #include <slurm_plugin/slurm_plugin_serialization.h>
 
 // Spank
-SPANK_PLUGIN(EAR_PLUGIN, 1)
+SPANK_PLUGIN(EAR_PLUGIN, 1);
 
 //
-static plug_serialization_t sd;
+plug_serialization_t sd;
 
 // Function order:
 // 	- Local 1
@@ -55,6 +55,16 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 // Function order:
 // 	- Local 2
 // 	- Remote 0
+int slurm_spank_init_post_opt_fini(spank_t sp)
+{
+	plug_verbose(sp, 2, "function slurm_spank_init_post_opt_fini");
+	
+	//
+	plug_print_variables(sp);
+
+	return ESPANK_SUCCESS;
+}
+
 int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
@@ -93,8 +103,8 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	//
 	plug_serialize_remote(sp, &sd);
-	
-	return ESPANK_SUCCESS;
+
+	return slurm_spank_init_post_opt_fini(sp);
 }
 
 // Function order:
@@ -127,6 +137,16 @@ int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
 // Function order:
 // 	- Local 0
 // 	- Remote 2
+int slurm_spank_user_init_fini(spank_t sp)
+{
+	plug_verbose(sp, 2, "function slurm_spank_user_init_fini");
+        
+	//
+        plug_print_variables(sp);
+
+        return ESPANK_SUCCESS;
+}
+
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
@@ -172,8 +192,8 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	if (plug_component_isenabled(sp, Component.test)) {
 		plug_test_result(sp);
 	}
-	
-	return ESPANK_SUCCESS;
+
+	return slurm_spank_user_init_fini(sp);
 }
 
 // Function order:
@@ -201,7 +221,7 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 
 int slurm_spank_exit (spank_t sp, int ac, char **av)
 {
-	plug_verbose(sp, 2, "slurm_spank_exit");
+	plug_verbose(sp, 2, "function slurm_spank_exit");
 
 	// EARD disconnection
 	if (plug_context_is(sp, Context.remote))

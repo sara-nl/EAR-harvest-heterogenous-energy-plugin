@@ -3,8 +3,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 ######## FILES
 
 band_OBJS = \
-    power_metrics.o \
-    energy_cpu.o
+    power_metrics.o 
 
 ######## RULES
 

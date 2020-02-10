@@ -231,7 +231,7 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
-	int i=0, j=0;
+	int i=0, j=0, range_found=0;
 	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
     n->num_policies = my_conf->num_policies;
 		n->policies=malloc(sizeof(policy_conf_t)*n->num_policies);
@@ -249,6 +249,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     i = 0;
     do{ // At least one node is assumed
 		if ((range_id = island_range_conf_contains_node(&my_conf->islands[i], nodename)) >= 0) {
+            range_found = 1;
             n->island = my_conf->islands[i].id;
             int num_ips = my_conf->islands[i].ranges[range_id].db_ip;
             if (my_conf->islands[i].num_ips > num_ips && num_ips >= 0)
@@ -270,11 +271,18 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 		}
 		i++;
 	}while(i<my_conf->num_islands);
+    
+    if (!range_found)
+    {
+        free(n);
+        return NULL;
+    }
 
 
     //pending checks for policies
 		memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
-	n->max_pstate=my_conf->eard.max_pstate;
+		check_policy_values(n->policies,n->num_policies);
+		n->max_pstate=my_conf->eard.max_pstate;
 
 	return n;
 }
@@ -675,17 +683,18 @@ void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
 {
     //each policy could have a short name stored in the cluster_conf section and we could just return that here
     int pol = policy_name_to_id(policy, conf);
-    if (!strcmp(policy, "MIN_ENERGY_TO_SOLUTION"))
+    strtolow(policy);
+    if (!strcmp(policy, "min_energy_to_solution") || !strcmp(policy, "min_energy"))
     {
         strcpy(buf, "ME");
         return;
     }
-    else if (!strcmp(policy, "MIN_TIME_TO_SOLUTION"))
+    else if (!strcmp(policy, "min_time_to_solution") || !strcmp(policy, "min_time"))
     {
         strcpy(buf, "MT");
         return;
     }
-    else if (!strcmp(policy, "MONITORING_ONLY"))
+    else if (!strcmp(policy, "monitoring_only") || !strcmp(policy, "monitoring"))
     {
         strcpy(buf, "MO");
         return;

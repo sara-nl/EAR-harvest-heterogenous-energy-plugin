@@ -45,7 +45,7 @@
 #include <cpufreq.h>
 #endif
 #else
-#include <control/cpupower.h>
+#include <common/hardware/cpupower.h>
 #endif
 
 #include <common/types/application.h>

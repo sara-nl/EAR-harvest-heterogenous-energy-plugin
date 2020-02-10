@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         verbose(0, "Usage: %s coeffs_file",argv[0]);
         exit(1);
     }
-
+	VERB_SET_LV(5);
 	size = file_size(argv[1]);
 
 	if (size < 0) {
@@ -88,7 +88,8 @@ int main(int argc, char *argv[])
 	state = file_read(argv[1], (char *) coeffs, size);
 
 	if (state_fail(state)) {
-		state_print_error("", state);
+		error("state id: %d (%s)", state, state_msg);
+
 		exit(1);
 	}
 

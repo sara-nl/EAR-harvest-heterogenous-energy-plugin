@@ -41,7 +41,7 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 	//
 	while ((node = slurm_hostlist_shift(hostlist)) != NULL)
 	{
-		plug_verbose(sp, 2, "connecting to EARD: '%s:%d'", node, port);
+		plug_verbose(sp, 2, "message connecting to EARD: '%s:%d'", node, port);
 
 		if (eards_remote_connect(node, port) < 0) {
 			plug_error(sp, "while connecting with EAR daemon");
@@ -50,11 +50,13 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 
 		if (new_job) {
 			eards_new_job(&sd->job.app);
+			plug_print_application(sp, &sd->job.app);
 		} else {
 			eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
 		}
 
 		eards_remote_disconnect();
+		
 		free(node);
 	}
 

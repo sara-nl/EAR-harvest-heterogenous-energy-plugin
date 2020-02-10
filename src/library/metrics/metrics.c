@@ -32,11 +32,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <papi.h>
+// #define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
+#ifdef CACHE_METRICS
+#include <metrics/cache/cache.h>
+#endif
 #include <common/hardware/hardware_info.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
@@ -119,11 +123,13 @@ static uint node_energy_units;
 #define SIG_BEGIN 	0
 #define SIG_END		1
 
+static int num_packs=0;
 static long long *metrics_flops[2]; // (vec)
 static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[3]; // ops (vec)
 static ull *metrics_bandwith_init[2]; // ops (vec)
 static ull *metrics_bandwith_end[2]; // ops (vec)
+static ull *diff_uncore_value;
 static ull *metrics_rapl[2]; // nJ (vec)
 static ull *aux_rapl; // nJ (vec)
 static ull *last_rapl; // nJ (vec)
@@ -144,11 +150,6 @@ static long long metrics_l3[2];
 
 static int NI=0;
 
-//TODO: remove when all metrics were unified
-#define RAPL_DRAM0 			0
-#define RAPL_DRAM1 			1
-#define RAPL_PACKAGE0 		2
-#define RAPL_PACKAGE1 		3
 
 long long metrics_time()
 {
@@ -248,11 +249,28 @@ static int metrics_partial_stop(uint where)
 		debug("EAR_NOT_READY because of power %f\n",c_power);
 		return EAR_NOT_READY;
 	}
+
+
+	/* This is new to avoid cases where uncore gets frozen */
+	eards_read_uncore(metrics_bandwith_end[LOO]);
+	diff_uncores(diff_uncore_value,metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
+	if ((where==SIG_END) && uncore_are_frozen(diff_uncore_value,bandwith_elements)){
+		verbose(1,"Doing reset of uncore counters becuase they were frozen");
+		eards_reset_uncore();
+		return EAR_NOT_READY;
+	}else{
+		copy_uncores(metrics_bandwith[LOO],diff_uncore_value,bandwith_elements);	
+	}
+	/* End new section to check frozen uncore counters */
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
 	aux_time=aux_time_stop;
 
 	acum_ipmi[LOO] = c_energy;
 	acum_ipmi[APP] += acum_ipmi[LOO];
+	ulong *ei,*ee;
+	ei=(ulong *)metrics_ipmi[LOO];
+	ee=(ulong *)aux_energy_stop;
+	debug("loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
 	// Manual time accumulation
 	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
@@ -263,9 +281,7 @@ static int metrics_partial_stop(uint where)
  	* diff_uncores(values,values_end,values_begin,num_counters);
  	* copy_uncores(values_begin,values_end,num_counters);
  	*/
-	eards_read_uncore(metrics_bandwith_end[LOO]);
 	//eards_start_uncore();
-	diff_uncores(metrics_bandwith[LOO],metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
 
 	eards_read_rapl(aux_rapl);
 
@@ -336,7 +352,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	metrics->time = time_s / (double) iterations;
 	metrics->avg_f = metrics_avg_frequency[s];
 
-	#if 0
+	#if CACHE_METRICS
 	metrics->L1_misses = metrics_l1[s];
 	metrics->L2_misses = metrics_l2[s];
 	metrics->L3_misses = metrics_l3[s];
@@ -394,15 +410,15 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	debug("DC power computed in signature %.2lf (%lu energy))",metrics->DC_power,acum_ipmi[s]);
 	metrics->EDP = time_s * time_s * metrics->DC_power;
 	if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
-		verbose(0,"Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
+		debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
 	}
 
-	// Energy RAPL (TODO: ask for the two individual energy types separately)
-	metrics->PCK_power   = (double) metrics_rapl[s][RAPL_PACKAGE0];
-	metrics->PCK_power  += (double) metrics_rapl[s][RAPL_PACKAGE1];
+	int p;
+	metrics->PCK_power=0;
+	metrics->DRAM_power=0;
+	for (p=0;p<num_packs;p++) metrics->DRAM_power=metrics->DRAM_power+(double) metrics_rapl[s][p];
+	for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
 	metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
-	metrics->DRAM_power  = (double) metrics_rapl[s][RAPL_DRAM0];
-	metrics->DRAM_power += (double) metrics_rapl[s][RAPL_DRAM1];
 	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 }
 
@@ -416,6 +432,10 @@ int metrics_init()
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
 	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	num_packs=detect_packages(NULL);
+	if (num_packs==0){
+		verbose(0,"Error detecting number of packges");
+	}
 
 	st=energy_lib_init(system_conf);
 	if (st!=EAR_SUCCESS){
@@ -454,7 +474,7 @@ int metrics_init()
 
 	// Daemon metrics allocation (TODO: standarize data size)
 	rapl_size = eards_get_data_size_rapl();
-	rapl_elements = rapl_size / sizeof(long long);
+	rapl_elements = rapl_size / sizeof(unsigned long long);
 
 	// Allocating data for energy node metrics
 	// node_energy_datasize=eards_node_energy_data_size();
@@ -481,13 +501,14 @@ int metrics_init()
 	metrics_bandwith_init[APP] = malloc(bandwith_size);
 	metrics_bandwith_end[LOO] = malloc(bandwith_size);
 	metrics_bandwith_end[APP] = malloc(bandwith_size);
+	diff_uncore_value = malloc(bandwith_size);
 	metrics_rapl[LOO] = malloc(rapl_size);
 	metrics_rapl[APP] = malloc(rapl_size);
 	aux_rapl = malloc(rapl_size);
 	last_rapl = malloc(rapl_size);
 
 
-	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith[ACUM] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
+	if (diff_uncore_value == NULL || metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith[ACUM] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
 		metrics_bandwith_end[LOO] == NULL || metrics_bandwith_end[APP] == NULL  ||
 			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
 	{
@@ -501,12 +522,13 @@ int metrics_init()
 	memset(metrics_bandwith_init[APP], 0, bandwith_size);
 	memset(metrics_bandwith_end[LOO], 0, bandwith_size);
 	memset(metrics_bandwith_end[APP], 0, bandwith_size);
+	memset(diff_uncore_value, 0, bandwith_size);
 	memset(metrics_rapl[LOO], 0, rapl_size);
 	memset(metrics_rapl[APP], 0, rapl_size);
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
-	debug( "detected %d RAPL counter", rapl_elements);
+	debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);
 	debug( "detected %d bandwith counter", bandwith_elements);
 
 	metrics_reset();

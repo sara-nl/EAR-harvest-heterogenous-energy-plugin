@@ -104,13 +104,13 @@ extern uint check_periodic_mode;
 
 
 #define  REPORT_TRACES() \
-      traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI); \
-      traces_frequency(ear_my_rank, my_id, policy_freq); \
-      traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
+      traces_new_signature(ear_my_rank, my_id, &loop.signature); \
+      traces_frequency(ear_my_rank, my_id, policy_freq); 
+      // traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
 #define VERBOSE_SIG() \
       verbose(1,"EAR(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
-      verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf)", CPI, GBS, POWER, TIME, ENERGY, EDP);
+      verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, EDP,policy_freq);
 
 
 
@@ -191,7 +191,7 @@ void states_end_period(uint iterations)
 		loop.total_iterations = iterations;
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		if (system_conf->report_loops){
-		#if DB_MYSQL
+		#if USE_DB
 		eards_write_loop_signature(&loop);
 		#endif
 		}
@@ -260,7 +260,7 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 	#if DB_FILES
    	append_loop_text_file(loop_summary_path, my_loop,job);
 	#endif
-	#if DB_MYSQL
+	#if USE_DB
     eards_write_loop_signature(my_loop);
     #endif
 }
@@ -281,9 +281,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	pst=policy_new_iteration(&loop.id);
 
 	prev_f = ear_frequency;
-	curr_pstate=frequency_freq_to_pstate(ear_frequency);
+	curr_pstate=frequency_closest_pstate(ear_frequency);
 	pst=policy_get_default_freq(&policy_def_freq);
-	def_pstate=frequency_freq_to_pstate(policy_def_freq);
+	def_pstate=frequency_closest_pstate(policy_def_freq);
 
 	if (system_conf!=NULL){
 	if (resched_conf->force_rescheduling){
@@ -594,7 +594,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
             EDP = ENERGY * TIME;
 
             /* VERBOSE */
-            traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER,VPI);
+            traces_new_signature(ear_my_rank, my_id, &loop_signature.signature);
             traces_frequency(ear_my_rank, my_id, policy_freq);
 			}
 			/* We run here at default freq */

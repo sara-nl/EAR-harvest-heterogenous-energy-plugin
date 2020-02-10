@@ -51,6 +51,7 @@ static int opt_g;
 static int opt_h;
 
 //
+static cluster_conf_t conf;
 static application_t *apps;
 static int n_apps;
 
@@ -70,6 +71,14 @@ static int diff_m000g; // (3,400,000,000) * 2 * 8 * 8 = 435 GB/s max BW
 static int diff_m450g; // (DDR4@3.4GHz OC) * (dual) * (8 bytes) * (8 channels)
 static ulong max_freq;
 static ulong min_freq;
+
+//
+double max_pow = MAX_ERROR_POWER;
+double min_pow = 040.0;
+double top_pow = MIN_SIG_POWER;
+double cei_pow = MAX_SIG_POWER;
+double max_tim = 180.0;
+double min_tim = 030.0;
 
 //
 double wtim;
@@ -118,24 +127,33 @@ static void print_individual()
 	int warn_wtim;
 	int warn_wpow;
 	int warn_wgbs;
+	int aler_wtim;
+	int aler_wpow;
+	int aler_wgbs;
 	//ulong freq;
 	//char *name;
 
 	if (opt_g) {
 		return;
 	}
+	
+	// Warning
+	warn_wpow = (wpow > top_pow) | (wpow < cei_pow);
 
-	// Warnings
-	warn_wtim = (wtim > 120.0) | (wtim < 060.0);
-	warn_wpow = (wpow > 400.0) | (wpow < 100.0);
-	warn_wgbs = (wgbs > 450.0) | (wgbs < 000.0);
+	// Warning color 
+	col_wpow = (warn_wpow == 0) ? "": STR_YLW;
 
-	// 
-	col_wtim = (warn_wtim == 0) ? "": STR_RED;
-	col_wpow = (warn_wpow == 0) ? "": STR_RED;
-	col_wgbs = (warn_wgbs == 0) ? "": STR_RED;
+	// Alert
+	aler_wtim = (wtim > max_tim) | (wtim < min_tim);
+	aler_wpow = (wpow > max_pow) | (wpow < min_pow);
+	aler_wgbs = (wgbs > 450.0)   | (wgbs < 000.0);
+
+	// Alert color
+	col_wtim = (aler_wtim == 0) ?       "": STR_RED;
+	col_wpow = (aler_wpow == 0) ? col_wpow: STR_RED;
+	col_wgbs = (aler_wgbs == 0) ?       "": STR_RED;
     
-	if (warn_wtim || warn_wpow || warn_wgbs) {
+	if (warn_wpow || aler_wtim || aler_wpow || aler_wgbs) {
 		tprintf("%s|||%s%0.2lf||%s%0.2lf||%s%0.2lf|||%s",
 			buffer_nodename, col_wtim, wtim, col_wpow, wpow, col_wgbs, wgbs, name);
 	}
@@ -238,10 +256,10 @@ static void analyze()
 		}
 
 		diff_wapps += !found_name;
-		diff_w060s += (wtim < 060.0);
-		diff_w120s += (wtim > 120.0);
-		diff_w100w += (wpow < 100.0);
-		diff_w400w += (wpow > 400.0);
+		diff_w060s += (wtim < min_tim);
+		diff_w120s += (wtim > max_tim);
+		diff_w100w += (wpow < min_pow);
+		diff_w400w += (wpow > max_pow);
 		diff_w450g += (wgbs > 450.0);
 		diff_w000g += (wgbs < 000.0);
 		min_freq   = min_freq * (freq >= min_freq) + freq * (freq < min_freq);
@@ -253,10 +271,10 @@ static void analyze()
 	mtim /= (double) n_apps;
 	mpow /= (double) n_apps;
 	mgbs /= (double) n_apps;
-	diff_m060s += (mtim < 060.0);
-	diff_m120s += (mtim > 120.0);
-	diff_m100w += (mpow < 100.0);
-	diff_m400w += (mpow > 400.0);
+	diff_m060s += (mtim < 040.0);
+	diff_m120s += (mtim > 180.0);
+	diff_m100w += (mpow < min_pow);
+	diff_m400w += (mpow > max_pow);
 	diff_m450g += (mgbs > 450.0);
 	diff_m000g += (mgbs < 000.0);
 }
@@ -269,15 +287,6 @@ static void analyze()
 
 static void read_applications()
 {
-	static cluster_conf_t conf;
-
-	get_ear_conf_path(buffer);
-
-	if (read_cluster_conf(buffer, &conf) != EAR_SUCCESS){
-		verbose(0, "Error reading cluster configuration."); //error
-		exit(1);
-	}
-
 	init_db_helper(&conf.database);
 
 	application_t *apps_aux;
@@ -341,9 +350,43 @@ static void usage(int argc, char *argv[])
 	}
 }
 
+static void init()
+{
+	my_node_conf_t *conf_node;
+
+	if (get_ear_conf_path(buffer) == EAR_ERROR) {
+		error("while getting ear.conf path");
+		exit(1);
+	}
+	verbose(0, "reading '%s' configuration file", buffer);
+	if (state_fail(read_cluster_conf(buffer, &conf))) {
+		error("while reading ear.conf path file");
+		exit(1);
+	}
+	if ((conf_node = get_my_node_conf(&conf, buffer_nodename)) == NULL) {
+		error("while reading node configuration, using default configuration");
+		goto print;
+	}
+	
+	max_pow = conf_node->max_error_power;
+	min_pow = conf_node->min_sig_power;
+	top_pow = conf_node->max_sig_power;
+	cei_pow = conf_node->min_sig_power;
+
+	print:
+	verbose(0, "--------------------------------------------------------");
+	verbose(0, "alert max power: %0.2lf", max_pow);
+	verbose(0, "alert min power: %0.2lf", min_pow);
+	verbose(0, "warning min power: %0.2lf", top_pow);
+	verbose(0, "warning min power: %0.2lf", cei_pow);
+	verbose(0, "--------------------------------------------------------");
+}
+
 int main(int argc, char *argv[])
 {
 	usage(argc, argv);
+
+	init();
 
 	read_applications();
 

@@ -209,6 +209,14 @@ void tprintf_close()
 	columns = 0;
 }
 
+void strtolow(char *string)
+{
+    while (*string) {
+        *string = tolower((unsigned char) *string);
+        string++;
+    }
+}
+
 void strtoup(char *string)
 {
     while (*string) {

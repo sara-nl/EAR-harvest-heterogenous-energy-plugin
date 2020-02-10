@@ -34,8 +34,9 @@
 
 #include <common/environment.h>
 #include <daemon/shared_configuration.h>
+#include <common/hardware/architecture.h>
 
-state_t init_power_models(uint user_type,conf_install_t *data,uint pstates);
+state_t init_power_models(uint user_type,conf_install_t *data,architecture_t *myarch);
 
 
 #endif

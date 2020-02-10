@@ -3,18 +3,28 @@ LDFLAGS =
 
 ######## INSTALLATION
 
-plug_BINS = earplug.so
+plug_BINS = erun 
+ifdef SLURM_BASE
+plug_BINS += earplug.so
+endif
 plug_PATH = $(DESTDIR)/lib
 plug_PERM = 0775
 
 ######## FILES
 
-plug_OBJS = $(SRCDIR)/daemon/eard_rapi.o \
+erun_SRCS = \
+        erun.c \
+        erun_sim.c \
+        erun_lock.c
+
+plug_OBJS = \
+        $(SRCDIR)/daemon/eard_rapi.o \
         $(SRCDIR)/daemon/shared_configuration.o \
         $(SRCDIR)/global_manager/eargm_rapi.o \
         $(SRCDIR)/common/libcommon.a
 
-plug_SRCS = slurm_plugin.c \
+plug_SRCS = \
+        slurm_plugin.c \
         slurm_plugin_environment.c \
         slurm_plugin_options.c \
         slurm_plugin_rcom_eard.c \
@@ -23,7 +33,8 @@ plug_SRCS = slurm_plugin.c \
         slurm_plugin_serialization.c \
         slurm_plugin_test.c
 
-plug_HDRS = slurm_plugin.h \
+plug_HDRS = \
+        slurm_plugin.h \
         slurm_plugin_environment.h \
         slurm_plugin_options.h \
         slurm_plugin_rcom.h \
@@ -33,15 +44,12 @@ plug_HDRS = slurm_plugin.h \
 ######## RULES
 
 all: $(plug_BINS)
-#all: slurm_plugin.o slurm_plugin_environment.o slurm_plugin_options.o \
-	slurm_plugin_rcom_eard.o slurm_plugin_rcom_eargmd.o slurm_plugin_rcom_shared.o \
-	slurm_plugin_serialization.o
-
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
 
 earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
+
+erun: $(erun_SRCS) $(plug_SRCS) $(plug_HDRS)
+	$(CC) $(CFLAGS) -DERUN -g -o $@ $(erun_SRCS) $(plug_SRCS) $(plug_OBJS)
 
 ######## OPTIONS
 
@@ -49,7 +57,7 @@ install: plug.ginstall;
 
 %.install: ;
 
-clean: rclean
+clean: plug.gclean rclean;
 
 ######## DEPENDENCIES
 

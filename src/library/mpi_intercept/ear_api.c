@@ -42,12 +42,12 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/environment.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
-#include <library/tracer/tracer_mpi.h>
 #include <library/states/states.h>
 #include <library/states/states_periodic.h>
 #include <library/models/models.h>
@@ -66,6 +66,8 @@
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
+
+unsigned long ext_def_freq=0;
 
 #if USE_LOCK_FILES
 #include <common/system/file.h>
@@ -100,7 +102,6 @@ static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #define MASTERS_SYNC_VERBOSE 1
 MPI_Comm new_world_comm,masters_comm;
 int num_masters;
-int my_master_rank;
 int my_master_size;
 int masters_connected=0;
 unsigned masters_comm_created=0;
@@ -161,14 +162,21 @@ void notify_eard_connection(int status)
 	if (my_master_rank==0) {
 		debug("Total number of masters connected %d",masters_connected);
 	}
-	if (masters_connected!=num_nodes){
-	/* Some of the nodes is not ok , setting off EARL */
-		if (my_master_rank==0) {
-			warning("Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",num_nodes,masters_connected);
-		}
-		my_id=1;
-		return;
+  if (masters_connected!=my_master_size){
+  /* Some of the nodes is not ok , setting off EARL */
+    if (my_master_rank==0) {
+      verbose(1,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",my_master_size,masters_connected);
+    }
+    my_id=1;
+    return;
+  }else{
+    if (masters_connected!=num_nodes){
+      num_nodes=masters_connected;
+      set_ear_num_nodes(num_nodes);
+      ppnode = my_size / num_nodes;
+    }
 	}
+	return;
 	}
 	#endif
 }
@@ -291,17 +299,30 @@ void ear_init()
 {
 	char *summary_pathname;
 	state_t st;
+	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
+	architecture_t arch_desc;
+
+
 
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
 
+	debug("Reading the environment");
+
 	// Environment initialization
 	ear_lib_environment();
+
+	if (ext_def_freq_str!=NULL){
+		ext_def_freq=(unsigned long)atol(ext_def_freq_str);
+		debug("Using externally defined default freq %lu",ext_def_freq);
+	}
 
 	// Fundamental data
 	gethostname(node_name, sizeof(node_name));
 	strtok(node_name, ".");
+
+	debug("Running in %s",node_name);
 
 	verb_level = get_ear_verbose();
 	verb_channel=2;
@@ -314,12 +335,16 @@ void ear_init()
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
 
+	debug("attach to master %d",my_id);
+
 	attach_to_master_set(my_id==0);
 
 	// if we are not the master, we return
+#if ONLY_MASTER
 	if (my_id != 0) {
 		return;
 	}
+#endif
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
 	debug("system_conf_path %s",system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
@@ -334,18 +359,21 @@ void ear_init()
 		debug("Shared memory not present");
 #if USE_LOCK_FILES
     debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-    file_unlock_master(fd_master_lock,fd_lock_filename);
+    if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
 		notify_eard_connection(0);
 		my_id=1;
 	}	
 
+#if ONLY_MASTER
 	if (my_id != 0) {
 		return;
 	}
+#endif
 
 
 	// Application static data and metrics
+	debug("init application");
 	init_application(&application);
 	init_application(&loop_signature);
 	application.is_mpi=1;
@@ -368,12 +396,14 @@ void ear_init()
 	//sets the job start_time
 	start_job(&application.job);
 
+	if (!my_id){ //only the master will connect with eard
 	verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
 	if (eards_connect(&application) == EAR_SUCCESS) {
 		debug("Rank %d connected with EARD", ear_my_rank);
 		notify_eard_connection(1);
 	}else{   
 		notify_eard_connection(0);
+	}
 	}
 	
 	// Initializing sub systems
@@ -386,7 +416,7 @@ void ear_init()
 	{
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			verbose(2, "turbo learning phase, turbo selected and start computing");
-			eards_set_turbo();
+			if (!my_id) eards_set_turbo();
 		} else {
 			verbose(2, "learning phase %d, turbo %d", ear_whole_app, ear_use_turbo);
 		}
@@ -394,11 +424,28 @@ void ear_init()
 
 
 	// Policies && models
-	init_power_policy(system_conf,resched_conf);
-	init_power_models(system_conf->user_type,&system_conf->installation,frequency_get_num_pstates());
+	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+    error("Retrieving architecture description");
+		/* How to proceeed here ? */
+  }
 
-	EAR_default_frequency=system_conf->def_freq;
-	EAR_default_pstate=system_conf->def_p_state;
+	#if SHOW_DEBUGS
+	print_arch_desc(&arch_desc);
+	#endif
+
+	init_power_policy(system_conf,resched_conf);
+	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
+
+	if (ext_def_freq==0){
+		EAR_default_frequency=system_conf->def_freq;
+		EAR_default_pstate=system_conf->def_p_state;
+	}else{
+		EAR_default_frequency=ext_def_freq;
+		EAR_default_pstate=frequency_closest_pstate(EAR_default_pstate);
+		if (EAR_default_frequency!=system_conf->def_freq) {
+			if (!my_id) eards_change_freq(EAR_default_frequency);
+		}
+	}
 
 	strcpy(application.job.policy,system_conf->policy_name);
 	strcpy(application.job.app_id, ear_app_name);
@@ -434,13 +481,13 @@ void ear_init()
 
 	// Tracing init
 	#if EAR_LIB_SYNC	
-	traces_init(application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(system_conf,application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
 	#else
-	traces_init(application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
+	traces_init(system_conf,application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
 	#endif
 
 	traces_start();
-	traces_frequency(ear_my_rank, my_id, ear_current_freq);
+	traces_frequency(ear_my_rank, my_id, EAR_default_frequency);
 	traces_stop();
 
 	traces_mpi_init();
@@ -460,13 +507,15 @@ void ear_init()
 void ear_finalize()
 {
 	// if we are not the master, we return
+#if ONLY_MASTER
 	if (my_id) {
 		return;
 	}	
+#endif
 
 #if USE_LOCK_FILES
 	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-	file_unlock_master(fd_master_lock,fd_lock_filename);
+	if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
 #endif
 
 	// Tracing
@@ -481,10 +530,12 @@ void ear_finalize()
 	frequency_dispose();
 
 	// Writing application data
-	eards_write_app_signature(&application);
-	append_application_text_file(app_summary_path, &application, 1);
-	report_mpi_application_data(&application);
-
+	if (!my_id) 
+	{
+		eards_write_app_signature(&application);
+		append_application_text_file(app_summary_path, &application, 1);
+		report_mpi_application_data(&application);
+	}
 	// Closing any remaining loop
 	if (loop_with_signature) {
 		debug("loop ends with %d iterations detected", ear_iterations);
@@ -514,7 +565,7 @@ void ear_finalize()
 	dettach_resched_shared_area();
 
 	// Cest fini
-	eards_disconnect();
+	if (!my_id) eards_disconnect();
 }
 
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest);
@@ -526,7 +577,9 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	time_t curr_time;
 	double time_from_mpi_init;
 
+#if ONLY_MASTER
 	if (my_id) return;
+#endif
 	/* The learning phase avoids EAR internals ear_whole_app is set to 1 when learning-phase is set */
 	if (!ear_whole_app)
 	{
@@ -623,7 +676,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
 
-		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
+		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 		/*traces_mpi_call(ear_my_rank, my_id,
 						(ulong) PAPI_get_real_usec(),
@@ -642,7 +695,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				debug("NEW_LOOP event %u level %hu size %hu\n",ear_event_l,ear_level,ear_size);
+				//debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
 				ear_iterations=0;
 				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				ear_loop_size=(uint)ear_size;
@@ -651,9 +704,9 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_NEW_LOOP:
-				debug("END_LOOP - NEW_LOOP event %u level %hu\n",ear_event_l,ear_level);
+				//debug("END_LOOP - NEW_LOOP event %lu level %hu\n",ear_event_l,ear_level);
 				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
+					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
 
 				loop_with_signature=0;
@@ -670,8 +723,8 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					debug("new iteration detected for level %u, event %u, size %u and iterations %u",
-							  ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
+					//debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
+							  //ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
 				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
@@ -679,9 +732,9 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_LOOP:
-				debug("END_LOOP event %u\n",ear_event_l);
+				//debug("END_LOOP event %lu\n",ear_event_l);
 				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
+					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
 				states_end_period(ear_iterations);
@@ -716,7 +769,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		//ear_event_s = dynais_sample_convert(ear_event_l);
 
-		debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
+		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) PAPI_get_real_usec(),
@@ -744,7 +797,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					debug("new iteration detected for level %hu, event %u, size %u and iterations %u",
+					debug("new iteration detected for level %hu, event %lu, size %u and iterations %u",
 							  ear_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
@@ -756,5 +809,100 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
        break;
       }
     } //ear_whole_app
+}
+
+/************************** MANUAL API *******************/
+
+static short ear_status=NO_LOOP;
+static unsigned long manual_loopid=0;
+unsigned long ear_new_loop()
+{
+  if (my_id)  return 0;
+	manual_loopid++;
+  if (!ear_whole_app)
+  {
+		switch (ear_status){
+			debug("New loop reported");
+			case NO_LOOP:
+				ear_status=IN_LOOP;
+				ear_iterations=0;
+				states_begin_period(my_id, manual_loopid,1,1);
+				ear_loop_size=1;
+				ear_loop_level=1;
+				in_loop=1;
+				mpi_calls_per_loop=1;
+				break;
+			case IN_LOOP:
+				debug("END_NEW Loop");
+				if (loop_with_signature) {
+					debug("loop ends with %d iterations detected", ear_iterations);
+				}
+				loop_with_signature=0;
+				traces_end_period(ear_my_rank, my_id);
+				states_end_period(ear_iterations);
+				ear_iterations=0;
+				mpi_calls_per_loop=1;
+				ear_loop_size=1;
+				ear_loop_level=1;
+				states_begin_period(my_id, manual_loopid, 1,1);
+				break;
+		}
+  }
+	return manual_loopid;
+}
+
+void ear_end_loop(unsigned long loop_id)
+{
+	if (my_id) return;
+  if (!ear_whole_app)
+  {
+		switch(ear_status){
+			case IN_LOOP:
+				if (loop_id==manual_loopid){
+					//debug("END_LOOP event %u\n",ear_event_l);
+					if (loop_with_signature) {
+						debug("loop ends with %d iterations detected", ear_iterations);
+					}
+					loop_with_signature=0;
+					states_end_period(ear_iterations);
+					traces_end_period(ear_my_rank, my_id);
+					ear_iterations=0;
+					in_loop=0;
+					mpi_calls_per_loop=0;
+					ear_status=NO_LOOP;
+				}else{ // Loop id is different from current one
+					debug("Error END_LOOP and current loop id %lu different from active one %lu",manual_loopid,loop_id);
+					ear_status=NO_LOOP;
+				}
+				break;
+			case NO_LOOP:debug("Error, application was not in a loop");
+				break;
+		}
+  }
+}
+
+void ear_new_iteration(unsigned long loop_id)
+{
+	if (my_id) return;
+  if (!ear_whole_app)
+  {
+
+		switch (ear_status){
+			case IN_LOOP:
+				ear_iterations++;
+				if (loop_with_signature)
+				{
+				debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
+  				1, loop_id,1, ear_iterations);
+				}
+				traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
+				states_new_iteration(my_id, 1, ear_iterations, 1, loop_id, mpi_calls_per_loop);
+				mpi_calls_per_loop=1;
+				break;
+			case NO_LOOP:
+				debug("Error, application is not in a loop");
+				break;
+		}
+  }
 }
 

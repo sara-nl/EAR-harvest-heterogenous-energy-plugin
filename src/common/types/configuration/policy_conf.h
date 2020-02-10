@@ -58,7 +58,7 @@ typedef struct policy_conf
     //uint num_settings;
    	float def_freq;
     uint p_state;
-    char is_available; //default at 0, not available
+    uint is_available; //default at 0, not available
 } policy_conf_t;
 
 
@@ -72,5 +72,8 @@ void print_policy_conf(policy_conf_t *p);
 
 /** Sets all pointers to NULL and all values to their default*/
 void init_policy_conf(policy_conf_t *p);
+
+void check_policy_values(policy_conf_t *p,int nump);
+void check_policy(policy_conf_t *p);
 
 #endif

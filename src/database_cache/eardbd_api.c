@@ -33,6 +33,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <common/system/time.h>
 #include <common/output/verbose.h>
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
@@ -163,7 +164,7 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 
 	//
 	if (eardbd_is_initialized()) {
-		edb_state_return_msg(state, EAR_ALREADY_INITIALIZED, "it's already initialized");
+		edb_state_return_msg(state, EAR_INITIALIZED, "it's already initialized");
 	}
 
 #if 1
@@ -197,14 +198,24 @@ edb_state_t eardbd_connect(cluster_conf_t *conf, my_node_conf_t *node)
 
 edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_state_t state)
 {
+	static ullong time_rec = -1;
+	static ullong time_now =  0;
 	edb_state_t state_con;
 	char *server_host;
 	char *mirror_host;
 	uint server_port;
 	uint mirror_port;
+	timestamp ts;
 
 	if (!eardbd_is_initialized()) {
 		edb_state_return_msg(state_con, EAR_NOT_INITIALIZED, "server and mirror are not enabled");
+	}
+
+	//
+	time_now = timestamp_getfast_convert(&ts, TIME_SECS);
+
+	if((time_now - time_rec) < 60) {
+		edb_state_return_msg(state_con, EAR_NOT_READY, "to many reconnections, wait a little longer");
 	}
 
 	// Configuring again the hosts and ports
@@ -242,6 +253,9 @@ edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_sta
 			_disconnect(&mirror_sock);
 		}
 	}
+
+	//
+	time_rec = timestamp_getfast_convert(&ts, TIME_SECS);
 
 	return state_con;
 }

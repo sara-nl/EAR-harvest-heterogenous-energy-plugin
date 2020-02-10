@@ -43,6 +43,13 @@
 
 typedef unsigned long ulong;
 
+#ifdef EARL_RESEARCH
+extern unsigned long ext_def_freq;
+#define FREQ_DEF(f) (!ext_def_freq?f:ext_def_freq)
+#else
+#define FREQ_DEF(f) f
+#endif
+
 state_t policy_init(polctx_t *c)
 {
 	if (c!=NULL) return EAR_SUCCESS;
@@ -65,7 +72,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
     if ((c!=NULL) && (c->reset_freq_opt))
     {
         // Use configuration when available
-        *(c->ear_frequency) = eards_change_freq(c->app->def_freq);
+        *(c->ear_frequency) = eards_change_freq(FREQ_DEF(c->app->def_freq));
     }
 	return EAR_SUCCESS;
 }
@@ -93,17 +100,17 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		if (c->app==NULL) return EAR_ERROR;
 
     if (c->use_turbo) min_pstate=0;
-    else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
+    else min_pstate=frequency_closest_pstate(c->app->max_freq);
 
 		// Default values
 		
 		min_eff_gain=c->app->settings[0];
-		def_freq=c->app->def_freq;
-		def_pstate=frequency_freq_to_pstate(def_freq);
+		def_freq=FREQ_DEF(c->app->def_freq);
+		def_pstate=frequency_closest_pstate(def_freq);
 
     // This is the frequency at which we were running
     curr_freq=*(c->ear_frequency);
-    curr_pstate = frequency_freq_to_pstate(curr_freq);
+    curr_pstate = frequency_closest_pstate(curr_freq);
 		
 
 
@@ -201,7 +208,7 @@ state_t  policy_get_default_freq(polctx_t *c,ulong *f)
 {
 		if ((c!=NULL) && (c->app!=NULL)){
     // Just in case the bestPstate was the frequency at which the application was running
-        *f=c->app->def_freq;
+        *f=FREQ_DEF(c->app->def_freq);
     }
 		return EAR_SUCCESS;
 }

@@ -27,9 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_PRIVATE_CACHE_H
-#define EAR_PRIVATE_CACHE_H
+#ifndef EAR_COMMON_FLOPS_H
+#define EAR_COMMON_FLOPS_H
 
 #include <metrics/flops/cpu/papi.h>
 
-#endif //EAR_PRIVATE_CACHE_H
+#endif 

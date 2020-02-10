@@ -45,6 +45,7 @@
 #include <sys/wait.h>
 #include <common/states.h>
 #include <common/config.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/daemon_log.h>
 #include <common/database/db_helper.h>
@@ -607,7 +608,7 @@ int main(int argc,char *argv[])
 	sigdelset(&set,SIGTERM);
 	sigdelset(&set,SIGINT);
 
-    #if DB_MYSQL
+    #if USE_DB
     verbose(VGM+1,"Connecting with EAR DB");
 	/*strcpy(my_cluster_conf.database.database,"Report2");*/
     init_db_helper(&my_cluster_conf.database);
@@ -620,6 +621,7 @@ int main(int argc,char *argv[])
 	if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)<0){
 		error("Asking for total energy system. Using aggregated %d\n",use_aggregation);
 	}
+	debug("db_select_acum_energy inicial %lu",result);
 	fill_periods(result);
 	/*
 	*
@@ -655,7 +657,8 @@ int main(int argc,char *argv[])
     
 	    	if ( db_select_acum_energy_idx(  divisor, use_aggregation,&last_id,&result)<0){
 				error("Asing for last T1 energy period. Using aggregated %d.Last id =%u\n",use_aggregation,last_id);
-			}
+				}
+				debug("Energy consumed in last T1 %lu",result);
 	    	if (!result){ 
 				verbose(VGM+1,"No results in that period of time found\n");
 	    	}else{ 
@@ -731,7 +734,7 @@ int main(int argc,char *argv[])
 				set_gm_grace_period_values(&my_warning);
 			}
 		}// ALARM
-		#if DB_MYSQL
+		#if USE_DB
 		db_insert_gm_warning(&my_warning);
 		#endif
 		if (must_refill){

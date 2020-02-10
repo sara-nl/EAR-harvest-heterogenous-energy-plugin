@@ -55,6 +55,7 @@ uint EAR_default_pstate;
 int ear_use_turbo = USE_TURBO; 
 int ear_whole_app;
 int ear_my_rank;
+int my_master_rank=-1;
 int my_job_id;
 int my_step_id;
 char my_account[GENERIC_NAME];

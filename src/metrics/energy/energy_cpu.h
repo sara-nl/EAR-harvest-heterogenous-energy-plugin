@@ -27,7 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef METRICS_ENERGY_H
-#define METRICS_ENERGY_H
+#ifndef METRICS_ENERGY_CPU_H
+#define METRICS_ENERGY_CPU_H
 
-#endif //METRICS_ENERGY_H
+#include <metrics/energy/cpu/intel_haswell.h>
+
+#endif 

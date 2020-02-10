@@ -45,7 +45,12 @@ typedef struct periodic_metric
     char node_id[NODE_SIZE];
 		/* Full */
     ulong avg_f;
-		ulong temp;
+    ulong temp;
+#if USE_GPUS
+    ulong DRAM_energy;
+    ulong PCK_energy;
+    ulong GPU_energy;
+#endif
 } periodic_metric_t;
 
 /** Initializes all values of the periodic_metric to 0 , sets the nodename */

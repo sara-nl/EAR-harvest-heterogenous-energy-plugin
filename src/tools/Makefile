@@ -12,7 +12,7 @@ tool_BINS = \
     coeffs_show \
     coeffs_default \
     coeffs_null \
-    get_ear_events \
+    ear_events \
     get_active_nodes \
     learning_show \
     learning_validate \
@@ -29,7 +29,7 @@ comm_OBJS = $(ROOTDIR)/src/common/libcommon.a
 all: $(tool_BINS)
 
 coeffs_compute: coeffs_compute.c $(comm_OBJS)
-	$(CCC) -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
+	$(CCC) -g -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
 
 coeffs_jobproj: coeffs_jobproj.c $(comm_OBJS)
 	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl
@@ -49,7 +49,7 @@ coeffs_default: coeffs_default.c $(comm_OBJS)
 coeffs_compare: coeffs_compare.c $(comm_OBJS)
 	$(CCC) -I$(SRCDIR) -o $@ $< $(comm_OBJS)
 
-get_ear_events: get_ear_events.c $(comm_OBJS)
+ear_events: ear_events.c $(comm_OBJS)
 	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
 get_active_nodes: get_active_nodes.c $(comm_OBJS)

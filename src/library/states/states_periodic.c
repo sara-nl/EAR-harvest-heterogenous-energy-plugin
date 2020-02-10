@@ -102,7 +102,7 @@ void states_periodic_end_period(uint iterations)
 		#if DB_FILES
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		#endif
-		#if DB_MYSQL
+		#if USE_DB
 		eards_write_loop_signature(&loop);
 		#endif
 	}
@@ -127,7 +127,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
    #if DB_FILES
    append_loop_text_file(loop_summary_path, loop,&loop_signature.job);
 	#endif
-	#if DB_MYSQL
+	#if USE_DB
     eards_write_loop_signature(loop);
     #endif
 	
@@ -195,13 +195,13 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					st=policy_apply(&loop_signature.signature,&policy_freq,&ready);
-					PP = projection_get(frequency_freq_to_pstate(policy_freq));
+					PP = projection_get(frequency_closest_pstate(policy_freq));
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
 						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
 
-					traces_new_signature(ear_my_rank, my_id, TIME, CPI, TPI, GBS, POWER, VPI);
+					traces_new_signature(ear_my_rank, my_id,&loop_signature.signature);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);

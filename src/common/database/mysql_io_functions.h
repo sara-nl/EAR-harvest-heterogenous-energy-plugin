@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <mysql/mysql.h>
 #include <common/config.h>
+#if DB_MYSQL
 #include <common/types/log.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
@@ -38,6 +38,8 @@
 #include <common/types/periodic_metric.h>
 #include <common/types/power_signature.h>
 #include <common/types/periodic_aggregation.h>
+
+#include <mysql/mysql.h>
 
 //
 #define EAR_TYPE_APPLICATION    1
@@ -56,10 +58,10 @@
 #define PERIODIC_METRIC_ARGS        6
 #endif
 #if !DB_SIMPLE
-#define SIGNATURE_ARGS              21
+#define SIGNATURE_ARGS              23
 #define AVG_SIGNATURE_ARGS          24
 #else
-#define SIGNATURE_ARGS              11
+#define SIGNATURE_ARGS              13
 #define AVG_SIGNATURE_ARGS          14
 #endif
 
@@ -217,3 +219,6 @@ int mysql_batch_insert_avg_signatures(MYSQL *connection, application_t *app, int
 int mysql_statement_error(MYSQL_STMT *statement);
 /** PENDING */
 int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signature_t **pow_sigs);
+
+
+#endif

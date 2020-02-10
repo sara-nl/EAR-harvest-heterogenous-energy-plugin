@@ -35,14 +35,9 @@
 // #define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/environment.h>
-#include <common/types/log.h>
+#include <common/types/log_eard.h>
 #include <common/hardware/frequency.h>
-#if USE_MSR_RAPL
-#include <metrics/accumulators/energy_cpu.h>
-#else
-#include <metrics/papi/generics.h>
-#include <metrics/papi/energy_cpu.h>
-#endif
+#include <metrics/energy/energy_cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
 #include <common/hardware/hardware_info.h>
@@ -52,21 +47,27 @@
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
-#if DB_MYSQL
+#if USE_DB
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
 #endif
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
 
+
+#define MIN_INTERVAL_RT_ERROR 3600
+
 #if APP_API_THREAD
 pthread_t app_eard_api_th;
 #endif
 
-static ehandler_t handler_energy;
+static ehandler_t eard_handler_energy,handler_energy;
 static ulong node_energy_datasize;
 static edata_t node_energy_data;
 unsigned int power_mon_freq = POWERMON_FREQ;
+static int fd_rapl[MAX_PACKAGES];
+static int num_packs=0;
+static unsigned long long *values_rapl;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
 cluster_conf_t my_cluster_conf;
@@ -133,11 +134,20 @@ int eard_must_exit = 0;
 topology_t node_desc;
 
 
+/* EARD init errors control */
+static uint error_uncore=0;
+static uint error_rapl=0;
+static uint error_energy=0;
+static uint error_connector=0;
+
+
+
 void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 {
 	uint i;
 	for (i=0;i<num_policies;i++){
-		plist[i].p_state=frequency_freq_to_pstate((unsigned long)(plist[i].def_freq*1000000));
+		check_policy(&plist[i]);
+		plist[i].p_state=frequency_closest_pstate((unsigned long)(plist[i].def_freq*1000000));
 	}
 }
 
@@ -223,9 +233,13 @@ void create_connector(char *ear_tmp, char *nodename, int i) {
 	if (mknod(ear_commreq, S_IFIFO | S_IRUSR | S_IRGRP | S_IWUSR | S_IWGRP | S_IROTH | S_IWOTH, 0) < 0) {
 		if (errno != EEXIST) {
 			error("Error creating ear communicator for requests %s\n", strerror(errno));
+			error_connector=1;
 		}
 	}
-	chmod(ear_commreq, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+	if (chmod(ear_commreq, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH)<0){
+		error("Error setting privileges for eard-earl connection");
+		error_connector=1;
+	}
 }
 
 void connect_service(int req, application_t *new_app) {
@@ -385,7 +399,7 @@ void eard_exit(uint restart) {
 	verbose(VCONF, "Releasing node resources");
 
 	// More disposes
-	if (state_fail(energy_dispose(&handler_energy))) {
+	if (state_fail(energy_dispose(&eard_handler_energy))) {
 		error("Error disposing energy for eard");
 	}
 	dispose_uncores();
@@ -439,11 +453,6 @@ void eard_close_comm() {
 
 	// Stop counting
 	if (RAPL_counting) {
-#if USE_MSR_RAPL
-		warning("stop_rapl counters not supported");
-#else
-		stop_rapl_metrics(values);
-#endif
 		//reset_rapl_metrics();
 		RAPL_counting = 0;
 	}
@@ -532,7 +541,7 @@ int eard_system(int must_read) {
 		case WRITE_EVENT:
 			ack = EAR_COM_OK;
 			ret1 = EAR_SUCCESS;
-#if DB_MYSQL
+#if USE_DB
 		if (my_cluster_conf.eard.use_mysql)
 		{
 			if (!my_cluster_conf.eard.use_eardbd) {
@@ -559,7 +568,7 @@ int eard_system(int must_read) {
 			ret1 = EAR_SUCCESS;
 			// print_loop_fd(1,&req.req_data.loop);
 			if (my_cluster_conf.database.report_loops) {
-#if DB_MYSQL
+#if USE_DB
 				if (my_cluster_conf.eard.use_mysql)
 				{
 					if (!my_cluster_conf.eard.use_eardbd){
@@ -677,6 +686,7 @@ int eard_uncore(int must_read) {
 			write(ear_fd_ack[uncore_req], &ack, sizeof(ack));
 			break;
 		case RESET_UNCORE:
+			printf("RESET_UNCORE in eard\n");
 			reset_uncores();
 			write(ear_fd_ack[uncore_req], &ack, sizeof(ack));
 			break;
@@ -713,7 +723,6 @@ int eard_uncore(int must_read) {
 int eard_rapl(int must_read) {
 	unsigned long comm_req = rapl_req;
 	unsigned long ack = 0;
-	unsigned long long values[RAPL_EVS];
 	if (must_read) {
 		if (read(ear_fd_req[comm_req], &req, sizeof(req)) != sizeof(req))
 			error("error when reading info at eard_rapl\n");
@@ -723,33 +732,21 @@ int eard_rapl(int must_read) {
 			connect_service(rapl_req, &req.req_data.app);
 			break;
 		case START_RAPL:
-#if USE_MSR_RAPL
-			warning("starting rapl msr not supported");
-#else
-			start_rapl_metrics();
-#endif
+			error("starting rapl msr not supported");
 			RAPL_counting = 1;
 			write(ear_fd_ack[comm_req], &ack, sizeof(ack));
 			break;
 		case RESET_RAPL:
-#if USE_MSR_RAPL
-			if (reset_rapl_msr()<0) error("Error resetting rapl msr counters");
-#else
-			reset_rapl_metrics();
-#endif
+			error("Reset RAPL counters not provided");
 			write(ear_fd_ack[comm_req], &ack, sizeof(ack));
 			break;
 		case READ_RAPL:
-#if USE_MSR_RAPL
-			if (read_rapl_msr(values)<0) error("Error reading rapl msr counters");
-#else
-			read_rapl_metrics(values);
-#endif
+			if (read_rapl_msr(fd_rapl,values_rapl)<0) error("Error reading rapl msr counters");
 			RAPL_counting = 0;
-			write(ear_fd_ack[comm_req], values, sizeof(unsigned long long) * RAPL_EVS);
+			write(ear_fd_ack[comm_req], values_rapl, sizeof(unsigned long long) * RAPL_POWER_EVS*num_packs);
 			break;
 		case DATA_SIZE_RAPL:
-			ack = sizeof(unsigned long long) * RAPL_EVS;
+			ack = sizeof(unsigned long long) * RAPL_POWER_EVS*num_packs;
 			write(ear_fd_ack[comm_req], &ack, sizeof(unsigned long));
 			break;
 		default:
@@ -848,7 +845,7 @@ void signal_handler(int sig) {
 				save_eard_conf(&eard_dyn_conf);
 			}
 
-#if DB_MYSQL
+#if USE_DB 
 			if (!my_cluster_conf.eard.use_eardbd && eardbd_connected){
 					eardbd_disconnect();
 					eardbd_connected=0;
@@ -971,6 +968,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 	policy_conf_t *my_policy;
 	ulong deff;
 	eard_max_pstate = node->max_pstate;
+	verbose(1,"Max pstate for this node is %d",eard_max_pstate);
 	// Default policy is just in case
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -985,6 +983,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 		default_policy_context.p_state=my_policy->p_state;
 		default_policy_context.settings[0]=my_policy->settings[0];
 	}
+		verbose(1,"configure_default_values. Looking for pstate %d\n",my_policy->p_state);
     deff=frequency_pstate_to_freq(my_policy->p_state);
     dyn->user_type=NORMAL;
 	dyn->learning=0;
@@ -1084,6 +1083,28 @@ int read_coefficients() {
 }
 
 
+void report_eard_init_error()
+{
+	if (error_uncore)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,UNCORE_INIT_ERROR,0);
+	}
+	if (error_rapl)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,RAPL_INIT_ERROR,0);
+	}
+	if (error_energy)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,ENERGY_INIT_ERROR,0);
+	}
+	if (error_connector)
+	{
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,CONNECTOR_INIT_ERROR,0);
+		
+	}
+}
+
+
 /*
 *
 *
@@ -1121,12 +1142,15 @@ int main(int argc, char *argv[]) {
 		_exit(1);
 	}
 	strtok(nodename, ".");
-	verbose(VCONF, "Executed in node name %s", nodename);
+	verbose(0,"Executed in node name %s", nodename);
 
 	/** CONFIGURATION **/
         int node_size;
         state_t s;
 
+				init_eard_rt_log();
+				log_report_eard_min_interval(MIN_INTERVAL_RT_ERROR);
+				verbose(0,"Reading hardware topology");
         /* We initialize topology */
         s = hardware_gettopology(&node_desc);
         node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
@@ -1134,6 +1158,14 @@ int main(int argc, char *argv[]) {
                 error("topology information can't be initialized (%d)", s);
                 _exit(1);
         }
+				num_packs=detect_packages(NULL);
+				if (num_packs==0) error("Num packages cannot be detected");
+
+				verbose(0,"Topology detected: packages %d Sockets %d, cores_per_sockets %d threads %d",
+					num_packs,node_desc.sockets,node_desc.cores,node_desc.threads);
+				verbose(0,"Initializing frequency list");
+				values_rapl=(unsigned long long*)calloc(num_packs*RAPL_POWER_EVS,sizeof(unsigned long long));
+				if (values_rapl==NULL) error("values_rapl returns NULL in eard initialization");
 
         /* We initialize frecuency */
         if (frequency_init(node_size) < 0) {
@@ -1143,13 +1175,13 @@ int main(int argc, char *argv[]) {
 
 
 
-
+			verbose(0,"Reading ear.conf configuration");
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path) == EAR_ERROR) {
 		error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
 		_exit(0);
 	}
-#if DB_MYSQL
+#if USE_DB
 #ifdef USE_EARDBD_CONF
 	if (get_eardbd_conf_path(my_eardbd_conf_path)==EAR_ERROR){
 		error("Error opening eardbd.conf file, not available at regular path ( $EAR_ETC/ear/eardbd.conf)");
@@ -1165,29 +1197,34 @@ int main(int argc, char *argv[]) {
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 		if (my_node_conf == NULL) {
-			verbose(VCONF, " Error in cluster configuration, node %s not found\n", nodename);
+			error( " Node %s not found in ear.conf, exiting\n", nodename);
+			_exit(0);
 		}
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
 	}
+	verbose(0,"Initializing dynamic information and creating tmp");
 	/* This info is used for eard checkpointing */
 	eard_dyn_conf.cconf = &my_cluster_conf;
 	eard_dyn_conf.nconf = my_node_conf;
 	eard_dyn_conf.pm_app = get_powermon_app();
 	set_global_eard_variables();
+	verbose(0,"Creating tmp dir");
 	create_tmp(ear_tmp);
 	if (my_cluster_conf.eard.use_log) {
+		verbose(0,"Creating log file");
 		fd_my_log = create_log(my_cluster_conf.install.dir_temp, "eard");
 		if (fd_my_log < 0) fd_my_log = 2;
 	}
 	set_verbose_variables();
 
+	verbose(0,"Creating frequency list in shared memory");
 	/** Shared memory is used between EARD and EARL **/
 	init_frequency_list();
 
 	/**** SHARED MEMORY REGIONS ****/
 	/* This area is for shared info */
-	verbose(VCONF, "creating shared memory regions");
+	verbose(0, "creating shared memory regions");
 	get_settings_conf_path(my_cluster_conf.install.dir_temp, dyn_conf_path);
 	verbose(VCONF + 1, "Using %s as settings path (shared memory region)", dyn_conf_path);
 	dyn_conf = create_settings_conf_shared_area(dyn_conf_path);
@@ -1203,8 +1240,9 @@ int main(int argc, char *argv[]) {
 		error("Error creating shared memory between EARD & EARL\n");
 		_exit(0);
 	}
-	verbose(VCONF, "Basic shared memory regions created\n");
+	verbose(0, "Basic shared memory regions created");
 	/* Coefficients */
+	verbose(0,"Loading coefficients");
 	coeffs_size = read_coefficients();
 	verbose(VCONF, "Coefficients loaded");
 	get_coeffs_path(my_cluster_conf.install.dir_temp, coeffs_path);
@@ -1215,8 +1253,10 @@ int main(int argc, char *argv[]) {
 		_exit(0);
 	}
 	/* Default coefficients */
+	verbose(0,"Loading default coefficients");
 	coeffs_default_size = read_coefficients_default();
 	verbose(VCONF, "Coefficients by default loaded");
+	if ((coeffs_size==0) && (coeffs_default_size==0)) verbose(0,"No coefficients found, power policies will not be applied");
 	get_coeffs_default_path(my_cluster_conf.install.dir_temp, coeffs_default_path);
 	verbose(VCONF + 1, "Using %s as coeff by default path (shared memory region)", coeffs_default_path);
 	coeffs_default_conf = create_coeffs_default_shared_area(coeffs_default_path, my_coefficients_default,
@@ -1235,6 +1275,7 @@ int main(int argc, char *argv[]) {
 		_exit(0);
 	}
 	/**** END CREATION SHARED MEMORY REGIONS ****/
+	verbose(0,"Shared memory regions created");
 
 	/** We must control if we come from a crash **/
 	int must_recover = new_service("eard");
@@ -1244,7 +1285,7 @@ int main(int argc, char *argv[]) {
 	}
 	/* After potential recoveries, we set the info in the shared memory */
     configure_default_values(dyn_conf,resched_conf,&my_cluster_conf,my_node_conf);
-    verbose(VCONF,"shared memory created max_freq %lu th %lf resched %d\n",dyn_conf->max_freq,dyn_conf->settings[0],resched_conf->force_rescheduling);
+    verbose(VCONF,"shared memory created max_freq %lu th %lf resched %d",dyn_conf->max_freq,dyn_conf->settings[0],resched_conf->force_rescheduling);
 
 	// Check
 	if (argc == 2) {
@@ -1259,7 +1300,7 @@ int main(int argc, char *argv[]) {
 	}
 	set_ear_verbose(verb_level);
 	VERB_SET_LV(verb_level);
-
+	verbose(0,"Catching signals");
 	// We catch signals
 	signal_catcher();
 
@@ -1269,7 +1310,7 @@ int main(int argc, char *argv[]) {
 
 	ear_node_freq = frequency_pstate_to_freq(eard_max_pstate);
 	eard_max_freq = ear_node_freq;
-	verbose(VCONF, "Default max frequency defined to %lu\n", eard_max_freq);
+	verbose(VCONF, "Default max frequency defined to %lu", eard_max_freq);
 
 	// Aperf (later on inside frequency_init(), but no more
 	uint num_cpus = frequency_get_num_online_cpus();
@@ -1282,32 +1323,45 @@ int main(int argc, char *argv[]) {
 #endif
 	// At this point, only one daemon is running
 
-	verbose(VCONF, "Starting eard...................pid %d\n", getpid());
-	verbose(VCONF + 1, "Creating comm files in %s with default freq %lu verbose set to %d\n",
+	verbose(VCONF, "Starting eard...................pid %d", getpid());
+	verbose(VCONF + 1, "Creating comm files in %s with default freq %lu verbose set to %d",
 			nodename, ear_node_freq, verb_level);
 
 	// PAST: we had here a frequency set
 
+	verbose(0,"Initializing uncore counters to compute memory bandwith");
 	// We initiaize uncore counters
 	cpu_model = get_model();
+	verbose(0,"CPU Model detected %d",cpu_model);
 	num_uncore_counters = init_uncores(cpu_model);
-	verbose(VCONF + 1, "eard %d imc uncore counters detected\n", num_uncore_counters);
+	verbose(VCONF + 1, "eard %d imc uncore counters detected", num_uncore_counters);
+	if (num_uncore_counters <= 0){
+		error("Uncore counters to compute memory bandwith not detected");
+		error_uncore=1;
+		num_uncore_counters=0;
+	}
+	verbose(0,"%d uncore counters detected ",num_uncore_counters);
 	reset_uncores();
 	/* Start uncore to have counters ready for reading */
 	start_uncores();
 
+	verbose(0,"Initializing RAPL counters");
 	// We initialize rapl counters
-#if USE_MSR_RAPL
-	if (init_rapl_msr()<0) error("Error initializing rapl");
-#else
-	init_rapl_metrics();
-	start_rapl_metrics();
-#endif
+	if (init_rapl_msr(fd_rapl)<0){ 
+		error("Error initializing rapl");
+		error_rapl=1;
+	}
+	verbose(0,"Initialzing energy plugin");
 	// We initilize energy_node
 	debug("Initializing energy in main EARD thread");
-	if (state_fail(energy_init(&my_cluster_conf, &handler_energy))) {
-		warning("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
+	if (state_fail(energy_init(&my_cluster_conf, &eard_handler_energy))) {
+		error("energy_init cannot be initialized,DC node emergy metrics will not be provided\n");
+		error_energy=1;
 	}
+  if (init_power_ponitoring(&handler_energy) != EAR_SUCCESS) {
+    error("Error initializing pm_energy in %s thread", "EARD main");
+		_exit(0);	
+  }
 	energy_datasize(&handler_energy,&node_energy_datasize);
 	debug("EARD main thread: node_energy_datasize %lu",node_energy_datasize);
 	node_energy_data=(edata_t)malloc(node_energy_datasize);
@@ -1315,12 +1369,12 @@ int main(int argc, char *argv[]) {
 	// Energy accuracy
   energy_frequency(&handler_energy, &energy_freq);
 
-	verbose(VCONF, "energy: detected product '%s'", handler_energy.product);
-	verbose(VCONF, "energy: detected manufacturer '%s'", handler_energy.manufacturer);
 	verbose(VCONF, "energy: power performance accuracy %lu usec", energy_freq);
 
+	verbose(0,"Creating pipe for EARL");
+
 	// HW initialized HERE...creating communication channels
-	verbose(VCONF + 1, "Creating comm in %s for node %s\n", ear_tmp, nodename);
+	verbose(VCONF + 1, "Creating comm in %s for node %s", ear_tmp, nodename);
 	FD_ZERO(&rfds);
 	// We support a set of "types" of requests
 	for (i = 0; i < ear_daemon_client_requests; i++) {
@@ -1339,8 +1393,9 @@ int main(int argc, char *argv[]) {
 		numfds_req = max_fd + 1;
 	}
 	rfds_basic = rfds;
+	verbose(0,"Connecting with EARDBD");
 	// Database cache daemon
-#if DB_MYSQL
+#if USE_DB
 	if (my_cluster_conf.eard.use_mysql)
 	{
 		if (my_cluster_conf.eard.use_eardbd)
@@ -1351,7 +1406,7 @@ int main(int argc, char *argv[]) {
 				error("Error connecting with EARDB errnum:%d errmsg:%s\n",
 					intern_error_num,intern_error_str);
 			} else {
-				verbose(VCONF,"Connecting with EARDBD\n");
+				verbose(VCONF,"Connected with EARDBD");
 				eardbd_connected=1;
 			}
 		}
@@ -1370,25 +1425,32 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
+	report_eard_init_error();
+	verbose(0,"Creating EARD threads");
+	verbose(0,"Creating power  monitor thread");
 #if POWERMON_THREAD
 	if ((ret=pthread_create(&power_mon_th, NULL, eard_power_monitoring, NULL))){
 		errno=ret;
 		error("error creating power_monitoring thread %s\n",strerror(errno));
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,PM_CREATION_ERROR,ret);
 	}
 #endif
-
+	verbose(0,"Creating the remote connections server");
 #if EXTERNAL_COMMANDS_THREAD
 	if ((ret=pthread_create(&dyn_conf_th, NULL, eard_dynamic_configuration, (void *)ear_tmp))){
 		error("error creating dynamic_configuration thread \n");
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,DYN_CREATION_ERROR,ret);
 	}
 #endif
+	verbose(0,"Creating APP-API thread");
 #if APP_API_THREAD
 	if ((ret=pthread_create(&app_eard_api_th,NULL,eard_non_earl_api_service,NULL))){
 		error("error creating server thread for non-earl api\n");
+		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,APP_API_CREATION_ERROR,ret);
 	}
 #endif
 
-	verbose(VCONF + 1, "Communicator for %s ON\n", nodename);
+	verbose(VCONF + 1, "Communicator for %s ON", nodename);
 	// we wait until EAR daemon receives a request
 	// We support requests realted to frequency and to uncore counters
 	// rapl support is pending to be supported
@@ -1401,6 +1463,7 @@ int main(int argc, char *argv[]) {
 	*	MAIN LOOP 
 	*
 	*/
+	verbose(0,"EARD initialized succesfully");
 	while (((numfds_ready = select(numfds_req, &rfds, NULL, NULL, my_to)) >= 0) ||
 		   ((numfds_ready < 0) && (errno == EINTR)))
 	{

@@ -33,6 +33,9 @@
 // Buffers
 static char buffer[SZ_PATH];
 
+//
+static int verbosity = -1;
+
 static int setenv_local(const char *var, const char *val, int ow)
 {
 	if (var == NULL || val == NULL) {
@@ -188,7 +191,7 @@ int unsetenv_agnostic(spank_t sp, char *var)
 
 int setenv_agnostic(spank_t sp, char *var, const char *val, int ow)
 {
-	if (sp == NULL || plug_context_is(sp, Context.local)) {
+	if (sp == NULL_C || plug_context_is(sp, Context.local)) {
 		return setenv_local(var, val, ow);
 	} else {
 		return setenv_remote(sp, var, val, ow);
@@ -259,7 +262,7 @@ int apenv_agnostic(char *dst, char *src, int dst_capacity)
 
 int exenv_agnostic(spank_t sp, char *var)
 {
-	if (sp == NULL || plug_context_is(sp, Context.local)) {
+	if (sp == NULL_C || plug_context_is(sp, Context.local)) {
 		return exenv_local(var);
         } else {
 		return exenv_remote(sp, var);
@@ -300,8 +303,34 @@ int plug_component_isenabled(spank_t sp, plug_component_t comp)
 }
 
 /*
- * Context
+ * Subject
  */
+
+char *plug_host(spank_t sp)
+{
+	static char  host_b[SZ_NAME_LARGE];
+	static char *host_p = NULL;
+
+	if (host_p == NULL) {
+		host_p = host_b;
+		gethostname(host_p, SZ_NAME_MEDIUM);
+	}
+
+	return host_p;
+}
+
+char *plug_context_str(spank_t sp)
+{
+        if (plug_context_is(sp, Context.srun)) {
+                return "srun";
+        } else if (plug_context_is(sp, Context.sbatch)) {
+                return "sbatch";
+        } else if (plug_context_is(sp, Context.remote)) {
+                return "remote";
+        } else {
+                return "unknown";
+        }
+}
 
 int plug_context_is(spank_t sp, plug_context_t ctxt)
 {
@@ -319,12 +348,10 @@ int plug_context_is(spank_t sp, plug_context_t ctxt)
  */
 
 int plug_verbosity_test(spank_t sp, int level)
-{
-	static int verbosity = -1;
-	
+{	
 	if (verbosity == -1)
 	{
-		if (getenv_agnostic(sp, "SLURM_COMP_VERBOSE", buffer, 8) == 1) {
+		if (getenv_agnostic(sp, Var.comp_verb.cmp, buffer, 8) == 1) {
 			verbosity = atoi(buffer);
 		} else {
 			verbosity = 0;
@@ -332,6 +359,12 @@ int plug_verbosity_test(spank_t sp, int level)
 	}
 
 	return verbosity >= level;
+}
+
+int plug_verbosity_silence(spank_t sp)
+{
+	verbosity = 0;
+	return 0;
 }
 
 /*

@@ -5,6 +5,7 @@
 *.so
 */bin/
 */lib/
+etc/rpms/rpmbuild.sh
 
 # Autotools
 *aclocal.m4
@@ -19,14 +20,6 @@ cmake*
 CMake*
 *_trash
 *.idea
-
-# Kernels
-npbparams.h
-setparams
-kernels/NPB3.3.1/NPB3.3-OMP/bin/
-kernels/NPB3.3.1/NPB3.3-MPI/bin/
-kernels/NPB3.3.1-MZ/NPB3.3-MZ-MPI/bin/
-kernels/DGEMM/mkl_c_samples_09072016.tgz
 
 # Julita's
 DB/
@@ -44,10 +37,15 @@ coefficients_list.csv
 *.csv
 *TOOLADMIN_NOTES.txt
 
+# Jordi's
+bench/
+
 # Build files
 etc/module/ear
 etc/slurm/ear.conf
 etc/conf/ear.conf
+etc/conf/ear.conf.template
+etc/conf/ear.conf.full.template
 etc/slurm/ear.plugstack.conf
 etc/systemd/eard.service
 etc/systemd/eardbd.service
@@ -79,6 +77,7 @@ tests/check/check.sh
 *ear_dbd_stress_test
 *ear_end_job
 *ear_energy_over_time
+*ear_events
 *ear_get_node_freq
 *ear_gm
 *ear_inc_th
@@ -105,9 +104,12 @@ tests/check/check.sh
 *get_app_list
 *get_ear_events
 *ips
+*postgres_test
 *ping
 *remove_learning
 *traces_to_paraver
+*erun
+
 src/daemon/commands/ear_check_node_test
 src/database_cache/tmpi
 src/tests/app_api/app_api_test
@@ -115,6 +117,8 @@ src/tests/functionals/ping
 src/tests/functionals/read_from_file
 src/tests/functionals/signaures_avg
 src/tests/functionals/ips_check
+src/tests/functionals/temperature_check
+src/tests/functionals/postgres_test
 src/tools/coefficients_comparison
 src/tools/coeffs_compare
 src/tools/coeffs_comparison
@@ -134,5 +138,6 @@ src/tools/learn_validator
 src/tools/learning_delete
 src/tools/learning_show
 src/tools/learning_validate
+src/tools/ear_events
 src/tools/show_coefficients
 src/tools/translate_coefficients

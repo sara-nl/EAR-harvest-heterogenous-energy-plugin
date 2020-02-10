@@ -39,6 +39,7 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
@@ -86,7 +87,8 @@ int my_read(int fd,char *buff,int size)
         error("Error receiving data from eard %s,%d",strerror(errno),errno);
       }
     }else if (ret==0){
-      must_abort=1;
+			tries++;
+      //must_abort=1;
     }
   }while((tries<MAX_SOCKET_COMM_TRIES) && (to_recv>0) && (must_abort==0));
 	if (ret<0) return ret;
@@ -102,6 +104,8 @@ int my_write(int fd,char *buff,int size)
 #if USE_NON_BLOCKING_IO
   int ret;
   int tries=0;
+	struct daemon_req *req;
+	req=(struct daemon_req*)buff;
   uint to_send,sended=0;
   uint must_abort=0;
   to_send=size;
@@ -166,7 +170,7 @@ uint warning_api(int return_value, int expected, char *msg)
 {
 	if (return_value!=expected){ 
 		app_connected=0;
-		warning("eards: %s", msg);
+		warning("eards: %s (returned %d expected %d)", msg,return_value,expected);
 	}
 	if (return_value<0){ 
 		app_connected=0;
@@ -217,7 +221,7 @@ int eards_connect(application_t *my_app)
 
 	// We create a single ID
 	my_id=create_ID(my_app->job.id,my_app->job.step_id);
-	debug("Connecting with daemon job_id=%d step_id%d\n",my_app->job.id,my_app->job.step_id);
+	debug("Connecting with daemon job_id=%lu step_id%lu\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)
 	{
 		debug( "ear_client connecting with service %d", i);
@@ -240,7 +244,7 @@ int eards_connect(application_t *my_app)
 						  ear_commreq, tries, strerror(errno));
 				return EAR_ERROR;
 			}
-
+			debug("Creating ping");
 			// ping pipe is used just for synchronization
 			sprintf(ear_ping,"%s/.ear_comm.ping.%d",ear_tmp,my_id);
 			ret1=mknod(ear_ping,S_IFIFO|S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH,0);
@@ -249,6 +253,7 @@ int eards_connect(application_t *my_app)
 				error("ERROR while creating the ping file");
 			}
 
+			debug("Opening ping ");
 			if ((ear_ping_fd = open(ear_ping,O_RDWR)) < 0){
 				error( "ERROR while opening ping pipe (%s)", strerror(errno));
 				ear_fd_req[i]=-1;
@@ -303,7 +308,7 @@ int eards_connect(application_t *my_app)
 				ear_fd_req[i]=-1;
 				return EAR_ERROR;
 			}
-			debug( "ear_client: ear_daemon ok for service %d, opening ack", i);
+			debug( "ear_client: ear_daemon ok for service %d, opening ack %s", i,ear_commack);
 			// At this point, if ear_commack doesn't exist, that means we are not the master
 			if ((ear_fd_ack[i]=open(ear_commack,O_RDONLY))<0)
 			{

@@ -27,10 +27,12 @@
  *   The GNU LEsser General Public License is contained in the file COPYING  
  */
 
+#if DB_MYQSL
+#include <mysql/mysql.h>
+#endif
 
 #include <stdio.h>
 #include <unistd.h>
-#include <mysql/mysql.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -39,6 +41,7 @@
 
 int _verbose = 0;
 
+#if DB_MYSQL
 void show_query_result(cluster_conf_t my_conf, char *query)
 {
     int i;
@@ -89,6 +92,11 @@ void show_query_result(cluster_conf_t my_conf, char *query)
     }
     mysql_free_result(result);
 }
+#else
+void show_query_result(cluster_conf_t my_conf, char *query)
+{
+}
+#endif
 
 int main(int argc,char *argv[])
 {

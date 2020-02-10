@@ -50,8 +50,11 @@ typedef struct ear_event{
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/types/log.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/eard_api.h>
+
+
 
 #define LOG_FILE 1
 
@@ -89,7 +92,7 @@ void init_log()
 	sprintf(my_log_buffer,"----------------------	EAR log created %s ------------------\n",s);
 	write(fd_log,my_log_buffer,strlen(my_log_buffer));
 #endif
-#if DB_MYSQL
+#if USE_DB
 	gethostname(log_nodename, sizeof(log_nodename));
 	strtok(log_nodename, ".");
 #endif
@@ -144,7 +147,7 @@ void report_new_event(ear_event_t *event)
     write(fd_log,my_log_buffer,strlen(my_log_buffer));
 #endif
 
-#if DB_MYSQL
+#if USE_DB
 	/* we request the daemon to write the event in the DB */
 	event->timestamp=time(NULL);
 	strcpy(event->node_id,log_nodename);
@@ -206,3 +209,4 @@ void log_report_global_policy_freq(job_id job,job_id sid,ulong newf)
 #endif
 }
 
+	

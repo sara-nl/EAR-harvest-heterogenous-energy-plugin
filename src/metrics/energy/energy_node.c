@@ -28,6 +28,7 @@
 */
 
 #include <common/config.h>
+// #define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>
@@ -47,8 +48,6 @@ struct energy_op
 	state_t (*accumulated)				(ulong *e,edata_t init, edata_t end);
 	state_t (*energy_to_str)			(char *str,edata_t end);
 } energy_ops;
-static char energy_manu[SZ_NAME_MEDIUM];
-static char energy_prod[SZ_NAME_MEDIUM];
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
 const int   energy_nops    = 10;
@@ -72,12 +71,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 
 	if (energy_loaded)
 	{
-		debug("sizeof energy_prod %lu", sizeof(energy_prod));
-		debug("sizeof energy_manu %lu", sizeof(energy_manu));
-		debug("ehand %p", eh);
-		strcpy(eh->product, energy_prod);
-    		strcpy(eh->manufacturer, energy_manu);
-		debug("22222");	
 		
 		debug("Energy plugin already loaded, executing basic init");	
 		ret = energy_ops.init(&eh->context);
@@ -94,8 +87,6 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 	debug("Using ear.conf energy plugin %s",conf->install.obj_ener);
 	sprintf(energy_objc, "%s/energy/%s",
 	conf->install.dir_plug, conf->install.obj_ener);
-	sprintf(energy_prod, "custom");
-	sprintf(energy_manu, "custom");
 	debug("loading shared object '%s'", energy_objc);
 
 		//
@@ -123,25 +114,12 @@ state_t energy_dispose(ehandler_t *eh)
 		s = energy_ops.dispose(&eh->context);
 	}
 
-	energy_handler_clean(eh);
-
-	// By now, libraries are not unloadable
-	#if 0
-	energy_ops.init               = NULL;
-	energy_ops.dispose            = NULL;
-	energy_ops.data_length_get    = NULL;
-	energy_ops.data_frequency_get = NULL;
-	energy_ops.dc_read            = NULL;
-	energy_ops.dc_time_read       = NULL;
-	energy_ops.ac_read            = NULL;
-	#endif
-
 	return s;
 }
 
 state_t energy_handler_clean(ehandler_t *eh)
 {
-	memset(eh, 0, sizeof(ehandler_t));
+	memset(eh, 0, sizeof(eh->context));
 	return EAR_SUCCESS;
 }
 

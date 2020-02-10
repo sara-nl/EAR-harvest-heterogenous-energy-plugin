@@ -65,6 +65,8 @@ void frequency_recover_previous_configuration();
 void frequency_recover_previous_policy();
 int frequency_is_valid_frequency(ulong freq);
 int frequency_is_valid_pstate(uint pstate);
+uint frequency_closest_pstate(ulong freq);
+ulong frequency_closest_frequency(ulong freq);
 
 #ifndef EAR_CPUPOWER
 void get_governor(struct cpufreq_policy *governor);

@@ -37,7 +37,6 @@ mpix_OBJS = \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
-    tracer/tracer_mpi.o \
     mpi_intercept/ear_api.o \
     mpi_intercept/process_MPI.o \
     dynais/dynais.a
@@ -60,6 +59,7 @@ all: all.components $(libs_OBJS)
 %.so: $(mpix_OBJS) $(comm_OBJS)
 	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.$(ext) $(mpix_OBJS) $(mpic_OBJS) $(mpif_OBJS) \
 	$(comm_OBJS) $(LDFLAGS)
+
 
 ######## OPTIONS
 

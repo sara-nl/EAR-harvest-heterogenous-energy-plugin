@@ -29,6 +29,7 @@
 
 #include <limits.h>
 #include <string.h>
+#include <stdio.h>
 #include <common/math_operations.h>
 
 unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end)
@@ -62,5 +63,26 @@ void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned lon
 void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N)
 {
 	memcpy((void *)DEST, (void *)SRC, N*sizeof(unsigned long long));
+}
+
+int uncore_are_frozen(unsigned long long * DEST,int N)
+{
+	int i,frozen=1;
+	for (i=0;i<N;i++){
+		if (DEST[i]>0){ 
+			frozen=0;	
+			break;
+		}
+	}
+	return frozen;
+}
+
+void print_uncores(unsigned long long * DEST,int N)
+{
+  int i,frozen=1;
+  for (i=0;i<N;i++){
+		fprintf(stdout,"Counter %d= %llu \t",i,DEST[i]);
+	}
+	fprintf(stdout,"\n");
 }
 

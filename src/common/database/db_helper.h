@@ -36,9 +36,20 @@
 #include <common/types/loop.h>
 #include <common/types/log.h>
 #include <common/config.h>
+#if DB_MYSQL
 #include <mysql/mysql.h>
+#elif DB_PSQL
+#include "libpq-fe.h"
+#endif
 
 #if DB_MYSQL
+MYSQL *mysql_create_connection();
+#elif DB_PSQL
+PGconn *postgresql_create_connection();
+#endif
+
+
+#if DB_MYSQL || DB_PSQL
 
 void init_db_helper(db_conf_t *conf);
 
@@ -78,6 +89,8 @@ int db_select_acum_energy(int start_time, int end_time, ulong  divisor, char is_
 
 int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_index, ulong *energy);
 
+int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uint *last_index, ulong *energy, long num_nodes, char **nodes);
+
 /** Reads applications from the normal DB or the learning DB depending on is_learning. It allocates 
 *   memory for apps. Returns the number of applications readed */
 int db_read_applications(application_t **apps,uint is_learning, int max_apps, char *node_name);
@@ -87,9 +100,17 @@ ulong get_num_applications(char is_learning, char *node_name);
 
 int db_run_query(char *query, char *user, char *passw);
 
+#if DB_MYSQL
 MYSQL_RES *db_run_query_result(char *query);
+#elif DB_PSQL
+PGresult *db_run_query_result(char *query);
+
+int get_num_rows(PGconn *connection, char *query);
+#endif
 
 int run_query_int_result(char *query);
+
+int get_num_columns(char *query);
 
 int db_read_applications_query(application_t **apps, char *query);
 

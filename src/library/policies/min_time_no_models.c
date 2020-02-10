@@ -45,6 +45,14 @@
 #include <common/hardware/frequency.h>
 #include <daemon/eard_api.h> //?
 
+#ifdef EARL_RESEARCH
+extern unsigned long ext_def_freq;
+#define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
+#else
+#define DEF_FREQ(f) f
+#endif
+
+
 typedef unsigned long ulong;
 static signature_t *sig_list;
 static unsigned int *sig_ready;
@@ -108,7 +116,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 {
     if ((c!=NULL) && (c->reset_freq_opt))
     {// Use configuration when available
-			*(c->ear_frequency) = eards_change_freq(c->app->def_freq);
+			*(c->ear_frequency) = eards_change_freq(DEF_FREQ(c->app->def_freq));
     }
 return EAR_SUCCESS;
 }
@@ -135,11 +143,11 @@ if (c==NULL) return EAR_ERROR;
 if (c->app==NULL) return EAR_ERROR;
 
     if (c->use_turbo) min_pstate=0;
-    else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
+    else min_pstate=frequency_closest_pstate(c->app->max_freq);
 
     // This is the frequency at which we were running
 curr_freq=*(c->ear_frequency);
-    curr_pstate = frequency_freq_to_pstate(curr_freq);
+    curr_pstate = frequency_closest_pstate(curr_freq);
 
 // New signature ready
 sig_ready[curr_pstate]=1;
@@ -149,8 +157,8 @@ signature_copy(&sig_list[curr_pstate], sig);
 // Default values
 
 min_eff_gain=c->app->settings[0];
-def_freq=c->app->def_freq;
-def_pstate=frequency_freq_to_pstate(def_freq);
+def_freq=DEF_FREQ(c->app->def_freq);
+def_pstate=frequency_closest_pstate(def_freq);
 
 
 // ref=1 is nominal 0=turbo, we are not using it
@@ -209,7 +217,7 @@ state_t  policy_get_default_freq(polctx_t *c,ulong *f)
 {
 if ((c!=NULL) && (c->app!=NULL)){
     // Just in case the bestPstate was the frequency at which the application was running
-        *f=c->app->def_freq;
+        *f=DEF_FREQ(c->app->def_freq);
     }
 return EAR_SUCCESS;
 }

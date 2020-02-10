@@ -40,6 +40,7 @@
 #define TIME_NSECS	1
 
 typedef struct timespec timestamp;
+typedef struct timespec timestamp_t;
 
 /* Generic monotonic timestamp
  *	- Builded with the fast or precise versions under the hood. Without
@@ -71,7 +72,10 @@ void timestamp_getreal(timestamp *ts);
 ullong timestamp_convert(timestamp *ts, ullong time_unit);
 
 /* Computes the difference between two timestamp_t values (ts2-ts1) and converts to the
- * selected time units. time_unit=1 means ns*/
+ * selected time units. time_unit=1 means ns. */
 ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit);
+
+/* A combination of getfast and convert. */
+ullong timestamp_getfast_convert(timestamp_t *ts, ullong time_unit);
 
 #endif //EAR_COMMON_TIME_H

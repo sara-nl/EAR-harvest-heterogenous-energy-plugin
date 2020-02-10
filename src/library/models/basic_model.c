@@ -27,12 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/states.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 #include <common/hardware/frequency.h>
+#include <common/hardware/architecture.h>
 
 #include <library/models/models_api.h>
 
@@ -42,14 +44,12 @@ static coefficient_t *coefficients_sm;
 static int num_coeffs;
 static uint num_pstates;
 static uint basic_model_init=0;
-
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #ifdef SHOW_DEBUGS
 #define debug(...) fprintf(stderr, __VA_ARGS__); 
 #else
 #define debug(...) 
 #endif
-
 
 static int valid_range(ulong from,ulong to)
 {
@@ -58,7 +58,7 @@ static int valid_range(ulong from,ulong to)
 }
 
 /* This function loads any information needed by the energy model */
-state_t model_init(char *etc,char *tmp,uint pstates)
+state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 {
   char coeff_file[128];
   char coeff_default_file[128];
@@ -67,7 +67,8 @@ state_t model_init(char *etc,char *tmp,uint pstates)
   int i, ref;
 
 	debug("Using basic_model\n");
-	num_pstates=pstates;
+	num_pstates=(uint)myarch->pstates;
+	debug("Using %u pstates",num_pstates);
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
   if (coefficients == NULL) {
@@ -98,14 +99,20 @@ state_t model_init(char *etc,char *tmp,uint pstates)
     num_coeffs=num_coeffs/sizeof(coefficient_t);
     int ccoeff;
     for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
-      ref=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate_ref);
-      i=frequency_freq_to_pstate(coefficients_sm[ccoeff].pstate);
+      ref=frequency_closest_pstate(coefficients_sm[ccoeff].pstate_ref);
+      i=frequency_closest_pstate(coefficients_sm[ccoeff].pstate);
       if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
+                debug("initializing coeffs for ref: %d i: %d\n", ref, i);
       }
     }
   }
 	basic_model_init=1;	
+    for (ref = 0; ref < num_pstates; ref++)
+    {
+        for (i = 0; i < num_pstates; i++)
+                debug("coefficient from ref: %d i: %d available: %d\n", ref, i, coefficients[ref][i].available);
+    }
 	return EAR_SUCCESS;
 }
 
@@ -157,7 +164,8 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 
 state_t model_projection_available(ulong from,ulong to)
 {
-	if (coefficients[from][to].available) return EAR_SUCCESS;
-	else EAR_ERROR;
+    debug("checking if coefficient from %lu to %lu is available: %lu\n", from, to, coefficients[from][to].available);
+	if (valid_range(from, to) && coefficients[from][to].available) return EAR_SUCCESS;
+	else return EAR_ERROR;
 }
 

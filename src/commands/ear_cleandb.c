@@ -38,7 +38,11 @@
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 
+#if DB_MYSQL
 #define CLEAN_PERIODIC_QUERY "DELETE FROM Periodic_metrics WHERE end_time <= UNIX_TIMESTAMP(SUBTIME(NOW(),'%d 0:0:0.00'))"
+#elif DB_PSQL
+#define CLEAN_PERIODIC_QUERY "DELETE FROM Periodic_metrics WHERE end_time <= (date_part('epoch',NOW())::int - (%d*24*3600))"
+#endif
 
 void usage(char *app)
 {
@@ -60,7 +64,7 @@ int main(int argc,char *argv[])
         t.c_lflag &= ~ECHO;
         tcsetattr(STDIN_FILENO, TCSANOW, &t);
 
-        verbose(0, "Introduce root's password:");
+        printf("Introduce root's password:");
         fflush(stdout);
         fgets(passw, sizeof(passw), stdin);
         t.c_lflag |= ECHO;
@@ -75,13 +79,6 @@ int main(int argc,char *argv[])
     if (num_days < 0 || num_days > 365)
     {
         verbose(0, "Invalid number of days."); //error
-    }
-    MYSQL *connection = mysql_init(NULL); 
-
-    if (connection == NULL)
-    {
-        verbose(0, "Error creating MYSQL object: %s", mysql_error(connection)); //error
-        exit(1);
     }
 
     cluster_conf_t my_cluster;
@@ -98,7 +95,11 @@ int main(int argc,char *argv[])
 
     sprintf(query, CLEAN_PERIODIC_QUERY, num_days);
 
+#if DB_MYSQL
     db_run_query(query, "root", passw); 
+#elif DB_PSQL
+    db_run_query(query, "postgres", passw); 
+#endif
 
     free_cluster_conf(&my_cluster);
 
