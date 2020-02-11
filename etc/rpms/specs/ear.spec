@@ -9,7 +9,7 @@
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
 %define name    ear-lennox-mysql-intel
-%define release   1
+%define release   3
 %define version   3.1
 
 # Information
@@ -86,6 +86,9 @@ exit
 #Comments for change log
 # * [dow mon dd yyyy] [packager [email address]] [RPM version]-list of changes
 %changelog
+* Tue Feb 11 2020 Juita Corbalan <julita.corbalan@bsc.es> 3.1.3
+- Fixed error when reading GPU energy
+- Fixed error when resetting IPMI interface
 * Wed Jan 16 2020 Julita Corbalan <julita.corbalan@bsc.es> 3.1.2
 - init_power_monitoring in dynamic_configuration
 - gpu support included

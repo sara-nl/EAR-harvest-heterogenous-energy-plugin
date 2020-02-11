@@ -29,7 +29,7 @@
 
 #include <stdlib.h>
 
-//#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 
 #include <common/config.h>
 #include <metrics/common/msr.h>

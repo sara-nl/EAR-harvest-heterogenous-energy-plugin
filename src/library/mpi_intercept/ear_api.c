@@ -42,7 +42,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/environment.h>
-//#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <library/common/externs_alloc.h>

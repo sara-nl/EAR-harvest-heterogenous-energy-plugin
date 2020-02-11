@@ -39,7 +39,7 @@
 #include <common/sizes.h>
 #include <metrics/common/msr.h>
 #include <common/hardware/hardware_info.h>
-//#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 
 /* */

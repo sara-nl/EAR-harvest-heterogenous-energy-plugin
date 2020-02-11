@@ -28,7 +28,7 @@
 */
 
 #include <common/config.h>
-// #define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 0
 #include <common/includes.h>
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>

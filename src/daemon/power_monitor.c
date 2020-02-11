@@ -576,7 +576,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		break;
 	case ENERGY_TAG:
 		appID->is_learning=0;
-        int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+        int mo_pid = policy_name_to_id("monitoring", &my_cluster_conf);
         if (mo_pid != EAR_ERROR)
             authorized_context.policy = mo_pid;
         else
