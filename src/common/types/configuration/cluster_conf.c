@@ -234,7 +234,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 	int i=0, j=0, range_found=0;
 	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
     n->num_policies = my_conf->num_policies;
-		n->policies=malloc(sizeof(policy_conf_t)*n->num_policies);
+    n->policies=malloc(sizeof(policy_conf_t)*n->num_policies);
     int num_spec_nodes = 0;
     int range_id = -1;
     while(i<my_conf->num_nodes)

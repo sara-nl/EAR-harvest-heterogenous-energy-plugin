@@ -57,6 +57,8 @@ typedef struct node_range
 	int end;
     int db_ip;
     int sec_ip;
+    int *specific_tags;
+    int num_tags;
 } node_range_t;
 
 
@@ -101,9 +103,13 @@ typedef struct node_island
     double min_sig_power;
     double max_sig_power;
     double max_error_power;
-		double max_power_cap;
-		ulong  max_temp;
-		char power_cap_type[SHORT_NAME];	
+    double max_power_cap;
+    ulong  max_temp;
+    char power_cap_type[SHORT_NAME];	
+    char **tags;
+    char **specific_tags;
+    uint num_tags;
+    uint num_specific_tags;
 } node_island_t;
 
 
