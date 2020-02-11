@@ -72,10 +72,19 @@ void print_database_conf(db_conf_t *conf)
 
 static void print_islands_conf(node_island_t *conf)
 {
+	int i, j;
 	verbosen(VCCONF, "Islands configuration\n");
 	verbosen(VCCONF, "--->id: %u (min_power %.0lf, max_power %.0lf,power_cap %.1lf power_cap_type=%s)\n", conf->id,conf->min_sig_power,conf->max_sig_power,conf->max_power_cap,conf->power_cap_type);
 	verbosen(VCCONF, "--->       (power>%.0lf or temp>%lu are errors)\n", conf->max_error_power,conf->max_temp);
-	int i;
+    if (conf->num_tags > 0)
+    {
+        verbosen(VCCONF, "--->       tags: ");
+        for (i = 0; i < conf->num_tags; i++)
+        {
+            verbosen(VCCONF, "tag%d:%s  ", i, conf->tags[i]);
+        }
+        verbosen(VCCONF, "\n");
+    }
 	for (i = 0; i < conf->num_ranges; i++)
 	{
        
@@ -91,6 +100,15 @@ static void print_islands_conf(node_island_t *conf)
 		    verbosen(VCCONF, "---->prefix: %s\tstart: %u\tend: %u\tip: %s\tbackup: %s\n",
                 conf->ranges[i].prefix, conf->ranges[i].start, conf->ranges[i].end, conf->db_ips[conf->ranges[i].db_ip], conf->backup_ips[conf->ranges[i].sec_ip]);
 		}
+        if (conf->ranges[i].num_tags > 0) {
+            verbosen(VCCONF, "\t----tags: ");
+            for (j = 0; j < conf->ranges[i].num_tags; j++)
+            {
+                verbosen(VCCONF, "tag%d:%s  ", j, conf->specific_tags[conf->ranges[i].specific_tags[j]]);
+            }
+            verbosen(VCCONF, "\n");
+        }
+
 	}
 }
 
