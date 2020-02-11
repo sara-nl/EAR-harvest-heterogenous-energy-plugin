@@ -1,4 +1,5 @@
 ## Unreleased
+- Removed documentation files
 - Fixed when Nvidia-SMI returns bad strings.
 - Added ERUN, a component to simulate the SLURM Plugin process when SLURM is not present.
 - Frequency control included in eard
