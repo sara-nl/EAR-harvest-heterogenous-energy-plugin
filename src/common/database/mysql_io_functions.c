@@ -1517,8 +1517,8 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
 #if USE_GPUS
     bind[4].buffer = &sig_aux->GPU_power;
 #else
-    bind[4].buffer_type = MYSQL_TYPE_NULL;
-    bind[4].is_null = (my_bool*) 1;
+    double temp;
+    bind[4].buffer = &temp;
 #endif
     bind[5].buffer = &sig_aux->EDP;
     bind[6].buffer = &sig_aux->GBS;
