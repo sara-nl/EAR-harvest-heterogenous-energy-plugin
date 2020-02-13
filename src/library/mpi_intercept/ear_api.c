@@ -42,7 +42,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/environment.h>
-//#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <library/common/externs_alloc.h>
@@ -604,7 +604,7 @@ void ear_init()
 		EAR_default_pstate=system_conf->def_p_state;
 	}else{
 		EAR_default_frequency=ext_def_freq;
-		EAR_default_pstate=frequency_freq_to_pstate(EAR_default_pstate);
+		EAR_default_pstate=frequency_closest_pstate(EAR_default_pstate);
 		if (EAR_default_frequency!=system_conf->def_freq) {
 			if (!my_id) eards_change_freq(EAR_default_frequency);
 		}
@@ -856,7 +856,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
+				//debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
 				ear_iterations=0;
 				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
 				ear_loop_size=(uint)ear_size;
@@ -865,9 +865,9 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_NEW_LOOP:
-				debug("END_LOOP - NEW_LOOP event %lu level %hu\n",ear_event_l,ear_level);
+				//debug("END_LOOP - NEW_LOOP event %lu level %hu\n",ear_event_l,ear_level);
 				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
+					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
 
 				loop_with_signature=0;
@@ -893,9 +893,9 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				break;
 			case END_LOOP:
-				debug("END_LOOP event %lu\n",ear_event_l);
+				//debug("END_LOOP event %lu\n",ear_event_l);
 				if (loop_with_signature) {
-					debug("loop ends with %d iterations detected", ear_iterations);
+					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
 				states_end_period(ear_iterations);

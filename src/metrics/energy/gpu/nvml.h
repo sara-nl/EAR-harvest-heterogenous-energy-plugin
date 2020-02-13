@@ -27,3 +27,36 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#ifndef METRICS_ENERGY_NVML_GPU_H
+#define METRICS_ENERGY_NVML_GPU_H
+
+#include <metrics/energy/energy_gpu.h>
+
+/** **/
+state_t nvml_status();
+
+/** **/
+state_t nvml_init(pcontext_t *c);
+
+/** **/
+state_t nvsmi_dispose(pcontext_t *c);
+
+/** Counts the number of GPUs. **/
+state_t nvml_count(pcontext_t *c, uint *count);
+
+/** **/
+state_t nvml_read(pcontext_t *c, gpu_energy_t *data_read);
+
+/** **/
+state_t nvml_data_alloc(pcontext_t *c, gpu_energy_t **data_read);
+
+/** **/
+state_t nvml_data_free(pcontext_t *c, gpu_energy_t **data_read);
+
+/** **/
+state_t nvml_data_null(pcontext_t *c, gpu_energy_t *data_read);
+
+/** **/
+state_t nvml_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg);
+
+#endif // METRICS_ENERGY_NVML_GPU_H

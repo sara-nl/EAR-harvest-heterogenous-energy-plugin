@@ -480,6 +480,10 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	if (setts->user_type != ENERGY_TAG) {
 		unsetenv_agnostic(sp, Var.tag.ear);
 	}
+	
+	if (!setts->lib_enabled) {
+		return ESPANK_SUCCESS;
+	}
 
 	snprintf(buffer1, 16, "%u", setts->def_p_state);
 	setenv_agnostic(sp, Var.p_state.ear, buffer1, 1);

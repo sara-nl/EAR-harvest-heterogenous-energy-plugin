@@ -531,7 +531,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
             else
 			    authorized_context.policy=MONITORING_ONLY;
 			if (appID->job.def_f){ 
-				if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+				if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_closest_pstate(appID->job.def_f);
 				else authorized_context.p_state=1;
 			} else authorized_context.p_state=1;
 			
@@ -544,7 +544,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 				authorized_context.policy=p_id;
 				if (appID->job.def_f){ 
 					verbose(VJOBPMON+1,"Setting freq to NOT default policy p_state ");
-					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_freq_to_pstate(appID->job.def_f);
+					if (frequency_is_valid_frequency(appID->job.def_f)) authorized_context.p_state=frequency_closest_pstate(appID->job.def_f);
 					else authorized_context.p_state=my_policy->p_state;
 				}else{ 
 					verbose(VJOBPMON+1,"Setting freq to default policy p_state %u",my_policy->p_state);
@@ -576,7 +576,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		break;
 	case ENERGY_TAG:
 		appID->is_learning=0;
-        int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+        int mo_pid = policy_name_to_id("monitoring", &my_cluster_conf);
         if (mo_pid != EAR_ERROR)
             authorized_context.policy = mo_pid;
         else
@@ -587,7 +587,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		break;
 	}
 	if ((!appID->is_mpi) && (!my_cluster_conf.eard.force_frequencies)){
-		my_policy->p_state=frequency_freq_to_pstate(frequency_get_cpu_freq(0));
+		my_policy->p_state=frequency_closest_pstate(frequency_get_cpu_freq(0));
 		verbose(VJOBPMON,"Application is not using ear and force_frequencies=off, frequencies are not changed pstate=%u",my_policy->p_state);
 		
 	}else{
@@ -826,7 +826,7 @@ void powermon_new_max_freq(ulong maxf) {
 			current_node_freq = maxf;
 		}
 	}
-	ps = frequency_freq_to_pstate(maxf);
+	ps = frequency_closest_pstate(maxf);
 	verbose(VJOBPMON, "Max pstate set to %u freq=%lu", ps, maxf);
 	my_node_conf->max_pstate = ps;
 	save_eard_conf(&eard_dyn_conf);
@@ -835,7 +835,7 @@ void powermon_new_max_freq(ulong maxf) {
 void powermon_new_def_freq(uint p_id, ulong def) {
 	uint ps;
 	uint cpolicy;
-	ps = frequency_freq_to_pstate(def);
+	ps = frequency_closest_pstate(def);
 	if ((ccontext >= 0) && (current_ear_app[ccontext]->app.is_mpi == 0)) {
 		cpolicy = policy_name_to_id(current_ear_app[ccontext]->app.job.policy, &my_cluster_conf);
 		if (cpolicy == p_id) { /* If the process runs at selected policy */
@@ -861,8 +861,8 @@ void powermon_new_def_freq(uint p_id, ulong def) {
 void powermon_red_freq(ulong max_freq, ulong def_freq) {
 	int nump;
 	uint ps_def, ps_max;
-	ps_def = frequency_freq_to_pstate(def_freq);
-	ps_max = frequency_freq_to_pstate(max_freq);
+	ps_def = frequency_closest_pstate(def_freq);
+	ps_max = frequency_closest_pstate(max_freq);
 	if ((ccontext >= 0) && (current_ear_app[ccontext]->app.is_mpi == 0)) {
 		if (def_freq < current_node_freq) {
 			verbose(VJOBPMON, "RedFreq: Application is not mpi, automatically changing freq from %lu to %lu",
@@ -885,7 +885,7 @@ void powermon_red_freq(ulong max_freq, ulong def_freq) {
 void powermon_set_freq(ulong freq) {
 	int nump;
 	uint ps;
-	ps = frequency_freq_to_pstate(freq);
+	ps = frequency_closest_pstate(freq);
 	if (ccontext >= 0) {
 		if (freq != current_node_freq) {
 			if ((my_cluster_conf.eard.force_frequencies) || (current_ear_app[ccontext]->app.is_mpi)) {

@@ -1,4 +1,15 @@
 ## Unreleased
+- Removed documentation files
+- Fixed when Nvidia-SMI returns bad strings.
+- Added ERUN, a component to simulate the SLURM Plugin process when SLURM is not present.
+- Frequency control included in eard
+- eard control for node non existing in configuration
+- GPU support for power monitoring. Not all cases supported yet
+- Extensions to report GPU in DB
+- Postgress support
+- Automatic GBs check in EARL
+
+## Changed
 - cluster_conf_read error fixed when reading "privileged" specification for policies
 - ear.conf and ear.conf.full replaced by ear.conf.template and ear.conf.full.template
 - More info with SLURM_COMP_VERBOSE env var

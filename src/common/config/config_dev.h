@@ -61,5 +61,6 @@
 #define EAR_CPUPOWER	1
 #define EARL_RESEARCH 1
 #define ONLY_MASTER 0
+//#define USE_GPUS 1
 
 #endif //EAR_CONFIG_DEV_H

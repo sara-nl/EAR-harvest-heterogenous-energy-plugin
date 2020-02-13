@@ -101,10 +101,5 @@ int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 	// Closing shared memory
 	dettach_settings_conf_shared_area();
 
-	// Variable EAR and LD_PRELOAD
-	if (!setts->lib_enabled || setts->user_type == ENERGY_TAG) {
-		return ESPANK_ERROR;
-	}
-
 	return ESPANK_SUCCESS;
 }

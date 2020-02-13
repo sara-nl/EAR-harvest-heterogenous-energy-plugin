@@ -132,6 +132,7 @@ static int *metrics_flops_weights; // (vec)
 static ull *metrics_bandwith[3]; // ops (vec)
 static ull *metrics_bandwith_init[2]; // ops (vec)
 static ull *metrics_bandwith_end[2]; // ops (vec)
+static ull *diff_uncore_value;
 static ull *metrics_rapl[2]; // nJ (vec)
 static ull *aux_rapl; // nJ (vec)
 static ull *last_rapl; // nJ (vec)
@@ -305,6 +306,19 @@ static int metrics_partial_stop(uint where)
 		debug("EAR_NOT_READY because of power %f\n",c_power);
 		return EAR_NOT_READY;
 	}
+
+
+	/* This is new to avoid cases where uncore gets frozen */
+	eards_read_uncore(metrics_bandwith_end[LOO]);
+	diff_uncores(diff_uncore_value,metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
+	if ((where==SIG_END) && uncore_are_frozen(diff_uncore_value,bandwith_elements)){
+		verbose(1,"Doing reset of uncore counters becuase they were frozen");
+		eards_reset_uncore();
+		return EAR_NOT_READY;
+	}else{
+		copy_uncores(metrics_bandwith[LOO],diff_uncore_value,bandwith_elements);	
+	}
+	/* End new section to check frozen uncore counters */
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
 	aux_time=aux_time_stop;
 
@@ -332,7 +346,6 @@ static int metrics_partial_stop(uint where)
 		set_null_rapl(aux_rapl);
 	}
 	//eards_start_uncore();
-	diff_uncores(metrics_bandwith[LOO],metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
 
 
 	// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
@@ -561,13 +574,14 @@ int metrics_init()
 	metrics_bandwith_init[APP] = malloc(bandwith_size);
 	metrics_bandwith_end[LOO] = malloc(bandwith_size);
 	metrics_bandwith_end[APP] = malloc(bandwith_size);
+	diff_uncore_value = malloc(bandwith_size);
 	metrics_rapl[LOO] = malloc(rapl_size);
 	metrics_rapl[APP] = malloc(rapl_size);
 	aux_rapl = malloc(rapl_size);
 	last_rapl = malloc(rapl_size);
 
 
-	if (metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith[ACUM] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
+	if (diff_uncore_value == NULL || metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith[ACUM] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
 		metrics_bandwith_end[LOO] == NULL || metrics_bandwith_end[APP] == NULL  ||
 			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
 	{
@@ -581,6 +595,7 @@ int metrics_init()
 	memset(metrics_bandwith_init[APP], 0, bandwith_size);
 	memset(metrics_bandwith_end[LOO], 0, bandwith_size);
 	memset(metrics_bandwith_end[APP], 0, bandwith_size);
+	memset(diff_uncore_value, 0, bandwith_size);
 	memset(metrics_rapl[LOO], 0, rapl_size);
 	memset(metrics_rapl[APP], 0, rapl_size);
 	memset(aux_rapl, 0, rapl_size);

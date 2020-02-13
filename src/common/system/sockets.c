@@ -367,7 +367,7 @@ static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 					if (!block && intents < NON_BLOCK_TRYS) {
 						intents += 1;
 					} else {
-						state_return_msg(EAR_SOCK_TIMEOUT, errno, strerror(errno));
+						state_return_msg(EAR_TIMEOUT, errno, strerror(errno));
 					}
 
 					#ifndef SHOW_DEBUGS

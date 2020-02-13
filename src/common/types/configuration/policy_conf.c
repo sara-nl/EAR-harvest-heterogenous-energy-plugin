@@ -35,6 +35,7 @@
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/hardware/frequency.h>
 
 
 /*
@@ -69,3 +70,27 @@ void print_policy_conf(policy_conf_t *p)
     verbosen(VCCONF, "\n");
 }
 
+void check_policy_values(policy_conf_t *p,int nump)
+{
+	int i=0;
+	ulong f;
+	for (i=0;i<nump;i++){
+		f=(unsigned long)(p[i].def_freq*1000000);
+		if (!frequency_is_valid_frequency(f)){
+			error("Default frequency %lu for policy %s is not valid",f,p[i].name);
+			p[i].def_freq=(float)frequency_closest_frequency(f)/(float)1000000;
+			error("New def_freq %f",p[i].def_freq);
+		}
+	}
+}
+
+void check_policy(policy_conf_t *p)
+{
+	unsigned long f;
+	f=(unsigned long)(p->def_freq*1000000);
+  if (!frequency_is_valid_frequency(f)){
+      error("Default frequency %lu for policy %s is not valid",f,p->name);
+      p->def_freq=(float)frequency_closest_frequency(f)/(float)1000000;
+      error("New def_freq %f",p->def_freq);
+  }
+}

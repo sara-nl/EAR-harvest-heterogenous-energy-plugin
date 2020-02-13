@@ -177,7 +177,7 @@ int dynconf_def_freq(uint p_id, ulong def) {
 	if (is_valid_freq(def, num_f, f_list)) {
 		if (dyn_conf->policy == p_id) {
 			dyn_conf->def_freq = def;
-			dyn_conf->def_p_state = frequency_freq_to_pstate(dyn_conf->def_freq);
+			dyn_conf->def_p_state = frequency_closest_pstate(dyn_conf->def_freq);
 			resched_conf->force_rescheduling = 1;
 		}
 		powermon_new_def_freq(p_id, def);
@@ -187,7 +187,7 @@ int dynconf_def_freq(uint p_id, ulong def) {
 		if (freq > 0) {
 			if (dyn_conf->policy == p_id) {
 				dyn_conf->def_freq = freq;
-				dyn_conf->def_p_state = frequency_freq_to_pstate(dyn_conf->def_freq);
+				dyn_conf->def_p_state = frequency_closest_pstate(dyn_conf->def_freq);
 				resched_conf->force_rescheduling = 1;
 			}
 			powermon_new_def_freq(p_id, freq);
@@ -202,7 +202,7 @@ int dynconf_set_freq(ulong freq) {
 	if (is_valid_freq(freq, num_f, f_list)) {
 		dyn_conf->max_freq = freq;
 		dyn_conf->def_freq = freq;
-		dyn_conf->def_p_state = frequency_freq_to_pstate(dyn_conf->def_freq);
+		dyn_conf->def_p_state = frequency_closest_pstate(dyn_conf->def_freq);
 		resched_conf->force_rescheduling = 1;
 		powermon_set_freq(freq);
 		return EAR_SUCCESS;
@@ -211,7 +211,7 @@ int dynconf_set_freq(ulong freq) {
 		if (freq2 > 0) {
 			dyn_conf->max_freq = freq2;
 			dyn_conf->def_freq = freq2;
-			dyn_conf->def_p_state = frequency_freq_to_pstate(dyn_conf->def_freq);
+			dyn_conf->def_p_state = frequency_closest_pstate(dyn_conf->def_freq);
 			resched_conf->force_rescheduling = 1;
 			powermon_set_freq(freq2);
 			return EAR_SUCCESS;
@@ -243,8 +243,8 @@ int dynconf_red_pstates(uint p_states) {
 	ulong i;
 	uint def_pstate, max_pstate;
 	ulong new_def_freq, new_max_freq;
-	def_pstate = frequency_freq_to_pstate(dyn_conf->def_freq);
-	max_pstate = frequency_freq_to_pstate(dyn_conf->max_freq);
+	def_pstate = frequency_closest_pstate(dyn_conf->def_freq);
+	max_pstate = frequency_closest_pstate(dyn_conf->max_freq);
 	/* Reducing means incresing in the vector of pstates */
 	def_pstate = def_pstate + p_states;
 	max_pstate = max_pstate + p_states;

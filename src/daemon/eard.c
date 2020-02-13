@@ -146,7 +146,8 @@ void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 {
 	uint i;
 	for (i=0;i<num_policies;i++){
-		plist[i].p_state=frequency_freq_to_pstate((unsigned long)(plist[i].def_freq*1000000));
+		check_policy(&plist[i]);
+		plist[i].p_state=frequency_closest_pstate((unsigned long)(plist[i].def_freq*1000000));
 	}
 }
 
@@ -685,6 +686,7 @@ int eard_uncore(int must_read) {
 			write(ear_fd_ack[uncore_req], &ack, sizeof(ack));
 			break;
 		case RESET_UNCORE:
+			printf("RESET_UNCORE in eard\n");
 			reset_uncores();
 			write(ear_fd_ack[uncore_req], &ack, sizeof(ack));
 			break;
@@ -832,7 +834,9 @@ void signal_handler(int sig) {
 			my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 			if (my_node_conf == NULL) {
 				error(" Error in cluster configuration, node %s not found\n", nodename);
+				exit(0);
 			} else {
+				check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 				eard_dyn_conf.nconf = my_node_conf;
 				print_my_node_conf(my_node_conf);
 				copy_my_node_conf(&my_original_node_conf, my_node_conf);
@@ -966,6 +970,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 	policy_conf_t *my_policy;
 	ulong deff;
 	eard_max_pstate = node->max_pstate;
+	verbose(1,"Max pstate for this node is %d",eard_max_pstate);
 	// Default policy is just in case
 	default_policy_context.policy=MONITORING_ONLY;
 	default_policy_context.p_state=EAR_MIN_P_STATE;
@@ -980,6 +985,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 		default_policy_context.p_state=my_policy->p_state;
 		default_policy_context.settings[0]=my_policy->settings[0];
 	}
+		verbose(1,"configure_default_values. Looking for pstate %d\n",my_policy->p_state);
     deff=frequency_pstate_to_freq(my_policy->p_state);
     dyn->user_type=NORMAL;
 	dyn->learning=0;
@@ -1193,8 +1199,10 @@ int main(int argc, char *argv[]) {
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 		if (my_node_conf == NULL) {
-			error( " Error in cluster configuration, node %s not found\n", nodename);
+			error( " Node %s not found in ear.conf, exiting\n", nodename);
+			_exit(0);
 		}
+		check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
 	}

@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <pthread.h>
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <metrics/energy/energy_gpu.h>
 #include <metrics/energy/gpu/nvsmi.h>
@@ -45,7 +46,7 @@ static pthread_t       samp_t_accumu;
 static FILE           *samp_t_stream;
 static uint            samp_num_gpus;
 static uint            samp_enabled;
-static gpu_energy_t    *samp_data;
+static gpu_energy_t    *samp_data=NULL;
 static uint            samp_ms;
 
 typedef struct nvsmi_context_s {
@@ -77,15 +78,34 @@ static void nvsmi_gpu_sample_add(uint i, gpu_energy_t *data_aux)
 static void *nvsmi_gpu_sample_main(void *p)
 {
 	static gpu_energy_t data_aux;
+	static char bs[256];
 	int i;
 	int s;
 	
 	do {
-		s = fscanf(samp_t_stream, "%u, %lf, %lu, %lu, %lu, %lu, %lu, %lu", &i,
-				&data_aux.power_w , &data_aux.freq_gpu_mhz, &data_aux.freq_mem_mhz,
-				&data_aux.util_gpu, &data_aux.util_mem,
-				&data_aux.temp_gpu, &data_aux.temp_mem);
-		debug("readed gpu %u: %d elements (w: %lf)\n", i, s, data_aux.power_w);
+		memset(bs, 0, 256);
+
+		s = fscanf(samp_t_stream, "%s%s%s%s%s%s%s%s",
+			&bs[  0], &bs[ 32], &bs[ 64], &bs[ 96],
+			&bs[128], &bs[160], &bs[192], &bs[224]);
+		debug("gpu data read <- %s %s %s %s %s %s %s %s",
+			&bs[  0], &bs[ 32], &bs[ 64], &bs[ 96],
+			&bs[128], &bs[160], &bs[192], &bs[224]);
+
+		i                     =          atoi(&bs[  0]);
+		data_aux.power_w      = (double) atof(&bs[ 32]);
+		data_aux.freq_gpu_mhz = (ulong)  atol(&bs[ 64]);
+		data_aux.freq_mem_mhz = (ulong)  atol(&bs[ 96]);
+		data_aux.util_gpu     = (ulong)  atol(&bs[128]);
+		data_aux.util_mem     = (ulong)  atol(&bs[160]);
+		data_aux.temp_gpu     = (ulong)  atol(&bs[192]);
+		data_aux.temp_mem     = (ulong)  atol(&bs[224]);
+
+		debug("gpu data read -> %u %0.2lf %lu %lu %lu %lu %lu %lu",
+			i                    , data_aux.power_w,
+			data_aux.freq_gpu_mhz, data_aux.freq_mem_mhz,
+			data_aux.util_gpu    , data_aux.util_mem,
+			data_aux.temp_gpu    , data_aux.temp_mem);
 
 		if (s == GPU_METRICS)
 		{
@@ -118,9 +138,7 @@ static state_t nvsmi_gpu_sample_create(pcontext_t *c, uint loop_ms)
 		return EAR_ERROR;
 	}
 	
-	for (i = 0; i < samp_num_gpus; i++) {
-		nvsmi_gpu_data_null(c, &samp_data[i]);
-	}
+	nvsmi_gpu_data_null(c, samp_data);
 
 	// Enabling sampling
 	samp_enabled = 1;
@@ -154,10 +172,12 @@ state_t nvsmi_gpu_init(pcontext_t *c, uint loop_ms)
 			state_return_msg(EAR_ERROR, 0, "no GPUs detected");
 		}
 	}
+	debug("%d GPUS detected",samp_num_gpus);
 	// Allocating internal accumulators
 	if (samp_data == NULL){
 		samp_data = calloc(samp_num_gpus, sizeof(gpu_energy_t));
 		if (samp_data == NULL) {
+			debug("Allocating memory for GPU");
 			return EAR_ERROR;
 		}
 	}
