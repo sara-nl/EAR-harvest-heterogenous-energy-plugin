@@ -479,9 +479,10 @@ int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps)
     {
         int offset = i*JOB_ARGS;
 
-        bind[0+offset].buffer_type = bind[4+offset].buffer_type = bind[5+offset].buffer_type = bind[12+offset].buffer_type
-        = bind[6+offset].buffer_type = bind[7+offset].buffer_type = bind[10+offset].buffer_type = bind[1+offset].buffer_type = MYSQL_TYPE_LONG;
-        bind[0+offset].is_unsigned = bind[10+offset].is_unsigned = 1;
+        bind[0+offset].buffer_type = bind[1+offset].buffer_type = bind[4+offset].buffer_type = bind[5+offset].buffer_type = bind[6+offset].buffer_type
+        = bind[7+offset].buffer_type = bind[10+offset].buffer_type = bind[12+offset].buffer_type = MYSQL_TYPE_LONG;
+
+        bind[0+offset].is_unsigned = bind[10+offset].is_unsigned = bind[1+offset].is_unsigned = 1;
 
         //string types
         bind[2+offset].buffer_type = bind[3+offset].buffer_type = bind[8+offset].buffer_type = 
