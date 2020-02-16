@@ -219,4 +219,18 @@ void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information
 	}
 }
 
+void compute_per_node_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info)
+{
+  int i,min_i=0;
+	double min_perc=sig[0].mpi_info.perc_mpi;
+  for (i=1;i<data->num_processes;i++){
+		if (sig[i].mpi_info.perc_mpi<min_perc){
+			min_i=i;
+			min_perc=sig[i].mpi_info.perc_mpi;
+		}
+  }
+  memcpy(&my_mpi_info,&sig[min_i].mpi_info,sizeof(mpi_information_t));
+}
+
+
 

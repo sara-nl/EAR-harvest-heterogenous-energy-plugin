@@ -185,6 +185,8 @@ void create_shared_regions()
 {
 	char *tmp=get_ear_tmp();
 	int bfd=-1;
+
+	/* This section allocates shared memory for processes in same node */
 	debug("Master creating shared regions for node synchro");
   sprintf(block_file,"%s/.my_local_lock_2",tmp);
   if ((bfd=file_lock_create(block_file))<0){
@@ -230,6 +232,7 @@ void create_shared_regions()
 		error("MPI_Barrier");
 		return;
 	}
+	/* This part allocates memory for sharing data between nodes */
 	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
 	if (share_global_info(masters_info.masters_comm,(char *)&lib_shared_region->num_processes,sizeof(int),(char*)masters_info.ppn,sizeof(int))!=EAR_SUCCESS){
 		error("Sharing the number of processes per node");
@@ -241,19 +244,29 @@ void create_shared_regions()
 		verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
 	}
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
+	#if SHARE_INFO_PER_PROCESS
+	debug("Sharing info at process level, reporting N per node");
 	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(mpi_information_t);
 	int total_elements=masters_info.max_ppn*masters_info.my_master_size;
+	int per_node_elements=masters_info.max_ppn;
+	#endif
+	#if SHARE_INFO_PER_NODE
+	debug("Sharing info at node level, reporting 1 per node");
+	int total_size=masters_info.my_master_size*sizeof(mpi_information_t);
+	int total_elements=masters_info.my_master_size;
+	int per_node_elements=1;
+	#endif
 	masters_info.nodes_info=(mpi_information_t *)calloc(total_elements,sizeof(mpi_information_t));
 	if (masters_info.nodes_info==NULL){ 
 		error("Allocating memory for node_info");
 	}else{ 
 		verbose(1,"%d Bytes (%d x %lu)  allocated for masters_info node_info",total_size,total_elements,sizeof(mpi_information_t));
 	}
-	masters_info.my_mpi_info=(mpi_information_t *)calloc(masters_info.max_ppn,sizeof(mpi_information_t));
+	masters_info.my_mpi_info=(mpi_information_t *)calloc(per_node_elements,sizeof(mpi_information_t));
   if (masters_info.my_mpi_info==NULL){
     error("Allocating memory for my_mpi_info");
   }else{
-    verbose(1,"%lu Bytes allocated for masters_info my_mpi_info",masters_info.max_ppn*sizeof(mpi_information_t));
+    verbose(1,"%lu Bytes allocated for masters_info my_mpi_info",per_node_elements*sizeof(mpi_information_t));
   }
 
 }
@@ -262,6 +275,8 @@ void attach_shared_regions()
 {
 	int bfd=-1,i;
 	char *tmp=get_ear_tmp();
+	/* This function is executed by processes different than masters */
+	/* they first join the Node shared memory */
 	sprintf(block_file,"%s/.my_local_lock",tmp);
 	if ((bfd=file_lock_create(block_file))<0){
 		error("Creating lock file for shared memory");
@@ -298,7 +313,7 @@ void attach_shared_regions()
 	sig_shared_region[my_node_id].master=0;
 	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
 	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
-	
+	/* No masters processes don't allocate memory for data sharing between nodes */	
 }
 /* Connects the mpi process to a new communicator composed by masters */
 void attach_to_master_set(int master)
@@ -468,6 +483,7 @@ void ear_init()
 
 	debug("attach to master %d",my_id);
 
+	/* All masters connect in a new MPI communicator */
 	attach_to_master_set(my_id==0);
 
 	// if we are not the master, we return
