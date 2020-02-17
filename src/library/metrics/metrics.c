@@ -488,7 +488,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
   sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
-	// signature_ready(&sig_shared_region[my_node_id]);
+	//signature_ready(&sig_shared_region[my_node_id]);
 }
 
 int metrics_init()

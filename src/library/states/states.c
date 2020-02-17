@@ -462,7 +462,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* This function executes the energy policy */
 			pst=policy_apply(&loop_signature.signature,&policy_freq,&ready);
 			signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
-
+			/* For no masters, ready will be 0, pending */
 
 			/* When the policy is ready to be evaluated, we go to the next state */
 			if (ready){

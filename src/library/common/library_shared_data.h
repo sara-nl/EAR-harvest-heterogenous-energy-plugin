@@ -126,6 +126,7 @@ void clean_signatures(lib_shared_data_t *data,shsignature_t *sig);
 void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig);
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig);
 void clean_my_mpi_info(mpi_information_t *info);
+void print_local_mpi_info(mpi_information_t *info);
 
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);
 int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info,int *node_cp,int *rank_cp);

@@ -211,8 +211,16 @@ int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info,in
 	*rank_cp=rank;
 	return rank;
 }
+	unsigned int total_mpi_calls;
+	unsigned long long exec_time;
+	unsigned long long mpi_time;
+	int rank;
+	double perc_mpi;
 
-
+void print_local_mpi_info(mpi_information_t *info)
+{
+	fprintf(stderr,"total_mpi_calls %u exec_time %llu mpi_time %llu rank %d perc_mpi %ld\n",info->total_mpi_calls,info->exec_time,info->mpi_time,info->rank,info->perc_mpi);
+}
 
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
 {

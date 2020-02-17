@@ -195,28 +195,28 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					TPI = loop_signature.signature.TPI;
 					TIME = loop_signature.signature.time;
 
-		            VI=metrics_vec_inst(&loop_signature.signature);
-		            VPI=(double)VI/(double)loop_signature.signature.instructions;
+		      VI=metrics_vec_inst(&loop_signature.signature);
+		      VPI=(double)VI/(double)loop_signature.signature.instructions;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
 					st=policy_apply(&loop_signature.signature,&policy_freq,&ready);
-					PP = projection_get(frequency_closest_pstate(policy_freq));
+					signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
 						if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
-
+					/* For no masters, ready will be 0, pending */
 					traces_new_signature(ear_my_rank, my_id,&loop_signature.signature);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
-					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
-					verbose(1,
+					if (masters_info.my_master_rank>=0){
+						verbose(1,
 									"\n\nEAR(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %lu\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
-					
+					}	
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);

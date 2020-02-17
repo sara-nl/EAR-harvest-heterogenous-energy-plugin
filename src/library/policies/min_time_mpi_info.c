@@ -60,17 +60,20 @@ extern unsigned long ext_def_freq;
 static float min_perc;
 static int check_reduce_mpi=0;
 static int reduce_freq_in_mpi=0;
+static int show_sig=0;
 static unsigned long saved_freq,mpi_freq;
 
 state_t policy_init(polctx_t *c)
 {
   char *min_perc_val=getenv("SLURM_EAR_MIN_PERC_MPI");
+	char *show_sig_c=getenv("SLURM_EAR_SHOW_SIGNATURES");
   if (min_perc_val!=NULL){ 
 		min_perc=(float)atoi(min_perc_val)/(float)100;
 	}else{
 		min_perc=(float)MIN_MPI_FOR_LOW_FREQ/(float)100;
 	}
-	verbose(1,"Using %f as min perc mpi2",min_perc);
+	if (show_sig_c!=NULL) show_sig=atoi(show_sig_c);
+	verbose(1,"Using %f as min perc mpi2 show_sig=%d",min_perc,show_sig);
 
 	if (c!=NULL){ 
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
@@ -271,8 +274,11 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
 	int node_cp,rank_cp;
 	if (masters_info.my_master_rank>=0){
-  	check_mpi_info(&masters_info,&node_cp,&rank_cp);
+		verbose(1,"policy_new_iteration");
+  	check_mpi_info(&masters_info,&node_cp,&rank_cp,show_sig);
 		if (rank_cp>=0){
+			verbose(1,"Shared data ready");
+			detect_load_unbalance(&masters_info);
 			verbose(1,"Node cp %d and rank cp %d",node_cp,rank_cp);
 			if (rank_cp==ear_my_rank){
 				//verbose(1,"I'm the CP!");
@@ -285,7 +291,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 				check_reduce_mpi=1;
 			}
 		}
-  	check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
+  	check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,show_sig);
 	}
 	if (!reduce_freq_in_mpi && check_reduce_mpi){
 		if (min_perc_mpi_in_node(lib_shared_region,sig_shared_region)>=(double)min_perc){	
