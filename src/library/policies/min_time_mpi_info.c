@@ -38,13 +38,14 @@
 #include <common/states.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
+#include <common/hardware/hardware_info.h>
+#include <common/environment.h>
+#include <common/math_operations.h>
+#include <common/system/time.h>
 #include <daemon/eard_api.h>
 #include <library/policies/policy_api.h>
-#include <common/math_operations.h>
 #include <library/common/externs.h>
-#include <common/system/time.h>
 #include <library/common/library_shared_data.h>
-#include <daemon/eard_api.h>
 
 static timestamp pol_time_init;
 
@@ -62,24 +63,38 @@ static int check_reduce_mpi=0;
 static int reduce_freq_in_mpi=0;
 static int show_sig=0;
 static unsigned long saved_freq,mpi_freq;
+static float ratio_TPI=1;
+static int mpi_reduction=0;
+
 
 state_t policy_init(polctx_t *c)
 {
   char *min_perc_val=getenv("SLURM_EAR_MIN_PERC_MPI");
 	char *show_sig_c=getenv("SLURM_EAR_SHOW_SIGNATURES");
+	char *red_in_mpi_c=getenv("SLURM_EAR_RED_FREQ_IN_MPI");
   if (min_perc_val!=NULL){ 
 		min_perc=(float)atoi(min_perc_val)/(float)100;
 	}else{
 		min_perc=(float)MIN_MPI_FOR_LOW_FREQ/(float)100;
 	}
 	if (show_sig_c!=NULL) show_sig=atoi(show_sig_c);
-	verbose(1,"Using %f as min perc mpi2 show_sig=%d",min_perc,show_sig);
+	if (red_in_mpi_c!=NULL) mpi_reduction=atoi(red_in_mpi_c);
+	
 
 	if (c!=NULL){ 
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
   	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
 		sig_shared_region[my_node_id].mpi_info.exec_time=0;
 		sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
+  	ratio_TPI=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
+  	if (masters_info.my_master_rank>=0){ 
+			verbose(1,"Ratio for TPI %f",ratio_TPI);
+		}
+		if (masters_info.my_master_rank==0){
+			verbose(1,"Using %f as min perc mpi2 show_sig=%d",min_perc,show_sig);
+			verbose(1,"mpi_reduction feature set to %d",mpi_reduction);
+		}
+
 
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
@@ -110,7 +125,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 // This is the main function in this file, it implements power policy
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
-    signature_t *my_app;
+    signature_t *my_app,c_sig;
     int i,min_pstate;
     unsigned int ref,try_next;
     double freq_gain,perf_gain,min_eff_gain;
@@ -120,7 +135,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		ulong curr_freq;
 		ulong curr_pstate,def_pstate,def_freq;
 		state_t st;
-    my_app=sig;
+
+		signature_copy(&c_sig,sig);
+
+		c_sig.TPI=c_sig.TPI/(double)ratio_TPI;
+    my_app=&c_sig;
 
 		*ready=1;
 
@@ -128,6 +147,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		if (c==NULL) return EAR_ERROR;
 		if (c->app==NULL) return EAR_ERROR;
 
+		if (lib_shared_region->num_processes)
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
 
@@ -274,7 +294,6 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
 	int node_cp,rank_cp;
 	if (masters_info.my_master_rank>=0){
-		verbose(1,"policy_new_iteration");
   	check_mpi_info(&masters_info,&node_cp,&rank_cp,show_sig);
 		if (rank_cp>=0){
 			verbose(1,"Shared data ready");
@@ -293,8 +312,8 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 		}
   	check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,show_sig);
 	}
-	if (!reduce_freq_in_mpi && check_reduce_mpi){
-		if (min_perc_mpi_in_node(lib_shared_region,sig_shared_region)>=(double)min_perc){	
+	if (mpi_reduction && !reduce_freq_in_mpi && check_reduce_mpi){
+		if (min_perc_mpi_in_node(lib_shared_region,sig_shared_region)>=(double)min_perc && load_unbalance(&masters_info)){	
 			saved_freq=*(c->ear_frequency);
 			int c_pstate=frequency_freq_to_pstate(saved_freq);
 			c_pstate++;

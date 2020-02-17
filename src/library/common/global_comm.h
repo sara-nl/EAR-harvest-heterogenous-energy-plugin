@@ -60,6 +60,6 @@ state_t wait_for_data(MPI_Request *req);
 void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig);
 void print_mpi_info(masters_info_t *mi);
 void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig);
-void detect_load_unbalance(masters_info_t *mi);
+int load_unbalance(masters_info_t *mi);
 
 #endif

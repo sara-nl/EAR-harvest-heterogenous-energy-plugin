@@ -30,18 +30,26 @@
 #ifndef _EAR_DAEMON_COMMON_H
 #define _EAR_DAEMON_COMMON_H
 
+#define _GNU_SOURCE             
+#include <sched.h>
+
+
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
 
-
+typedef struct new_freq_type{
+	unsigned long f;
+	cpu_set_t mask;	
+}new_freq_type_t;
 // Data type to send the requests
 union daemon_req_opt {
     unsigned long req_value;
     application_t app;
 	loop_t		  loop;
 	ear_event_t event;
+	new_freq_type_t f_mask;
 };
 
 struct daemon_req {
@@ -67,6 +75,7 @@ struct daemon_req {
 #define CONNECT_FREQ 			5
 #define START_APP_COMP_FREQ 	6
 #define END_APP_COMP_FREQ 		7
+#define SET_FREQ_WITH_MASK 8
 
 #define END_COMM 				1000
 

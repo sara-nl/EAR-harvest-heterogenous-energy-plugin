@@ -511,6 +511,7 @@ int metrics_init()
 		verbose(1,"Error loading energy plugin");
 	}
 
+
 	// Local metrics initialization
 	init_basic_metrics();
 	#if CACHE_METRICS

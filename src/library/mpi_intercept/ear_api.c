@@ -241,7 +241,7 @@ void create_shared_regions()
 	masters_info.max_ppn=masters_info.ppn[0];
 	for (i=1;i<masters_info.my_master_size;i++){ 
 		if (masters_info.ppn[i]>masters_info.max_ppn) masters_info.max_ppn=masters_info.ppn[i];
-		verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
+		if (masters_info.my_master_rank==0) verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
 	}
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
 	#if SHARE_INFO_PER_PROCESS

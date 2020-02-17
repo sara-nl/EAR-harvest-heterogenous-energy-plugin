@@ -126,7 +126,7 @@ void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
     int max_ppn=1;
     #endif
 
-		if (show_sig) print_mpi_info(mi);
+		if (show_sig && mi->my_master_rank==0) print_mpi_info(mi);
 
     verbose(1,"Info received in master %d",mi->my_master_rank);
     select_global_cp(mi->my_master_size,max_ppn,mi->ppn,mi->nodes_info,node_cp,rank_cp);
@@ -135,7 +135,7 @@ void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
   }
 }
 
-void detect_load_unbalance(masters_info_t *mi)
+int load_unbalance(masters_info_t *mi)
 {
 }
 
