@@ -481,7 +481,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 		unsetenv_agnostic(sp, Var.tag.ear);
 	}
 	
-	if (!setts->lib_enabled) {
+	if (sd->pack.eard.connected && !setts->lib_enabled) {
 		return ESPANK_SUCCESS;
 	}
 

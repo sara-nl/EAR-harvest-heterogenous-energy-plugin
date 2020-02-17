@@ -83,6 +83,7 @@ typedef struct plug_eard {
 	settings_conf_t setts;
 	services_conf_t servs;
 	plug_freqs_t freqs;
+	uint connected;
 	uint port;
 } plug_eard_t;
 
