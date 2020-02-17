@@ -37,6 +37,7 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 
 	// Hostlist get
 	hostlist = slurm_hostlist_create(sd->subject.host);
+	sd->pack.eard.connected = 1;
 
 	//
 	while ((node = slurm_hostlist_shift(hostlist)) != NULL)
@@ -45,6 +46,7 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 
 		if (eards_remote_connect(node, port) < 0) {
 			plug_error(sp, "while connecting with EAR daemon");
+			sd->pack.eard.connected = 0;
 			continue;
 		}
 
