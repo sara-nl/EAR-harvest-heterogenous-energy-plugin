@@ -88,6 +88,8 @@ typedef struct my_node_conf
 	double max_power_cap;
 	char power_cap_type[SHORT_NAME];
 	uint 	use_log;
+    int num_tags;
+    char **tags;
 }my_node_conf_t;
 
 

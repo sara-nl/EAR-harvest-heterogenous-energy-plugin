@@ -230,6 +230,245 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 	island->num_ranges += range_count;
 }
 
+void parse_island(cluster_conf_t *conf, char *line)
+{
+    int idx = -1, i = 0;
+    int contains_ip = 0;
+    int contains_sec_ip = 0;
+    char tag_parsing = 0;
+    char *token;
+
+    if (conf->num_islands == 0)
+        conf->islands = NULL;
+
+    int current_ranges = 0;
+    //token = strtok_r(line, " ", &primary_ptr);
+    token = strtok(line, "=");
+    while (token != NULL)
+    {
+        strtoup(token);
+        if (!strcmp(token, "ISLAND"))
+        {
+            token = strtok(NULL, " ");
+            int aux = atoi(token);
+            idx = -1;
+            for (i = 0; i < conf->num_islands; i++)
+                if (conf->islands[i].id == aux) idx = i;
+
+            if (idx < 0)
+            {
+                conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
+                            if (conf->islands==NULL){
+                                error("NULL pointer in allocating islands");
+                                return;
+                            }
+                set_default_island_conf(&conf->islands[conf->num_islands],atoi(token));
+            }
+        }
+        else if (!strcmp(token, "MAX_POWER")){
+            token = strtok(NULL, " ");
+            conf->islands[conf->num_islands].max_sig_power=(double)atoi(token);
+        }
+        else if (!strcmp(token, "MIN_POWER")){
+            token = strtok(NULL, " ");
+            conf->islands[conf->num_islands].min_sig_power=(double)atoi(token);
+        }
+        else if (!strcmp(token, "ERROR_POWER")){
+            token = strtok(NULL, " ");
+            conf->islands[conf->num_islands].max_error_power=(double)atoi(token);
+        }
+        else if (!strcmp(token, "ERROR_TEMP")){
+            token = strtok(NULL, " ");
+            conf->islands[conf->num_islands].max_temp=(double)atoi(token);
+        }
+        else if (!strcmp(token, "POWER_CAP")){
+            token = strtok(NULL, " ");
+            conf->islands[conf->num_islands].max_power_cap=(double)atoi(token);
+        }
+        else if (!strcmp(token, "POWER_CAP_TYPE")){
+            token = strtok(NULL, " ");
+            strclean(token, '\n');
+            remove_chars(token, ' ');
+            strcpy(conf->islands[conf->num_islands].power_cap_type,token);
+        }
+        else if (!strcmp(token, "DBIP"))
+        {
+            contains_ip = 1;
+            token = strtok(NULL, " ");
+            strclean(token, '\n');
+            int ip_id = -1;
+            int id_f = idx < 0 ? conf->num_islands: idx;
+            if (conf->islands[id_f].num_ips < 1)
+                conf->islands[id_f].db_ips = NULL;
+            for (i = 0; i < conf->islands[id_f].num_ips; i++)
+                if (!strcmp(conf->islands[id_f].db_ips[i], token)) ip_id = i;
+            if (ip_id < 0)
+            {
+                conf->islands[id_f].db_ips = realloc(conf->islands[id_f].db_ips,
+                                                                    (conf->islands[id_f].num_ips+1)*sizeof(char *));
+                                                if (conf->islands[id_f].db_ips==NULL){
+                                                    error("NULL pointer in DB IPS definition");
+                                                    return;
+                                                }
+                conf->islands[id_f].db_ips[conf->islands[id_f].num_ips] = malloc(strlen(token)+1);
+                remove_chars(token, ' ');
+                strcpy(conf->islands[id_f].db_ips[conf->islands[id_f].num_ips], token);
+                for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+                    conf->islands[id_f].ranges[i].db_ip = conf->islands[id_f].num_ips;
+                conf->islands[id_f].num_ips++;
+            }
+            else
+            {
+                for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+                    conf->islands[id_f].ranges[i].db_ip = ip_id;
+            }
+        }
+        else if (!strcmp(token, "DBSECIP"))
+        {
+            contains_sec_ip = 1;
+            token = strtok(NULL, " ");
+            strclean(token, '\n');
+            int ip_id = -1;
+            int id_f = idx < 0 ? conf->num_islands: idx;
+            if (conf->islands[id_f].num_backups < 1)
+                    conf->islands[id_f].backup_ips = NULL;
+            for (i = 0; i < conf->islands[id_f].num_backups; i++)
+                    if (!strcmp(conf->islands[id_f].backup_ips[i], token)) ip_id = i;
+            if (ip_id < 0)
+            {
+                remove_chars(token, ' ');
+                if (strlen(token) > 0)
+                {
+                    conf->islands[id_f].backup_ips = realloc(conf->islands[id_f].backup_ips,
+                                                                        (conf->islands[id_f].num_backups+1)*sizeof(char *));
+                                                        if (conf->islands[id_f].backup_ips==NULL){
+                                                            error("NULL pointer in DB backup ip");
+                                                            return;
+                                                        }
+                    conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups] = malloc(strlen(token)+1);
+                    strcpy(conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups], token);
+                    for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+                        conf->islands[id_f].ranges[i].sec_ip = conf->islands[id_f].num_backups;
+                    conf->islands[id_f].num_backups++;
+                }
+            }
+            else
+            {
+                for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+                    conf->islands[id_f].ranges[i].sec_ip = ip_id;
+            }
+        }
+        else if (!strcmp(token, "NODES"))
+        {
+            token = strtok(NULL, " ");
+            int id_f = idx < 0 ? conf->num_islands: idx;
+            current_ranges = conf->islands[id_f].num_ranges;
+            generate_node_ranges(&conf->islands[id_f], token);
+        }
+        else if (!strcmp(token, "ISLAND_TAGS"))
+        {
+            tag_parsing = 1;
+            int i, found = 0;
+            char aux_token[256], *next_token = NULL;
+            token = strtok(NULL, " ");
+            strcpy(aux_token, token);
+            token = strtok(NULL, " ");
+            if (token != NULL && strlen(token) > 0)
+                next_token = token;
+            token = aux_token;
+            token = strtok(token, ",");
+            //this is an alternative to the if(idx<0) system
+            int id_f = idx < 0 ? conf->num_islands: idx;
+            while (token)
+            {
+                found = 0;
+                strclean(token, '\n');
+                //prevent repeats in multi-line island definitions
+                for (i = 0; i < conf->islands[id_f].num_tags && !found; i++)
+                {
+                    if (!strcmp(token, conf->islands[id_f].tags[i]))
+                        found = 1;
+                }
+                if (!found)
+                {
+                    conf->islands[id_f].tags = realloc(conf->islands[id_f].tags, sizeof(char *));
+                    conf->islands[id_f].tags[conf->islands[id_f].num_tags] = calloc(strlen(token), sizeof(char));
+                    strcpy(conf->islands[id_f].tags[conf->islands[id_f].num_tags], token);
+                    conf->islands[id_f].num_tags++;
+                }
+                token = strtok(NULL, ",");
+            }
+            token = next_token;
+        }
+        else if (!strcmp(token, "TAGS"))
+        {
+            tag_parsing = 1;
+            char aux_token[256], *next_token = NULL;
+            token = strtok(NULL, " ");
+            strcpy(aux_token, token);
+            token = strtok(NULL, " ");
+            if (token != NULL && strlen(token) > 0)
+                next_token = token;
+            token = aux_token;
+            token = strtok(token, ",");
+            int id_f = idx < 0 ? conf->num_islands: idx;
+            int current_num_tags = 0;
+            int *current_tags = NULL;
+            char found = 0;
+            while (token)
+            {
+                strclean(token, '\n');
+                current_tags = realloc(current_tags, sizeof(int)*(current_num_tags+1));
+                for (i = 0; i < conf->islands[id_f].num_specific_tags; i++)
+                {
+                    if (!strcmp(token, conf->islands[id_f].specific_tags[i]))
+                    {
+                       current_tags[current_num_tags] = i;
+                       found = 1;
+                    }
+                }
+                if (!found)
+                {
+                    conf->islands[id_f].specific_tags = realloc(conf->islands[id_f].specific_tags, sizeof(char *)*(conf->islands[id_f].num_specific_tags+1));
+                    conf->islands[id_f].specific_tags[conf->islands[id_f].num_specific_tags] = calloc(strlen(token), sizeof(char));
+                    strcpy(conf->islands[id_f].specific_tags[conf->islands[id_f].num_specific_tags], token);
+                    current_tags[current_num_tags] = conf->islands[id_f].num_specific_tags;
+                    conf->islands[id_f].num_specific_tags++;
+                }
+                current_num_tags++;
+                token = strtok(NULL, ",");
+            }
+
+            for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+            {
+                conf->islands[id_f].ranges[i].specific_tags = calloc(current_num_tags, sizeof(int));
+                memcpy(conf->islands[id_f].ranges[i].specific_tags, current_tags, sizeof(int)*current_num_tags); 
+                conf->islands[id_f].ranges[i].num_tags = current_num_tags; 
+            }
+            token = next_token;
+            free(current_tags);
+        }
+        
+        //this is a hack, and the entire function should be rewritten using strtok_r
+        if (tag_parsing) token = strtok(token, "=");
+        else token = strtok(NULL, "=");
+        tag_parsing = 0;
+    }
+    int id_f = idx < 0 ? conf->num_islands: idx;
+    if (!contains_ip && conf->islands[id_f].num_ips > 0)
+    {
+        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+            conf->islands[id_f].ranges[i].db_ip = 0;
+    }
+    if (!contains_sec_ip && conf->islands[id_f].num_backups > 0)
+    {
+        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+            conf->islands[id_f].ranges[i].sec_ip = 0;
+    }
+    if (idx < 0)
+        conf->num_islands++;
+}
+
 void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 {
 	char line[256];
@@ -316,8 +555,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					return ;
 				}
 			}
-      curr_policy = &conf->power_policies[conf->num_policies];
-      init_policy_conf(curr_policy);
+            curr_policy = &conf->power_policies[conf->num_policies];
+            init_policy_conf(curr_policy);
 			while (token != NULL)
 			{
 				key = strtok_r(token, "=", &secondary_ptr);
@@ -851,214 +1090,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		    //ISLES config
 		else if (!strcmp(token, "ISLAND"))
 		{
-
-			int i = 0;
-            int idx = -1;
-            int contains_ip = 0;
-            int contains_sec_ip = 0;
 			//fully restore the line
 			line[strlen(line)] = '=';
-
-			if (conf->num_islands == 0)
-				conf->islands = NULL;
-
-            int current_ranges = 0;
-			//token = strtok_r(line, " ", &primary_ptr);
-			token = strtok(line, "=");
-			while (token != NULL)
-			{
-				strtoup(token);
-				if (!strcmp(token, "ISLAND"))
-				{
-					token = strtok(NULL, " ");
-                    int aux = atoi(token);
-                    idx = -1;
-                    for (i = 0; i < conf->num_islands; i++)
-                        if (conf->islands[i].id == aux) idx = i;
-
-                    if (idx < 0)
-                    {
-			            conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
-									if (conf->islands==NULL){
-										error("NULL pointer in allocating islands");
-										return;
-									}
-						set_default_island_conf(&conf->islands[conf->num_islands],atoi(token));
-                    }
-				}
-				else if (!strcmp(token, "MAX_POWER")){
-					token = strtok(NULL, " ");
-					conf->islands[conf->num_islands].max_sig_power=(double)atoi(token);
-				}
-				else if (!strcmp(token, "MIN_POWER")){
-					token = strtok(NULL, " ");
-					conf->islands[conf->num_islands].min_sig_power=(double)atoi(token);
-				}
-				else if (!strcmp(token, "ERROR_POWER")){
-					token = strtok(NULL, " ");
-					conf->islands[conf->num_islands].max_error_power=(double)atoi(token);
-				}
-				else if (!strcmp(token, "ERROR_TEMP")){
-					token = strtok(NULL, " ");
-					conf->islands[conf->num_islands].max_temp=(double)atoi(token);
-				}
-				else if (!strcmp(token, "POWER_CAP")){
-                    token = strtok(NULL, " ");
-                    conf->islands[conf->num_islands].max_power_cap=(double)atoi(token);
-                }
-				else if (!strcmp(token, "POWER_CAP_TYPE")){
-                    token = strtok(NULL, " ");
-					strclean(token, '\n');
-                    remove_chars(token, ' ');
-                    strcpy(conf->islands[conf->num_islands].power_cap_type,token);
-                }
-				else if (!strcmp(token, "DBIP"))
-				{
-                    contains_ip = 1;
-					token = strtok(NULL, " ");
-					strclean(token, '\n');
-                    int ip_id = -1;
-                    int id_f = idx < 0 ? conf->num_islands: idx;
-                    if (conf->islands[id_f].num_ips < 1)
-                        conf->islands[id_f].db_ips = NULL;
-                    for (i = 0; i < conf->islands[id_f].num_ips; i++)
-                        if (!strcmp(conf->islands[id_f].db_ips[i], token)) ip_id = i;
-                    if (ip_id < 0)
-                    {
-                        conf->islands[id_f].db_ips = realloc(conf->islands[id_f].db_ips,
-                                                                            (conf->islands[id_f].num_ips+1)*sizeof(char *));
-														if (conf->islands[id_f].db_ips==NULL){
-															error("NULL pointer in DB IPS definition");
-															return;
-														}
-                        conf->islands[id_f].db_ips[conf->islands[id_f].num_ips] = malloc(strlen(token)+1);
-                        remove_chars(token, ' ');
-                        strcpy(conf->islands[id_f].db_ips[conf->islands[id_f].num_ips], token);
-                        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-                            conf->islands[id_f].ranges[i].db_ip = conf->islands[id_f].num_ips;
-                        conf->islands[id_f].num_ips++;
-                    }
-                    else
-                    {
-                        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-                            conf->islands[id_f].ranges[i].db_ip = ip_id;
-                    }
-                }
-                else if (!strcmp(token, "DBSECIP"))
-                {
-                    contains_sec_ip = 1;
-					token = strtok(NULL, " ");
-					strclean(token, '\n');
-                    int ip_id = -1;
-                    int id_f = idx < 0 ? conf->num_islands: idx;
-                    if (conf->islands[id_f].num_backups < 1)
-                            conf->islands[id_f].backup_ips = NULL;
-                    for (i = 0; i < conf->islands[id_f].num_backups; i++)
-                            if (!strcmp(conf->islands[id_f].backup_ips[i], token)) ip_id = i;
-                    if (ip_id < 0)
-                    {
-                        remove_chars(token, ' ');
-                        if (strlen(token) > 0)
-                        {
-                            conf->islands[id_f].backup_ips = realloc(conf->islands[id_f].backup_ips,
-                                                                                (conf->islands[id_f].num_backups+1)*sizeof(char *));
-																if (conf->islands[id_f].backup_ips==NULL){
-																	error("NULL pointer in DB backup ip");
-																	return;
-																}
-                            conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups] = malloc(strlen(token)+1);
-                            strcpy(conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups], token);
-                            for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-                                conf->islands[id_f].ranges[i].sec_ip = conf->islands[id_f].num_backups;
-                            conf->islands[id_f].num_backups++;
-                        }
-                    }
-                    else
-                    {
-                        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-                            conf->islands[id_f].ranges[i].sec_ip = ip_id;
-                    }
-                }
-				else if (!strcmp(token, "NODES"))
-				{
-					token = strtok(NULL, " ");
-                    int id_f = idx < 0 ? conf->num_islands: idx;
-                    current_ranges = conf->islands[id_f].num_ranges;
-                    generate_node_ranges(&conf->islands[id_f], token);
-				}
-                else if (!strcmp(token, "ISLAND_TAGS"))
-                {
-                    token = strtok(NULL, " ");
-                    token = strtok(token, ",");
-                    //this is an alternative to the if(idx<0) system
-                    int id_f = idx < 0 ? conf->num_islands: idx;
-                    while (token)
-                    {
-                        strclean(token, '\n');
-                        conf->islands[id_f].tags = realloc(conf->islands[id_f].tags, sizeof(char *));
-                        conf->islands[id_f].tags[conf->islands[id_f].num_tags] = calloc(strlen(token), sizeof(char));
-                        strcpy(conf->islands[id_f].tags[conf->islands[id_f].num_tags], token);
-                        conf->islands[id_f].num_tags++;
-                        token = strtok(NULL, "&");
-                    }
-                    
-                }
-                else if (!strcmp(token, "TAGS"))
-                {
-                    token = strtok(NULL, " ");
-                    token = strtok(token, ",");
-                    int id_f = idx < 0 ? conf->num_islands: idx;
-                    int current_num_tags = 0;
-                    int *current_tags = NULL;
-                    char found = 0;
-                    while (token)
-                    {
-                        strclean(token, '\n');
-                        current_tags = realloc(current_tags, sizeof(int)*(current_num_tags+1));
-                        for (i = 0; i < conf->islands[id_f].num_specific_tags; i++)
-                        {
-                            if (!strcmp(token, conf->islands[id_f].specific_tags[i]))
-                            {
-                               current_tags[current_num_tags] = i;
-                               found = 1;
-                            }
-                        }
-                        if (!found)
-                        {
-                            conf->islands[id_f].specific_tags = realloc(conf->islands[id_f].specific_tags, sizeof(char *)*(conf->islands[id_f].num_specific_tags+1));
-                            conf->islands[id_f].specific_tags[conf->islands[id_f].num_specific_tags] = calloc(strlen(token), sizeof(char));
-                            strcpy(conf->islands[id_f].specific_tags[conf->islands[id_f].num_specific_tags], token);
-                            current_tags[current_num_tags] = conf->islands[id_f].num_specific_tags;
-                            conf->islands[id_f].num_specific_tags++;
-                        }
-                        current_num_tags++;
-                        token = strtok(NULL, ",");
-                    }
-
-                    for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-                    {
-                        conf->islands[id_f].ranges[i].specific_tags = calloc(current_num_tags, sizeof(int));
-                        memcpy(conf->islands[id_f].ranges[i].specific_tags, current_tags, sizeof(int)*current_num_tags); 
-                        conf->islands[id_f].ranges[i].num_tags = current_num_tags; 
-                    }
-                    free(current_tags);
-                }
-				
-				token = strtok(NULL, "=");
-			}
-            int id_f = idx < 0 ? conf->num_islands: idx;
-            if (!contains_ip && conf->islands[id_f].num_ips > 0)
-            {
-                for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-                    conf->islands[id_f].ranges[i].db_ip = 0;
-            }
-            if (!contains_sec_ip && conf->islands[id_f].num_backups > 0)
-            {
-                for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-                    conf->islands[id_f].ranges[i].sec_ip = 0;
-            }
-            if (idx < 0)
-    			conf->num_islands++;
+            parse_island(conf, line);
 		}
 		// INSTALLATION AREA
 		else if (!strcmp(token, "TMPDIR"))
