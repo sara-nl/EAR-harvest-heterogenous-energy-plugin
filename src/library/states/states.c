@@ -280,56 +280,6 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
     #endif
 }
 
-void check_mpi_info()
-{
-	if ((masters_info.my_master_rank>=0) && masters_info.node_info_pending && (is_info_ready(&masters_info.req)==EAR_SUCCESS)){
-    #if SHARE_INFO_PER_PROCESS
-    int max_ppn=masters_info.max_ppn;
-    #endif
-    #if SHARE_INFO_PER_NODE
-    int max_ppn=1;
-    #endif
-
-		verbose(1,"Info received in master %d",masters_info.my_master_rank);
-		int global_cp=select_global_cp(masters_info.my_master_size,max_ppn,masters_info.ppn,masters_info.nodes_info);
-		verbose(1,"Global CP is rank %d",global_cp);
-		masters_info.node_info_pending=0;
-	}
-}
-
-void check_node_signatures()
-{
-    #if SHARE_INFO_PER_PROCESS
-    int max_ppn=masters_info.max_ppn;
-    #endif
-    #if SHARE_INFO_PER_NODE
-    int max_ppn=1;
-    #endif
-
-	  /* If the master signature is ready we check the others */
-  if ((masters_info.my_master_rank>=0) && sig_shared_region[0].ready){
-    if (are_signatures_ready(lib_shared_region,sig_shared_region)){
-      // print_shared_signatures(lib_shared_region,sig_shared_region);
-      clean_signatures(lib_shared_region,sig_shared_region);
-			if (!masters_info.node_info_pending){
-				#if SHARE_INFO_PER_PROCESS
-				copy_my_mpi_info(lib_shared_region,sig_shared_region,masters_info.my_mpi_info);
-				#endif
-				#if SHARE_INFO_PER_NODE
-				compute_per_node_mpi_info(lib_shared_region,sig_shared_region,masters_info.my_mpi_info);
-				#endif
-				if (ishare_global_info(masters_info.masters_comm,(char *)masters_info.my_mpi_info,
-					sizeof(mpi_information_t)*max_ppn,
-					(char *)masters_info.nodes_info,sizeof(mpi_information_t)*max_ppn,&masters_info.req)!=EAR_SUCCESS){
-					error("Sending node mpi_info_t to other masters master_rank %d",masters_info.my_master_rank);
-				}else{ 
-					verbose(1,"mpi_info for master_rank %d sent to other nodes",masters_info.my_master_rank);
-					masters_info.node_info_pending=1;
-				}
-			}
-    }
-  }
-}
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC;
@@ -378,8 +328,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		}
 	}
 	}
-	check_mpi_info();
-	check_node_signatures();
 
 	switch (EAR_STATE)
 	{
@@ -481,7 +429,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				return;
 			}
 			//verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
-			signature_ready(&sig_shared_region[my_node_id]);
 			//print_loop_signature("signature computed", &loop_signature.signature);
             /* Included for dynais test */
             if (loop_with_signature==0){
@@ -514,6 +461,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			/* This function executes the energy policy */
 			pst=policy_apply(&loop_signature.signature,&policy_freq,&ready);
+			signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 
 
 			/* When the policy is ready to be evaluated, we go to the next state */
@@ -556,7 +504,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				return;
 			}
       verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
-      signature_ready(&sig_shared_region[my_node_id]);
+      signature_ready(&sig_shared_region[my_node_id],SIGNATURE_STABLE);
 
 			/*print_loop_signature("signature refreshed", &loop_signature.signature);*/
 

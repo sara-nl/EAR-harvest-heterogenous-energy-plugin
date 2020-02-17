@@ -309,14 +309,16 @@ static int metrics_partial_stop(uint where)
 
 
 	/* This is new to avoid cases where uncore gets frozen */
-	eards_read_uncore(metrics_bandwith_end[LOO]);
-	diff_uncores(diff_uncore_value,metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
-	if ((where==SIG_END) && uncore_are_frozen(diff_uncore_value,bandwith_elements)){
-		verbose(1,"Doing reset of uncore counters becuase they were frozen");
-		eards_reset_uncore();
-		return EAR_NOT_READY;
-	}else{
-		copy_uncores(metrics_bandwith[LOO],diff_uncore_value,bandwith_elements);	
+	if (masters_info.my_master_rank>=0){
+		eards_read_uncore(metrics_bandwith_end[LOO]);
+		diff_uncores(diff_uncore_value,metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
+		if ((where==SIG_END) && uncore_are_frozen(diff_uncore_value,bandwith_elements)){
+			verbose(1,"Doing reset of uncore counters becuase they were frozen");
+			eards_reset_uncore();
+			return EAR_NOT_READY;
+		}else{
+			copy_uncores(metrics_bandwith[LOO],diff_uncore_value,bandwith_elements);	
+		}
 	}
 	/* End new section to check frozen uncore counters */
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
@@ -333,40 +335,36 @@ static int metrics_partial_stop(uint where)
 	metrics_usecs[APP] += metrics_usecs[LOO];
 	
 	// Daemon metrics
-	if (masters_info.my_master_rank>=0) metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
+	if (masters_info.my_master_rank>=0){ 
+		metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
 	/* This code needs to be adapted to read , compute the difference, and copy begin=end 
  	* diff_uncores(values,values_end,values_begin,num_counters);
  	* copy_uncores(values_begin,values_end,num_counters);
  	*/
-	if (masters_info.my_master_rank>=0){
-		eards_read_uncore(metrics_bandwith_end[LOO]);
 		eards_read_rapl(aux_rapl);
-	}else{
-		set_null_uncores(metrics_bandwith_end[LOO]);
-		set_null_rapl(aux_rapl);
-	}
 	//eards_start_uncore();
 
 
-	// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
-	for (i = 0; i < bandwith_elements; i++) {
-			metrics_bandwith[ACUM][i] += metrics_bandwith[LOO][i];
-	}
-	// We read acuumulated energy
-	for (i = 0; i < rapl_elements; i++) {
-		if (aux_rapl[i] < last_rapl[i])
-		{
-			metrics_rapl[LOO][i] = ullong_diff_overflow(last_rapl[i], aux_rapl[i]);
+		// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
+		for (i = 0; i < bandwith_elements; i++) {
+				metrics_bandwith[ACUM][i] += metrics_bandwith[LOO][i];
 		}
-		else {
-			metrics_rapl[LOO][i]=aux_rapl[i]-last_rapl[i];		
+		// We read acuumulated energy
+		for (i = 0; i < rapl_elements; i++) {
+			if (aux_rapl[i] < last_rapl[i])
+			{
+				metrics_rapl[LOO][i] = ullong_diff_overflow(last_rapl[i], aux_rapl[i]);
+			}
+			else {
+				metrics_rapl[LOO][i]=aux_rapl[i]-last_rapl[i];		
+			}
 		}
-	}
-
-	// Manual RAPL accumulation
-	for (i = 0; i < rapl_elements; i++) {
-			metrics_rapl[APP][i] += metrics_rapl[LOO][i];
-	}
+	
+		// Manual RAPL accumulation
+		for (i = 0; i < rapl_elements; i++) {
+				metrics_rapl[APP][i] += metrics_rapl[LOO][i];
+		}
+	} /* Metrics collected by node_master*/
 
 
 	// Local metrics
@@ -490,7 +488,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
   sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
-	signature_ready(&sig_shared_region[my_node_id]);
+	// signature_ready(&sig_shared_region[my_node_id]);
 }
 
 int metrics_init()

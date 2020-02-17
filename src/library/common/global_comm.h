@@ -55,4 +55,9 @@ state_t share_global_info(MPI_Comm comm,char * data_send, int size_send,char * d
 state_t is_info_ready(MPI_Request *req);
 
 state_t wait_for_data(MPI_Request *req);
+
+
+void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp);
+void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig);
+
 #endif

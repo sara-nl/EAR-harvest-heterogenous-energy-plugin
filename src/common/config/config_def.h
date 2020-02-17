@@ -107,5 +107,8 @@
 /* Number of max tries  */
 #define MAX_SOCKET_COMM_TRIES           10000000
 
+
+#define MIN_MPI_FOR_LOW_FREQ		20
+
 #endif //EAR_CONFIG_DEF_H
 

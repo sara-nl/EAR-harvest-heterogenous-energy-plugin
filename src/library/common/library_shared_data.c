@@ -42,6 +42,7 @@
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <library/common/library_shared_data.h>
+#include <library/common/global_comm.h>
 
 static int fd_conf,fd_signatures;
 
@@ -120,9 +121,10 @@ void shared_signatures_area_dispose(char * path)
 }
 
 
-void signature_ready(shsignature_t *sig)
+void signature_ready(shsignature_t *sig,int cur_state)
 {
 	sig->ready=1;
+	sig->app_state=cur_state;
 }
 
 int compute_total_signatures_ready(lib_shared_data_t *data,shsignature_t *sig)
@@ -177,7 +179,20 @@ int select_cp(lib_shared_data_t *data,shsignature_t *sig)
 	return rank;
 }
 
-int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info)
+double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig)
+{
+  int i;
+  double minp=sig[0].mpi_info.perc_mpi;
+  for (i=1;i<data->num_processes;i++){
+    if (sig[i].mpi_info.perc_mpi<minp){
+      minp=sig[i].mpi_info.perc_mpi;
+    }
+  }
+  return minp;
+}
+
+
+int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info,int *node_cp,int *rank_cp)
 {
 	int i,j;
 	int rank;
@@ -189,9 +204,11 @@ int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info)
 			if (minp>my_mpi_info[i*max+j].perc_mpi){
 				rank=my_mpi_info[i*max+j].rank;
 				minp=my_mpi_info[i*max+j].perc_mpi;
+				*node_cp=i;
 			}
 		}
 	}
+	*rank_cp=rank;
 	return rank;
 }
 
@@ -231,6 +248,8 @@ void compute_per_node_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_in
   }
   memcpy(&my_mpi_info,&sig[min_i].mpi_info,sizeof(mpi_information_t));
 }
+
+
 
 
 

@@ -1,3 +1,4 @@
+CC = mpiicc
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) 
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 

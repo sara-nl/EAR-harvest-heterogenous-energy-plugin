@@ -36,6 +36,7 @@
 #include <common/types/loop.h>
 #include <daemon/shared_configuration.h>
 #include <library/common/library_shared_data.h>
+#include <library/common/global_comm.h>
 
 extern loop_t loop;
 extern application_t loop_signature;
@@ -78,6 +79,7 @@ extern uint check_periodic_mode;
 extern lib_shared_data_t *lib_shared_region;
 extern shsignature_t *sig_shared_region;
 extern int my_node_id;
+extern masters_info_t masters_info;
 
 
 #endif

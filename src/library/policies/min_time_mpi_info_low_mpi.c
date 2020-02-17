@@ -34,7 +34,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-#include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
@@ -43,10 +42,9 @@
 #include <common/math_operations.h>
 #include <library/common/externs.h>
 #include <common/system/time.h>
-#include <library/common/library_shared_data.h>
-#include <daemon/eard_api.h>
 
 static timestamp pol_time_init;
+static float min_perc=(float)MIN_MPI_FOR_LOW_FREQ/(float)100;
 
 typedef unsigned long ulong;
 
@@ -57,21 +55,13 @@ extern unsigned long ext_def_freq;
 #define FREQ_DEF(f) f
 #endif
 
-static float min_perc;
-static int check_reduce_mpi=0;
-static int reduce_freq_in_mpi=0;
-static unsigned long saved_freq,mpi_freq;
-
 state_t policy_init(polctx_t *c)
 {
-  char *min_perc_val=getenv("SLURM_EAR_MIN_PERC_MPI");
-  if (min_perc_val!=NULL){ 
-		min_perc=(float)atoi(min_perc_val)/(float)100;
-	}else{
-		min_perc=(float)MIN_MPI_FOR_LOW_FREQ/(float)100;
-	}
-	verbose(1,"Using %f as min perc mpi2",min_perc);
+	char *min_perc_val=getenv("SLURM_EAR_MIN_PERC_MPI");
+	if (min_perc_val!=NULL) min_perc=(float)atoi(min_perc_val)/(float)100;
 
+	printf("Using %f as min_perc in mpi time to reduce frequency\n",min_perc);
+	
 	if (c!=NULL){ 
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
   	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
@@ -203,11 +193,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 			}
 		}	
 		*new_freq=best_freq;
-
-		/* we share what is the next frequency for the application */
-		sig_shared_region[my_node_id].new_freq=best_freq;
-		
-		if (reduce_freq_in_mpi) reduce_freq_in_mpi=0;
 		return EAR_SUCCESS;
 }
 
@@ -266,38 +251,3 @@ state_t policy_mpi_end(polctx_t *c)
 	return EAR_SUCCESS;
 }
 
-
-state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
-{
-	int node_cp,rank_cp;
-	if (masters_info.my_master_rank>=0){
-  	check_mpi_info(&masters_info,&node_cp,&rank_cp);
-		if (rank_cp>=0){
-			verbose(1,"Node cp %d and rank cp %d",node_cp,rank_cp);
-			if (rank_cp==ear_my_rank){
-				//verbose(1,"I'm the CP!");
-			}
-			if (node_cp==masters_info.my_master_rank){
-				verbose(1,"I'm in the node CP");
-				check_reduce_mpi=0;
-				reduce_freq_in_mpi=0;
-			}else{ 
-				check_reduce_mpi=1;
-			}
-		}
-  	check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
-	}
-	if (!reduce_freq_in_mpi && check_reduce_mpi){
-		if (min_perc_mpi_in_node(lib_shared_region,sig_shared_region)>=(double)min_perc){	
-			saved_freq=*(c->ear_frequency);
-			int c_pstate=frequency_freq_to_pstate(saved_freq);
-			c_pstate++;
-			*(c->ear_frequency)=frequency_pstate_to_freq(c_pstate);
-			verbose(1,"Node %d setting freq to %lu",masters_info.my_master_rank,*(c->ear_frequency));
-			eards_change_freq(*(c->ear_frequency));
-			reduce_freq_in_mpi=1;
-			check_reduce_mpi=0;
-		}
-	}
-	return EAR_SUCCESS;
-}
