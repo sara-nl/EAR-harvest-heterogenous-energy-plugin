@@ -88,6 +88,7 @@
 
 #define POWER_SIGNATURE_MYSQL_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
 #define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f, temp, DRAM_energy, PCK_energy, GPU_energy)"\
                                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
@@ -478,9 +479,10 @@ int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps)
     {
         int offset = i*JOB_ARGS;
 
-        bind[0+offset].buffer_type = bind[4+offset].buffer_type = bind[5+offset].buffer_type = bind[12+offset].buffer_type
-        = bind[6+offset].buffer_type = bind[7+offset].buffer_type = bind[10+offset].buffer_type = bind[1+offset].buffer_type = MYSQL_TYPE_LONGLONG;
-        bind[0+offset].is_unsigned = bind[10+offset].is_unsigned = 1;
+        bind[0+offset].buffer_type = bind[1+offset].buffer_type = bind[4+offset].buffer_type = bind[5+offset].buffer_type = bind[6+offset].buffer_type
+        = bind[7+offset].buffer_type = bind[10+offset].buffer_type = bind[12+offset].buffer_type = MYSQL_TYPE_LONG;
+
+        bind[0+offset].is_unsigned = bind[10+offset].is_unsigned = bind[1+offset].is_unsigned = 1;
 
         //string types
         bind[2+offset].buffer_type = bind[3+offset].buffer_type = bind[8+offset].buffer_type = 
@@ -963,7 +965,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
 
     //integer types
     bind[0].buffer_type = bind[4].buffer_type = bind[5].buffer_type = bind[12].buffer_type
-    = bind[6].buffer_type = bind[7].buffer_type = bind[10].buffer_type = bind[1].buffer_type = MYSQL_TYPE_LONGLONG;
+    = bind[6].buffer_type = bind[7].buffer_type = bind[10].buffer_type = bind[1].buffer_type = MYSQL_TYPE_LONG;
     bind[0].is_unsigned = bind[10].is_unsigned = 1;
 
     //string types
@@ -1516,8 +1518,8 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
 #if USE_GPUS
     bind[4].buffer = &sig_aux->GPU_power;
 #else
-    bind[4].buffer_type = MYSQL_TYPE_NULL;
-    bind[4].is_null = (my_bool*) 1;
+    double temp;
+    bind[4].buffer = &temp;
 #endif
     bind[5].buffer = &sig_aux->EDP;
     bind[6].buffer = &sig_aux->GBS;
@@ -1919,7 +1921,7 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
         int offset = i*num_args;
         for (j = 0; j < num_args; j++)
         {
-            bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
+            bind[offset+j].buffer_type = MYSQL_TYPE_LONG;
             bind[offset+j].is_unsigned = 1;
         }
         bind[offset+3].buffer_type = MYSQL_TYPE_VARCHAR;

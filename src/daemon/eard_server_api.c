@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+//#define SHOW_DEBUGS 0
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -232,7 +233,7 @@ void propagate_req(request_t *command, uint port)
 {
      
     if (command->node_dist > total_ips) return;
-    if (self_id = -1 || ips == NULL || total_ips < 1) return;
+    if (self_id == -1 || ips == NULL || total_ips < 1) return;
 
     struct sockaddr_in temp;
 

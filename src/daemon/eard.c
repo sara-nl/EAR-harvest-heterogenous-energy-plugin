@@ -834,7 +834,9 @@ void signal_handler(int sig) {
 			my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 			if (my_node_conf == NULL) {
 				error(" Error in cluster configuration, node %s not found\n", nodename);
+				exit(0);
 			} else {
+				check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 				eard_dyn_conf.nconf = my_node_conf;
 				print_my_node_conf(my_node_conf);
 				copy_my_node_conf(&my_original_node_conf, my_node_conf);
@@ -1200,6 +1202,7 @@ int main(int argc, char *argv[]) {
 			error( " Node %s not found in ear.conf, exiting\n", nodename);
 			_exit(0);
 		}
+		check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
 	}

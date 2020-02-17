@@ -281,7 +281,6 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 
     //pending checks for policies
 		memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
-		check_policy_values(n->policies,n->num_policies);
 		n->max_pstate=my_conf->eard.max_pstate;
 
 	return n;
