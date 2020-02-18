@@ -246,27 +246,27 @@ void create_shared_regions()
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
 	#if SHARE_INFO_PER_PROCESS
 	debug("Sharing info at process level, reporting N per node");
-	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(mpi_information_t);
+	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
 	int total_elements=masters_info.max_ppn*masters_info.my_master_size;
 	int per_node_elements=masters_info.max_ppn;
 	#endif
 	#if SHARE_INFO_PER_NODE
 	debug("Sharing info at node level, reporting 1 per node");
-	int total_size=masters_info.my_master_size*sizeof(mpi_information_t);
+	int total_size=masters_info.my_master_size*sizeof(shsignature_t);
 	int total_elements=masters_info.my_master_size;
 	int per_node_elements=1;
 	#endif
-	masters_info.nodes_info=(mpi_information_t *)calloc(total_elements,sizeof(mpi_information_t));
+	masters_info.nodes_info=(shsignature_t *)calloc(total_elements,sizeof(shsignature_t));
 	if (masters_info.nodes_info==NULL){ 
 		error("Allocating memory for node_info");
 	}else{ 
-		verbose(1,"%d Bytes (%d x %lu)  allocated for masters_info node_info",total_size,total_elements,sizeof(mpi_information_t));
+		verbose(1,"%d Bytes (%d x %lu)  allocated for masters_info node_info",total_size,total_elements,sizeof(shsignature_t));
 	}
-	masters_info.my_mpi_info=(mpi_information_t *)calloc(per_node_elements,sizeof(mpi_information_t));
+	masters_info.my_mpi_info=(shsignature_t *)calloc(per_node_elements,sizeof(shsignature_t));
   if (masters_info.my_mpi_info==NULL){
     error("Allocating memory for my_mpi_info");
   }else{
-    verbose(1,"%lu Bytes allocated for masters_info my_mpi_info",per_node_elements*sizeof(mpi_information_t));
+    verbose(1,"%lu Bytes allocated for masters_info my_mpi_info",per_node_elements*sizeof(shsignature_t));
   }
 
 }

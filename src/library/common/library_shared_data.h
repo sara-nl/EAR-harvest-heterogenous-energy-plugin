@@ -125,13 +125,15 @@ int are_signatures_ready(lib_shared_data_t *data,shsignature_t *sig);
 void clean_signatures(lib_shared_data_t *data,shsignature_t *sig);
 void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig);
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig);
+void print_sh_signature(shsignature_t *sig);
 void clean_my_mpi_info(mpi_information_t *info);
 void print_local_mpi_info(mpi_information_t *info);
 
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);
-int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info,int *node_cp,int *rank_cp);
+int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *node_cp,int *rank_cp);
 double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig);
 
 void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info);
+void copy_my_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *rem_sig);
 
 #endif

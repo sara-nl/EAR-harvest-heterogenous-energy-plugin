@@ -192,7 +192,7 @@ double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig)
 }
 
 
-int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info,int *node_cp,int *rank_cp)
+int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *node_cp,int *rank_cp)
 {
 	int i,j;
 	int rank;
@@ -201,9 +201,9 @@ int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info,in
 	for (i=0;i<size;i++){
 		/* Inside node */
 		for (j=0;j<ppn[i];j++){
-			if (minp>my_mpi_info[i*max+j].perc_mpi){
-				rank=my_mpi_info[i*max+j].rank;
-				minp=my_mpi_info[i*max+j].perc_mpi;
+			if (minp>my_sh_sig[i*max+j].mpi_info.perc_mpi){
+				rank=my_sh_sig[i*max+j].mpi_info.rank;
+				minp=my_sh_sig[i*max+j].mpi_info.perc_mpi;
 				*node_cp=i;
 			}
 		}
@@ -211,37 +211,33 @@ int select_global_cp(int size,int max,int *ppn,mpi_information_t *my_mpi_info,in
 	*rank_cp=rank;
 	return rank;
 }
-	unsigned int total_mpi_calls;
-	unsigned long long exec_time;
-	unsigned long long mpi_time;
-	int rank;
-	double perc_mpi;
 
 void print_local_mpi_info(mpi_information_t *info)
 {
-	fprintf(stderr,"total_mpi_calls %u exec_time %llu mpi_time %llu rank %d perc_mpi %.3lf\n",info->total_mpi_calls,info->exec_time,info->mpi_time,info->rank,info->perc_mpi);
+	fprintf(stderr,"total_mpi_calls %u exec_time %llu mpi_time %llu rank %d perc_mpi %.3lf \n",info->total_mpi_calls,info->exec_time,info->mpi_time,info->rank,info->perc_mpi);
+}
+
+void print_sh_signature(shsignature_t *sig)
+{
+	  fprintf(stderr," RANK %d mpi_data={total_mpi_calls %u mpi_time %llu exec_time %llu PercTime %lf }\n",
+    sig->mpi_info.rank,sig->mpi_info.total_mpi_calls,sig->mpi_info.mpi_time,sig->mpi_info.exec_time,sig->mpi_info.perc_mpi);
+    fprintf(stderr,"RANK %d signature={cpi %.3lf tpi %.3lf time %.3lf dc_power %.3lf} state %d new_freq %lu\n",sig->mpi_info.rank,sig->sig.CPI,sig->sig.TPI, sig->sig.time,sig->sig.DC_power,sig->app_state,sig->new_freq);
 }
 
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
 {
 	int i;
-	double percmpi;
 
 	for (i=0;i<data->num_processes;i++){
-		fprintf(stdout,"RANK %d mpi_data[%d]={total_mpi_calls %u mpi_time %llu exec_time %llu PercTime %lf}\n",
-		sig[i].mpi_info.rank,i,sig[i].mpi_info.total_mpi_calls,sig[i].mpi_info.mpi_time,sig[i].mpi_info.exec_time,sig[i].mpi_info.perc_mpi);
-		fprintf(stdout,"signature[%d]={cpi %.3lf tpi %.3lf time %.3lf dc_power %.3lf}\n",i,sig[i].sig.CPI,sig[i].sig.TPI,
-		sig[i].sig.time,sig[i].sig.DC_power);
+		print_sh_signature(&sig[i]);
 	}
 }
 
 
-void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info)
+
+void copy_my_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *rem_sig)
 {
-	int i;
-	for (i=0;i<data->num_processes;i++){
-		memcpy(&my_mpi_info[i],&sig[i].mpi_info,sizeof(mpi_information_t));
-	}
+	memcpy(rem_sig,sig,sizeof(shsignature_t)*data->num_processes);
 }
 
 void compute_per_node_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info)
@@ -257,6 +253,55 @@ void compute_per_node_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_in
   memcpy(&my_mpi_info,&sig[min_i].mpi_info,sizeof(mpi_information_t));
 }
 
+
+void compute_node_sig(signature_t *avg_sig,int n)
+{
+	double t,cpi,gflops;
+	unsigned long avg_f,def_f;
+	t=avg_sig->time/n;
+	cpi=avg_sig->CPI/n;
+	avg_f=avg_sig->avg_f/n;
+	def_f=avg_sig->def_f/n;
+	avg_sig->time=t;
+	avg_sig->CPI=cpi;
+	avg_sig->avg_f=avg_f;
+	avg_sig->def_f=def_f;
+}
+
+void acum_signature_metrics(signature_t *avg_sig,signature_t *s)
+{
+	avg_sig->time+=s->time;
+	avg_sig->CPI+=s->CPI;
+	avg_sig->avg_f+=s->avg_f;
+	avg_sig->def_f+=s->def_f;
+	avg_sig->Gflops+=s->Gflops;
+}
+void set_global_metrics(signature_t *avg_sig,signature_t *s)
+{
+	avg_sig->GBS=s->GBS;
+	avg_sig->TPI=s->TPI;
+	avg_sig->DC_power=s->DC_power;
+	avg_sig->time=0;
+	avg_sig->CPI=0;
+	avg_sig->avg_f=0;
+	avg_sig->def_f=0;
+	avg_sig->Gflops=0;
+}
+
+void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig)
+{
+	int i;
+	compute_per_node_mpi_info(data,sig,&my_node_sig->mpi_info);
+	signature_t avg_node;
+	set_global_metrics(&avg_node,&my_node_sig[0].sig);
+	for (i=0;i<data->num_processes;i++){
+		acum_signature_metrics(&avg_node,&my_node_sig[i].sig);
+	}
+	compute_node_sig(&avg_node,data->num_processes);
+	signature_copy(&my_node_sig->sig,&avg_node);
+	fprintf(stderr,"AVG per node sig (using rank %d) \n",my_node_sig->mpi_info.rank);
+	print_sh_signature(my_node_sig);	
+}
 
 
 

@@ -42,8 +42,8 @@ typedef struct masters_info{
 	int my_master_size;
 	int *ppn;
 	int max_ppn;
-	mpi_information_t *my_mpi_info;
-	mpi_information_t *nodes_info;
+	shsignature_t *my_mpi_info;
+	shsignature_t *nodes_info;
 	int node_info_pending;
 	MPI_Request req;
 }masters_info_t;
@@ -61,5 +61,6 @@ void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig);
 void print_mpi_info(masters_info_t *mi);
 void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig);
 int load_unbalance(masters_info_t *mi);
+void print_global_signatures(masters_info_t *mi);
 
 #endif

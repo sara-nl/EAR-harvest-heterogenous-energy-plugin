@@ -80,21 +80,22 @@ void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignatur
     /* If the master signature is ready we check the others */
   if ((mi->my_master_rank>=0) && sig[0].ready){
     if (are_signatures_ready(data,sig)){
+			/* here we print my node signatures, not all of them */
       if (show_sig) print_shared_signatures(data,sig);
       clean_signatures(data,sig);
       if (!mi->node_info_pending){
         #if SHARE_INFO_PER_PROCESS
-        copy_my_mpi_info(data,sig,mi->my_mpi_info);
+        copy_my_sig_info(data,sig,mi->my_mpi_info);
         #endif
         #if SHARE_INFO_PER_NODE
-        compute_per_node_mpi_info(data,sig,mi->my_mpi_info);
+        compute_per_node_sig(data,sig,mi->my_mpi_info);
         #endif
         if (ishare_global_info(mi->masters_comm,(char *)mi->my_mpi_info,
-          sizeof(mpi_information_t)*max_ppn,
-          (char *)mi->nodes_info,sizeof(mpi_information_t)*max_ppn,&mi->req)!=EAR_SUCCESS){
-          error("Sending node mpi_info_t to other masters master_rank %d",mi->my_master_rank);
+          sizeof(shsignature_t)*max_ppn,
+          (char *)mi->nodes_info,sizeof(shsignature_t)*max_ppn,&mi->req)!=EAR_SUCCESS){
+          error("Sending node sh_signature to other masters master_rank %d",mi->my_master_rank);
         }else{
-          verbose(1,"mpi_info for master_rank %d sent to other nodes",mi->my_master_rank);
+          verbose(1,"sh_signatures for master_rank %d sent to other nodes",mi->my_master_rank);
           mi->node_info_pending=1;
         }
       }
@@ -106,12 +107,24 @@ void print_mpi_info(masters_info_t *mi)
 {
 	int nodei,node_ppn;
 	for (nodei=0;nodei<mi->my_master_size;nodei++){
-		verbose(1,"Printing info for node %d",nodei);
+		fprintf(stderr,"Printing info for node %d",nodei);
 		for (node_ppn=0;node_ppn<mi->ppn[nodei];node_ppn++){
-			print_local_mpi_info(&mi->nodes_info[nodei*mi->max_ppn+node_ppn]);
+			print_local_mpi_info(&mi->nodes_info[nodei*mi->max_ppn+node_ppn].mpi_info);
 		}
 	}
 }
+
+void print_global_signatures(masters_info_t *mi)
+{
+  int nodei,node_ppn;
+  for (nodei=0;nodei<mi->my_master_size;nodei++){
+    fprintf(stderr,"Printing info for node %d",nodei);
+    for (node_ppn=0;node_ppn<mi->ppn[nodei];node_ppn++){
+      print_sh_signature(&mi->nodes_info[nodei*mi->max_ppn+node_ppn]);
+    }
+  }
+}
+
 
 
 void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
@@ -126,7 +139,7 @@ void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
     int max_ppn=1;
     #endif
 
-		if (show_sig && mi->my_master_rank==0) print_mpi_info(mi);
+		if (show_sig && mi->my_master_rank==0) print_global_signatures(mi);
 
     verbose(1,"Info received in master %d",mi->my_master_rank);
     select_global_cp(mi->my_master_size,max_ppn,mi->ppn,mi->nodes_info,node_cp,rank_cp);
@@ -137,5 +150,5 @@ void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
 
 int load_unbalance(masters_info_t *mi)
 {
+	return 0;
 }
-

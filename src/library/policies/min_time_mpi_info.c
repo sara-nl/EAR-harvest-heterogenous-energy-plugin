@@ -297,7 +297,6 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
   	check_mpi_info(&masters_info,&node_cp,&rank_cp,show_sig);
 		if (rank_cp>=0){
 			verbose(1,"Shared data ready");
-			detect_load_unbalance(&masters_info);
 			verbose(1,"Node cp %d and rank cp %d",node_cp,rank_cp);
 			if (rank_cp==ear_my_rank){
 				//verbose(1,"I'm the CP!");
