@@ -1058,7 +1058,7 @@ int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_a
 int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uint *last_index, ulong *energy, long num_nodes, char **nodes)
 {
     char *query;
-    int i, total_length;
+    int i, total_length=0;
 
     for (i = 0; i < num_nodes; i++)
         total_length += (strlen(nodes[i]) + 8); //8 comes from (''), and spaces in the query for each node
