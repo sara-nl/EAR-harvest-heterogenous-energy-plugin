@@ -58,5 +58,11 @@ int main(int argc,char *argv[])
     free_cluster_conf(&my_cluster);
     free(my_node_conf);
     printf("freed cluster_conf\n");
+    printf("reading cluster_conf again\n");
+	read_cluster_conf(ear_path,&my_cluster);
+    printf("freeing cluster_conf again\n");
+    free_cluster_conf(&my_cluster);
+    printf("freed cluster_conf\n");
+
 	return 0;
 }
