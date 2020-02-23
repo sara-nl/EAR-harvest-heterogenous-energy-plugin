@@ -365,7 +365,7 @@ void parse_island(cluster_conf_t *conf, char *line)
             current_ranges = conf->islands[id_f].num_ranges;
             generate_node_ranges(&conf->islands[id_f], token);
         }
-        else if (!strcmp(token, "ISLAND_TAGS"))
+        /*else if (!strcmp(token, "ISLAND_TAGS"))
         {
             tag_parsing = 1;
             int i, found = 0;
@@ -447,7 +447,7 @@ void parse_island(cluster_conf_t *conf, char *line)
             }
             token = next_token;
             free(current_tags);
-        }
+        }*/
         
         //this is a hack, and the entire function should be rewritten using strtok_r
         if (tag_parsing) token = strtok(token, "=");
@@ -1245,6 +1245,7 @@ void free_cluster_conf(cluster_conf_t *conf)
             free(conf->islands[i].db_ips[j]);
         for (j = 0; j < conf->islands[i].num_backups; j++)
             free(conf->islands[i].backup_ips[j]);
+        /*
         for (j = 0; j < conf->islands[i].num_tags; j++)
             free(conf->islands[i].tags[j]);
         free(conf->islands[i].tags);
@@ -1259,7 +1260,7 @@ void free_cluster_conf(cluster_conf_t *conf)
                 free(conf->islands[i].ranges[j].specific_tags);
                 conf->islands[i].ranges[j].specific_tags = NULL;
             }
-        }
+        } */
 		free(conf->islands[i].ranges);
         free(conf->islands[i].db_ips);
         free(conf->islands[i].backup_ips);
