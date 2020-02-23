@@ -63,12 +63,23 @@ typedef struct new_policy_cont{
 	double settings[MAX_POLICY_SETTINGS];
 }new_policy_cont_t;
 
+typedef struct power_limit{
+	unsigned int type;
+	unsigned long limit;
+}power_limit_t;
+
+typedef struct risk_dec{
+	unsigned long level;
+	unsigned long target;
+}risk_dec_t;
+
 typedef union req_data{
 		application_t 		new_job;
 		end_job_req_t 		end_job;
 		new_conf_t 				ear_conf;
 		new_policy_cont_t	pol_conf;
-	  unsigned long     pc;
+	  power_limit_t     pc;
+		risk_dec_t 			risk;
 }req_data_t;
 
 
@@ -119,12 +130,25 @@ typedef struct status{
 #define EAR_RC_REST_CONF	106
 #define EAR_RC_SET_POLICY 108
 #define EAR_RC_PING		    500
-#define EAR_RC_NEW_POWERCAP	700
 #define EAR_RC_STATUS		600
+
+/* New functions for power limits */
+#define EAR_RC_RED_POWER 700
+#define EAR_RC_SET_POWER 701 
+#define EAR_RC_INC_POWER 702
+#define EAR_RC_GET_POWER 703
+
+#define EAR_RC_SET_RISK 800
+
+
+
 #define NO_COMMAND 100000
 
 #define STATUS_BAD      0
 #define STATUS_OK       1
+
+#define ABSOLUTE 0
+#define RELATIVE 1
 
 
 #else

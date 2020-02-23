@@ -47,6 +47,7 @@
 #include <common/types/job.h>
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/system/symplug.h>
 
 //#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
@@ -77,6 +78,17 @@ int last_command_time = -1;
 #if USE_NEW_PROP
 int node_found = EAR_ERROR;
 #endif
+
+/* New to manage risk */
+typedef struct eard_policy_symbols {
+	state_t (*set_risk) (policy_conf_t *ref_pol,policy_conf_t *node_pol,ulong risk,ulong opt_target,ulong cfreq,ulong *nfreq);
+} eard_polsym_t;
+
+static eard_polsym_t *polsyms_fun;
+static void    *polsyms_obj = NULL;
+const int       polsyms_n = 1;
+const char     *polsyms_nam[] = {"policy_set_risk"};
+/* End new section */
 
 static char *TH_NAME = "RemoteAPI";
 static ehandler_t my_eh_rapi;
@@ -332,6 +344,80 @@ void dyncon_get_status(int fd, request_t *command) {
 	debug("status released");
 }
 
+void dyncon_power_management(int fd, request_t *command)
+{
+	unsigned long limit;
+	status_t status;
+	unsigned long cpower;
+	switch (command->req){
+    case EAR_RC_RED_POWER:
+			if (command->my_req.pc.type==ABSOLUTE){
+				verbose(1,"We must reduce the power in %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap-command->my_req.pc.limit;
+			}
+			if (command->my_req.pc.type==RELATIVE){
+				verbose(1,"We must reduce the power by %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap-(my_node_conf->max_power_cap*command->my_req.pc.limit);
+			}
+			break;	
+    case EAR_RC_GET_POWER:
+			verbose(1,"get power command");
+			powermon_get_status(&status);
+			cpower=(unsigned long)status.node.power;
+			write(fd,&cpower,sizeof(unsigned long));
+			break;
+    case EAR_RC_SET_POWER:
+			verbose(1,"We must set the power to %lu watts",command->my_req.pc.limit);
+			limit=command->my_req.pc.limit;
+			break;
+    case EAR_RC_INC_POWER:
+			if (command->my_req.pc.type==ABSOLUTE){
+				verbose(1,"We can increase the power in %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap+command->my_req.pc.limit;
+			}
+			if (command->my_req.pc.type==RELATIVE){
+				verbose(1,"We can increase the power by %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap+(my_node_conf->max_power_cap*command->my_req.pc.limit);
+			}
+			break;	
+		default:
+			verbose(1,"power command received not supported");
+	}
+	verbose(1,"New power limit %lu",limit);
+	set_power_limit(&my_eh_rapi,limit);
+}
+
+void update_current_settings(policy_conf_t *cpolicy_settings)
+{
+	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
+	dyn_conf->def_freq=cpolicy_settings->def_freq;
+	memcpy(dyn_conf->settings,cpolicy_settings->settings,sizeof(double)*MAX_POLICY_SETTINGS);
+	dyn_conf->def_p_state=cpolicy_settings->p_state;
+	resched_conf->force_rescheduling=1;	
+}
+
+void dyncon_set_risk(int fd, request_t *command)
+{
+	int i;
+	unsigned long new_max_freq,c_max,mfreq;
+	c_max=frequency_pstate_to_freq(my_node_conf->max_pstate);
+	mfreq=c_max;
+	for (i=0;i<my_node_conf->num_policies;i++){
+		verbose(1,"Setting risk level for %s to %lu",my_node_conf->policies[i].name,command->my_req.risk.level);	
+		polsyms_fun[i].set_risk(&my_original_node_conf.policies[i],&my_node_conf->policies[i],command->my_req.risk.level,command->my_req.risk.target,mfreq,&new_max_freq);
+		if (new_max_freq<c_max) c_max=new_max_freq;
+		if (dyn_conf->policy==i){
+			verbose(1,"Current policy is %d", i);
+			update_current_settings(&my_node_conf->policies[i]);	
+			if (new_max_freq!=dyn_conf->max_freq){
+				dyn_conf->max_freq=new_max_freq;
+				resched_conf->force_rescheduling=1;
+			}
+		}
+	}
+	my_node_conf->max_pstate=frequency_freq_to_pstate(new_max_freq);
+	verbose(1,"New max frequency is %lu pstate=%lu",new_max_freq,my_node_conf->max_pstate);
+}
 
 void process_remote_requests(int clientfd) {
 	request_t command;
@@ -407,6 +493,18 @@ void process_remote_requests(int clientfd) {
 			dyncon_get_status(clientfd, &command);
 			return;
 			break;
+		case EAR_RC_RED_POWER:
+		case EAR_RC_GET_POWER:
+		case EAR_RC_SET_POWER:
+		case EAR_RC_INC_POWER:
+			dyncon_power_management(clientfd, &command);
+			return;
+			break;
+		case EAR_RC_SET_RISK:
+			verbose(1,"set risk command received");
+			dyncon_set_risk(clientfd, &command);
+			return;
+			break;
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;
@@ -420,6 +518,21 @@ void process_remote_requests(int clientfd) {
 	{
 		verbose(VRAPI + 1, "command=%d propagated distance=%d", req, command.node_dist);
 		propagate_req(&command, my_cluster_conf.eard.port);
+	}
+}
+
+void policy_load()
+{
+  char basic_path[SZ_PATH_INCOMPLETE];
+	int i;
+	polsyms_fun=(eard_polsym_t *)calloc(my_node_conf->num_policies,sizeof(eard_polsym_t));
+	if (polsyms_fun==NULL){
+		error("Allocating memory for policy functions in eard");
+	}
+	for (i=0;i<my_node_conf->num_policies;i++){
+		sprintf(basic_path,"%s/policies/%s.so",my_cluster_conf.install.dir_plug,my_node_conf->policies[i].name);
+		verbose(1,"Loading functions for policy %s",basic_path);
+		symplug_open(basic_path, (void **)&polsyms_fun[i], polsyms_nam, polsyms_n);
 	}
 }
 
@@ -462,6 +575,9 @@ void *eard_dynamic_configuration(void *tmp)
 		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,RCONNECTOR_INIT_ERROR,eards_remote_socket);
 		pthread_exit(0);
 	}
+
+	policy_load();
+
 	/*
 	*	MAIN LOOP
 	*/

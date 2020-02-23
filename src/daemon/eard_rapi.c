@@ -454,16 +454,57 @@ int eards_ping()
     command.time_code = time(NULL);
     return send_command(&command);
 }
-int eards_set_powercap(unsigned long pc)
+
+/* Power management */
+int eards_set_powerlimit(unsigned long limit)
 {
     request_t command;
   	command.node_dist = 0;
-    command.req=EAR_RC_NEW_POWERCAP;
+    command.req=EAR_RC_SET_POWER;
     command.node_dist = 0;
     command.time_code = time(NULL);
-		command.my_req.pc=pc;
+		command.my_req.pc.limit=limit;
     return send_command(&command);
 }
+
+int eards_red_powerlimit(unsigned int type, unsigned long limit)
+{
+    request_t command;
+    command.node_dist = 0;
+    command.req=EAR_RC_RED_POWER;
+    command.node_dist = 0;
+    command.time_code = time(NULL);
+    command.my_req.pc.limit=limit;
+    command.my_req.pc.type=type;
+    return send_command(&command);
+}
+
+int eards_inc_powerlimit(unsigned int type, unsigned long limit)
+{
+    request_t command;
+    command.node_dist = 0;
+    command.req=EAR_RC_INC_POWER;
+    command.node_dist = 0;
+    command.time_code = time(NULL);
+    command.my_req.pc.limit=limit;
+    command.my_req.pc.type=type;
+    return send_command(&command);
+}   
+
+int eards_set_risk(unsigned long risk,unsigned long target)
+{
+    request_t command;
+    command.node_dist = 0;
+    command.req=EAR_RC_SET_RISK;
+    command.node_dist = 0;
+    command.time_code = time(NULL);
+	  command.my_req.risk.level=risk;
+	  command.my_req.risk.target=target;
+    return send_command(&command);
+}
+
+
+/* End new functions for power limit management */
 
 
 int eards_set_policy_info(new_policy_cont_t *p)

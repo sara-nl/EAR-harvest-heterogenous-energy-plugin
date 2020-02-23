@@ -417,3 +417,9 @@ state_t energy_to_str(char *str, edata_t e) {
         sprintf(str, "%lu", *pe);
         return EAR_SUCCESS;
 }
+
+state_t power_limit(ulong limit)
+{
+	verbose(1,"Energy Intel Node Manager setting limit to %lu",limit);
+	return EAR_SUCCESS;
+}

@@ -164,4 +164,11 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
 int send_status(request_t *command, status_t **status);
 
 void correct_error_starter(char *host_name, request_t *command, uint port);
+
+
+/* Power management extensions */
+int eards_set_powerlimit(unsigned long limit);
+int eards_red_powerlimit(unsigned int type, unsigned long limit);
+int eards_inc_powerlimit(unsigned int type, unsigned long limit);
+int eards_set_risk(unsigned long risk,unsigned long target);
 #endif
