@@ -461,9 +461,8 @@ int eards_set_powerlimit(unsigned long limit)
     request_t command;
   	command.node_dist = 0;
     command.req=EAR_RC_SET_POWER;
-    command.node_dist = 0;
     command.time_code = time(NULL);
-		command.my_req.pc.limit=limit;
+	command.my_req.pc.limit=limit;
     return send_command(&command);
 }
 
@@ -472,7 +471,6 @@ int eards_red_powerlimit(unsigned int type, unsigned long limit)
     request_t command;
     command.node_dist = 0;
     command.req=EAR_RC_RED_POWER;
-    command.node_dist = 0;
     command.time_code = time(NULL);
     command.my_req.pc.limit=limit;
     command.my_req.pc.type=type;
@@ -484,7 +482,6 @@ int eards_inc_powerlimit(unsigned int type, unsigned long limit)
     request_t command;
     command.node_dist = 0;
     command.req=EAR_RC_INC_POWER;
-    command.node_dist = 0;
     command.time_code = time(NULL);
     command.my_req.pc.limit=limit;
     command.my_req.pc.type=type;
@@ -496,13 +493,21 @@ int eards_set_risk(unsigned long risk,unsigned long target)
     request_t command;
     command.node_dist = 0;
     command.req=EAR_RC_SET_RISK;
-    command.node_dist = 0;
     command.time_code = time(NULL);
-	  command.my_req.risk.level=risk;
-	  command.my_req.risk.target=target;
+	command.my_req.risk.level=risk;
+	command.my_req.risk.target=target;
     return send_command(&command);
 }
 
+void set_risk_all_nodes(unsigned long risk, unsigned long target, cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_SET_RISK;
+    command.time_code = time(NULL);
+	command.my_req.risk.level=risk;
+	command.my_req.risk.target=target;
+    send_command_all(command, my_cluster_conf);
+}
 
 /* End new functions for power limit management */
 
@@ -512,9 +517,8 @@ int eards_set_policy_info(new_policy_cont_t *p)
     request_t command;
     command.node_dist = 0;
     command.req=EAR_RC_SET_POLICY;
-    command.node_dist = 0;
     command.time_code = time(NULL);
-		memcpy(&command.my_req.pol_conf,p,sizeof(new_policy_cont_t));
+	memcpy(&command.my_req.pol_conf,p,sizeof(new_policy_cont_t));
     return send_command(&command);
 }
 

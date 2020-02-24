@@ -340,6 +340,7 @@ int main(int argc, char *argv[])
             {"restore-conf", 	optional_argument, 0, 6},
 	        {"ping", 	     	optional_argument, 0, 'p'},
             {"status",       	optional_argument, 0, 's'},
+            {"set-risk",        required_argument, 0, 'r'},
             {"error",           no_argument, 0, 'e'},
             {"help",         	no_argument, 0, 'h'},
             {0, 0, 0, 0}
@@ -498,6 +499,23 @@ int main(int argc, char *argv[])
                 {
                     num_status = status_all_nodes(my_cluster_conf, &status);
                     process_status(num_status, status, 0);
+                }
+                break;
+            case 'r':
+                arg = atoi(optarg);
+				if (optind+1 > argc)
+				{
+					printf("Sending risk level %d to all nodes\n", arg);
+                    set_risk_all_nodes(arg, arg2, my_cluster_conf);
+                    break;
+				}
+				int rc = eards_remote_connect(argv[optind], my_cluster_conf.eard.port);
+                if (rc < 0){
+                    printf("Error connecting with node %s\n", argv[optind]);
+                }else{
+                    printf("Sending risk level %d to %s\n", arg, argv[optind]);
+                    eards_set_risk(arg, 0);
+                    eards_remote_disconnect();
                 }
                 break;
             case 'e':
