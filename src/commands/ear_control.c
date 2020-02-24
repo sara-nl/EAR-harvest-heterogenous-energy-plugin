@@ -502,20 +502,23 @@ int main(int argc, char *argv[])
                 }
                 break;
             case 'r':
-                arg = atoi(optarg);
-				if (optind+1 > argc)
-				{
-					printf("Sending risk level %d to all nodes\n", arg);
-                    set_risk_all_nodes(arg, arg2, my_cluster_conf);
-                    break;
-				}
-				int rc = eards_remote_connect(argv[optind], my_cluster_conf.eard.port);
-                if (rc < 0){
-                    printf("Error connecting with node %s\n", argv[optind]);
-                }else{
-                    printf("Sending risk level %d to %s\n", arg, argv[optind]);
-                    eards_set_risk(arg, 0);
-                    eards_remote_disconnect();
+                if (optarg)
+                {
+                    arg = atoi(optarg);
+                    if (optind+1 > argc)
+                    {
+                        printf("Sending risk level %d to all nodes\n", arg);
+                        set_risk_all_nodes(arg, arg2, my_cluster_conf);
+                        break;
+                    }
+                    int rc = eards_remote_connect(argv[optind], my_cluster_conf.eard.port);
+                    if (rc < 0){
+                        printf("Error connecting with node %s\n", argv[optind]);
+                    }else{
+                        printf("Sending risk level %d to %s\n", arg, argv[optind]);
+                        eards_set_risk(arg, 0);
+                        eards_remote_disconnect();
+                    }
                 }
                 break;
             case 'e':
