@@ -32,7 +32,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/version.h>
-// #define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/config.h>
 
 #ifdef EAR_CPUPOWER
@@ -148,7 +148,7 @@ static ulong *get_frequencies_rank()
 	list=CPUfreq_get_available_frequencies(0,&num_freqs);
 	#endif
 
-	verbose(VMETRICS, "%lu frequencies available ", num_freqs); // 2
+	debug("%lu frequencies available ", num_freqs); // 2
 
 	//
 	pointer = (ulong *) malloc(sizeof(ulong) * num_freqs);
@@ -204,7 +204,7 @@ int frequency_init(unsigned int _num_cpus)
 
 	if (is_turbo_enabled)	freq_nom = freq_list_rank[1];
 	else freq_nom = freq_list_rank[0];
-	verbose(VMETRICS, "nominal frequency is %lu (KHz)", freq_nom);
+	debug("nominal frequency is %lu (KHz)", freq_nom);
 
 	return EAR_SUCCESS;
 }
@@ -249,7 +249,7 @@ ulong frequency_set_all_cpus(ulong freq)
 {
 	int result, i = 0;
 
-	verbose(VMETRICS, "setting all cpus to %lu KHz", freq);
+	debug("setting all cpus to %lu KHz", freq);
 	if (is_valid_frequency(freq))
 	{
 
@@ -332,6 +332,15 @@ ulong frequency_pstate_to_freq(uint pstate)
 	}
 	return freq_list_rank[pstate];
 }
+ulong frequency_pstate_to_freq_list(uint pstate,ulong *flist,uint np)
+{
+	debug("Looking for pstate %u",pstate);
+  if (pstate >= np) {
+    return flist[1];
+  }
+  return flist[pstate];
+}
+
 
 // ear_get_pstate
 uint frequency_freq_to_pstate(ulong freq)
@@ -344,10 +353,22 @@ uint frequency_freq_to_pstate(ulong freq)
 		else found = 1;
 	}
 
-	verbose(VMETRICS, "the P_STATE of the frequency %lu is %d", freq, i);
-
 	return i;
 }
+
+uint frequency_freq_to_pstate_list(ulong freq,ulong *flist,uint np)
+{
+  int i = 0, found = 0;
+	debug("Looking for %lu, nump %u",freq,np);
+  while ((i < np) && (found == 0))
+  {
+		debug("pstate %u is %lu",i,flist[i]);	
+    if (flist[i] != freq) i++;
+    else found = 1;
+  }
+  return i;
+}
+
 
 uint freq_to_ps(ulong freq,uint *ps)
 {
@@ -369,7 +390,7 @@ uint close_ps_to_freq(ulong freq,uint *ps)
   	{
   	  if (freq_list_rank[i] > freq){ i++;
   	  }else{
-				verbose(1,"selecting closest frequency to %lu=%lu",freq,freq_list_rank[i-1]);
+				debug("selecting closest frequency to %lu=%lu",freq,freq_list_rank[i-1]);
 				*ps=i-1;
 				return EAR_SUCCESS;	
 			}
@@ -455,7 +476,7 @@ void frequency_save_previous_frequency()
 	// Saving previous policy data
 	previous_cpu0_freq = freq_list_cpu[0];
 	
-	verbose(VMETRICS, "previous frequency was set to %lu (KHz)", previous_cpu0_freq);
+	debug("previous frequency was set to %lu (KHz)", previous_cpu0_freq);
 	
 	saved_previous_freq = 1;
 }
@@ -464,7 +485,7 @@ void frequency_save_previous_frequency()
 void frequency_recover_previous_frequency()
 {
 	if (!saved_previous_freq) {
-		verbose(VMETRICS, "previous frequency not saved");
+		debug("previous frequency not saved");
 		return;
 	}
 
@@ -485,12 +506,12 @@ void frequency_save_previous_policy()
 
 	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
 	strcpy(previous_cpu0_policy.governor, policy->governor);
-	verbose(VMETRICS, "previous policy governor was %s", policy->governor);
+	debug("previous policy governor was %s", policy->governor);
 	#else
 	governor_t policy;
 	CPUfreq_get_policy(0,&policy);
 	memcpy(&previous_cpu0_policy,&policy,sizeof(governor_t));
-	verbose(VMETRICS, "previous policy governor was %s", policy.name);
+	debug("previous policy governor was %s", policy.name);
 	#endif
 
 
@@ -550,7 +571,7 @@ void frequency_recover_previous_policy()
 	int status, i;
 
 	if (!saved_previous_policy) {
-		verbose(VMETRICS, "previous policy not saved");
+		debug("previous policy not saved");
 		return;
 	}
 

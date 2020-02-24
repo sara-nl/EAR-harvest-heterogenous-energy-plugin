@@ -27,55 +27,23 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
+#include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <fcntl.h>
 #include <unistd.h>
-#include <common/config.h>
-#include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/types/projection.h>
-#include <library/policies/policy_api.h>
-
-#ifdef EARL_RESEARCH
-extern unsigned long ext_def_freq;
-#define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
-#else
-#define DEF_FREQ(f) f
-#endif
+#include <common/types/configuration/policy_conf.h>
+#include <common/types/risk.h>
 
 
 
-state_t policy_init(polctx_t *c)
+state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,ulong risk_level,ulong opt_target,ulong mfreq,ulong *nfreq)
 {
-	return EAR_SUCCESS;
+  debug("monitoring , risk set to %lu: NO_ACTIONS",risk_level);
+  *nfreq=mfreq;
+  return EAR_SUCCESS;
 }
-state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
-{
-	*ready=1;
-	*new_freq=DEF_FREQ(c->app->def_freq);
-	return EAR_SUCCESS;
-}
-state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
-{
-	*ok=1;
-	return EAR_SUCCESS;
-}
-
-
-state_t policy_get_default_freq(polctx_t *c, ulong *freq_set)
-{
-	*freq_set=DEF_FREQ(c->app->def_freq);
-	return EAR_SUCCESS;
-}
-
-state_t policy_max_tries(polctx_t *c,int *intents)
-{
-	*intents=0;
-	return EAR_SUCCESS;
-}
-
 

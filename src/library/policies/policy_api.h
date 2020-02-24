@@ -45,7 +45,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id);
 state_t policy_mpi_init(polctx_t *c);
 state_t policy_mpi_end(polctx_t *c);
 state_t policy_configure(polctx_t *c);
-state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,ulong risk_level,ulong opt_target,ulong mfreq,ulong *nfreq);
+state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,ulong risk_level,ulong opt_target,ulong mfreq,ulong *nfreq,ulong *f_list,uint nump);
 
 
 

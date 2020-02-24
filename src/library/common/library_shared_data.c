@@ -90,7 +90,7 @@ void lib_shared_data_area_dispose(char * path)
 
 void print_lib_shared_data(lib_shared_data_t *sh_data)
 {
-	fprintf(stderr,"sh_data num_processes %lu signatures %d cas_counters %lf\n",sh_data->num_processes,sh_data->num_signatures,sh_data->cas_counters);
+	fprintf(stderr,"sh_data num_processes %d signatures %d cas_counters %lf\n",sh_data->num_processes,sh_data->num_signatures,sh_data->cas_counters);
 
 }
 

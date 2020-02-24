@@ -81,7 +81,7 @@ int node_found = EAR_ERROR;
 
 /* New to manage risk */
 typedef struct eard_policy_symbols {
-	state_t (*set_risk) (policy_conf_t *ref_pol,policy_conf_t *node_pol,ulong risk,ulong opt_target,ulong cfreq,ulong *nfreq);
+	state_t (*set_risk) (policy_conf_t *ref_pol,policy_conf_t *node_pol,ulong risk,ulong opt_target,ulong cfreq,ulong *nfreq,ulong *f_list,uint nump);
 } eard_polsym_t;
 
 static eard_polsym_t *polsyms_fun;
@@ -389,11 +389,12 @@ void dyncon_power_management(int fd, request_t *command)
 
 void update_current_settings(policy_conf_t *cpolicy_settings)
 {
-	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
+	verbose(1,"current policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
 	dyn_conf->def_freq=cpolicy_settings->def_freq;
 	memcpy(dyn_conf->settings,cpolicy_settings->settings,sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn_conf->def_p_state=cpolicy_settings->p_state;
 	resched_conf->force_rescheduling=1;	
+	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
 }
 
 void dyncon_set_risk(int fd, request_t *command)
@@ -403,9 +404,10 @@ void dyncon_set_risk(int fd, request_t *command)
 	c_max=frequency_pstate_to_freq(my_node_conf->max_pstate);
 	mfreq=c_max;
 	for (i=0;i<my_node_conf->num_policies;i++){
-		verbose(1,"Setting risk level for %s to %lu",my_node_conf->policies[i].name,command->my_req.risk.level);	
-		polsyms_fun[i].set_risk(&my_original_node_conf.policies[i],&my_node_conf->policies[i],command->my_req.risk.level,command->my_req.risk.target,mfreq,&new_max_freq);
-		if (new_max_freq<c_max) c_max=new_max_freq;
+		if (polsyms_fun[i].set_risk!=NULL){
+			verbose(1,"Setting risk level for %s to %lu",my_node_conf->policies[i].name,command->my_req.risk.level);	
+			polsyms_fun[i].set_risk(&my_original_node_conf.policies[i],&my_node_conf->policies[i],command->my_req.risk.level,command->my_req.risk.target,mfreq,&new_max_freq,f_list,num_f);
+		}
 		if (dyn_conf->policy==i){
 			verbose(1,"Current policy is %d", i);
 			update_current_settings(&my_node_conf->policies[i]);	
@@ -415,7 +417,7 @@ void dyncon_set_risk(int fd, request_t *command)
 			}
 		}
 	}
-	my_node_conf->max_pstate=frequency_freq_to_pstate(new_max_freq);
+	my_node_conf->max_pstate=frequency_freq_to_pstate(dyn_conf->max_freq);
 	verbose(1,"New max frequency is %lu pstate=%lu",new_max_freq,my_node_conf->max_pstate);
 }
 
@@ -530,7 +532,7 @@ void policy_load()
 		error("Allocating memory for policy functions in eard");
 	}
 	for (i=0;i<my_node_conf->num_policies;i++){
-		sprintf(basic_path,"%s/policies/%s.so",my_cluster_conf.install.dir_plug,my_node_conf->policies[i].name);
+		sprintf(basic_path,"%s/eard_policies/%s_eard.so",my_cluster_conf.install.dir_plug,my_node_conf->policies[i].name);
 		verbose(1,"Loading functions for policy %s",basic_path);
 		symplug_open(basic_path, (void **)&polsyms_fun[i], polsyms_nam, polsyms_n);
 	}

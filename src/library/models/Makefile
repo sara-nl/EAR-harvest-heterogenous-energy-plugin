@@ -13,7 +13,7 @@ modl_PERM = 0775
 all: $(modl_OBJS) $(modl_BINS)
 
 %.o: %.c %.h
-	$(CC) -I${SRCDIR} $(CC_FLAGS) $(CFLAGS) -c $<
+	$(MPICC) -I${SRCDIR} $(MPICC_FLAGS) $(CFLAGS) -c $<
 
 %.so: %.o
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@  

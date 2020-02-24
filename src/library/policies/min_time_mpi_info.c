@@ -327,22 +327,3 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 	return EAR_SUCCESS;
 }
 
-state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,ulong risk_level,ulong opt_target,ulong mfreq,ulong *nfreq)
-{
-	verbose(1,"min_time , risk set to %lu",risk_level);
-	int risk1,risk2,panic;
-	risk1=is_risk_set(risk_level,WARNING1);	
-	risk2=is_risk_set(risk_level,WARNING2);	
-	panic=is_risk_set(risk_level,PANIC);	
-	if (risk1){
-		verbose(1,"We are in risk1");
-	}
-	if (risk2){	
-		verbose(1,"We are in risk2");
-	}
-	if (panic){
-	verbose(1,"We are in panic");
-	}
-	*nfreq=mfreq;
-	return EAR_SUCCESS;
-}

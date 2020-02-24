@@ -8,7 +8,7 @@
 # Var definitions
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
-%define name    ear-lennox-mysql-intel
+%define name    ear-powercap
 %define release   3
 %define version   3.1
 

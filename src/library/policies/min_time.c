@@ -35,6 +35,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <daemon/eard_api.h>

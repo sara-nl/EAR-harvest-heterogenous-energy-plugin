@@ -13,7 +13,7 @@ all: $(OBJS)
 	$(MPICC) $(CC_FLAGS) $(CFLAGS) -c $<
 
 library_shared_data.o:library_shared_data.c 
-	$(CC) $(CFLAGS) -c $< 	
+	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -c $< 	
 
 ######## OPTIONS 
 
