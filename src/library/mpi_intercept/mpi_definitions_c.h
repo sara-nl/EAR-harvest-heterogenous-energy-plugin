@@ -27,15 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_MPI_DEFINITIONS_H
-#define LIBRARY_MPI_DEFINITIONS_H
+#ifndef LIBRARY_MPI_DEFINITIONS_C_H
+#define LIBRARY_MPI_DEFINITIONS_C_H
 
-#include <mpi.h>
-#include <library/mpi_intercept/MPI_interface.h>
+#include <library/mpi_intercept/mpi.h>
 
-#define MPI_SYMS_N 93
+#define MPI_C_SYMS_N 93
 
-typedef struct mpi_syms_s
+typedef struct mpi_c_syms_s
 {
 	int (*MPI_Allgather) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
 	int (*MPI_Allgatherv) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, MPI_Comm comm);
@@ -132,7 +131,7 @@ typedef struct mpi_syms_s
 	int (*MPI_Iscatter) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request);
 	int (*MPI_Iscatterv) (MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], MPI3_CONST int displs[], MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request);
 #endif
-} mpi_syms_t;
+} mpi_c_syms_t;
 
 #if 0
 // These definitions are not used today, but could be used someday
@@ -233,4 +232,4 @@ int MPI_Iscatterv_empty(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], M
 #endif
 #endif
 
-#endif //LIBRARY_MPI_DEFINITIONS_H
+#endif //LIBRARY_MPI_DEFINITIONS_C_H
