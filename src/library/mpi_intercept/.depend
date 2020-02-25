@@ -13,13 +13,17 @@ process_MPI.o: process_MPI.c ../../common/config.h \
  ../../common/types/configuration/policy_conf.h \
  ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/types/coefficient.h \
- ../../daemon/shared_configuration.h
+ ../../common/hardware/architecture.h \
+ ../../common/hardware/hardware_info.h ../../common/system/file.h \
+ ../../common/hardware/cpuid.h ../../daemon/shared_configuration.h
+MPI_interceptF.o: MPI_interceptF.c MPI_interfaceF.h \
+ ../../library/mpi_intercept/mpi.h
 mpi_definitions_c.o: mpi_definitions_c.c \
  ../../library/mpi_intercept/mpi_definitions_c.h \
  ../../library/mpi_intercept/mpi.h
 mpi_interception_f.o: mpi_interception_f.c ../../common/output/debug.h \
  ../../common/system/symplug.h ../../common/states.h \
- ../../common/types/generic.h \
+ ../../common/plugins.h ../../common/types/generic.h \
  ../../library/mpi_intercept/MPI_interfaceF.h \
  ../../library/mpi_intercept/mpi.h \
  ../../library/mpi_intercept/mpi_interception_f.h \
@@ -47,7 +51,9 @@ ear_api.o: ear_api.c ../../common/config.h \
  ../../common/string_enhanced.h ../../common/types/coefficient.h \
  ../../library/dynais/dynais.h ../../library/tracer/tracer.h \
  ../../library/states/states.h ../../library/states/states_periodic.h \
- ../../library/models/models.h ../../library/policies/policy.h \
+ ../../library/models/models.h ../../common/hardware/architecture.h \
+ ../../common/hardware/hardware_info.h ../../common/system/file.h \
+ ../../common/hardware/cpuid.h ../../library/policies/policy.h \
  ../../common/types/projection.h ../../library/metrics/metrics.h \
  ../../library/mpi_intercept/ear_api.h \
  ../../library/mpi_intercept/MPI_types.h \
@@ -56,7 +62,7 @@ ear_api.o: ear_api.c ../../common/config.h \
  ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
  ../../metrics/common/papi.h ../../daemon/eard_api.h \
  ../../common/types/log.h ../../common/types/event_type.h \
- ../../daemon/eard_conf_api.h ../../common/system/file.h
+ ../../daemon/eard_conf_api.h
 mpi_definitions_f.o: mpi_definitions_f.c \
  ../../library/mpi_intercept/mpi_definitions_f.h \
  ../../library/mpi_intercept/mpi.h
@@ -68,7 +74,8 @@ MPI_interfaceF.o: MPI_interfaceF.c ../../common/output/debug.h \
  ../../library/mpi_intercept/MPI_interfaceF.h
 mpi_interception_c.o: mpi_interception_c.c ../../common/output/debug.h \
  ../../common/system/symplug.h ../../common/states.h \
- ../../common/types/generic.h ../../library/mpi_intercept/MPI_interface.h \
+ ../../common/plugins.h ../../common/types/generic.h \
+ ../../library/mpi_intercept/MPI_interface.h \
  ../../library/mpi_intercept/mpi.h \
  ../../library/mpi_intercept/mpi_interception_c.h \
  ../../library/mpi_intercept/mpi_definitions_c.h
