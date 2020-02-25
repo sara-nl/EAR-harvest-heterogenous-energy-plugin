@@ -384,7 +384,7 @@ void dyncon_power_management(int fd, request_t *command)
 			verbose(1,"power command received not supported");
 	}
 	verbose(1,"New power limit %lu",limit);
-	set_power_limit(&my_eh_rapi,limit);
+	energy_set_power_limit(&my_eh_rapi,limit,command->my_req.pc.type);
 }
 
 void update_current_settings(policy_conf_t *cpolicy_settings)

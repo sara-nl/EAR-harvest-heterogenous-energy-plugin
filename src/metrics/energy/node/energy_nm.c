@@ -279,6 +279,13 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
 	return EAR_SUCCESS;
 }
 
+state_t nm_power_limit(struct ipmi_intf *intf, unsigned long limit,uint8_t target)
+{
+	return EAR_SUCCESS;
+
+}
+
+
 /*
  * MAIN FUNCTIONS
  */
@@ -359,6 +366,15 @@ state_t energy_dc_read(void *c, edata_t energy_mj) {
 	*penergy_mj=(unsigned long)be64toh(*energyp);
 	return EAR_SUCCESS;
 }
+
+state_t energy_power_limit(void *c, unsigned long limit,unsigned long target) {
+  state_t st;
+
+  debug("energy_power_limit limit=%luW target=%lu\n",limit,target);
+  st=nm_power_limit((struct ipmi_intf *)c,limit,(uint8_t)target);
+  return st;
+}
+
 
 state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms) {
 	struct ipmi_data out;
