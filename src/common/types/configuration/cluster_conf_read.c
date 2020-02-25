@@ -365,7 +365,7 @@ void parse_island(cluster_conf_t *conf, char *line)
             current_ranges = conf->islands[id_f].num_ranges;
             generate_node_ranges(&conf->islands[id_f], token);
         }
-        /*else if (!strcmp(token, "ISLAND_TAGS"))
+        else if (!strcmp(token, "ISLAND_TAGS"))
         {
             tag_parsing = 1;
             int i, found = 0;
@@ -447,7 +447,7 @@ void parse_island(cluster_conf_t *conf, char *line)
             }
             token = next_token;
             free(current_tags);
-        }*/
+        }
         
         //this is a hack, and the entire function should be rewritten using strtok_r
         if (tag_parsing) token = strtok(token, "=");
@@ -460,10 +460,29 @@ void parse_island(cluster_conf_t *conf, char *line)
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].db_ip = 0;
     }
+    else
+    {
+        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+            conf->islands[id_f].ranges[i].db_ip = -1;
+    }
     if (!contains_sec_ip && conf->islands[id_f].num_backups > 0)
     {
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].sec_ip = 0;
+    }
+    else
+    {
+        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
+            conf->islands[id_f].ranges[i].sec_ip = -1;
+    }
+    if (conf->islands[id_f].num_ips)
+    {
+        for (i = 0; i < current_ranges; i++)
+        {
+            if (conf->islands[id_f].ranges[i].db_ip < 0) conf->islands[id_f].ranges[i].db_ip = 0;
+
+            if (conf->islands[id_f].ranges[i].sec_ip < 0) conf->islands[id_f].ranges[i].sec_ip = 0;
+        }
     }
     if (idx < 0)
         conf->num_islands++;
@@ -476,7 +495,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 	char *token;
 
 	//filling the default policies before starting
-  conf->num_policies=0;
+    conf->num_policies=0;
 	conf->num_tags=0;
     conf->power_policies = calloc(TOTAL_POLICIES, sizeof(policy_conf_t));
 	fill_policies(conf);
@@ -1245,12 +1264,13 @@ void free_cluster_conf(cluster_conf_t *conf)
             free(conf->islands[i].db_ips[j]);
         for (j = 0; j < conf->islands[i].num_backups; j++)
             free(conf->islands[i].backup_ips[j]);
-        /*
+        
         for (j = 0; j < conf->islands[i].num_tags; j++)
             free(conf->islands[i].tags[j]);
         free(conf->islands[i].tags);
         for (j = 0; j < conf->islands[i].num_specific_tags; j++)
             free(conf->islands[i].specific_tags[j]);
+
         free(conf->islands[i].specific_tags);
 
         for (j = 0; j < conf->islands[i].num_ranges; j++)
@@ -1260,7 +1280,7 @@ void free_cluster_conf(cluster_conf_t *conf)
                 free(conf->islands[i].ranges[j].specific_tags);
                 conf->islands[i].ranges[j].specific_tags = NULL;
             }
-        } */
+        } 
 		free(conf->islands[i].ranges);
         free(conf->islands[i].db_ips);
         free(conf->islands[i].backup_ips);
