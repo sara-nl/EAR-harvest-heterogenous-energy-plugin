@@ -271,7 +271,7 @@ int job(int argc, char *argv[])
 	print_argv(_argc, _argv);
 	
 	// Going inactive?
-	_inactive = isenv_agnostic(_sp, Var.ctx_srun.rem, "1");
+	_inactive = isenv_agnostic(_sp, Var.was_srun.rem, "1");
 
 	if (_inactive) {
 		_error = 2;

@@ -256,12 +256,15 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.group.rem);
 	printenv_agnostic(sp, Var.path_temp.rem);
 	printenv_agnostic(sp, Var.path_inst.rem);
-	printenv_agnostic(sp, Var.ctx_sbac.rem);
-	printenv_agnostic(sp, Var.ctx_srun.rem);
+	printenv_agnostic(sp, Var.was_sbac.rem);
+	printenv_agnostic(sp, Var.was_srun.rem);
 	printenv_agnostic(sp, Var.node_num.loc);
 	printenv_agnostic(sp, Var.name_app.rem);
 	printenv_agnostic(sp, Var.account.rem);
-	printenv_agnostic(sp, Var.node_list.rem);
+	printenv_agnostic(sp, Var.job_nodl.rem);
+	printenv_agnostic(sp, Var.job_nodn.rem);
+	printenv_agnostic(sp, Var.step_nodl.rem);
+	printenv_agnostic(sp, Var.step_nodn.rem);
 	printenv_agnostic(sp, Var.version.loc);
 	printenv_agnostic(sp, Var.gm_secure.loc);
 
@@ -297,16 +300,16 @@ int plug_clean_components(spank_t sp)
 	 * Components
 	 */
 	if (valenv_agnostic(sp, Var.comp_test.cmp, &test)) {
-			plug_component_setenabled(sp, Component.test, test);
+		plug_component_setenabled(sp, Component.test, test);
 	}
 	if (test || !isenv_agnostic(sp, Var.comp_plug.cmp, "0")) {
-			plug_component_setenabled(sp, Component.plugin, 1);
+		plug_component_setenabled(sp, Component.plugin, 1);
 	}
 	if (test || isenv_agnostic(sp, Var.comp_libr.cmp, "1")) {
-			plug_component_setenabled(sp, Component.library, 1);
+		plug_component_setenabled(sp, Component.library, 1);
 	}
 	if (isenv_agnostic(sp, Var.comp_moni.cmp, "1")) {
-			plug_component_setenabled(sp, Component.monitor, 1);
+		plug_component_setenabled(sp, Component.monitor, 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -395,21 +398,18 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	 */
 
 	if (plug_context_is(sp, Context.srun)) {
-		setenv_agnostic(sp, Var.ctx_srun.rem, "1", 1);
-	}
+		setenv_agnostic(sp, Var.ctx_last.rem, Constring.srun, 1);
+		setenv_agnostic(sp, Var.was_srun.rem, "1", 1);
+	} else
 	if (plug_context_is(sp, Context.sbatch)) {
-		setenv_agnostic(sp, Var.ctx_sbac.rem, "1", 1);
+		setenv_agnostic(sp, Var.ctx_last.rem, Constring.sbatch, 1);
+		setenv_agnostic(sp, Var.was_sbac.rem, "1", 1);
 	}
-
-//fprintf(stderr, "TEMP OIGAN %s\n", sd->pack.path_temp);
-//printenv_agnostic(sp, Var.path_temp.rem);
-//setenv_agnostic(sp, "EAR_CACA", "CACA", 1);
 
 	return ESPANK_SUCCESS;
 }
 
-int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
-{
+int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd) {
 	plug_verbose(sp, 2, "function plug_deserialize_remote");
 
 	// Silence
@@ -419,19 +419,19 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Options
 	 */
-	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
-	repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
+	repenv_agnostic(sp, Var.verbose.loc, Var.verbose.ear);
+	repenv_agnostic(sp, Var.policy.loc, Var.policy.ear);
 	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
 	repenv_agnostic(sp, Var.frequency.loc, Var.frequency.ear);
-	repenv_agnostic(sp, Var.learning.loc,  Var.learning.ear);
-	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
+	repenv_agnostic(sp, Var.learning.loc, Var.learning.ear);
+	repenv_agnostic(sp, Var.tag.loc, Var.tag.ear);
 	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
 	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
 
 	/*
 	 * User
 	 */
-	getenv_agnostic(sp, Var.user.rem,  sd->job.user.user,  SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, Var.user.rem, sd->job.user.user, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.group.rem, sd->job.user.group, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.account.rem, sd->job.user.account, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, SZ_PATH);
@@ -442,11 +442,29 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
   	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
-	if (isenv_agnostic(sp, Var.ctx_srun.rem, "1")) {
+	if (isenv_agnostic(sp, Var.ctx_last.rem, Constring.srun)) {
 		sd->subject.context_local = Context.srun;
-	} else if (isenv_agnostic(sp, Var.ctx_sbac.rem, "1")) {
+	} else if (isenv_agnostic(sp, Var.ctx_last.rem, Constring.sbatch)) {
 		sd->subject.context_local = Context.sbatch;
+	} else {
+		sd->subject.context_local = Context.error;
 	}
+
+	// Is master?
+	if (plug_context_was(sd, Context.sbatch)) {
+		sd->subject.is_master = 1;
+	} else if (plug_context_was(sd, Context.srun))
+	{
+		if (getenv_agnostic(sp, Var.step_nodl, buffer1, SZ_BUFF_EXTRA))
+		{
+			hostlist_t node_lists = slurm_hostlist_create(buffer1);
+			char *node_first      = slurm_hostlist_shift(node_list);
+			sd->subject.is_master = strstr(sd->subject.host, node_first);
+		}
+	}
+
+	plug_verbose(sp, 2, "this node '%s'", sd->subject.host);
+	plug_verbose(sp, 2, "is master '%d'");
 
 	/*
 	 * The .ear variables are set during the APP serialization. But APP

@@ -110,6 +110,7 @@ typedef struct plug_subject
 	char host[SZ_NAME_MEDIUM];
 	int context_local;
 	int exit_status;
+	int is_master;
 } plug_subject_t;
 
 typedef struct plug_serialization
