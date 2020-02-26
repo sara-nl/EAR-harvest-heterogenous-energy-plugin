@@ -88,9 +88,9 @@ struct context_s {
 };
 
 struct constring_s {
+	char *error;
 	char *srun;
 	char *sbatch;
-	char *other;
 } Constring __attribute__((weak)) = {
 	.error  = "error",
 	.srun   = "srun",
@@ -121,6 +121,9 @@ struct variables_s {
 	varnames_t tag;
 	varnames_t path_usdb;
 	varnames_t path_trac;
+	varnames_t gm_host;
+	varnames_t gm_port;
+	varnames_t gm_secure;
 	varnames_t perf_pen;
 	varnames_t eff_gain;
 	varnames_t name_app;
@@ -140,7 +143,6 @@ struct variables_s {
 	varnames_t ld_libr;
 	varnames_t node_num;
 	varnames_t version;
-	varnames_t gm_secure;
 }
 	Var __attribute__((weak)) =
 {
@@ -159,6 +161,8 @@ struct variables_s {
 .tag       = { .loc = "SLURM_LOC_ETAG", .ear = "EAR_ENERGY_TAG"       },
 .path_usdb = { .loc = "SLURM_LOC_USDB", .ear = "EAR_USER_DB_PATHNAME" },
 .path_trac = { .loc = "SLURM_LOC_TRAC", .ear = "SLURM_EAR_TRACE_PATH" },
+.gm_host   = { .loc = "SLURM_LOC_GMHS", .ear = ""                     },
+.gm_port   = { .loc = "SLURM_LOC_GMPR", .ear = ""                     },
 .gm_secure = { .loc = "SLURM_LOC_GMSC", .ear = ""                     },
 .perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                       },
 .eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"           },
@@ -215,7 +219,7 @@ char *plug_context_str(spank_t sp);
 
 int plug_context_is(spank_t sp, plug_context_t ctxt);
 
-int plug_context_was(plug_serialization *sd, plug_context_t ctxt);
+int plug_context_was(plug_serialization_t *sd, plug_context_t ctxt);
 
 int plug_verbosity_test(spank_t sp, int level);
 

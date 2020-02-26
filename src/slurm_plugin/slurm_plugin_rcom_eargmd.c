@@ -45,7 +45,8 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	sd->pack.eargmd.secured = atoi(buffer);
 
 	if (!sd->pack.eargmd.enabled || sd->pack.eargmd.secured) {
-		plug_verbose(sp, 3, "connection with EARGMD not enabled or secured");
+		plug_verbose(sp, 2, "connection with EARGMD not enabled or secured (%d,%d)",
+			sd->pack.eargmd.enabled, sd->pack.eargmd.secured);
 		return ESPANK_SUCCESS;
 	}
 

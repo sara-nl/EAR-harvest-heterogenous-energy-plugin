@@ -156,7 +156,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 	plug_deserialize_remote(sp, &sd);
 
-	if (!plug_context_was(&sd, Context.error)) {
+	if (plug_context_was(&sd, Context.error)) {
 		plug_component_setenabled(sp, Component.plugin, 0);
 	}
 
@@ -164,7 +164,7 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	if (sd->subject.is_master) {
+	if (sd.subject.is_master) {
 		plug_rcom_eargmd_job_start(sp, &sd);
 	}
 
@@ -233,7 +233,7 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 
 	plug_rcom_eard_job_finish(sp, &sd);
 
-	if (sd->subject.is_master) {
+	if (sd.subject.is_master) {
 		plug_rcom_eargmd_job_finish(sp, &sd);
 	}
 

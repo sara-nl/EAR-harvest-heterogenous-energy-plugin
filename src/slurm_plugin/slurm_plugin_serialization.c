@@ -99,11 +99,15 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 		{
 			strncpy(sd->pack.eargmd.host, &av[i][12], SZ_NAME_MEDIUM);
 			found_eargmd_host = 1;
+			
+			plug_verbose(sp, 2, "plugstack found eargm host '%s'", sd->pack.eargmd.host);
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
 		{
 			sd->pack.eargmd.port = atoi(&av[i][12]);
 			found_earmgd_port = 1;
+			
+			plug_verbose(sp, 2, "plugstack found eargm port '%d'", sd->pack.eargmd.port);
 		}
 	}
 
@@ -406,6 +410,10 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 		setenv_agnostic(sp, Var.was_sbac.rem, "1", 1);
 	}
 
+	/*
+	 * EARGMD
+	 */
+
 	return ESPANK_SUCCESS;
 }
 
@@ -455,16 +463,24 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd) {
 		sd->subject.is_master = 1;
 	} else if (plug_context_was(sd, Context.srun))
 	{
-		if (getenv_agnostic(sp, Var.step_nodl, buffer1, SZ_BUFF_EXTRA))
+		if (getenv_agnostic(sp, Var.step_nodl.rem, buffer1, SZ_BUFF_EXTRA))
 		{
-			hostlist_t node_lists = slurm_hostlist_create(buffer1);
+			hostlist_t node_list  = slurm_hostlist_create(buffer1);
 			char *node_first      = slurm_hostlist_shift(node_list);
-			sd->subject.is_master = strstr(sd->subject.host, node_first);
+
+			if (node_first != NULL)
+			{
+				size_t len1 = strlen(sd->subject.host);
+				size_t len2 = strlen(node_first);
+				len1 = (len2 > len1) ? len1: len2; 
+				sd->subject.is_master = (strncmp(sd->subject.host, node_first, len1) == 0);
+			}
+			plug_verbose(sp, 2, "subject first node '%s'", node_first);
 		}
 	}
 
-	plug_verbose(sp, 2, "this node '%s'", sd->subject.host);
-	plug_verbose(sp, 2, "is master '%d'");
+	plug_verbose(sp, 2, "subject is '%s'", sd->subject.host);
+	plug_verbose(sp, 2, "subject is master? '%d'", sd->subject.is_master);
 
 	/*
 	 * The .ear variables are set during the APP serialization. But APP
