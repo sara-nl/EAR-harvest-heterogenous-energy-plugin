@@ -200,6 +200,7 @@ int setenv_agnostic(spank_t sp, char *var, const char *val, int ow)
 
 int getenv_agnostic(spank_t sp, char *var, char *buf, int len)
 {
+	buf[0] = '\0';
 	if (plug_context_is(sp, Context.local)) {
 		return getenv_local(var, buf, len);
 	} else {

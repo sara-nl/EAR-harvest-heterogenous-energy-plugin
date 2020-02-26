@@ -55,6 +55,9 @@
         	}
 #endif
 
+#define fail(function) \
+	((s = function) != ESPANK_SUCCESS)
+
 
 typedef char *plug_component_t;
 typedef int   plug_context_t;
@@ -220,6 +223,8 @@ char *plug_context_str(spank_t sp);
 int plug_context_is(spank_t sp, plug_context_t ctxt);
 
 int plug_context_was(plug_serialization_t *sd, plug_context_t ctxt);
+
+int plug_masternode_is(plug_serialization_t *sd);
 
 int plug_verbosity_test(spank_t sp, int level);
 

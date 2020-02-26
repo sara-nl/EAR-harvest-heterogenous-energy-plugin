@@ -372,19 +372,6 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	return ESPANK_SUCCESS;
 }
 
-int plug_deserialize_local_alloc(spank_t sp, plug_serialization_t *sd)
-{
-	plug_verbose(sp, 2, "function plug_deserialize_local_alloc");
-	
-	/*
-	 * Job
-	 */
-	getenv_agnostic(sp, Var.node_num.loc, buffer1, SZ_PATH);
-	sd->job.n_nodes = atoi(buffer1);
-	
-	return ESPANK_SUCCESS;
-}
-
 int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_serialize_remote");
@@ -413,12 +400,19 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * EARGMD
 	 */
+	if (sd->pack.eargmd.enabled) {
+		sprintf(buffer1, "%d", sd->pack.eargmd.port);
+		setenv_agnostic(sp, Var.gm_port.loc, buffer1             , 1);
+		setenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, 1);
+	}
 
 	return ESPANK_SUCCESS;
 }
 
-int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd) {
+int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
+{
 	plug_verbose(sp, 2, "function plug_deserialize_remote");
+	int s1, s2;
 
 	// Silence
 	VERB_SET_EN(0);
@@ -446,8 +440,8 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd) {
 	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
 
 	/*
-  	 * Subject
-  	 */
+   * Subject
+   */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
 	if (isenv_agnostic(sp, Var.ctx_last.rem, Constring.srun)) {
@@ -458,29 +452,58 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd) {
 		sd->subject.context_local = Context.error;
 	}
 
-	// Is master?
-	if (plug_context_was(sd, Context.sbatch)) {
-		sd->subject.is_master = 1;
-	} else if (plug_context_was(sd, Context.srun))
-	{
-		if (getenv_agnostic(sp, Var.step_nodl.rem, buffer1, SZ_BUFF_EXTRA))
-		{
-			hostlist_t node_list  = slurm_hostlist_create(buffer1);
-			char *node_first      = slurm_hostlist_shift(node_list);
+	/*
+	 * Job/step
+	 */
+	s1 = 0;
+	s2 = 0;
 
-			if (node_first != NULL)
-			{
-				size_t len1 = strlen(sd->subject.host);
-				size_t len2 = strlen(node_first);
-				len1 = (len2 > len1) ? len1: len2; 
-				sd->subject.is_master = (strncmp(sd->subject.host, node_first, len1) == 0);
+	if (plug_context_was(sd, Context.sbatch)) {
+		s1 = getenv_agnostic(sp, Var.job_nodl.rem , buffer1, SZ_NAME_BIG);
+		s2 = getenv_agnostic(sp, Var.job_nodn.rem , buffer2, SZ_NAME_BIG);
+	} else if (plug_context_was(sd, Context.srun)) {
+		s1 = getenv_agnostic(sp, Var.step_nodl.rem, buffer1, SZ_NAME_BIG);
+		s2 = getenv_agnostic(sp, Var.step_nodn.rem, buffer2, SZ_NAME_BIG);
+	}
+
+	if (s1 && s2) {
+		sd->job.node_n = atoi(buffer2);
+	}
+
+	/*
+	 * Master
+	 */
+	hostlist *p1;
+	char *p2;
+
+	if (s1 && s2)
+	{
+		p1 = slurm_hostlist_create(buffer1);
+		p2 = slurm_hostlist_shift(p1);
+
+		if (p2 != NULL)
+		{
+			s1 = strlen(sd->subject.host);
+			s2 = strlen(p2);
+
+			if (s1 < s2) {
+				s2 = s1;
 			}
-			plug_verbose(sp, 2, "subject first node '%s'", node_first);
+
+			sd->subject.is_master = (strncmp(sd->subject.host, p2, s2) == 0);
 		}
 	}
 
-	plug_verbose(sp, 2, "subject is '%s'", sd->subject.host);
-	plug_verbose(sp, 2, "subject is master? '%d'", sd->subject.is_master);
+	/*
+	 * EARMGD
+	 */
+	s1 = getenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, SZ_NAME_MEDIUM);
+	s2 = getenv_agnostic(sp, Var.gm_port.loc, buffer1             , SZ_NAME_MEDIUM);
+
+	if (s1 && s2) {
+		sd->pack.eargmd.port = atoi(buffer1);
+		sd->pack.eargmd.enabled = 1;
+	}
 
 	/*
 	 * The .ear variables are set during the APP serialization. But APP

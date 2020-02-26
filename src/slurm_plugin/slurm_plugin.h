@@ -67,7 +67,7 @@ typedef struct plug_job
 {
 	application_t app;
 	plug_user_t user;
-	uint n_nodes;
+	uint node_n;
 } plug_job_t;
 
 /*
