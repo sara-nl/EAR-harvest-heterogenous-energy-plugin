@@ -49,26 +49,22 @@ static void mpi_f_symbol_load()
 
 void mpi_allgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {
-	fprintf(stderr, ">> F MPI_Allgather...............");
 	debug(">> F MPI_Allgather...............");
 	EAR_MPI_Allgather_F_enter(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, ierror);
 	mpi_f_syms.mpi_allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, ierror);
 	EAR_MPI_Allgather_F_leave();
 	debug("<< F MPI_Allgather...............");
-	fprintf(stderr, "<< F MPI_Allgather...............");
 }
 void mpi_allgather_ (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror) __attribute__((alias("mpi_allgather")));
 void mpi_allgather__ (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror) __attribute__((alias("mpi_allgather")));
 
 void mpi_allgatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {
-	fprintf(stderr, ">> F MPI_Allgatherv...............");
 	debug(">> F MPI_Allgatherv...............");
 	EAR_MPI_Allgatherv_F_enter(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm, ierror);
 	mpi_f_syms.mpi_allgatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, comm, ierror);
 	EAR_MPI_Allgatherv_F_leave();
 	debug("<< F MPI_Allgatherv...............");
-	fprintf(stderr, "<< F MPI_Allgatherv...............");
 }
 void mpi_allgatherv_ (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror) __attribute__((alias("mpi_allgatherv")));
 void mpi_allgatherv__ (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror) __attribute__((alias("mpi_allgatherv")));
