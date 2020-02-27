@@ -146,13 +146,12 @@ static int frequency_exists(spank_t sp, ulong *freqs, int n_freqs, ulong freq)
 
 int plug_print_application(spank_t sp, application_t *app)
 {
-	plug_verbose(sp, 3, "application summary:");
-	plug_verbose(sp, 3, "------------------------------");
+	plug_verbose(sp, 3, "---------- application summary ---");
 	plug_verbose(sp, 3, "job/step/name '%lu'/'%lu'/'%s'", app->job.id, app->job.step_id, app->job.app_id);
 	plug_verbose(sp, 3, "user/group/acc '%s'/'%s'/'%s'", app->job.user_id, app->job.group_id, app->job.user_acc);
 	plug_verbose(sp, 3, "policy/th/freq '%s'/'%f'/'%lu'", app->job.policy, app->job.th, app->job.def_f);
 	plug_verbose(sp, 3, "learning/tag '%u'/'%s'", app->is_learning, app->job.energy_tag);
-	plug_verbose(sp, 3, "------------------------------");
+	plug_verbose(sp, 3, "----------------------------------");
 	return EAR_SUCCESS;
 }
 
@@ -260,6 +259,7 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.group.rem);
 	printenv_agnostic(sp, Var.path_temp.rem);
 	printenv_agnostic(sp, Var.path_inst.rem);
+	printenv_agnostic(sp, Var.ctx_last.rem);
 	printenv_agnostic(sp, Var.was_sbac.rem);
 	printenv_agnostic(sp, Var.was_srun.rem);
 	printenv_agnostic(sp, Var.node_num.loc);
@@ -270,6 +270,8 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.step_nodl.rem);
 	printenv_agnostic(sp, Var.step_nodn.rem);
 	printenv_agnostic(sp, Var.version.loc);
+	printenv_agnostic(sp, Var.gm_host.loc);
+	printenv_agnostic(sp, Var.gm_port.loc);
 	printenv_agnostic(sp, Var.gm_secure.loc);
 
 	printenv_agnostic(sp, Var.verbose.ear);
@@ -417,7 +419,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	// Silence
 	VERB_SET_EN(0);
 	ERROR_SET_EN(0);
-
+	
 	/*
 	 * Options
 	 */
@@ -440,8 +442,8 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
 
 	/*
-   * Subject
-   */
+	 * Subject
+	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
 	if (isenv_agnostic(sp, Var.ctx_last.rem, Constring.srun)) {
@@ -459,11 +461,11 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	s2 = 0;
 
 	if (plug_context_was(sd, Context.sbatch)) {
-		s1 = getenv_agnostic(sp, Var.job_nodl.rem , buffer1, SZ_NAME_BIG);
-		s2 = getenv_agnostic(sp, Var.job_nodn.rem , buffer2, SZ_NAME_BIG);
+		s1 = getenv_agnostic(sp, Var.job_nodl.rem , buffer1, SZ_BUFF_EXTRA);
+		s2 = getenv_agnostic(sp, Var.job_nodn.rem , buffer2, SZ_BUFF_EXTRA);
 	} else if (plug_context_was(sd, Context.srun)) {
-		s1 = getenv_agnostic(sp, Var.step_nodl.rem, buffer1, SZ_NAME_BIG);
-		s2 = getenv_agnostic(sp, Var.step_nodn.rem, buffer2, SZ_NAME_BIG);
+		s1 = getenv_agnostic(sp, Var.step_nodl.rem, buffer1, SZ_BUFF_EXTRA);
+		s2 = getenv_agnostic(sp, Var.step_nodn.rem, buffer2, SZ_BUFF_EXTRA);
 	}
 
 	if (s1 && s2) {
@@ -473,8 +475,13 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * Master
 	 */
-	hostlist *p1;
+	hostlist_t p1;
 	char *p2;
+
+	if (plug_context_was(sd, Context.sbatch)) {
+		sd->subject.is_master = 1;
+		s1 = s2 = 0;
+	}
 
 	if (s1 && s2)
 	{
@@ -491,8 +498,12 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 			}
 
 			sd->subject.is_master = (strncmp(sd->subject.host, p2, s2) == 0);
+			plug_verbose(sp, 2, "first node from list of nodes '%s'", p2);
 		}
 	}
+
+	plug_verbose(sp, 2, "subject '%s' is master? '%d'",
+		sd->subject.host, sd->subject.is_master);
 
 	/*
 	 * EARMGD
@@ -576,6 +587,9 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	char ext1[64];
 	char ext2[64];
 
+	buffer1[0] = '\0';
+	buffer2[0] = '\0';
+	
 	if(getenv_agnostic(sp, Var.version.loc, ext1, 64)) {
 		snprintf(ext2, 64, "%s.so", ext1);
 	} else {

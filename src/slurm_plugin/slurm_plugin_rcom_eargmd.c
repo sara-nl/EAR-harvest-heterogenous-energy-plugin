@@ -37,7 +37,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_start");
 
 	// Pack deserialization
-	if (!getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH)) {
+	if (getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH)) {
 		sd->pack.eargmd.secured = atoi(buffer);
 	}
 	//
@@ -52,7 +52,7 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 		return ESPANK_ERROR;
 	}
 	// Verbosity
-	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
+	plug_verbose(sp, 2, "connecting EARGMD with host '%s', port '%u', and nnodes '%u'",
 		sd->pack.eargmd.host, sd->pack.eargmd.port, sd->job.node_n);
 	// Connection
 	if (eargm_connect(sd->pack.eargmd.host, sd->pack.eargmd.port) < 0) {

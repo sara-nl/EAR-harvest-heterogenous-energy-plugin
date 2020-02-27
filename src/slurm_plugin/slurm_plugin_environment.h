@@ -56,7 +56,7 @@
 #endif
 
 #define fail(function) \
-	((s = function) != ESPANK_SUCCESS)
+	(function != ESPANK_SUCCESS)
 
 
 typedef char *plug_component_t;

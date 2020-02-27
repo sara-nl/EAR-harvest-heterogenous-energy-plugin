@@ -100,14 +100,6 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	return ESPANK_SUCCESS;
 }
 
-
-int slurm_spank_user_init_fini(spank_t sp)
-{
-	plug_verbose(sp, 2, "function slurm_spank_user_init_fini");
-        
-
-}
-
 // Helper function
 int slurm_spank_user_init_eard(spank_t sp)
 {
