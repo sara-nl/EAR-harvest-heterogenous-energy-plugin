@@ -1,7 +1,7 @@
 #ifndef _LOADER_C_VOIDS_H_
 #define _LOADER_C_VOIDS_H_
 
-#include <library/mpi_intercept/loader/mpic_defs.h>
+#include <library/mpi_intercept/mpi.h>
 
 void mpic_void_Allgather_in(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
 void mpic_void_Allgather_out(void);

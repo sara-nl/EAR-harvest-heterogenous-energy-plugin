@@ -1,7 +1,7 @@
 #ifndef _LOADER_C_EARS_H_
 #define _LOADER_C_EARS_H_
 
-#include <library/mpi_intercept/loader/mpic_defs.h>
+#include <library/mpi_intercept/mpi.h>
 
 typedef struct mpic_ear_s
 {

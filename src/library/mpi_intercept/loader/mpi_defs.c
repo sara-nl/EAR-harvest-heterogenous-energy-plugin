@@ -1,3 +1,5 @@
+#include <library/mpi_intercept/loader/mpi_defs.h>
+
 mpic_mpi_t mpic_mpi;
 mpif_mpi_t mpif_mpi;
 

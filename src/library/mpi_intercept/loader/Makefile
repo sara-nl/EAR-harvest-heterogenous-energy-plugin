@@ -1,5 +1,6 @@
 SRCDIR = ../../..
-MPICC  =
+MPICC  = /hpc/base/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/bin/mpiicc
+MPICC_FLAGS = -I$(SRCDIR) -static-intel -Werror-all
 
 ######## FILES
 
