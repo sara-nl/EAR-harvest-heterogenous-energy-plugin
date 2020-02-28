@@ -190,7 +190,6 @@ void mpif_void_Iscatter_in(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fi
 void mpif_void_Iscatter_out(void);
 void mpif_void_Iscatterv_in(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 void mpif_void_Iscatterv_out(void);
-}
 #endif
 
-#enif //_LOADER_F_VOIDS_H_
+#endif //_LOADER_F_VOIDS_H_

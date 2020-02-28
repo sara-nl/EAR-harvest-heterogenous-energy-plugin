@@ -2,6 +2,8 @@
 #define _LOADER_DEFS_H_
 
 #include <library/mpi_intercept/mpi.h>
+#include <library/mpi_intercept/loader/mpic_syms.h>
+#include <library/mpi_intercept/loader/mpif_syms.h>
 #include <library/mpi_intercept/loader/mpic_syms_ear.h>
 #include <library/mpi_intercept/loader/mpif_syms_ear.h>
 #include <library/mpi_intercept/loader/mpic_syms_void.h>
