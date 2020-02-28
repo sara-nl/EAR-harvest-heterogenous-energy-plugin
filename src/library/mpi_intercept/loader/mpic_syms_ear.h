@@ -1,3 +1,8 @@
+#ifndef _LOADER_C_EARS_H_
+#define _LOADER_C_EARS_H_
+
+#include <library/mpi_intercept/loader/mpic_defs.h>
+
 typedef struct mpic_ear_s
 {
 	void (*mpic_ear_Allgather_in) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
@@ -189,3 +194,5 @@ typedef struct mpic_ear_s
 	void (*mpic_ear_Iscatterv_out) (void);
 	#endif
 } mpic_ear_t;
+
+#endif //_LOADER_C_VOIDS_H_

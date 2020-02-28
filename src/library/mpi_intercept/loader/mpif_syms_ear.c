@@ -1,3 +1,5 @@
+#include <library/mpi_intercept/loader/mpif_syms_ear.h>
+
 void mpif_ear_Allgather_in(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror) {
 	before_mpi(Allgather, (p2i)sendbuf, (p2i)recvbuf);
 }

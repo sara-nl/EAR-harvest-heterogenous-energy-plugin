@@ -1,4 +1,4 @@
-#include <library/mpi_intercept/loader/mpic_defs.h>
+#include <library/mpi_intercept/loader/mpic_syms.h>
 
 int MPI_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {

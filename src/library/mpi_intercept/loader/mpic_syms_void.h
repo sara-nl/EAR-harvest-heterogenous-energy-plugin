@@ -1,6 +1,8 @@
 #ifndef _LOADER_C_VOIDS_H_
 #define _LOADER_C_VOIDS_H_
 
+#include <library/mpi_intercept/loader/mpic_defs.h>
+
 void mpic_void_Allgather_in(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
 void mpic_void_Allgather_out(void);
 void mpic_void_Allgatherv_in(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, MPI_Comm comm);
@@ -190,4 +192,4 @@ void mpic_void_Iscatterv_in(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[
 void mpic_void_Iscatterv_out(void);
 #endif
 
-#enif //_LOADER_C_VOIDS_H_
+#endif //_LOADER_C_VOIDS_H_

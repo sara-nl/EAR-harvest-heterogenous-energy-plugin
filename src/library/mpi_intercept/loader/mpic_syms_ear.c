@@ -1,3 +1,5 @@
+#include <library/mpi_intercept/mpic_syms_ear.h>
+
 void mpic_ear_Allgather_in(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm) {
 	before_mpi(Allgather, (p2i)sendbuf,(p2i)recvbuf);
 }
