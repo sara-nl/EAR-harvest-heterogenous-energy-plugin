@@ -101,5 +101,3 @@ typedef struct mpif_mpi_s
 	void (*mpi_iscatterv) (MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 	#endif
 } mpif_mpi_t;
-
-#endif //_LOADER_F_SYMS_H_
