@@ -281,6 +281,58 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
 
 state_t nm_power_limit(struct ipmi_intf *intf, unsigned long limit,uint8_t target)
 {
+#if 0
+	/* sudo ipmitool -b 0 -t 0x2c raw 0x2E 0xD0 0x57 0x01 0x00 TARGET LIMIT_LSB LIMIT_HSB */
+	/* -b channel     Set destination channel for bridged request
+ *   -t address     Bridge request to remote target address*/
+	uint16_t limit2b;
+	uint8_t *limitb;
+	struct ipmi_rs *rsp;
+  struct ipmi_rq req;
+  uint8_t msg_data[8];
+  int i;
+  int s;
+	limit2b=(uint16_t)limit;
+	limitb=(uint8_t*)limit2b;
+
+  if (pthread_mutex_trylock(&ompi_lock)) {
+    return EAR_BUSY;
+  }
+	memset(&req, 0, sizeof(req));
+  req.msg.netfn = NM_NETFN;
+  req.msg.cmd = NM_CMD_ENERGY;
+  msg_data[0]=(uint8_t)0x66;
+  msg_data[1]=(uint8_t)0x4A;
+  msg_data[2]=(uint8_t)0x00;
+  msg_data[3]=cmd_arg;
+  msg_data[4]=(uint8_t)0x01;
+  msg_data[5]=(uint8_t)0x82;
+  msg_data[6]=(uint8_t)0x00;
+  msg_data[7]=(uint8_t)0x08;
+  intf->addr=0x0;
+  req.msg.data = msg_data;
+  req.msg.data_len = sizeof(msg_data);
+
+  rsp = send_power_cmd(intf, &req);
+  if (rsp == NULL) {
+        out->mode=-1;
+        pthread_mutex_unlock(&ompi_lock);
+        return EAR_ERROR;
+  };
+  if (rsp->ccode > 0) {
+        out->mode=-1;
+        pthread_mutex_unlock(&ompi_lock);
+        return EAR_ERROR;
+        };
+
+  out->data_len=rsp->data_len;
+  for (i=0;i<rsp->data_len; i++) {
+    out->data[i]=rsp->data[i];
+  }
+  pthread_mutex_unlock(&ompi_lock);
+  return EAR_SUCCESS;
+#endif
+
 	return EAR_SUCCESS;
 
 }

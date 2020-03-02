@@ -72,6 +72,12 @@ typedef struct risk_dec{
 	unsigned long level;
 	unsigned long target;
 }risk_dec_t;
+typedef struct powercap_opt{
+	uint num_greedy;			/* Number of greedy nodes */
+	int *greedy_nodes; 		/* List of greedy nodes */
+	uint *extra_power;		/* Extra power received by each greedy node */
+	uint max_inc_new_jobs; /* Max power allowed to be received by new jobs since last powercap reported */
+}powercap_opt_t;
 
 typedef union req_data{
 		application_t 		new_job;
@@ -80,6 +86,7 @@ typedef union req_data{
 		new_policy_cont_t	pol_conf;
 	  power_limit_t     pc;
 		risk_dec_t 			risk;
+		powercap_opt_t  pc_opt;
 }req_data_t;
 
 
@@ -119,6 +126,18 @@ typedef struct status{
     eard_policy_info_t    policy_conf[TOTAL_POLICIES];
 } status_t;
 
+typedef struct powercap_status{
+	uint idle_nodes; 	       /* Total number of idle nodes */
+	uint released_power;       /* Accumulated released power in last T1 */
+	uint num_greedy;             /* Number of greedy nodes */
+	int *greedy_nodes;           /* List of greedy nodes */
+	uint num_newjob_nodes; /* Number of nodes asking for powercap_def*/
+	int *powerdef_nodes;	       /* List of nodes asking for powercap_def */
+	uint current_power; 	      /* Accumulated power */
+  uint total_powercap;        /* Accumulated current powercap limits */
+}powercap_status_t;
+
+
 #define EAR_RC_NEW_JOB     0
 #define EAR_RC_END_JOB     1
 #define EAR_RC_MAX_FREQ    100
@@ -137,8 +156,11 @@ typedef struct status{
 #define EAR_RC_SET_POWER 701 
 #define EAR_RC_INC_POWER 702
 #define EAR_RC_GET_POWER 703
-
+#define EAR_RC_GET_POWERCAP_STATUS 	704
+#define EAR_RC_SET_POWERCAP_OPT			705
 #define EAR_RC_SET_RISK 800
+
+
 
 
 

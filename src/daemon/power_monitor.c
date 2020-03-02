@@ -1247,3 +1247,17 @@ void print_powermon_app(powermon_app_t *app) {
 	print_energy_data(&app->energy_init);
 }
 
+uint powermon_is_idle()
+{
+	return (ccontext>=0);
+}
+uint powermon_current_power()
+{
+	return (uint)last_power_reported;
+}
+uint powermon_get_powercap()
+{
+	return (uint) my_node_conf->max_power_cap;
+}
+
+

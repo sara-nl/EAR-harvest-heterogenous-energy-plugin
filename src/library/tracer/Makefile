@@ -15,10 +15,10 @@ allt: DEFINES=-DEAR_GUI
 allt: tracer.o tracer_dynais.o tracer_paraver.o
 
 %.o: %.c %.h
-	$(MPICC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) -c $<
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) -c $<
 
 %.so:%.o
-	$(MPICC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) $(LDFLAGS)  -shared $< -o $@
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) $(LDFLAGS)  -shared $< -o $@
 
 tracer_cache.so:tracer_cache.o $(SRCDIR)/metrics/cache/cpu/papi.o
 	$(MPICC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) $(LDFLAGS) $(SRCDIR)/metrics/cache/cpu/papi.o  -shared $< -o $@

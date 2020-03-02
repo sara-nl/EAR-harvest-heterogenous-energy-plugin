@@ -57,6 +57,7 @@
 #include <daemon/power_monitor.h>
 #include <daemon/eard_conf_rapi.h>
 #include <common/hardware/frequency.h>
+#include <daemon/powercap.h>
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;
@@ -380,6 +381,11 @@ void dyncon_power_management(int fd, request_t *command)
 				limit=my_node_conf->max_power_cap+(my_node_conf->max_power_cap*command->my_req.pc.limit);
 			}
 			break;	
+    case EAR_RC_SET_POWERCAP_OPT:
+			verbose(1,"Set powercap options received");
+			set_powercap_opt(&command->my_req.pc_opt);
+			return;
+			break;
 		default:
 			verbose(1,"power command received not supported");
 	}
@@ -499,6 +505,7 @@ void process_remote_requests(int clientfd) {
 		case EAR_RC_GET_POWER:
 		case EAR_RC_SET_POWER:
 		case EAR_RC_INC_POWER:
+		case EAR_RC_SET_POWERCAP_OPT:
 			dyncon_power_management(clientfd, &command);
 			return;
 			break;
