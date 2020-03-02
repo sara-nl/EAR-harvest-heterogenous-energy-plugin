@@ -40,7 +40,7 @@ void after_init();
 
 /** called before all the mpi calls except mpi_init and mpi_finalize. It calls dynais and, based on 
 *    dynais reported status, calls the main EAR functionallity */
-void before_mpi(int call, p2i buf, p2i dest);
+void before_mpi(mpi_call call_type, p2i buf, p2i dest);
 
 /** called after all the mpi calls excel mpi_init and mpi_finalize. */
 void after_mpi();

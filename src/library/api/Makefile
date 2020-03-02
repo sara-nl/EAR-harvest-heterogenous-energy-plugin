@@ -1,6 +1,6 @@
-SRCDIR  = ../../..
+SRCDIR  = ../..
 CC      = /hpc/base/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/bin/mpiicc
-CFLAGS  = -Wall -I$(SRCDIR)
+CFLAGS  = -Wall -I$(SRCDIR) -fPIC
 LDFLAGS = -static-intel
 
 ######## FILES
@@ -15,7 +15,7 @@ LIBS = \
 
 ######## RULES
 
-all: $(OBJS)
+all: $(OBJS) $(LIBS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_MPI_H
-#define LIBRARY_MPI_H
+#ifndef LIBRARY_API_MPI_H
+#define LIBRARY_API_MPI_H
 
 #include <mpi.h>
 
@@ -41,6 +41,28 @@
 #endif
 
 #define p2i unsigned long
+
+enum type_mpi_call {
+    _Unknown=0,
+    _Send=1,
+    _Receive=2,
+    _Barrier=3,
+    _Wait=4,
+    _Bcast=5,
+    _All2All=6,
+    _Gather=7,
+    _Scatter=8,
+    _Scan=9,
+    _Reduce=10,
+    _SendRecv=11,
+    _Test=12,
+    _Comm=13,
+    _IO=14,
+	//Last 16 bits: 0000000x yyyyyyyy
+	// x : Blocking - No blocking
+	// y : type mpi call [0-15]
+    _Blocking=0x10
+};
 
 typedef enum
 {
@@ -141,4 +163,4 @@ typedef enum
 	Not_implemented
 } mpi_call;
 
-#endif //LIBRARY_MPI_H
+#endif //LIBRARY_API_MPI_H

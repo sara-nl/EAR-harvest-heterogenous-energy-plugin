@@ -30,7 +30,8 @@
 #include <common/output/debug.h>
 #include <library/api/ear_interface.h>
 
-void before_init(){
+void before_init()
+{
 }
 
 void after_init()

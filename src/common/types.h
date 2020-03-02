@@ -1,3 +1,4 @@
+
 /**************************************************************
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
@@ -27,12 +28,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LOADER_DEFS_H
-#define LOADER_DEFS_H
+#ifndef COMMON_TYPES_H
+#define COMMON_TYPES_H
 
-#include <library/api/mpic_interface.h>
-#include <library/api/mpif_interface.h>
-#include <library/api_loader/mpic_syms.h>
-#include <library/api_loader/mpif_syms.h>
+#include <common/types/generic.h>
 
-#endif //LOADER_DEFS_H
+#endif //COMMON_TYPES_H
