@@ -133,7 +133,7 @@ typedef struct mpif_s
 	#endif
 } mpif_t;
 
-const char *mpif_names[] =
+const char *mpif_names[] __attribute__((weak)) =
 {
 	"mpi_allgather",
 	"mpi_allgatherv",

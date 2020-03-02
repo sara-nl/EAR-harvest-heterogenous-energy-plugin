@@ -415,7 +415,7 @@ typedef struct earc_s
 	#endif
 } earc_t;
 
-const char *earc_names[] =
+const char *earc_names[] __attribute__((weak)) =
 {
 	"earc_Allgather_enter",
 	"earc_Allgather_leave",

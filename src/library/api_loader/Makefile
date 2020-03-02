@@ -1,6 +1,6 @@
 SRCDIR  = ../..
 CC      = /hpc/base/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/bin/mpiicc
-CFLAGS  = -Wall -I$(SRCDIR)
+CFLAGS  = -Wall -I$(SRCDIR) -fPIC
 LDFLAGS = -static-intel
 
 ######## FILES
@@ -21,8 +21,7 @@ all: $(OBJS) $(LIBS)
 	$(CC) $(CFLAGS) -c $<
 
 libloader.so:
-	$(CC) -shared -o libloader.so $(OBJS) $(LDFLAGS)
-
+	$(CC) -shared -o libloader.so $(OBJS) $(LDFLAGS) ../../common/libcommon.a
 
 ######## OPTIONS 
 

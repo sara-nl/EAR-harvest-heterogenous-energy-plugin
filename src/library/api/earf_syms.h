@@ -415,7 +415,7 @@ typedef struct earf_s
 	#endif
 } earf_t;
 
-const char *earf_names[] =
+const char *earf_names[] __attribute__((weak)) =
 {
 	"earf_Allgather_enter",
 	"earf_Allgather_leave",
@@ -574,8 +574,8 @@ const char *earf_names[] =
 	"earf_Win_start_enter",
 	"earf_Win_start_leave",
 	"earf_Win_wait_enter",
-	"earf_Win_wait_leave",
-#if MPI_VERSION >= 3
+	"earf_Win_wait_leave"
+	#if MPI_VERSION >= 3
 	,
 	"earf_Iallgather_enter",
 	"earf_Iallgather_leave",
@@ -604,7 +604,7 @@ const char *earf_names[] =
 	"earf_Iscatter_enter",
 	"earf_Iscatter_leave",
 	"earf_Iscatterv_enter",
-	"earf_Iscatterv_leave",
+	"earf_Iscatterv_leave"
 	#endif
 };
 

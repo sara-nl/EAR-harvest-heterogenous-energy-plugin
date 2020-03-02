@@ -28,6 +28,7 @@
 */
 
 #define _GNU_SOURCE
+//#define SHOW_DEBUGS
 #include <common/output/debug.h>
 #include <common/system/symplug.h>
 #include <library/api_loader/loader.h>
@@ -50,7 +51,7 @@ void strntolow(char *string)
 	}
 }
 
-static int extract_value(char *string, char *needle, char *buffer)
+static int get_version(char *string, char *needle, char *buffer)
 {
 	char *p = strtok(string, " ");
 	char *q;
@@ -148,24 +149,26 @@ static int mpi_detect_mvapich()
 
 static void load_c_mpi_symbols()
 {
-	symplug_join(RTLD_NEXT, (void **) &mpic_mpi, mpic_mpi_names, mpic_mpi_n);
+	symplug_join(RTLD_NEXT, (void **) &mpic_mpi, mpic_names, mpic_n);
 }
 
 static void load_f_mpi_symbols()
 {
-	symplug_join(RTLD_NEXT, (void **) &mpif_mpi, mpif_mpi_names, mpif_mpi_n);
+	symplug_join(RTLD_NEXT, (void **) &mpif_mpi, mpif_names, mpif_n);
 }
 
 static void load_c_ear_symbols()
 {
-	mpic_ear_loaded = 1;
-	symplug_join(RTLD_NEXT, (void **) &mpic_ear, mpic_ear_names, mpic_ear_n);
+	return;
+	earc_loaded = 1;
+	symplug_join(RTLD_NEXT, (void **) &mpic_ear, earc_names, earc_n);
 }
 
 static void load_f_ear_symbols()
 {
-	mpif_ear_loaded = 1;
-	symplug_join(RTLD_NEXT, (void **) &mpif_ear, mpif_ear_names, mpif_ear_n);
+	return;
+	earf_loaded = 1;
+	symplug_join(RTLD_NEXT, (void **) &mpif_ear, earf_names, earf_n);
 }
 
 static void load_x_ear_symbols()
@@ -199,9 +202,9 @@ static void load_x_ear_symbols()
 
 static int symbols_mpi()
 {
-	void **calls;
-	calls = malloc(sizeof(void *) * 1);
-	symplug_join(RTLD_DEFAULT, calls, (const char **) "MPI_Get_library_version", 1);
+	const char *sym_version[] = { "MPI_Get_library_version" };
+	void **calls = malloc(sizeof(void *) * 1);
+	symplug_join(RTLD_DEFAULT, calls, sym_version, 1);
 	return (calls[0] != NULL);
 }
 

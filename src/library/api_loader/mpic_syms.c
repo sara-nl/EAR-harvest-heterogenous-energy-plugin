@@ -376,7 +376,6 @@ int MPI_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest,
 int MPI_Init(int *argc, char ***argv)
 {
 	debug(">> C MPI_Init...............");
-	mpi_c_symbol_load();
 	IF mpic_ear.Init_enter(argc, argv);
 	int res = mpic_mpi.Init(argc, argv);
 	IF mpic_ear.Init_leave();
@@ -387,7 +386,6 @@ int MPI_Init(int *argc, char ***argv)
 int MPI_Init_thread(int *argc, char ***argv, int required, int *provided)
 {
 	debug(">> C MPI_Init_thread...............");
-	mpi_c_symbol_load();
 	IF mpic_ear.Init_thread_enter(argc, argv, required, provided);
 	int res = mpic_mpi.Init_thread(argc, argv, required, provided);
 	IF mpic_ear.Init_thread_leave();
