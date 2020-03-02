@@ -27,12 +27,19 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LOADER_DEFS_H
-#define LOADER_DEFS_H
+#ifndef LIBRARY_LOADER_H
+#define LIBRARY_LOADER_H
 
 #include <library/api/mpic_interface.h>
 #include <library/api/mpif_interface.h>
 #include <library/api_loader/mpic_syms.h>
 #include <library/api_loader/mpif_syms.h>
 
-#endif //LOADER_DEFS_H
+extern int earf_loaded;
+extern int earc_loaded;
+extern mpic_t mpic_mpi;
+extern mpif_t mpif_mpi;
+extern earc_t mpic_ear;
+extern earf_t mpif_ear;
+
+#endif //LIBRARY_LOADER_H

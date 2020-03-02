@@ -28,16 +28,10 @@
 */
 
 #include <common/output/debug.h>
-//#include <library/api_loader/loader.h>
-#include <library/api/mpif_interface.h>
-#include <library/api_loader/mpif_syms.h>
-
-extern mpif_mpi_t mpif_mpi;
-extern mpif_ear_t mpif_ear;
-extern int mpif_ear_loaded;
+#include <library/api_loader/loader.h>
 
 #define IF \
-	if (mpif_ear_loaded == 1)
+	if (earf_loaded == 1)
 
 void mpi_allgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {

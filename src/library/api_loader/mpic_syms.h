@@ -27,14 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LOADER_C_SYMS_H
-#define LOADER_C_SYMS_H
+#ifndef LIBRARY_LOADER_MPIC_SYMS_H
+#define LIBRARY_LOADER_MPIC_SYMS_H
 
 #include <library/api/mpi.h>
 
-#define mpic_mpi_n 93
+#define mpic_n 93
 
-typedef struct mpic_mpi_s
+typedef struct mpic_s
 {
 	int (*Allgather) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm);
 	int (*Allgatherv) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, MPI_Comm comm);
@@ -131,9 +131,9 @@ typedef struct mpic_mpi_s
 	int (*Iscatter) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request);
 	int (*Iscatterv) (MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], MPI3_CONST int displs[], MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request);
 	#endif
-} mpic_mpi_t;
+} mpic_t;
 
-const char *mpic_mpi_names[] =
+const char *mpic_names[] =
 {
 	"MPI_Allgather",
 	"MPI_Allgatherv",
@@ -233,4 +233,4 @@ const char *mpic_mpi_names[] =
 	#endif
 };
 
-#endif //LOADER_C_SYMS_H
+#endif //LIBRARY_LOADER_MPIC_SYMS_H

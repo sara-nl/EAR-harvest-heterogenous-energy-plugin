@@ -6,9 +6,9 @@ LDFLAGS = -static-intel
 ######## FILES
 
 OBJS = \
-    mpic_interface.o \
-    mpif_interface.o \
-    ear_interface.o
+    earc_syms.o \
+    earf_syms.o \
+    api.o
 
 LIBS = \
 	libinterface.so

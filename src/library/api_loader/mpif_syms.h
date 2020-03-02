@@ -27,14 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LOADER_F_SYMS_H
-#define LOADER_F_SYMS_H
+#ifndef LIBRARY_LOADER_MPIF_SYMS_H
+#define LIBRARY_LOADER_MPIF_SYMS_H
 
 #include <library/api/mpi.h>
 
-#define mpif_mpi_n 93
+#define mpif_n 93
 
-typedef struct mpif_mpi_s
+typedef struct mpif_s
 {
 	void (*allgather) (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror);
 	void (*allgatherv) (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror);
@@ -131,9 +131,9 @@ typedef struct mpif_mpi_s
 	void (*iscatter) (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 	void (*iscatterv) (MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 	#endif
-} mpif_mpi_t;
+} mpif_t;
 
-const char *mpif_mpi_names[] =
+const char *mpif_names[] =
 {
 	"mpi_allgather",
 	"mpi_allgatherv",
@@ -233,4 +233,4 @@ const char *mpif_mpi_names[] =
 	#endif
 };
 
-#endif //LOADER_F_SYMS_H
+#endif //LIBRARY_LOADER_MPIF_SYMS_H

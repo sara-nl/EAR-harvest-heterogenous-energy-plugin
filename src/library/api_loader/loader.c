@@ -35,12 +35,12 @@
 static char buffer1[4096];
 static char buffer2[4096];
 static char version[256];
-mpic_mpi_t mpic_mpi;
-mpif_mpi_t mpif_mpi;
-mpic_ear_t mpic_ear;
-mpif_ear_t mpif_ear;
-int mpic_ear_loaded;
-int mpif_ear_loaded;
+int earf_loaded;
+int earc_loaded;
+mpic_t mpic_mpi;
+mpif_t mpif_mpi;
+earc_t mpic_ear;
+earf_t mpif_ear;
 
 void strntolow(char *string)
 {
