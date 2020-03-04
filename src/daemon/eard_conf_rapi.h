@@ -43,6 +43,8 @@
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 
+#define TEMP_NUM_NODES 10
+
 typedef struct end_job_req{
 	job_id jid;
 	job_id sid;
@@ -74,8 +76,8 @@ typedef struct risk_dec{
 }risk_dec_t;
 typedef struct powercap_opt{
 	uint num_greedy;			/* Number of greedy nodes */
-	int *greedy_nodes; 		/* List of greedy nodes */
-	uint *extra_power;		/* Extra power received by each greedy node */
+	int greedy_nodes[TEMP_NUM_NODES]; 		/* List of greedy nodes */
+	uint extra_power[TEMP_NUM_NODES];		/* Extra power received by each greedy node */
 	uint max_inc_new_jobs; /* Max power allowed to be received by new jobs since last powercap reported */
 }powercap_opt_t;
 
