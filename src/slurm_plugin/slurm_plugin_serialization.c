@@ -52,6 +52,7 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 
 	int found_earmgd_port = 0;
 	int found_eargmd_host = 0;
+	int found_eargmd_minn = 0;
 	int found_path_inst = 0;
 	int found_path_temp = 0;
 	int i;
@@ -108,6 +109,10 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 			found_earmgd_port = 1;
 			
 			plug_verbose(sp, 2, "plugstack found eargm port '%d'", sd->pack.eargmd.port);
+		}
+		if ((strlen(av[i]) > 11) && (strncmp ("eargmd_min", av[i], 11) == 0))
+		{
+			sd->pack.eargmd.min = atoi(&av[i][11]);
 		}
 	}
 
@@ -402,10 +407,14 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * EARGMD
 	 */
-	if (sd->pack.eargmd.enabled) {
+	if (sd->pack.eargmd.enabled)
+	{
 		sprintf(buffer1, "%d", sd->pack.eargmd.port);
-		setenv_agnostic(sp, Var.gm_port.loc, buffer1             , 1);
+		sprintf(buffer2, "%d", sd->pack.eargmd.min );
+		
 		setenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, 1);
+		setenv_agnostic(sp, Var.gm_port.loc, buffer1             , 1);
+		setenv_agnostic(sp, Var.gm_min.loc , buffer2             , 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -508,11 +517,15 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * EARMGD
 	 */
+	sd->pack.eargmd.min = 1;	
+
 	s1 = getenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, SZ_NAME_MEDIUM);
 	s2 = getenv_agnostic(sp, Var.gm_port.loc, buffer1             , SZ_NAME_MEDIUM);
+	     getenv_agnostic(sp, Var.gm_min.loc , buffer2             , SZ_NAME_MEDIUM);
 
 	if (s1 && s2) {
 		sd->pack.eargmd.port = atoi(buffer1);
+		sd->pack.eargmd.min  = atoi(buffer2);
 		sd->pack.eargmd.enabled = 1;
 	}
 
