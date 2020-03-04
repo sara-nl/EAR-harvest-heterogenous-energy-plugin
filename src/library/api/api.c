@@ -28,7 +28,7 @@
 */
 
 #include <common/output/debug.h>
-#include <library/api/ear_interface.h>
+#include <library/api/api.h>
 
 void before_init()
 {
@@ -36,6 +36,7 @@ void before_init()
 
 void after_init()
 {
+	fprintf(stderr, "hellooo\n");
 	//ear_init();
 }
 

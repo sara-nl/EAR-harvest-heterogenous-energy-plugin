@@ -1,5 +1,9 @@
-CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) 
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -I /hpc/base/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/include
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -I /hpc/base/ctt/packages/openmpi/openmpi-3.1.1_slurm/include
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
+MPICC = /hpc/base/intel/compilers_and_libraries_2019.4.243/linux/bin/intel64/icc
+MPICC = /hpc/base/ctt/packages/openmpi/openmpi-3.1.1_slurm/bin/mpicc
+MPICC = /hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc
 
 ######## VARS
 
@@ -37,10 +41,16 @@ mpix_OBJS = \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
+    dynais/dynais.a \
+    mpi_intercept/ear_api.o \
+    api/api.o \
+    api/earc_syms.o \
+    api/earf_syms.o
+
+
+ifdef NO
     mpi_intercept/ear_api.o \
     mpi_intercept/process_MPI.o \
-    dynais/dynais.a
-
 mpic_OBJS = \
     mpi_intercept/mpi_definitions_c.o \
     mpi_intercept/mpi_interception_c.o \
@@ -51,6 +61,7 @@ mpif_OBJS = \
     mpi_intercept/mpi_definitions_f.o \
     mpi_intercept/mpi_interception_f.o \
     mpi_intercept/MPI_interfaceF.o
+endif
 endif
 
 ######## RULES
@@ -77,9 +88,9 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'metrics' $* || exit
 	@ $(MAKE) -C 'models' $* || exit
 	@ $(MAKE) -B -C 'policies' $* MPICC='$(MPICC)' || exit
-	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'states' $* MPICC='$(MPICC)' || exit
 	@ $(MAKE) -B -C 'tracer' $* MPICC='$(MPICC)' || exit
+#	@ $(MAKE) -B -C 'mpi_intercept' $* MPICC='$(MPICC)' || exit
 
 ######## DEPENDENCIES
 

@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#define SHOW_DEBUGS
 #include <common/includes.h>
 #include <common/system/symplug.h>
 
@@ -41,7 +42,7 @@ state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 		error    = dlerror();
 	
 		if ((calls[i] != NULL) && (error == NULL)) {
-			debug("symbol %s found (%p)", names[i], calls[i]);
+			//debug("symbol %s found (%p)", names[i], calls[i]);
 		} else {
 			debug("symbol %s not found (%s)", names[i], error);
 			calls[i] = NULL;

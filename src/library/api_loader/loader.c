@@ -28,13 +28,15 @@
 */
 
 #define _GNU_SOURCE
-//#define SHOW_DEBUGS
+#define SHOW_DEBUGS
+#include <stdlib.h>
 #include <common/output/debug.h>
 #include <common/system/symplug.h>
 #include <library/api_loader/loader.h>
 
 static char buffer1[4096];
 static char buffer2[4096];
+static char install[4096];
 static char version[256];
 int earf_loaded;
 int earc_loaded;
@@ -157,42 +159,55 @@ static void load_f_mpi_symbols()
 	symplug_join(RTLD_NEXT, (void **) &mpif_mpi, mpif_names, mpif_n);
 }
 
-static void load_c_ear_symbols()
+static void load_earc_symbols(char *path_so)
 {
-	return;
+	debug("load_earc_symbols (%s)", path_so);
+	symplug_open(path_so, (void **) &mpic_ear, earc_names, earc_n);
+	// Symbols loaded
 	earc_loaded = 1;
-	symplug_join(RTLD_NEXT, (void **) &mpic_ear, earc_names, earc_n);
 }
 
-static void load_f_ear_symbols()
+static void load_earf_symbols(char *path_so)
 {
-	return;
+	debug("load_earf_symbols (%s)", path_so);
+	symplug_open(path_so, (void **) &mpif_ear, earf_names, earf_n);
+	// Symbols loaded
 	earf_loaded = 1;
-	symplug_join(RTLD_NEXT, (void **) &mpif_ear, earf_names, earf_n);
 }
 
 static void load_x_ear_symbols()
 {
 	int len = 4096;
+	char *path;
 
-	//
+	// Getting the library version
 	MPI_Get_library_version(buffer1, &len);
+	//debug("%s", buffer1);
 	strntolow(buffer1);
-	debug("%s", buffer1);
 
+	// Getting the installation path
+	if ((path = getenv("EAR_INSTALL_PATH")) == NULL) {
+		debug("installation path not found");
+		return;
+	}
+	//
+	sprintf(install, "%s/lib/libear.so", path);
+	sprintf(install, "/home/xjaneas/git/ear_private/src/library/api/libinterface.so");
+	sprintf(install, "/home/xjaneas/git/ear_private/src/library/libear.so");
+	
 	//
 	if (mpi_detect_intel())
 	{
 		debug("Intel MPI detected, version '%s'", version);
-		load_c_ear_symbols();
+		load_earc_symbols(install);
 	} else if (mpi_detect_open()) {
 		debug("Open MPI detected, version '%s'", version);
-		load_c_ear_symbols();
-		load_f_ear_symbols();
+		load_earc_symbols(install);
+		load_earf_symbols(install);
 	} else if (mpi_detect_mvapich()) {
 		debug("MVAPICH MPI detected, version '%s'", version);
-		load_c_ear_symbols();
-		load_f_ear_symbols();
+		load_earc_symbols(install);
+		load_earf_symbols(install);
 	} else {
 		debug("Unknown MPI detected");
 	}
@@ -203,7 +218,7 @@ static void load_x_ear_symbols()
 static int symbols_mpi()
 {
 	const char *sym_version[] = { "MPI_Get_library_version" };
-	void **calls = malloc(sizeof(void *) * 1);
+	void *calls[1];
 	symplug_join(RTLD_DEFAULT, calls, sym_version, 1);
 	return (calls[0] != NULL);
 }

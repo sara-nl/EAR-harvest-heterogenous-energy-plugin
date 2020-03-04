@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+//#define SHOW_DEBUGS
 #include <common/output/debug.h>
 #include <library/api_loader/loader.h>
 
