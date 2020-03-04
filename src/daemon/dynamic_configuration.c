@@ -386,7 +386,7 @@ void dyncon_power_management(int fd, request_t *command)
 			set_powercap_opt(&command->my_req.pc_opt);
 			return;
 			break;
-		default:
+    default:
 			verbose(1,"power command received not supported");
 	}
 	verbose(1,"New power limit %lu",limit);

@@ -84,7 +84,7 @@ typedef union req_data{
 		end_job_req_t 		end_job;
 		new_conf_t 				ear_conf;
 		new_policy_cont_t	pol_conf;
-	  power_limit_t     pc;
+	    power_limit_t     pc;
 		risk_dec_t 			risk;
 		powercap_opt_t  pc_opt;
 }req_data_t;

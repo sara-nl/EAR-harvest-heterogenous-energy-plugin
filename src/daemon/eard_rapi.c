@@ -717,11 +717,11 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
     int rc, i;
     struct sockaddr_in temp;
     unsigned int  current_dist;
-		char next_ip[50]; 
+	char next_ip[50]; 
     memset(num_status, 0, sizeof(num_status));
     temp_status = calloc(NUM_PROPS, sizeof(status_t*));
 
-		debug("correct_status for ip %d with distance %d\n",ips[target_idx],command->node_dist);
+	debug("correct_status for ip %d with distance %d\n",ips[target_idx],command->node_dist);
     if (command->node_dist > total_ips)
     {
         final_status = calloc(1, sizeof(status_t));
@@ -1285,6 +1285,11 @@ int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_
 /** Send powercap_options to all nodes */
 int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_opt)
 {
+    request_t command;
+    command.req=EAR_RC_SET_POWERCAP_OPT;
+    command.time_code = time(NULL);
+    command.my_req.pc_opt = *pc_opt;
+    send_command_all(command, my_cluster_conf);
 	return EAR_SUCCESS;
 }
 
