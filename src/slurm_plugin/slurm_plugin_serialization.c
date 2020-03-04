@@ -57,6 +57,10 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 	int found_path_temp = 0;
 	int i;
 
+	// Initialization values
+	sd->pack.eargmd.min = 1;
+
+	// Search
 	for (i = 0; i < ac; ++i)
 	{
 		if ((strlen(av[i]) > 8) && (strncmp ("default=", av[i], 8) == 0))
@@ -110,9 +114,11 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 			
 			plug_verbose(sp, 2, "plugstack found eargm port '%d'", sd->pack.eargmd.port);
 		}
-		if ((strlen(av[i]) > 11) && (strncmp ("eargmd_min", av[i], 11) == 0))
+		if ((strlen(av[i]) > 11) && (strncmp ("eargmd_min=", av[i], 11) == 0))
 		{
 			sd->pack.eargmd.min = atoi(&av[i][11]);
+			
+			plug_verbose(sp, 2, "plugstack found eargm min '%d'", sd->pack.eargmd.min);
 		}
 	}
 
@@ -259,6 +265,11 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.tag.loc);
 	printenv_agnostic(sp, Var.path_usdb.loc);
 	printenv_agnostic(sp, Var.path_trac.loc);
+	printenv_agnostic(sp, Var.version.loc);
+	printenv_agnostic(sp, Var.gm_host.loc);
+	printenv_agnostic(sp, Var.gm_port.loc);
+	printenv_agnostic(sp, Var.gm_min.loc);
+	printenv_agnostic(sp, Var.gm_secure.loc);
 	
 	printenv_agnostic(sp, Var.user.rem);
 	printenv_agnostic(sp, Var.group.rem);
@@ -274,10 +285,6 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.job_nodn.rem);
 	printenv_agnostic(sp, Var.step_nodl.rem);
 	printenv_agnostic(sp, Var.step_nodn.rem);
-	printenv_agnostic(sp, Var.version.loc);
-	printenv_agnostic(sp, Var.gm_host.loc);
-	printenv_agnostic(sp, Var.gm_port.loc);
-	printenv_agnostic(sp, Var.gm_secure.loc);
 
 	printenv_agnostic(sp, Var.verbose.ear);
 	printenv_agnostic(sp, Var.policy.ear);
@@ -407,7 +414,7 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	/*
 	 * EARGMD
 	 */
-	if (sd->pack.eargmd.enabled)
+	if (sd->pack.eargmd.enabled == 1)
 	{
 		sprintf(buffer1, "%d", sd->pack.eargmd.port);
 		sprintf(buffer2, "%d", sd->pack.eargmd.min );

@@ -167,7 +167,7 @@ struct variables_s {
 .path_trac = { .loc = "SLURM_LOC_TRAC", .ear = "SLURM_EAR_TRACE_PATH" },
 .gm_host   = { .loc = "SLURM_LOC_GMHS", .ear = ""                     },
 .gm_port   = { .loc = "SLURM_LOC_GMPR", .ear = ""                     },
-.gm_port   = { .loc = "SLURM_LOC_GMMN", .ear = ""                     },
+.gm_min    = { .loc = "SLURM_LOC_GMMI", .ear = ""                     },
 .gm_secure = { .loc = "SLURM_LOC_GMSC", .ear = ""                     },
 .perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                       },
 .eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"           },
