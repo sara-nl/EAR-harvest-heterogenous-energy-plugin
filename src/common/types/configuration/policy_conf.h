@@ -53,6 +53,7 @@ typedef struct policy_conf
 {
     uint policy; 
     char name[POLICY_NAME_SIZE];
+    char tag[POLICY_NAME_SIZE];
     double settings[MAX_POLICY_SETTINGS];
     //double th; 
     //uint num_settings;

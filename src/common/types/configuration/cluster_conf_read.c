@@ -601,7 +601,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 }
                 else if (!strcmp(key, "PRIVILEGED"))
                 {
-									curr_policy->is_available=(atoi(value)==0);
+                    curr_policy->is_available=(atoi(value)==0);
+                }
+                else if (!strcmp(key, "TAG"))
+                {
+                    strcpy(curr_policy->tag, value);
                 }
                                 
 			    token = strtok_r(NULL, " ", &primary_ptr);
@@ -1268,10 +1272,13 @@ void free_cluster_conf(cluster_conf_t *conf)
         for (j = 0; j < conf->islands[i].num_tags; j++)
             free(conf->islands[i].tags[j]);
         free(conf->islands[i].tags);
+        conf->islands[i].num_tags = 0;
+
         for (j = 0; j < conf->islands[i].num_specific_tags; j++)
             free(conf->islands[i].specific_tags[j]);
-
         free(conf->islands[i].specific_tags);
+        conf->islands[i].num_specific_tags = 0;
+
 
         for (j = 0; j < conf->islands[i].num_ranges; j++)
         {

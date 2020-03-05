@@ -67,6 +67,7 @@ void print_policy_conf(policy_conf_t *p)
     verbosen(VCCONF,"---> policy %s p_state %u def_freq %.1f NormalUsersAuth %u", p->name ,p->p_state,p->def_freq,p->is_available);
     for (i = 0; i < MAX_POLICY_SETTINGS; i++)
         verbosen(VCCONF, " setting%d  %.2lf ", i, p->settings[i]);
+    verbosen(VCCONF, " tag: %s", p->tag);
     verbosen(VCCONF, "\n");
 }
 

@@ -147,6 +147,19 @@ typedef struct energy_tag
 	uint num_accounts;
 } energy_tag_t;
 
+typedef struct tags
+{
+    char type;
+    char is_default;
+    ulong max_avx512_freq;
+    ulong max_avx2_freq;
+    ulong max_power;
+    ulong min_power;
+    ulong error_power;
+    char energy_model[GENERIC_NAME];
+    char energy_plugin[GENERIC_NAME];
+
+} tag_t;
 typedef struct db_conf
 {
     char ip[USER];
