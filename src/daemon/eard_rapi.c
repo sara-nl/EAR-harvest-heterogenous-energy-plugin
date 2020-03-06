@@ -1378,6 +1378,23 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
 	return ack;
 }
 
+
+int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status) 
+{
+    int num_temp_status;
+    powercap_status_t *temp_status;
+    request_t command;
+
+    command.node_dist = 0;
+    command.req = EAR_RC_GET_POWERCAP_STATUS;
+    command.time_code = time(NULL);
+    if ((num_temp_status = send_powercap_status(&command, &temp_status)) < 1) {
+        debug("Error sending command to node %s, trying to correct it", next_ip);
+    }
+    *pc_status = temp_status;
+    return num_temp_status;
+}
+
 /** Asks for powercap_status for all nodes */
 int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status)
 {
