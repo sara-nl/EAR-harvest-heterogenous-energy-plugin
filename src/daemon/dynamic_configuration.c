@@ -403,6 +403,21 @@ void update_current_settings(policy_conf_t *cpolicy_settings)
 	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
 }
 
+void dyncon_get_powerstatus(int fd)
+{
+	powercap_status_t *status;
+    status = calloc(1, sizeof(powercap_status_t));
+	unsigned long return_status = 1;
+	debug("return_status %lu status=%p", return_status, status);
+
+	get_powercap_status(&status[return_status - 1]);
+	write(fd, &return_status, sizeof(return_status));
+	write(fd, status, sizeof(powercap_status_t) * return_status);
+	debug("Returning from dyncon_get_powerstatus");
+	free(status);
+	debug("powerstatus released");
+}
+
 void dyncon_set_risk(int fd, request_t *command)
 {
 	int i;
@@ -514,6 +529,9 @@ void process_remote_requests(int clientfd) {
 			dyncon_set_risk(clientfd, &command);
 			return;
 			break;
+        case EAR_RC_GET_POWERCAP_STATUS:
+            dyncon_get_powerstatus(clientfd);
+            return;
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;

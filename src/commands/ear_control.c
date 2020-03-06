@@ -340,6 +340,7 @@ int main(int argc, char *argv[])
             {"restore-conf", 	optional_argument, 0, 6},
 	        {"ping", 	     	optional_argument, 0, 'p'},
             {"status",       	optional_argument, 0, 's'},
+            {"powerstatus",     optional_argument, 0, 'w'},
             {"set-risk",        required_argument, 0, 'r'},
             {"error",           no_argument, 0, 'e'},
             {"help",         	no_argument, 0, 'h'},
@@ -519,6 +520,23 @@ int main(int argc, char *argv[])
                         eards_set_risk(arg, 0);
                         eards_remote_disconnect();
                     }
+                }
+                break;
+            case 'w':
+                if (optarg)
+                {
+                    int num_power_status = 0;
+                    powercap_status_t *powerstatus;
+                    int rc = eards_remote_connect(optarg, my_cluster_conf.eard.port);
+                    if (rc < 0) {
+                        printf("Error connecting with node %s\n", optarg);
+                    }else{
+                        printf("Reading power_status from node %s\n", optarg);
+                        num_power_status = eards_get_powercap_status(my_cluster_conf, &powerstatus);
+                        eards_remote_disconnect();
+                    }
+                    if (num_power_status > 0)
+                        printf("power_status returned\n");
                 }
                 break;
             case 'e':
