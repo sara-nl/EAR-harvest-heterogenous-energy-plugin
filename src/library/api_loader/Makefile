@@ -1,5 +1,5 @@
 CFLAGS  = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
-LDFLAGS = $(SRCDIR)/common/libcommon.a
+LDFLAGS = $(SRCDIR)/common/libcommon.a -ldl
 
 ######## FILES
 
@@ -8,22 +8,27 @@ load_OBJS = \
     mpic_syms.o \
     mpif_syms.o
 
-load_LIBS = \
+load_BINS = \
     libloader.so
+
+load_DEPS = $(SRCDIR)/common/libcommon.a
+
+load_PATH = $(DESTDIR)/lib
+load_PERM = 0775
 
 ######## RULES
 
-all: clean $(load_OBJS) $(load_LIBS)
+all: clean $(load_OBJS) $(load_BINS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
 libloader.so:
-	$(CC) -shared -o libloader.so $(load_OBJS) $(LDFLAGS)
+	$(CC) -shared -o libloader.so $(load_OBJS) $(LDFLAGS) $(load_DEPS)
 
 ######## OPTIONS 
 
-install: ;
+install: load.ginstall;
 
 clean: rclean;
 

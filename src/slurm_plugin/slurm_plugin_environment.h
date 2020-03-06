@@ -116,7 +116,7 @@ struct variables_s {
 	varnames_t comp_moni;
 	varnames_t comp_test;
 	varnames_t comp_verb;
-	varnames_t hack_libr;
+	varnames_t hack_load;
 	varnames_t verbose;
 	varnames_t policy;
 	varnames_t policy_th;
@@ -156,7 +156,7 @@ struct variables_s {
 .comp_moni = { .cmp = "SLURM_COMP_MONITOR" },
 .comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
-.hack_libr = { .hck = "SLURM_HACK_LIBRARY" },
+.hack_load = { .hck = "SLURM_HACK_LOADER" },
 .verbose   = { .loc = "SLURM_LOC_VERB",      .ear = VAR_OPT_VERB      },
 .policy    = { .loc = "SLURM_LOC_POLI",      .ear = VAR_OPT_POLI      },
 .policy_th = { .loc = "SLURM_LOC_POTH",      .ear = VAR_OPT_THRA      },

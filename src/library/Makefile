@@ -48,7 +48,8 @@ mpix_OBJS = \
 all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(comm_OBJS)
-	$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(comm_OBJS) $(LDFLAGS)
+	$(CC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(comm_OBJS) $(LDFLAGS)
+	#$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 
