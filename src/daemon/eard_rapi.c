@@ -1275,11 +1275,118 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 }
 #endif
 
+int send_powercap_status(request_t *command, powercap_status_t **status)
+{
+	ulong ack;
+	int ret;
+	int total, pending;
+    powercap_status_t *return_status;
+	debug("Sending command %u\n",command->req);
+	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
+		if (ret<0){ 
+			error("Error sending command (status) %s\n",strerror(errno));
+		}else{ 
+			debug("Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
+		}
+	}
+	debug("Reading ack size \n");
+	/* We assume first long will not block */
+	ret=read(eards_sfd,&ack,sizeof(ulong));
+	//ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
+	if (ret<0){
+		error("Error receiving ack in (status) (%s) \n",strerror(errno));
+        return EAR_ERROR;
+	}
+    if (ack < 1){
+        error("Number of status expected is not valid: %lu", ack);
+        return EAR_ERROR;
+    }
+	debug("Waiting for %d ack bytes\n",ack);
+    return_status = calloc(ack, sizeof(powercap_status_t));
+	if (return_status==NULL){
+		error("Not enough memory at send_status");
+		return EAR_ERROR;
+	}
+	total=0;
+	pending=sizeof(powercap_status_t)*ack;
+    ret = read(eards_sfd, (char *)return_status+total, pending);
+    //ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
+	if (ret<0){
+		error("Error by reading status (%s)",strerror(errno));
+        free(return_status);
+		return EAR_ERROR;
+	}
+	total+=ret;
+	pending-=ret;
+	while ((ret>0) && (pending>0)){
+    	ret = read(eards_sfd, (char *)return_status+total, pending);
+    	//ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
+		if (ret<0){
+			error("Error by reading status (%s)",strerror(errno));
+        	free(return_status);
+			return EAR_ERROR;
+		}
+		total+=ret;
+		pending-=ret;
+	}
+    *status = return_status;
+	debug("Returning from send_status with %d\n",ack);
+	return ack;
+}
 
 /** Asks for powercap_status for all nodes */
-int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t *pc_status)
+int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status)
 {
-	return EAR_SUCCESS;
+
+    int i, j,  rc, total_ranges, num_all_status = 0, num_temp_status;
+    int **ips, *ip_counts;
+    struct sockaddr_in temp;
+    powercap_status_t *temp_status, *all_status = NULL;
+    request_t command;
+    char next_ip[256];
+    time_t ctime = time(NULL);
+    
+    command.time_code = ctime;
+    command.req = EAR_RC_GET_POWERCAP_STATUS;
+
+    total_ranges = get_ip_ranges(&my_cluster_conf, &ip_counts, &ips);
+    for (i = 0; i < total_ranges; i++)
+    {
+        for (j = 0; j < ip_counts[i]; j++)
+        {
+            command.node_dist = ip_counts[i]+10;
+            temp.sin_addr.s_addr = ips[i][j];
+            strcpy(next_ip, inet_ntoa(temp.sin_addr));
+            
+            rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
+            if (rc<0){
+                debug("Error connecting with node %s, trying to correct it", next_ip);
+                num_temp_status = 0;
+            }
+            else{
+                if ((num_temp_status = send_powercap_status(&command, &temp_status)) < 1) {
+                    debug("Error sending command to node %s, trying to correct it", next_ip);
+                }
+                eards_remote_disconnect();
+            }
+        
+            if (num_temp_status > 0)
+            {
+                all_status = realloc(all_status, sizeof(powercap_status_t)*(num_all_status+num_temp_status));
+                memcpy(&all_status[num_all_status], temp_status, sizeof(powercap_status_t)*num_temp_status);
+                free(temp_status);
+                num_all_status += num_temp_status;
+            }
+            else
+            {
+                debug("Connection to node %s returned 0 status\n", next_ip)
+            }
+            
+        }
+    }
+    *pc_status = all_status;
+
+    return num_all_status;
 }
 
 /** Send powercap_options to all nodes */

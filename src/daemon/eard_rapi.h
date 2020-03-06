@@ -133,7 +133,7 @@ void new_ping_all_nodes(cluster_conf_t my_cluster_conf);
 int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status);
 
 /** Asks for powercap_status for all nodes */
-int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t *pc_status);
+int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status);
 
 /** Send powercap_options to all nodes */
 int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_opt);
