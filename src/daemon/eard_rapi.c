@@ -141,6 +141,50 @@ int send_non_block_command(request_t *command)
     return (!to_recv); // Should we return ack ?
 }
 
+int recieve_data(int fd, void **data)
+{
+    int ret, total, pending;
+    request_header_t head;
+    char *read_data;
+
+    ret = read(fd, &head, sizeof(request_header_t));
+    if (ret < 0) {
+        error("Error recieving response data header (%s) \n", strerror(errno));
+        return EAR_ERROR;
+    }
+    if (head.size < 1) {
+        error("Error recieving response data. Invalid data size (%d).\n", head.size);
+        return EAR_ERROR;
+    }
+    read_data = calloc(head.size, sizeof(char));
+    total = 0;
+    pending = head.size;
+
+    ret = read(fd, read_data+total, pending);
+	if (ret<0){
+		error("Error by recieve data (%s)",strerror(errno));
+        free(read_data);
+		return EAR_ERROR;
+	}
+	total+=ret;
+	pending-=ret;
+	while ((ret>0) && (pending>0)){
+    	ret = read(fd, read_data+total, pending);
+    	//ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
+		if (ret<0){
+		    error("Error by recieve data (%s)",strerror(errno));
+            free(read_data);
+			return EAR_ERROR;
+		}
+		total+=ret;
+		pending-=ret;
+	}
+    *data = read_data;
+	debug("Returning from recieve_data with type %d\n", head.type);
+	return head.type;
+
+}
+
 //specifically sends and reads the ack of a status command
 int send_status(request_t *command, status_t **status)
 {
