@@ -28,6 +28,7 @@
 */
 
 #include <common/output/debug.h>
+#include <library/api/api.h>
 #include <library/api/earc_syms.h>
 
 void earc_Allgather_enter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm) {

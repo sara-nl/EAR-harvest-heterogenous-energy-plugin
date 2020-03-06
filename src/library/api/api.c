@@ -27,35 +27,42 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <common/output/debug.h>
 #include <library/api/api.h>
+#include <library/api/api_ear.h>
+#include <library/policies/policy.h>
+#include <common/output/debug.h>
 
 void before_init()
 {
+	debug("before_init");
 }
 
 void after_init()
 {
-	fprintf(stderr, "hellooo\n");
-	//ear_init();
+	debug("after_init");
+	ear_init();
 }
 
 void before_mpi(mpi_call call_type, p2i buf, p2i dest)
 {
-	//policy_mpi_init();
-	//ear_mpi_call(call_type,buf,dest);
+	debug("before_mpi");
+	policy_mpi_init();
+	ear_mpi_call(call_type,buf,dest);
 }
 
 void after_mpi(mpi_call call_type)
 {
-	//policy_mpi_end();
+	debug("after_mpi");
+	policy_mpi_end();
 }
 
 void before_finalize()
 {
-	//ear_finalize();
+	debug("before_finalize");
+	ear_finalize();
 }
 
 void after_finalize()
 {
+	debug("after_finalize");
 }

@@ -52,7 +52,7 @@ DBDaemonUseLog=1
 #---------------------------------------------------------------------------------------------------
 # EAR Library (EARL)
 #---------------------------------------------------------------------------------------------------
-CoefficientsDir=/home/xjcorbalan/ear/etc/ear/coeffs
+CoefficientsDir=/hpc/opt/ear/etc/ear/coeffs
 # Default power policy values
 MinTimePerformanceAccuracy=10000000
 # DynAIS configuration
@@ -106,10 +106,10 @@ GlobalManagerUseLog=1
 #---------------------------------------------------------------------------------------------------
 # Common configuration
 #---------------------------------------------------------------------------------------------------
-TmpDir=/var/ear
-EtcDir=/home/xjcorbalan/ear/etc
-InstDir=/home/xjcorbalan/ear
-DataBasePathName=/home/xjcorbalan/ear/etc/ear/dbs/dbs.
+TmpDir=/var/run/ear
+EtcDir=/hpc/opt/ear/etc
+InstDir=/hpc/opt/ear
+DataBasePathName=/hpc/opt/ear/etc/ear/dbs/dbs.
 Verbose=0
 NetworkExtension=-net_ext
 #---------------------------------------------------------------------------------------------------

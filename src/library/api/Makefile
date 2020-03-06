@@ -1,28 +1,22 @@
-SRCDIR  = ../..
-CC      = /hpc/base/intel/compilers_and_libraries_2019.4.243/linux/mpi/intel64/bin/mpiicc
-CFLAGS  = -Wall -I$(SRCDIR) -fPIC
-LDFLAGS = -static-intel
+CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
 
 ######## FILES
 
 OBJS = \
+    api.o \
+    api_ear.o \
     earc_syms.o \
     earf_syms.o \
-    api.o
-
-LIBS = \
-	libinterface.so
 
 ######## RULES
 
-all: $(OBJS) $(LIBS)
+all: $(OBJS)
+
+api_ear.o: api_ear.c api_ear.h
+	$(CC) $(CFLAGS)  $(PAPI_CFLAGS) -c $<	
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
-
-libinterface.so:
-	$(CC) -shared -o libinterface.so $(OBJS) $(LDFLAGS)
-
 
 ######## OPTIONS 
 

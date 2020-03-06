@@ -29,6 +29,9 @@
 
 #define _GNU_SOURCE
 #define SHOW_DEBUGS
+
+#include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
 #include <common/system/symplug.h>
@@ -175,37 +178,48 @@ static void load_earf_symbols(char *path_so)
 	earf_loaded = 1;
 }
 
-static void load_x_ear_symbols()
+static void load_x_create_paths(char *buffer, char *vendor, char *version)
 {
-	int len = 4096;
-	char *path;
+	char *path = NULL;
 
-	// Getting the library version
-	MPI_Get_library_version(buffer1, &len);
-	//debug("%s", buffer1);
-	strntolow(buffer1);
-
+	//
+	if ((path = getenv("SLURM_HACK_LOADER")) != NULL) {
+		sprintf(buffer, "%s", path);
+		return;
+	}
+	
 	// Getting the installation path
 	if ((path = getenv("EAR_INSTALL_PATH")) == NULL) {
 		debug("installation path not found");
 		return;
 	}
-	//
-	sprintf(install, "%s/lib/libear.so", path);
-	sprintf(install, "/home/xjaneas/git/ear_private/src/library/api/libinterface.so");
-	sprintf(install, "/home/xjaneas/git/ear_private/src/library/libear.so");
 	
+	sprintf(buffer, "%s/lib/libear.%s%s.so", path, vendor, version);
+}
+
+static void load_x_ear_symbols()
+{
+	int len = 4096;
+
+	// Getting the library version
+	MPI_Get_library_version(buffer1, &len);
+	strntolow(buffer1);
+
 	//
 	if (mpi_detect_intel())
 	{
-		debug("Intel MPI detected, version '%s'", version);
+		load_x_create_paths(install, "intel", version);
 		load_earc_symbols(install);
-	} else if (mpi_detect_open()) {
-		debug("Open MPI detected, version '%s'", version);
+	}
+	else if (mpi_detect_open())
+	{
+		load_x_create_paths(install, "open", version);
 		load_earc_symbols(install);
 		load_earf_symbols(install);
-	} else if (mpi_detect_mvapich()) {
-		debug("MVAPICH MPI detected, version '%s'", version);
+	}
+	else if (mpi_detect_mvapich())
+	{
+		load_x_create_paths(install, "mvapich", version);
 		load_earc_symbols(install);
 		load_earf_symbols(install);
 	} else {

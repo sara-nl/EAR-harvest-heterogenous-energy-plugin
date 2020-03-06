@@ -1,40 +1,31 @@
-CC           = @CC@
-CC_FLAGS     = @CC_FLAGS@
-MPICC        = @MPICC@
-MPICC_FLAGS  = @MPICC_FLAGS@
-MPI_BASE     = @MPI_DIR@
-MPI_CFLAGS   = @MPI_CPPFLAGS@
-MPI_VERSION  = @MPI_VERSION@
-PAPI_BASE    = @PAPI_DIR@
-PAPI_CFLAGS  = @PAPI_CPPFLAGS@
-PAPI_LDFLAGS = @PAPI_LDFLAGS@ @PAPI_LIBS@
-GSL_BASE     = @GSL_DIR@
-GSL_CFLAGS   = @GSL_CPPFLAGS@
-GSL_LDFLAGS  = @GSL_LDFLAGS@ @GSL_LIBS@
-SLURM_BASE   = @SLURM_DIR@
-SLURM_CFLAGS = @SLURM_CPPFLAGS@
-DB_BASE      = @DB_DIR@
-DB_CFLAGS    = @DB_CPPFLAGS@
-DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
-
-######## FOLDERS
-
+CC           = /opt/rh/devtoolset-7/root/bin/gcc
+CC_FLAGS     = 
+MPICC        = /hpc/opt/intel/compilers_and_libraries_2017.7.259/linux/mpi/intel64/bin/mpicc
+MPICC_FLAGS  = -static-intel 
+MPI_VERSION  = 
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
-DESTDIR      = @prefix@
-ETCDIR       = @sysconfdir@
-TMPDIR       = @localstatedir@
-DOCDIR       = @docdir@
-
-######## FEATURES
-
-FEAT_AVX512  = @FEAT_AVX512@
-VER_MAJOR    = 3
-VER_MINOR    = 1
-CHOWN_USR    = @USER@
-CHOWN_GRP    = @GROUP@
+DESTDIR      = /hpc/opt/ear3.1
+ETCDIR       = /hpc/opt/ear/etc
+TMPDIR       = /var/run/ear
+DOCDIR       = /share/doc/ear
+PAPI_BASE    = /hpc/opt/papi
+PAPI_CFLAGS  = -I/hpc/opt/papi/include
+PAPI_LDFLAGS = -L/hpc/opt/papi/lib -Wl,-rpath,/hpc/opt/papi/lib -lpapi
+GSL_BASE     = /hpc/opt/gsl
+GSL_CFLAGS   = -I/hpc/opt/gsl/include
+GSL_LDFLAGS  = -L/hpc/opt/gsl/lib -lm -lgsl -lgslcblas
+SLURM_BASE   = /hpc/opt/slurm
+SLURM_CFLAGS = -I/hpc/opt/slurm/include
+DB_BASE      = /usr
+DB_CFLAGS    = 
+DB_LDFLAGS   = -L/usr/lib64/mysql -lmysqlclient
+CHOWN_USR    = xjaneas
+CHOWN_GRP    = 
 CONSTANTS    = -DSEC_KEY=10001
 REPLACE      =
+FEAT_AVX512  = 1
+FEAT_FORT    = 0
 
 ######## VARS
 
@@ -42,9 +33,13 @@ export CC
 export CC_FLAGS
 export MPICC
 export MPICC_FLAGS
-export MPI_BASE
-export MPI_CFLAGS
 export MPI_VERSION
+export ROOTDIR
+export SRCDIR
+export DESTDIR
+export ETCDIR
+export TMPDIR
+export DOCDIR
 export PAPI_BASE
 export PAPI_CFLAGS
 export PAPI_LDFLAGS
@@ -56,20 +51,12 @@ export SLURM_CFLAGS
 export DB_BASE
 export DB_CFLAGS
 export DB_LDFLAGS
-export ROOTDIR
-export SRCDIR
-export DESTDIR
-export ETCDIR
-export TMPDIR
-export DOCDIR
 export CHOWN_USR
 export CHOWN_GRP
-export FEAT_AVX512
-export VER_MAJOR
-export VER_MINOR
 export CONSTANTS
 export REPLACE
-
+export FEAT_AVX512
+export FEAT_FORT
 
 ######## RULES
 
