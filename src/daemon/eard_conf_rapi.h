@@ -112,6 +112,11 @@ typedef struct app_info{
 	uint step_id;
 }app_info_t;
 
+typedef struct request_header {
+    char type;
+    uint size;
+} request_header_t;
+
 typedef struct eard_policy_info{
     ulong freq; /* default freq in KH, divide by 1000000 to show Ghz */
     uint th;     /* th x 100, divide by 100 */
