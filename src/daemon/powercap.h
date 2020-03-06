@@ -29,7 +29,39 @@
 
 #ifndef _EAR_POWERCAP_H
 #define _EAR_POWERCAP_H
+#define <pthread.h>
 #include <daemon/eard_conf_rapi.h>
+
+#define DOMAIN_NODE 0
+#define DOMAIN_CPU 1
+#define PC_STATUS_OK 			0
+#define PC_STATUS_GREEDY 	1
+#define PC_STATUS_RELEASE 2
+#define PC_STATUS_ASK_DEF	3
+#define PC_STATUS_IDLE		4
+#define PC_STATUS_ERROR		100;
+
+typedef struct node_powercap_opt {
+	pthread_mutex_t lock;
+  uint def_powercap; /* powercap default value defined in ear.conf */
+  uint powercap_idle; /* powercap to be applied at idle periods */
+	uint current_pc;		/* Current limit */
+	uint last_t1_allocated; /* Power allocated at last T1,guaranteed */
+	uint released;			/* Power released since last T1 */
+	uint max_node_power; /* Maximum node power */
+  uint th_inc; /* Percentage to mark powercap_status as greedy */
+  uint th_red; /* Percentage to mark powercap_status as released */
+ 	uint th_release /* Percentage of power to be released */
+	uint powercap_status; /* Current status */
+	uint max_inc_new_jobs; /* Max extra power for new jobs */
+	uint requested;
+}node_powercap_opt_t;
+
+int powercap_init();
 void get_powercap_status(powercap_status_t *my_status);
 void set_powercap_opt(powercap_opt_t *opt);
+uint get_powercap_value();
+int set_powercap_value(uint domain,uint limit);
+int is_powercap_set();
+void print_powercap_opt(powercap_opt_t *opt);
 #endif

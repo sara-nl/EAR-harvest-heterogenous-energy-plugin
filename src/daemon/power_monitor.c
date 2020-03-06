@@ -1255,7 +1255,7 @@ uint powermon_current_power()
 {
 	return (uint)last_power_reported;
 }
-uint powermon_get_powercap()
+uint powermon_get_powercap_def()
 {
 	return (uint) my_node_conf->max_power_cap;
 }
