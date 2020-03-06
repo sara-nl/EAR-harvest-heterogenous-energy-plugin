@@ -29,7 +29,7 @@
 
 #ifndef _EAR_POWERCAP_H
 #define _EAR_POWERCAP_H
-#define <pthread.h>
+#include <pthread.h>
 #include <daemon/eard_conf_rapi.h>
 
 #define DOMAIN_NODE 0
@@ -51,7 +51,7 @@ typedef struct node_powercap_opt {
 	uint max_node_power; /* Maximum node power */
   uint th_inc; /* Percentage to mark powercap_status as greedy */
   uint th_red; /* Percentage to mark powercap_status as released */
- 	uint th_release /* Percentage of power to be released */
+ 	uint th_release; /* Percentage of power to be released */
 	uint powercap_status; /* Current status */
 	uint max_inc_new_jobs; /* Max extra power for new jobs */
 	uint requested;
