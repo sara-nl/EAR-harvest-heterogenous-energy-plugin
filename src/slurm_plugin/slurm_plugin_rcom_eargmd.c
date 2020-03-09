@@ -36,42 +36,42 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_start");
 
-	// Disabled
-	//return ESPANK_SUCCESS;
-
-	// Pack deserialization
-	buffer[0] = '\0';
-	getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH);
-	sd->pack.eargmd.secured = atoi(buffer);
-
-	if (!sd->pack.eargmd.enabled || sd->pack.eargmd.secured) {
-		plug_verbose(sp, 3, "connection with EARGMD not enabled or secured");
+	// Limit
+	if (sd->job.node_n < sd->pack.eargmd.min) {
+		plug_verbose(sp, 2, "EARGMD is not connected because not enough nodes (%d < %d)",
+			sd->job.node_n, sd->pack.eargmd.min);
 		return ESPANK_SUCCESS;
 	}
-
+	// Pack deserialization
+	if (getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH)) {
+		sd->pack.eargmd.secured = atoi(buffer);
+	}
 	//
-	if (sd->job.n_nodes == 0) {
-		plug_error(sp, "while getting the node number '%u'", sd->job.n_nodes);
+	if (!sd->pack.eargmd.enabled || sd->pack.eargmd.secured) {
+		plug_error(sp, "connection with EARGMD not enabled or secured (%d,%d)",
+			sd->pack.eargmd.enabled, sd->pack.eargmd.secured);
 		return ESPANK_ERROR;
 	}
-
+	//
+	if (sd->job.node_n == 0) {
+		plug_error(sp, "while getting the node number '%u'", sd->job.node_n);
+		return ESPANK_ERROR;
+	}
 	// Verbosity
-	plug_verbose(sp, 2, "trying to connect EARGMD with host '%s', port '%u', and nnodes '%u'",
-		sd->pack.eargmd.host, sd->pack.eargmd.port, sd->job.n_nodes);
-
+	plug_verbose(sp, 2, "connecting EARGMD with host '%s', port '%u', and nnodes '%u'",
+		sd->pack.eargmd.host, sd->pack.eargmd.port, sd->job.node_n);
 	// Connection
 	if (eargm_connect(sd->pack.eargmd.host, sd->pack.eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
-	if (!eargm_new_job(sd->job.n_nodes)) {
+	if (!eargm_new_job(sd->job.node_n)) {
 		plug_error(sp, "while speaking with EAR global manager daemon");
 	}
 	eargm_disconnect();
 
 	// Informing that this report has to be finished
 	sd->pack.eargmd.connected = 1;
-
 	// Enabling protection (hypercontained)
 	setenv_agnostic(sp, Var.gm_secure.loc, "1", 1);
 
@@ -82,21 +82,18 @@ int plug_rcom_eargmd_job_finish(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_finish");
 
-	// Disabled
-	//return ESPANK_SUCCESS;
-
 	if (!sd->pack.eargmd.connected) {
 		return ESPANK_SUCCESS;
 	}
 
 	plug_verbose(sp, 2, "trying to disconnect EARGMD with host '%s', port '%u', and nnodes '%u'",
-                sd->pack.eargmd.host, sd->pack.eargmd.port, sd->job.n_nodes);
+                sd->pack.eargmd.host, sd->pack.eargmd.port, sd->job.node_n);
 
 	if (eargm_connect(sd->pack.eargmd.host, sd->pack.eargmd.port) < 0) {
 		plug_error(sp, "while connecting with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}
-	if (!eargm_end_job(sd->job.n_nodes)) {
+	if (!eargm_end_job(sd->job.node_n)) {
 		plug_error(sp, "while speaking with EAR global manager daemon");
 		return ESPANK_ERROR;
 	}

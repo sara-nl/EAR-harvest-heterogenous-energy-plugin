@@ -105,8 +105,6 @@ int pipeline(int argc, char *argv[], int sp, int at)
 		if (plug_context_is(_sp, Context.srun))
 		{
 			slurm_spank_init_post_opt(_sp, argc, argv);
-
-			slurm_spank_local_user_init(_sp, argc, argv);
 		}
 		else if (plug_context_is(_sp, Context.remote))
 		{
@@ -271,7 +269,7 @@ int job(int argc, char *argv[])
 	print_argv(_argc, _argv);
 	
 	// Going inactive?
-	_inactive = isenv_agnostic(_sp, Var.ctx_srun.rem, "1");
+	_inactive = isenv_agnostic(_sp, Var.was_srun.rem, "1");
 
 	if (_inactive) {
 		_error = 2;

@@ -27,20 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef MPI_INTERFACEF_H
 #define MPI_INTERFACEF_H
 
-#include <mpi.h>
-
-#ifndef MPI3_CONST
-#  if MPI_VERSION >= 3
-#    define MPI3_CONST const
-#  else
-#    define MPI3_CONST
-#  endif
-#endif
+#include <library/mpi_intercept/mpi.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -286,7 +276,6 @@ void EAR_MPI_Win_start_F_leave(void);
 void EAR_MPI_Win_wait_F_enter(MPI_Fint *win, MPI_Fint *ierror);
 void EAR_MPI_Win_wait_F_leave(void); /**@}*/ 
 
-
 #if MPI_VERSION >= 3
 void EAR_MPI_Iallgather_F_enter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 void EAR_MPI_Iallgather_F_leave(void);
@@ -329,7 +318,6 @@ void EAR_MPI_Iscatter_F_leave(void);
 
 void EAR_MPI_Iscatterv_F_enter(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 void EAR_MPI_Iscatterv_F_leave(void);
-
 #endif
 
 #ifdef __cplusplus
