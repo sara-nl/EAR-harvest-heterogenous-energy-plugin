@@ -529,7 +529,7 @@ void process_remote_requests(int clientfd) {
 			dyncon_set_risk(clientfd, &command);
 			return;
 			break;
-        case EAR_RC_GET_POWERCAP_STATUS:
+    case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd);
             return;
 		default:
