@@ -54,7 +54,7 @@ typedef struct node_powercap_opt {
  	uint th_release; /* Percentage of power to be released */
 	uint powercap_status; /* Current status */
 	uint max_inc_new_jobs; /* Max extra power for new jobs */
-	uint requested;
+	uint requested; /* Extra power requested, used when node is greedy or powercap < def_powercap */
 }node_powercap_opt_t;
 
 int powercap_init();

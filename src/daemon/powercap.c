@@ -313,26 +313,37 @@ int periodic_metric_info(double cp)
 	pthread_mutex_unlock(&my_pc_opt.lock);
 	return EAR_SUCCESS;
 }
+void print_power_status(powercap_status_t *my_status)
+{
+	int i;
+	fprintf(stderr,"Power_status:Ilde %u released %u total greedy %u total new %u current power %u total power cap %u\n",
+	my_status->idle_nodes,my_status->released_power,my_status->num_greedy,my_status->num_newjob_nodes,my_status->current_power,
+	my_status->total_powercap);
+	if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u) ",my_status->greedy_nodes,my_status->greedy_req);
+	if (my_status->num_newjob_nodes) fprintf(stderr,"new_node=(ip=%u,req=%u) ",my_status->powerdef_nodes,my_status->new_req);
+}
 void get_powercap_status(powercap_status_t *my_status)
 {
 	debug("get_powercap_status");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
-	my_status->idle_nodes=powermon_is_idle();
+	memset(my_status,0,sizeof(powercap_status_t));
 	switch(my_pc_opt.powercap_status){
-		case PC_STATUS_OK:my_status->num_greedy=0;break;
+		case PC_STATUS_IDLE:my_status->idle_nodes=1;break;
 		case PC_STATUS_GREEDY:
 			my_status->num_greedy=1; 
-			/* How do deal with greedy vector */;break;
-		case PC_STATUS_RELEASE:my_status->released_power=my_pc_opt.released;
-		case PC_STATUS_ASK_DEF:
-			my_status->num_newjob_nodes++;
-			/*my_status->powerdef_nodes*/;break;
+			my_status->greedy_nodes=0;
+			my_status->greedy_req=my_pc_opt.requested;
+			;break;
+		case PC_STATUS_RELEASE:my_status->released_power=my_pc_opt.released;break;
+		case PC_STATUS_ASK_DEF: my_status->num_newjob_nodes=1;
+			my_status->powerdef_nodes=0;
+			my_status->new_req=my_pc_opt.requested;
 	}
 	
 	my_status->current_power=powermon_current_power();
 	my_status->total_powercap=get_powercap_value();
-	verbose(1,"powercap_status idle=%u current_power %u powercap %u",my_status->idle_nodes,my_status->current_power,my_status->total_powercap);
 	pthread_mutex_unlock(&my_pc_opt.lock);
+	print_power_status(my_status);
 }
 
 
