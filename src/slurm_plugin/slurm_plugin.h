@@ -93,6 +93,7 @@ typedef struct plug_eargmd {
 	uint secured;
 	uint enabled;
 	uint port;
+	uint min;
 } plug_eargmd_t;
 
 typedef struct plug_package {

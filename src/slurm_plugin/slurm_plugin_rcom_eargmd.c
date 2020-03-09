@@ -36,6 +36,12 @@ int plug_rcom_eargmd_job_start(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_rcom_eargmd_job_start");
 
+	// Limit
+	if (sd->job.node_n < sd->pack.eargmd.min) {
+		plug_verbose(sp, 2, "EARGMD is not connected because not enough nodes (%d < %d)",
+			sd->job.node_n, sd->pack.eargmd.min);
+		return ESPANK_SUCCESS;
+	}
 	// Pack deserialization
 	if (getenv_agnostic(sp, Var.gm_secure.loc, buffer, SZ_PATH)) {
 		sd->pack.eargmd.secured = atoi(buffer);
