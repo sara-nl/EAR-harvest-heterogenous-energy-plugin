@@ -28,7 +28,8 @@
 */
 
 #include <common/output/debug.h>
-#include <library/api/mpif_interface.h>
+#include <library/api/api.h>
+#include <library/api/earf_syms.h>
 
 void earf_Allgather_enter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror) {
     debug(">> F Allgather...............");

@@ -411,7 +411,6 @@ void mpi_ibsend__ (MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MP
 void mpi_init(MPI_Fint *ierror)
 {
 	debug(">> F MPI_Init...............");
-	mpi_f_symbol_load();
 	IF mpif_ear.Init_enter(ierror);
 	mpif_mpi.init(ierror);
 	IF mpif_ear.Init_leave();
@@ -423,7 +422,6 @@ void mpi_init__ (MPI_Fint *ierror) __attribute__((alias("mpi_init")));
 void mpi_init_thread(MPI_Fint *required, MPI_Fint *provided, MPI_Fint *ierror)
 {
 	debug(">> F MPI_Init_thread...............");
-	mpi_f_symbol_load();
 	IF mpif_ear.Init_thread_enter(required, provided, ierror);
 	mpif_mpi.init_thread(required, provided, ierror);
 	IF mpif_ear.Init_thread_leave();

@@ -28,12 +28,20 @@
 */
 
 #define _GNU_SOURCE
-#include <common/output/debug.h>
+#define SHOW_DEBUGS
+
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <common/system/file.h>
 #include <common/system/symplug.h>
+#include <common/output/verbose.h>
+#include <common/config/config_env.h>
 #include <library/api_loader/loader.h>
 
 static char buffer1[4096];
 static char buffer2[4096];
+static char library[4096];
 static char version[256];
 int earf_loaded;
 int earc_loaded;
@@ -50,7 +58,7 @@ void strntolow(char *string)
 	}
 }
 
-static int extract_value(char *string, char *needle, char *buffer)
+static int get_version(char *string, char *needle, char *buffer)
 {
 	char *p = strtok(string, " ");
 	char *q;
@@ -148,66 +156,101 @@ static int mpi_detect_mvapich()
 
 static void load_c_mpi_symbols()
 {
-	symplug_join(RTLD_NEXT, (void **) &mpic_mpi, mpic_mpi_names, mpic_mpi_n);
+	symplug_join(RTLD_NEXT, (void **) &mpic_mpi, mpic_names, mpic_n);
 }
 
 static void load_f_mpi_symbols()
 {
-	symplug_join(RTLD_NEXT, (void **) &mpif_mpi, mpif_mpi_names, mpif_mpi_n);
+	symplug_join(RTLD_NEXT, (void **) &mpif_mpi, mpif_names, mpif_n);
 }
 
-static void load_c_ear_symbols()
+static void load_earc_symbols(char *path_so)
 {
-	mpic_ear_loaded = 1;
-	symplug_join(RTLD_NEXT, (void **) &mpic_ear, mpic_ear_names, mpic_ear_n);
+	verbose(2, "loading EAR C (%s)", path_so);
+	symplug_open(path_so, (void **) &mpic_ear, earc_names, earc_n);
+	// Symbols loaded
+	earc_loaded = 1;
 }
 
-static void load_f_ear_symbols()
+static void load_earf_symbols(char *path_so)
 {
-	mpif_ear_loaded = 1;
-	symplug_join(RTLD_NEXT, (void **) &mpif_ear, mpif_ear_names, mpif_ear_n);
+	verbose(2, "loading EAR F (%s)", path_so);
+	symplug_open(path_so, (void **) &mpif_ear, earf_names, earf_n);
+	// Symbols loaded
+	earf_loaded = 1;
+}
+
+static int load_create_path(char *buffer, char *vendor, char *version)
+{
+	char *path = NULL;
+
+	//
+	if ((path = getenv("SLURM_HACK_LOADER")) != NULL) {
+		sprintf(buffer, "%s", path);
+		return 1;
+	}
+	
+	// Getting the installation path
+	if ((path = getenv(VAR_INS_PATH)) == NULL) {
+		verbose(2, "installation path not found");
+		return 0;
+	}
+	
+	//sprintf(buffer, "%s/%s.%s%s.so", path, REL_PATH_LIBR, vendor, version);
+	sprintf(buffer, "%s/%s.so", path, REL_PATH_LIBR);
+	return file_is_regular(buffer);
 }
 
 static void load_x_ear_symbols()
 {
 	int len = 4096;
 
-	//
+	// Getting the library version
 	MPI_Get_library_version(buffer1, &len);
 	strntolow(buffer1);
-	debug("%s", buffer1);
 
 	//
-	if (mpi_detect_intel())
-	{
-		debug("Intel MPI detected, version '%s'", version);
-		load_c_ear_symbols();
+	if (mpi_detect_intel()) {
+		if (load_create_path(library, "intel", version)) {
+			load_earc_symbols(library);
+		}
 	} else if (mpi_detect_open()) {
-		debug("Open MPI detected, version '%s'", version);
-		load_c_ear_symbols();
-		load_f_ear_symbols();
+		if (load_create_path(library, "open", version) == 1) {
+			load_earc_symbols(library);
+			load_earf_symbols(library);
+		}
 	} else if (mpi_detect_mvapich()) {
-		debug("MVAPICH MPI detected, version '%s'", version);
-		load_c_ear_symbols();
-		load_f_ear_symbols();
+		if (load_create_path(library, "mvapich", version)) {
+			load_earc_symbols(library);
+			load_earf_symbols(library);
+		}
 	} else {
-		debug("Unknown MPI detected");
+		verbose(2, "Unknown MPI detected");
 	}
 
 	return;
 }
 
-static int symbols_mpi()
+static int exists_symbols_mpi()
 {
-	void **calls;
-	calls = malloc(sizeof(void *) * 1);
-	symplug_join(RTLD_DEFAULT, calls, (const char **) "MPI_Get_library_version", 1);
+	const char *sym_version[] = { "MPI_Get_library_version" };
+	void *calls[1] = { NULL };
+	char *var = NULL;
+
+	if ((var = getenv("SLURM_LOADER_VERBOSE")) != NULL)
+	{
+		VERB_SET_EN(1);
+		VERB_SET_LV(atoi(var));
+	}
+	
+	symplug_join(RTLD_DEFAULT, calls, sym_version, 1);
 	return (calls[0] != NULL);
 }
 
 void  __attribute__ ((constructor)) loader()
 {
-	if (symbols_mpi())
+return;
+	if (exists_symbols_mpi())
 	{
 		load_c_mpi_symbols();
 		load_f_mpi_symbols();

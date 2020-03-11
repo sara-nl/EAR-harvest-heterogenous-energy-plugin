@@ -133,7 +133,7 @@ typedef struct mpic_s
 	#endif
 } mpic_t;
 
-const char *mpic_names[] =
+const char *mpic_names[] __attribute__((weak)) =
 {
 	"MPI_Allgather",
 	"MPI_Allgatherv",

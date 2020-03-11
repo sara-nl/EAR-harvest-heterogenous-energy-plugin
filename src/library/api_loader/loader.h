@@ -30,8 +30,8 @@
 #ifndef LIBRARY_LOADER_H
 #define LIBRARY_LOADER_H
 
-#include <library/api/mpic_interface.h>
-#include <library/api/mpif_interface.h>
+#include <library/api/earc_syms.h>
+#include <library/api/earf_syms.h>
 #include <library/api_loader/mpic_syms.h>
 #include <library/api_loader/mpif_syms.h>
 

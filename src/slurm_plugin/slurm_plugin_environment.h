@@ -30,6 +30,8 @@
 #ifndef EAR_SLURM_PLUGIN_ENVIRONMENT_H
 #define EAR_SLURM_PLUGIN_ENVIRONMENT_H
 
+#include <common/config/config_env.h>
+
 // Verbosity
 #ifdef ERUN
 	#define plug_verbose(sp, level, ...) \
@@ -114,7 +116,7 @@ struct variables_s {
 	varnames_t comp_moni;
 	varnames_t comp_test;
 	varnames_t comp_verb;
-	varnames_t hack_libr;
+	varnames_t hack_load;
 	varnames_t verbose;
 	varnames_t policy;
 	varnames_t policy_th;
@@ -155,28 +157,27 @@ struct variables_s {
 .comp_moni = { .cmp = "SLURM_COMP_MONITOR" },
 .comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
-.hack_libr = { .hck = "SLURM_HACK_LIBRARY" },
-.verbose   = { .loc = "SLURM_LOC_VERB", .ear = "EAR_VERBOSE"          },
-.policy    = { .loc = "SLURM_LOC_POLI", .ear = "EAR_POWER_POLICY"     },
-.policy_th = { .loc = "SLURM_LOC_POTH", .ear = "EAR_POWER_POLICY_TH"  },
-.frequency = { .loc = "SLURM_LOC_FREQ", .ear = "EAR_FREQUENCY"        },
-.p_state   = { .loc = "SLURM_LOC_PSTA", .ear = "EAR_P_STATE"          },
-.learning  = { .loc = "SLURM_LOC_LERN", .ear = "EAR_LEARNING_PHASE"   },
-.tag       = { .loc = "SLURM_LOC_ETAG", .ear = "EAR_ENERGY_TAG"       },
-.path_usdb = { .loc = "SLURM_LOC_USDB", .ear = "EAR_USER_DB_PATHNAME" },
-.path_trac = { .loc = "SLURM_LOC_TRAC", .ear = "SLURM_EAR_TRACE_PATH" },
-.gm_host   = { .loc = "SLURM_LOC_GMHS", .ear = ""                     },
-.gm_port   = { .loc = "SLURM_LOC_GMPR", .ear = ""                     },
-.gm_min    = { .loc = "SLURM_LOC_GMMI", .ear = ""                     },
-.gm_secure = { .loc = "SLURM_LOC_GMSC", .ear = ""                     },
-.perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                       },
-.eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"           },
-.name_app  = { .rem = "SLURM_JOB_NAME",      .ear = "EAR_APP_NAME"    },
+.hack_load = { .hck = "SLURM_HACK_LOADER" },
+.verbose   = { .loc = "SLURM_LOC_VERB",      .ear = VAR_OPT_VERB      },
+.policy    = { .loc = "SLURM_LOC_POLI",      .ear = VAR_OPT_POLI      },
+.policy_th = { .loc = "SLURM_LOC_POTH",      .ear = VAR_OPT_THRA      },
+.frequency = { .loc = "SLURM_LOC_FREQ",      .ear = VAR_OPT_FREQ      },
+.p_state   = { .loc = "SLURM_LOC_PSTA",      .ear = VAR_OPT_PSTA      },
+.learning  = { .loc = "SLURM_LOC_LERN",      .ear = VAR_OPT_LERN      },
+.tag       = { .loc = "SLURM_LOC_ETAG",      .ear = VAR_OPT_ETAG      },
+.path_usdb = { .loc = "SLURM_LOC_USDB",      .ear = VAR_OPT_USDB      },
+.path_trac = { .loc = "SLURM_LOC_TRAC",      .ear = VAR_OPT_TRAC      },
+.gm_host   = { .loc = "SLURM_LOC_GMHS",      .ear = ""                },
+.gm_port   = { .loc = "SLURM_LOC_GMPR",      .ear = ""                },
+.gm_secure = { .loc = "SLURM_LOC_GMSC",      .ear = ""                },
+.perf_pen  = { .loc = "",                    .ear = VAR_OPT_THRB      },
+.eff_gain  = { .loc = "",                    .ear = VAR_OPT_THRC      },
+.name_app  = { .rem = "SLURM_JOB_NAME",      .ear = VAR_APP_NAME      },
 .user      = { .rem = "SLURM_ERUSER",        .ear = "" },
 .group     = { .rem = "SLURM_ERGRUP",        .ear = "" },
 .account   = { .rem = "SLURM_JOB_ACCOUNT",   .ear = "" },
-.path_temp = { .rem = "SLURM_ERTEMP",        .ear = "EAR_TMP"         },
-.path_inst = { .rem = "SLURM_ERINST",        .ear = "" },
+.path_temp = { .rem = "SLURM_ERTEMP",        .ear = VAR_TMP_PATH      },
+.path_inst = { .rem = "SLURM_ERINST",        .ear = VAR_INS_PATH      },
 .job_nodl  = { .rem = "SLURM_JOB_NODELIST",  .ear = "" },
 .job_nodn  = { .rem = "SLURM_JOB_NUM_NODES", .ear = "" },
 .step_nodl = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
