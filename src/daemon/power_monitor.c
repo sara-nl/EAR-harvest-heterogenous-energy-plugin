@@ -45,7 +45,7 @@
 #include <common/config.h>
 #include <common/system/sockets.h>
 
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -57,6 +57,7 @@
 #include <common/hardware/hardware_info.h>
 #include <common/hardware/frequency.h>
 #include <daemon/power_monitor.h>
+#include <daemon/powercap.h>
 #include <daemon/node_metrics.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
@@ -662,6 +663,9 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	ulong f;
 	uint user_type;
 	verbose(VJOBPMON, "powermon_new_job (%lu,%lu)", appID->job.id, appID->job.step_id);
+#if POWERCAP
+	if (powermon_is_idle()) powercap_idle_to_run();
+#endif
 	if (new_context(appID->job.id, appID->job.step_id) != EAR_SUCCESS) {
 		error("Maximum number of contexts reached, no more concurrent jobs supported");
 		return;
@@ -778,6 +782,10 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 		}
 		ccontext = select_last_context();
 	}
+#if POWERCAP
+  if (powermon_is_idle()) powercap_run_to_idle();
+#endif
+
 }
 
 /*
@@ -958,6 +966,9 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 
 	/* To be usd by status */
 	last_power_reported = my_current_power->avg_dc;
+#if POWERCAP
+	periodic_metric_info(last_power_reported);
+#endif
 	copy_node_metrics(&my_nm_id, &last_nm, nm);
 
 	current_sample.avg_f = (ulong) get_nm_cpufreq(&my_nm_id, nm);;
@@ -1149,6 +1160,9 @@ void *eard_power_monitoring(void *noinfo) {
 	// current_sample is the current powermonitoring period
 	debug("init_periodic_metric");
 	init_periodic_metric(&current_sample);
+#if POWERCAP
+	powercap_init();
+#endif
 	create_powermon_out();
 
 	// We will collect and report avg power until eard finishes
@@ -1249,7 +1263,8 @@ void print_powermon_app(powermon_app_t *app) {
 
 uint powermon_is_idle()
 {
-	return (ccontext>=0);
+	debug("powermon_is_idle ccontext %d",ccontext);
+	return (ccontext<0);
 }
 uint powermon_current_power()
 {

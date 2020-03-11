@@ -39,7 +39,7 @@
 #define PC_STATUS_RELEASE 2
 #define PC_STATUS_ASK_DEF	3
 #define PC_STATUS_IDLE		4
-#define PC_STATUS_ERROR		100;
+#define PC_STATUS_ERROR		100
 
 typedef struct node_powercap_opt {
 	pthread_mutex_t lock;
@@ -64,4 +64,11 @@ uint get_powercap_value();
 int set_powercap_value(uint domain,uint limit);
 int is_powercap_set();
 void print_powercap_opt(powercap_opt_t *opt);
+int powercap_idle_to_run();
+int powercap_run_to_idle();
+int powercap_init();
+int periodic_metric_info(double cp);
+int is_powercap_set();
+int is_powercap_on();
+
 #endif

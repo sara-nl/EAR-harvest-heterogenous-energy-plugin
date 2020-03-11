@@ -77,7 +77,7 @@ typedef struct risk_dec{
 typedef struct powercap_opt{
 	uint num_greedy;			/* Number of greedy nodes */
 	int greedy_nodes[TEMP_NUM_NODES]; 		/* List of greedy nodes */
-	uint extra_power[TEMP_NUM_NODES];		/* Extra power received by each greedy node */
+	int extra_power[TEMP_NUM_NODES];		/* Extra power received by each greedy node */
 	uint max_inc_new_jobs; /* Max power allowed to be received by new jobs since last powercap reported */
 }powercap_opt_t;
 

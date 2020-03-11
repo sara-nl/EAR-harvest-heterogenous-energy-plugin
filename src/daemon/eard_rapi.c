@@ -1396,7 +1396,7 @@ int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t 
 }
 
 /** Asks for powercap_status for all nodes */
-int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status)
+int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status)
 {
 
     int i, j,  rc, total_ranges, num_all_status = 0, num_temp_status;
@@ -1410,7 +1410,7 @@ int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_
     command.time_code = ctime;
     command.req = EAR_RC_GET_POWERCAP_STATUS;
 
-    total_ranges = get_ip_ranges(&my_cluster_conf, &ip_counts, &ips);
+    total_ranges = get_ip_ranges(my_cluster_conf, &ip_counts, &ips);
     for (i = 0; i < total_ranges; i++)
     {
         for (j = 0; j < ip_counts[i]; j++)
@@ -1419,7 +1419,7 @@ int cluster_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_
             temp.sin_addr.s_addr = ips[i][j];
             strcpy(next_ip, inet_ntoa(temp.sin_addr));
             
-            rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
+            rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
             if (rc<0){
                 debug("Error connecting with node %s, trying to correct it", next_ip);
                 num_temp_status = 0;

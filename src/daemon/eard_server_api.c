@@ -57,6 +57,7 @@
 int *ips = NULL;
 int total_ips = -1;
 int self_id = -1;
+int init_ips_ready=0;
 
 // based on getaddrinfo man pages
 int create_server_socket(uint port)
@@ -148,6 +149,7 @@ int read_command(int s,request_t *command)
 	pending=sizeof(request_t);
 	done=0;
 
+	verbose(VCONNECT,"read_command request size %d",pending);
 	ret=read(s,command,sizeof(request_t));
 	//ret=recv(s,command,sizeof(request_t), MSG_DONTWAIT);
 	if (ret<0){
@@ -189,6 +191,7 @@ int init_ips(cluster_conf_t *my_conf)
     if (ret < 1) {
         ips = NULL;
         self_id = -1;
+				init_ips_ready=-1;
         return EAR_ERROR;
     }
     if (strlen(my_conf->net_ext) > 0)
@@ -207,9 +210,12 @@ int init_ips(cluster_conf_t *my_conf)
         free(ips);
         ips = NULL;
         error("Couldn't find node in IP list.");
+				init_ips_ready=-1;
         return EAR_ERROR;
     }
     total_ips = ret;
+		verbose(0,"Init_ips_ready=1");	
+		init_ips_ready=1;	
     return EAR_SUCCESS;
   
 }
