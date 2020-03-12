@@ -533,7 +533,7 @@ void process_remote_requests(int clientfd) {
 			dyncon_set_risk(clientfd, &command);
 			return;
 			break;
-        case EAR_RC_GET_POWERCAP_STATUS:
+    case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd);
             return;
 		default:
@@ -595,7 +595,8 @@ void *eard_dynamic_configuration(void *tmp)
 #if USE_NEW_PROP
 	verbose(0, "Init for ips");
 	node_found = init_ips(&my_cluster_conf);
-    if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file");
+  if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file");
+	verbose(0,"Init ips ready");
 #endif
 
 

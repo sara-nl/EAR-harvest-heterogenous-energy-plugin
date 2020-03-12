@@ -581,7 +581,7 @@ void set_default_island_conf(node_island_t *isl_conf, uint id)
 	isl_conf->max_sig_power=MAX_SIG_POWER;
 	isl_conf->max_error_power=MAX_ERROR_POWER;
 	isl_conf->max_temp=MAX_TEMP;
-	isl_conf->max_power_cap=MAX_POWER_CAP;
+	isl_conf->max_power_cap=DEF_POWER_CAP;
 	strcpy(isl_conf->power_cap_type,POWER_CAP_TYPE);
 }
 

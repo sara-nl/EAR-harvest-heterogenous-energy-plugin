@@ -10,7 +10,7 @@
 
 %define name    ear-powercap
 %define release   3
-%define version   3.1
+%define version   3.3
 
 # Information
 # Prefix  Just for when missing any prefix
