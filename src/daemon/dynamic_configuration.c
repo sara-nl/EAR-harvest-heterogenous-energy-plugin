@@ -338,7 +338,11 @@ void dyncon_get_status(int fd, request_t *command) {
 		return;
 	}
 	powermon_get_status(&status[num_status - 1]);
+#ifdef NEW_STATUS
+    send_data(fd, sizeof(status_t) * num_status, (char *)status, EAR_TYPE_STATUS);
+#else
 	write(fd, &return_status, sizeof(return_status));
+#endif
 	write(fd, status, sizeof(status_t) * num_status);
 	debug("Returning from dyncon_get_status");
 	free(status);

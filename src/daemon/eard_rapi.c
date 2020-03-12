@@ -141,21 +141,38 @@ int send_non_block_command(request_t *command)
     return (!to_recv); // Should we return ack ?
 }
 
-int recieve_data(int fd, void **data)
+int send_data(int fd, size_t size, char *data, int type)
+{
+    int ret;
+    request_header_t head;
+    head.size = size;
+    head.type = type;
+
+    ret = write(fd, &head, sizeof(request_header_t));
+    ret = write(fd, data, size);
+
+    return EAR_SUCCESS; 
+
+}
+
+request_header_t recieve_data(int fd, void **data)
 {
     int ret, total, pending;
     request_header_t head;
     char *read_data;
+    head.type = 0;
+    head.size = 0;
 
     ret = read(fd, &head, sizeof(request_header_t));
     if (ret < 0) {
         error("Error recieving response data header (%s) \n", strerror(errno));
-        return EAR_ERROR;
+        return head;
     }
     if (head.size < 1) {
         error("Error recieving response data. Invalid data size (%d).\n", head.size);
-        return EAR_ERROR;
+        return head;
     }
+    //write ack should go here if we implement it
     read_data = calloc(head.size, sizeof(char));
     total = 0;
     pending = head.size;
@@ -164,7 +181,9 @@ int recieve_data(int fd, void **data)
 	if (ret<0){
 		error("Error by recieve data (%s)",strerror(errno));
         free(read_data);
-		return EAR_ERROR;
+        head.type = 0;
+        head.size = 0;
+		return head;
 	}
 	total+=ret;
 	pending-=ret;
@@ -174,17 +193,36 @@ int recieve_data(int fd, void **data)
 		if (ret<0){
 		    error("Error by recieve data (%s)",strerror(errno));
             free(read_data);
-			return EAR_ERROR;
+            head.type = 0;
+            head.size = 0;
+			return head;
 		}
 		total+=ret;
 		pending-=ret;
 	}
     *data = read_data;
 	debug("Returning from recieve_data with type %d\n", head.type);
-	return head.type;
+	return head;
 
 }
 
+#ifdef NEW_STATUS
+int new_send_staus(request_t *command, status_t **status)
+{
+    request_header_t head;
+    send_command(command);
+    head = recieve_data(eards_sfd, (void**)status);
+    if (head.type != EAR_TYPE_STATUS) {
+        error("Invalid type error, got type %d expected %d\n", head.type, EAR_TYPE_STATUS);
+        free(*status);
+        return EAR_ERROR;
+    }
+
+    return (head.size/sizeof(status_t));
+
+}
+
+#else
 //specifically sends and reads the ack of a status command
 int send_status(request_t *command, status_t **status)
 {
@@ -244,6 +282,7 @@ int send_status(request_t *command, status_t **status)
 	debug("Returning from send_status with %d\n",ack);
 	return ack;
 }
+#endif
 
 int set_socket_block(int sfd, char blocking)
 {

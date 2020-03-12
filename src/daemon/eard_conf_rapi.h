@@ -113,8 +113,8 @@ typedef struct app_info{
 }app_info_t;
 
 typedef struct request_header {
-    char type;
-    uint size;
+    int type;
+    size_t size;
 } request_header_t;
 
 typedef struct eard_policy_info{
@@ -169,6 +169,8 @@ typedef struct powercap_status{
 
 
 
+#define EAR_TYPE_STATUS         2001
+#define EAR_TYPE_POWER_STATUS   2002
 
 
 #define NO_COMMAND 100000
