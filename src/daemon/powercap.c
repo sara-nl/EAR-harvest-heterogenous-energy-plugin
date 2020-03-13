@@ -378,11 +378,10 @@ int periodic_metric_info(double cp)
 void print_power_status(powercap_status_t *my_status)
 {
 	int i;
-	fprintf(stderr,"Power_status:Ilde %u released %u total greedy %u total new %u current power %u total power cap %u\n",
-	my_status->idle_nodes,my_status->released_power,my_status->num_greedy,my_status->num_newjob_nodes,my_status->current_power,
+	fprintf(stderr,"Power_status:Ilde %u released %u requested %u total greedy %u  current power %u total power cap %u\n",
+	my_status->idle_nodes,my_status->released,my_status->requested,my_status->num_greedy,my_status->current_power,
 	my_status->total_powercap);
-	if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u) ",my_status->greedy_nodes,my_status->greedy_req);
-	if (my_status->num_newjob_nodes) fprintf(stderr,"new_node=(ip=%u,req=%u) ",my_status->powerdef_nodes,my_status->new_req);
+	if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes,my_status->greedy_req,my_status->extra_power);
 }
 void get_powercap_status(powercap_status_t *my_status)
 {
@@ -395,14 +394,21 @@ void get_powercap_status(powercap_status_t *my_status)
 			my_status->num_greedy=1; 
 			my_status->greedy_nodes=my_ip; /* IP missing */
 			my_status->greedy_req=my_pc_opt.requested;
-			;break;
-		case PC_STATUS_RELEASE:my_status->released_power=my_pc_opt.released;
+			if (my_pc_opt.last_t1_allocated>my_pc_opt.def_powercap) my_status->extra_power=my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap;
+			break;
+		case PC_STATUS_RELEASE:my_status->released=my_pc_opt.released;
 		my_pc_opt.powercap_status=PC_STATUS_OK;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
-		case PC_STATUS_ASK_DEF: my_status->num_newjob_nodes=1;
-			my_status->powerdef_nodes=my_ip; /* IP missing */
-			my_status->new_req=my_pc_opt.requested;
+		case PC_STATUS_ASK_DEF: 
+			my_status->requested=my_pc_opt.requested;
 			break;
 		case PC_STATUS_ERROR: break;
+		case PC_STATUS_OK:
+			if (my_pc_opt.last_t1_allocated>my_pc_opt.def_powercap){
+				my_status->num_greedy=1;my_status->greedy_nodes=my_ip;
+				my_status->greedy_req=0;
+ 				my_status->extra_power=my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap;
+			}	
+			break;
 	}
 	
 	my_status->current_power=powermon_current_power();
