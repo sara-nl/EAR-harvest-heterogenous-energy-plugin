@@ -67,22 +67,20 @@
 */
 
 #define GRACE_PERIOD 100
-#define NO_PROBLEM 	3
-#define WARNING_3	2
-#define WARNING_2	1
-#define PANIC		0
-#define NUM_LEVELS  4
+#define EARGM_NO_PROBLEM 	3
+#define EARGM_WARNING1	2
+#define EARGM_WARNING2	1
+#define EARGM_PANIC		0
 #define DEFCON_L4	0
 #define DEFCON_L3	1
 #define DEFCON_L2	2
+#define NUM_LEVELS  4
 #define BASIC_U		1
 #define KILO_U		1000
 #define MEGA_U		1000000
 
 #define min(a,b) (a<b?a:b)
 
-ulong th_level[NUM_LEVELS]={10,10,5,0};
-ulong pstate_level[NUM_LEVELS]={3,2,1,0};
 uint use_aggregation;
 uint units;
 uint policy;
@@ -287,11 +285,21 @@ uint defcon(ulong e_t2,ulong e_t1,ulong load)
       perc=perc_power;
       break;
   }
-  if (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L4]) return NO_PROBLEM;
-  if ((perc>=my_cluster_conf.eargm.defcon_limits[DEFCON_L4]) && (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L3]))  return WARNING_3;
-  if ((perc>=my_cluster_conf.eargm.defcon_limits[DEFCON_L3]) && (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L2]))  return WARNING_2;
-  return PANIC;
+  if (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L4]) return EARGM_NO_PROBLEM;
+  if ((perc>=my_cluster_conf.eargm.defcon_limits[DEFCON_L4]) && (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L3]))  return EARGM_WARNING1;
+  if ((perc>=my_cluster_conf.eargm.defcon_limits[DEFCON_L3]) && (perc<my_cluster_conf.eargm.defcon_limits[DEFCON_L2]))  return EARGM_WARNING2;
+  return EARGM_PANIC;
 
+}
+
+void create_risk(risk_t *my_risk,int wl)
+{
+	*my_risk=0;
+	switch(wl){
+		case EARGM_WARNING1:set_risk(my_risk,WARNING1);
+		case EARGM_WARNING2:set_risk(my_risk,WARNING2);
+		case EARGM_PANIC:set_risk(my_risk,PANIC);
+	}
 }
 
 void fill_periods(ulong energy)
@@ -458,20 +466,6 @@ void *eargm_server_api(void *p)
 /*
 *	ACTIONS for WARNING and PANIC LEVELS
 */
-ulong eargm_increase_th_all_nodes(int level)
-{
-	ulong th;
-	th=th_level[level];
-	increase_th_all_nodes(th, policy, my_cluster_conf);
-	return th;
-}
-ulong eargm_reduce_frequencies_all_nodes(int level)
-{
-  ulong ps;
-	ps=pstate_level[level];
-	red_def_max_pstate_all_nodes(ps,my_cluster_conf);
-	return ps;
-}
 void report_status(gm_warning_t *my_warning)
 {
     #if SYSLOG_MSG
@@ -503,129 +497,6 @@ void set_gm_status(gm_warning_t *my_warning,ulong et1,ulong et2,ulong ebudget,ui
 		default:strcpy(my_warning->policy,"Error");
 	}
 }
-#if 0
-void aggregate_powercap_status(powercap_status_t *my_cluster_power_status,int num_st,cluster_powercap_status_t *cluster_status)
-{
-	int i,num_greedy=0,num_def=0;
-	uint total_req_greedy,total_extra_power;
-	memset(cluster_status,0,sizeof(cluster_powercap_status_t));
-	for (i=0;i<num_st;i++){
-		if (my_cluster_power_status[i].num_greedy) cluster_status->num_greedy++;
-		if (my_cluster_power_status[i].idle_nodes) cluster_status->idle_nodes++;	
-		cluster_status->released+=my_cluster_power_status[i].released;
-		cluster_status->requested+=my_cluster_power_status[i].requested;
-		cluster_status->current_power+=my_cluster_power_status[i].current_power;
-		cluster_status->total_powercap+=my_cluster_power_status[i].total_powercap;
-	}
-	cluster_status->greedy_nodes=calloc(cluster_status->num_greedy,sizeof(int));
-	cluster_status->greedy_req=calloc(cluster_status->num_greedy,sizeof(int));
-	cluster_status->extra_power=calloc(cluster_status->num_greedy,sizeof(int));
-	total_req_greedy=0;
-	total_extra_power=0;
-	for (i=0;i<num_st;i++){
-		if (my_cluster_power_status[i].num_greedy){ 
-			cluster_status->greedy_nodes[num_greedy]=my_cluster_power_status[i].greedy_nodes;
-			cluster_status->greedy_req[num_greedy]=my_cluster_power_status[i].greedy_req;
-			cluster_status->extra_power[num_greedy]=my_cluster_power_status[i].extra_power;
-			num_greedy++;
-			total_req_greedy+=cluster_status->greedy_req[num_greedy];
-			total_extra_power+=cluster_status->extra_power[num_greedy];
-		}
-	}	
-}
-
-void allocate_free_power_to_greedy_nodes(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint *total_free)
-{
-	int i, nodes_no_extra=0, num_extra=0,num_greedy=0,more_power;
-	uint pending=*total_free;
-	for (i=0;i<cluster_status->num_greedy;i++){
-		if ((cluster_status->greedy_req[i]) && (!cluster_status->extra_power[i])){ 
-			nodes_no_extra+=cluster_status->greedy_req[i];
-			num_extra++;
-		}else num_greedy++;
-	}
-	if (nodes_no_extra<pending) more_power=-1;
-	else more_power=pending/num_extra;
-	verbose(0,"Allocating %d watts to new greedy nodes first (-1 => alloc=req",more_power);
-	for (i=0;i<cluster_status->num_greedy;i++){
-    if ((cluster_status->greedy_req[i]) && (!cluster_status->extra_power[i])){
-			if (more_power<0) cluster_options->extra_power[i]=cluster_status->greedy_req[i];
-			else cluster_options->extra_power[i]=min(more_power,cluster_status->greedy_req[i]);
-			pending-=cluster_options->extra_power[i];
-		}
-	}
-	/* If there is pending power to allocate */
-	if (pending){
-		verbose(0,"Allocating %u watts to greedy nodes ",pending);
-		more_power=pending/num_greedy;
-		for (i=0;i<cluster_status->num_greedy;i++){
-    	if ((cluster_status->greedy_req[i]) && (!cluster_options->extra_power[i])){
-      	cluster_options->extra_power[i]=min(cluster_status->greedy_req[i],more_power);
-      	pending-=cluster_options->extra_power[i];
-    	}
-  	}
-	}
-	*total_free=pending;
-}
-
-/* This function is executed when there is not enough power for new running nodes */
-void reduce_allocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint min_reduction)
-{
-	
-}
-
-/* This function is executed when there is enough power for new running nodes but not for all the greedy nodes */
-void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,int nun_nodes)
-{	
-	uint total_free;
-	uint min_reduction;
-	verbose(0,"There are %u idle nodes %u greedy nodes ",
-	cluster_status->idle_nodes,cluster_status->num_greedy);
-	memset(cluster_options,0,sizeof(powercap_opt_t));	
-	verbose(0,"Total power %u , requested for new %u released %u extra req %u",max_cluster_power,cluster_status->requested,cluster_status->released,total_req_greedy);
-	/* Allocated power + default requested must be less that maximum */
-	if ((cluster_status->total_powercap+cluster_status->requested)<=max_cluster_power){
-		verbose(0,"There is enough power for new running");
-		total_free=max_cluster_power-(cluster_status->total_powercap+cluster_status->requested);
-		if (total_req_greedy>=total_free){
-			verbose(0,"There is more free power than requested by greedy nodes=> allocating all the extra power");
-			total_free-=total_req_greedy;
-			cluster_options->num_greedy=cluster_status->num_greedy;
-			memcpy(cluster_options->greedy_nodes,cluster_status->greedy_nodes,cluster_status->num_greedy*sizeof(int));
-			memcpy(cluster_options->extra_power,cluster_status->greedy_req,cluster_status->num_greedy*sizeof(uint));
-		}else{
-			verbose(0,"There is not enough power for all the greedy nodes ");
-			cluster_options->num_greedy=cluster_status->num_greedy;
-			allocate_free_power_to_greedy_nodes(cluster_status,cluster_options,&total_free);
-		}	
-	}else{
-		/* There is not enough power for new jobs, we must reduce the extra allocation */
-		verbose(0,"We must reduce the extra allocation");
-		cluster_options->num_greedy=0;
-		min_reduction=max_cluster_power-(cluster_status->total_powercap+cluster_status->requested);
-		total_free=0;
-		reduce_allocation(cluster_status,cluster_options,min_reduction);
-	}
-	if (total_free) cluster_options->max_inc_new_jobs=total_free/(nun_nodes-cluster_status->idle_nodes);
-}
-
-void send_powercap_options_to_cluster(powercap_opt_t *cluster_options)
-{
-	cluster_set_powercap_opt(my_cluster_conf,cluster_options);
-}
-void print_cluster_power_status(int num_power_status,powercap_status_t *my_cluster_power_status)
-{
-	int i;
-	fprintf(stderr,"%d power_status received\n",num_power_status);
-	for (i=0;i<num_power_status;i++){
-		fprintf(stderr,"Node %d\n",i);
-		fprintf(stderr,"\tidle nodes %u num_greedy %u \n",my_cluster_power_status[i].idle_nodes,my_cluster_power_status[i].num_greedy);
-		fprintf(stderr,"\tgreedy_req %u new_req %u current_power %u total_powercap %u\n",
-		my_cluster_power_status[i].greedy_req,my_cluster_power_status[i].requested,
-		my_cluster_power_status[i].current_power,my_cluster_power_status[i].total_powercap);
-	}
-}
-#endif
 
 /*
 *
@@ -662,6 +533,7 @@ int main(int argc,char *argv[])
 	int resulti;
 	uint process_created=0;
 	gm_warning_t my_warning;
+	risk_t current_risk;
     if (argc > 2) usage(argv[0]);
 	if (argc==2) parse_args(argv);
     // We read the cluster configuration and sets default values in the shared memory
@@ -816,53 +688,49 @@ int main(int argc,char *argv[])
 			
 			if (!in_action){
 			my_warning.level=current_level;
+			my_warning.inc_th=0;my_warning.new_p_state=0;
 			switch(current_level){
-			case NO_PROBLEM:
+			case EARGM_NO_PROBLEM:
 				verbose(VGM," Safe area. energy budget %.2lf%% \n",perc_energy);
 				break;
-			case WARNING_3:
+			case EARGM_WARNING1:
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
-				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 	
 				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-					my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_3);            
-				}else{
-					my_warning.inc_th=0;
+					create_risk(&current_risk,EARGM_WARNING1);
+					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
-				process_created+=send_mail(WARNING_3,perc_energy);
+				process_created+=send_mail(EARGM_WARNING1,perc_energy);
 				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
 				report_status(&my_warning);
 				break;
-			case WARNING_2:
+			case EARGM_WARNING2:
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
-				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% \n",perc_energy);
+				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-					my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(WARNING_2);
-					my_warning.inc_th=eargm_increase_th_all_nodes(WARNING_2);            
-				}else{
-					my_warning.inc_th=0;my_warning.new_p_state=0;
+					create_risk(&current_risk,EARGM_WARNING2);
+					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
 				my_warning.energy_percent=perc_energy;
-				process_created+=send_mail(WARNING_2,perc_energy);
+				process_created+=send_mail(EARGM_WARNING2,perc_energy);
 				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
 				report_status(&my_warning);
 				break;
-			case PANIC:
+			case EARGM_PANIC:
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
-				verbose(VGM,"PANIC!... we are close or over the maximum energy budget %.2lf%% \n",perc_energy);
+				verbose(VGM,"PANIC!... we are close or over the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-					my_warning.new_p_state=eargm_reduce_frequencies_all_nodes(PANIC);
-					my_warning.inc_th=eargm_increase_th_all_nodes(PANIC);            
-				}else{
-					my_warning.inc_th=0;my_warning.new_p_state=0;
+					create_risk(&current_risk,EARGM_PANIC);	
+					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
-				process_created+=send_mail(PANIC,perc_energy);
+				process_created+=send_mail(EARGM_PANIC,perc_energy);
 				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
 				report_status(&my_warning);
 				break;
@@ -897,8 +765,6 @@ int main(int argc,char *argv[])
     #if SYSLOG_MSG
     closelog();
     #endif
-
-
     
 		return 0;
 }

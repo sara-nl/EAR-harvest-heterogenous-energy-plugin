@@ -40,9 +40,9 @@
 
 
 
-state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,ulong risk_level,ulong opt_target,ulong mfreq,ulong *nfreq)
+state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,risk_t risk_level,ulong opt_target,ulong mfreq,ulong *nfreq)
 {
-  debug("monitoring , risk set to %lu: NO_ACTIONS",risk_level);
+  debug("monitoring , risk set to %lu: NO_ACTIONS",(unsigned long)risk_level);
   *nfreq=mfreq;
   return EAR_SUCCESS;
 }

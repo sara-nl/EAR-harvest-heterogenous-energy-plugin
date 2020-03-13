@@ -42,6 +42,7 @@
 
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
+#include <common/types/risk.h>
 
 #define TEMP_NUM_NODES 10
 
@@ -71,7 +72,7 @@ typedef struct power_limit{
 }power_limit_t;
 
 typedef struct risk_dec{
-	unsigned long level;
+	risk_t level;
 	unsigned long target;
 }risk_dec_t;
 typedef struct powercap_opt{

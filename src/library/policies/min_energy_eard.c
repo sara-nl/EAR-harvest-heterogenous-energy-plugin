@@ -52,9 +52,9 @@
 #define PANIC_DEF_PSTATES_LESS 1
 
 
-state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,ulong risk_level,ulong opt_target,ulong mfreq,ulong *nfreq,ulong *f_list,uint nump)
+state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,risk_t risk_level,ulong opt_target,ulong mfreq,ulong *nfreq,ulong *f_list,uint nump)
 {
-  debug("min_energy risk set to %lu",risk_level);
+  debug("min_energy risk set to %lu",(unsigned long)risk_level);
 	debug("current conf %lf def_pstate %u max_freq %lu",ref->settings[0],ref->p_state,mfreq);
   int risk1,risk2,panic;
 	unsigned long f;
