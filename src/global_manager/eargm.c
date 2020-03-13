@@ -87,6 +87,9 @@ uint policy;
 uint divisor = 1;
 uint last_id=0;
 
+int last_state=EARGM_NO_PROBLEM;
+unsigned long last_avg_power=0,curr_avg_power=0;
+
 uint t1_expired=0;
 uint must_refill=0;
 
@@ -498,6 +501,31 @@ void set_gm_status(gm_warning_t *my_warning,ulong et1,ulong et2,ulong ebudget,ui
 	}
 }
 
+void compute_efficiency_of_actions(unsigned long curr_avg_power,unsigned long last_avg_power,int in_action);
+{
+	float power_red,power_red_t2;
+	uint estimated_t1_needed;
+	uint required_saving=5;
+	power_red=1.0-(curr_avg_power/last_avg_power);
+	verbose(0,"Power has been reduced by %f in t1",power_red);
+	power_red_t2=power_red/aggregated_samples;	
+	verbose(0,"Power has been reduced by %f in t2",power_red_t2);
+	switch(last_state){
+		case EARGM_WARNING1:required_saving=current_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L4];break;
+		case EARGM_WARNING2:required_saving=current_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L3];break;
+		case EARGM_PANIC:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L2];break;
+	}
+	estimated_t1_needed=required_saving/power_red_t2;	
+	verbose(0,"%u grace periods are needed to reduce the warning level,required saving %u",estimated_t1_needed,required_saving);
+	if (estimated_t1_needed>in_action){
+		verbose(0,"We will not reach our target with this number of grace periods");
+	}
+	if (estimated_t1_needed<aggregated_samples){
+		/* ACTION */	
+	}else{
+		/* ACTION */
+	}
+}
 /*
 *
 *	EAR GLOBAL MANAGER
@@ -675,7 +703,9 @@ int main(int argc,char *argv[])
 					resulti=(int)result;
 				if (resulti < 0) exit(1);
 			}
-			verbose(VGM,"Energy consumed in last %u seconds %lu %s. Avg power %lu %s\n",period_t1,result,unit_energy,(unsigned long)(result/period_t1),unit_power);
+			last_avg_power=curr_avg_power;
+			curr_avg_power=(unsigned long)(result/period_t1);
+			verbose(VGM,"Energy consumed in last %u seconds %lu %s. Avg power %lu %s\n",period_t1,result,unit_energy,curr_avg_power,unit_power);
 			
 	
 			new_energy_sample(result);
@@ -694,6 +724,7 @@ int main(int argc,char *argv[])
 				verbose(VGM," Safe area. energy budget %.2lf%% \n",perc_energy);
 				break;
 			case EARGM_WARNING1:
+				last_state=EARGM_WARNING1;
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
@@ -708,6 +739,7 @@ int main(int argc,char *argv[])
 				report_status(&my_warning);
 				break;
 			case EARGM_WARNING2:
+				last_state=EARGM_WARNING2;
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
@@ -722,6 +754,7 @@ int main(int argc,char *argv[])
 				report_status(&my_warning);
 				break;
 			case EARGM_PANIC:
+				last_state=EARGM_PANIC;
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"PANIC!... we are close or over the maximum energy budget %.2lf%% ",perc_energy);
@@ -736,6 +769,8 @@ int main(int argc,char *argv[])
 				break;
 			}
 			}else{ 
+				/* We can check here the effect of actions */				
+				compute_efficiency_of_actions(curr_avg_power,last_avg_power,in_action);
 				in_action--;
 				set_gm_grace_period_values(&my_warning);
 			}
