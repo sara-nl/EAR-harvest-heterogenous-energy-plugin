@@ -27,12 +27,12 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_LOADER_MPIC_SYMS_H
-#define LIBRARY_LOADER_MPIC_SYMS_H
+#ifndef LIBRARY_LOADER_MPIC_H
+#define LIBRARY_LOADER_MPIC_H
 
 #include <library/api/mpi.h>
 
-#define mpic_n 93
+#define MPIC_N 93
 
 typedef struct mpic_s
 {
@@ -130,10 +130,10 @@ typedef struct mpic_s
 	int (*Iscan) (MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request);
 	int (*Iscatter) (MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request);
 	int (*Iscatterv) (MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], MPI3_CONST int displs[], MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request);
-	#endif
+#endif
 } mpic_t;
 
-const char *mpic_names[] __attribute__((weak)) =
+const char *mpic_names[] ATTR_INTERNAL =
 {
 	"MPI_Allgather",
 	"MPI_Allgatherv",
@@ -214,7 +214,7 @@ const char *mpic_names[] __attribute__((weak)) =
 	"MPI_Win_post",
 	"MPI_Win_start",
 	"MPI_Win_wait"
-	#if MPI_VERSION >= 3
+#if MPI_VERSION >= 3
 	,
 	"MPI_Iallgather",
 	"MPI_Iallgatherv",
@@ -230,7 +230,7 @@ const char *mpic_names[] __attribute__((weak)) =
 	"MPI_Iscan",
 	"MPI_Iscatter",
 	"MPI_Iscatterv",
-	#endif
+#endif
 };
 
-#endif //LIBRARY_LOADER_MPIC_SYMS_H
+#endif //LIBRARY_LOADER_MPIC_H

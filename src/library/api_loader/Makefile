@@ -5,8 +5,9 @@ LDFLAGS = $(SRCDIR)/common/libcommon.a -ldl
 
 load_OBJS = \
     loader.o \
-    mpic_syms.o \
-    mpif_syms.o
+    module_mpi.o \
+    module_mpic.o \
+    module_mpif.o
 
 load_BINS = \
     libloader.so

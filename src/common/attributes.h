@@ -27,7 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_LOADER_H
-#define LIBRARY_LOADER_H
+#ifndef COMMON_SYSTEM_ATTRIBUTES_H
+#define COMMON_SYSTEM_ATTRIBUTES_H
 
-#endif //LIBRARY_LOADER_H
+#define ATTR_INTERNAL 	__attribute__ ((visibility ("internal")))
+#define ATTR_HIDDEN		__attribute__ ((visibility ("hidden")))
+
+#endif //COMMON_SYSTEM_ATTRIBUTES_H

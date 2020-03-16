@@ -27,12 +27,12 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_LOADER_MPIF_SYMS_H
-#define LIBRARY_LOADER_MPIF_SYMS_H
+#ifndef LIBRARY_LOADER_MPIF_H
+#define LIBRARY_LOADER_MPIF_H
 
 #include <library/api/mpi.h>
 
-#define mpif_n 93
+#define MPIF_N 93
 
 typedef struct mpif_s
 {
@@ -115,7 +115,7 @@ typedef struct mpif_s
 	void (*win_post) (MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror);
 	void (*win_start) (MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror);
 	void (*win_wait) (MPI_Fint *win, MPI_Fint *ierror);
-	#if MPI_VERSION >= 3
+	//#if MPI_VERSION >= 3
 	void (*iallgather) (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 	void (*iallgatherv) (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcount, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 	void (*iallreduce) (MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
@@ -130,107 +130,107 @@ typedef struct mpif_s
 	void (*iscan) (MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 	void (*iscatter) (MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
 	void (*iscatterv) (MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror);
-	#endif
+	//#endif
 } mpif_t;
 
-const char *mpif_names[] __attribute__((weak)) =
+const char *mpif_names[] ATTR_INTERNAL =
 {
-	"mpi_allgather",
-	"mpi_allgatherv",
-	"mpi_allreduce",
-	"mpi_alltoall",
-	"mpi_alltoallv",
-	"mpi_barrier",
-	"mpi_bcast",
-	"mpi_bsend",
-	"mpi_bsend_init",
-	"mpi_cancel",
-	"mpi_cart_create",
-	"mpi_cart_sub",
-	"mpi_comm_create",
-	"mpi_comm_dup",
-	"mpi_comm_free",
-	"mpi_comm_rank",
-	"mpi_comm_size",
-	"mpi_comm_spawn",
-	"mpi_comm_spawn_multiple",
-	"mpi_comm_split",
-	"mpi_file_close",
-	"mpi_file_read",
-	"mpi_file_read_all",
-	"mpi_file_read_at",
-	"mpi_file_read_at_all",
-	"mpi_file_write",
-	"mpi_file_write_all",
-	"mpi_file_write_at",
-	"mpi_file_write_at_all",
-	"mpi_finalize",
-	"mpi_gather",
-	"mpi_gatherv",
-	"mpi_get",
-	"mpi_ibsend",
-	"mpi_init",
-	"mpi_init_thread",
-	"mpi_intercomm_create",
-	"mpi_intercomm_merge",
-	"mpi_iprobe",
-	"mpi_irecv",
-	"mpi_irsend",
-	"mpi_isend",
-	"mpi_issend",
-	"mpi_probe",
-	"mpi_put",
-	"mpi_recv",
-	"mpi_recv_init",
-	"mpi_reduce",
-	"mpi_reduce_scatter",
-	"mpi_request_free",
-	"mpi_request_get_status",
-	"mpi_rsend",
-	"mpi_rsend_init",
-	"mpi_scan",
-	"mpi_scatter",
-	"mpi_scatterv",
-	"mpi_send",
-	"mpi_send_init",
-	"mpi_sendrecv",
-	"mpi_sendrecv_replace",
-	"mpi_ssend",
-	"mpi_ssend_init",
-	"mpi_start",
-	"mpi_startall",
-	"mpi_test",
-	"mpi_testall",
-	"mpi_testany",
-	"mpi_testsome",
-	"mpi_wait",
-	"mpi_waitall",
-	"mpi_waitany",
-	"mpi_waitsome",
-	"mpi_win_complete",
-	"mpi_win_create",
-	"mpi_win_fence",
-	"mpi_win_free",
-	"mpi_win_post",
-	"mpi_win_start",
-	"mpi_win_wait"
-	#if MPI_VERSION >= 3
+	"mpi_Allgather",
+	"mpi_Allgatherv",
+	"mpi_Allreduce",
+	"mpi_Alltoall",
+	"mpi_Alltoallv",
+	"mpi_Barrier",
+	"mpi_Bcast",
+	"mpi_Bsend",
+	"mpi_Bsend_init",
+	"mpi_Cancel",
+	"mpi_Cart_create",
+	"mpi_Cart_sub",
+	"mpi_Comm_create",
+	"mpi_Comm_dup",
+	"mpi_Comm_free",
+	"mpi_Comm_rank",
+	"mpi_Comm_size",
+	"mpi_Comm_spawn",
+	"mpi_Comm_spawn_multiple",
+	"mpi_Comm_split",
+	"mpi_File_close",
+	"mpi_File_read",
+	"mpi_File_read_all",
+	"mpi_File_read_at",
+	"mpi_File_read_at_all",
+	"mpi_File_write",
+	"mpi_File_write_all",
+	"mpi_File_write_at",
+	"mpi_File_write_at_all",
+	"mpi_Finalize",
+	"mpi_Gather",
+	"mpi_Gatherv",
+	"mpi_Get",
+	"mpi_Ibsend",
+	"mpi_Init",
+	"mpi_Init_thread",
+	"mpi_Intercomm_create",
+	"mpi_Intercomm_merge",
+	"mpi_Iprobe",
+	"mpi_Irecv",
+	"mpi_Irsend",
+	"mpi_Isend",
+	"mpi_Issend",
+	"mpi_Probe",
+	"mpi_Put",
+	"mpi_Recv",
+	"mpi_Recv_init",
+	"mpi_Reduce",
+	"mpi_Reduce_scatter",
+	"mpi_Request_free",
+	"mpi_Request_get_status",
+	"mpi_Rsend",
+	"mpi_Rsend_init",
+	"mpi_Scan",
+	"mpi_Scatter",
+	"mpi_Scatterv",
+	"mpi_Send",
+	"mpi_Send_init",
+	"mpi_Sendrecv",
+	"mpi_Sendrecv_replace",
+	"mpi_Ssend",
+	"mpi_Ssend_init",
+	"mpi_Start",
+	"mpi_Startall",
+	"mpi_Test",
+	"mpi_Testall",
+	"mpi_Testany",
+	"mpi_Testsome",
+	"mpi_Wait",
+	"mpi_Waitall",
+	"mpi_Waitany",
+	"mpi_Waitsome",
+	"mpi_Win_complete",
+	"mpi_Win_create",
+	"mpi_Win_fence",
+	"mpi_Win_free",
+	"mpi_Win_post",
+	"mpi_Win_start",
+	"mpi_Win_wait"
+//#if MPI_VERSION >= 3
 	,
-	"mpi_iallgather",
-	"mpi_iallgatherv",
-	"mpi_iallreduce",
-	"mpi_ialltoall",
-	"mpi_ialltoallv",
-	"mpi_ibarrier",
-	"mpi_ibcast",
-	"mpi_igather",
-	"mpi_igatherv",
-	"mpi_ireduce",
-	"mpi_ireduce_scatter",
-	"mpi_iscan",
-	"mpi_iscatter",
-	"mpi_iscatterv"
-	#endif
+	"mpi_Iallgather",
+	"mpi_Iallgatherv",
+	"mpi_Iallreduce",
+	"mpi_Ialltoall",
+	"mpi_Ialltoallv",
+	"mpi_Ibarrier",
+	"mpi_Ibcast",
+	"mpi_Igather",
+	"mpi_Igatherv",
+	"mpi_Ireduce",
+	"mpi_Ireduce_scatter",
+	"mpi_Iscan",
+	"mpi_Iscatter",
+	"mpi_Iscatterv",
+//#endif
 };
 
-#endif //LIBRARY_LOADER_MPIF_SYMS_H
+#endif //LIBRARY_LOADER_MPIF_H

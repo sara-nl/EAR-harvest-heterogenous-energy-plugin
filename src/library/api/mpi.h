@@ -30,7 +30,7 @@
 #ifndef LIBRARY_API_MPI_H
 #define LIBRARY_API_MPI_H
 
-#include <mpi.h>
+#include "mpi.h"
 
 #ifndef MPI3_CONST
 #  if MPI_VERSION >= 3

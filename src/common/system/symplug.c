@@ -30,7 +30,7 @@
 #include <common/includes.h>
 #include <common/system/symplug.h>
 
-state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
+state_t ATTR_INTERNAL symplug_join(void *handle, void *calls[], const char *names[], uint n)
 {
 	char *error;
 	uint i;
@@ -51,9 +51,9 @@ state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 	return EAR_SUCCESS;
 }
 
-state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
+state_t ATTR_INTERNAL symplug_open(char *path, void *calls[], const char *names[], uint n, uint flags)
 {
-	void *handle = dlopen(path, RTLD_GLOBAL | RTLD_LAZY);
+	void *handle = dlopen(path, flags);
 
 	if (!handle)
 	{
