@@ -50,15 +50,7 @@
 #ifndef MPI_INTERFACE_H
 #define MPI_INTERFACE_H
 
-#include <mpi.h>
-
-#ifndef MPI3_CONST
-#  if MPI_VERSION >= 3
-#    define MPI3_CONST const
-#  else
-#    define MPI3_CONST
-#  endif
-#endif
+#include <library/mpi_intercept/mpi.h>
 
 /**@{* Each pair of functions are called before (enter function) and after (leave) a type MPI call. Which pair depends on the
 *   type of the call, and the functions called are EAR_MPY_<call>_enter and leave. */
