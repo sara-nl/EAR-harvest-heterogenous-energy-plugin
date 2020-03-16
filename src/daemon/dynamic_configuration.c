@@ -426,7 +426,7 @@ void dyncon_set_risk(int fd, request_t *command)
 	mfreq=c_max;
 	for (i=0;i<my_node_conf->num_policies;i++){
 		if (polsyms_fun[i].set_risk!=NULL){
-			verbose(1,"Setting risk level for %s to %lu",my_node_conf->policies[i].name,command->my_req.risk.level);	
+			verbose(1,"Setting risk level for %s to %lu",my_node_conf->policies[i].name,(unsigned long)command->my_req.risk.level);	
 			polsyms_fun[i].set_risk(&my_original_node_conf.policies[i],&my_node_conf->policies[i],command->my_req.risk.level,command->my_req.risk.target,mfreq,&new_max_freq,f_list,num_f);
 		}
 		if (dyn_conf->policy==i){

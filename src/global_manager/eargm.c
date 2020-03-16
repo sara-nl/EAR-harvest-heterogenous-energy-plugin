@@ -501,18 +501,18 @@ void set_gm_status(gm_warning_t *my_warning,ulong et1,ulong et2,ulong ebudget,ui
 	}
 }
 
-void compute_efficiency_of_actions(unsigned long curr_avg_power,unsigned long last_avg_power,int in_action);
+void compute_efficiency_of_actions(unsigned long curr_avg_power,unsigned long last_avg_power,int in_action)
 {
 	float power_red,power_red_t2;
 	uint estimated_t1_needed;
 	uint required_saving=5;
 	power_red=1.0-(curr_avg_power/last_avg_power);
 	verbose(0,"Power has been reduced by %f in t1",power_red);
-	power_red_t2=power_red/aggregated_samples;	
+	power_red_t2=power_red/aggregate_samples;	
 	verbose(0,"Power has been reduced by %f in t2",power_red_t2);
 	switch(last_state){
-		case EARGM_WARNING1:required_saving=current_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L4];break;
-		case EARGM_WARNING2:required_saving=current_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L3];break;
+		case EARGM_WARNING1:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L4];break;
+		case EARGM_WARNING2:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L3];break;
 		case EARGM_PANIC:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L2];break;
 	}
 	estimated_t1_needed=required_saving/power_red_t2;	
@@ -520,7 +520,7 @@ void compute_efficiency_of_actions(unsigned long curr_avg_power,unsigned long la
 	if (estimated_t1_needed>in_action){
 		verbose(0,"We will not reach our target with this number of grace periods");
 	}
-	if (estimated_t1_needed<aggregated_samples){
+	if (estimated_t1_needed<aggregate_samples){
 		/* ACTION */	
 	}else{
 		/* ACTION */
