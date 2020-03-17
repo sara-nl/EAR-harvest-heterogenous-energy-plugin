@@ -486,6 +486,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			debug("signature_copy");
 			signature_copy(&loop.signature, &loop_signature.signature);
+		  report_loop_signature(iterations,&loop,&loop_signature.job);
 			/* VERBOSE */
 			VERBOSE_SIG();
 			REPORT_TRACES();
