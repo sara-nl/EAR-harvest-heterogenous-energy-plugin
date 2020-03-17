@@ -54,6 +54,7 @@
 #include <common/environment.h>
 
 extern masters_info_t masters_info;
+extern float ratio_PPN;
 
 
 
@@ -460,7 +461,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			sig_ready[curr_pstate]=1;
 
 			/* This function executes the energy policy */
-			pst=policy_apply(&loop_signature.signature,&policy_freq,&ready);
+			signature_t app_signature;	
+			adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
+			pst=policy_apply(&app_signature,&policy_freq,&ready);
 			signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 			/* For no masters, ready will be 0, pending */
 

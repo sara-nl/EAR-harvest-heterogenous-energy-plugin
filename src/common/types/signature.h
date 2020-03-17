@@ -83,4 +83,6 @@ void compute_vpi(double *vpi,signature_t *sig);
 void print_signature_fd_binary(int fd, signature_t *sig);
 void read_signature_fd_binary(int fd, signature_t *sig);
 
+void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN);
+
 #endif

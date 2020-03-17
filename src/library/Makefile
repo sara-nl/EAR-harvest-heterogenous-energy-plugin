@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) 
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread 
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 
 ######## VARS
@@ -18,7 +18,7 @@ endif
 ifdef MPICC
 libs_BINS += libear.$(ext)
 libs_PATH  = $(DESTDIR)/lib
-libs_OBJS  = all.components libear.so
+libs_OBJS  = all.components libear.$(ext) libear.seq.so
 libs_PERM  = 0755
 endif
 
@@ -45,7 +45,7 @@ mpix_OBJS = \
 mpic_OBJS = \
     mpi_intercept/mpi_definitions_c.o \
     mpi_intercept/mpi_interception_c.o \
-    mpi_intercept/MPI_interface.o
+    mpi_intercept/MPI_interface.o \
 		common/global_comm.o
 
 ifeq ($(FEAT_FORT), 1)
