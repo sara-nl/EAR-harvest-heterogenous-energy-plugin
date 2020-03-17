@@ -15,7 +15,7 @@ else
 ext = so
 endif
 
-ifdef MPICC
+ifdef MPI_CFLAGS
 libs_BINS += libear.$(ext)
 libs_PATH  = $(DESTDIR)/lib
 libs_OBJS  = libear.so
@@ -31,10 +31,10 @@ comm_OBJS = \
     $(SRCDIR)/common/libcommon.a
 
 mpix_OBJS = \
-    api/api.o \
-    api/api_ear.o \
-    api/earc_syms.o \
-    api/earf_syms.o \
+    api/ear.o \
+    api/ear_mpi.o \
+    api/api_mpic.o \
+    api/api_mpif.o \
     metrics/metrics.o \
     models/models.o \
     policies/policy.o \
@@ -49,7 +49,6 @@ all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(comm_OBJS)
 	$(CC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(comm_OBJS) $(LDFLAGS)
-	#$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 

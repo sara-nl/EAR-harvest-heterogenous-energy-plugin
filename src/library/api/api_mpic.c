@@ -28,13 +28,15 @@
 */
 
 #include <common/output/debug.h>
-#include <library/api/mpic_c.h>
+#include <library/api/api_mpic.h>
 
-static mpic_t *next_mpic;
+static mpic_t next_mpic;
 
 void api_mpic_setnext(mpic_t *_next_mpic)
 {
-	next_mpic = _next_mpic;
+    debug(">> C setnext...............");
+	memcpy(&next_mpic, _next_mpic, sizeof(mpic_t));
+    debug("<< C setnext...............");
 }
 
 int api_mpic_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
@@ -352,8 +354,8 @@ int api_mpic_Gatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendt
 {
     debug(">> C Gatherv...............");
     before_mpi(Gatherv, (p2i)sendbuf,(p2i)recvbuf);
-    int res = next_mpic.Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, root, comm);
-    debug("<< C Gatherv...............");
+    int res = next_mpic.Gatherv(sendbuf, sendcount, sendtype, recvbuf, recvcounts, displs, recvtype, root, comm);
+	debug("<< C Gatherv...............");
     after_mpi(Gatherv);
 	return res;
 }

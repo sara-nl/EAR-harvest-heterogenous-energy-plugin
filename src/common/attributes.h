@@ -30,7 +30,14 @@
 #ifndef COMMON_SYSTEM_ATTRIBUTES_H
 #define COMMON_SYSTEM_ATTRIBUTES_H
 
-#define ATTR_INTERNAL 	__attribute__ ((visibility ("internal")))
-#define ATTR_HIDDEN		__attribute__ ((visibility ("hidden")))
+#define attr2(a1, a2)	__attribute__ ((a1, a2))
+#define attr(a)			__attribute__ ((a))
+#define attr_hidden		visibility("hidden")
+#define attr_weak		weak
+
+//#define ATTR_PROTECTED	__attribute__ ((visibility ("protected")))
+//#define ATTR_INTERNAL 	__attribute__ ((visibility ("internal")))
+//#define ATTR_HIDDEN		__attribute__ ((visibility ("hidden")))
+//#define ATTR_WEAK		__attribute__((weak))
 
 #endif //COMMON_SYSTEM_ATTRIBUTES_H

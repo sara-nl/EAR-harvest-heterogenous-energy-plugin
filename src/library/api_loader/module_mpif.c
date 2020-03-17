@@ -29,6 +29,8 @@
 
 #include <library/api_loader/module_mpi.h>
 
+extern mpif_t api_mpif;
+
 void mpi_allgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {
 	api_mpif.allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm, ierror);

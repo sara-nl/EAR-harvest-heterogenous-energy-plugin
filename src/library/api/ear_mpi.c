@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <library/api/api.h>
-#include <library/api/api_ear.h>
+#include <library/api/ear.h>
+#include <library/api/ear_mpi.h>
 #include <library/policies/policy.h>
 #include <common/output/debug.h>
 

@@ -27,10 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#define _GNU_SOURCE
+#include <dlfcn.h>
+#include <stdlib.h>
 #include <common/system/file.h>
 #include <common/system/symplug.h>
 #include <common/output/verbose.h>
 #include <common/config/config_env.h>
+#include <library/api_loader/module_mpi.h>
 
 static mpic_t next_mpic;
 static mpif_t next_mpif;
@@ -42,6 +46,7 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	static char buffer[4096];
 	char *library = NULL;
 	char *path = NULL;
+	char *hack = NULL;
 	int len = 4096;
 	int fndi = 0;
 	int fndo = 0;
@@ -50,15 +55,17 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	*lang_c = 0;
 	*lang_f = 0;
 
-	if ((path = getenv(VAR_INS_PATH)) == NULL) {
+	if ((hack = getenv(HACK_PATH_LIBR)) != NULL) {
+		hack = getenv(HACK_PATH_LIBR);
+	} else if ((path = getenv(VAR_INS_PATH)) == NULL) {
 		verbose(2, "installation path not found");
 		return;
 	}
 
 	// Getting the library version
-	MPI_Get_library_version(buffer1, &len);
+	MPI_Get_library_version(buffer, &len);
 	// Passing to lowercase
-	strntolow(buffer1);
+	strtolow(buffer);
 
 	if (strstr(buffer, "intel") != NULL) {
 		fndi = 1;
@@ -67,8 +74,12 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	} else if (strstr(buffer, "mvapich") != NULL) {
 		fndm = 1;
 	} else {
+		verbose(2, "no mpi version found");
 		return;
 	}
+		
+	verbose(2, "mpi_get_version (intel: %d, open: %d, mvapich: %d)",
+		fndi, fndo, fndm);
 
 	//
 	library = "libear.so";
@@ -78,10 +89,13 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	}
 
 	//
-	sprintf(path_so, "%s/%s", path, library);
-	verbose(2, "loading library %s", path_so);
-
-	if (file_is_regular(buffer)) {
+	if (!hack) {
+		sprintf(path_so, "%s/%s/%s", path, REL_PATH_LIBR, library);
+	} else {
+		sprintf(path_so, "%s", hack);
+	}
+	
+	if (!file_is_regular(path_so)) {
 		return;
 	}
 
@@ -94,50 +108,72 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 
 static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 {
+	void **next_mpic_v = (void **) &next_mpic;
+	void **next_mpif_v = (void **) &next_mpif;
+	void **api_mpic_v  = (void **) &api_mpic;
+	void **api_mpif_v  = (void **) &api_mpif;
 	void *libear;
 	int i;
 
-	verbose(2, "module_mpi_dlsym loading %s", path_so);
+	verbose(2, "module_mpi_dlsym loading library %s (c: %d, f: %d)",
+		path_so, lang_c, lang_f);
 
-	if (lang_c) {
-		symplug_join(RTLD_NEXT, (void **) &next_mpic, mpic_names, MPIC_N);
-	}
-	if (lang_f) {
-		symplug_join(RTLD_NEXT, (void **) &next_mpif, mpif_names, MPIF_N);
-	}
+	symplug_join(RTLD_NEXT, (void **) &next_mpic, mpic_names, MPIC_N);
+	symplug_join(RTLD_NEXT, (void **) &next_mpif, mpif_names, MPIF_N);
 
 	//
-	libear = dlopen(path_so, RTLD_NOW | RTLD_GLOBAL);
+	libear = dlopen(path_so, RTLD_NOW | RTLD_LOCAL);
+	verbose(3, "dlopen returned %p", libear);
 
-	if (libear != NULL) {
-		symplug_join(libear, (void **) &api_mpic, api_mpic_names, API_MPIC_N);
-		symplug_join(libear, (void **) &api_mpif, api_mpif_names, API_MPIF_N);
+	if (libear != NULL)
+	{
+		if (lang_c) {
+			symplug_join(libear, (void **) &api_mpic, api_mpic_names, MPIC_N);
+		}
+		if (lang_f) {
+			symplug_join(libear, (void **) &api_mpif, api_mpif_names, MPIF_N);
+		}
 	}
 
 	//
 	for(i = 0; i < MPIC_N; ++i)
 	{
-		if(api_mpic[i] == NULL) {
-			api_mpic[i] = next_mpic[i];
+		if(api_mpic_v[i] == NULL) {
+			api_mpic_v[i] = next_mpic_v[i];
 		}
 	}
 	for(i = 0; i < MPIF_N; ++i)
 	{
-		if(api_mpif[i] == NULL) {
-			api_mpif[i] = next_mpif[i];
+		if(api_mpif_v[i] == NULL) {
+			api_mpif_v[i] = next_mpif_v[i];
 		}
 	}
-
+	
 	// Setting MPI next symbols
-	void (*api_mpic_setnext) (mpic_t *) = dlsym(libear, "api_mpic_setnext");
-	void (*api_mpif_setnext) (mpif_t *) = dlsym(libear, "api_mpif_setnext");
-	api_mpic_setnext(&next_mpic);
-	api_mpif_setnext(&next_mpif);
+	if (libear != NULL)
+	{
+		void (*api_mpic_setnext) (mpic_t *) = dlsym(libear, "api_mpic_setnext");
+		void (*api_mpif_setnext) (mpif_t *) = dlsym(libear, "api_mpif_setnext");
+		api_mpic_setnext(&next_mpic);
+		api_mpif_setnext(&next_mpif);
+	}
 }
 
 static int module_mpi_is()
 {
-	return (dlsym(RTLD_DEFAULT, "MPI_Get_library_version") != NULL);
+	return !(dlsym(RTLD_DEFAULT, "MPI_Get_library_version") == NULL);
+}
+
+static void module_mpi_init()
+{
+	char *verb;
+	
+	verbose(2, "function module_mpi");
+	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
+	{
+		VERB_SET_EN(1);
+		VERB_SET_LV(atoi(verb));
+	}
 }
 
 void module_mpi()
@@ -146,9 +182,12 @@ void module_mpi()
 	int lang_c;
 	int lang_f;
 
+	module_mpi_init();
+
 	if (!module_mpi_is()) {
 		return;
 	}
+
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
 	module_mpi_dlsym(path_so, lang_c, lang_f);
 }

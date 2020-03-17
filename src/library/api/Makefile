@@ -3,10 +3,10 @@ CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
 ######## FILES
 
 OBJS = \
-    api.o \
-    api_ear.o \
-    earc_syms.o \
-    earf_syms.o \
+    ear.o \
+    ear_mpi.o \
+    api_mpic.o \
+    api_mpif.o \
 
 ######## RULES
 

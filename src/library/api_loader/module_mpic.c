@@ -29,6 +29,8 @@
 
 #include <library/api_loader/module_mpi.h>
 
+extern mpic_t api_mpic;
+
 int MPI_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
 	return api_mpic.Allgather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype, comm);

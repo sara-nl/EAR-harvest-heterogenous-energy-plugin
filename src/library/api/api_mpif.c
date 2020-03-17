@@ -28,13 +28,15 @@
 */
 
 #include <common/output/debug.h>
-#include <library/api/mpi_f.h>
+#include <library/api/api_mpif.h>
 
-static mpif_t *next_mpif;
+static mpif_t next_mpif;
 
 void api_mpif_setnext(mpif_t *_next_mpif)
 {
-    next_mpif = _next_mpif;
+	debug(">> F setnext...............");
+	memcpy(&next_mpif, _next_mpif, sizeof(mpif_t));
+	debug("<< F setnext...............");
 }
 
 void api_mpif_Allgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)

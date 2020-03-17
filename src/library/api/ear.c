@@ -27,24 +27,13 @@
  *	The GNU LEsser General Public License is contained in the file COPYING	
  */
 
-#include "mpi.h"
-#include <time.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <papi.h>
-#include <common/config.h>
-#include <common/states.h>
-#include <common/environment.h>
 //#define SHOW_DEBUGS 1
-#include <common/output/verbose.h>
+#include <papi.h>
+#include <common/includes.h>
+#include <common/environment.h>
 #include <common/types/application.h>
+#include <common/hardware/frequency.h>
+#include <library/api/mpi.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
@@ -53,12 +42,9 @@
 #include <library/models/models.h>
 #include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
-#include <library/api/mpi.h>
-#include <common/hardware/frequency.h>
-#include <metrics/common/papi.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
-
+#include <metrics/common/papi.h>
 
 // Statics
 #define BUFFSIZE 			128

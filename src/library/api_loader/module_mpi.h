@@ -35,9 +35,6 @@
 #include <library/api_loader/module_mpic.h>
 #include <library/api_loader/module_mpif.h>
 
-extern mpic_t api_mpic;
-extern mpif_t api_mpif;
-
 void module_mpi();
 
 #endif //LIBRARY_LOADER_MPI_H

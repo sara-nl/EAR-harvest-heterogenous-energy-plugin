@@ -51,4 +51,8 @@
 #define REL_PATH_LIBR "lib/libear"
 #define REL_PATH_LOAD "lib/libloader.so"
 
+//
+#define HACK_PATH_LOAD "SLURM_HACK_LIBRARY"
+#define HACK_PATH_LIBR "SLURM_HACK_LOADER"
+
 #endif //CONFIG_ENVIRONMENT_H
