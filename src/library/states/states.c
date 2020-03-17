@@ -27,7 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#if MPI
 #include <mpi.h>
+#endif
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
