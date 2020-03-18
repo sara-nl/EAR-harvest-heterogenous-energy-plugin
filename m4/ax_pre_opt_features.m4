@@ -62,10 +62,35 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	# MPI
 	#
 	AC_ARG_VAR([CC_FLAGS],[Adds parameters to C compiler])
+	AC_ARG_VAR([MPICC],[Defines the MPI compiler])
+	AC_ARG_VAR([MPICC_FLAGS],[Appends parameters to MPI compiler])
 	AC_ARG_VAR([MPI_VERSION],[Adds a suffix to the EAR library referring the MPI version used to compile])
+
+	# !I && !O
+	if test -z "$MPICC"; then
+		MPICC=mpicc
+	fi
 
 	if echo "$CC" | grep -q "icc" && test -z "$CC_FLAGS"; then
 		CC_FLAGS=-static-intel
+	fi
+
+	if echo "$MPICC" | grep -q "mpiicc" && test -z "$MPICC_FLAGS"; then	
+		MPICC_FLAGS="-static-intel"
+		
+		if test "x$enable_rpath" = "xno"; then
+			MPICC_FLAGS="$MPICC_FLAGS -norpath"
+		fi
+	fi
+	
+	if echo "$MPICC" | grep -q "/"; then
+		echo nothing &> /dev/null
+	else
+		if which $MPICC &> /dev/null; then
+			MPICC="`which $MPICC`"
+		else
+			MPICC="mpicc"
+		fi
 	fi
 
 	if echo "$CC" | grep -q "/"; then
@@ -73,6 +98,10 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	else
 		CC="`which $CC`"
 	fi
+
+	MPI_DIR=`dirname $MPICC`
+	MPI_DIR=`(cd $MPI_DIR/.. && pwd)`
+	MPI_CPPFLAGS="-I$MPI_DIR/include"
 
 	#
 	# Architecture

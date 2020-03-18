@@ -35,7 +35,7 @@
 #include <common/output/verbose.h>
 #include <common/string_enhanced.h>
 #include <common/config/config_env.h>
-#include <library/api_loader/module_mpi.h>
+#include <library/loader/module_mpi.h>
 
 static mpic_t next_mpic;
 static mpif_t next_mpif;

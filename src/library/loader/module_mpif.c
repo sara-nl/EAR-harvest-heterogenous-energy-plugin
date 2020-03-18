@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <library/api_loader/module_mpi.h>
+#include <library/loader/module_mpi.h>
 
 extern mpif_t ear_mpif;
 

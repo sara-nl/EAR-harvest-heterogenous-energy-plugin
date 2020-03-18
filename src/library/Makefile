@@ -1,12 +1,6 @@
 CFLAGS  = -I$(SRCDIR) $(PAPI_CFLAGS) 
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 
-######## VARS
-
-export DIR
-export CFLAGS
-export LDFLAGS
-
 ########
 
 ifdef MPI_VERSION
@@ -35,6 +29,8 @@ mpix_OBJS = \
     api/ear_mpi.o \
     api/mpic.o \
     api/mpif.o \
+
+core_OBJS = \
     metrics/metrics.o \
     models/models.o \
     policies/policy.o \
@@ -47,8 +43,8 @@ mpix_OBJS = \
 
 all: all.components $(libs_OBJS)
 
-%.so: $(mpix_OBJS) $(comm_OBJS)
-	$(CC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(comm_OBJS) $(LDFLAGS)
+%.so: $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
+	$(CC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(core_OBJS) $(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 
@@ -62,11 +58,10 @@ clean: clean.components rclean;
 
 %.components:
 	@ $(MAKE) -C 'api'        $* || exit
-	@ $(MAKE) -C 'api_loader' $* || exit
 	@ $(MAKE) -C 'dynais'     $* || exit
+	@ $(MAKE) -C 'loader'     $* || exit
 	@ $(MAKE) -C 'metrics'    $* || exit
 	@ $(MAKE) -C 'models'     $* || exit
-	@ $(MAKE) -C 'policies'   $* || exit
 	@ $(MAKE) -C 'policies'   $* || exit
 	@ $(MAKE) -C 'states'     $* || exit
 	@ $(MAKE) -C 'tracer'     $* || exit

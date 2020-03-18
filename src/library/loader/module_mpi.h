@@ -32,8 +32,8 @@
 
 #include <library/api/mpic.h>
 #include <library/api/mpif.h>
-#include <library/api_loader/module_mpic.h>
-#include <library/api_loader/module_mpif.h>
+#include <library/loader/module_mpic.h>
+#include <library/loader/module_mpif.h>
 
 void module_mpi();
 
