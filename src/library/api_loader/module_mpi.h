@@ -30,8 +30,8 @@
 #ifndef LIBRARY_LOADER_MPI_H
 #define LIBRARY_LOADER_MPI_H
 
-#include <library/api/api_mpic.h>
-#include <library/api/api_mpif.h>
+#include <library/api/mpic.h>
+#include <library/api/mpif.h>
 #include <library/api_loader/module_mpic.h>
 #include <library/api_loader/module_mpif.h>
 

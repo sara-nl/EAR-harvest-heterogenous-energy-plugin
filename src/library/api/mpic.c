@@ -28,19 +28,19 @@
 */
 
 #include <common/output/debug.h>
+#include <library/api/mpic.h>
 #include <library/api/ear_mpi.h>
-#include <library/api/api_mpic.h>
 
 static mpic_t next_mpic;
 
-void api_mpic_setnext(mpic_t *_next_mpic)
+void ear_mpic_setnext(mpic_t *_next_mpic)
 {
 	debug(">> C setnext...............");
 	memcpy(&next_mpic, _next_mpic, sizeof(mpic_t));
 	debug("<< C setnext...............");
 }
 
-int api_mpic_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
+int ear_mpic_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
     debug(">> C Allgather...............");
     before_mpi(Allgather, (p2i)sendbuf,(p2i)recvbuf);
@@ -50,7 +50,7 @@ int api_mpic_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sen
 	return res;
 }
 
-int api_mpic_Allgatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, MPI_Comm comm)
+int ear_mpic_Allgatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, MPI_Comm comm)
 {
     debug(">> C Allgatherv...............");
     before_mpi(Allgatherv,(p2i)sendbuf,(p2i)recvbuf);
@@ -60,7 +60,7 @@ int api_mpic_Allgatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype se
 	return res;
 }
 
-int api_mpic_Allreduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
+int ear_mpic_Allreduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
     debug(">> C Allreduce...............");
     before_mpi(Allreduce, (p2i)sendbuf,(p2i)recvbuf);
@@ -70,7 +70,7 @@ int api_mpic_Allreduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_D
 	return res;
 }
 
-int api_mpic_Alltoall(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
+int ear_mpic_Alltoall(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)
 {
     debug(">> C Alltoall...............");
     before_mpi(Alltoall, (p2i)sendbuf,(p2i)recvbuf);
@@ -80,7 +80,7 @@ int api_mpic_Alltoall(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype send
 	return res;
 }
 
-int api_mpic_Alltoallv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI3_CONST int *sdispls, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *rdispls, MPI_Datatype recvtype, MPI_Comm comm)
+int ear_mpic_Alltoallv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI3_CONST int *sdispls, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *rdispls, MPI_Datatype recvtype, MPI_Comm comm)
 {
     debug(">> C Alltoallv...............");
     before_mpi(Alltoallv, (p2i)sendbuf,(p2i)recvbuf);
@@ -90,7 +90,7 @@ int api_mpic_Alltoallv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI
 	return res;
 }
 
-int api_mpic_Barrier(MPI_Comm comm)
+int ear_mpic_Barrier(MPI_Comm comm)
 {
     debug(">> C Barrier...............");
     before_mpi(Barrier, (p2i)comm,0);
@@ -100,7 +100,7 @@ int api_mpic_Barrier(MPI_Comm comm)
 	return res;
 }
 
-int api_mpic_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
+int ear_mpic_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm)
 {
     debug(">> C Bcast...............");
     before_mpi(Bcast, (p2i)comm,0);
@@ -110,7 +110,7 @@ int api_mpic_Bcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI
 	return res;
 }
 
-int api_mpic_Bsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
+int ear_mpic_Bsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
 {
     debug(">> C Bsend...............");
     before_mpi(Bsend, (p2i)buf,(p2i)dest);
@@ -120,7 +120,7 @@ int api_mpic_Bsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int d
 	return res;
 }
 
-int api_mpic_Bsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Bsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Bsend_init...............");
     before_mpi(Bsend_init, (p2i)buf,(p2i)dest);
@@ -130,7 +130,7 @@ int api_mpic_Bsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, 
 	return res;
 }
 
-int api_mpic_Cancel(MPI_Request *request)
+int ear_mpic_Cancel(MPI_Request *request)
 {
     debug(">> C Cancel...............");
     before_mpi(Cancel, (p2i)request,(p2i)0);
@@ -140,7 +140,7 @@ int api_mpic_Cancel(MPI_Request *request)
 	return res;
 }
 
-int api_mpic_Cart_create(MPI_Comm comm_old, int ndims, MPI3_CONST int dims[], MPI3_CONST int periods[], int reorder, MPI_Comm *comm_cart)
+int ear_mpic_Cart_create(MPI_Comm comm_old, int ndims, MPI3_CONST int dims[], MPI3_CONST int periods[], int reorder, MPI_Comm *comm_cart)
 {
     debug(">> C Cart_create...............");
     before_mpi(Cart_create, (p2i)ndims,(p2i)comm_cart);
@@ -150,7 +150,7 @@ int api_mpic_Cart_create(MPI_Comm comm_old, int ndims, MPI3_CONST int dims[], MP
 	return res;
 }
 
-int api_mpic_Cart_sub(MPI_Comm comm, MPI3_CONST int remain_dims[], MPI_Comm *newcomm)
+int ear_mpic_Cart_sub(MPI_Comm comm, MPI3_CONST int remain_dims[], MPI_Comm *newcomm)
 {
     debug(">> C Cart_sub...............");
     before_mpi(Cart_sub, (p2i)remain_dims,(p2i)newcomm);
@@ -160,7 +160,7 @@ int api_mpic_Cart_sub(MPI_Comm comm, MPI3_CONST int remain_dims[], MPI_Comm *new
 	return res;
 }
 
-int api_mpic_Comm_create(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm)
+int ear_mpic_Comm_create(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm)
 {
     debug(">> C Comm_create...............");
     before_mpi(Comm_create, (p2i)group,(p2i)newcomm);
@@ -170,7 +170,7 @@ int api_mpic_Comm_create(MPI_Comm comm, MPI_Group group, MPI_Comm *newcomm)
 	return res;
 }
 
-int api_mpic_Comm_dup(MPI_Comm comm, MPI_Comm *newcomm)
+int ear_mpic_Comm_dup(MPI_Comm comm, MPI_Comm *newcomm)
 {
     debug(">> C Comm_dup...............");
     before_mpi(Comm_dup, (p2i)newcomm,(p2i)0);
@@ -180,7 +180,7 @@ int api_mpic_Comm_dup(MPI_Comm comm, MPI_Comm *newcomm)
 	return res;
 }
 
-int api_mpic_Comm_free(MPI_Comm *comm)
+int ear_mpic_Comm_free(MPI_Comm *comm)
 {
     debug(">> C Comm_free...............");
     before_mpi(Comm_free, (p2i)comm,(p2i)0);
@@ -190,7 +190,7 @@ int api_mpic_Comm_free(MPI_Comm *comm)
 	return res;
 }
 
-int api_mpic_Comm_rank(MPI_Comm comm, int *rank)
+int ear_mpic_Comm_rank(MPI_Comm comm, int *rank)
 {
     debug(">> C Comm_rank...............");
     before_mpi(Comm_rank, (p2i)comm,(p2i)rank);
@@ -200,7 +200,7 @@ int api_mpic_Comm_rank(MPI_Comm comm, int *rank)
 	return res;
 }
 
-int api_mpic_Comm_size(MPI_Comm comm, int *size)
+int ear_mpic_Comm_size(MPI_Comm comm, int *size)
 {
     debug(">> C Comm_size...............");
     before_mpi(Comm_size, (p2i)size,(p2i)0);
@@ -210,7 +210,7 @@ int api_mpic_Comm_size(MPI_Comm comm, int *size)
 	return res;
 }
 
-int api_mpic_Comm_spawn(MPI3_CONST char *command, char *argv[], int maxprocs, MPI_Info info, int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])
+int ear_mpic_Comm_spawn(MPI3_CONST char *command, char *argv[], int maxprocs, MPI_Info info, int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])
 {
     debug(">> C Comm_spawn...............");
     before_mpi(Comm_spawn, (p2i)command,(p2i)info);
@@ -220,7 +220,7 @@ int api_mpic_Comm_spawn(MPI3_CONST char *command, char *argv[], int maxprocs, MP
 	return res;
 }
 
-int api_mpic_Comm_spawn_multiple(int count, char *array_of_commands[], char **array_of_argv[], MPI3_CONST int array_of_maxprocs[], MPI3_CONST MPI_Info array_of_info[], int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])
+int ear_mpic_Comm_spawn_multiple(int count, char *array_of_commands[], char **array_of_argv[], MPI3_CONST int array_of_maxprocs[], MPI3_CONST MPI_Info array_of_info[], int root, MPI_Comm comm, MPI_Comm *intercomm, int array_of_errcodes[])
 {
     debug(">> C Comm_spawn_multiple...............");
     before_mpi(Comm_spawn_multiple, (p2i)array_of_commands,(p2i)array_of_info);
@@ -230,7 +230,7 @@ int api_mpic_Comm_spawn_multiple(int count, char *array_of_commands[], char **ar
 	return res;
 }
 
-int api_mpic_Comm_split(MPI_Comm comm, int color, int key, MPI_Comm *newcomm)
+int ear_mpic_Comm_split(MPI_Comm comm, int color, int key, MPI_Comm *newcomm)
 {
     debug(">> C Comm_split...............");
     before_mpi(Comm_split, (p2i)key,(p2i)newcomm);
@@ -240,7 +240,7 @@ int api_mpic_Comm_split(MPI_Comm comm, int color, int key, MPI_Comm *newcomm)
 	return res;
 }
 
-int api_mpic_File_close(MPI_File *fh)
+int ear_mpic_File_close(MPI_File *fh)
 {
     debug(">> C File_close...............");
     before_mpi(File_close, (p2i)fh,(p2i)0);
@@ -250,7 +250,7 @@ int api_mpic_File_close(MPI_File *fh)
 	return res;
 }
 
-int api_mpic_File_read(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_read(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_read...............");
     before_mpi(File_read, (p2i)buf,(p2i)datatype);
@@ -260,7 +260,7 @@ int api_mpic_File_read(MPI_File fh, void *buf, int count, MPI_Datatype datatype,
 	return res;
 }
 
-int api_mpic_File_read_all(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_read_all(MPI_File fh, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_read_all...............");
     before_mpi(File_read_all, (p2i)buf,(p2i)datatype);
@@ -270,7 +270,7 @@ int api_mpic_File_read_all(MPI_File fh, void *buf, int count, MPI_Datatype datat
 	return res;
 }
 
-int api_mpic_File_read_at(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_read_at(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_read_at...............");
     before_mpi(File_read_at, (p2i)buf,(p2i)datatype);
@@ -280,7 +280,7 @@ int api_mpic_File_read_at(MPI_File fh, MPI_Offset offset, void *buf, int count, 
 	return res;
 }
 
-int api_mpic_File_read_at_all(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_read_at_all(MPI_File fh, MPI_Offset offset, void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_read_at_all...............");
     before_mpi(File_read_at_all, (p2i)buf,(p2i)datatype);
@@ -290,7 +290,7 @@ int api_mpic_File_read_at_all(MPI_File fh, MPI_Offset offset, void *buf, int cou
 	return res;
 }
 
-int api_mpic_File_write(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_write(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_write...............");
     before_mpi(File_write, (p2i)buf,(p2i)datatype);
@@ -300,7 +300,7 @@ int api_mpic_File_write(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Dataty
 	return res;
 }
 
-int api_mpic_File_write_all(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_write_all(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_write_all...............");
     before_mpi(File_write_all, (p2i)buf,(p2i)datatype);
@@ -310,7 +310,7 @@ int api_mpic_File_write_all(MPI_File fh, MPI3_CONST void *buf, int count, MPI_Da
 	return res;
 }
 
-int api_mpic_File_write_at(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_write_at(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_write_at...............");
     before_mpi(File_write_at, (p2i)buf,(p2i)datatype);
@@ -321,7 +321,7 @@ int api_mpic_File_write_at(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf,
 	return res;
 }
 
-int api_mpic_File_write_at_all(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
+int ear_mpic_File_write_at_all(MPI_File fh, MPI_Offset offset, MPI3_CONST void *buf, int count, MPI_Datatype datatype, MPI_Status *status)
 {
     debug(">> C File_write_at_all...............");
     before_mpi(File_write_at_all, (p2i)buf,(p2i)datatype);
@@ -331,7 +331,7 @@ int api_mpic_File_write_at_all(MPI_File fh, MPI_Offset offset, MPI3_CONST void *
 	return res;
 }
 
-int api_mpic_Finalize(void)
+int ear_mpic_Finalize(void)
 {
     debug(">> C Finalize...............");
     before_finalize();
@@ -341,7 +341,7 @@ int api_mpic_Finalize(void)
 	return res;
 }
 
-int api_mpic_Gather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
+int ear_mpic_Gather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
     debug(">> C Gather...............");
     before_mpi(Gather, (p2i)sendbuf,(p2i)recvbuf);
@@ -351,7 +351,7 @@ int api_mpic_Gather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendty
 	return res;
 }
 
-int api_mpic_Gatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, int root, MPI_Comm comm)
+int ear_mpic_Gatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int *recvcounts, MPI3_CONST int *displs, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
     debug(">> C Gatherv...............");
     before_mpi(Gatherv, (p2i)sendbuf,(p2i)recvbuf);
@@ -361,7 +361,7 @@ int api_mpic_Gatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendt
 	return res;
 }
 
-int api_mpic_Get(void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)
+int ear_mpic_Get(void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)
 {
     debug(">> C Get...............");
     before_mpi(Get, (p2i)origin_addr,(p2i)origin_datatype);
@@ -371,7 +371,7 @@ int api_mpic_Get(void *origin_addr, int origin_count, MPI_Datatype origin_dataty
 	return res;
 }
 
-int api_mpic_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ibsend...............");
     before_mpi(Ibsend, (p2i)buf,(p2i)datatype);
@@ -381,7 +381,7 @@ int api_mpic_Ibsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int 
 	return res;
 }
 
-int api_mpic_Init(int *argc, char ***argv)
+int ear_mpic_Init(int *argc, char ***argv)
 {
     debug(">> C Init...............");
     before_init();
@@ -391,7 +391,7 @@ int api_mpic_Init(int *argc, char ***argv)
 	return res;
 }
 
-int api_mpic_Init_thread(int *argc, char ***argv, int required, int *provided)
+int ear_mpic_Init_thread(int *argc, char ***argv, int required, int *provided)
 {
     debug(">> C Init_thread...............");
     before_init();
@@ -401,7 +401,7 @@ int api_mpic_Init_thread(int *argc, char ***argv, int required, int *provided)
 	return res;
 }
 
-int api_mpic_Intercomm_create(MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm, int remote_leader, int tag, MPI_Comm *newintercomm)
+int ear_mpic_Intercomm_create(MPI_Comm local_comm, int local_leader, MPI_Comm peer_comm, int remote_leader, int tag, MPI_Comm *newintercomm)
 {
     debug(">> C Intercomm_create...............");
     before_mpi(Intercomm_create, (p2i)local_leader,(p2i)remote_leader);
@@ -411,7 +411,7 @@ int api_mpic_Intercomm_create(MPI_Comm local_comm, int local_leader, MPI_Comm pe
 	return res;
 }
 
-int api_mpic_Intercomm_merge(MPI_Comm intercomm, int high, MPI_Comm *newintracomm)
+int ear_mpic_Intercomm_merge(MPI_Comm intercomm, int high, MPI_Comm *newintracomm)
 {
     debug(">> C Intercomm_merge...............");
     before_mpi(Intercomm_merge, (p2i)newintracomm,(p2i)0);
@@ -421,7 +421,7 @@ int api_mpic_Intercomm_merge(MPI_Comm intercomm, int high, MPI_Comm *newintracom
 	return res;
 }
 
-int api_mpic_Iprobe(int source, int tag, MPI_Comm comm, int *flag, MPI_Status *status)
+int ear_mpic_Iprobe(int source, int tag, MPI_Comm comm, int *flag, MPI_Status *status)
 {
     debug(">> C Iprobe...............");
     before_mpi(Iprobe, (p2i)flag,(p2i)status);
@@ -431,7 +431,7 @@ int api_mpic_Iprobe(int source, int tag, MPI_Comm comm, int *flag, MPI_Status *s
 	return res;
 }
 
-int api_mpic_Irecv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Irecv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Irecv...............");
     before_mpi(Irecv, (p2i)buf,(p2i)request);
@@ -441,7 +441,7 @@ int api_mpic_Irecv(void *buf, int count, MPI_Datatype datatype, int source, int 
 	return res;
 }
 
-int api_mpic_Irsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Irsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Irsend...............");
     before_mpi(Irsend, (p2i)buf,(p2i)dest);
@@ -451,7 +451,7 @@ int api_mpic_Irsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int 
 	return res;
 }
 
-int api_mpic_Isend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Isend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Isend...............");
     before_mpi(Isend, (p2i)buf,(p2i)dest);
@@ -461,7 +461,7 @@ int api_mpic_Isend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int d
 	return res;
 }
 
-int api_mpic_Issend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Issend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Issend...............");
     before_mpi(Issend, (p2i)buf,(p2i)dest);
@@ -471,7 +471,7 @@ int api_mpic_Issend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int 
 	return res;
 }
 
-int api_mpic_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status)
+int ear_mpic_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
     debug(">> C Probe...............");
     before_mpi(Probe, (p2i)source,(p2i)0);
@@ -481,7 +481,7 @@ int api_mpic_Probe(int source, int tag, MPI_Comm comm, MPI_Status *status)
 	return res;
 }
 
-int api_mpic_Put(MPI3_CONST void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)
+int ear_mpic_Put(MPI3_CONST void *origin_addr, int origin_count, MPI_Datatype origin_datatype, int target_rank, MPI_Aint target_disp, int target_count, MPI_Datatype target_datatype, MPI_Win win)
 {
     debug(">> C Put...............");
     before_mpi(Put, (p2i)origin_addr,(p2i)0);
@@ -491,7 +491,7 @@ int api_mpic_Put(MPI3_CONST void *origin_addr, int origin_count, MPI_Datatype or
 	return res;
 }
 
-int api_mpic_Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
+int ear_mpic_Recv(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Status *status)
 {
     debug(">> C Recv...............");
     before_mpi(Recv, (p2i)buf,(p2i)source);
@@ -501,7 +501,7 @@ int api_mpic_Recv(void *buf, int count, MPI_Datatype datatype, int source, int t
 	return res;
 }
 
-int api_mpic_Recv_init(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Recv_init(void *buf, int count, MPI_Datatype datatype, int source, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Recv_init...............");
     before_mpi(Recv_init, (p2i)buf,(p2i)source);
@@ -511,7 +511,7 @@ int api_mpic_Recv_init(void *buf, int count, MPI_Datatype datatype, int source, 
 	return res;
 }
 
-int api_mpic_Reduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm)
+int ear_mpic_Reduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm)
 {
     debug(">> C Reduce...............");
     before_mpi(Reduce, (p2i)sendbuf,(p2i)recvbuf);
@@ -521,7 +521,7 @@ int api_mpic_Reduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Data
 	return res;
 }
 
-int api_mpic_Reduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST int *recvcounts, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
+int ear_mpic_Reduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST int *recvcounts, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
     debug(">> C Reduce_scatter...............");
     before_mpi(Reduce_scatter, (p2i)sendbuf,(p2i)recvbuf);
@@ -531,7 +531,7 @@ int api_mpic_Reduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST 
 	return res;
 }
 
-int api_mpic_Request_free(MPI_Request *request)
+int ear_mpic_Request_free(MPI_Request *request)
 {
     debug(">> C Request_free...............");
     before_mpi(Request_free, (p2i)request,(p2i)0);
@@ -541,7 +541,7 @@ int api_mpic_Request_free(MPI_Request *request)
 	return res;
 }
 
-int api_mpic_Request_get_status(MPI_Request request, int *flag, MPI_Status *status)
+int ear_mpic_Request_get_status(MPI_Request request, int *flag, MPI_Status *status)
 {
     debug(">> C Request_get_status...............");
     before_mpi(Request_get_status, (p2i)request,(p2i)0);
@@ -551,7 +551,7 @@ int api_mpic_Request_get_status(MPI_Request request, int *flag, MPI_Status *stat
 	return res;
 }
 
-int api_mpic_Rsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
+int ear_mpic_Rsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
 {
     debug(">> C Rsend...............");
     before_mpi(Rsend, (p2i)buf,(p2i)dest);
@@ -561,7 +561,7 @@ int api_mpic_Rsend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int d
 	return res;
 }
 
-int api_mpic_Rsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Rsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Rsend_init...............");
     before_mpi(Rsend_init, (p2i)buf,(p2i)0);
@@ -571,7 +571,7 @@ int api_mpic_Rsend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, 
 	return res;
 }
 
-int api_mpic_Scan(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
+int ear_mpic_Scan(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm)
 {
     debug(">> C Scan...............");
     before_mpi(Scan, (p2i)sendbuf,(p2i)recvbuf);
@@ -581,7 +581,7 @@ int api_mpic_Scan(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Dataty
 	return res;
 }
 
-int api_mpic_Scatter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
+int ear_mpic_Scatter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
     debug(">> C Scatter...............");
     before_mpi(Scatter, (p2i)sendbuf,(p2i)recvbuf);
@@ -591,7 +591,7 @@ int api_mpic_Scatter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendt
 	return res;
 }
 
-int api_mpic_Scatterv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI3_CONST int *displs, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
+int ear_mpic_Scatterv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI3_CONST int *displs, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm)
 {
     debug(">> C Scatterv...............");
     before_mpi(Scatterv, (p2i)sendbuf,(p2i)recvbuf);
@@ -601,7 +601,7 @@ int api_mpic_Scatterv(MPI3_CONST void *sendbuf, MPI3_CONST int *sendcounts, MPI3
 	return res;
 }
 
-int api_mpic_Send(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
+int ear_mpic_Send(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
 {
     debug(">> C Send...............");
     before_mpi(Send, (p2i)buf,(p2i)dest);
@@ -611,7 +611,7 @@ int api_mpic_Send(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int de
 	return res;
 }
 
-int api_mpic_Send_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Send_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Send_init...............");
     before_mpi(Send_init, (p2i)buf,(p2i)dest);
@@ -621,7 +621,7 @@ int api_mpic_Send_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, i
 	return res;
 }
 
-int api_mpic_Sendrecv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, int dest, int sendtag, void *recvbuf, int recvcount, MPI_Datatype recvtype, int source, int recvtag, MPI_Comm comm, MPI_Status *status)
+int ear_mpic_Sendrecv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, int dest, int sendtag, void *recvbuf, int recvcount, MPI_Datatype recvtype, int source, int recvtag, MPI_Comm comm, MPI_Status *status)
 {
     debug(">> C Sendrecv...............");
     before_mpi(Sendrecv, (p2i)sendbuf,(p2i)recvbuf);
@@ -631,7 +631,7 @@ int api_mpic_Sendrecv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype send
 	return res;
 }
 
-int api_mpic_Sendrecv_replace(void *buf, int count, MPI_Datatype datatype, int dest, int sendtag, int source, int recvtag, MPI_Comm comm, MPI_Status *status)
+int ear_mpic_Sendrecv_replace(void *buf, int count, MPI_Datatype datatype, int dest, int sendtag, int source, int recvtag, MPI_Comm comm, MPI_Status *status)
 {
     debug(">> C Sendrecv_replace...............");
     before_mpi(Sendrecv_replace, (p2i)buf,(p2i)dest);
@@ -641,7 +641,7 @@ int api_mpic_Sendrecv_replace(void *buf, int count, MPI_Datatype datatype, int d
 	return res;
 }
 
-int api_mpic_Ssend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
+int ear_mpic_Ssend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm)
 {
     debug(">> C Ssend...............");
     before_mpi(Ssend, (p2i)buf,(p2i)dest);
@@ -651,7 +651,7 @@ int api_mpic_Ssend(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int d
 	return res;
 }
 
-int api_mpic_Ssend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ssend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, int dest, int tag, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ssend_init...............");
     before_mpi(Ssend_init, (p2i)buf,(p2i)dest);
@@ -661,7 +661,7 @@ int api_mpic_Ssend_init(MPI3_CONST void *buf, int count, MPI_Datatype datatype, 
 	return res;
 }
 
-int api_mpic_Start(MPI_Request *request)
+int ear_mpic_Start(MPI_Request *request)
 {
     debug(">> C Start...............");
     before_mpi(Start, (p2i)request,(p2i)0);
@@ -671,7 +671,7 @@ int api_mpic_Start(MPI_Request *request)
 	return res;
 }
 
-int api_mpic_Startall(int count, MPI_Request array_of_requests[])
+int ear_mpic_Startall(int count, MPI_Request array_of_requests[])
 {
     debug(">> C Startall...............");
     before_mpi(Startall, (p2i)array_of_requests,(p2i)0);
@@ -681,7 +681,7 @@ int api_mpic_Startall(int count, MPI_Request array_of_requests[])
 	return res;
 }
 
-int api_mpic_Test(MPI_Request *request, int *flag, MPI_Status *status)
+int ear_mpic_Test(MPI_Request *request, int *flag, MPI_Status *status)
 {
     debug(">> C Test...............");
     before_mpi(Test, (p2i)request,(p2i)0);
@@ -691,7 +691,7 @@ int api_mpic_Test(MPI_Request *request, int *flag, MPI_Status *status)
 	return res;
 }
 
-int api_mpic_Testall(int count, MPI_Request array_of_requests[], int *flag, MPI_Status array_of_statuses[])
+int ear_mpic_Testall(int count, MPI_Request array_of_requests[], int *flag, MPI_Status array_of_statuses[])
 {
     debug(">> C Testall...............");
     before_mpi(Testall, (p2i)array_of_requests,(p2i)array_of_statuses);
@@ -701,7 +701,7 @@ int api_mpic_Testall(int count, MPI_Request array_of_requests[], int *flag, MPI_
 	return res;
 }
 
-int api_mpic_Testany(int count, MPI_Request array_of_requests[], int *indx, int *flag, MPI_Status *status)
+int ear_mpic_Testany(int count, MPI_Request array_of_requests[], int *indx, int *flag, MPI_Status *status)
 {
     debug(">> C Testany...............");
     before_mpi(Testany, (p2i)array_of_requests,(p2i)flag);
@@ -711,7 +711,7 @@ int api_mpic_Testany(int count, MPI_Request array_of_requests[], int *indx, int 
 	return res;
 }
 
-int api_mpic_Testsome(int incount, MPI_Request array_of_requests[], int *outcount, int array_of_indices[], MPI_Status array_of_statuses[])
+int ear_mpic_Testsome(int incount, MPI_Request array_of_requests[], int *outcount, int array_of_indices[], MPI_Status array_of_statuses[])
 {
     debug(">> C Testsome...............");
     before_mpi(Testsome, (p2i)array_of_requests,(p2i)outcount);
@@ -721,7 +721,7 @@ int api_mpic_Testsome(int incount, MPI_Request array_of_requests[], int *outcoun
 	return res;
 }
 
-int api_mpic_Wait(MPI_Request *request, MPI_Status *status)
+int ear_mpic_Wait(MPI_Request *request, MPI_Status *status)
 {
     debug(">> C Wait...............");
     before_mpi(Wait, (p2i)request,(p2i)0);
@@ -731,7 +731,7 @@ int api_mpic_Wait(MPI_Request *request, MPI_Status *status)
 	return res;
 }
 
-int api_mpic_Waitall(int count, MPI_Request *array_of_requests, MPI_Status *array_of_statuses)
+int ear_mpic_Waitall(int count, MPI_Request *array_of_requests, MPI_Status *array_of_statuses)
 {
     debug(">> C Waitall...............");
     before_mpi(Waitall, (p2i)array_of_requests,(p2i)array_of_statuses);
@@ -741,7 +741,7 @@ int api_mpic_Waitall(int count, MPI_Request *array_of_requests, MPI_Status *arra
 	return res;
 }
 
-int api_mpic_Waitany(int count, MPI_Request *requests, int *index, MPI_Status *status)
+int ear_mpic_Waitany(int count, MPI_Request *requests, int *index, MPI_Status *status)
 {
     debug(">> C Waitany...............");
     before_mpi(Waitany, (p2i)requests,(p2i)index);
@@ -751,7 +751,7 @@ int api_mpic_Waitany(int count, MPI_Request *requests, int *index, MPI_Status *s
 	return res;
 }
 
-int api_mpic_Waitsome(int incount, MPI_Request *array_of_requests, int *outcount, int *array_of_indices, MPI_Status *array_of_statuses)
+int ear_mpic_Waitsome(int incount, MPI_Request *array_of_requests, int *outcount, int *array_of_indices, MPI_Status *array_of_statuses)
 {
     debug(">> C Waitsome...............");
     before_mpi(Waitsome, (p2i)array_of_requests,(p2i)outcount);
@@ -761,7 +761,7 @@ int api_mpic_Waitsome(int incount, MPI_Request *array_of_requests, int *outcount
 	return res;
 }
 
-int api_mpic_Win_complete(MPI_Win win)
+int ear_mpic_Win_complete(MPI_Win win)
 {
     debug(">> C Win_complete...............");
     before_mpi(Win_complete, (p2i)win,(p2i)0);
@@ -771,7 +771,7 @@ int api_mpic_Win_complete(MPI_Win win)
 	return res;
 }
 
-int api_mpic_Win_create(void *base, MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win)
+int ear_mpic_Win_create(void *base, MPI_Aint size, int disp_unit, MPI_Info info, MPI_Comm comm, MPI_Win *win)
 {
     debug(">> C Win_create...............");
     before_mpi(Win_create, (p2i)base,(p2i)info);
@@ -781,7 +781,7 @@ int api_mpic_Win_create(void *base, MPI_Aint size, int disp_unit, MPI_Info info,
 	return res;
 }
 
-int api_mpic_Win_fence(int assert, MPI_Win win)
+int ear_mpic_Win_fence(int assert, MPI_Win win)
 {
     debug(">> C Win_fence...............");
     before_mpi(Win_fence, (p2i)win,(p2i)0);
@@ -791,7 +791,7 @@ int api_mpic_Win_fence(int assert, MPI_Win win)
 	return res;
 }
 
-int api_mpic_Win_free(MPI_Win *win)
+int ear_mpic_Win_free(MPI_Win *win)
 {
     debug(">> C Win_free...............");
     before_mpi(Win_free, (p2i)win,(p2i)0);
@@ -801,7 +801,7 @@ int api_mpic_Win_free(MPI_Win *win)
 	return res;
 }
 
-int api_mpic_Win_post(MPI_Group group, int assert, MPI_Win win)
+int ear_mpic_Win_post(MPI_Group group, int assert, MPI_Win win)
 {
     debug(">> C Win_post...............");
     before_mpi(Win_post, (p2i)win,(p2i)0);
@@ -811,7 +811,7 @@ int api_mpic_Win_post(MPI_Group group, int assert, MPI_Win win)
 	return res;
 }
 
-int api_mpic_Win_start(MPI_Group group, int assert, MPI_Win win)
+int ear_mpic_Win_start(MPI_Group group, int assert, MPI_Win win)
 {
     debug(">> C Win_start...............");
     before_mpi(Win_start, (p2i)win,(p2i)0);
@@ -821,7 +821,7 @@ int api_mpic_Win_start(MPI_Group group, int assert, MPI_Win win)
 	return res;
 }
 
-int api_mpic_Win_wait(MPI_Win win)
+int ear_mpic_Win_wait(MPI_Win win)
 {
     debug(">> C Win_wait...............");
     before_mpi(Win_wait, (p2i)win,(p2i)0);
@@ -832,7 +832,7 @@ int api_mpic_Win_wait(MPI_Win win)
 }
 
 #if MPI_VERSION >= 3
-int api_mpic_Iallgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Iallgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Iallgather...............");
     before_mpi(Iallgather, (p2i)sendbuf,(p2i)recvbuf);
@@ -842,7 +842,7 @@ int api_mpic_Iallgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype se
 	return res;
 }
 
-int api_mpic_Iallgatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int recvcounts[], MPI3_CONST int displs[], MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Iallgatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int recvcounts[], MPI3_CONST int displs[], MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Iallgatherv...............");
     before_mpi(Iallgatherv, (p2i)sendbuf,(p2i)recvbuf);
@@ -852,7 +852,7 @@ int api_mpic_Iallgatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype s
 	return res;
 }
 
-int api_mpic_Iallreduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Iallreduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Iallreduce...............");
     before_mpi(Iallreduce, (p2i)sendbuf,(p2i)recvbuf);
@@ -862,7 +862,7 @@ int api_mpic_Iallreduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_
 	return res;
 }
 
-int api_mpic_Ialltoall(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ialltoall(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ialltoall...............");
     before_mpi(Ialltoall, (p2i)sendbuf,(p2i)recvbuf);
@@ -872,7 +872,7 @@ int api_mpic_Ialltoall(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sen
 	return res;
 }
 
-int api_mpic_Ialltoallv(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], MPI3_CONST int sdispls[], MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int recvcounts[], MPI3_CONST int rdispls[], MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ialltoallv(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], MPI3_CONST int sdispls[], MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int recvcounts[], MPI3_CONST int rdispls[], MPI_Datatype recvtype, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ialltoallv...............");
     before_mpi(Ialltoallv, (p2i)sendbuf,(p2i)recvbuf);
@@ -882,7 +882,7 @@ int api_mpic_Ialltoallv(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], M
 	return res;
 }
 
-int api_mpic_Ibarrier(MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ibarrier(MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ibarrier...............");
     before_mpi(Ibarrier, (p2i)request,(p2i)0);
@@ -892,7 +892,7 @@ int api_mpic_Ibarrier(MPI_Comm comm, MPI_Request *request)
 	return res;
 }
 
-int api_mpic_Ibcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ibcast(void *buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ibcast...............");
     before_mpi(Ibcast, (p2i)buffer,(p2i)request);
@@ -902,7 +902,7 @@ int api_mpic_Ibcast(void *buffer, int count, MPI_Datatype datatype, int root, MP
 	return res;
 }
 
-int api_mpic_Igather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Igather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Igather...............");
     before_mpi(Igather, (p2i)sendbuf,(p2i)recvbuf);
@@ -912,7 +912,7 @@ int api_mpic_Igather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendt
 	return res;
 }
 
-int api_mpic_Igatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int recvcounts[], MPI3_CONST int displs[], MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Igatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, MPI3_CONST int recvcounts[], MPI3_CONST int displs[], MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Igatherv...............");
     before_mpi(Igatherv, (p2i)sendbuf,(p2i)recvbuf);
@@ -922,7 +922,7 @@ int api_mpic_Igatherv(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype send
 	return res;
 }
 
-int api_mpic_Ireduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ireduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, int root, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ireduce...............");
     before_mpi(Ireduce, (p2i)sendbuf,(p2i)recvbuf);
@@ -932,7 +932,7 @@ int api_mpic_Ireduce(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Dat
 	return res;
 }
 
-int api_mpic_Ireduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST int recvcounts[], MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Ireduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST int recvcounts[], MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Ireduce_scatter...............");
     before_mpi(Ireduce_scatter, (p2i)sendbuf,(p2i)recvbuf);
@@ -942,7 +942,7 @@ int api_mpic_Ireduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST
 	return res;
 }
 
-int api_mpic_Iscan(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Iscan(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datatype datatype, MPI_Op op, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Iscan...............");
     before_mpi(Iscan, (p2i)sendbuf,(p2i)recvbuf);
@@ -952,7 +952,7 @@ int api_mpic_Iscan(MPI3_CONST void *sendbuf, void *recvbuf, int count, MPI_Datat
 	return res;
 }
 
-int api_mpic_Iscatter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Iscatter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Iscatter...............");
     before_mpi(Iscatter, (p2i)sendbuf,(p2i)recvbuf);
@@ -962,7 +962,7 @@ int api_mpic_Iscatter(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype send
 	return res;
 }
 
-int api_mpic_Iscatterv(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], MPI3_CONST int displs[], MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
+int ear_mpic_Iscatterv(MPI3_CONST void *sendbuf, MPI3_CONST int sendcounts[], MPI3_CONST int displs[], MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, int root, MPI_Comm comm, MPI_Request *request)
 {
     debug(">> C Iscatterv...............");
     before_mpi(Iscatterv, (p2i)sendbuf,(p2i)recvbuf);

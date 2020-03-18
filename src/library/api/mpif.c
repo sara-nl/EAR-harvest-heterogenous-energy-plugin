@@ -28,19 +28,19 @@
 */
 
 #include <common/output/debug.h>
+#include <library/api/mpif.h>
 #include <library/api/ear_mpi.h>
-#include <library/api/api_mpif.h>
 
 static mpif_t next_mpif;
 
-void api_mpif_setnext(mpif_t *_next_mpif)
+void ear_mpif_setnext(mpif_t *_next_mpif)
 {
 	debug(">> F setnext...............");
 	memcpy(&next_mpif, _next_mpif, sizeof(mpif_t));
 	debug("<< F setnext...............");
 }
 
-void api_mpif_Allgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Allgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Allgather...............");
     before_mpi(Allgather, (p2i)sendbuf, (p2i)recvbuf);
@@ -49,7 +49,7 @@ void api_mpif_Allgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint 
     after_mpi(Allgather);
 }
 
-void api_mpif_Allgatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Allgatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Allgatherv...............");
     before_mpi(Allgatherv, (p2i)sendbuf, (p2i)recvbuf);
@@ -58,7 +58,7 @@ void api_mpif_Allgatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint
     after_mpi(Allgatherv);
 }
 
-void api_mpif_Allreduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Allreduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Allreduce...............");
     before_mpi(Allreduce, (p2i)sendbuf, (p2i)recvbuf);
@@ -67,7 +67,7 @@ void api_mpif_Allreduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count
     after_mpi(Allreduce);
 }
 
-void api_mpif_Alltoall(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Alltoall(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Alltoall...............");
     before_mpi(Alltoall, (p2i)sendbuf, (p2i)recvbuf);
@@ -76,7 +76,7 @@ void api_mpif_Alltoall(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *
     after_mpi(Alltoall);
 }
 
-void api_mpif_Alltoallv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *sdispls, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *rdispls, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Alltoallv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *sdispls, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *rdispls, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Alltoallv...............");
     before_mpi(Alltoallv, (p2i)sendbuf, (p2i)recvbuf);
@@ -85,7 +85,7 @@ void api_mpif_Alltoallv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcount
     after_mpi(Alltoallv);
 }
 
-void api_mpif_Barrier(MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Barrier(MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Barrier...............");
     before_mpi(Barrier, (p2i)comm, (p2i)ierror);
@@ -94,7 +94,7 @@ void api_mpif_Barrier(MPI_Fint *comm, MPI_Fint *ierror)
     after_mpi(Barrier);
 }
 
-void api_mpif_Bcast(void *buffer, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Bcast(void *buffer, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Bcast...............");
     before_mpi(Bcast, (p2i)buffer, 0);
@@ -103,7 +103,7 @@ void api_mpif_Bcast(void *buffer, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint 
     after_mpi(Bcast);
 }
 
-void api_mpif_Bsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Bsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Bsend...............");
     before_mpi(Bsend, (p2i)buf, (p2i)dest);
@@ -112,7 +112,7 @@ void api_mpif_Bsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, M
     after_mpi(Bsend);
 }
 
-void api_mpif_Bsend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Bsend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Bsend_init...............");
     before_mpi(Bsend_init, (p2i)buf, (p2i)dest);
@@ -121,7 +121,7 @@ void api_mpif_Bsend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *dataty
     after_mpi(Bsend_init);
 }
 
-void api_mpif_Cancel(MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Cancel(MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Cancel...............");
     before_mpi(Cancel, (p2i)request, 0);
@@ -130,7 +130,7 @@ void api_mpif_Cancel(MPI_Fint *request, MPI_Fint *ierror)
     after_mpi(Cancel);
 }
 
-void api_mpif_Cart_create(MPI_Fint *comm_old, MPI_Fint *ndims, MPI3_CONST MPI_Fint *dims, MPI3_CONST MPI_Fint *periods, MPI_Fint *reorder, MPI_Fint *comm_cart, MPI_Fint *ierror)
+void ear_mpif_Cart_create(MPI_Fint *comm_old, MPI_Fint *ndims, MPI3_CONST MPI_Fint *dims, MPI3_CONST MPI_Fint *periods, MPI_Fint *reorder, MPI_Fint *comm_cart, MPI_Fint *ierror)
 {
     debug(">> F Cart_create...............");
     before_mpi(Cart_create, (p2i)ndims, 0);
@@ -139,7 +139,7 @@ void api_mpif_Cart_create(MPI_Fint *comm_old, MPI_Fint *ndims, MPI3_CONST MPI_Fi
     after_mpi(Cart_create);
 }
 
-void api_mpif_Cart_sub(MPI_Fint *comm, MPI3_CONST MPI_Fint *remain_dims, MPI_Fint *comm_new, MPI_Fint *ierror)
+void ear_mpif_Cart_sub(MPI_Fint *comm, MPI3_CONST MPI_Fint *remain_dims, MPI_Fint *comm_new, MPI_Fint *ierror)
 {
     debug(">> F Cart_sub...............");
     before_mpi(Cart_sub, (p2i)remain_dims, 0);
@@ -148,7 +148,7 @@ void api_mpif_Cart_sub(MPI_Fint *comm, MPI3_CONST MPI_Fint *remain_dims, MPI_Fin
     after_mpi(Cart_sub);
 }
 
-void api_mpif_Comm_create(MPI_Fint *comm, MPI_Fint *group, MPI_Fint *newcomm, MPI_Fint *ierror)
+void ear_mpif_Comm_create(MPI_Fint *comm, MPI_Fint *group, MPI_Fint *newcomm, MPI_Fint *ierror)
 {
     debug(">> F Comm_create...............");
     before_mpi(Comm_create, (p2i)group, 0);
@@ -157,7 +157,7 @@ void api_mpif_Comm_create(MPI_Fint *comm, MPI_Fint *group, MPI_Fint *newcomm, MP
     after_mpi(Comm_create);
 }
 
-void api_mpif_Comm_dup(MPI_Fint *comm, MPI_Fint *newcomm, MPI_Fint *ierror)
+void ear_mpif_Comm_dup(MPI_Fint *comm, MPI_Fint *newcomm, MPI_Fint *ierror)
 {
     debug(">> F Comm_dup...............");
     before_mpi(Comm_dup, (p2i)newcomm, 0);
@@ -166,7 +166,7 @@ void api_mpif_Comm_dup(MPI_Fint *comm, MPI_Fint *newcomm, MPI_Fint *ierror)
     after_mpi(Comm_dup);
 }
 
-void api_mpif_Comm_free(MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Comm_free(MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Comm_free...............");
     before_mpi(Comm_free, (p2i)comm, 0);
@@ -175,7 +175,7 @@ void api_mpif_Comm_free(MPI_Fint *comm, MPI_Fint *ierror)
     after_mpi(Comm_free);
 }
 
-void api_mpif_Comm_rank(MPI_Fint *comm, MPI_Fint *rank, MPI_Fint *ierror)
+void ear_mpif_Comm_rank(MPI_Fint *comm, MPI_Fint *rank, MPI_Fint *ierror)
 {
     debug(">> F Comm_rank...............");
     before_mpi(Comm_rank, (p2i)rank, 0);
@@ -184,7 +184,7 @@ void api_mpif_Comm_rank(MPI_Fint *comm, MPI_Fint *rank, MPI_Fint *ierror)
     after_mpi(Comm_rank);
 }
 
-void api_mpif_Comm_size(MPI_Fint *comm, MPI_Fint *size, MPI_Fint *ierror)
+void ear_mpif_Comm_size(MPI_Fint *comm, MPI_Fint *size, MPI_Fint *ierror)
 {
     debug(">> F Comm_size...............");
     before_mpi(Comm_size, (p2i)size, 0);
@@ -193,7 +193,7 @@ void api_mpif_Comm_size(MPI_Fint *comm, MPI_Fint *size, MPI_Fint *ierror)
     after_mpi(Comm_size);
 }
 
-void api_mpif_Comm_spawn(MPI3_CONST char *command, char *argv, MPI_Fint *maxprocs, MPI_Fint *info, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *intercomm, MPI_Fint *array_of_errcodes, MPI_Fint *ierror)
+void ear_mpif_Comm_spawn(MPI3_CONST char *command, char *argv, MPI_Fint *maxprocs, MPI_Fint *info, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *intercomm, MPI_Fint *array_of_errcodes, MPI_Fint *ierror)
 {
     debug(">> F Comm_spawn...............");
     before_mpi(Comm_spawn, (p2i)command, 0);
@@ -202,7 +202,7 @@ void api_mpif_Comm_spawn(MPI3_CONST char *command, char *argv, MPI_Fint *maxproc
     after_mpi(Comm_spawn);
 }
 
-void api_mpif_Comm_spawn_multiple(MPI_Fint *count, char *array_of_commands, char *array_of_argv, MPI3_CONST MPI_Fint *array_of_maxprocs, MPI3_CONST MPI_Fint *array_of_info, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *intercomm, MPI_Fint *array_of_errcodes, MPI_Fint *ierror)
+void ear_mpif_Comm_spawn_multiple(MPI_Fint *count, char *array_of_commands, char *array_of_argv, MPI3_CONST MPI_Fint *array_of_maxprocs, MPI3_CONST MPI_Fint *array_of_info, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *intercomm, MPI_Fint *array_of_errcodes, MPI_Fint *ierror)
 {
     debug(">> F Comm_spawn_multiple...............");
     before_mpi(Comm_spawn_multiple, (p2i)array_of_commands, 0);
@@ -211,7 +211,7 @@ void api_mpif_Comm_spawn_multiple(MPI_Fint *count, char *array_of_commands, char
     after_mpi(Comm_spawn_multiple);
 }
 
-void api_mpif_Comm_split(MPI_Fint *comm, MPI_Fint *color, MPI_Fint *key, MPI_Fint *newcomm, MPI_Fint *ierror)
+void ear_mpif_Comm_split(MPI_Fint *comm, MPI_Fint *color, MPI_Fint *key, MPI_Fint *newcomm, MPI_Fint *ierror)
 {
     debug(">> F Comm_split...............");
     before_mpi(Comm_split, (p2i)comm, 0);
@@ -220,7 +220,7 @@ void api_mpif_Comm_split(MPI_Fint *comm, MPI_Fint *color, MPI_Fint *key, MPI_Fin
     after_mpi(Comm_split);
 }
 
-void api_mpif_File_close(MPI_File *fh, MPI_Fint *ierror)
+void ear_mpif_File_close(MPI_File *fh, MPI_Fint *ierror)
 {
     debug(">> F File_close...............");
     before_mpi(File_close, (p2i)fh, 0);
@@ -229,7 +229,7 @@ void api_mpif_File_close(MPI_File *fh, MPI_Fint *ierror)
     after_mpi(File_close);
 }
 
-void api_mpif_File_read(MPI_File *fh, void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_read(MPI_File *fh, void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_read...............");
     before_mpi(File_read, (p2i)buf, 0);
@@ -238,7 +238,7 @@ void api_mpif_File_read(MPI_File *fh, void *buf, MPI_Fint *count, MPI_Fint *data
     after_mpi(File_read);
 }
 
-void api_mpif_File_read_all(MPI_File *fh, void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_read_all(MPI_File *fh, void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_read_all...............");
     before_mpi(File_read_all, (p2i)buf, 0);
@@ -247,7 +247,7 @@ void api_mpif_File_read_all(MPI_File *fh, void *buf, MPI_Fint *count, MPI_Fint *
     after_mpi(File_read_all);
 }
 
-void api_mpif_File_read_at(MPI_File *fh, MPI_Offset *offset, void* buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_read_at(MPI_File *fh, MPI_Offset *offset, void* buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_read_at...............");
     before_mpi(File_read_at, (p2i)buf, 0);
@@ -256,7 +256,7 @@ void api_mpif_File_read_at(MPI_File *fh, MPI_Offset *offset, void* buf, MPI_Fint
     after_mpi(File_read_at);
 }
 
-void api_mpif_File_read_at_all(MPI_File *fh, MPI_Offset *offset, void* buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_read_at_all(MPI_File *fh, MPI_Offset *offset, void* buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_read_at_all...............");
     before_mpi(File_read_at_all, (p2i)buf, 0);
@@ -265,7 +265,7 @@ void api_mpif_File_read_at_all(MPI_File *fh, MPI_Offset *offset, void* buf, MPI_
     after_mpi(File_read_at_all);
 }
 
-void api_mpif_File_write(MPI_File *fh, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_write(MPI_File *fh, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_write...............");
     before_mpi(File_write, (p2i)buf, 0);
@@ -274,7 +274,7 @@ void api_mpif_File_write(MPI_File *fh, MPI3_CONST void *buf, MPI_Fint *count, MP
     after_mpi(File_write);
 }
 
-void api_mpif_File_write_all(MPI_File *fh, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_write_all(MPI_File *fh, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_write_all...............");
     before_mpi(File_write_all, (p2i)buf, 0);
@@ -283,7 +283,7 @@ void api_mpif_File_write_all(MPI_File *fh, MPI3_CONST void *buf, MPI_Fint *count
     after_mpi(File_write_all);
 }
 
-void api_mpif_File_write_at(MPI_File *fh, MPI_Offset *offset, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_write_at(MPI_File *fh, MPI_Offset *offset, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_write_at...............");
     before_mpi(File_write_at, (p2i)buf, 0);
@@ -292,7 +292,7 @@ void api_mpif_File_write_at(MPI_File *fh, MPI_Offset *offset, MPI3_CONST void *b
     after_mpi(File_write_at);
 }
 
-void api_mpif_File_write_at_all(MPI_File *fh, MPI_Offset *offset, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
+void ear_mpif_File_write_at_all(MPI_File *fh, MPI_Offset *offset, MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Status *status, MPI_Fint *ierror)
 {
     debug(">> F File_write_at_all...............");
     before_mpi(File_write_at_all, (p2i)buf, 0);
@@ -301,7 +301,7 @@ void api_mpif_File_write_at_all(MPI_File *fh, MPI_Offset *offset, MPI3_CONST voi
     after_mpi(File_write_at_all);
 }
 
-void api_mpif_Finalize(MPI_Fint *ierror)
+void ear_mpif_Finalize(MPI_Fint *ierror)
 {
     debug(">> F Finalize...............");
     before_finalize();
@@ -310,7 +310,7 @@ void api_mpif_Finalize(MPI_Fint *ierror)
     after_finalize();
 }
 
-void api_mpif_Gather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Gather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Gather...............");
     before_mpi(Gather, (p2i)sendbuf, 0);
@@ -319,7 +319,7 @@ void api_mpif_Gather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *se
     after_mpi(Gather);
 }
 
-void api_mpif_Gatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Gatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Gatherv...............");
     before_mpi(Gatherv, (p2i)sendbuf, 0);
@@ -328,7 +328,7 @@ void api_mpif_Gatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *s
     after_mpi(Gatherv);
 }
 
-void api_mpif_Get(MPI_Fint *origin_addr, MPI_Fint *origin_count, MPI_Fint *origin_datatype, MPI_Fint *target_rank, MPI_Fint *target_disp, MPI_Fint *target_count, MPI_Fint *target_datatype, MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Get(MPI_Fint *origin_addr, MPI_Fint *origin_count, MPI_Fint *origin_datatype, MPI_Fint *target_rank, MPI_Fint *target_disp, MPI_Fint *target_count, MPI_Fint *target_datatype, MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Get...............");
     before_mpi(Get, (p2i)origin_addr, 0);
@@ -337,7 +337,7 @@ void api_mpif_Get(MPI_Fint *origin_addr, MPI_Fint *origin_count, MPI_Fint *origi
     after_mpi(Get);
 }
 
-void api_mpif_Ibsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Ibsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Ibsend...............");
     before_mpi(Ibsend, (p2i)buf, (p2i)dest);
@@ -346,7 +346,7 @@ void api_mpif_Ibsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, 
     after_mpi(Ibsend);
 }
 
-void api_mpif_Init(MPI_Fint *ierror)
+void ear_mpif_Init(MPI_Fint *ierror)
 {
     debug(">> F Init...............");
     before_init();
@@ -355,7 +355,7 @@ void api_mpif_Init(MPI_Fint *ierror)
     after_init();
 }
 
-void api_mpif_Init_thread(MPI_Fint *required, MPI_Fint *provided, MPI_Fint *ierror)
+void ear_mpif_Init_thread(MPI_Fint *required, MPI_Fint *provided, MPI_Fint *ierror)
 {
     debug(">> F Init_thread...............");
     before_init();
@@ -364,7 +364,7 @@ void api_mpif_Init_thread(MPI_Fint *required, MPI_Fint *provided, MPI_Fint *ierr
     after_init();
 }
 
-void api_mpif_Intercomm_create(MPI_Fint *local_comm, MPI_Fint *local_leader, MPI_Fint *peer_comm, MPI_Fint *remote_leader, MPI_Fint *tag, MPI_Fint *newintercomm, MPI_Fint *ierror)
+void ear_mpif_Intercomm_create(MPI_Fint *local_comm, MPI_Fint *local_leader, MPI_Fint *peer_comm, MPI_Fint *remote_leader, MPI_Fint *tag, MPI_Fint *newintercomm, MPI_Fint *ierror)
 {
     debug(">> F Intercomm_create...............");
     before_mpi(Intercomm_create,0 , 0);
@@ -373,7 +373,7 @@ void api_mpif_Intercomm_create(MPI_Fint *local_comm, MPI_Fint *local_leader, MPI
     after_mpi(Intercomm_create);
 }
 
-void api_mpif_Intercomm_merge(MPI_Fint *intercomm, MPI_Fint *high, MPI_Fint *newintracomm, MPI_Fint *ierror)
+void ear_mpif_Intercomm_merge(MPI_Fint *intercomm, MPI_Fint *high, MPI_Fint *newintracomm, MPI_Fint *ierror)
 {
     debug(">> F Intercomm_merge...............");
     before_mpi(Intercomm_merge, 0, 0);
@@ -382,7 +382,7 @@ void api_mpif_Intercomm_merge(MPI_Fint *intercomm, MPI_Fint *high, MPI_Fint *new
     after_mpi(Intercomm_merge);
 }
 
-void api_mpif_Iprobe(MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *flag, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Iprobe(MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *flag, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Iprobe...............");
     before_mpi(Iprobe, (p2i)source, 0);
@@ -391,7 +391,7 @@ void api_mpif_Iprobe(MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *
     after_mpi(Iprobe);
 }
 
-void api_mpif_Irecv(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Irecv(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Irecv...............");
     before_mpi(Irecv, (p2i)buf, (p2i)source);
@@ -400,7 +400,7 @@ void api_mpif_Irecv(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *so
     after_mpi(Irecv);
 }
 
-void api_mpif_Irsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Irsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Irsend...............");
     before_mpi(Irsend, (p2i)buf, (p2i)dest);
@@ -409,7 +409,7 @@ void api_mpif_Irsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, 
     after_mpi(Irsend);
 }
 
-void api_mpif_Isend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Isend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Isend...............");
     before_mpi(Isend, (p2i)buf, (p2i)dest);
@@ -418,7 +418,7 @@ void api_mpif_Isend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, M
     after_mpi(Isend);
 }
 
-void api_mpif_Issend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Issend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Issend...............");
     before_mpi(Issend, (p2i)buf, (p2i)dest);
@@ -427,7 +427,7 @@ void api_mpif_Issend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, 
     after_mpi(Issend);
 }
 
-void api_mpif_Probe(MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Probe(MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Probe...............");
     before_mpi(Probe, (p2i)source, 0);
@@ -436,7 +436,7 @@ void api_mpif_Probe(MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *s
     after_mpi(Probe);
 }
 
-void api_mpif_Put(MPI3_CONST void *origin_addr, MPI_Fint *origin_count, MPI_Fint *origin_datatype, MPI_Fint *target_rank, MPI_Fint *target_disp, MPI_Fint *target_count, MPI_Fint *target_datatype, MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Put(MPI3_CONST void *origin_addr, MPI_Fint *origin_count, MPI_Fint *origin_datatype, MPI_Fint *target_rank, MPI_Fint *target_disp, MPI_Fint *target_count, MPI_Fint *target_datatype, MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Put...............");
     before_mpi(Put, (p2i)origin_addr, 0);
@@ -445,7 +445,7 @@ void api_mpif_Put(MPI3_CONST void *origin_addr, MPI_Fint *origin_count, MPI_Fint
     after_mpi(Put);
 }
 
-void api_mpif_Recv(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Recv(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Recv...............");
     before_mpi(Recv, (p2i)buf, (p2i)source);
@@ -454,7 +454,7 @@ void api_mpif_Recv(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *sou
     after_mpi(Recv);
 }
 
-void api_mpif_Recv_init(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Recv_init(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *source, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Recv_init...............");
     before_mpi(Recv_init, (p2i)buf, (p2i)source);
@@ -463,7 +463,7 @@ void api_mpif_Recv_init(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint
     after_mpi(Recv_init);
 }
 
-void api_mpif_Reduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Reduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Reduce...............");
     before_mpi(Reduce, (p2i)sendbuf, (p2i)recvbuf);
@@ -472,7 +472,7 @@ void api_mpif_Reduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, M
     after_mpi(Reduce);
 }
 
-void api_mpif_Reduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Reduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Reduce_scatter...............");
     before_mpi(Reduce_scatter, (p2i)sendbuf, (p2i)recvbuf);
@@ -481,7 +481,7 @@ void api_mpif_Reduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST
     after_mpi(Reduce_scatter);
 }
 
-void api_mpif_Request_free(MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Request_free(MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Request_free...............");
     before_mpi(Request_free, (p2i)request, 0);
@@ -490,7 +490,7 @@ void api_mpif_Request_free(MPI_Fint *request, MPI_Fint *ierror)
     after_mpi(Request_free);
 }
 
-void api_mpif_Request_get_status(MPI_Fint *request, int *flag, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Request_get_status(MPI_Fint *request, int *flag, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Request_get_status...............");
     before_mpi(Request_get_status, (p2i)request, 0);
@@ -499,7 +499,7 @@ void api_mpif_Request_get_status(MPI_Fint *request, int *flag, MPI_Fint *status,
     after_mpi(Request_get_status);
 }
 
-void api_mpif_Rsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Rsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Rsend...............");
     before_mpi(Rsend, (p2i)buf, (p2i)dest);
@@ -508,7 +508,7 @@ void api_mpif_Rsend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, M
     after_mpi(Rsend);
 }
 
-void api_mpif_Rsend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Rsend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Rsend_init...............");
     before_mpi(Rsend_init, (p2i)buf, (p2i)dest);
@@ -517,7 +517,7 @@ void api_mpif_Rsend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *dataty
     after_mpi(Rsend_init);
 }
 
-void api_mpif_Scan(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Scan(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Scan...............");
     before_mpi(Scan, (p2i)sendbuf, 0);
@@ -526,7 +526,7 @@ void api_mpif_Scan(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI
     after_mpi(Scan);
 }
 
-void api_mpif_Scatter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Scatter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Scatter...............");
     before_mpi(Scatter, (p2i)sendbuf, (p2i)recvbuf);
@@ -535,7 +535,7 @@ void api_mpif_Scatter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *s
     after_mpi(Scatter);
 }
 
-void api_mpif_Scatterv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Scatterv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Scatterv...............");
     before_mpi(Scatterv, (p2i)sendbuf, 0);
@@ -544,7 +544,7 @@ void api_mpif_Scatterv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts
     after_mpi(Scatterv);
 }
 
-void api_mpif_Send(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Send(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Send...............");
     before_mpi(Send, (p2i)buf, (p2i)dest);
@@ -553,7 +553,7 @@ void api_mpif_Send(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MP
     after_mpi(Send);
 }
 
-void api_mpif_Send_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Send_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Send_init...............");
     before_mpi(Send_init, (p2i)buf, (p2i)dest);
@@ -562,7 +562,7 @@ void api_mpif_Send_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatyp
     after_mpi(Send_init);
 }
 
-void api_mpif_Sendrecv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, MPI_Fint *dest, MPI_Fint *sendtag, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *source, MPI_Fint *recvtag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Sendrecv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, MPI_Fint *dest, MPI_Fint *sendtag, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *source, MPI_Fint *recvtag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Sendrecv...............");
     before_mpi(Sendrecv, (p2i)sendbuf, (p2i)recvbuf);
@@ -571,7 +571,7 @@ void api_mpif_Sendrecv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *
     after_mpi(Sendrecv);
 }
 
-void api_mpif_Sendrecv_replace(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *sendtag, MPI_Fint *source, MPI_Fint *recvtag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Sendrecv_replace(void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *sendtag, MPI_Fint *source, MPI_Fint *recvtag, MPI_Fint *comm, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Sendrecv_replace...............");
     before_mpi(Sendrecv_replace, (p2i)buf, (p2i)dest);
@@ -580,7 +580,7 @@ void api_mpif_Sendrecv_replace(void *buf, MPI_Fint *count, MPI_Fint *datatype, M
     after_mpi(Sendrecv_replace);
 }
 
-void api_mpif_Ssend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Ssend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Ssend...............");
     before_mpi(Ssend, (p2i)buf, (p2i)dest);
@@ -589,7 +589,7 @@ void api_mpif_Ssend(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, M
     after_mpi(Ssend);
 }
 
-void api_mpif_Ssend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Ssend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *dest, MPI_Fint *tag, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Ssend_init...............");
     before_mpi(Ssend_init, (p2i)buf, (p2i)dest);
@@ -598,7 +598,7 @@ void api_mpif_Ssend_init(MPI3_CONST void *buf, MPI_Fint *count, MPI_Fint *dataty
     after_mpi(Ssend_init);
 }
 
-void api_mpif_Start(MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Start(MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Start...............");
     before_mpi(Start, (p2i)request, 0);
@@ -607,7 +607,7 @@ void api_mpif_Start(MPI_Fint *request, MPI_Fint *ierror)
     after_mpi(Start);
 }
 
-void api_mpif_Startall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *ierror)
+void ear_mpif_Startall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *ierror)
 {
     debug(">> F Startall...............");
     before_mpi(Startall, (p2i)count, 0);
@@ -616,7 +616,7 @@ void api_mpif_Startall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *i
     after_mpi(Startall);
 }
 
-void api_mpif_Test(MPI_Fint *request, MPI_Fint *flag, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Test(MPI_Fint *request, MPI_Fint *flag, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Test...............");
     before_mpi(Test, (p2i)request, 0);
@@ -625,7 +625,7 @@ void api_mpif_Test(MPI_Fint *request, MPI_Fint *flag, MPI_Fint *status, MPI_Fint
     after_mpi(Test);
 }
 
-void api_mpif_Testall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *flag, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
+void ear_mpif_Testall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *flag, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
 {
     debug(">> F Testall...............");
     before_mpi(Testall, 0, 0);
@@ -634,7 +634,7 @@ void api_mpif_Testall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *fl
     after_mpi(Testall);
 }
 
-void api_mpif_Testany(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *index, MPI_Fint *flag, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Testany(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *index, MPI_Fint *flag, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Testany...............");
     before_mpi(Testany, 0, 0);
@@ -643,7 +643,7 @@ void api_mpif_Testany(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *in
     after_mpi(Testany);
 }
 
-void api_mpif_Testsome(MPI_Fint *incount, MPI_Fint *array_of_requests, MPI_Fint *outcount, MPI_Fint *array_of_indices, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
+void ear_mpif_Testsome(MPI_Fint *incount, MPI_Fint *array_of_requests, MPI_Fint *outcount, MPI_Fint *array_of_indices, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
 {
     debug(">> F Testsome...............");
     before_mpi(Testsome, 0, 0);
@@ -652,7 +652,7 @@ void api_mpif_Testsome(MPI_Fint *incount, MPI_Fint *array_of_requests, MPI_Fint 
     after_mpi(Testsome);
 }
 
-void api_mpif_Wait(MPI_Fint *request, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Wait(MPI_Fint *request, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Wait...............");
     before_mpi(Wait, (p2i)request, 0);
@@ -661,7 +661,7 @@ void api_mpif_Wait(MPI_Fint *request, MPI_Fint *status, MPI_Fint *ierror)
     after_mpi(Wait);
 }
 
-void api_mpif_Waitall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
+void ear_mpif_Waitall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
 {
     debug(">> F Waitall...............");
     before_mpi(Waitall, (p2i)count, 0);
@@ -670,7 +670,7 @@ void api_mpif_Waitall(MPI_Fint *count, MPI_Fint *array_of_requests, MPI_Fint *ar
     after_mpi(Waitall);
 }
 
-void api_mpif_Waitany(MPI_Fint *count, MPI_Fint *requests, MPI_Fint *index, MPI_Fint *status, MPI_Fint *ierror)
+void ear_mpif_Waitany(MPI_Fint *count, MPI_Fint *requests, MPI_Fint *index, MPI_Fint *status, MPI_Fint *ierror)
 {
     debug(">> F Waitany...............");
     before_mpi(Waitany, 0, 0);
@@ -679,7 +679,7 @@ void api_mpif_Waitany(MPI_Fint *count, MPI_Fint *requests, MPI_Fint *index, MPI_
     after_mpi(Waitany);
 }
 
-void api_mpif_Waitsome(MPI_Fint *incount, MPI_Fint *array_of_requests, MPI_Fint *outcount, MPI_Fint *array_of_indices, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
+void ear_mpif_Waitsome(MPI_Fint *incount, MPI_Fint *array_of_requests, MPI_Fint *outcount, MPI_Fint *array_of_indices, MPI_Fint *array_of_statuses, MPI_Fint *ierror)
 {
     debug(">> F Waitsome...............");
     before_mpi(Waitsome, 0, 0);
@@ -688,7 +688,7 @@ void api_mpif_Waitsome(MPI_Fint *incount, MPI_Fint *array_of_requests, MPI_Fint 
     after_mpi(Waitsome);
 }
 
-void api_mpif_Win_complete(MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Win_complete(MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Win_complete...............");
     before_mpi(Win_complete, 0, 0);
@@ -697,7 +697,7 @@ void api_mpif_Win_complete(MPI_Fint *win, MPI_Fint *ierror)
     after_mpi(Win_complete);
 }
 
-void api_mpif_Win_create(void *base, MPI_Aint *size, MPI_Fint *disp_unit, MPI_Fint *info, MPI_Fint *comm, MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Win_create(void *base, MPI_Aint *size, MPI_Fint *disp_unit, MPI_Fint *info, MPI_Fint *comm, MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Win_create...............");
     before_mpi(Win_create, 0, 0);
@@ -706,7 +706,7 @@ void api_mpif_Win_create(void *base, MPI_Aint *size, MPI_Fint *disp_unit, MPI_Fi
     after_mpi(Win_create);
 }
 
-void api_mpif_Win_fence(MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Win_fence(MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Win_fence...............");
     before_mpi(Win_fence, 0, 0);
@@ -715,7 +715,7 @@ void api_mpif_Win_fence(MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror)
     after_mpi(Win_fence);
 }
 
-void api_mpif_Win_free(MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Win_free(MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Win_free...............");
     before_mpi(Win_free, 0, 0);
@@ -724,7 +724,7 @@ void api_mpif_Win_free(MPI_Fint *win, MPI_Fint *ierror)
     after_mpi(Win_free);
 }
 
-void api_mpif_Win_post(MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Win_post(MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Win_post...............");
     before_mpi(Win_post, 0, 0);
@@ -733,7 +733,7 @@ void api_mpif_Win_post(MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fin
     after_mpi(Win_post);
 }
 
-void api_mpif_Win_start(MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Win_start(MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Win_start...............");
     before_mpi(Win_start, 0, 0);
@@ -742,7 +742,7 @@ void api_mpif_Win_start(MPI_Fint *group, MPI_Fint *assert, MPI_Fint *win, MPI_Fi
     after_mpi(Win_start);
 }
 
-void api_mpif_Win_wait(MPI_Fint *win, MPI_Fint *ierror)
+void ear_mpif_Win_wait(MPI_Fint *win, MPI_Fint *ierror)
 {
     debug(">> F Win_wait...............");
     before_mpi(Win_wait, 0, 0);
@@ -752,7 +752,7 @@ void api_mpif_Win_wait(MPI_Fint *win, MPI_Fint *ierror)
 }
 
 //#if MPI_VERSION >= 3
-void api_mpif_Iallgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Iallgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Iallgather...............");
     before_mpi(Iallgather, (p2i)sendbuf, (p2i)recvbuf);
@@ -761,7 +761,7 @@ void api_mpif_Iallgather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint
     after_mpi(Iallgather);
 }
 
-void api_mpif_Iallgatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcount, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Iallgatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcount, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Iallgatherv...............");
     before_mpi(Iallgatherv, (p2i)sendbuf, (p2i)recvbuf);
@@ -770,7 +770,7 @@ void api_mpif_Iallgatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fin
     after_mpi(Iallgatherv);
 }
 
-void api_mpif_Iallreduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Iallreduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Iallreduce...............");
     before_mpi(Iallreduce, (p2i)sendbuf, (p2i)recvbuf);
@@ -779,7 +779,7 @@ void api_mpif_Iallreduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *coun
     after_mpi(Iallreduce);
 }
 
-void api_mpif_Ialltoall(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Ialltoall(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Ialltoall...............");
     before_mpi(Ialltoall, (p2i)sendbuf, (p2i)recvbuf);
@@ -788,7 +788,7 @@ void api_mpif_Ialltoall(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint 
     after_mpi(Ialltoall);
 }
 
-void api_mpif_Ialltoallv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *sdispls, MPI_Fint *sendtype, MPI_Fint *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *rdispls, MPI_Fint *recvtype, MPI_Fint *request, MPI_Fint *comm, MPI_Fint *ierror)
+void ear_mpif_Ialltoallv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *sdispls, MPI_Fint *sendtype, MPI_Fint *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *rdispls, MPI_Fint *recvtype, MPI_Fint *request, MPI_Fint *comm, MPI_Fint *ierror)
 {
     debug(">> F Ialltoallv...............");
     before_mpi(Ialltoallv, (p2i)sendbuf, (p2i)recvbuf);
@@ -797,7 +797,7 @@ void api_mpif_Ialltoallv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcoun
     after_mpi(Ialltoallv);
 }
 
-void api_mpif_Ibarrier(MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Ibarrier(MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Ibarrier...............");
     before_mpi(Ibarrier, (p2i)request, 0);
@@ -806,7 +806,7 @@ void api_mpif_Ibarrier(MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
     after_mpi(Ibarrier);
 }
 
-void api_mpif_Ibcast(void *buffer, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Ibcast(void *buffer, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Ibcast...............");
     before_mpi(Ibcast, (p2i)buffer, 0);
@@ -815,7 +815,7 @@ void api_mpif_Ibcast(void *buffer, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint
     after_mpi(Ibcast);
 }
 
-void api_mpif_Igather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Igather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Igather...............");
     before_mpi(Igather, (p2i)sendbuf, (p2i)recvbuf);
@@ -824,7 +824,7 @@ void api_mpif_Igather(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *s
     after_mpi(Igather);
 }
 
-void api_mpif_Igatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Igatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Igatherv...............");
     before_mpi(Igatherv, (p2i)sendbuf, (p2i)recvbuf);
@@ -833,7 +833,7 @@ void api_mpif_Igatherv(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *
     after_mpi(Igatherv);
 }
 
-void api_mpif_Ireduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Ireduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Ireduce...............");
     before_mpi(Ireduce, (p2i)sendbuf, (p2i)recvbuf);
@@ -842,7 +842,7 @@ void api_mpif_Ireduce(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, 
     after_mpi(Ireduce);
 }
 
-void api_mpif_Ireduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Ireduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONST MPI_Fint *recvcounts, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Ireduce_scatter...............");
     before_mpi(Ireduce_scatter, (p2i)sendbuf, (p2i)recvbuf);
@@ -851,7 +851,7 @@ void api_mpif_Ireduce_scatter(MPI3_CONST void *sendbuf, void *recvbuf, MPI3_CONS
     after_mpi(Ireduce_scatter);
 }
 
-void api_mpif_Iscan(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Iscan(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MPI_Fint *datatype, MPI_Fint *op, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Iscan...............");
     before_mpi(Iscan, (p2i)sendbuf, (p2i)recvbuf);
@@ -860,7 +860,7 @@ void api_mpif_Iscan(MPI3_CONST void *sendbuf, void *recvbuf, MPI_Fint *count, MP
     after_mpi(Iscan);
 }
 
-void api_mpif_Iscatter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Iscatter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Iscatter...............");
     before_mpi(Iscatter, (p2i)sendbuf, (p2i)recvbuf);
@@ -869,7 +869,7 @@ void api_mpif_Iscatter(MPI3_CONST void *sendbuf, MPI_Fint *sendcount, MPI_Fint *
     after_mpi(Iscatter);
 }
 
-void api_mpif_Iscatterv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
+void ear_mpif_Iscatterv(MPI3_CONST void *sendbuf, MPI3_CONST MPI_Fint *sendcounts, MPI3_CONST MPI_Fint *displs, MPI_Fint *sendtype, void *recvbuf, MPI_Fint *recvcount, MPI_Fint *recvtype, MPI_Fint *root, MPI_Fint *comm, MPI_Fint *request, MPI_Fint *ierror)
 {
     debug(">> F Iscatterv...............");
     before_mpi(Iscatterv, (p2i)sendbuf, (p2i)recvbuf);

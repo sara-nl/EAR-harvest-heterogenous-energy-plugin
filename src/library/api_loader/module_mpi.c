@@ -39,8 +39,8 @@
 
 static mpic_t next_mpic;
 static mpif_t next_mpif;
-mpic_t api_mpic;
-mpif_t api_mpif;
+mpic_t ear_mpic;
+mpif_t ear_mpif;
 
 static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 {
@@ -111,8 +111,8 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 {
 	void **next_mpic_v = (void **) &next_mpic;
 	void **next_mpif_v = (void **) &next_mpif;
-	void **api_mpic_v  = (void **) &api_mpic;
-	void **api_mpif_v  = (void **) &api_mpif;
+	void **ear_mpic_v  = (void **) &ear_mpic;
+	void **ear_mpif_v  = (void **) &ear_mpif;
 	void *libear;
 	int i;
 
@@ -131,34 +131,34 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 	if (libear != NULL)
 	{
 		if (lang_c) {
-			symplug_join(libear, (void **) &api_mpic, api_mpic_names, MPIC_N);
+			symplug_join(libear, (void **) &ear_mpic, ear_mpic_names, MPIC_N);
 		}
 		if (lang_f) {
-			symplug_join(libear, (void **) &api_mpif, api_mpif_names, MPIF_N);
+			symplug_join(libear, (void **) &ear_mpif, ear_mpic_names, MPIF_N);
 		}
 	}
 
 	//
 	for(i = 0; i < MPIC_N; ++i)
 	{
-		if(api_mpic_v[i] == NULL) {
-			api_mpic_v[i] = next_mpic_v[i];
+		if(ear_mpic_v[i] == NULL) {
+			ear_mpic_v[i] = next_mpic_v[i];
 		}
 	}
 	for(i = 0; i < MPIF_N; ++i)
 	{
-		if(api_mpif_v[i] == NULL) {
-			api_mpif_v[i] = next_mpif_v[i];
+		if(ear_mpif_v[i] == NULL) {
+			ear_mpif_v[i] = next_mpif_v[i];
 		}
 	}
 	
 	// Setting MPI next symbols
 	if (libear != NULL)
 	{
-		void (*api_mpic_setnext) (mpic_t *) = dlsym(libear, "api_mpic_setnext");
-		void (*api_mpif_setnext) (mpif_t *) = dlsym(libear, "api_mpif_setnext");
-		api_mpic_setnext(&next_mpic);
-		api_mpif_setnext(&next_mpif);
+		void (*ear_mpic_setnext) (mpic_t *) = dlsym(libear, "ear_mpic_setnext");
+		void (*ear_mpif_setnext) (mpif_t *) = dlsym(libear, "ear_mpif_setnext");
+		ear_mpic_setnext(&next_mpic);
+		ear_mpif_setnext(&next_mpif);
 	}
 }
 

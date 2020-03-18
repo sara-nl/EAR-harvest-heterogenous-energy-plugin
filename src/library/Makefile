@@ -33,8 +33,8 @@ comm_OBJS = \
 mpix_OBJS = \
     api/ear.o \
     api/ear_mpi.o \
-    api/api_mpic.o \
-    api/api_mpif.o \
+    api/mpic.o \
+    api/mpif.o \
     metrics/metrics.o \
     models/models.o \
     policies/policy.o \
