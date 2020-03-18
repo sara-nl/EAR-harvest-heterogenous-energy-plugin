@@ -45,7 +45,7 @@ mpif_t ear_mpif;
 static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 {
 	static char buffer[4096];
-	char *library = NULL;
+	char *extension = NULL;
 	char *path = NULL;
 	char *hack = NULL;
 	int len = 4096;
@@ -83,15 +83,15 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 		fndi, fndo, fndm);
 
 	//
-	library = "libear.so";
+	extension = ".so";
 
 	if (fndo) {
-		library = "libear_ompi.so";
+		extension = ".ompi.so";
 	}
 
 	//
 	if (!hack) {
-		sprintf(path_so, "%s/%s/%s", path, REL_PATH_LIBR, library);
+		sprintf(path_so, "%s/%s%s", path, REL_PATH_LIBR, extension);
 	} else {
 		sprintf(path_so, "%s", hack);
 	}

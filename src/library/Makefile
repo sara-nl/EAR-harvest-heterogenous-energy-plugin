@@ -1,3 +1,5 @@
+MPICC = $(CC)
+MPICC_FLAGS = $(CC_FLAGS)
 CFLAGS  = -I$(SRCDIR) $(PAPI_CFLAGS) 
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 
@@ -44,11 +46,12 @@ core_OBJS = \
 all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
-	$(CC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(core_OBJS) $(comm_OBJS) $(LDFLAGS)
+	$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(core_OBJS) $(comm_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 
-install: install.components libs.ginstall;
+install: install.components libs.ginstall
+	echo $(libs_BINS)
 
 %.install: ;
 

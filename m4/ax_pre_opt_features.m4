@@ -101,7 +101,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 
 	MPI_DIR=`dirname $MPICC`
 	MPI_DIR=`(cd $MPI_DIR/.. && pwd)`
-	MPI_CPPFLAGS="-I$MPI_DIR/include"
+	MPI_CPPFLAGS="-I\$(MPI_BASE)/include"
 
 	#
 	# Architecture

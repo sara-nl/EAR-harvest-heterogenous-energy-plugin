@@ -17,16 +17,12 @@ DB_BASE      = @DB_DIR@
 DB_CFLAGS    = @DB_CPPFLAGS@
 DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
 
-######## FOLDERS
-
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
 DESTDIR      = @prefix@
 ETCDIR       = @sysconfdir@
 TMPDIR       = @localstatedir@
 DOCDIR       = @docdir@
-
-######## FEATURES
 
 FEAT_AVX512  = @FEAT_AVX512@
 VER_MAJOR    = 3
@@ -36,34 +32,9 @@ CHOWN_GRP    = @GROUP@
 CONSTANTS    = -DSEC_KEY=10001
 REPLACE      =
 
-######## VARS
+######## EXPORTS
 
-export CC
-export CC_FLAGS
-export MPI_CFLAGS
-export MPI_VERSION
-export PAPI_CFLAGS
-export PAPI_LDFLAGS
-export GSL_CFLAGS
-export GSL_LDFLAGS
-export SLURM_CFLAGS
-export DB_CFLAGS
-export DB_LDFLAGS
-
-export ROOTDIR
-export SRCDIR
-export DESTDIR
-export ETCDIR
-export TMPDIR
-export DOCDIR
-
-export FEAT_AVX512
-export VER_MAJOR
-export VER_MINOR
-export CHOWN_USR
-export CHOWN_GRP
-export CONSTANTS
-export REPLACE
+include ./Makefile.exports
 
 ######## RULES
 
