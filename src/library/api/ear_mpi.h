@@ -27,11 +27,21 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef LIBRARY_API_H
-#define LIBRARY_API_H
+#ifndef LIBRARY_EAR_MPI_H
+#define LIBRARY_EAR_MPI_H
 
 #include <library/api/mpi.h>
 
+void before_init();
 
+void after_init();
 
-#endif //LIBRARY_API_H
+void before_mpi(mpi_call call_type, p2i buf, p2i dest);
+
+void after_mpi(mpi_call call_type);
+
+void before_finalize();
+
+void after_finalize();
+
+#endif //LIBRARY_EAR_MPI_H

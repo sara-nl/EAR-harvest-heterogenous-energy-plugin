@@ -1,7 +1,5 @@
 CC           = @CC@
 CC_FLAGS     = @CC_FLAGS@
-MPICC        = @MPICC@
-MPICC_FLAGS  = @MPICC_FLAGS@
 MPI_BASE     = @MPI_DIR@
 MPI_CFLAGS   = @MPI_CPPFLAGS@
 MPI_VERSION  = @MPI_VERSION@
@@ -40,36 +38,30 @@ REPLACE      =
 
 export CC
 export CC_FLAGS
-export MPICC
-export MPICC_FLAGS
-export MPI_BASE
 export MPI_CFLAGS
 export MPI_VERSION
-export PAPI_BASE
 export PAPI_CFLAGS
 export PAPI_LDFLAGS
-export GSL_BASE
 export GSL_CFLAGS
 export GSL_LDFLAGS
-export SLURM_BASE
 export SLURM_CFLAGS
-export DB_BASE
 export DB_CFLAGS
 export DB_LDFLAGS
+
 export ROOTDIR
 export SRCDIR
 export DESTDIR
 export ETCDIR
 export TMPDIR
 export DOCDIR
-export CHOWN_USR
-export CHOWN_GRP
+
 export FEAT_AVX512
 export VER_MAJOR
 export VER_MINOR
+export CHOWN_USR
+export CHOWN_GRP
 export CONSTANTS
 export REPLACE
-
 
 ######## RULES
 

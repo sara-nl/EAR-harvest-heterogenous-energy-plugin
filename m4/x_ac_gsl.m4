@@ -85,7 +85,7 @@ AC_DEFUN([X_AC_GSL],
 
     AC_ARG_WITH(
         [gsl],
-        AS_HELP_STRING(--with-gsl=PATH,Specify path to gsl installation),
+        AS_HELP_STRING(--with-gsl=PATH,Specify path to GSL installation),
         [
 			_x_ac_gsl_dirs_root="$withval"
 			_x_ac_gsl_custom="yes"

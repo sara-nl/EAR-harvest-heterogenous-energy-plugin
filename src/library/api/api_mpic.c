@@ -28,15 +28,16 @@
 */
 
 #include <common/output/debug.h>
+#include <library/api/ear_mpi.h>
 #include <library/api/api_mpic.h>
 
 static mpic_t next_mpic;
 
 void api_mpic_setnext(mpic_t *_next_mpic)
 {
-    debug(">> C setnext...............");
+	debug(">> C setnext...............");
 	memcpy(&next_mpic, _next_mpic, sizeof(mpic_t));
-    debug("<< C setnext...............");
+	debug("<< C setnext...............");
 }
 
 int api_mpic_Allgather(MPI3_CONST void *sendbuf, int sendcount, MPI_Datatype sendtype, void *recvbuf, int recvcount, MPI_Datatype recvtype, MPI_Comm comm)

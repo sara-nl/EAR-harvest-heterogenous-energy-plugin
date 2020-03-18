@@ -28,6 +28,7 @@
 */
 
 #include <common/output/debug.h>
+#include <library/api/ear_mpi.h>
 #include <library/api/api_mpif.h>
 
 static mpif_t next_mpif;

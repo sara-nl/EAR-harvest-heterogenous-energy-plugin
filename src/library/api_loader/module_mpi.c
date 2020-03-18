@@ -33,6 +33,7 @@
 #include <common/system/file.h>
 #include <common/system/symplug.h>
 #include <common/output/verbose.h>
+#include <common/string_enhanced.h>
 #include <common/config/config_env.h>
 #include <library/api_loader/module_mpi.h>
 
@@ -120,6 +121,8 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 
 	symplug_join(RTLD_NEXT, (void **) &next_mpic, mpic_names, MPIC_N);
 	symplug_join(RTLD_NEXT, (void **) &next_mpif, mpif_names, MPIF_N);
+	verbose(3, "dlsym for C init returned %p", next_mpic.Init);
+	verbose(3, "dlsym for F init returned %p", next_mpif.init);
 
 	//
 	libear = dlopen(path_so, RTLD_NOW | RTLD_LOCAL);
