@@ -59,7 +59,7 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	if ((hack = getenv(HACK_PATH_LIBR)) != NULL) {
 		hack = getenv(HACK_PATH_LIBR);
 	} else if ((path = getenv(VAR_INS_PATH)) == NULL) {
-		verbose(2, "installation path not found");
+		verbose(2, "LOADER: installation path not found");
 		return;
 	}
 
@@ -75,11 +75,11 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	} else if (strstr(buffer, "mvapich") != NULL) {
 		fndm = 1;
 	} else {
-		verbose(2, "no mpi version found");
+		verbose(2, "LOADER: no mpi version found");
 		return;
 	}
 		
-	verbose(2, "mpi_get_version (intel: %d, open: %d, mvapich: %d)",
+	verbose(2, "LOADER: mpi_get_version (intel: %d, open: %d, mvapich: %d)",
 		fndi, fndo, fndm);
 
 	//
@@ -116,17 +116,17 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 	void *libear;
 	int i;
 
-	verbose(2, "module_mpi_dlsym loading library %s (c: %d, f: %d)",
+	verbose(2, "LOADER: module_mpi_dlsym loading library %s (c: %d, f: %d)",
 		path_so, lang_c, lang_f);
 
 	symplug_join(RTLD_NEXT, (void **) &next_mpic, mpic_names, MPIC_N);
 	symplug_join(RTLD_NEXT, (void **) &next_mpif, mpif_names, MPIF_N);
-	verbose(3, "dlsym for C init returned %p", next_mpic.Init);
-	verbose(3, "dlsym for F init returned %p", next_mpif.init);
+	verbose(3, "LOADER: dlsym for C init returned %p", next_mpic.Init);
+	verbose(3, "LOADER: dlsym for F init returned %p", next_mpif.init);
 
 	//
 	libear = dlopen(path_so, RTLD_NOW | RTLD_LOCAL);
-	verbose(3, "dlopen returned %p", libear);
+	verbose(3, "LOADER: dlopen returned %p", libear);
 
 	if (libear != NULL)
 	{
@@ -134,7 +134,7 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 			symplug_join(libear, (void **) &ear_mpic, ear_mpic_names, MPIC_N);
 		}
 		if (lang_f) {
-			symplug_join(libear, (void **) &ear_mpif, ear_mpic_names, MPIF_N);
+			symplug_join(libear, (void **) &ear_mpif, ear_mpif_names, MPIF_N);
 		}
 	}
 
@@ -171,7 +171,7 @@ static void module_mpi_init()
 {
 	char *verb;
 	
-	verbose(2, "function module_mpi");
+	verbose(3, "LOADER: function module_mpi");
 	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
 	{
 		VERB_SET_EN(1);
@@ -188,6 +188,7 @@ void module_mpi()
 	module_mpi_init();
 
 	if (!module_mpi_is()) {
+		verbose(3, "LOADER: no MPI detected");
 		return;
 	}
 
