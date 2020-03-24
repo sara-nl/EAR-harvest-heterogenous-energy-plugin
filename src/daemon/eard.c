@@ -44,6 +44,7 @@
 #include <metrics/frequency/frequency_cpu.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
+#include <daemon/powercap.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
@@ -397,6 +398,11 @@ void eard_exit(uint restart) {
 	// Recovering old frequency and governor configurations.
 	verbose(VCONF, "frequency_dispose");
 	frequency_dispose();
+
+#if POWERCAP
+  powercap_end();
+#endif
+
 
 	verbose(VCONF, "Releasing node resources");
 

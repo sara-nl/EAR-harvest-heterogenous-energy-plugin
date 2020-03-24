@@ -66,6 +66,7 @@
 #include <syslog.h>
 #endif
 
+
 #if USE_DB
 #include <database_cache/eardbd_api.h>
 #include <common/database/db_helper.h>
@@ -260,6 +261,10 @@ powermon_app_t *get_powermon_app() {
 
 static void PM_my_sigusr1(int signun) {
 	verbose(VNODEPMON, " thread %u receives sigusr1", (uint) pthread_self());
+#if POWERCAP
+  powercap_end();
+#endif
+
 	pthread_exit(0);
 }
 
@@ -1209,7 +1214,7 @@ void *eard_power_monitoring(void *noinfo) {
 			// Compute the power
 			compute_power(&e_begin, &e_end, &my_current_power);
 
-			print_power(&my_current_power);
+			print_power(&my_current_power,1,-1);
 
 			// Save current power
 			update_historic_info(&my_current_power, &nm_diff);
@@ -1223,8 +1228,9 @@ void *eard_power_monitoring(void *noinfo) {
 	if (dispose_node_metrics(&my_nm_id) != EAR_SUCCESS) {
 		error("dispose_node_metrics ");
 	}
-
-
+#if POWERCAP
+  powercap_end();
+#endif
 	pthread_exit(0);
 	//exit(0);
 }

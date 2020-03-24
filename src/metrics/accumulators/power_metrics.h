@@ -90,7 +90,7 @@ void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *m
 void print_energy_data(energy_data_t *e);
 
 /** Prints power information to the stdout */
-void print_power(power_data_t *my_power);
+void print_power(power_data_t *my_power,uint showdate,int out);
 
 /** Write (text mode) the power information in the provided file descriptor */
 void report_periodic_power(int fd,power_data_t *my_power);
