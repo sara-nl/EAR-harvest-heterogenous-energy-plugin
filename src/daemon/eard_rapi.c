@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
+#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -148,11 +149,21 @@ int send_data(int fd, size_t size, char *data, int type)
     head.size = size;
     head.type = type;
 
+    fprintf(stderr, "sending data of size %u and type %d\n", size, type);
+    fprintf(stderr, "data sizes: %u and %u\n", sizeof(head.size), sizeof(head.type));
     ret = write(fd, &head, sizeof(request_header_t));
+    fprintf(stderr, "sent head, %d bytes\n", ret);
     ret = write(fd, data, size);
+    fprintf(stderr, "sent data, %d bytes\n", ret);
 
     return EAR_SUCCESS; 
 
+}
+
+char is_valid_type(int type)
+{
+    if (type == EAR_TYPE_STATUS || type == EAR_TYPE_POWER_STATUS) return 1;
+    return 0;
 }
 
 request_header_t recieve_data(int fd, void **data)
@@ -164,12 +175,18 @@ request_header_t recieve_data(int fd, void **data)
     head.size = 0;
 
     ret = read(fd, &head, sizeof(request_header_t));
+    fprintf(stderr, "values read: type %d size %u\n", head.type, head.size);
     if (ret < 0) {
         error("Error recieving response data header (%s) \n", strerror(errno));
+        head.type = EAR_ERROR;
+        head.size = 0;
         return head;
     }
-    if (head.size < 1) {
-        error("Error recieving response data. Invalid data size (%d).\n", head.size);
+
+    if (head.size < 1 || !is_valid_type(head.type)) {
+        error("Error recieving response data. Invalid data size (%d) or type (%d).\n", head.size, head.type);
+        head.type = EAR_ERROR;
+        head.size = 0;
         return head;
     }
     //write ack should go here if we implement it
@@ -181,7 +198,7 @@ request_header_t recieve_data(int fd, void **data)
 	if (ret<0){
 		error("Error by recieve data (%s)",strerror(errno));
         free(read_data);
-        head.type = 0;
+        head.type = EAR_ERROR;
         head.size = 0;
 		return head;
 	}
@@ -193,7 +210,7 @@ request_header_t recieve_data(int fd, void **data)
 		if (ret<0){
 		    error("Error by recieve data (%s)",strerror(errno));
             free(read_data);
-            head.type = 0;
+            head.type = EAR_ERROR;
             head.size = 0;
 			return head;
 		}
@@ -202,19 +219,22 @@ request_header_t recieve_data(int fd, void **data)
 	}
     *data = read_data;
 	debug("Returning from recieve_data with type %d\n", head.type);
+    fprintf(stderr, "returning from recieve_data with type %d and size %d\n", head.size, head.type);
 	return head;
 
 }
 
+#define NEW_STATUS 1
 #ifdef NEW_STATUS
-int new_send_staus(request_t *command, status_t **status)
+int send_status(request_t *command, status_t **status)
 {
     request_header_t head;
     send_command(command);
     head = recieve_data(eards_sfd, (void**)status);
+    fprintf(stderr, "recieve_data with type %d and size %d\n", head.type, head.size);
     if (head.type != EAR_TYPE_STATUS) {
         error("Invalid type error, got type %d expected %d\n", head.type, EAR_TYPE_STATUS);
-        free(*status);
+        if (head.size > 0 && head.type != EAR_ERROR) free(status);
         return EAR_ERROR;
     }
 
@@ -792,6 +812,75 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
     send_command_all(command, my_cluster_conf);
 }
 
+request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, request_t *command, uint port, void **data)
+{
+    char *temp_data, *final_data = NULL;
+    int rc, i, final_size = 0, default_type = EAR_ERROR;
+    struct sockaddr_in temp;
+    unsigned int current_dist;
+    request_header_t head;
+    char next_ip[64];
+
+    current_dist = command->node_dist;
+
+    for ( i = 1; i <= NUM_PROPS; i++)
+    {
+        //check that the next ip exists within the range
+        if ((target_idx + current_dist + i*NUM_PROPS) >= total_ips) break;
+
+        //prepare next node data
+        temp.sin_addr.s_addr = ips[target_idx + current_dist + i*NUM_PROPS];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+        //prepare next node distance
+        command->node_dist = current_dist + i*NUM_PROPS;
+
+        //connect and send data
+        rc = eards_remote_connect(next_ip, port);
+        if (rc < 0)
+        {
+            debug("propagate_req:Error connecting to node: %s\n", next_ip);
+            head = correct_data_prop(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+        }
+        else
+        {
+            send_command(command);
+            head = recieve_data(rc, (void **)&temp_data);
+            if ((head.size) < 1 || head.type == EAR_ERROR)
+            {
+                debug("propagate_req: Error propagating command to node %s\n", next_ip);
+                eards_remote_disconnect();
+                head = correct_data_prop(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+            }
+            else eards_remote_disconnect();
+        }
+
+        //TODO: data processing, this is a workaround for status_t
+        if (head.size > 0 && head.type != EAR_ERROR)
+        {
+            default_type = head.type;
+            final_data = realloc(final_data, final_size + head.size);
+            memcpy(&final_data[final_size], temp_data, head.size);
+            final_size += head.size;
+            free(temp_data);
+        }
+    }
+
+    head.size = final_size;
+    head.type = default_type;
+    *data = final_data;
+    
+    if (default_type == EAR_ERROR && final_size > 0)
+    {
+        free(final_data);
+        head.size = 0;
+    }
+    else if (final_size == 0 && default_type != EAR_ERROR) head.type = EAR_ERROR;
+
+
+    return head;
+
+}
+
 #if USE_NEW_PROP
 int correct_status(int target_idx, int total_ips, int *ips, request_t *command, uint port, status_t **status)
 {
@@ -1236,6 +1325,95 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 }
 #endif
 
+request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_conf, void **data)
+{
+    int i, j, rc, total_ranges, final_size = 0, default_type = EAR_ERROR;
+    int **ips, *ip_counts;
+    struct sockaddr_in temp;
+    request_header_t head;
+    char *temp_data, *all_data = NULL;
+    char next_ip[64];
+    
+    total_ranges = get_ip_ranges(my_cluster_conf, &ip_counts, &ips);
+    for (i = 0; i < total_ranges; i++)
+    {
+        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
+        {
+            temp.sin_addr.s_addr = ips[i][j];
+            strcpy(next_ip, inet_ntoa(temp.sin_addr));
+            
+            rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
+            if (rc<0){
+                debug("Error connecting with node %s, trying to correct it", next_ip);
+                head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
+            }
+            else{
+                debug("Node %s with distance %d contacted!\n", next_ip, command->node_dist);
+                send_command(command);
+                head = recieve_data(rc, (void **)&temp_data);
+                if (head.size < 1 || head.type == EAR_ERROR) {
+                    debug("Error sending command to node %s, trying to correct it", next_ip);
+                    head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
+                }
+                eards_remote_disconnect();
+            }
+        
+            if (head.size > 0 && head.type != EAR_ERROR)
+            {
+                 default_type = head.type;
+                 all_data = realloc(all_data, final_size + head.size);
+                 memcpy(&all_data[final_size], temp_data, head.size);
+                 final_size += head.size;
+                 free(temp_data);
+            }
+            
+        }
+    }
+    head.size = final_size;
+    head.type = default_type;
+    *data = all_data;
+
+    if (default_type == EAR_ERROR && final_size > 0)
+    {
+        free(all_data);
+        head.size = 0;
+    }
+    else if (final_size < 1 && default_type != EAR_ERROR) head.type = EAR_ERROR;
+
+    return head;
+}
+
+#if NEW_STATUS
+int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
+{
+    request_t command;
+    status_t *temp_status;
+    request_header_t head;
+    time_t ctime = time(NULL);
+    int num_status = 0;
+
+    command.time_code = ctime;
+    command.req = EAR_RC_STATUS;
+    command.node_dist = 0;
+
+    head = data_all_nodes(&command, &my_cluster_conf, (void **)&temp_status);
+    num_status = head.size / sizeof(status_t);
+
+    if (head.type != EAR_TYPE_STATUS || head.size < sizeof(status_t))
+    {
+        if (head.size > 0) free (temp_status);
+        *status = temp_status;
+        return 0;
+    }
+
+    *status = temp_status;
+
+    return num_status;
+
+}
+
+#else
+
 #if USE_NEW_PROP
 int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 {
@@ -1357,7 +1535,26 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
     return num_all_status;
 }
 #endif
+#endif
 
+#if NEW_STATUS
+int send_powercap_status(request_t *command, powercap_status_t **status)
+{
+    request_header_t head;
+    send_command(command);
+    head = recieve_data(eards_sfd, (void**)status);
+    fprintf(stderr, "recieve_data with type %d and size %d\n", head.type, head.size);
+    if (head.type != EAR_TYPE_POWER_STATUS) {
+        error("Invalid type error, got type %d expected %d\n", head.type, EAR_TYPE_STATUS);
+        if (head.size > 0 && head.type != EAR_ERROR) free(status);
+        return EAR_ERROR;
+    }
+
+    return (head.size/sizeof(powercap_status_t));
+
+}
+
+#else
 int send_powercap_status(request_t *command, powercap_status_t **status)
 {
 	ulong ack;
@@ -1416,6 +1613,7 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
 	debug("Returning from send_status with %d\n",ack);
 	return ack;
 }
+#endif
 
 
 int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status) 
@@ -1428,7 +1626,7 @@ int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t 
     command.req = EAR_RC_GET_POWERCAP_STATUS;
     command.time_code = time(NULL);
     if ((num_temp_status = send_powercap_status(&command, &temp_status)) < 1) {
-        debug("Error sending command to node %s, trying to correct it", next_ip);
+        debug("Error sending command to node");
     }
     *pc_status = temp_status;
     return num_temp_status;
@@ -1452,9 +1650,15 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
     total_ranges = get_ip_ranges(my_cluster_conf, &ip_counts, &ips);
     for (i = 0; i < total_ranges; i++)
     {
+#if NEW_STATUS
+        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
+        {
+            command.node_dist = 0;
+#else
         for (j = 0; j < ip_counts[i]; j++)
         {
             command.node_dist = ip_counts[i]+10;
+#endif
             temp.sin_addr.s_addr = ips[i][j];
             strcpy(next_ip, inet_ntoa(temp.sin_addr));
             

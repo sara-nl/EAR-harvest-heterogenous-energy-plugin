@@ -231,6 +231,7 @@ void usage(char *app)
 void check_ip(status_t status, ip_table_t *ips, int num_ips)
 {
     int i, j;
+    printf("checking ip %d with status %d and power %lu\n", status.ip, status.ok, status.node.power);
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
 		{
@@ -536,7 +537,31 @@ int main(int argc, char *argv[])
                         eards_remote_disconnect();
                     }
                     if (num_power_status > 0)
-                        printf("power_status returned\n");
+                    {
+                        int i;
+                        for (i = 0; i < num_power_status; i++)
+                        {
+                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
+                                        powerstatus[i].released_power, powerstatus[i].num_greedy, powerstatus[i].current_power, powerstatus[i].total_powercap);
+                        }
+                    }
+
+                }
+                else
+                {
+                    int num_power_status = 0;
+                    powercap_status_t *powerstatus;
+                    num_power_status = cluster_get_powercap_status(&my_cluster_conf, &powerstatus);
+                    if (num_power_status > 0)
+                    {
+                        int i;
+                        for (i = 0; i < num_power_status; i++)
+                        {
+                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
+                                        powerstatus[i].released_power, powerstatus[i].num_greedy, powerstatus[i].current_power, powerstatus[i].total_powercap);
+                        }
+                    }
+                    else printf("powercap_status returnet with invalid (%d) num_powerstatus\n", num_power_status);
                 }
                 break;
             case 'e':

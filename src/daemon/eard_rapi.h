@@ -143,6 +143,9 @@ int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_
 /** Sends the command to the currently connected fd */
 int send_command(request_t *command);
 
+/** Sends data of size size through the open fd*/
+int send_data(int fd, size_t size, char *data, int type);
+
 /** Sets frequency for all nodes. */
 void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
@@ -173,6 +176,10 @@ int send_status(request_t *command, status_t **status);
 
 void correct_error_starter(char *host_name, request_t *command, uint port);
 
+request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, request_t *command, uint port, void **data);
+
+/** Recieves data from a previously send command */
+request_header_t recieve_data(int fd, void **data);
 
 /* Power management extensions */
 int eards_set_powerlimit(unsigned long limit);

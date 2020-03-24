@@ -388,25 +388,48 @@ void get_powercap_status(powercap_status_t *my_status)
 {
 	debug("get_powercap_status");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
-	memset(my_status,0,sizeof(powercap_status_t));
+	//memset(my_status,0,sizeof(powercap_status_t));
 	switch(my_pc_opt.powercap_status){
-		case PC_STATUS_IDLE:my_status->idle_nodes=1;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
+		case PC_STATUS_IDLE:
+            my_status->idle_nodes++;
+            my_pc_opt.released=0;
+            my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
+            break;
 		case PC_STATUS_GREEDY:
-			my_status->num_greedy=1; 
-			my_status->greedy_nodes=my_ip; /* IP missing */
-			my_status->greedy_req=my_pc_opt.requested;
-			;break;
-		case PC_STATUS_RELEASE:my_status->released_power=my_pc_opt.released;
-		my_pc_opt.powercap_status=PC_STATUS_OK;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
-		case PC_STATUS_ASK_DEF: my_status->num_newjob_nodes=1;
-			my_status->powerdef_nodes=my_ip; /* IP missing */
-			my_status->new_req=my_pc_opt.requested;
+            /* Memory management */
+            if (my_status->num_greedy < 1) {
+                my_status->greedy_nodes=NULL;
+                my_status->greedy_req=NULL;
+            }
+			my_status->num_greedy++; 
+            if (my_status->num_greedy < 1) break;
+			my_status->greedy_nodes=realloc(my_status->greedy_nodes, sizeof(int)*my_status->num_greedy);
+		    my_status->greedy_req=realloc(my_status->greedy_req, sizeof(uint)*my_status->num_greedy);
+            /* Data management */
+            my_status->greedy_nodes[my_status->num_greedy - 1] = my_ip; /* IP missing */
+			my_status->greedy_req[my_status->num_greedy - 1]=my_pc_opt.requested;
+			break;
+		case PC_STATUS_RELEASE:
+            my_status->released_power+=my_pc_opt.released;
+		    my_pc_opt.powercap_status=PC_STATUS_OK;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
+		case PC_STATUS_ASK_DEF: 
+            /* Memory management */
+            if (my_status->num_newjob_nodes < 1) {
+                my_status->powerdef_nodes = NULL;
+                my_status->new_req = NULL;
+            }
+            my_status->num_newjob_nodes++;
+			my_status->powerdef_nodes=realloc(my_status->powerdef_nodes, sizeof(int)*my_status->num_newjob_nodes); /* IP missing */
+			my_status->new_req=realloc(my_status->new_req, sizeof(uint)*my_status->num_newjob_nodes); 
+            /* Data management */
+			my_status->powerdef_nodes[my_status->num_newjob_nodes]=my_ip; /* IP missing */
+			my_status->new_req[my_status->num_newjob_nodes]=my_pc_opt.requested;
 			break;
 		case PC_STATUS_ERROR: break;
 	}
 	
-	my_status->current_power=powermon_current_power();
-	my_status->total_powercap=get_powercap_value();
+	my_status->current_power+=powermon_current_power();
+	my_status->total_powercap+=get_powercap_value();
 	pthread_mutex_unlock(&my_pc_opt.lock);
 	print_power_status(my_status);
 }

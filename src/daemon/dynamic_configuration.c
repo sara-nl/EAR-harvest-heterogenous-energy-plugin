@@ -29,6 +29,7 @@
 
 #define _GNU_SOURCE
 
+#define NEW_STATUS 1
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,10 +50,11 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/system/symplug.h>
 
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>
+#include <daemon/eard_rapi.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_conf_rapi.h>
@@ -328,6 +330,10 @@ int dyncon_set_policy(new_policy_cont_t *p)
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
+#ifdef NEW_STATUS
+    long int ack;
+	send_answer(fd, &ack); //send ack before propagating
+#endif
 	int num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
 	unsigned long return_status = num_status;
 	debug("return_status %lu status=%p",return_status,status);
@@ -342,8 +348,8 @@ void dyncon_get_status(int fd, request_t *command) {
     send_data(fd, sizeof(status_t) * num_status, (char *)status, EAR_TYPE_STATUS);
 #else
 	write(fd, &return_status, sizeof(return_status));
-#endif
 	write(fd, status, sizeof(status_t) * num_status);
+#endif
 	debug("Returning from dyncon_get_status");
 	free(status);
 	debug("status released");
@@ -407,16 +413,37 @@ void update_current_settings(policy_conf_t *cpolicy_settings)
 	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
 }
 
-void dyncon_get_powerstatus(int fd)
+void dyncon_get_powerstatus(int fd, request_t *command)
 {
 	powercap_status_t *status;
+    int return_status;
+#if NEW_STATUS
+    long int ack;
+	send_answer(fd, &ack);
+    char *status_data;
+	return_status = propagate_powercap_status(command, my_cluster_conf.eard.port, (powercap_status_t **)&status_data);
+    status = mem_alloc_powercap_status(status_data);
+    free(status_data);
+#else
+    return_status = 1;
     status = calloc(1, sizeof(powercap_status_t));
-	unsigned long return_status = 1;
+#endif
+
+    if (return_status < 1) 
+    {
+            //error
+    }
 	debug("return_status %lu status=%p", return_status, status);
 
 	get_powercap_status(&status[return_status - 1]);
+#ifdef NEW_STATUS
+    status_data = mem_alloc_char_powercap_status(status);
+    send_data(fd, sizeof(powercap_status_t) * return_status + ((sizeof(uint) + sizeof(int)) * (status->num_greedy + status->num_newjob_nodes)), status_data, EAR_TYPE_POWER_STATUS);
+    free(status_data);
+#else
 	write(fd, &return_status, sizeof(return_status));
 	write(fd, status, sizeof(powercap_status_t) * return_status);
+#endif
 	debug("Returning from dyncon_get_powerstatus");
 	free(status);
 	debug("powerstatus released");
@@ -534,7 +561,7 @@ void process_remote_requests(int clientfd) {
 			return;
 			break;
     case EAR_RC_GET_POWERCAP_STATUS:
-            dyncon_get_powerstatus(clientfd);
+            dyncon_get_powerstatus(clientfd, &command);
             return;
 		default:
 			error("Invalid remote command\n");

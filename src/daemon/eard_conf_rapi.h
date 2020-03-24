@@ -114,7 +114,7 @@ typedef struct app_info{
 
 typedef struct request_header {
     int type;
-    size_t size;
+    uint size;
 } request_header_t;
 
 typedef struct eard_policy_info{
@@ -134,16 +134,16 @@ typedef struct status{
 } status_t;
 
 typedef struct powercap_status{
-	uint idle_nodes; 	       /* Total number of idle nodes */
-	uint released_power;       /* Accumulated released power in last T1 */
-	uint num_greedy;             /* Number of greedy nodes */
-	int greedy_nodes;           /* List of greedy nodes */
-	uint greedy_req;
-	uint num_newjob_nodes; /* Number of nodes asking for powercap_def*/
-	int powerdef_nodes;	       /* List of nodes asking for powercap_def */
-	uint new_req;
-	uint current_power; 	      /* Accumulated power */
-  uint total_powercap;        /* Accumulated current powercap limits */
+	uint idle_nodes; 	        /* Total number of idle nodes */
+	uint released_power;        /* Accumulated released power in last T1 */
+	uint num_greedy;            /* Number of greedy nodes */
+	int *greedy_nodes;           /* List of greedy nodes */
+	uint *greedy_req;
+	uint num_newjob_nodes;      /* Number of nodes asking for powercap_def*/
+	int *powerdef_nodes;	        /* List of nodes asking for powercap_def */
+	uint *new_req;
+	uint current_power; 	    /* Accumulated power */
+    uint total_powercap;        /* Accumulated current powercap limits */
 }powercap_status_t;
 
 

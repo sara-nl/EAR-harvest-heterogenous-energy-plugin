@@ -1188,7 +1188,7 @@ int postgresql_batch_insert_signatures(PGconn *connection, signature_t *sigs, ch
         param_lengths[1  + offset] = sizeof(sigs[i].DRAM_power);
         param_lengths[2  + offset] = sizeof(sigs[i].PCK_power);
 #if USE_GPUS
-        param_lengths[3  + offset] = sizeof(sigs[i].GPU_energy);
+        param_lengths[3  + offset] = sizeof(sigs[i].GPU_power);
 #else
         param_lengths[3  + offset] = sizeof(NULL);
 #endif

@@ -52,7 +52,7 @@
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
-
+#define NEW_STATUS 1
 
 int *ips = NULL;
 int total_ips = -1;
@@ -416,6 +416,312 @@ int get_self_ip()
 	return EAR_ERROR;
 }
 
+powercap_status_t *mem_alloc_powercap_status(char *final_data)
+{
+    int final_size;
+    powercap_status_t *status = calloc(1, sizeof(powercap_status_t));
+
+    final_size = sizeof(powercap_status_t);
+    memcpy(status, final_data, final_size);
+
+    status->greedy_nodes = calloc(status->num_greedy, sizeof(int));
+    status->greedy_req = calloc(status->num_greedy, sizeof(uint));
+    status->powerdef_nodes = calloc(status->num_newjob_nodes, sizeof(int));
+    status->new_req = calloc(status->num_newjob_nodes, sizeof(uint));
+
+    memcpy(status->greedy_nodes, &final_data[final_size], sizeof(int)*status->num_greedy);
+    final_size += status->num_greedy*sizeof(int);
+
+    memcpy(status->greedy_req, &final_data[final_size], sizeof(uint)*status->num_greedy);
+    final_size += status->num_greedy*sizeof(uint);
+
+    memcpy(status->powerdef_nodes, &final_data[final_size], sizeof(int)*status->num_newjob_nodes);
+    final_size += status->num_newjob_nodes*sizeof(int);
+
+    memcpy(status->new_req, &final_data[final_size], sizeof(uint)*status->num_newjob_nodes);
+    final_size += status->num_newjob_nodes*sizeof(uint);
+
+    return status;
+}
+
+char *mem_alloc_char_powercap_status(powercap_status_t *status)
+{
+    int size = sizeof(powercap_status_t) + ((status->num_greedy + status->num_newjob_nodes) * (sizeof(int) + sizeof(uint)));
+    char *data = calloc(size, sizeof(char));
+
+    memcpy(data, status, sizeof(powercap_status_t));
+    size = sizeof(powercap_status_t);
+
+    memcpy(&data[size], status->greedy_nodes, sizeof(int) * status->num_greedy);
+    size += sizeof(int) * status->num_greedy;
+    
+    memcpy(&data[size], status->greedy_req, sizeof(uint) * status->num_greedy);
+    size += sizeof(uint) * status->num_greedy;
+
+    memcpy(&data[size], status->powerdef_nodes, sizeof(int) * status->num_newjob_nodes);
+    size += sizeof(int) * status->num_newjob_nodes;
+    
+    memcpy(&data[size], status->new_req, sizeof(uint) * status->num_newjob_nodes);
+    size += sizeof(uint) * status->num_newjob_nodes;
+
+    return data;
+}
+
+powercap_status_t *memmap_powercap_status(char *final_data, int *size)
+{
+    int final_size;
+    powercap_status_t *status = (powercap_status_t *) final_data;
+
+    final_size = sizeof(powercap_status_t);
+    status->greedy_nodes = (int *)&final_data[final_size];
+    final_size += status->num_greedy*sizeof(int);
+               
+    status->greedy_req = (uint *)&final_data[final_size];
+    final_size += status->num_greedy*sizeof(uint);
+
+    status->powerdef_nodes = (int *)&final_data[final_size];
+    final_size += status->num_newjob_nodes*sizeof(int);
+
+    status->new_req = (uint *)&final_data[final_size];
+    final_size += status->num_newjob_nodes*sizeof(uint);
+    
+    *size = final_size;
+    return status;
+
+}
+
+request_header_t process_data(request_header_t data_head, char **temp_data_ptr, char **final_data_ptr, int final_size)
+{
+    char *temp_data = *temp_data_ptr;
+    char *final_data = *final_data_ptr;
+    request_header_t head;
+    head.type = data_head.type;
+    switch(data_head.type)
+    {
+        case EAR_TYPE_STATUS:
+            final_data = realloc(final_data, final_size + data_head.size);
+            memcpy(&final_data[final_size], temp_data, data_head.size);
+            head.size = final_size + data_head.size;
+        break;
+        case EAR_TYPE_POWER_STATUS:
+            if (final_data != NULL)
+            {
+                int total_size = 0;
+                powercap_status_t *original_status = memmap_powercap_status(final_data, &final_size);
+                total_size += final_size - sizeof(powercap_status_t);
+                powercap_status_t *new_status = memmap_powercap_status(temp_data, &final_size);
+                total_size += final_size;
+
+                char *final_status = calloc(final_size, sizeof(char));
+                powercap_status_t *status = (powercap_status_t *)final_status;
+
+                status->idle_nodes = original_status->idle_nodes + new_status->idle_nodes;
+                status->released_power = original_status->released_power + new_status->released_power;
+                status->num_greedy = original_status->num_greedy + new_status->num_greedy;
+                status->num_newjob_nodes = original_status->num_newjob_nodes + new_status->num_newjob_nodes;
+                status->current_power = original_status->current_power + new_status->current_power;
+                status->total_powercap = original_status->total_powercap + new_status->total_powercap;
+
+                final_size = sizeof(powercap_status_t);
+                memcpy(&final_status[final_size], original_status->greedy_nodes, sizeof(int)*original_status->num_greedy);
+                final_size += sizeof(int)*original_status->num_greedy;
+                memcpy(&final_status[final_size], new_status->greedy_nodes, sizeof(int)*new_status->num_greedy);
+                final_size += sizeof(int)*new_status->num_greedy;
+
+                memcpy(&final_status[final_size], original_status->greedy_req, sizeof(uint)*original_status->num_greedy);
+                final_size += sizeof(uint)*original_status->num_greedy;
+                memcpy(&final_status[final_size], new_status->greedy_req, sizeof(uint)*new_status->num_greedy);
+                final_size += sizeof(uint)*new_status->num_greedy;
+
+                memcpy(&final_status[final_size], original_status->powerdef_nodes, sizeof(int)*original_status->num_newjob_nodes);
+                final_size += sizeof(int)*original_status->num_newjob_nodes;
+                memcpy(&final_status[final_size], new_status->powerdef_nodes, sizeof(int)*new_status->num_newjob_nodes);
+                final_size += sizeof(int)*new_status->num_newjob_nodes;
+
+                memcpy(&final_status[final_size], original_status->new_req, sizeof(uint)*original_status->num_newjob_nodes);
+                final_size += sizeof(uint)*original_status->num_newjob_nodes;
+                memcpy(&final_status[final_size], new_status->new_req, sizeof(uint)*new_status->num_newjob_nodes);
+                final_size += sizeof(uint)*new_status->num_newjob_nodes;
+
+                final_data = realloc(final_data, final_size);
+                memcpy(final_data, final_status, final_size);
+                
+                status = memmap_powercap_status(final_data, &final_size);
+                head.size = final_size;
+                free(final_status);
+
+
+            }
+            else
+            {
+                final_data = realloc(final_data, final_size + data_head.size);
+                memcpy(&final_data[final_size], temp_data, data_head.size);
+                head.size = data_head.size;
+                final_data = (char *)memmap_powercap_status(final_data, &final_size);
+                //setting powercap_status pointers to its right value
+                //check if final_size == head.size??
+
+            }
+        break;
+    }
+
+    *final_data_ptr = final_data;
+
+    return head;
+}
+
+request_header_t propagate_data(request_t *command, uint port, void **data)
+{
+    char *temp_data, *final_data = NULL;
+    int rc, i, final_size = 0, default_type = EAR_ERROR;
+    struct sockaddr_in temp;
+    unsigned int current_dist;
+    request_header_t head;
+    char next_ip[64];
+
+    current_dist = command->node_dist;
+    for (i = 1; i <= NUM_PROPS; i++)
+    {
+        //check that the next ip exists within the range
+        if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+
+        //prepare next node data
+        temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+        //prepare next node distance
+        command->node_dist = current_dist + i*NUM_PROPS;
+			verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
+
+        //connect and send data
+        rc = eards_remote_connect(next_ip, port);
+        if (rc < 0)
+        {
+            error("propagate_req: Error connecting to node: %s\n", next_ip);
+            head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+        }
+        else
+        {
+            send_command(command);
+            head = recieve_data(rc, (void **)&temp_data);
+            if (head.size < 1 || head.type == EAR_ERROR) 
+            {
+                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                eards_remote_disconnect();
+                head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+            }
+            else eards_remote_disconnect();
+        }
+        //TODO: Process data (ex. when it's a powercap_status the memory won't be an exact map of power_cap_statuses
+        //temporary workaround for status_t:
+        if (head.size > 0 && head.type != EAR_ERROR)
+        {
+            head = process_data(head, &temp_data, &final_data, final_size);
+            free(temp_data);
+            default_type = head.type;
+            final_size = head.size;
+        }
+    }
+
+    head.size = final_size;
+    head.type = default_type;
+    *data = final_data;
+
+    if (default_type == EAR_ERROR && final_size > 0)
+    {
+        free(final_data);
+        head.size = 0;
+    }
+    else if (final_size < 1 && default_type != EAR_ERROR) head.type = EAR_ERROR;
+
+    return head;
+	
+}
+
+int propagate_powercap_status(request_t *command, uint port, powercap_status_t **status)
+{
+    powercap_status_t *temp_status, *final_status;
+
+    if (command->node_dist > total_ips || self_id < 0 || ips == NULL || total_ips < 1)
+    {
+        final_status = calloc(1, sizeof(powercap_status_t));
+        *status = final_status;
+        return 1;
+    }
+
+    request_header_t head = propagate_data(command, port, (void **)&temp_status); //we don't check for number of powercap_status since we will have 1 at most
+    int num_status = head.size / sizeof(powercap_status_t);
+    if (head.type != EAR_TYPE_POWER_STATUS || head.size < sizeof(powercap_status_t))
+    {
+        final_status = calloc(1, sizeof(powercap_status_t));
+        if (head.size > 0) free(temp_status);
+        *status = final_status;
+        return 1; //maybe return EAR_ERROR??
+    }
+
+    //memory allocation with the current node
+#if 0
+    final_status = calloc(num_status + 1, sizeof(powercap_status_t));
+    memcpy(final_status, temp_status, head.size);
+    *status = final_status;
+    free(temp_status);
+    num_status++;
+#endif
+    *status = temp_status;
+    num_status = 1;
+
+    return num_status;
+}
+
+#ifdef NEW_STATUS
+int propagate_status(request_t *command, uint port, status_t **status)
+{
+    status_t *temp_status, *final_status;
+    int num_status = 0;
+    //final_status = calloc(1, sizeof(status_t));
+    if (command->node_dist > total_ips || self_id < 0 || ips == NULL || total_ips < 1)
+    {
+        final_status = calloc(1, sizeof(status_t));
+        if (self_id < 0 || ips == NULL)
+            final_status[0].ip = get_self_ip();
+        else
+            final_status[0].ip = ips[self_id];
+        final_status[0].ok = STATUS_OK;
+	    debug("status has 1 status\n");
+        *status = final_status;
+        return 1;
+    }
+
+    request_header_t head = propagate_data(command, port, (void **)&temp_status);
+    num_status = head.size / sizeof(status_t);
+    
+    if (head.type != EAR_TYPE_STATUS || head.size < sizeof(status_t))
+    {
+        final_status = calloc(1, sizeof(status_t));
+        final_status[0].ip = ips[self_id];
+        final_status[0].ok = STATUS_OK;
+        if (head.size > 0) free(temp_status);
+        *status = final_status;
+        return 1;
+    }
+
+    //memory allocation with the current node
+    final_status = calloc(num_status + 1, sizeof(status_t));
+    memcpy(final_status, temp_status, head.size);
+
+    //current node info
+    final_status[num_status].ip = ips[self_id];
+    final_status[num_status].ok = STATUS_OK;
+    *status = final_status;
+    num_status++;   //we add the original status
+
+    free(temp_status);
+
+    return num_status;
+
+}
+
+#else
+
 #if USE_NEW_PROP
 int propagate_status(request_t *command, uint port, status_t **status)
 {
@@ -424,7 +730,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
     int rc, i;
     struct sockaddr_in temp;
     unsigned int  current_dist;
-		char next_ip[50]; 
+    char next_ip[50]; 
     temp_status = calloc(NUM_PROPS, sizeof(status_t *));
     memset(num_status, 0, sizeof(num_status));
 
@@ -625,4 +931,5 @@ int propagate_status(request_t *command, uint port, status_t **status)
     return total_status + 1;
 
 }
+#endif
 #endif
