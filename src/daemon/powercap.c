@@ -56,6 +56,7 @@
 #define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
 #define INM_SET_POWERCAP_VALUE_CMD "ipmitool -v -b 0 -t 0x2c raw 0x2E 0xD0 0x57 0x01 0x00 %#X %#X %#X"
 #define INM_GET_POWERCAP_CMD "NO_CMD"
+#define INM_ENABLE_XCC_BRIGE "ipmitool raw 0x06 0x32 0 1"
 
 static node_powercap_opt_t my_pc_opt;
 static int my_ip;
@@ -202,6 +203,15 @@ int powercap_init()
 	if (do_cmd(cmd)){
 	if (execute(cmd)!=EAR_SUCCESS){ 
 		debug("Error executing INM CMD enable");
+		return EAR_ERROR;
+	}
+	}
+	/* Enable XCC-Bridge comm */
+	debug("Enable XCC-Bridge");
+	sprintf(cmd,INM_ENABLE_XCC_BRIGE);
+	if (do_cmd(cmd)){
+	if (execute(cmd)!=EAR_SUCCESS){ 
+		debug("Error executing INM XCC-bridge");
 		return EAR_ERROR;
 	}
 	}
