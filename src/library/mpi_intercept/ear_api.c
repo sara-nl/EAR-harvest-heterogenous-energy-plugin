@@ -27,7 +27,9 @@
  *	The GNU LEsser General Public License is contained in the file COPYING	
  */
 
+#if MPI
 #include <mpi.h>
+#endif
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -42,6 +44,8 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/environment.h>
+#define _GNU_SOURCE
+#include <pthread.h>
 //#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/types/application.h>
@@ -55,8 +59,10 @@
 #include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
 #include <library/mpi_intercept/ear_api.h>
+#if MPI
 #include <library/mpi_intercept/MPI_types.h>
 #include <library/mpi_intercept/MPI_calls_coded.h>
+#endif
 #include <library/common/library_shared_data.h>
 #include <common/hardware/frequency.h>
 #include <metrics/common/papi.h>
@@ -68,7 +74,7 @@
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
-
+pthread_t earl_periodic_th;
 unsigned long ext_def_freq=0;
 
 #if USE_LOCK_FILES
@@ -111,7 +117,9 @@ mpi_information_t *per_node_mpi_info, *global_mpi_info;
 char lib_shared_region_path[GENERIC_NAME];
 char shsignature_region_path[GENERIC_NAME];
 char block_file[GENERIC_NAME];
+float ratio_PPN;
 
+void *earl_periodic_actions(void *no_arg);
 //
 static void print_local_data()
 {
@@ -152,13 +160,17 @@ void notify_eard_connection(int status)
 	if (masters_info.my_master_rank==0) {
 		debug("Number of nodes expected %d\n",masters_info.my_master_size);
 	}
+	#if MPI
 	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_info.masters_comm);
-
-
 	for (i = 0; i < masters_info.my_master_size; ++i)
 	{       
 		masters_connected+=(int)buffer_recv[i];
 	}
+	#else
+	masters_connected=1;
+	#endif	
+
+
 	if (masters_info.my_master_rank==0) {
 		debug("Total number of masters connected %d",masters_connected);
 	}
@@ -206,6 +218,7 @@ void create_shared_regions()
 		lib_shared_region->num_signatures=0;
 	}
 	debug("Node connected %u",my_node_id);
+	#if MPI
 	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 		error("MPI_Barrier");
 		return;
@@ -214,6 +227,7 @@ void create_shared_regions()
 		error("MPI_Barrier");
 		return;
 	}
+	#endif
 	//print_lib_shared_data(lib_shared_region);
 	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
     error("Getting the shsignature_region_path	");
@@ -228,15 +242,21 @@ void create_shared_regions()
 	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
 	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
 
+	#if MPI
 	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 		error("MPI_Barrier");
 		return;
 	}
+	#endif
 	/* This part allocates memory for sharing data between nodes */
 	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
+	#if MPI
 	if (share_global_info(masters_info.masters_comm,(char *)&lib_shared_region->num_processes,sizeof(int),(char*)masters_info.ppn,sizeof(int))!=EAR_SUCCESS){
 		error("Sharing the number of processes per node");
 	}
+	#else
+	masters_info.ppn[0]=1;
+	#endif
 	int i;
 	masters_info.max_ppn=masters_info.ppn[0];
 	for (i=1;i<masters_info.my_master_size;i++){ 
@@ -249,6 +269,7 @@ void create_shared_regions()
 	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
 	int total_elements=masters_info.max_ppn*masters_info.my_master_size;
 	int per_node_elements=masters_info.max_ppn;
+	ratio_PPN=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
 	#endif
 	#if SHARE_INFO_PER_NODE
 	debug("Sharing info at node level, reporting 1 per node");
@@ -284,10 +305,12 @@ void attach_shared_regions()
 	if (get_lib_shared_data_path(tmp,lib_shared_region_path)!=EAR_SUCCESS){
     error("Getting the lib_shared_region_path");
   }else{
+		#if MPI
 		if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 			error("MPI_Barrier");
 			return;
 		}
+		#endif
 		do{
 			lib_shared_region=attach_lib_shared_data_area(lib_shared_region_path);
 		}while(lib_shared_region==NULL);
@@ -296,12 +319,14 @@ void attach_shared_regions()
     lib_shared_region->num_processes=lib_shared_region->num_processes+1;
 		file_unlock(bfd);
   }
+	#if MPI
   if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){	
 		error("In MPI_BARRIER");
 	}
   if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){	
 		error("In MPI_BARRIER");
 	}
+	#endif
 	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
     error("Getting the shsignature_region_path  ");
   }else{
@@ -324,16 +349,23 @@ void attach_to_master_set(int master)
 	else color=MPI_UNDEFINED;
 	if (master) masters_info.my_master_rank=0;
 	else masters_info.my_master_rank=-1;
+	#if MPI
 	if (PMPI_Comm_dup(MPI_COMM_WORLD,&masters_info.new_world_comm)!=MPI_SUCCESS){
 		error("Duplicating MPI_COMM_WORLD");
 	}
 	if (PMPI_Comm_split(masters_info.new_world_comm, color, masters_info.my_master_rank, &masters_info.masters_comm)!=MPI_SUCCESS){
     error("Splitting MPI_COMM_WORLD");
   }
+	#endif
 	masters_comm_created=1;
 	if ((masters_comm_created) && (!color)){
+		#if MPI
 		PMPI_Comm_rank(masters_info.masters_comm,&masters_info.my_master_rank);
 		PMPI_Comm_size(masters_info.masters_comm,&masters_info.my_master_size);
+		#else
+		masters_info.my_master_rank=0;
+		masters_info.my_master_size=1;
+		#endif
 		debug("New master communicator created with %d masters. My master rank %d\n",masters_info.my_master_size,masters_info.my_master_rank);
 	}
 }
@@ -343,6 +375,7 @@ static int get_local_id(char *node_name)
 	int master = 1;
 
 #if USE_LOCK_FILES
+	#if MPI
 	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
 
 	if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
@@ -350,6 +383,9 @@ static int get_local_id(char *node_name)
 	} else {
 		master = 0;
 	}
+	#else
+	master=0;
+	#endif
 
 	if (master) {
 		debug("Rank %d is not the master in node %s", ear_my_rank, node_name);
@@ -357,7 +393,12 @@ static int get_local_id(char *node_name)
 		verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
 	}
 #else
+	#if MPI
 	master = get_ear_local_id();
+	#else 
+	master=0;
+	#endif
+	
 
 	if (master < 0) {
 		master = (ear_my_rank % ppnode);
@@ -445,8 +486,13 @@ void ear_init()
 
 
 	// MPI
+	#if MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
+	#else
+	ear_my_rank=0;
+	my_size=1;
+	#endif
 
 	debug("Reading the environment");
 
@@ -474,8 +520,13 @@ void ear_init()
 	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
+	#if MPI
 	num_nodes = get_ear_num_nodes();
 	ppnode = my_size / num_nodes;
+	#else
+	num_nodes=1;
+	ppnode=1;
+	#endif
 
 	get_job_identification();
 	// Getting if the local process is the master or not
@@ -671,6 +722,11 @@ void ear_init()
 	if (masters_info.my_master_rank==0) {
 		verbose(1, "EAR initialized successfully ");
 	}
+	#if !MPI
+	if (pthread_create(&earl_periodic_th,NULL,earl_periodic_actions,NULL)){
+		error("error creating server thread for non-earl api\n");
+	}
+	#endif
 }
 
 void ear_finalize()
@@ -1084,3 +1140,19 @@ void ear_new_iteration(unsigned long loop_id)
   }
 }
 
+
+/**************** New for iterative code ********************/
+void *earl_periodic_actions(void *no_arg)
+{
+		//if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
+		traces_start();
+    states_periodic_begin_period(my_id, NULL, 1, 1);
+    ear_iterations=0;
+		mpi_calls_in_period=1;
+    states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
+		do{
+			sleep(lib_period);
+      ear_iterations++;
+      states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
+		}while(1);
+}

@@ -43,6 +43,7 @@
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/eard_conf_rapi.h>
+#include <common/types/risk.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
@@ -185,6 +186,6 @@ request_header_t recieve_data(int fd, void **data);
 int eards_set_powerlimit(unsigned long limit);
 int eards_red_powerlimit(unsigned int type, unsigned long limit);
 int eards_inc_powerlimit(unsigned int type, unsigned long limit);
-int eards_set_risk(unsigned long risk,unsigned long target);
-void set_risk_all_nodes(unsigned long risk, unsigned long target, cluster_conf_t my_cluster_conf);
+int eards_set_risk(risk_t risk,unsigned long target);
+void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t my_cluster_conf);
 #endif

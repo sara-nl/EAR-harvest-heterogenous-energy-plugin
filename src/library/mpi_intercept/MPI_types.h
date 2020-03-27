@@ -27,13 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
 #ifndef _MPI_TYPES_H_
 #define _MPI_TYPES_H
 
-#define p2i unsigned long
+#include <library/mpi_intercept/mpi.h>
 
-#else
 #endif
 
 

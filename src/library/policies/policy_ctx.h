@@ -36,12 +36,21 @@
 #include <common/types/signature.h>
 #include <common/types/projection.h>
 #include <daemon/shared_configuration.h>
+#if MPI
 #include <mpi.h>
+#endif
 
+#if MPI
 typedef struct mpi_ctx{
 	MPI_Comm 	master_comm;
 	MPI_Comm 	comm;
 }mpi_ctx_t;
+#else
+typedef struct mpi_ctx{
+  int  master_comm;
+  int  comm;
+}mpi_ctx_t;
+#endif
 
 typedef struct policy_context {
 	settings_conf_t *app;

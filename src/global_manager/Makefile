@@ -3,36 +3,36 @@ LDFLAGS = $(DB_LDFLAGS) -lpthread
 
 ######## INSTALLATION
 
-eard_BINS = eargmd
-eard_PATH = $(DESTDIR)/sbin
-eard_PERM = 0770
+eargm_BINS = eargmd
+eargm_PATH = $(DESTDIR)/sbin
+eargm_PERM = 0770
 
 ######## FILES
 
 comm_BINS = $(SRCDIR)/daemon/eard_rapi.o \
-    $(SRCDIR)/common/libcommon.a \
-    eargm_server_api.o
+    $(SRCDIR)/common/libcommon.a 
 
-eard_OBJS = eargm_rapi.o \
-    eargm_server_api.o
+eargm_OBJS = eargm_rapi.o \
+    eargm_server_api.o \
+		cluster_powercap.o		
 
 ######## RULES
 
-all: $(eard_OBJS) $(eard_BINS) all.others
+all: $(eargm_OBJS) $(eargm_BINS) all.others
 
-eargmd: eargm.c $(comm_BINS)
-	$(CC) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(comm_BINS) $(LDFLAGS)
+eargmd: eargm.c $(comm_BINS) $(eargm_OBJS)
+	$(CC) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(eargm_OBJS) $(comm_BINS) $(LDFLAGS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -fPIC -c $<
 
 ######## OPTIONS
 
-install: install.others eard.ginstall;
+install: install.others eargm.ginstall;
 
 %.install: %.install.others;
 
-clean: clean.others eard.gclean rclean;
+clean: clean.others eargm.gclean rclean;
 
 ######## SUBFOLDERS
 

@@ -3,13 +3,14 @@
 OBJS = \
     ear_api.o \
     process_MPI.o \
-    mpi_definitions.o \
-    mpi_interception.o \
+    mpi_definitions_c.o \
+    mpi_interception_c.o \
     MPI_interface.o
 
 ifeq ($(FEAT_FORT), 1)
 OBJS += \
-    MPI_interceptF.o \
+    mpi_definitions_f.o \
+    mpi_interception_f.o \
     MPI_interfaceF.o
 endif
 
@@ -21,7 +22,7 @@ allt: DEFINES=-DEAR_GUI
 allt: $(OBJS)
 
 %.o: %.c %.h
-	$(MPICC) $(CC_FLAGS) $(CFLAGS) -c $<
+	$(MPICC) -Wall $(CC_FLAGS) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 

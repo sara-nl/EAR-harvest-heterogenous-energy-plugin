@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) 
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread -DMPI=1
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 
 ######## VARS
@@ -43,14 +43,15 @@ mpix_OBJS = \
 		common/library_shared_data.o \
 
 mpic_OBJS = \
-    mpi_intercept/mpi_definitions.o \
-    mpi_intercept/mpi_interception.o \
+    mpi_intercept/mpi_definitions_c.o \
+    mpi_intercept/mpi_interception_c.o \
     mpi_intercept/MPI_interface.o \
 		common/global_comm.o
 
 ifeq ($(FEAT_FORT), 1)
 mpif_OBJS = \
-    mpi_intercept/MPI_interceptF.o \
+    mpi_intercept/mpi_definitions_f.o \
+    mpi_intercept/mpi_interception_f.o \
     mpi_intercept/MPI_interfaceF.o
 endif
 

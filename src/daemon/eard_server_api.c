@@ -426,8 +426,7 @@ powercap_status_t *mem_alloc_powercap_status(char *final_data)
 
     status->greedy_nodes = calloc(status->num_greedy, sizeof(int));
     status->greedy_req = calloc(status->num_greedy, sizeof(uint));
-    status->powerdef_nodes = calloc(status->num_newjob_nodes, sizeof(int));
-    status->new_req = calloc(status->num_newjob_nodes, sizeof(uint));
+    status->extra_power = calloc(status->num_greedy, sizeof(uint));
 
     memcpy(status->greedy_nodes, &final_data[final_size], sizeof(int)*status->num_greedy);
     final_size += status->num_greedy*sizeof(int);
@@ -435,18 +434,15 @@ powercap_status_t *mem_alloc_powercap_status(char *final_data)
     memcpy(status->greedy_req, &final_data[final_size], sizeof(uint)*status->num_greedy);
     final_size += status->num_greedy*sizeof(uint);
 
-    memcpy(status->powerdef_nodes, &final_data[final_size], sizeof(int)*status->num_newjob_nodes);
-    final_size += status->num_newjob_nodes*sizeof(int);
-
-    memcpy(status->new_req, &final_data[final_size], sizeof(uint)*status->num_newjob_nodes);
-    final_size += status->num_newjob_nodes*sizeof(uint);
+    memcpy(status->extra_power, &final_data[final_size], sizeof(uint)*status->num_greedy);
+    final_size += status->num_greedy*sizeof(uint);
 
     return status;
 }
 
 char *mem_alloc_char_powercap_status(powercap_status_t *status)
 {
-    int size = sizeof(powercap_status_t) + ((status->num_greedy + status->num_newjob_nodes) * (sizeof(int) + sizeof(uint)));
+    int size = sizeof(powercap_status_t) + ((status->num_greedy) * (sizeof(int) + sizeof(uint)*2));
     char *data = calloc(size, sizeof(char));
 
     memcpy(data, status, sizeof(powercap_status_t));
@@ -458,11 +454,9 @@ char *mem_alloc_char_powercap_status(powercap_status_t *status)
     memcpy(&data[size], status->greedy_req, sizeof(uint) * status->num_greedy);
     size += sizeof(uint) * status->num_greedy;
 
-    memcpy(&data[size], status->powerdef_nodes, sizeof(int) * status->num_newjob_nodes);
-    size += sizeof(int) * status->num_newjob_nodes;
-    
-    memcpy(&data[size], status->new_req, sizeof(uint) * status->num_newjob_nodes);
-    size += sizeof(uint) * status->num_newjob_nodes;
+    memcpy(&data[size], status->extra_power, sizeof(uint) * status->num_greedy);
+    size += sizeof(uint) * status->num_greedy;
+
 
     return data;
 }
@@ -479,12 +473,9 @@ powercap_status_t *memmap_powercap_status(char *final_data, int *size)
     status->greedy_req = (uint *)&final_data[final_size];
     final_size += status->num_greedy*sizeof(uint);
 
-    status->powerdef_nodes = (int *)&final_data[final_size];
-    final_size += status->num_newjob_nodes*sizeof(int);
+    status->extra_power = (uint *)&final_data[final_size];
+    final_size += status->num_greedy*sizeof(uint);
 
-    status->new_req = (uint *)&final_data[final_size];
-    final_size += status->num_newjob_nodes*sizeof(uint);
-    
     *size = final_size;
     return status;
 
@@ -516,9 +507,9 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 powercap_status_t *status = (powercap_status_t *)final_status;
 
                 status->idle_nodes = original_status->idle_nodes + new_status->idle_nodes;
-                status->released_power = original_status->released_power + new_status->released_power;
+                status->released= original_status->released + new_status->released;
                 status->num_greedy = original_status->num_greedy + new_status->num_greedy;
-                status->num_newjob_nodes = original_status->num_newjob_nodes + new_status->num_newjob_nodes;
+                status->requested = original_status->requested + new_status->requested;
                 status->current_power = original_status->current_power + new_status->current_power;
                 status->total_powercap = original_status->total_powercap + new_status->total_powercap;
 
@@ -533,15 +524,10 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 memcpy(&final_status[final_size], new_status->greedy_req, sizeof(uint)*new_status->num_greedy);
                 final_size += sizeof(uint)*new_status->num_greedy;
 
-                memcpy(&final_status[final_size], original_status->powerdef_nodes, sizeof(int)*original_status->num_newjob_nodes);
-                final_size += sizeof(int)*original_status->num_newjob_nodes;
-                memcpy(&final_status[final_size], new_status->powerdef_nodes, sizeof(int)*new_status->num_newjob_nodes);
-                final_size += sizeof(int)*new_status->num_newjob_nodes;
-
-                memcpy(&final_status[final_size], original_status->new_req, sizeof(uint)*original_status->num_newjob_nodes);
-                final_size += sizeof(uint)*original_status->num_newjob_nodes;
-                memcpy(&final_status[final_size], new_status->new_req, sizeof(uint)*new_status->num_newjob_nodes);
-                final_size += sizeof(uint)*new_status->num_newjob_nodes;
+                memcpy(&final_status[final_size], original_status->extra_power, sizeof(uint)*original_status->num_greedy);
+                final_size += sizeof(uint)*original_status->num_greedy;
+                memcpy(&final_status[final_size], new_status->extra_power, sizeof(uint)*new_status->num_greedy);
+                final_size += sizeof(uint)*new_status->num_greedy;
 
                 final_data = realloc(final_data, final_size);
                 memcpy(final_data, final_status, final_size);

@@ -33,16 +33,19 @@
 
 state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 {
+	char *error;
 	uint i;
 
 	for (i = 0; i < n; ++i)
 	{
 		calls[i] = dlsym(handle, names[i]);
-
-		if (calls[i]!=NULL) {
-			debug("symbol %s found", names[i]);
+		error    = dlerror();
+	
+		if ((calls[i] != NULL) && (error == NULL)) {
+			debug("symbol %s found (%p)", names[i], calls[i]);
 		} else {
-			debug("symbol %s not found", names[i]);
+			debug("symbol %s not found (%s)", names[i], error);
+			calls[i] = NULL;
 		}
 	}
 

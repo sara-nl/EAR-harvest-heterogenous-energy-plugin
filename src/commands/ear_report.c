@@ -709,6 +709,7 @@ int main(int argc,char *argv[])
     char all_nodes = 0;
     char all_tags = 0;
     char all_eardbds = 0;
+    char global_energy = 0;
     struct tm tinfo = {0};
 
     if (get_ear_conf_path(path_name) == EAR_ERROR)
@@ -807,17 +808,7 @@ int main(int argc,char *argv[])
                 time_period = my_conf.eargm.t2*2;
                 if (optind < argc && strchr(argv[optind], '-') == NULL)
                     time_period = atoi(argv[optind]);
-                if (start_time > 0)
-                    print_all(connection, start_time, end_time, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
-                else
-                    print_all(connection, start_time, time_period, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
-#if DB_MYSQL
-                mysql_close(connection);
-#elif DB_PSQL
-                PQfinish(connection);
-#endif
-                free_cluster_conf(&my_conf);
-                exit(0);
+                global_energy = 1;
                 break;
             case 'e':
                 if (strptime(optarg, "%Y-%m-%e", &tinfo) == NULL)
@@ -852,7 +843,7 @@ int main(int argc,char *argv[])
         }
     }
 
-    if (!all_users && !all_nodes && !all_tags && !all_eardbds)
+    if (!all_users && !all_nodes && !all_tags && !all_eardbds && !global_energy)
     {
         long long result = get_sum(connection, start_time, end_time, divisor);
         compute_pow(connection, start_time, end_time, result);
@@ -894,7 +885,13 @@ int main(int argc,char *argv[])
         compute_pow(connection, start_time, end_time, 0);
         print_all(connection, start_time, end_time, ALL_ISLANDS, PER_METRIC_TYPE);
     }
-    
+    else if (global_energy)
+    {
+        if (start_time > 0)
+            print_all(connection, start_time, end_time, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
+        else
+            print_all(connection, start_time, time_period, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
+    }
 #if DB_MYSQL
     mysql_close(connection);
 #elif DB_PSQL

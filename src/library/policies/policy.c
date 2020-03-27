@@ -26,7 +26,9 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
+#if MPI
 #include <mpi.h>
+#endif
 #include <dlfcn.h>
 #include <common/includes.h>
 #include <common/system/symplug.h>
@@ -39,9 +41,6 @@
 #include <daemon/eard_api.h>
 
 extern masters_info_t masters_info;
-/*
-extern MPI_Comm masters_comm,new_world_comm;
-*/
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
@@ -110,6 +109,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	my_pol_ctx.ear_frequency=&ear_frequency;
 	my_pol_ctx.num_pstates=frequency_get_num_pstates();
 	my_pol_ctx.use_turbo=ear_use_turbo;
+	#if MPI
 	if (PMPI_Comm_dup(masters_info.new_world_comm,&my_pol_ctx.mpi.comm)!=MPI_SUCCESS){
 		error("Duplicating COMM_WORLD in policy");
 	}
@@ -118,6 +118,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
     error("Duplicating master_comm in policy");
   }
 	}
+	#endif
 	return policy_init();
 }
 

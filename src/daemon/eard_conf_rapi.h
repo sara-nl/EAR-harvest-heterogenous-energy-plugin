@@ -42,6 +42,7 @@
 
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
+#include <common/types/risk.h>
 
 #define TEMP_NUM_NODES 10
 
@@ -71,7 +72,7 @@ typedef struct power_limit{
 }power_limit_t;
 
 typedef struct risk_dec{
-	unsigned long level;
+	risk_t level;
 	unsigned long target;
 }risk_dec_t;
 typedef struct powercap_opt{
@@ -129,19 +130,21 @@ typedef struct status{
     char    ok;
     status_node_info_t  node;
     app_info_t  app;
-		unsigned int num_policies;
+	unsigned int num_policies;
     eard_policy_info_t    policy_conf[TOTAL_POLICIES];
 } status_t;
 
 typedef struct powercap_status{
 	uint idle_nodes; 	        /* Total number of idle nodes */
-	uint released_power;        /* Accumulated released power in last T1 */
+	uint released;        /* Accumulated released power in last T1 */
+    uint requested;         //accumulated new_req
 	uint num_greedy;            /* Number of greedy nodes */
 	int *greedy_nodes;           /* List of greedy nodes */
-	uint *greedy_req;
-	uint num_newjob_nodes;      /* Number of nodes asking for powercap_def*/
-	int *powerdef_nodes;	        /* List of nodes asking for powercap_def */
-	uint *new_req;
+	uint *greedy_req; //->extra_power
+    uint *extra_power;
+	//uint num_newjob_nodes;      /* Number of nodes asking for powercap_def*/
+	//int *powerdef_nodes;	    /* List of nodes asking for powercap_def */ //esto se va
+	//uint *new_req; //->requested, acumulado no vector
 	uint current_power; 	    /* Accumulated power */
     uint total_powercap;        /* Accumulated current powercap limits */
 }powercap_status_t;

@@ -591,7 +591,7 @@ int eards_inc_powerlimit(unsigned int type, unsigned long limit)
     return send_command(&command);
 }   
 
-int eards_set_risk(unsigned long risk,unsigned long target)
+int eards_set_risk(risk_t risk,unsigned long target)
 {
     request_t command;
     command.node_dist = 0;
@@ -602,7 +602,7 @@ int eards_set_risk(unsigned long risk,unsigned long target)
     return send_command(&command);
 }
 
-void set_risk_all_nodes(unsigned long risk, unsigned long target, cluster_conf_t my_cluster_conf)
+void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_SET_RISK;

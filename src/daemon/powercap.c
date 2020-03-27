@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <common/config.h>
 #define SHOW_DEBUGS 1
@@ -43,11 +45,13 @@
 #include <daemon/powercap.h>
 #include <common/types/configuration/cluster_conf.h>
 
+#define POWERCAP_MON 1
 
 /* This version is a prototype and should be replaced by an INM plugin+GPU commands for powercap */
 
 #define INM_ENABLE_CMD	"ipmitool raw 0x3a 0xc7 0x01"
 #define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 01 00 00" 
+#define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 00 00 00" 
 #define INM_SET_POWERCAP_POLICY_CMD "NO_CMD"
 #define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
 #define INM_SET_POWERCAP_VALUE_CMD "ipmitool -v -b 0 -t 0x2c raw 0x2E 0xD0 0x57 0x01 0x00 %#X %#X %#X"
@@ -59,9 +63,54 @@ extern int *ips;
 extern int self_id;
 extern volatile int init_ips_ready;
 int last_status;
+int fd_powercap_values=0;
 
+pthread_t powercapmon_th;
+unsigned long powercapmon_freq=1;
+extern int eard_must_exit;
 
 #define min(a,b) ((a<b)?a:b)
+
+void get_date_str(char *msg,int size)
+{
+	struct tm *current_t;
+  time_t rawtime;
+	time(&rawtime);
+	current_t = localtime(&rawtime);
+  strftime(msg, size, "%c", current_t);
+}
+
+#if POWERCAP_MON
+void * powercapmon_f(void * arg)
+{
+	unsigned long f=5;
+	int fd;
+	ehandler_t pc_eh;
+  energy_data_t e_begin;
+  energy_data_t e_end;
+  power_data_t pc_power;
+
+	//pthread_setname_np(pthread_self(),"powercap_monitor");
+	
+	fd=open("/var/run/ear/powercap_mon.txt",O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
+	if (init_power_ponitoring(&pc_eh)!=EAR_SUCCESS){
+		error("PC init_power_ponitoring");
+		pthread_exit(0);
+	}
+	alloc_energy_data(&e_begin);
+  alloc_energy_data(&e_end);
+  alloc_power_data(&pc_power);
+	read_enegy_data(&pc_eh, &e_begin);
+	while (!eard_must_exit) {
+		sleep(f);
+		read_enegy_data(&pc_eh, &e_end);
+		compute_power(&e_begin, &e_end, &pc_power);
+		print_power(&pc_power,1,fd);
+		copy_energy_data(&e_begin, &e_end);
+	}
+	pthread_exit(0);
+}
+#endif
 uint compute_power_to_release(uint current)
 {
 	return my_pc_opt.th_release;
@@ -129,6 +178,11 @@ void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 	pthread_mutex_init(&my_powercap_opt->lock,NULL);
 }
 
+void powercap_end()
+{ 
+	set_powercap_value(DOMAIN_NODE,0);
+}
+
 int powercap_init()
 {
 	char cmd[1024];
@@ -136,11 +190,9 @@ int powercap_init()
 	debug("powercap init");
 	set_default_node_powercap_opt(&my_pc_opt);
 	print_node_powercap_opt(&my_pc_opt);
-	debug("waiting for ips ready");
 	while(init_ips_ready==0){ 
 		sleep(1);
 	}
-	debug("ips ready in powercap");
 	if (init_ips_ready>0) my_ip=ips[self_id];
 	else my_ip=0;
 	
@@ -183,6 +235,20 @@ int powercap_init()
 	last_status=PC_STATUS_IDLE;
 	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
 	debug("powercap initialization finished");
+	#if POWERCAP_MON
+	fd_powercap_values=open("/var/run/ear/powercap_values.txt",O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
+	if (fd_powercap_values<0){
+		fprintf(stderr,"Error creating file for powercap_values %s\n",strerror(errno));
+	}else{
+		dprintf(fd_powercap_values,"File created\n");
+		debug("/var/run/ear/powercap_values.txt created");
+	}
+		
+	debug("Creating thread for powercap  monitor");
+	if (pthread_create(&powercapmon_th,NULL,powercapmon_f,NULL)){
+		error("Error creating powercapmon_th");
+	}
+	#endif
 	return EAR_SUCCESS;	
 }
 
@@ -205,11 +271,16 @@ uint get_powercap_value()
 int set_powercap_value(uint domain,uint limit)
 {
 	char cmd[1024];
+	char c_date[128];
 	state_t ret;
 	uint16_t sized_limit=(uint16_t)limit;
 	char *limitv=(char *)&sized_limit;
 	if (limit==my_pc_opt.current_pc) return EAR_SUCCESS;
 	debug("set_powercap_value domain %u limit %u",domain,limit);
+	get_date_str(c_date,sizeof(c_date));
+	if (fd_powercap_values>=0){ 
+		dprintf(fd_powercap_values,"%s domain %u limit %u \n",c_date,domain,limit);
+	}
 	sprintf(cmd,INM_SET_POWERCAP_VALUE_CMD,domain,(uint8_t)limitv[0],(uint8_t)limitv[1]);
 	my_pc_opt.current_pc=limit;
 	fprintf(stderr,"--------------- executing %s\n",cmd);
@@ -378,11 +449,10 @@ int periodic_metric_info(double cp)
 void print_power_status(powercap_status_t *my_status)
 {
 	int i;
-	fprintf(stderr,"Power_status:Ilde %u released %u total greedy %u total new %u current power %u total power cap %u\n",
-	my_status->idle_nodes,my_status->released_power,my_status->num_greedy,my_status->num_newjob_nodes,my_status->current_power,
+	fprintf(stderr,"Power_status:Ilde %u released %u requested %u total greedy %u  current power %u total power cap %u\n",
+	my_status->idle_nodes,my_status->released,my_status->requested,my_status->num_greedy,my_status->current_power,
 	my_status->total_powercap);
-	if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u) ",my_status->greedy_nodes,my_status->greedy_req);
-	if (my_status->num_newjob_nodes) fprintf(stderr,"new_node=(ip=%u,req=%u) ",my_status->powerdef_nodes,my_status->new_req);
+	if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes,my_status->greedy_req,my_status->extra_power);
 }
 void get_powercap_status(powercap_status_t *my_status)
 {
@@ -400,32 +470,45 @@ void get_powercap_status(powercap_status_t *my_status)
             if (my_status->num_greedy < 1) {
                 my_status->greedy_nodes=NULL;
                 my_status->greedy_req=NULL;
+                my_status->extra_power=NULL;
             }
 			my_status->num_greedy++; 
             if (my_status->num_greedy < 1) break;
 			my_status->greedy_nodes=realloc(my_status->greedy_nodes, sizeof(int)*my_status->num_greedy);
 		    my_status->greedy_req=realloc(my_status->greedy_req, sizeof(uint)*my_status->num_greedy);
+		    my_status->extra_power=realloc(my_status->extra_power, sizeof(uint)*my_status->num_greedy);
             /* Data management */
             my_status->greedy_nodes[my_status->num_greedy - 1] = my_ip; /* IP missing */
 			my_status->greedy_req[my_status->num_greedy - 1]=my_pc_opt.requested;
+			if (my_pc_opt.last_t1_allocated>my_pc_opt.def_powercap) my_status->extra_power[my_status->num_greedy - 1]=my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap;
+            else my_status->extra_power[my_status->num_greedy - 1] = 0;
 			break;
 		case PC_STATUS_RELEASE:
-            my_status->released_power+=my_pc_opt.released;
+            my_status->released+=my_pc_opt.released;
 		    my_pc_opt.powercap_status=PC_STATUS_OK;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
 		case PC_STATUS_ASK_DEF: 
-            /* Memory management */
-            if (my_status->num_newjob_nodes < 1) {
-                my_status->powerdef_nodes = NULL;
-                my_status->new_req = NULL;
-            }
-            my_status->num_newjob_nodes++;
-			my_status->powerdef_nodes=realloc(my_status->powerdef_nodes, sizeof(int)*my_status->num_newjob_nodes); /* IP missing */
-			my_status->new_req=realloc(my_status->new_req, sizeof(uint)*my_status->num_newjob_nodes); 
             /* Data management */
-			my_status->powerdef_nodes[my_status->num_newjob_nodes]=my_ip; /* IP missing */
-			my_status->new_req[my_status->num_newjob_nodes]=my_pc_opt.requested;
+			my_status->requested=my_pc_opt.requested;
 			break;
 		case PC_STATUS_ERROR: break;
+		case PC_STATUS_OK:
+			if (my_pc_opt.last_t1_allocated>my_pc_opt.def_powercap){
+                if (my_status->num_greedy < 1) {
+                    my_status->greedy_nodes=NULL;
+                    my_status->greedy_req=NULL;
+                    my_status->extra_power=NULL;
+                }
+			    my_status->num_greedy++; 
+                if (my_status->num_greedy < 1) break;
+			    my_status->greedy_nodes=realloc(my_status->greedy_nodes, sizeof(int)*my_status->num_greedy);
+    		    my_status->greedy_req=realloc(my_status->greedy_req, sizeof(uint)*my_status->num_greedy);
+	    	    my_status->extra_power=realloc(my_status->extra_power, sizeof(uint)*my_status->num_greedy);
+                /* Data management */
+                my_status->greedy_nodes[my_status->num_greedy - 1] = my_ip; /* IP missing */
+    			my_status->greedy_req[my_status->num_greedy - 1]=0;
+                my_status->extra_power[my_status->num_greedy - 1]=my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap;
+			}	
+			break;
 	}
 	
 	my_status->current_power+=powermon_current_power();

@@ -64,7 +64,6 @@ static int check_reduce_mpi=0;
 static int reduce_freq_in_mpi=0;
 static int show_sig=0;
 static unsigned long saved_freq,mpi_freq;
-static float ratio_TPI=1;
 static int mpi_reduction=0;
 
 
@@ -87,10 +86,6 @@ state_t policy_init(polctx_t *c)
   	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
 		sig_shared_region[my_node_id].mpi_info.exec_time=0;
 		sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
-  	ratio_TPI=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
-  	if (masters_info.my_master_rank>=0){ 
-			verbose(1,"Ratio for TPI %f",ratio_TPI);
-		}
 		if (masters_info.my_master_rank==0){
 			verbose(1,"Using %f as min perc mpi2 show_sig=%d",min_perc,show_sig);
 			verbose(1,"mpi_reduction feature set to %d",mpi_reduction);
@@ -126,7 +121,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 // This is the main function in this file, it implements power policy
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
-    signature_t *my_app,c_sig;
+    signature_t *my_app;
     int i,min_pstate;
     unsigned int ref,try_next;
     double freq_gain,perf_gain,min_eff_gain;
@@ -137,10 +132,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		ulong curr_pstate,def_pstate,def_freq;
 		state_t st;
 
-		signature_copy(&c_sig,sig);
-
-		c_sig.TPI=c_sig.TPI/(double)ratio_TPI;
-    my_app=&c_sig;
+    my_app=sig;
 
 		*ready=1;
 

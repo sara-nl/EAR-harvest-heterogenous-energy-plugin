@@ -55,6 +55,9 @@
         	}
 #endif
 
+#define fail(function) \
+	(function != ESPANK_SUCCESS)
+
 
 typedef char *plug_component_t;
 typedef int   plug_context_t;
@@ -87,6 +90,16 @@ struct context_s {
 	.local  = -1
 };
 
+struct constring_s {
+	char *error;
+	char *srun;
+	char *sbatch;
+} Constring __attribute__((weak)) = {
+	.error  = "error",
+	.srun   = "srun",
+	.sbatch = "sbatch",
+};
+
 typedef struct varname_s {
 	char *loc;
 	char *rem;
@@ -111,6 +124,10 @@ struct variables_s {
 	varnames_t tag;
 	varnames_t path_usdb;
 	varnames_t path_trac;
+	varnames_t gm_host;
+	varnames_t gm_port;
+	varnames_t gm_min;
+	varnames_t gm_secure;
 	varnames_t perf_pen;
 	varnames_t eff_gain;
 	varnames_t name_app;
@@ -119,14 +136,17 @@ struct variables_s {
 	varnames_t account;
 	varnames_t path_temp;
 	varnames_t path_inst;
-	varnames_t node_list;
-	varnames_t ctx_sbac;
-	varnames_t ctx_srun;
+	varnames_t job_nodl;
+	varnames_t job_nodn;
+	varnames_t step_nodl;
+	varnames_t step_nodn;
+	varnames_t ctx_last;
+	varnames_t was_sbac;
+	varnames_t was_srun;
 	varnames_t ld_prel;
 	varnames_t ld_libr;
 	varnames_t node_num;
 	varnames_t version;
-	varnames_t gm_secure;
 }
 	Var __attribute__((weak)) =
 {
@@ -145,6 +165,9 @@ struct variables_s {
 .tag       = { .loc = "SLURM_LOC_ETAG", .ear = "EAR_ENERGY_TAG"       },
 .path_usdb = { .loc = "SLURM_LOC_USDB", .ear = "EAR_USER_DB_PATHNAME" },
 .path_trac = { .loc = "SLURM_LOC_TRAC", .ear = "SLURM_EAR_TRACE_PATH" },
+.gm_host   = { .loc = "SLURM_LOC_GMHS", .ear = ""                     },
+.gm_port   = { .loc = "SLURM_LOC_GMPR", .ear = ""                     },
+.gm_min    = { .loc = "SLURM_LOC_GMMI", .ear = ""                     },
 .gm_secure = { .loc = "SLURM_LOC_GMSC", .ear = ""                     },
 .perf_pen  = { .ear = "EAR_PERFORMANCE_PENALTY"                       },
 .eff_gain  = { .ear = "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"           },
@@ -154,9 +177,13 @@ struct variables_s {
 .account   = { .rem = "SLURM_JOB_ACCOUNT",   .ear = "" },
 .path_temp = { .rem = "SLURM_ERTEMP",        .ear = "EAR_TMP"         },
 .path_inst = { .rem = "SLURM_ERINST",        .ear = "" },
-.node_list = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
-.ctx_sbac  = { .rem = "SLURM_ERSBAC",        .ear = "" },
-.ctx_srun  = { .rem = "SLURM_ERSRUN",        .ear = "" },
+.job_nodl  = { .rem = "SLURM_JOB_NODELIST",  .ear = "" },
+.job_nodn  = { .rem = "SLURM_JOB_NUM_NODES", .ear = "" },
+.step_nodl = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
+.step_nodn = { .rem = "SLURM_STEP_NUM_NODES",.ear = "" },
+.ctx_last  = { .rem = "SLURM_ERLAST",        .ear = "" },
+.was_sbac  = { .rem = "SLURM_ERSBAC",        .ear = "" },
+.was_srun  = { .rem = "SLURM_ERSRUN",        .ear = "" },
 .ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"      },
 .ld_libr   = { .rem = "",                    .ear = "LD_LIBRARY_PATH" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
@@ -196,6 +223,10 @@ char *plug_host(spank_t sp);
 char *plug_context_str(spank_t sp);
 
 int plug_context_is(spank_t sp, plug_context_t ctxt);
+
+int plug_context_was(plug_serialization_t *sd, plug_context_t ctxt);
+
+int plug_masternode_is(plug_serialization_t *sd);
 
 int plug_verbosity_test(spank_t sp, int level);
 

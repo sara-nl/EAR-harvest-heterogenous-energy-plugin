@@ -58,6 +58,7 @@ typedef struct node_powercap_opt {
 }node_powercap_opt_t;
 
 int powercap_init();
+void powercap_end();
 void get_powercap_status(powercap_status_t *my_status);
 void set_powercap_opt(powercap_opt_t *opt);
 uint get_powercap_value();

@@ -44,6 +44,7 @@
 #include <metrics/frequency/frequency_cpu.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
+#include <daemon/powercap.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
@@ -56,6 +57,7 @@
 
 
 #define MIN_INTERVAL_RT_ERROR 3600
+
 
 #if APP_API_THREAD
 pthread_t app_eard_api_th;
@@ -102,6 +104,7 @@ int coeffs_default_size;
 uint signal_sighup = 0;
 uint f_monitoring;
 
+loop_t current_loop_data;
 
 #define max(a, b) (a>b?a:b)
 #define min(a, b) (a<b?a:b)
@@ -396,6 +399,11 @@ void eard_exit(uint restart) {
 	verbose(VCONF, "frequency_dispose");
 	frequency_dispose();
 
+#if POWERCAP
+  powercap_end();
+#endif
+
+
 	verbose(VCONF, "Releasing node resources");
 
 	// More disposes
@@ -566,6 +574,7 @@ int eard_system(int must_read) {
 		case WRITE_LOOP_SIGNATURE:
 			ack = EAR_COM_OK;
 			ret1 = EAR_SUCCESS;
+			copy_loop(&current_loop_data,&req.req_data.loop);
 			// print_loop_fd(1,&req.req_data.loop);
 			if (my_cluster_conf.database.report_loops) {
 #if USE_DB
