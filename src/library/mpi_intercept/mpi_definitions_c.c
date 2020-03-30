@@ -27,9 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <library/mpi_intercept/mpi_definitions.h>
+#include <library/mpi_intercept/mpi_definitions_c.h>
 
-const char *mpi_names[] = {
+const char *mpi_c_names[] = {
 	"MPI_Allgather",
 	"MPI_Allgatherv",
 	"MPI_Allreduce",
@@ -129,7 +129,10 @@ const char *mpi_names[] = {
  	,
 };
 
-mpi_syms_t mpi_syms = {
+#if 1
+mpi_c_syms_t mpi_c_syms;
+#else
+mpi_c_syms_t mpi_c_syms = {
 	.MPI_Allgather = PMPI_Allgather,
 	.MPI_Allgatherv = PMPI_Allgatherv,
 	.MPI_Allreduce = PMPI_Allreduce,
@@ -228,3 +231,4 @@ mpi_syms_t mpi_syms = {
 #endif
 	,
 };
+#endif

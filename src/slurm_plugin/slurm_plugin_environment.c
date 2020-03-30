@@ -343,6 +343,11 @@ int plug_context_is(spank_t sp, plug_context_t ctxt)
 	return cur == ctxt;
 }
 
+int plug_context_was(plug_serialization_t *sd, plug_context_t ctxt)
+{
+	return sd->subject.context_local == ctxt;
+}
+
 /*
  * Verbosity
  */

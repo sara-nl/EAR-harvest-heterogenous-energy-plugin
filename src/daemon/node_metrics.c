@@ -199,6 +199,7 @@ int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 	for (i=0;i<id->nsockets;i++){
 		temp_total+=nm->temp[i];
 	}
+	temp_total=temp_total/id->nsockets;
 	sprintf(msg," avg_cpu_freq %.2lf uncore_freq=%llu temp=%llu",(double)nm->avg_cpu_freq/(double)1000000,(long long unsigned int)uncore_total,temp_total);
 	verbose(VNODEPMON,msg);
 	return EAR_SUCCESS;

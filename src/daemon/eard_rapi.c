@@ -339,11 +339,10 @@ int eards_remote_connect(char *nodename,uint port)
 int eards_new_job(application_t *new_job)
 {
 	request_t command;
-	command.node_dist = 0;
 
     debug("eards_new_job");
 	command.req=EAR_RC_NEW_JOB;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
 	copy_application(&command.my_req.new_job,new_job);
 	debug("command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
@@ -353,11 +352,10 @@ int eards_new_job(application_t *new_job)
 int eards_end_job(job_id jid,job_id sid)
 {
     request_t command;
-	command.node_dist = 0;
 
     debug("eards_end_job");
     command.req=EAR_RC_END_JOB;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
@@ -369,9 +367,8 @@ int eards_end_job(job_id jid,job_id sid)
 int eards_set_max_freq(unsigned long freq)
 {
 	request_t command;
-	command.node_dist = 0;
 	command.req=EAR_RC_MAX_FREQ;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     command.my_req.ear_conf.max_freq=freq;
 	return send_command(&command);
@@ -380,9 +377,8 @@ int eards_set_max_freq(unsigned long freq)
 int eards_set_freq(unsigned long freq)
 {
     request_t command;
-	command.node_dist = 0;
     command.req=EAR_RC_SET_FREQ;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     command.my_req.ear_conf.max_freq=freq;
     return send_command(&command);
@@ -390,9 +386,8 @@ int eards_set_freq(unsigned long freq)
 int eards_set_def_freq(unsigned long freq)
 {
     request_t command;
-	command.node_dist = 0;
     command.req=EAR_RC_DEF_FREQ;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     command.my_req.ear_conf.max_freq=freq;
     return send_command(&command);
@@ -402,9 +397,8 @@ int eards_set_def_freq(unsigned long freq)
 int eards_red_max_and_def_freq(uint p_states)
 {
     request_t command;
-	command.node_dist = 0;
     command.req=EAR_RC_RED_PSTATE;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     command.my_req.ear_conf.p_states=p_states;
     return send_command(&command);
@@ -413,9 +407,8 @@ int eards_red_max_and_def_freq(uint p_states)
 int eards_restore_conf()
 {
     request_t command;
-	command.node_dist = 0;
     command.req=EAR_RC_REST_CONF;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     return send_command(&command);
 }
@@ -426,9 +419,8 @@ int eards_restore_conf()
 int eards_set_th(unsigned long th)
 {
     request_t command;
-	command.node_dist = 0;
     command.req=EAR_RC_NEW_TH;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     command.my_req.ear_conf.th=th;
     return send_command(&command);
@@ -438,9 +430,8 @@ int eards_set_th(unsigned long th)
 int eards_inc_th(unsigned long th)
 {
     request_t command;
-	command.node_dist = 0;
     command.req=EAR_RC_INC_TH;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     command.my_req.ear_conf.th=th;
     return send_command(&command);
@@ -448,18 +439,16 @@ int eards_inc_th(unsigned long th)
 int eards_ping()
 {
     request_t command;
-	command.node_dist = 0;
     command.req=EAR_RC_PING;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
     return send_command(&command);
 }
 int eards_set_powercap(unsigned long pc)
 {
     request_t command;
-  	command.node_dist = 0;
     command.req=EAR_RC_NEW_POWERCAP;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
 		command.my_req.pc=pc;
     return send_command(&command);
@@ -469,11 +458,10 @@ int eards_set_powercap(unsigned long pc)
 int eards_set_policy_info(new_policy_cont_t *p)
 {
     request_t command;
-    command.node_dist = 0;
     command.req=EAR_RC_SET_POLICY;
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.time_code = time(NULL);
-		memcpy(&command.my_req.pol_conf,p,sizeof(new_policy_cont_t));
+	memcpy(&command.my_req.pol_conf,p,sizeof(new_policy_cont_t));
     return send_command(&command);
 }
 
