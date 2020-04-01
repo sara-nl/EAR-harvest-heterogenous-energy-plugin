@@ -458,6 +458,7 @@ void get_powercap_status(powercap_status_t *my_status)
 	debug("get_powercap_status");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
 	//memset(my_status,0,sizeof(powercap_status_t));
+	my_status->total_nodes++;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
             my_status->idle_nodes++;
@@ -477,7 +478,7 @@ void get_powercap_status(powercap_status_t *my_status)
 		    my_status->greedy_req=realloc(my_status->greedy_req, sizeof(uint)*my_status->num_greedy);
 		    my_status->extra_power=realloc(my_status->extra_power, sizeof(uint)*my_status->num_greedy);
             /* Data management */
-            my_status->greedy_nodes[my_status->num_greedy - 1] = my_ip; /* IP missing */
+            my_status->greedy_nodes[my_status->num_greedy - 1] = my_ip; 
 			my_status->greedy_req[my_status->num_greedy - 1]=my_pc_opt.requested;
 			if (my_pc_opt.last_t1_allocated>my_pc_opt.def_powercap) my_status->extra_power[my_status->num_greedy - 1]=my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap;
             else my_status->extra_power[my_status->num_greedy - 1] = 0;

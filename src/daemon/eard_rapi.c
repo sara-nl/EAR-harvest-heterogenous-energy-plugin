@@ -1618,6 +1618,7 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 char *final_status = calloc(final_size, sizeof(char));
                 powercap_status_t *status = (powercap_status_t *)final_status;
 
+								status->total_nodes = original_status->total_nodes + new_status->total_nodes;
                 status->idle_nodes = original_status->idle_nodes + new_status->idle_nodes;
                 status->released= original_status->released + new_status->released;
                 status->num_greedy = original_status->num_greedy + new_status->num_greedy;
@@ -1763,7 +1764,7 @@ int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t 
 }
 
 /** Asks for powercap_status for all nodes */
-int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t *pc_status)
+int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status)
 {
 
     int i, j,  rc, total_ranges, num_all_status = 0, num_temp_status;
@@ -1825,7 +1826,7 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
             
         }
     }
-    //*pc_status = all_status;
+    *pc_status = all_status;
 
     return num_all_status;
 }

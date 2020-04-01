@@ -41,9 +41,8 @@
 extern cluster_conf_t my_cluster_conf;
 uint max_cluster_power,default_power,num_nodes;
 uint total_req_new,total_req_greedy;
-cluster_powercap_status_t my_cluster_power_status;
+cluster_powercap_status_t *my_cluster_power_status;
 int num_power_status;
-cluster_powercap_status_t cluster_status;
 powercap_opt_t cluster_options;
 
 #define min(a,b) (a<b?a:b)
@@ -125,8 +124,8 @@ void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
   uint total_free;
 	uint num_nodes=cluster_status->total_nodes;
   uint min_reduction;
-  verbose(0,"There are %u idle nodes %u greedy nodes ",
-  cluster_status->idle_nodes,cluster_status->num_greedy);
+  verbose(0,"There are %u nodes  %u idle nodes %u greedy nodes ",
+  cluster_status->total_nodes,cluster_status->idle_nodes,cluster_status->num_greedy);
   memset(cluster_options,0,sizeof(powercap_opt_t));
   verbose(0,"Total power %u , requested for new %u released %u extra req %u",max_cluster_power,cluster_status->requested,cluster_status->released,total_req_greedy);
   /* Allocated power + default requested must be less that maximum */
@@ -179,8 +178,7 @@ void print_cluster_power_status(powercap_status_t *my_cluster_power_status)
 {
   int i;
 	powercap_status_t *cs=my_cluster_power_status;
-	fprintf(stderr,"Idle nodes %u power (released %u requested %u consumed %u allocated %u) total_greedy_nodes %u\n",cs->idle_nodes,
-	cs->released,cs->requested,cs->current_power,cs->total_powercap,cs->num_greedy);
+	fprintf(stderr,"Total %u Idle  %u power (released %u requested %u consumed %u allocated %u) total_greedy_nodes %u\n",cs->total_nodes,cs->idle_nodes, cs->released,cs->requested,cs->current_power,cs->total_powercap,cs->num_greedy);
   fprintf(stderr,"%d power_status received\n",num_power_status);
   for (i=0;i<cs->num_greedy;i++){
    fprintf(stderr,"\t[%d] ip %d greedy_req %u extra_power %u\n",i,cs->greedy_nodes[i],cs->greedy_req[i],cs->extra_power[i]);
@@ -212,8 +210,8 @@ int cluster_power_limited()
 void cluster_check_powercap()
 {
         num_power_status=cluster_get_powercap_status(&my_cluster_conf,&my_cluster_power_status);
-        print_cluster_power_status(&my_cluster_power_status);
-        powercap_reallocation(&my_cluster_power_status,&cluster_options);
+        print_cluster_power_status(my_cluster_power_status);
+        powercap_reallocation(my_cluster_power_status,&cluster_options);
         send_powercap_options_to_cluster(&cluster_options);
 
 }
