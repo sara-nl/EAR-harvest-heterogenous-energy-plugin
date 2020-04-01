@@ -433,7 +433,7 @@ void dyncon_get_powerstatus(int fd, request_t *command)
     {
             //error
     }
-	debug("return_status %lu status=%p", return_status, status);
+	debug("return_status %d status=%p", return_status, status);
 
 	get_powercap_status(&status[return_status - 1]);
 #ifdef NEW_STATUS

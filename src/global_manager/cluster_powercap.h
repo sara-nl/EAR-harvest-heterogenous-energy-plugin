@@ -33,24 +33,14 @@
 #include <daemon/eard_rapi.h>
 
 
-typedef struct cluster_powercap_status{
-  uint idle_nodes;         /* Total number of idle nodes */
-  uint released;       /* Accumulated released power in last T1 */
-  uint requested;       /* Asking for default power */
-  uint num_greedy;             /* Number of greedy nodes */
-  int *greedy_nodes;           /* List of greedy nodes */
-  uint *greedy_req;
-  uint *extra_power;
-  uint current_power;         /* Accumulated power */
-  uint total_powercap;        /* Accumulated current powercap limits */
-}cluster_powercap_status_t;
+#define cluster_powercap_status_t powercap_status_t
 
-void aggregate_powercap_status(powercap_status_t *my_cluster_power_status,int num_st,cluster_powercap_status_t *cluster_status);
+//void aggregate_powercap_status(powercap_status_t *my_cluster_power_status,int num_st,cluster_powercap_status_t *cluster_status);
 void allocate_free_power_to_greedy_nodes(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint *total_free);
 void reduce_allocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint min_reduction);
-void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,int nun_nodes);
+void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options);
 void send_powercap_options_to_cluster(powercap_opt_t *cluster_options);
-void print_cluster_power_status(int num_power_status,powercap_status_t *my_cluster_power_status);
+void print_cluster_power_status(cluster_powercap_status_t *my_cluster_power_status);
 void cluster_powercap_init();
 int cluster_power_limited();
 void cluster_check_powercap();

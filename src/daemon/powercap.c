@@ -449,7 +449,9 @@ void print_power_status(powercap_status_t *my_status)
 	fprintf(stderr,"Power_status:Ilde %u released %u requested %u total greedy %u  current power %u total power cap %u\n",
 	my_status->idle_nodes,my_status->released,my_status->requested,my_status->num_greedy,my_status->current_power,
 	my_status->total_powercap);
-	if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes,my_status->greedy_req,my_status->extra_power);
+	for (i=0;i<my_status->num_greedy;i++){
+		if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes[i],my_status->greedy_req[i],my_status->extra_power[i]);
+	}
 }
 void get_powercap_status(powercap_status_t *my_status)
 {

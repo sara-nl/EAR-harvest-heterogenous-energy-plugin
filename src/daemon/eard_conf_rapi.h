@@ -135,6 +135,7 @@ typedef struct status{
 } status_t;
 
 typedef struct powercap_status{
+	uint total_nodes;
 	uint idle_nodes; 	        /* Total number of idle nodes */
 	uint released;        /* Accumulated released power in last T1 */
     uint requested;         //accumulated new_req
@@ -142,9 +143,11 @@ typedef struct powercap_status{
 	int *greedy_nodes;           /* List of greedy nodes */
 	uint *greedy_req; //->extra_power
     uint *extra_power;
-	//uint num_newjob_nodes;      /* Number of nodes asking for powercap_def*/
-	//int *powerdef_nodes;	    /* List of nodes asking for powercap_def */ //esto se va
-	//uint *new_req; //->requested, acumulado no vector
+#if 0
+	uint num_newjob_nodes;      /* Number of nodes asking for powercap_def*/
+	int *powerdef_nodes;	    /* List of nodes asking for powercap_def */ //esto se va
+	uint *new_req; //->requested, acumulado no vector
+#endif
 	uint current_power; 	    /* Accumulated power */
     uint total_powercap;        /* Accumulated current powercap limits */
 }powercap_status_t;

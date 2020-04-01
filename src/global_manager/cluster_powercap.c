@@ -41,13 +41,14 @@
 extern cluster_conf_t my_cluster_conf;
 uint max_cluster_power,default_power,num_nodes;
 uint total_req_new,total_req_greedy;
-powercap_status_t *my_cluster_power_status;
+cluster_powercap_status_t my_cluster_power_status;
 int num_power_status;
 cluster_powercap_status_t cluster_status;
 powercap_opt_t cluster_options;
 
 #define min(a,b) (a<b?a:b)
 
+#if 0
 void aggregate_powercap_status(powercap_status_t *my_cluster_power_status,int num_st,cluster_powercap_status_t *cluster_status)
 {
   int i,num_greedy=0,num_def=0;
@@ -77,6 +78,7 @@ void aggregate_powercap_status(powercap_status_t *my_cluster_power_status,int nu
     }
   }
 }
+#endif
 void allocate_free_power_to_greedy_nodes(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint *total_free)
 { 
   int i, nodes_no_extra=0, num_extra=0,num_greedy=0,more_power;
@@ -118,9 +120,10 @@ void reduce_allocation(cluster_powercap_status_t *cluster_status,powercap_opt_t 
 }
 
 /* This function is executed when there is enough power for new running nodes but not for all the greedy nodes */
-void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,int nun_nodes)
+void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options)
 {
   uint total_free;
+	uint num_nodes=cluster_status->total_nodes;
   uint min_reduction;
   verbose(0,"There are %u idle nodes %u greedy nodes ",
   cluster_status->idle_nodes,cluster_status->num_greedy);
@@ -149,13 +152,15 @@ void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
     total_free=0;
     reduce_allocation(cluster_status,cluster_options,min_reduction);
   }
-  if (total_free) cluster_options->max_inc_new_jobs=total_free/(nun_nodes-cluster_status->idle_nodes);
+  if (total_free) cluster_options->max_inc_new_jobs=total_free/(num_nodes-cluster_status->idle_nodes);
 }
 
 void send_powercap_options_to_cluster(powercap_opt_t *cluster_options)
 {
   cluster_set_powercap_opt(my_cluster_conf,cluster_options);
 }
+
+#if 0
 void print_cluster_power_status(int num_power_status,powercap_status_t *my_cluster_power_status)
 {
   int i;
@@ -168,6 +173,20 @@ void print_cluster_power_status(int num_power_status,powercap_status_t *my_clust
     my_cluster_power_status[i].current_power,my_cluster_power_status[i].total_powercap);
   }
 }
+#endif
+
+void print_cluster_power_status(powercap_status_t *my_cluster_power_status)
+{
+  int i;
+	powercap_status_t *cs=my_cluster_power_status;
+	fprintf(stderr,"Idle nodes %u power (released %u requested %u consumed %u allocated %u) total_greedy_nodes %u\n",cs->idle_nodes,
+	cs->released,cs->requested,cs->current_power,cs->total_powercap,cs->num_greedy);
+  fprintf(stderr,"%d power_status received\n",num_power_status);
+  for (i=0;i<cs->num_greedy;i++){
+   fprintf(stderr,"\t[%d] ip %d greedy_req %u extra_power %u\n",i,cs->greedy_nodes[i],cs->greedy_req[i],cs->extra_power[i]);
+  }
+}
+
 
 void cluster_powercap_init()
 {
@@ -193,10 +212,8 @@ int cluster_power_limited()
 void cluster_check_powercap()
 {
         num_power_status=cluster_get_powercap_status(&my_cluster_conf,&my_cluster_power_status);
-        num_nodes=num_power_status;
-        print_cluster_power_status(num_power_status,my_cluster_power_status);
-        aggregate_powercap_status(my_cluster_power_status,num_power_status,&cluster_status);
-        powercap_reallocation(&cluster_status,&cluster_options,num_power_status);
+        print_cluster_power_status(&my_cluster_power_status);
+        powercap_reallocation(&my_cluster_power_status,&cluster_options);
         send_powercap_options_to_cluster(&cluster_options);
 
 }

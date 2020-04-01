@@ -1622,7 +1622,7 @@ int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t 
 }
 
 /** Asks for powercap_status for all nodes */
-int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status)
+int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t *pc_status)
 {
 
     int i, j,  rc, total_ranges, num_all_status = 0, num_temp_status;
@@ -1677,7 +1677,7 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
             
         }
     }
-    *pc_status = all_status;
+    //*pc_status = all_status;
 
     return num_all_status;
 }
