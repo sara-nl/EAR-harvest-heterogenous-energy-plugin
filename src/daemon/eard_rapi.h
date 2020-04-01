@@ -182,6 +182,8 @@ request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, requ
 /** Recieves data from a previously send command */
 request_header_t recieve_data(int fd, void **data);
 
+request_header_t process_data(request_header_t data_head, char **temp_data_ptr, char **final_data_ptr, int final_size);
+
 /* Power management extensions */
 int eards_set_powerlimit(unsigned long limit);
 int eards_red_powerlimit(unsigned int type, unsigned long limit);
