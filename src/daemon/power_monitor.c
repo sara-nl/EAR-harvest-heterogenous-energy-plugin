@@ -484,7 +484,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		my_policy = &default_policy_context;
 		return my_policy;
 	}
-	debug("configuring policy for user %u policy %s freq %lu th %lf is_learning %u",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
+	debug("configuring policy for user %u policy %s freq %lu th %lf is_learning %u is_mpi %d force_freq %d",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning,appID->is_mpi,my_cluster_conf.eard.force_frequencies);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
@@ -953,6 +953,12 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	if (my_current_power->avg_dc < RAPL) {
 		corrected_power = RAPL;
 	}
+#if USE_GPUS
+	current_sample.DRAM_energy=accum_dram_power(my_current_power);
+	current_sample.PCK_energy=accum_cpu_power(my_current_power);
+  current_sample.GPU_energy=accum_gpu_power(my_current_power);
+#endif
+
 
 	current_sample.DC_energy = corrected_power * (ulong) difftime(my_current_power->end, my_current_power->begin);
 
