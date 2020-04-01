@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 0
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
