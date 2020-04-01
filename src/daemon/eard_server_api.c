@@ -416,6 +416,7 @@ int get_self_ip()
 	return EAR_ERROR;
 }
 
+#if 0
 powercap_status_t *mem_alloc_powercap_status(char *final_data)
 {
     int final_size;
@@ -556,6 +557,7 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
     return head;
 }
 
+#endif
 request_header_t propagate_data(request_t *command, uint port, void **data)
 {
     char *temp_data, *final_data = NULL;

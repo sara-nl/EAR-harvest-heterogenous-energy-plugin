@@ -1527,6 +1527,147 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 #endif
 
 #if NEW_STATUS
+
+powercap_status_t *mem_alloc_powercap_status(char *final_data)
+{
+    int final_size;
+    powercap_status_t *status = calloc(1, sizeof(powercap_status_t));
+
+    final_size = sizeof(powercap_status_t);
+    memcpy(status, final_data, final_size);
+
+    status->greedy_nodes = calloc(status->num_greedy, sizeof(int));
+    status->greedy_req = calloc(status->num_greedy, sizeof(uint));
+    status->extra_power = calloc(status->num_greedy, sizeof(uint));
+
+    memcpy(status->greedy_nodes, &final_data[final_size], sizeof(int)*status->num_greedy);
+    final_size += status->num_greedy*sizeof(int);
+
+    memcpy(status->greedy_req, &final_data[final_size], sizeof(uint)*status->num_greedy);
+    final_size += status->num_greedy*sizeof(uint);
+
+    memcpy(status->extra_power, &final_data[final_size], sizeof(uint)*status->num_greedy);
+    final_size += status->num_greedy*sizeof(uint);
+
+    return status;
+}
+
+char *mem_alloc_char_powercap_status(powercap_status_t *status)
+{
+    int size = sizeof(powercap_status_t) + ((status->num_greedy) * (sizeof(int) + sizeof(uint)*2));
+    char *data = calloc(size, sizeof(char));
+
+    memcpy(data, status, sizeof(powercap_status_t));
+    size = sizeof(powercap_status_t);
+
+    memcpy(&data[size], status->greedy_nodes, sizeof(int) * status->num_greedy);
+    size += sizeof(int) * status->num_greedy;
+    
+    memcpy(&data[size], status->greedy_req, sizeof(uint) * status->num_greedy);
+    size += sizeof(uint) * status->num_greedy;
+
+    memcpy(&data[size], status->extra_power, sizeof(uint) * status->num_greedy);
+    size += sizeof(uint) * status->num_greedy;
+
+
+    return data;
+}
+
+powercap_status_t *memmap_powercap_status(char *final_data, int *size)
+{
+    int final_size;
+    powercap_status_t *status = (powercap_status_t *) final_data;
+
+    final_size = sizeof(powercap_status_t);
+    status->greedy_nodes = (int *)&final_data[final_size];
+    final_size += status->num_greedy*sizeof(int);
+               
+    status->greedy_req = (uint *)&final_data[final_size];
+    final_size += status->num_greedy*sizeof(uint);
+
+    status->extra_power = (uint *)&final_data[final_size];
+    final_size += status->num_greedy*sizeof(uint);
+
+    *size = final_size;
+    return status;
+
+}
+
+request_header_t process_data(request_header_t data_head, char **temp_data_ptr, char **final_data_ptr, int final_size)
+{
+    char *temp_data = *temp_data_ptr;
+    char *final_data = *final_data_ptr;
+    request_header_t head;
+    head.type = data_head.type;
+    switch(data_head.type)
+    {
+        case EAR_TYPE_STATUS:
+            final_data = realloc(final_data, final_size + data_head.size);
+            memcpy(&final_data[final_size], temp_data, data_head.size);
+            head.size = final_size + data_head.size;
+        break;
+        case EAR_TYPE_POWER_STATUS:
+            if (final_data != NULL)
+            {
+                int total_size = 0;
+                powercap_status_t *original_status = memmap_powercap_status(final_data, &final_size);
+                total_size += final_size - sizeof(powercap_status_t);
+                powercap_status_t *new_status = memmap_powercap_status(temp_data, &final_size);
+                total_size += final_size;
+
+                char *final_status = calloc(final_size, sizeof(char));
+                powercap_status_t *status = (powercap_status_t *)final_status;
+
+                status->idle_nodes = original_status->idle_nodes + new_status->idle_nodes;
+                status->released= original_status->released + new_status->released;
+                status->num_greedy = original_status->num_greedy + new_status->num_greedy;
+                status->requested = original_status->requested + new_status->requested;
+                status->current_power = original_status->current_power + new_status->current_power;
+                status->total_powercap = original_status->total_powercap + new_status->total_powercap;
+
+                final_size = sizeof(powercap_status_t);
+                memcpy(&final_status[final_size], original_status->greedy_nodes, sizeof(int)*original_status->num_greedy);
+                final_size += sizeof(int)*original_status->num_greedy;
+                memcpy(&final_status[final_size], new_status->greedy_nodes, sizeof(int)*new_status->num_greedy);
+                final_size += sizeof(int)*new_status->num_greedy;
+
+                memcpy(&final_status[final_size], original_status->greedy_req, sizeof(uint)*original_status->num_greedy);
+                final_size += sizeof(uint)*original_status->num_greedy;
+                memcpy(&final_status[final_size], new_status->greedy_req, sizeof(uint)*new_status->num_greedy);
+                final_size += sizeof(uint)*new_status->num_greedy;
+
+                memcpy(&final_status[final_size], original_status->extra_power, sizeof(uint)*original_status->num_greedy);
+                final_size += sizeof(uint)*original_status->num_greedy;
+                memcpy(&final_status[final_size], new_status->extra_power, sizeof(uint)*new_status->num_greedy);
+                final_size += sizeof(uint)*new_status->num_greedy;
+
+                final_data = realloc(final_data, final_size);
+                memcpy(final_data, final_status, final_size);
+                
+                status = memmap_powercap_status(final_data, &final_size);
+                head.size = final_size;
+                free(final_status);
+
+
+            }
+            else
+            {
+                final_data = realloc(final_data, final_size + data_head.size);
+                memcpy(&final_data[final_size], temp_data, data_head.size);
+                head.size = data_head.size;
+                final_data = (char *)memmap_powercap_status(final_data, &final_size);
+                //setting powercap_status pointers to its right value
+                //check if final_size == head.size??
+
+            }
+        break;
+    }
+
+    *final_data_ptr = final_data;
+
+    return head;
+}
+
 int send_powercap_status(request_t *command, powercap_status_t **status)
 {
     request_header_t head;
@@ -1539,7 +1680,7 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
         return EAR_ERROR;
     }
 
-    return (head.size/sizeof(powercap_status_t));
+    return head.size >= sizeof(powercap_status_t);
 
 }
 
@@ -1665,10 +1806,17 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
         
             if (num_temp_status > 0)
             {
+#if NEW_STATUS
+            request_header_t head;
+            head.type = EAR_TYPE_POWER_STATUS;
+            head = process_data(head, (char **)&temp_status, (char **)&all_status, num_all_status);
+            num_all_status = 1;
+#else
                 all_status = realloc(all_status, sizeof(powercap_status_t)*(num_all_status+num_temp_status));
                 memcpy(&all_status[num_all_status], temp_status, sizeof(powercap_status_t)*num_temp_status);
                 free(temp_status);
                 num_all_status += num_temp_status;
+#endif
             }
             else
             {
