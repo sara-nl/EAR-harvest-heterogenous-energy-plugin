@@ -45,7 +45,7 @@
 #include <daemon/powercap.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#define POWERCAP_MON 1
+#define POWERCAP_MON 0
 
 /* This version is a prototype and should be replaced by an INM plugin+GPU commands for powercap */
 
@@ -53,7 +53,7 @@
 #define INM_ENABLE_XCC_BRIGE "ipmitool raw 0x06 0x32 0 1"
 #define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control enable global" 
 #define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control disable global" 
-#define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id 0 domain platform correction soft power %d  trig_lim 1000 stats 30 enable"
+#define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id 0 domain platform correction hard power %d  trig_lim 1000 stats 30 enable"
 #define INM_DISABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy remove policy_id 0"
 #define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
 
@@ -187,7 +187,22 @@ void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 
 void powercap_end()
 { 
-	set_powercap_value(DOMAIN_NODE,0);
+	char cmd[1024];
+	debug("1-Disable policy");
+  sprintf(cmd,INM_DISABLE_POWERCAP_POLICY_CMD);
+  if (do_cmd(cmd)){
+  if (execute(cmd)!=EAR_SUCCESS){
+    debug("Error executing policy disable");
+  }
+  }
+  debug("2-Disable policy control");
+  sprintf(cmd,INM_DISABLE_POLICY_CONTROL_CMD);
+  if (do_cmd(cmd)){
+  if (execute(cmd)!=EAR_SUCCESS){
+    debug("Error disabling policy control");
+  }
+  }
+
 }
 
 int powercap_init()
@@ -446,11 +461,11 @@ int periodic_metric_info(double cp)
 void print_power_status(powercap_status_t *my_status)
 {
 	int i;
-	fprintf(stderr,"Power_status:Ilde %u released %u requested %u total greedy %u  current power %u total power cap %u\n",
+	debug("Power_status:Ilde %u released %u requested %u total greedy %u  current power %u total power cap %u",
 	my_status->idle_nodes,my_status->released,my_status->requested,my_status->num_greedy,my_status->current_power,
 	my_status->total_powercap);
 	for (i=0;i<my_status->num_greedy;i++){
-		if (my_status->num_greedy) fprintf(stderr,"greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes[i],my_status->greedy_req[i],my_status->extra_power[i]);
+		if (my_status->num_greedy) debug("greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes[i],my_status->greedy_req[i],my_status->extra_power[i]);
 	}
 }
 void get_powercap_status(powercap_status_t *my_status)
@@ -461,11 +476,13 @@ void get_powercap_status(powercap_status_t *my_status)
 	my_status->total_nodes++;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
+						debug("Idle node!, allocated power %u",my_pc_opt.current_pc);
             my_status->idle_nodes++;
             my_pc_opt.released=0;
             my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
             break;
 		case PC_STATUS_GREEDY:
+					debug("greedy node asking for %u watts current pc %u",my_pc_opt.requested,my_pc_opt.last_t1_allocated);
             /* Memory management */
             if (my_status->num_greedy < 1) {
                 my_status->greedy_nodes=NULL;
@@ -484,14 +501,17 @@ void get_powercap_status(powercap_status_t *my_status)
             else my_status->extra_power[my_status->num_greedy - 1] = 0;
 			break;
 		case PC_STATUS_RELEASE:
+			debug("Releasing %u W allocated %u W",my_pc_opt.released,my_pc_opt.current_pc);
             my_status->released+=my_pc_opt.released;
 		    my_pc_opt.powercap_status=PC_STATUS_OK;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
 		case PC_STATUS_ASK_DEF: 
             /* Data management */
-			my_status->requested=my_pc_opt.requested;
+			debug("Asking for defaul power %uW allocated %uW",my_pc_opt.requested,my_pc_opt.last_t1_allocated);
+			my_status->requested+=my_pc_opt.requested;
 			break;
 		case PC_STATUS_ERROR: break;
 		case PC_STATUS_OK:
+			debug("Node OK allocated %u W extra=%uW",my_pc_opt.last_t1_allocated,my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap);
 			if (my_pc_opt.last_t1_allocated>my_pc_opt.def_powercap){
                 if (my_status->num_greedy < 1) {
                     my_status->greedy_nodes=NULL;

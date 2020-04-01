@@ -115,6 +115,7 @@ void allocate_free_power_to_greedy_nodes(cluster_powercap_status_t *cluster_stat
 /* This function is executed when there is not enough power for new running nodes */
 void reduce_allocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint min_reduction)
 {
+	verbose(0,"reduce_allocation not implemented");
 
 }
 
