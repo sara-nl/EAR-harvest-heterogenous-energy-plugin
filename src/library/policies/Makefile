@@ -8,7 +8,9 @@ modl_BINS = \
        min_time_no_models.so \
        min_energy_no_models.so \
        monitoring.so \
-			 min_time_mpi_info.so 
+			 min_time_mpi_info.so \
+			 min_energy_auto.so 
+
 modl_PATH = $(DESTDIR)/lib/plugins/policies
 modl_PERM = 0775
 
