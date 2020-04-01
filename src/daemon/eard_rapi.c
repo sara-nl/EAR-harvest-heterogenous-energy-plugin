@@ -60,7 +60,7 @@ int send_command(request_t *command)
 		if (ret<0){ 
 			error("Error sending command %s\n",strerror(errno));
 		}else{ 
-			debug("Warning sending command:sent %d ret %d \n",sizeof(request_t),ret);
+			debug("Warning sending command:sent %lu ret %d \n",sizeof(request_t),ret);
 		}
 	}
 	ret=read(eards_sfd,&ack,sizeof(ulong));
@@ -70,7 +70,7 @@ int send_command(request_t *command)
 		error("Error receiving ack %s\n",strerror(errno));
 	}
 	else if (ret!=sizeof(ulong)){
-		debug("Error receiving ack: expected %d ret %d\n",sizeof(ulong),ret);
+		debug("Error receiving ack: expected %lu ret %d\n",sizeof(ulong),ret);
 	}
 	return (ret==sizeof(ulong)); // Should we return ack ?
 }
@@ -149,12 +149,12 @@ int send_data(int fd, size_t size, char *data, int type)
     head.size = size;
     head.type = type;
 
-    fprintf(stderr, "sending data of size %u and type %d\n", size, type);
-    fprintf(stderr, "data sizes: %u and %u\n", sizeof(head.size), sizeof(head.type));
+    debug("sending data of size %lu and type %d\n", size, type);
+    debug("data sizes: %lu and %lu\n", sizeof(head.size), sizeof(head.type));
     ret = write(fd, &head, sizeof(request_header_t));
-    fprintf(stderr, "sent head, %d bytes\n", ret);
+    debug("sent head, %d bytes\n", ret);
     ret = write(fd, data, size);
-    fprintf(stderr, "sent data, %d bytes\n", ret);
+    debug("sent data, %d bytes\n", ret);
 
     return EAR_SUCCESS; 
 
@@ -175,7 +175,7 @@ request_header_t recieve_data(int fd, void **data)
     head.size = 0;
 
     ret = read(fd, &head, sizeof(request_header_t));
-    fprintf(stderr, "values read: type %d size %u\n", head.type, head.size);
+    debug("values read: type %d size %u\n", head.type, head.size);
     if (ret < 0) {
         error("Error recieving response data header (%s) \n", strerror(errno));
         head.type = EAR_ERROR;
@@ -218,8 +218,7 @@ request_header_t recieve_data(int fd, void **data)
 		pending-=ret;
 	}
     *data = read_data;
-	debug("Returning from recieve_data with type %d\n", head.type);
-    fprintf(stderr, "returning from recieve_data with type %d and size %d\n", head.size, head.type);
+    debug("returning from recieve_data with type %d and size %u\n", head.type, head.size);
 	return head;
 
 }
@@ -231,7 +230,7 @@ int send_status(request_t *command, status_t **status)
     request_header_t head;
     send_command(command);
     head = recieve_data(eards_sfd, (void**)status);
-    fprintf(stderr, "recieve_data with type %d and size %d\n", head.type, head.size);
+    debug("recieve_data with type %d and size %u\n", head.type, head.size);
     if (head.type != EAR_TYPE_STATUS) {
         error("Invalid type error, got type %d expected %d\n", head.type, EAR_TYPE_STATUS);
         if (head.size > 0 && head.type != EAR_ERROR) free(status);
@@ -448,7 +447,7 @@ int eards_new_job(application_t *new_job)
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
 	copy_application(&command.my_req.new_job,new_job);
-	debug("command %u job_id %d,%d\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
+	debug("command %u job_id %lu,%lu\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_non_block_command(&command);
 }
 
@@ -463,7 +462,7 @@ int eards_end_job(job_id jid,job_id sid)
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
 //	command.my_req.end_job.status=status;
-	debug("command %u job_id %d step_id %d \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+	debug("command %u job_id %lu step_id %lu \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
 	return send_non_block_command(&command);
 }
 
@@ -1533,7 +1532,7 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
     request_header_t head;
     send_command(command);
     head = recieve_data(eards_sfd, (void**)status);
-    fprintf(stderr, "recieve_data with type %d and size %d\n", head.type, head.size);
+    debug("recieve_data with type %d and size %u\n", head.type, head.size);
     if (head.type != EAR_TYPE_POWER_STATUS) {
         error("Invalid type error, got type %d expected %d\n", head.type, EAR_TYPE_STATUS);
         if (head.size > 0 && head.type != EAR_ERROR) free(status);
