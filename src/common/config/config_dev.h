@@ -66,5 +66,5 @@
 #define SHARE_INFO_PER_PROCESS 1
 #define SHARE_INFO_PER_NODE 0
 
-#define POWERCAP 0
+#define POWERCAP 1
 #endif //EAR_CONFIG_DEV_H

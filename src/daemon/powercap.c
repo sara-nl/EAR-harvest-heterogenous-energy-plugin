@@ -50,13 +50,19 @@
 /* This version is a prototype and should be replaced by an INM plugin+GPU commands for powercap */
 
 #define INM_ENABLE_CMD	"ipmitool raw 0x3a 0xc7 0x01"
-#define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 01 00 00" 
-#define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 00 00 00" 
-#define INM_SET_POWERCAP_POLICY_CMD "NO_CMD"
+#define INM_ENABLE_XCC_BRIGE "ipmitool raw 0x06 0x32 0 1"
+#define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control enable global" 
+#define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control disable global" 
+#define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id 0 domain platform correction soft power %d  trig_lim 1000 stats 30 enable"
+#define INM_DISABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy remove policy_id 0"
 #define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
+
+#if 0
+#define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 00 00 00" 
+#define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 01 00 00" 
 #define INM_SET_POWERCAP_VALUE_CMD "ipmitool -v -b 0 -t 0x2c raw 0x2E 0xD0 0x57 0x01 0x00 %#X %#X %#X"
 #define INM_GET_POWERCAP_CMD "NO_CMD"
-#define INM_ENABLE_XCC_BRIGE "ipmitool raw 0x06 0x32 0 1"
+#endif
 
 static node_powercap_opt_t my_pc_opt;
 static int my_ip;
@@ -197,16 +203,7 @@ int powercap_init()
 	if (init_ips_ready>0) my_ip=ips[self_id];
 	else my_ip=0;
 	
-	/* Enable INM commands */
-	debug("Enable INM");
-	sprintf(cmd,INM_ENABLE_CMD);
-	if (do_cmd(cmd)){
-	if (execute(cmd)!=EAR_SUCCESS){ 
-		debug("Error executing INM CMD enable");
-		return EAR_ERROR;
-	}
-	}
-	/* Enable XCC-Bridge comm */
+	/* 1-Enable XCC-Bridge comm */
 	debug("Enable XCC-Bridge");
 	sprintf(cmd,INM_ENABLE_XCC_BRIGE);
 	if (do_cmd(cmd)){
@@ -215,7 +212,16 @@ int powercap_init()
 		return EAR_ERROR;
 	}
 	}
-	/* Enable powercap policy control */
+	/* 2-Enable INM commands */
+	debug("Enable INM");
+	sprintf(cmd,INM_ENABLE_CMD);
+	if (do_cmd(cmd)){
+	if (execute(cmd)!=EAR_SUCCESS){ 
+		debug("Error executing INM CMD enable");
+		return EAR_ERROR;
+	}
+	}
+	/* 3-Enable powercap policy control */
 	sprintf(cmd,INM_ENABLE_POLICY_CONTROL_CMD);
 	debug("Enable INM policy control");
 	if (do_cmd(cmd)){
@@ -223,23 +229,6 @@ int powercap_init()
 		debug("Error executing INM CMD Policy control");
 		return EAR_ERROR;
 	}
-	}
-	/* Set powercap policy control */
-	sprintf(cmd,INM_SET_POWERCAP_POLICY_CMD);
-	debug("Set INM policy");
-	if (do_cmd(cmd)){
-	if (execute(cmd)!=EAR_SUCCESS){
-		debug("Error executing INM CMD Set Policy control");
-		return EAR_ERROR;
-	}
-	}
-	/* Get powercap policy for validation */	
-	sprintf(cmd,INM_GET_POWERCAP_POLICY_CMD);
-	if (do_cmd(cmd)){
-  if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error executing INM CMD Get Policy control");
-    return EAR_ERROR;
-  }
 	}
 	my_pc_opt.powercap_status=PC_STATUS_IDLE;
 	last_status=PC_STATUS_IDLE;
@@ -283,15 +272,13 @@ int set_powercap_value(uint domain,uint limit)
 	char cmd[1024];
 	char c_date[128];
 	state_t ret;
-	uint16_t sized_limit=(uint16_t)limit;
-	char *limitv=(char *)&sized_limit;
 	if (limit==my_pc_opt.current_pc) return EAR_SUCCESS;
 	debug("set_powercap_value domain %u limit %u",domain,limit);
 	get_date_str(c_date,sizeof(c_date));
 	if (fd_powercap_values>=0){ 
 		dprintf(fd_powercap_values,"%s domain %u limit %u \n",c_date,domain,limit);
 	}
-	sprintf(cmd,INM_SET_POWERCAP_VALUE_CMD,domain,(uint8_t)limitv[0],(uint8_t)limitv[1]);
+	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,limit);
 	my_pc_opt.current_pc=limit;
 	fprintf(stderr,"--------------- executing %s\n",cmd);
 	return execute(cmd);
