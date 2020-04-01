@@ -36,7 +36,7 @@
 typedef struct cluster_powercap_status{
   uint idle_nodes;         /* Total number of idle nodes */
   uint released;       /* Accumulated released power in last T1 */
-  uint requested;
+  uint requested;       /* Asking for default power */
   uint num_greedy;             /* Number of greedy nodes */
   int *greedy_nodes;           /* List of greedy nodes */
   uint *greedy_req;

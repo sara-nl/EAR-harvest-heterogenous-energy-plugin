@@ -114,7 +114,7 @@ typedef struct app_info{
 }app_info_t;
 
 typedef struct request_header {
-    char type;
+    int type;
     uint size;
 } request_header_t;
 
@@ -130,20 +130,23 @@ typedef struct status{
     char    ok;
     status_node_info_t  node;
     app_info_t  app;
-		unsigned int num_policies;
+	unsigned int num_policies;
     eard_policy_info_t    policy_conf[TOTAL_POLICIES];
 } status_t;
 
 typedef struct powercap_status{
-	uint idle_nodes; 	       /* Total number of idle nodes */
-	uint released;       /* Accumulated released power in last T1 */
-	uint num_greedy;             /* Number of greedy nodes */
-	int greedy_nodes;           /* List of greedy nodes */
-	uint greedy_req;
-	uint extra_power;
-	uint requested;
-	uint current_power; 	      /* Accumulated power */
-  uint total_powercap;        /* Accumulated current powercap limits */
+	uint idle_nodes; 	        /* Total number of idle nodes */
+	uint released;        /* Accumulated released power in last T1 */
+    uint requested;         //accumulated new_req
+	uint num_greedy;            /* Number of greedy nodes */
+	int *greedy_nodes;           /* List of greedy nodes */
+	uint *greedy_req; //->extra_power
+    uint *extra_power;
+	//uint num_newjob_nodes;      /* Number of nodes asking for powercap_def*/
+	//int *powerdef_nodes;	    /* List of nodes asking for powercap_def */ //esto se va
+	//uint *new_req; //->requested, acumulado no vector
+	uint current_power; 	    /* Accumulated power */
+    uint total_powercap;        /* Accumulated current powercap limits */
 }powercap_status_t;
 
 
@@ -171,6 +174,8 @@ typedef struct powercap_status{
 
 
 
+#define EAR_TYPE_STATUS         2001
+#define EAR_TYPE_POWER_STATUS   2002
 
 
 #define NO_COMMAND 100000
