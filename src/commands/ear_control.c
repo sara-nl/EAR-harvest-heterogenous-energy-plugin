@@ -343,6 +343,7 @@ int main(int argc, char *argv[])
             {"status",       	optional_argument, 0, 's'},
             {"powerstatus",     optional_argument, 0, 'w'},
             {"set-risk",        required_argument, 0, 'r'},
+            {"setopt",        required_argument, 0, 'o'},
             {"error",           no_argument, 0, 'e'},
             {"help",         	no_argument, 0, 'h'},
             {0, 0, 0, 0}
@@ -541,8 +542,8 @@ int main(int argc, char *argv[])
                         int i;
                         for (i = 0; i < num_power_status; i++)
                         {
-                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
-                                        powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].current_power, powerstatus[i].total_powercap);
+                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
+                                        powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, powerstatus[i].current_power, powerstatus[i].total_powercap);
                         }
                     }
 
@@ -557,11 +558,35 @@ int main(int argc, char *argv[])
                         int i;
                         for (i = 0; i < num_power_status; i++)
                         {
-                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
-                                        powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].current_power, powerstatus[i].total_powercap);
+                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\t total_nodes: %d\n", i, powerstatus[i].idle_nodes,
+                                        powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, powerstatus[i].current_power, powerstatus[i].total_powercap, powerstatus[i].total_nodes);
                         }
                     }
                     else printf("powercap_status returnet with invalid (%d) num_powerstatus\n", num_power_status);
+                }
+                break;
+            case 'o':
+                if (optarg)
+                {
+                    powercap_opt_t msg;
+                    memset(&msg, 0, sizeof(powercap_opt_t));
+                    msg.num_greedy = 1;
+                    msg.greedy_nodes[0] = 772087468;
+                    msg.extra_power[0] = 25;
+                    request_t command;
+                    command.req = EAR_RC_SET_POWERCAP_OPT;
+                    command.time_code = time(NULL);
+                    command.my_req.pc_opt = msg;
+                    int rc = eards_remote_connect(optarg, my_cluster_conf.eard.port);
+                    
+                    if (rc < 0) {
+                        printf("Error connecting with node %s\n", optarg);
+                    }else{
+                        printf("Reading power_status from node %s\n", optarg);
+                        send_command(&command);
+                        eards_remote_disconnect();
+                    }
+                   
                 }
                 break;
             case 'e':

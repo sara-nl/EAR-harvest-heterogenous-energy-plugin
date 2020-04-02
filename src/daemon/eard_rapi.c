@@ -1647,8 +1647,7 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 
                 status = memmap_powercap_status(final_data, &final_size);
                 head.size = final_size;
-                free(final_status);
-
+                //free(final_status);
 
             }
             else
