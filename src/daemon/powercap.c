@@ -176,7 +176,7 @@ void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 	my_powercap_opt->powercap_idle=powermon_get_powercap_def()/2;
 	my_powercap_opt->current_pc=powermon_get_powercap_def();
 	my_powercap_opt->last_t1_allocated=powermon_get_powercap_def();
-	my_powercap_opt->released=0;
+	my_powercap_opt->released=my_powercap_opt->last_t1_allocated-my_powercap_opt->powercap_idle;
 	my_powercap_opt->th_inc=10;
 	my_powercap_opt->th_red=50;
 	my_powercap_opt->th_release=25;
@@ -477,8 +477,9 @@ void get_powercap_status(powercap_status_t *my_status)
 	my_status->total_nodes++;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
-						debug("%sIdle%s node!, allocated power %u",COL_BLU,COL_CLR,my_pc_opt.current_pc);
+						debug("%sIdle%s node!, release %u allocated power %u",COL_BLU,COL_CLR,my_pc_opt.released,my_pc_opt.current_pc);
             my_status->idle_nodes++;
+						my_status->released+=my_pc_opt.released;
             my_pc_opt.released=0;
             my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
             break;

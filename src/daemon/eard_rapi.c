@@ -55,22 +55,22 @@ int send_command(request_t *command)
 {
 	ulong ack;
 	int ret;
-	debug("Sending command %u\n",command->req);
+	debug("Sending command %u",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
-			error("Error sending command %s\n",strerror(errno));
+			error("Error sending command %s",strerror(errno));
 		}else{ 
-			debug("Warning sending command:sent %lu ret %d \n",sizeof(request_t),ret);
+			debug("Warning sending command:sent %lu ret %d ",sizeof(request_t),ret);
 		}
 	}
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	//ret=recv(eards_sfd,&ack,sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
-		printf("ERRO: %d\n", errno);
-		error("Error receiving ack %s\n",strerror(errno));
+		printf("ERRO: %d", errno);
+		error("Error receiving ack %s",strerror(errno));
 	}
 	else if (ret!=sizeof(ulong)){
-		debug("Error receiving ack: expected %lu ret %d\n",sizeof(ulong),ret);
+		debug("Error receiving ack: expected %lu ret %d",sizeof(ulong),ret);
 	}
 	return (ret==sizeof(ulong)); // Should we return ack ?
 }
@@ -149,12 +149,12 @@ int send_data(int fd, size_t size, char *data, int type)
     head.size = size;
     head.type = type;
 
-    debug("sending data of size %lu and type %d\n", size, type);
-    debug("data sizes: %lu and %lu\n", sizeof(head.size), sizeof(head.type));
+    debug("sending data of size %lu and type %d", size, type);
+    debug("data sizes: %lu and %lu", sizeof(head.size), sizeof(head.type));
     ret = write(fd, &head, sizeof(request_header_t));
-    debug("sent head, %d bytes\n", ret);
+    debug("sent head, %d bytes", ret);
     ret = write(fd, data, size);
-    debug("sent data, %d bytes\n", ret);
+    debug("sent data, %d bytes", ret);
 
     return EAR_SUCCESS; 
 
@@ -175,16 +175,16 @@ request_header_t recieve_data(int fd, void **data)
     head.size = 0;
 
     ret = read(fd, &head, sizeof(request_header_t));
-    debug("values read: type %d size %u\n", head.type, head.size);
+    debug("values read: type %d size %u", head.type, head.size);
     if (ret < 0) {
-        error("Error recieving response data header (%s) \n", strerror(errno));
+        error("Error recieving response data header (%s) ", strerror(errno));
         head.type = EAR_ERROR;
         head.size = 0;
         return head;
     }
 
     if (head.size < 1 || !is_valid_type(head.type)) {
-        error("Error recieving response data. Invalid data size (%d) or type (%d).\n", head.size, head.type);
+        error("Error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
         head.type = EAR_ERROR;
         head.size = 0;
         return head;
@@ -218,7 +218,7 @@ request_header_t recieve_data(int fd, void **data)
 		pending-=ret;
 	}
     *data = read_data;
-    debug("returning from recieve_data with type %d and size %u\n", head.type, head.size);
+    debug("returning from recieve_data with type %d and size %u", head.type, head.size);
 	return head;
 
 }
@@ -230,9 +230,9 @@ int send_status(request_t *command, status_t **status)
     request_header_t head;
     send_command(command);
     head = recieve_data(eards_sfd, (void**)status);
-    debug("recieve_data with type %d and size %u\n", head.type, head.size);
+    debug("recieve_data with type %d and size %u", head.type, head.size);
     if (head.type != EAR_TYPE_STATUS) {
-        error("Invalid type error, got type %d expected %d\n", head.type, EAR_TYPE_STATUS);
+        error("Invalid type error, got type %d expected %d", head.type, EAR_TYPE_STATUS);
         if (head.size > 0 && head.type != EAR_ERROR) free(status);
         return EAR_ERROR;
     }
@@ -249,27 +249,27 @@ int send_status(request_t *command, status_t **status)
 	int ret;
 	int total, pending;
     status_t *return_status;
-	debug("Sending command %u\n",command->req);
+	debug("Sending command %u",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
-			error("Error sending command (status) %s\n",strerror(errno));
+			error("Error sending command (status) %s",strerror(errno));
 		}else{ 
-			debug("Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
+			debug("Error sending command (status) ret=%d expected=%d",ret,sizeof(request_t));
 		}
 	}
-	debug("Reading ack size \n");
+	debug("Reading ack size ");
 	/* We assume first long will not block */
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	//ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
-		error("Error receiving ack in (status) (%s) \n",strerror(errno));
+		error("Error receiving ack in (status) (%s) ",strerror(errno));
         return EAR_ERROR;
 	}
     if (ack < 1){
         error("Number of status expected is not valid: %lu", ack);
         return EAR_ERROR;
     }
-	debug("Waiting for %d ack bytes\n",ack);
+	debug("Waiting for %d ack bytes",ack);
     return_status = calloc(ack, sizeof(status_t));
 	if (return_status==NULL){
 		error("Not enough memory at send_status");
@@ -298,7 +298,7 @@ int send_status(request_t *command, status_t **status)
 		pending-=ret;
 	}
     *status = return_status;
-	debug("Returning from send_status with %d\n",ack);
+	debug("Returning from send_status with %d",ack);
 	return ack;
 }
 #endif
@@ -325,7 +325,7 @@ int eards_remote_connect(char *nodename,uint port)
     fd_set set;
 
 		if (eards_remote_connected){ 
-			debug("Connection already done!\n");
+			debug("Connection already done!");
 			return eards_sfd;
 		}
    	memset(&hints, 0, sizeof(struct addrinfo));
@@ -337,7 +337,7 @@ int eards_remote_connect(char *nodename,uint port)
 		sprintf(port_number,"%d",port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
-			debug("getaddrinfo fail for %s and %s\n",nodename,port_number);
+			debug("getaddrinfo fail for %s and %s",nodename,port_number);
 			return EAR_ERROR;
     }
 
@@ -377,13 +377,13 @@ int eards_remote_connect(char *nodename,uint port)
                 sysret = getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);
                 if (sysret)
                 {
-                    debug("Error geting sockopt\n");
+                    debug("Error geting sockopt");
                     close(sfd);
                     continue;
                 }
                 else if (optlen != sizeof(int))
                 {
-                    debug("Error with getsockopt\n");
+                    debug("Error with getsockopt");
                     close(sfd);
                     continue;
                 }
@@ -393,11 +393,11 @@ int eards_remote_connect(char *nodename,uint port)
                     close(sfd);
                     continue;
                 }
-                else debug("Connected\n");
+                else debug("Connected");
             }
             else
             {
-                debug("Timeout connecting to %s node\n", nodename);
+                debug("Timeout connecting to %s node", nodename);
                 close(sfd);
                 continue;
             }
@@ -407,7 +407,7 @@ int eards_remote_connect(char *nodename,uint port)
     }
 
    	if (rp == NULL) {               /* No address succeeded */
-		debug("Failing in connecting to remote eards\n");
+		debug("Failing in connecting to remote eards");
 		return EAR_ERROR;
     }
 
@@ -447,7 +447,7 @@ int eards_new_job(application_t *new_job)
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
 	copy_application(&command.my_req.new_job,new_job);
-	debug("command %u job_id %lu,%lu\n",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
+	debug("command %u job_id %lu,%lu",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_non_block_command(&command);
 }
 
@@ -462,7 +462,7 @@ int eards_end_job(job_id jid,job_id sid)
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
 //	command.my_req.end_job.status=status;
-	debug("command %u job_id %lu step_id %lu \n",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
+	debug("command %u job_id %lu step_id %lu ",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
 	return send_non_block_command(&command);
 }
 
@@ -630,7 +630,7 @@ void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
-	debug("Sending old_increase_th_all_nodes \n");
+	debug("Sending old_increase_th_all_nodes ");
 
     for (i=0;i < my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -651,7 +651,7 @@ void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
         	    if (rc<0){
 	    		    debug("Error connecting with node %s", node_name);
             	}else{
-	        		debug("Increasing the PerformanceEfficiencyGain in node %s by %lu\n", node_name,th);
+	        		debug("Increasing the PerformanceEfficiencyGain in node %s by %lu", node_name,th);
 		        	if (!eards_inc_th(th)) debug("Error increasing the th for node %s", node_name);
 			        eards_remote_disconnect();
         		}
@@ -664,7 +664,7 @@ void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 {
 	int i, j, k, rc;
     char node_name[256];
-	debug("Sending old_red_max_freq_all_nodes\n");
+	debug("Sending old_red_max_freq_all_nodes");
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {
@@ -685,7 +685,7 @@ void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
 	    		    debug("Error connecting with node %s", node_name);
             	}else{
     
-                debug("Reducing  the frequency in node %s by %lu\n", node_name,ps);
+                debug("Reducing  the frequency in node %s by %lu", node_name,ps);
 		        	if (!eards_red_max_and_def_freq(ps)) debug("Error reducing the max freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
@@ -698,7 +698,7 @@ void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
     int i, j, k, rc; 
     char node_name[256];
-	debug("Sengind old_ping_all_nodes\n");
+	debug("Sengind old_ping_all_nodes");
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
         {   
@@ -719,7 +719,7 @@ void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
                     error("Error connecting with node %s", node_name);
                 }else{
 
-                    debug("Node %s ping!\n", node_name);
+                    debug("Node %s ping!", node_name);
                     if (!eards_ping()) error("Error doing ping for node %s", node_name);
                     eards_remote_disconnect();
                 }
@@ -827,7 +827,7 @@ request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, requ
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
-            debug("propagate_req:Error connecting to node: %s\n", next_ip);
+            debug("propagate_req:Error connecting to node: %s", next_ip);
             head = correct_data_prop(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
         }
         else
@@ -836,7 +836,7 @@ request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, requ
             head = recieve_data(rc, (void **)&temp_data);
             if ((head.size) < 1 || head.type == EAR_ERROR)
             {
-                debug("propagate_req: Error propagating command to node %s\n", next_ip);
+                debug("propagate_req: Error propagating command to node %s", next_ip);
                 eards_remote_disconnect();
                 head = correct_data_prop(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
             }
@@ -882,7 +882,7 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
     memset(num_status, 0, sizeof(num_status));
     temp_status = calloc(NUM_PROPS, sizeof(status_t*));
 
-	debug("correct_status for ip %d with distance %d\n",ips[target_idx],command->node_dist);
+	debug("correct_status for ip %d with distance %d",ips[target_idx],command->node_dist);
     if (command->node_dist > total_ips)
     {
         final_status = calloc(1, sizeof(status_t));
@@ -909,14 +909,14 @@ int correct_status(int target_idx, int total_ips, int *ips, request_t *command, 
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
-            debug("propagate_req:Error connecting to node: %s\n", next_ip);
+            debug("propagate_req:Error connecting to node: %s", next_ip);
             num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
         }
         else
         {
             if ((num_status[i-1] = send_status(command, &temp_status[i-1])) < 1) 
             {
-                debug("propagate_req: Error propagating command to node %s\n", next_ip);
+                debug("propagate_req: Error propagating command to node %s", next_ip);
                 eards_remote_disconnect();
                 num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
             }
@@ -961,7 +961,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
 {
     status_t *final_status, *status1 = NULL, *status2 = NULL;
     int total_status, num_status1 = 0, num_status2 = 0;
-		debug("correct_status for ip %d with distance %d\n",target_ip,command->node_dist);
+		debug("correct_status for ip %d with distance %d",target_ip,command->node_dist);
     if (command->node_dist < 1) {
         final_status = calloc(1, sizeof(status_t));
         final_status[0].ip = target_ip;
@@ -991,37 +991,37 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        debug("Error connecting to node: %s\n", nextip1);
+        debug("Error connecting to node: %s", nextip1);
         num_status1 = correct_status(ntohl(ip1), command, port, &status1);
     }
     else
     {
-		debug("connection ok, sending status requests %s\n",nextip1);
+		debug("connection ok, sending status requests %s",nextip1);
         if ((num_status1 = send_status(command, &status1)) < 1)
         {
-            debug("Error propagating command to node %s\n", nextip1);
+            debug("Error propagating command to node %s", nextip1);
             eards_remote_disconnect();
             num_status1 = correct_status(ntohl(ip1), command, port, &status1);
         }
         else eards_remote_disconnect();
     }
 
-	debug("Correcting second node\n");
+	debug("Correcting second node");
 
     command->node_dist = actual_dist;
     //connect to second subnode
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        debug("Error connecting to node: %s\n", nextip2);
+        debug("Error connecting to node: %s", nextip2);
         num_status2 = correct_status(ntohl(ip2), command, port, &status2);
     }
     else
     {
-		debug("connection ok, sending status requests %s\n",nextip2);
+		debug("connection ok, sending status requests %s",nextip2);
         if ((num_status2 = send_status(command, &status2)) < 1)
         {
-            debug("Error propagating command to node %s\n", nextip2);
+            debug("Error propagating command to node %s", nextip2);
             eards_remote_disconnect();
             num_status2 = correct_status(ntohl(ip2), command, port, &status2);
         }
@@ -1037,7 +1037,7 @@ int correct_status(uint target_ip, request_t *command, uint port, status_t **sta
     *status = final_status;
     free(status1);
     free(status2);
-		debug("correct_status ends return value=%d\n",total_status + 1);
+		debug("correct_status ends return value=%d",total_status + 1);
     return total_status + 1;
 }
 #endif
@@ -1070,14 +1070,14 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
-            debug("propagate_req:Error connecting to node: %s\n", next_ip);
+            debug("propagate_req:Error connecting to node: %s", next_ip);
             correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
         }
         else
         {
             if (!send_command(command)) 
             {
-                debug("propagate_req: Error propagating command to node %s\n", next_ip);
+                debug("propagate_req: Error propagating command to node %s", next_ip);
                 eards_remote_disconnect();
                 correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
             }
@@ -1110,14 +1110,14 @@ void correct_error(uint target_ip, request_t *command, uint port)
     int rc = eards_remote_connect(nextip1, port);
     if (rc < 0)
     {
-        debug("Error connecting to node: %s\n", nextip1);
+        debug("Error connecting to node: %s", nextip1);
         correct_error(ntohl(ip1), command, port);
     }
     else
     {
         if (!send_command(command))
         {
-            debug("Error propagating command to node %s\n", nextip1);
+            debug("Error propagating command to node %s", nextip1);
             eards_remote_disconnect();
             correct_error(ntohl(ip1), command, port);
         }
@@ -1129,14 +1129,14 @@ void correct_error(uint target_ip, request_t *command, uint port)
     rc = eards_remote_connect(nextip2, port);
     if (rc < 0)
     {
-        debug("Error connecting to node: %s\n", nextip2);
+        debug("Error connecting to node: %s", nextip2);
         correct_error(ntohl(ip2), command, port);
     }
     else
     {
         if (!send_command(command))
         {
-            debug("Error propagating command to node %s\n", nextip2);
+            debug("Error propagating command to node %s", nextip2);
             eards_remote_disconnect();
             correct_error(ntohl(ip2), command, port);
         }
@@ -1167,7 +1167,7 @@ int correct_status_starter(char *host_name, request_t *command, uint port, statu
 
    	s = getaddrinfo(host_name, NULL, &hints, &result);
     if (s != 0) {
-		debug("getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		debug("getaddrinfo fails for host %s (%s)",host_name,strerror(errno));
 		return EAR_ERROR;
     }
 
@@ -1204,7 +1204,7 @@ void correct_error_starter(char *host_name, request_t *command, uint port)
 
    	s = getaddrinfo(host_name, NULL, &hints, &result);
     if (s != 0) {
-		debug("getaddrinfo fails for host %s (%s)\n",host_name,strerror(errno));
+		debug("getaddrinfo fails for host %s (%s)",host_name,strerror(errno));
 		return;
     }
 
@@ -1244,7 +1244,7 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                 correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
             }
             else{
-                debug("Node %s with distance %d contacted!\n", next_ip, command.node_dist);
+                debug("Node %s with distance %d contacted!", next_ip, command.node_dist);
                 if (!send_command(&command)) {
                     debug("Error sending command to node %s, trying to correct it", next_ip);
                     correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
@@ -1266,7 +1266,7 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
     int i, j, k, rc; 
     char node_name[256];
     time_t ctime = time(NULL);
-	debug("send_command_all %d\n",command.req);
+	debug("send_command_all %d",command.req);
     command.time_code = ctime;
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
@@ -1302,7 +1302,7 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                 correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
             }
             else{
-                debug("Node %s with distance %d contacted!\n", node_name, command.node_dist);
+                debug("Node %s with distance %d contacted!", node_name, command.node_dist);
                 if (!send_command(&command)) {
                     debug("Error sending command to node %s, trying to correct it", node_name);
                     correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
@@ -1337,7 +1337,7 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
                 head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
             }
             else{
-                debug("Node %s with distance %d contacted!\n", next_ip, command->node_dist);
+                debug("Node %s with distance %d contacted!", next_ip, command->node_dist);
                 send_command(command);
                 head = recieve_data(rc, (void **)&temp_data);
                 if (head.size < 1 || head.type == EAR_ERROR) {
@@ -1432,7 +1432,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
                 num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
             }
             else{
-                debug("Node %s with distance %d contacted!\n", next_ip, command.node_dist);
+                debug("Node %s with distance %d contacted!", next_ip, command.node_dist);
                 if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
                     debug("Error sending command to node %s, trying to correct it", next_ip);
                     num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
@@ -1449,7 +1449,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
             }
             else
             {
-                debug("Connection to node %s returned 0 status\n", next_ip)
+                debug("Connection to node %s returned 0 status", next_ip)
             }
             
         }
@@ -1673,9 +1673,9 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
     request_header_t head;
     send_command(command);
     head = recieve_data(eards_sfd, (void**)status);
-    debug("recieve_data with type %d and size %u\n", head.type, head.size);
+    debug("recieve_data with type %d and size %u", head.type, head.size);
     if (head.type != EAR_TYPE_POWER_STATUS) {
-        error("Invalid type error, got type %d expected %d\n", head.type, EAR_TYPE_STATUS);
+        error("Invalid type error, got type %d expected %d", head.type, EAR_TYPE_STATUS);
         if (head.size > 0 && head.type != EAR_ERROR) free(status);
         return EAR_ERROR;
     }
@@ -1691,27 +1691,27 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
 	int ret;
 	int total, pending;
     powercap_status_t *return_status;
-	debug("Sending command %u\n",command->req);
+	debug("Sending command %u",command->req);
 	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
 		if (ret<0){ 
-			error("Error sending command (status) %s\n",strerror(errno));
+			error("Error sending command (status) %s",strerror(errno));
 		}else{ 
-			debug("Error sending command (status) ret=%d expected=%d\n",ret,sizeof(request_t));
+			debug("Error sending command (status) ret=%d expected=%d",ret,sizeof(request_t));
 		}
 	}
-	debug("Reading ack size \n");
+	debug("Reading ack size ");
 	/* We assume first long will not block */
 	ret=read(eards_sfd,&ack,sizeof(ulong));
 	//ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
-		error("Error receiving ack in (status) (%s) \n",strerror(errno));
+		error("Error receiving ack in (status) (%s) ",strerror(errno));
         return EAR_ERROR;
 	}
     if (ack < 1){
         error("Number of status expected is not valid: %lu", ack);
         return EAR_ERROR;
     }
-	debug("Waiting for %d ack bytes\n",ack);
+	debug("Waiting for %d ack bytes",ack);
     return_status = calloc(ack, sizeof(powercap_status_t));
 	if (return_status==NULL){
 		error("Not enough memory at send_status");
@@ -1740,7 +1740,7 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
 		pending-=ret;
 	}
     *status = return_status;
-	debug("Returning from send_status with %d\n",ack);
+	debug("Returning from send_status with %d",ack);
 	return ack;
 }
 #endif
@@ -1820,7 +1820,7 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
             }
             else
             {
-                debug("Connection to node %s returned 0 status\n", next_ip)
+                debug("Connection to node %s returned 0 status", next_ip)
             }
             
         }
@@ -1865,7 +1865,7 @@ void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
         	    if (rc<0){
 	    		    debug("Error connecting with node %s", node_name);
             	}else{
-                	debug("Reducing  the default and maximumfrequency in node %s by %lu\n", node_name,ps);
+                	debug("Reducing  the default and maximumfrequency in node %s by %lu", node_name,ps);
 		        	if (!eards_red_max_and_def_freq(ps)) debug("Error reducing the default freq for node %s", node_name);
 			        eards_remote_disconnect();
         		}
@@ -1902,7 +1902,7 @@ void old_reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf
                 if (rc<0){
                     debug("Error connecting with node %s",node_name);
                 }else{
-                	debug("Setting  the frequency in node %s to %lu\n", node_name, freq);
+                	debug("Setting  the frequency in node %s to %lu", node_name, freq);
                 	if (!eards_set_freq(freq)) debug("Error reducing the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
@@ -1937,7 +1937,7 @@ void old_set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
                 if (rc<0){
                     debug("Error connecting with node %s",node_name);
                 }else{
-                	debug("Setting  the frequency in node %s to %lu\n", node_name, freq);
+                	debug("Setting  the frequency in node %s to %lu", node_name, freq);
                 	if (!eards_set_def_freq(freq)) debug("Error setting the freq for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
@@ -1972,7 +1972,7 @@ void old_restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
                 if (rc<0){
                     debug("Error connecting with node %s",node_name);
                 }else{
-                	debug("Restoring the configuartion in node %s\n", node_name);
+                	debug("Restoring the configuartion in node %s", node_name);
                 	if (!eards_restore_conf()) debug("Error restoring the configuration for node %s", node_name);
             	    eards_remote_disconnect();
 		        }
