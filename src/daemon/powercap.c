@@ -36,6 +36,7 @@
 #define _GNU_SOURCE
 #include <pthread.h>
 #include <common/config.h>
+#include <common/colors.h>
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
@@ -288,7 +289,7 @@ int set_powercap_value(uint domain,uint limit)
 	char c_date[128];
 	state_t ret;
 	if (limit==my_pc_opt.current_pc) return EAR_SUCCESS;
-	debug("set_powercap_value domain %u limit %u",domain,limit);
+	debug("%sset_powercap_value domain %u limit %u%s",COL_BLU,domain,limit,COL_CLR);
 	get_date_str(c_date,sizeof(c_date));
 	if (fd_powercap_values>=0){ 
 		dprintf(fd_powercap_values,"%s domain %u limit %u \n",c_date,domain,limit);
@@ -312,7 +313,7 @@ int powercap_idle_to_run()
 	}else extra=0;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
-		debug("Goin from idle to run ");
+		debug("%sGoin from idle to run%s ",COL_GRE,COL_CLR);
 		/* There is enough power for me */
 		if ((my_pc_opt.last_t1_allocated+extra)>=my_pc_opt.def_powercap){	
 			/* if we already had de power, we just set the status as OK */
@@ -360,7 +361,7 @@ int powercap_run_to_idle()
     case PC_STATUS_GREEDY:
     case PC_STATUS_ASK_DEF:
 		case PC_STATUS_RELEASE:
-		debug("Goin from run to idle");
+		debug("%sGoin from run to idle%s",COL_GRE,COL_CLR);
 		uint rel;
 		my_pc_opt.released=my_pc_opt.last_t1_allocated-my_pc_opt.powercap_idle;
 		my_pc_opt.requested=0;
@@ -476,13 +477,13 @@ void get_powercap_status(powercap_status_t *my_status)
 	my_status->total_nodes++;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
-						debug("Idle node!, allocated power %u",my_pc_opt.current_pc);
+						debug("%sIdle%s node!, allocated power %u",COL_BLU,COL_CLR,my_pc_opt.current_pc);
             my_status->idle_nodes++;
             my_pc_opt.released=0;
             my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
             break;
 		case PC_STATUS_GREEDY:
-					debug("greedy node asking for %u watts current pc %u",my_pc_opt.requested,my_pc_opt.last_t1_allocated);
+					debug("%sGreedy%s node asking for %u watts current pc %u",COL_BLU,COL_CLR,my_pc_opt.requested,my_pc_opt.last_t1_allocated);
             /* Memory management */
             if (my_status->num_greedy < 1) {
                 my_status->greedy_nodes=NULL;
@@ -501,17 +502,17 @@ void get_powercap_status(powercap_status_t *my_status)
             else my_status->extra_power[my_status->num_greedy - 1] = 0;
 			break;
 		case PC_STATUS_RELEASE:
-			debug("Releasing %u W allocated %u W",my_pc_opt.released,my_pc_opt.current_pc);
+			debug("%sReleasing%s %u W allocated %u W",COL_BLU,COL_CLR,my_pc_opt.released,my_pc_opt.current_pc);
             my_status->released+=my_pc_opt.released;
 		    my_pc_opt.powercap_status=PC_STATUS_OK;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
 		case PC_STATUS_ASK_DEF: 
             /* Data management */
-			debug("Asking for defaul power %uW allocated %uW",my_pc_opt.requested,my_pc_opt.last_t1_allocated);
+			debug("%sAsking for defaul power%s %uW allocated %uW",COL_BLU,COL_CLR,my_pc_opt.requested,my_pc_opt.last_t1_allocated);
 			my_status->requested+=my_pc_opt.requested;
 			break;
 		case PC_STATUS_ERROR: break;
 		case PC_STATUS_OK:
-			debug("Node OK allocated %u W extra=%uW",my_pc_opt.last_t1_allocated,my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap);
+			debug("%sNode OK%s allocated %u W extra=%uW",COL_BLU,COL_CLR,my_pc_opt.last_t1_allocated,my_pc_opt.last_t1_allocated-my_pc_opt.def_powercap);
 			if (my_pc_opt.last_t1_allocated>my_pc_opt.def_powercap){
                 if (my_status->num_greedy < 1) {
                     my_status->greedy_nodes=NULL;
