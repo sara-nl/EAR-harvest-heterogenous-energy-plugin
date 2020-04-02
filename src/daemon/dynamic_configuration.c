@@ -360,6 +360,8 @@ void dyncon_power_management(int fd, request_t *command)
 	unsigned long limit;
 	status_t status;
 	unsigned long cpower;
+    long int ack;
+	send_answer(fd, &ack);
 	switch (command->req){
     case EAR_RC_RED_POWER:
 			if (command->my_req.pc.type==ABSOLUTE){

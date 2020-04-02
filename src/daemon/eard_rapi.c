@@ -1615,10 +1615,10 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 powercap_status_t *new_status = memmap_powercap_status(temp_data, &final_size);
                 total_size += final_size;
 
-                char *final_status = calloc(final_size, sizeof(char));
+                char *final_status = calloc(total_size, sizeof(char));
                 powercap_status_t *status = (powercap_status_t *)final_status;
 
-								status->total_nodes = original_status->total_nodes + new_status->total_nodes;
+				status->total_nodes = original_status->total_nodes + new_status->total_nodes;
                 status->idle_nodes = original_status->idle_nodes + new_status->idle_nodes;
                 status->released= original_status->released + new_status->released;
                 status->num_greedy = original_status->num_greedy + new_status->num_greedy;
@@ -1668,7 +1668,7 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
     return head;
 }
 
-int send_powercap_status(request_t *command, powercap_status_t **status)
+request_header_t send_powercap_status(request_t *command, powercap_status_t **status)
 {
     request_header_t head;
     send_command(command);
@@ -1677,10 +1677,13 @@ int send_powercap_status(request_t *command, powercap_status_t **status)
     if (head.type != EAR_TYPE_POWER_STATUS) {
         error("Invalid type error, got type %d expected %d", head.type, EAR_TYPE_STATUS);
         if (head.size > 0 && head.type != EAR_ERROR) free(status);
-        return EAR_ERROR;
+        head.size = 0;
+        head.type = EAR_ERROR;
+        return head;
     }
 
-    return head.size >= sizeof(powercap_status_t);
+    //return head.size >= sizeof(powercap_status_t);
+    return head;
 
 }
 
@@ -1755,11 +1758,21 @@ int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t 
     command.node_dist = 0;
     command.req = EAR_RC_GET_POWERCAP_STATUS;
     command.time_code = time(NULL);
+#if NEW_STATUS
+    request_header_t head;
+    head = send_powercap_status(&command, &temp_status);
+    if (head.size < sizeof(powercap_status_t) || head.type != EAR_TYPE_POWER_STATUS) {
+#else
     if ((num_temp_status = send_powercap_status(&command, &temp_status)) < 1) {
+#endif
         debug("Error sending command to node");
     }
     *pc_status = temp_status;
+#if NEW_STATUS
+    return num_temp_status >= sizeof(powercap_status_t);
+#else
     return num_temp_status;
+#endif
 }
 
 /** Asks for powercap_status for all nodes */
@@ -1771,6 +1784,7 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
     struct sockaddr_in temp;
     powercap_status_t *temp_status, *all_status = NULL;
     request_t command;
+    request_header_t head;
     char next_ip[256];
     time_t ctime = time(NULL);
     
@@ -1798,28 +1812,35 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
                 num_temp_status = 0;
             }
             else{
+#if NEW_STATUS
+                head = send_powercap_status(&command, &temp_status);
+                if (head.size < sizeof(powercap_status_t) || head.type != EAR_TYPE_POWER_STATUS) {
+#else
                 if ((num_temp_status = send_powercap_status(&command, &temp_status)) < 1) {
+#endif
                     debug("Error sending command to node %s, trying to correct it", next_ip);
                 }
                 eards_remote_disconnect();
             }
         
+#if NEW_STATUS
+            if (head.size >= sizeof(powercap_status_t) && head.type == EAR_TYPE_POWER_STATUS)
+            {
+                head = process_data(head, (char **)&temp_status, (char **)&all_status, num_all_status);
+                num_all_status = 1;
+            }
+#else
             if (num_temp_status > 0)
             {
-#if NEW_STATUS
-            request_header_t head;
-            head.type = EAR_TYPE_POWER_STATUS;
-            head = process_data(head, (char **)&temp_status, (char **)&all_status, num_all_status);
-            num_all_status = 1;
-#else
                 all_status = realloc(all_status, sizeof(powercap_status_t)*(num_all_status+num_temp_status));
                 memcpy(&all_status[num_all_status], temp_status, sizeof(powercap_status_t)*num_temp_status);
                 free(temp_status);
                 num_all_status += num_temp_status;
-#endif
             }
+#endif
             else
             {
+                num_temp_status = 0;
                 debug("Connection to node %s returned 0 status", next_ip)
             }
             
