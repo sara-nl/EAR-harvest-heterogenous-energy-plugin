@@ -361,7 +361,6 @@ void dyncon_power_management(int fd, request_t *command)
 	status_t status;
 	unsigned long cpower;
     long int ack;
-	send_answer(fd, &ack);
 	switch (command->req){
     case EAR_RC_RED_POWER:
 			if (command->my_req.pc.type==ABSOLUTE){
@@ -555,7 +554,6 @@ void process_remote_requests(int clientfd) {
 		case EAR_RC_INC_POWER:
 		case EAR_RC_SET_POWERCAP_OPT:
 			dyncon_power_management(clientfd, &command);
-			return;
 			break;
 		case EAR_RC_SET_RISK:
 			verbose(1,"set risk command received");
