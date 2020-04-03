@@ -545,6 +545,7 @@ int main(int argc, char *argv[])
                             printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
                                         powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, powerstatus[i].current_power, powerstatus[i].total_powercap);
                         }
+                        free(powerstatus);
                     }
 
                 }
@@ -561,8 +562,9 @@ int main(int argc, char *argv[])
                             printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\t total_nodes: %d\n", i, powerstatus[i].idle_nodes,
                                         powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, powerstatus[i].current_power, powerstatus[i].total_powercap, powerstatus[i].total_nodes);
                         }
+                        free(powerstatus);
                     }
-                    else printf("powercap_status returnet with invalid (%d) num_powerstatus\n", num_power_status);
+                    else printf("powercap_status returned with invalid (%d) num_powerstatus\n", num_power_status);
                 }
                 break;
             case 'o':

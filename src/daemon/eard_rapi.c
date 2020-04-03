@@ -1247,9 +1247,10 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
                 debug("Node %s with distance %d contacted!", next_ip, command.node_dist);
                 if (!send_command(&command)) {
                     debug("Error sending command to node %s, trying to correct it", next_ip);
+                    eards_remote_disconnect();
                     correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
                 }
-                eards_remote_disconnect();
+                else eards_remote_disconnect();
             }
             
         }
@@ -1342,9 +1343,10 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
                 head = recieve_data(rc, (void **)&temp_data);
                 if (head.size < 1 || head.type == EAR_ERROR) {
                     debug("Error sending command to node %s, trying to correct it", next_ip);
+                    eards_remote_disconnect();
                     head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
                 }
-                eards_remote_disconnect();
+                else eards_remote_disconnect();
             }
         
             if (head.size > 0 && head.type != EAR_ERROR)
@@ -1435,9 +1437,9 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
                 debug("Node %s with distance %d contacted!", next_ip, command.node_dist);
                 if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
                     debug("Error sending command to node %s, trying to correct it", next_ip);
+                    eards_remote_disconnect();
                     num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
                 }
-                eards_remote_disconnect();
             }
         
             if (num_temp_status > 0)
@@ -1647,7 +1649,7 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 
                 status = memmap_powercap_status(final_data, &final_size);
                 head.size = final_size;
-                //free(final_status);
+                free(final_status);
 
             }
             else
@@ -1828,6 +1830,7 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
             {
                 head = process_data(head, (char **)&temp_status, (char **)&all_status, num_all_status);
                 num_all_status = 1;
+                free(temp_status);
             }
 #else
             if (num_temp_status > 0)
@@ -1847,6 +1850,13 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
         }
     }
     *pc_status = all_status;
+
+    if (total_ranges > 0) {
+        for (i = 0; i < total_ranges; i++)
+            free(ips[i]);
+        free(ip_counts);
+        free(ips);
+    }
 
     return num_all_status;
 }
