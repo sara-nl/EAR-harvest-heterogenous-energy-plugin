@@ -543,12 +543,11 @@ void get_powercap_status(powercap_status_t *my_status)
 void print_powercap_opt(powercap_opt_t *opt)
 {
 	int i;
-	debug("print_powercap_opt");
-	fprintf(stderr,"num_greedy %u\n",opt->num_greedy);	
+	debug("num_greedy %u",opt->num_greedy);	
 	for (i=0;i<opt->num_greedy;i++){
-		fprintf(stderr,"greedy_node %d extra power %d\n",opt->greedy_nodes[i],opt->extra_power[i]);
+		debug("greedy_node %d extra power %d",opt->greedy_nodes[i],opt->extra_power[i]);
 	}
-	fprintf(stderr,"Max extra power for new jobs %u\n",opt->max_inc_new_jobs);
+	debug("Max extra power for new jobs %u",opt->max_inc_new_jobs);
 }
 
 void set_powercap_opt(powercap_opt_t *opt)

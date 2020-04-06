@@ -37,7 +37,7 @@
 
 /* EARD VERBOSE constants */
 /* Used in eard_rapi.h */
-#define VCONNECT 0
+#define VCONNECT 2
 #define VMSG    3
 /* Used in eard.c */
 #define VCONF   1
