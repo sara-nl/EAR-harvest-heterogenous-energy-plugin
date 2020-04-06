@@ -313,7 +313,7 @@ int powercap_idle_to_run()
 	}else extra=0;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
-		debug("%sGoin from idle to run%s ",COL_GRE,COL_CLR);
+		debug("%sGoin from idle to run:allocated %u automatic_extra=%u %s ",COL_GRE,my_pc_opt.last_t1_allocated,my_pc_opt.max_inc_new_jobs,COL_CLR);
 		/* There is enough power for me */
 		if ((my_pc_opt.last_t1_allocated+extra)>=my_pc_opt.def_powercap){	
 			/* if we already had de power, we just set the status as OK */

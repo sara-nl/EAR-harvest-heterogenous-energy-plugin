@@ -694,7 +694,7 @@ int main(int argc,char *argv[])
 	
     
 	    	if ( db_select_acum_energy_idx(  divisor, use_aggregation,&last_id,&result)<0){
-				error("Asing for last T1 energy period. Using aggregated %d.Last id =%u\n",use_aggregation,last_id);
+				error("Asing for last T1 energy period. Using aggregated %d.Last id =%u",use_aggregation,last_id);
 				}
 				debug("Energy consumed in last T1 %lu",result);
 	    	if (!result){ 
@@ -705,7 +705,7 @@ int main(int argc,char *argv[])
 			}
 			last_avg_power=curr_avg_power;
 			curr_avg_power=(unsigned long)(result/period_t1);
-			verbose(VGM,"Energy consumed in last %u seconds %lu %s. Avg power %lu %s\n",period_t1,result,unit_energy,curr_avg_power,unit_power);
+			verbose(VGM,"Energy consumed in last %u seconds %lu %s. Avg power %lu %s",period_t1,result,unit_energy,curr_avg_power,unit_power);
 			
 	
 			new_energy_sample(result);

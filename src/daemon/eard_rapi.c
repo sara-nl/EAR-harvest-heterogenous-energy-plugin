@@ -1771,7 +1771,7 @@ int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t 
     }
     *pc_status = temp_status;
 #if NEW_STATUS
-    return num_temp_status >= sizeof(powercap_status_t);
+    return head.size >= sizeof(powercap_status_t);
 #else
     return num_temp_status;
 #endif
