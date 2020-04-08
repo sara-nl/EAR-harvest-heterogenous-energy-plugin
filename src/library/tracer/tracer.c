@@ -125,7 +125,8 @@ void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank
 		debug("NULL configuration in traces_init");
 		return;
   }
-	debug("loading %s",traces_plugin);
+	//debug("loading %s",traces_plugin);
+	verbose(1,"loading %s",traces_plugin);
 
   ret = symplug_open(traces_plugin, (void **) &trace_syms_fun, trace_syms_nam, trace_syms_n);
   if (ret!=EAR_SUCCESS){ 

@@ -95,7 +95,7 @@ void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, 
 {
 
 	policy_loop_init(&periodic_loop);
-	traces_new_period(ear_my_rank, my_id, event);
+	if (masters_info.my_master_rank>=0) traces_new_period(ear_my_rank, my_id, event);
 	loop_with_signature = 0;
 	EAR_STATE=FIRST_ITERATION;
 	
@@ -159,7 +159,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	st=policy_new_iteration(&periodic_loop);
 	if (resched_conf->force_rescheduling)
 	{
-		traces_reconfiguration(ear_my_rank, my_id);
+		if (masters_info.my_master_rank>=0) traces_reconfiguration(ear_my_rank, my_id);
 		debug("EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
 					system_conf->max_freq, system_conf->th);
 
@@ -171,7 +171,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	{
 		case FIRST_ITERATION:
 				EAR_STATE = EVALUATING_SIGNATURE;
-				traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
+				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 				metrics_compute_signature_begin();
 				// Loop printing algorithm
 				loop.id.event = event;
@@ -210,13 +210,15 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 						if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
 					/* For no masters, ready will be 0, pending */
+					if (masters_info.my_master_rank>=0){
 					traces_new_signature(ear_my_rank, my_id,&loop_signature.signature);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
+					}
 
 					if (masters_info.my_master_rank>=0){
 						verbose(1,
-									"\n\nEAR(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %lu\n",
+									"\n\nEAR+P(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %lu\n",
 									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
 									policy_freq);
 					}	

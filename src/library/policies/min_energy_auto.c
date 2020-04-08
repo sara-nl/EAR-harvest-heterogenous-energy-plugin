@@ -35,7 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -53,12 +53,14 @@ extern unsigned long ext_def_freq;
 
 static double *ratios_time;
 static double *ratios_energy;
+static int *valid_ratio;
 
 state_t policy_init(polctx_t *c)
 {
 	if (c!=NULL){ 
 		ratios_time=malloc(sizeof(double)*c->num_pstates);
 		ratios_energy=malloc(sizeof(double)*c->num_pstates);
+		valid_ratio=malloc(sizeof(int)*c->num_pstates);
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
@@ -101,6 +103,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	if ((c!=NULL) && (c->app!=NULL)){
 		memset(ratios_time,0,sizeof(double)*c->num_pstates);
 		memset(ratios_energy,0,sizeof(double)*c->num_pstates);
+		memset(valid_ratio,0,sizeof(int)*c->num_pstates);
 
 		fprintf(stderr,"Max_freq set to %lu\n",c->app->max_freq);
     if (c->use_turbo) min_pstate=0;
@@ -196,35 +199,21 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
         debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
 			ratios_energy[i]=((energy_nominal-energy_proj)/energy_nominal)*100.0;
 			ratios_time[i]=((time_proj-time_nominal)/time_nominal)*100.0;
-			#if 0
-			if ((energy_proj < best_solution) && (time_proj < time_max))
+			if (((ratios_energy[i]/ratios_time[i])<1.0) || (time_proj>time_max)){
+				valid_ratio[i]=0;
+			}else valid_ratio[i]=1;
+			if (valid_ratio[i] && (energy_proj < best_solution) && (time_proj < time_max))
 			{
-                    debug("new best solution found\n");
+          debug("new best solution found\n");
 					best_freq = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
 			}
-			#endif
 		}
 	}
 	}else{ 
 		*ready=0;
 		return EAR_ERROR;
 	}
-	best_pstate=min_pstate;
-	double best_ratio=1,curr;
-	for (i = min_pstate+1; i < c->num_pstates;i++){
-		/* If we save energy */
-		curr=ratios_energy[i]/ratios_time[i];
-		debug("pstate %d reports %lf energy saving and %lf time penalty ratio=%lf",i,ratios_energy[i],ratios_time[i],curr);
-		if (ratios_energy[i]>0){
-			if (curr>best_ratio){
-				best_pstate=i;
-				best_ratio=curr;
-			}
-		}	
-	}
-	best_freq = frequency_pstate_to_freq(best_pstate);	
-	debug("Best ratio is pstate %lu f=%lu with ratio %lf",best_pstate,best_freq,best_ratio);
 	*new_freq=best_freq;
 	return EAR_SUCCESS;
 }

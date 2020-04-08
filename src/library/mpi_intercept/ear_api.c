@@ -134,6 +134,7 @@ static void print_local_data()
 	verbose(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
 	verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
 	verbose(1, "VAR path: %s", get_ear_tmp());
+	verbose(1, "EAR privileged user %u",system_conf->user_type==AUTHORIZED);
 	verbose(1, "--------------------------------");
 	}
 }
@@ -281,13 +282,13 @@ void create_shared_regions()
 	if (masters_info.nodes_info==NULL){ 
 		error("Allocating memory for node_info");
 	}else{ 
-		verbose(1,"%d Bytes (%d x %lu)  allocated for masters_info node_info",total_size,total_elements,sizeof(shsignature_t));
+		debug("%d Bytes (%d x %lu)  allocated for masters_info node_info",total_size,total_elements,sizeof(shsignature_t));
 	}
 	masters_info.my_mpi_info=(shsignature_t *)calloc(per_node_elements,sizeof(shsignature_t));
   if (masters_info.my_mpi_info==NULL){
     error("Allocating memory for my_mpi_info");
   }else{
-    verbose(1,"%lu Bytes allocated for masters_info my_mpi_info",per_node_elements*sizeof(shsignature_t));
+    debug("%lu Bytes allocated for masters_info my_mpi_info",per_node_elements*sizeof(shsignature_t));
   }
 
 }
@@ -460,6 +461,8 @@ static void get_app_name(char *my_name)
 /*** We update EARL configuration based on shared memory information **/
 void update_configuration()
 {
+	char *cdynais_window;
+	int dynais_window=system_conf->lib_info.dynais_window;
 	/* print_settings_conf(system_conf);*/
 	set_ear_power_policy(system_conf->policy);
 	set_ear_power_policy_th(system_conf->settings[0]);
@@ -467,7 +470,11 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	/* Included for dynais tunning */
-	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
+	cdynais_window=getenv("SLURM_EAR_DYNAIS_WINDOW_SIZE");
+  if ((cdynais_window!=NULL) && (system_conf->user_type==AUTHORIZED)){
+		dynais_window=atoi(cdynais_window);
+	}
+	set_ear_dynais_window_size(dynais_window);
 	set_ear_learning(system_conf->learning);
 	dynais_timeout=system_conf->lib_info.dynais_timeout;
 	lib_period=system_conf->lib_info.lib_period;
@@ -648,7 +655,7 @@ void ear_init()
   }
 
 	if (masters_info.my_master_rank>=0){
-		print_affinity_mask(&arch_desc.top);
+		//print_affinity_mask(&arch_desc.top);
 		int is_set;
 		if (is_affinity_set(&arch_desc.top,getpid(),&is_set)!=EAR_SUCCESS){
 			error("Checking the affinity mask");
@@ -710,6 +717,7 @@ void ear_init()
 	fflush(stderr);
 
 	// Tracing init
+	if (!my_id){
 	traces_init(system_conf,application.job.app_id,masters_info.my_master_rank, my_id, num_nodes, my_size, ppnode);
 
 	traces_start();
@@ -717,6 +725,7 @@ void ear_init()
 	traces_stop();
 
 	traces_mpi_init();
+	}
 	
 	// All is OK :D
 	if (masters_info.my_master_rank==0) {
@@ -746,10 +755,12 @@ void ear_finalize()
 #endif
 
 	// Tracing
+	if (!my_id){
 	traces_stop();
 	traces_end(ear_my_rank, my_id, 0);
 
 	traces_mpi_end();
+	}
 
 	// Closing and obtaining global metrics
 	debug("metrics dispose");
@@ -817,13 +828,14 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	{
 		unsigned long  ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		//unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
-
+	if (!my_id){
 	    traces_mpi_call(ear_my_rank, my_id,
                         (ulong) PAPI_get_real_usec(),
                         (ulong) ear_event_l,
                         (ulong) buf,
                         (ulong) dest,
                         (ulong) call_type);
+		}
 
 		total_mpi_calls++;
 		/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
@@ -848,7 +860,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
-								traces_start();
+								if (!my_id) traces_start();
 								debug("Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
@@ -943,7 +955,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				}
 
 				loop_with_signature=0;
-				traces_end_period(ear_my_rank, my_id);
+				if (!my_id) traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
@@ -960,7 +972,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 					//		  ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
-				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
+				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_loop_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -970,8 +982,8 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
+				if (!my_id)  traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
-				traces_end_period(ear_my_rank, my_id);
 				ear_iterations=0;
 				in_loop=0;
 				mpi_calls_per_loop=0;
@@ -1005,7 +1017,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
-		traces_mpi_call(ear_my_rank, my_id,
+		if (!my_id) traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) PAPI_get_real_usec(),
 						(unsigned long) buf,
 						(unsigned long) dest,
@@ -1035,7 +1047,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 							  //ear_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
-				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
+				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, (uint)ear_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -1072,7 +1084,7 @@ unsigned long ear_new_loop()
 					debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
-				traces_end_period(ear_my_rank, my_id);
+				if (!my_id) traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
@@ -1099,7 +1111,7 @@ void ear_end_loop(unsigned long loop_id)
 					}
 					loop_with_signature=0;
 					states_end_period(ear_iterations);
-					traces_end_period(ear_my_rank, my_id);
+					if (!my_id) traces_end_period(ear_my_rank, my_id);
 					ear_iterations=0;
 					in_loop=0;
 					mpi_calls_per_loop=0;
@@ -1129,7 +1141,7 @@ void ear_new_iteration(unsigned long loop_id)
 				//debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
   				//1, loop_id,1, ear_iterations);
 				}
-				traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
+				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
 				states_new_iteration(my_id, 1, ear_iterations, 1, loop_id, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -1145,7 +1157,7 @@ void ear_new_iteration(unsigned long loop_id)
 void *earl_periodic_actions(void *no_arg)
 {
 		//if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
-		traces_start();
+		if (!my_id) traces_start();
     states_periodic_begin_period(my_id, NULL, 1, 1);
     ear_iterations=0;
 		mpi_calls_in_period=1;
