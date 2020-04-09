@@ -514,7 +514,7 @@ void ear_init()
 
 	if (ext_def_freq_str!=NULL){
 		ext_def_freq=(unsigned long)atol(ext_def_freq_str);
-		debug("Using externally defined default freq %lu",ext_def_freq);
+		verbose(1,"Using externally defined default freq %lu",ext_def_freq);
 	}
 
 	// Fundamental data
@@ -633,7 +633,11 @@ void ear_init()
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 
 	debug("Metrics init");	
-	metrics_init();
+	if (metrics_init()==EAR_ERROR){
+		eard_ok=0;
+		my_id=1;
+		return;
+	}
 	debug("frequency_init");
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
 

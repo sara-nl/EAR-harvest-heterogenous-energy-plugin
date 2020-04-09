@@ -504,11 +504,13 @@ int metrics_init()
 	num_packs=detect_packages(NULL);
 	if (num_packs==0){
 		verbose(0,"Error detecting number of packges");
+		return EAR_ERROR;
 	}
 
 	st=energy_lib_init(system_conf);
 	if (st!=EAR_SUCCESS){
 		verbose(1,"Error loading energy plugin");
+		return EAR_ERROR;
 	}
 
 

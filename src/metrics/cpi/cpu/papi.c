@@ -42,7 +42,7 @@ static long long values[BASIC_SETS][BASIC_EVS];
 static long long acum_values[BASIC_EVS];
 static int event_sets[BASIC_SETS];
 
-void init_basic_metrics()
+int init_basic_metrics()
 {
 	PAPI_option_t attach_op[BASIC_SETS];
 	int sets, events;
@@ -67,7 +67,7 @@ void init_basic_metrics()
 		{
 			error("Creating %d eventset.Exiting:%s",
 					sets,PAPI_strerror(ret));
-			exit(1);
+			return EAR_ERROR;
 		}
 
 		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid))!=PAPI_OK)
@@ -101,6 +101,7 @@ void init_basic_metrics()
 						"ix86arch::INSTRUCTION_RETIRED", PAPI_strerror(ret));
 		}
 	}
+	return EAR_SUCCESS;
 }
 
 void reset_basic_metrics()
