@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <common/config.h>
+#include <common/states.h>
 #include <common/output/verbose.h>
 #include <metrics/cpi/cpu/papi.h>
 
@@ -73,7 +74,7 @@ int init_basic_metrics()
 		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid))!=PAPI_OK)
 		{
 			error("PAPI_assign_eventset_component.Exiting:%s", PAPI_strerror(ret));
-			exit(1);
+			return EAR_ERROR;
 		}
 
 		attach_op[sets].attach.eventset=event_sets[sets];
