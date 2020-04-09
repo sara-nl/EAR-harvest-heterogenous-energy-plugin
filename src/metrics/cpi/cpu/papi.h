@@ -34,7 +34,7 @@
 
 // BASIC metrics are CYCLES and INSTRUCTIONS
 /** Initializes the event metrics for cycles and instructions. */
-void init_basic_metrics();
+int init_basic_metrics();
 
 /** Resets the event metrics for both cycles and instructions. */
 void reset_basic_metrics();

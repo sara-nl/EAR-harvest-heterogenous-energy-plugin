@@ -409,7 +409,11 @@ void ear_init()
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	
-	metrics_init();
+	if (metrics_init()!=EAR_SUCCESS){
+		    my_id=1;
+				verbose(0,"Error in EAR metrics initialization, setting EARL off");
+				return;
+	}
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
 
 	if (ear_my_rank == 0)
@@ -427,6 +431,9 @@ void ear_init()
 	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
     error("Retrieving architecture description");
 		/* How to proceeed here ? */
+		my_id=1;
+		verbose(0,"Error in EAR metrics initialization, setting EARL off");
+		return;
   }
 
 	#if SHOW_DEBUGS
