@@ -75,6 +75,10 @@ DefaultPowerPolicy=min_time
 Policy=monitoring Settings=0 DefaultFreq=2.3 Privileged=0
 Policy=min_time Settings=0.7 DefaultFreq=2.0 Privileged=0
 Policy=min_energy Settings=0.1 DefaultFreq=2.3 Privileged=1
+#Policy=monitoring Settings=0 DefaultPstate=1 Privileged=0
+#Policy=min_time Settings=0.7 DefaultPstate=4 Privileged=0
+#Policy=min_energy Settings=0.1 DefaultPstate=1 Privileged=1
+
 
 #---------------------------------------------------------------------------------------------------
 # EAR Global Manager (EARGMD)
