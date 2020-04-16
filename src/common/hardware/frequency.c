@@ -327,7 +327,7 @@ ulong *frequency_get_freq_rank_list()
 ulong frequency_pstate_to_freq(uint pstate)
 {
 	if (pstate >= num_freqs) {
-		error("higher P_STATE (%u) than the maximum (%lu), returning nominal", pstate, num_freqs);
+		debug("higher P_STATE (%u) than the maximum (%lu), returning nominal", pstate, num_freqs);
 		return freq_list_rank[1];
 	}
 	return freq_list_rank[pstate];
@@ -396,7 +396,7 @@ uint close_ps_to_freq(ulong freq,uint *ps)
 			}
   	}
 	}else{
-		error("Frequency %lu out of range for this architecture",freq);
+		debug("Frequency %lu out of range for this architecture",freq);
 		*ps=1;
 		return EAR_ERROR;
 	}
@@ -422,7 +422,7 @@ uint frequency_closest_pstate(ulong freq)
 	if (freq_to_ps(freq,&ps)==EAR_SUCCESS){
 		return ps;
 	}else{
-			error("Invalid frequency %lu, looking for closest frequency",freq);
+			debug("Invalid frequency %lu, looking for closest frequency",freq);
 			close_ps_to_freq(freq,&ps);
 			return ps;
 	}

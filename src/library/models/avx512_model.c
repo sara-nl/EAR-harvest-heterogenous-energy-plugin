@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 #include <common/hardware/frequency.h>
@@ -46,11 +47,6 @@ static uint basic_model_init=0;
 static architecture_t arch;
 static int avx512_pstate=1,avx2_pstate=1;
 
-#ifdef SHOW_DEBUGS
-#define debug(...) fprintf(stderr, __VA_ARGS__); 
-#else
-#define debug(...) 
-#endif
 
 static int valid_range(ulong from,ulong to)
 {
@@ -71,8 +67,10 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 	num_pstates=myarch->pstates;
 	copy_arch_desc(&arch,myarch);
 	print_arch_desc(&arch);
+	VERB_SET_EN(0);
 	avx512_pstate=frequency_closest_pstate(arch.max_freq_avx512);
 	avx2_pstate=frequency_closest_pstate(arch.max_freq_avx2);
+	VERB_SET_EN(1);
 	debug("Pstate for maximum freq avx512 %d Pstate for maximum freq avx2 %d",avx512_pstate,avx2_pstate);
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
