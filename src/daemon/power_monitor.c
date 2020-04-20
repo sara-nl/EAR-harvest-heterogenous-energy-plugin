@@ -1114,6 +1114,9 @@ void powermon_init_nm() {
 	if (init_node_metrics_data(&my_nm_id, &nm_diff) != EAR_SUCCESS) {
 		error("init_node_metrics_data diff");
 	}
+	if (init_node_metrics_data(&my_nm_id, &last_nm) != EAR_SUCCESS) {
+		error("init_node_metrics_data diff");
+	}
 }
 
 /*
