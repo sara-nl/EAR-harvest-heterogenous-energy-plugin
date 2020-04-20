@@ -981,7 +981,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	if (RAPL == 0) {
 		log_report_eard_rt_error(usedb,useeardbd,jid,sid,RAPL_ERROR,RAPL);
 	}
-	if ((current_sample.avg_f==0) || (current_sample.avg_f>frequency_get_nominal_freq())){
+	if ((current_sample.avg_f==0) || ((current_sample.avg_f>frequency_get_nominal_freq()) && (mpi))){
 		log_report_eard_rt_error(usedb,useeardbd,jid,sid,FREQ_ERROR,current_sample.avg_f);
 	}
 #endif
