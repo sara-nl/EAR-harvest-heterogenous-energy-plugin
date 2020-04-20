@@ -997,7 +997,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	if (RAPL == 0) {
 		log_report_eard_rt_error(usedb,useeardbd,jid,sid,RAPL_ERROR,RAPL);
 	}
-	if ((current_sample.avg_f==0) || (current_sample.avg_f>frequency_get_nominal_freq())){
+	if ((current_sample.avg_f==0) || ((current_sample.avg_f>frequency_get_nominal_freq()) && (mpi))){
 		log_report_eard_rt_error(usedb,useeardbd,jid,sid,FREQ_ERROR,current_sample.avg_f);
 	}
 #endif
@@ -1128,6 +1128,9 @@ void powermon_init_nm() {
 		error("init_node_metrics_data end");
 	}
 	if (init_node_metrics_data(&my_nm_id, &nm_diff) != EAR_SUCCESS) {
+		error("init_node_metrics_data diff");
+	}
+	if (init_node_metrics_data(&my_nm_id, &last_nm) != EAR_SUCCESS) {
 		error("init_node_metrics_data diff");
 	}
 }
