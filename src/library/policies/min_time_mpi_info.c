@@ -34,6 +34,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/hardware/frequency.h>
@@ -190,6 +191,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		i=best_pstate-1;
 		time_current=time_ref;
 
+		debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
 
 		while(try_next && (i >= min_pstate))
 		{

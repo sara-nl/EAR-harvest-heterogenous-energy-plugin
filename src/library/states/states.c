@@ -120,7 +120,7 @@ extern uint check_periodic_mode;
 #define VERBOSE_SIG() \
 			if (masters_info.my_master_rank>=0){\
       	verbose(1,"EAR+D(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
-      	verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ EDP=%.2lf):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, EDP,policy_freq);\
+      	verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ TPI=%.2lf):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, TPI,policy_freq);\
 			}
 
 
