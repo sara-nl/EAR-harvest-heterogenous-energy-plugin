@@ -48,7 +48,8 @@
 #define VAR_OPT_THRC "EAR_MIN_PERFORMANCE_EFFICIENCY_GAIN"
 
 //
-#define REL_PATH_LIBR "lib/libear"
+#define REL_PATH_LIBR "lib"
+#define REL_NAME_LIBR "libear"
 #define REL_PATH_LOAD "lib/libloader.so"
 
 //

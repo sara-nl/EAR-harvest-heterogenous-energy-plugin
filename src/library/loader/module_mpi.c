@@ -91,9 +91,9 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 
 	//
 	if (!hack) {
-		sprintf(path_so, "%s/%s%s", path, REL_PATH_LIBR, extension);
+		sprintf(path_so, "%s/%s/%s.%s", path, REL_PATH_LIBR, REL_NAME_LIBR, extension);
 	} else {
-		sprintf(path_so, "%s", hack);
+		sprintf(path_so, "%s/%s.%s", hack, REL_NAME_LIBR, extension);
 	}
 	
 	if (!file_is_regular(path_so)) {
