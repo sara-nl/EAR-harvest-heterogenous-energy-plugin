@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/system/file.h>
+#include <common/system/time.h>
 #include <common/output/verbose.h>
 #include <library/tracer/tracer_dynais.h>
 
@@ -65,7 +66,7 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 	enabled = (fd >= 0);
 }
 
-void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3)
+void traces_mpi_call(int global_rank, int local_rank, ulong ev, ulong a1, ulong a2, ulong a3)
 {
 	unsigned long *b;
 	ssize_t w;
@@ -76,7 +77,7 @@ void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulon
 
 	b = (unsigned long *) buffer;
 	b[0] = ev;
-	b[1] = time;
+	b[1] = (ulong) timestamp_getconvert(TIME_USECS);
 
 	write(fd, b, 16);
 }

@@ -592,13 +592,14 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	{
 		unsigned long  ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		//unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
-
+	
+#if 1
 	    traces_mpi_call(ear_my_rank, my_id,
-                        (ulong) PAPI_get_real_usec(),
                         (ulong) ear_event_l,
                         (ulong) buf,
                         (ulong) dest,
                         (ulong) call_type);
+#endif
 
 		total_mpi_calls++;
 		/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
@@ -685,13 +686,13 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
-		/*traces_mpi_call(ear_my_rank, my_id,
-						(ulong) PAPI_get_real_usec(),
+#if 0
+		traces_mpi_call(ear_my_rank, my_id,
 						(ulong) ear_event_l,
 						(ulong) buf,
 						(ulong) dest,
-						(ulong) call_type);*/
-
+						(ulong) call_type);
+#endif
 		mpi_calls_per_loop++;
 		// This is key to detect periods
 		ear_status = dynais(ear_event_s, &ear_size, &ear_level);
@@ -779,7 +780,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
-						(unsigned long) PAPI_get_real_usec(),
 						(unsigned long) buf,
 						(unsigned long) dest,
 						(unsigned long) call_type,

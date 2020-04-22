@@ -76,8 +76,9 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 	return stamp;
 }
 
-ullong timestamp_getfast_convert(timestamp_t *ts, ullong time_unit)
+ullong timestamp_getconvert(ullong time_unit)
 {
-	timestamp_getfast(ts);
-	return timestamp_convert(ts, time_unit);
+	timestamp_t ts;
+	timestamp_getfast(&ts);
+	return timestamp_convert(&ts, time_unit);
 }
