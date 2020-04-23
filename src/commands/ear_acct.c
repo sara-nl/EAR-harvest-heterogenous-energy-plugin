@@ -314,7 +314,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
         if (avx)
         {
             strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s %-14s %-10s\n");
-            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-10.2lf\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.5lf %-14.2lf %-10.2lf\n");
             strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-14s %-10.2lf\n");
             strcpy(sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-10.2lf\n");
             strcpy(mpi_sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-14s %-10.2lf\n");
@@ -322,7 +322,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
         else
         {
             strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s %-10s\n");
-            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-10.2lf\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.5lf %-10.2lf\n");
             strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-10.2lf\n");
             strcpy(sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-10.2lf\n");
             strcpy(mpi_sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-10.2lf\n");
