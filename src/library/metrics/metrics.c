@@ -53,6 +53,7 @@
 #include <daemon/eard_api.h>
 #include <common/system/time.h>
 extern masters_info_t masters_info;
+extern int dispose;
 //#define TEST_MB 0
 
 /*
@@ -291,6 +292,7 @@ static int metrics_partial_stop(uint where)
 		energy_lib_to_str(stop_energy_str,aux_energy_stop);	
 		if ((where==SIG_END) && (c_energy==0) && (masters_info.my_master_rank>=0)){ 
 			debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
+			if (dispose) fprintf(stderr,"partial stop and EAR_NOT_READY\n");
 			return EAR_NOT_READY;
 		}
 	}
@@ -300,6 +302,13 @@ static int metrics_partial_stop(uint where)
 	/* energy is computed in node_energy_units and time in usecs */
 	//debug("Energy computed %lu, time %lld",c_energy,c_time);
 	c_power=(float)(c_energy*(1000000.0/(double)node_energy_units))/(float)c_time;
+
+	if (masters_info.my_master_rank>=0){
+	if (dispose && ((c_power<0) || (c_power>system_conf->max_sig_power))){
+		fprintf(stderr,"dispose and c_power %lf\n",c_power);	
+		fprintf(stderr,"power %f energy %lu time %llu\n",c_power,c_energy,c_time);
+	}
+	}
 
 	/* If we are not the node master, we will continue */
 	if ((where==SIG_END) && (c_power<system_conf->min_sig_power) && (masters_info.my_master_rank>=0)){ 

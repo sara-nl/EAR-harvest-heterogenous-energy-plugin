@@ -509,7 +509,6 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period++;
 				return;
 			}
-      verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
       signature_ready(&sig_shared_region[my_node_id],SIGNATURE_STABLE);
 
 			/*print_loop_signature("signature refreshed", &loop_signature.signature);*/

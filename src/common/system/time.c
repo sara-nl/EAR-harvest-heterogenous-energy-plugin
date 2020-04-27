@@ -81,8 +81,9 @@ void print_timestamp(timestamp *ts)
 	fprintf(stdout,"Secs %llu nsec %llu\n",ts->tv_sec,ts->tv_nsec);
 }
 
-ullong timestamp_getfast_convert(timestamp_t *ts, ullong time_unit)
+ullong timestamp_getconvert(ullong time_unit)
 {
-	timestamp_getfast(ts);
-	return timestamp_convert(ts, time_unit);
+	timestamp_t ts;
+	timestamp_getfast(&ts);
+	return timestamp_convert(&ts, time_unit);
 }

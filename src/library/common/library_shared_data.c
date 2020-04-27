@@ -196,19 +196,26 @@ int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *nod
 {
 	int i,j;
 	int rank;
-	double minp=100.0;
+	double minp=100.0,maxp=0.0;
+	unsigned int total_mpi=0;
+	unsigned long long total_mpi_time=0, total_exec_time=0;
 	/* Node loop */
 	for (i=0;i<size;i++){
 		/* Inside node */
 		for (j=0;j<ppn[i];j++){
+			total_mpi+=my_sh_sig[i*max+j].mpi_info.total_mpi_calls;
+			total_mpi_time+=my_sh_sig[i*max+j].mpi_info.mpi_time;
+			total_exec_time+=my_sh_sig[i*max+j].mpi_info.exec_time;
 			if (minp>my_sh_sig[i*max+j].mpi_info.perc_mpi){
 				rank=my_sh_sig[i*max+j].mpi_info.rank;
 				minp=my_sh_sig[i*max+j].mpi_info.perc_mpi;
 				*node_cp=i;
 			}
+			if (maxp<my_sh_sig[i*max+j].mpi_info.perc_mpi) maxp=my_sh_sig[i*max+j].mpi_info.perc_mpi;
 		}
 	}
 	*rank_cp=rank;
+	fprintf(stderr,"The (MIN MPI %lf, MAX MPI %lf) (MPI_CALLS %u MPI_TIME %llu USER_TIME=%llu)\n",minp*100.0,maxp*100.0,total_mpi,total_mpi_time/1000000000,total_exec_time/1000000000);
 	return rank;
 }
 

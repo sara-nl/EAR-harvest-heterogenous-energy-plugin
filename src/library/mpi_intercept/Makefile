@@ -22,7 +22,7 @@ allt: DEFINES=-DEAR_GUI
 allt: $(OBJS)
 
 %.o: %.c %.h
-	$(MPICC) -Wall $(CC_FLAGS) $(CFLAGS) -c $<
+	$(MPICC) $(MPICC_FLAGS) -Wall $(CC_FLAGS) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 

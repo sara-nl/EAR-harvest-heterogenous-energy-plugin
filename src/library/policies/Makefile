@@ -10,7 +10,9 @@ modl_BINS = \
        min_energy_no_models.so \
        monitoring.so \
 			 min_time_mpi_info.so \
-			 min_energy_auto.so 
+			 min_energy_auto.so \
+			 monitoring_ext.so \
+			 monitoring_ext_notime.so
 
 modl_PATH = $(DESTDIR)/lib/plugins/policies
 modl_PERM = 0775
@@ -50,6 +52,11 @@ monitoring_eard.so:monitoring_eard.o $(SRCDIR)/common/libcommon.a
 
 
 min_time_mpi_info.so: min_time_mpi_info.o $(SRCDIR)/common/system/time.o
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
+
+monitoring_ext.so:monitoring_ext.o $(SRCDIR)/common/system/time.o	
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
+monitoring_ext_notime.so:monitoring_ext_notime.o $(SRCDIR)/common/system/time.o	
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
 
 ######## OPTIONS 

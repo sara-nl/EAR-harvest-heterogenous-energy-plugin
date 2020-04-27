@@ -76,6 +76,7 @@
 #define USE_LOCK_FILES 		1
 pthread_t earl_periodic_th;
 unsigned long ext_def_freq=0;
+int dispose=0;
 
 #if USE_LOCK_FILES
 #include <common/system/file.h>
@@ -769,6 +770,7 @@ void ear_finalize()
 
 	// Closing and obtaining global metrics
 	debug("metrics dispose");
+	dispose=1;
 	metrics_dispose(&application.signature, get_total_resources());
 	dynais_dispose();
 	if (!my_id) frequency_dispose();
@@ -835,7 +837,6 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 		//unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
 	if (!my_id){
 	    traces_mpi_call(ear_my_rank, my_id,
-                        (ulong) PAPI_get_real_usec(),
                         (ulong) ear_event_l,
                         (ulong) buf,
                         (ulong) dest,
@@ -928,13 +929,13 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
-		/*traces_mpi_call(ear_my_rank, my_id,
-						(ulong) PAPI_get_real_usec(),
+#if 0
+		traces_mpi_call(ear_my_rank, my_id,
 						(ulong) ear_event_l,
 						(ulong) buf,
 						(ulong) dest,
-						(ulong) call_type);*/
-
+						(ulong) call_type);
+#endif
 		mpi_calls_per_loop++;
 		// This is key to detect periods
 		ear_status = dynais(ear_event_s, &ear_size, &ear_level);
@@ -1023,7 +1024,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
 		if (!my_id) traces_mpi_call(ear_my_rank, my_id,
-						(unsigned long) PAPI_get_real_usec(),
 						(unsigned long) buf,
 						(unsigned long) dest,
 						(unsigned long) call_type,
