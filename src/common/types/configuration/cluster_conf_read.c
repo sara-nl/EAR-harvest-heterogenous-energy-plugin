@@ -277,7 +277,7 @@ void parse_island(cluster_conf_t *conf, char *line)
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_error_power=(double)atoi(token);
         }
-        else if (!strcmp(token, "ERROR_TEMP")){
+        else if (!strcmp(token, "MAX_TEMP")){
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_temp=(double)atoi(token);
         }

@@ -20,7 +20,7 @@ reportSIGDetail=1
 # In seconds
 NodeDaemonPowermonFreq=60
 NodeDaemonPort=5000
-NodeForceFrequencies=1
+NodeDaemonForceFrequencies=1
 #---------------------------------------------------------------------------------------------------
 # EAR Database Manager (EARDBD)
 #---------------------------------------------------------------------------------------------------

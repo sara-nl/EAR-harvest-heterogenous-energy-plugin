@@ -28,7 +28,7 @@ NodeDaemonMaxPstate=1
 NodeDaemonTurbo=0
 NodeUseDB=1
 NodeUseEARDBD=1
-NodeForceFrequencies=1
+NodeDaemonForceFrequencies=1
 # Verbosity
 NodeDaemonVerbose=1
 # When set to 1, the output is saved in 'TmpDir'/eard.log (common configuration) as a log file.
