@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
             {"inc-th",       	required_argument, 0, 3},
             {"set-def-freq", 	required_argument, 0, 4},
             {"set-th",          required_argument, 0, 5},
-            {"restore-conf", 	no_argument, 0, 6},
+            {"restore-conf", 	optional_argument, 0, 6},
 	        {"ping", 	     	optional_argument, 0, 'p'},
             {"status",       	optional_argument, 0, 's'},
             {"error",           no_argument, 0, 'e'},
@@ -422,7 +422,29 @@ int main(int argc, char *argv[])
                 set_th_all_nodes(arg, arg2, my_cluster_conf);
                 break;
             case 6:
-                restore_conf_all_nodes(my_cluster_conf);
+                if (optarg)
+                {
+                    char node_name[256];
+                    strcpy(node_name, optarg);
+                    strtoup(node_name);
+                    if (strcmp(node_name, optarg))
+                    {
+                        strcpy(node_name, optarg);
+                        strcat(node_name, my_cluster_conf.net_ext);
+                    }
+                    else strcpy(node_name, optarg);
+                    int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
+                    if (rc<0){
+                        printf("Error connecting with node %s\n", node_name);
+                    }else{
+                        if (!eards_restore_conf()) printf("Eroor restoring configuration for node: %s\n", node_name);
+                        eards_remote_disconnect();
+                    }
+                }
+                else
+                {
+                    restore_conf_all_nodes(my_cluster_conf);
+                }
                 break;
             case 'p':
                 if (optarg)

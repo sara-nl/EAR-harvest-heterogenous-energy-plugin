@@ -265,7 +265,12 @@ static int metrics_partial_stop(uint where)
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
 	aux_time=aux_time_stop;
 
-	acum_ipmi[LOO] = c_energy;
+	if (c_power<(system_conf->max_sig_power*1.5)){
+		acum_ipmi[LOO] = c_energy;
+	}else{
+		verbose(1,"Computed power was not correct (%lf) reducing it to %lf\n",c_power,system_conf->min_sig_power);
+		acum_ipmi[LOO] = system_conf->min_sig_power*c_time;
+	}
 	acum_ipmi[APP] += acum_ipmi[LOO];
 	ulong *ei,*ee;
 	ei=(ulong *)metrics_ipmi[LOO];
@@ -331,8 +336,10 @@ static void metrics_reset()
 ull metrics_vec_inst(signature_t *metrics)
 {
 	ull VI=0;
+	if (papi_flops_supported){
     if (metrics->FLOPS[3]>0) VI = metrics->FLOPS[3] / metrics_flops_weights[3];
     if (metrics->FLOPS[7]>0) VI = VI + (metrics->FLOPS[7] / metrics_flops_weights[7]);
+	}
 	return VI;
 }
 
@@ -359,9 +366,9 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	#endif
 
 	// FLOPS
+	metrics->Gflops = 0.0;
 	if (papi_flops_supported)
 	{
-		metrics->Gflops = 0.0;
 
 		for (i = 0; i < flops_elements; i++) {
 			metrics->FLOPS[i] = metrics_flops[s][i] * metrics_flops_weights[i];
@@ -435,22 +442,24 @@ int metrics_init()
 	num_packs=detect_packages(NULL);
 	if (num_packs==0){
 		verbose(0,"Error detecting number of packges");
+		return EAR_ERROR;
 	}
 
 	st=energy_lib_init(system_conf);
 	if (st!=EAR_SUCCESS){
 		verbose(1,"Error loading energy plugin");
+		return EAR_ERROR;
 	}
 	debug("energy_init loaded");
 
 	// Local metrics initialization
-	init_basic_metrics();
+	if (init_basic_metrics()!=EAR_SUCCESS) return EAR_ERROR;
 	#if CACHE_METRICS
 	init_cache_metrics();
 	#endif
 	papi_flops_supported = init_flops_metrics();
 
-	if (papi_flops_supported)
+	if (papi_flops_supported==1)
 	{
 		// Fops size and elements
 		flops_elements = get_number_fops_events();
@@ -464,7 +473,7 @@ int metrics_init()
 		if (metrics_flops[LOO] == NULL || metrics_flops[APP] == NULL)
 		{
 			error("error allocating memory, exiting");
-			exit(1);
+			return EAR_ERROR;
 		}
 
 		get_weigth_fops_instructions(metrics_flops_weights);
@@ -513,7 +522,7 @@ int metrics_init()
 			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
 	{
 			verbose(0, "error allocating memory in metrics, exiting");
-			exit(1);
+			return EAR_ERROR;
 	}
 	memset(metrics_bandwith[LOO], 0, bandwith_size);
 	memset(metrics_bandwith[APP], 0, bandwith_size);

@@ -67,7 +67,7 @@ typedef struct plug_job
 {
 	application_t app;
 	plug_user_t user;
-	uint n_nodes;
+	uint node_n;
 } plug_job_t;
 
 /*
@@ -83,6 +83,7 @@ typedef struct plug_eard {
 	settings_conf_t setts;
 	services_conf_t servs;
 	plug_freqs_t freqs;
+	uint connected;
 	uint port;
 } plug_eard_t;
 
@@ -92,6 +93,7 @@ typedef struct plug_eargmd {
 	uint secured;
 	uint enabled;
 	uint port;
+	uint min;
 } plug_eargmd_t;
 
 typedef struct plug_package {
@@ -109,6 +111,7 @@ typedef struct plug_subject
 	char host[SZ_NAME_MEDIUM];
 	int context_local;
 	int exit_status;
+	int is_master;
 } plug_subject_t;
 
 typedef struct plug_serialization

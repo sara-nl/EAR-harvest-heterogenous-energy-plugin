@@ -1057,8 +1057,14 @@ int db_select_acum_energy(int start_time, int end_time, ulong divisor, char is_a
 #if DB_MYSQL
 int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uint *last_index, ulong *energy, long num_nodes, char **nodes)
 {
-    char query[1024];
-    int i;
+    char *query;
+    int i, total_length=0;
+
+    for (i = 0; i < num_nodes; i++)
+        total_length += (strlen(nodes[i]) + 8); //8 comes from (''), and spaces in the query for each node
+
+    query = calloc(total_length, sizeof(char));
+
     *energy = 0;
 	MYSQL *connection = mysql_create_connection();
 
@@ -1122,11 +1128,13 @@ int db_select_acum_energy_nodes(int start_time, int end_time, ulong divisor, uin
     int status = mysql_stmt_fetch(statement);
     if (status != 0 && status != MYSQL_DATA_TRUNCATED)
     {
+        free(query);
         return stmt_error(connection, statement);
     }
 
     mysql_stmt_close(statement);
     mysql_close(connection);
+    free(query);
 
     return EAR_SUCCESS;
 

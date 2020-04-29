@@ -8,9 +8,9 @@
 # Var definitions
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
-%define name    ear-lennox-mysql-intel
-%define release   1
-%define version   3.1
+%define name    ear-lennox-mysql-intel-withgpus
+%define release   3
+%define version   3.2
 
 # Information
 # Prefix  Just for when missing any prefix
@@ -64,6 +64,7 @@ cp	-rp ${EAR_INSTALL_PATH}/lib/libear.* %{buildroot}/usr/lib/
 cp    -rp ${EAR_INSTALL_PATH}/lib/libear_api.a %{buildroot}/usr/lib/libear_api.a
 cp    -rp ${EAR_INSTALL_PATH}/lib/plugins/* %{buildroot}/usr/lib/plugins/
 cp	-rp ${EAR_INSTALL_PATH}/lib/earplug.so %{buildroot}/usr/lib/
+cp	-rp ${EAR_INSTALL_PATH}/lib/erun %{buildroot}/usr/bin/
 cp  -p  ${EAR_SOURCE_PATH}/etc/systemd/eargmd.service.in %{buildroot}/etc/systemd/system
 cp  -p  ${EAR_SOURCE_PATH}/etc/systemd/eardbd.service.in %{buildroot}/etc/systemd/system
 cp  -p  ${EAR_SOURCE_PATH}/etc/systemd/eard.service.in %{buildroot}/etc/systemd/system
@@ -86,6 +87,12 @@ exit
 #Comments for change log
 # * [dow mon dd yyyy] [packager [email address]] [RPM version]-list of changes
 %changelog
+* Tue Mar 31 2020 Julita Corbalan <julita.corbalan@bsc.es> 3.2
+- GPU, PCK and DRAM reported in DB
+- USE_GPU set to 1
+* Tue Feb 11 2020 Julita Corbalan <julita.corbalan@bsc.es> 3.1.3
+- Fixed error when reading GPU energy
+- Fixed error when resetting IPMI interface
 * Wed Jan 16 2020 Julita Corbalan <julita.corbalan@bsc.es> 3.1.2
 - init_power_monitoring in dynamic_configuration
 - gpu support included

@@ -31,6 +31,7 @@
 #include <string.h>
 #include <strings.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/states.h>
@@ -55,6 +56,7 @@ void init_policy_conf(policy_conf_t *p)
 //    p->th = 0;
     p->is_available = 0;
 		p->def_freq=(float)0;
+		p->p_state=UINT_MAX;
     memset(p->settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 
@@ -75,22 +77,34 @@ void check_policy_values(policy_conf_t *p,int nump)
 	int i=0;
 	ulong f;
 	for (i=0;i<nump;i++){
-		f=(unsigned long)(p[i].def_freq*1000000);
-		if (!frequency_is_valid_frequency(f)){
-			error("Default frequency %lu for policy %s is not valid",f,p[i].name);
-			p[i].def_freq=(float)frequency_closest_frequency(f)/(float)1000000;
-			error("New def_freq %f",p[i].def_freq);
-		}
+		check_policy(&p[i]);
 	}
 }
 
 void check_policy(policy_conf_t *p)
 {
 	unsigned long f;
-	f=(unsigned long)(p->def_freq*1000000);
-  if (!frequency_is_valid_frequency(f)){
-      error("Default frequency %lu for policy %s is not valid",f,p->name);
-      p->def_freq=(float)frequency_closest_frequency(f)/(float)1000000;
-      error("New def_freq %f",p->def_freq);
-  }
+	uint ppstate;
+	/* We are using pstates */
+	if (p->def_freq==(float)0){
+		if (p->p_state>=frequency_get_num_pstates()) p->p_state=frequency_get_nominal_pstate();
+	}else{
+	/* We are using frequencies */
+		f=(unsigned long)(p->def_freq*1000000);
+  	if (!frequency_is_valid_frequency(f)){
+      	error("Default frequency %lu for policy %s is not valid",f,p->name);
+      	p->def_freq=(float)frequency_closest_frequency(f)/(float)1000000;
+      	error("New def_freq %f",p->def_freq);
+  	}
+	}
+}
+
+void compute_policy_def_freq(policy_conf_t *p)
+{
+	if (p->def_freq==(float)0){
+		p->def_freq=(float)frequency_pstate_to_freq(p->p_state)/1000000.0;
+	}else{
+		p->p_state=frequency_closest_pstate((unsigned long)(p->def_freq*1000000));
+	}
+
 }

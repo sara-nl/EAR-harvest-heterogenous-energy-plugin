@@ -55,16 +55,6 @@ int slurm_spank_init(spank_t sp, int ac, char **av)
 // Function order:
 // 	- Local 2
 // 	- Remote 0
-int slurm_spank_init_post_opt_fini(spank_t sp)
-{
-	plug_verbose(sp, 2, "function slurm_spank_init_post_opt_fini");
-	
-	//
-	plug_print_variables(sp);
-
-	return ESPANK_SUCCESS;
-}
-
 int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init_post_opt");
@@ -104,96 +94,89 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	//
 	plug_serialize_remote(sp, &sd);
 
-	return slurm_spank_init_post_opt_fini(sp);
-}
-
-// Function order:
-// 	- Local 3
-// 	- Remote 0
-#if 1
-int slurm_spank_local_user_init (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_local_user_init");
-
-	// Correct
-	if (!plug_context_is(sp, Context.local)) {
-		return ESPANK_SUCCESS;
-	}
-
-	// Correct
-        if (!plug_component_isenabled(sp, Component.plugin)) {
-                return ESPANK_SUCCESS;
-        }
-
-        // 
-        plug_deserialize_local_alloc(sp, &sd);
-
-	plug_rcom_eargmd_job_start(sp, &sd);
+	//
+	plug_print_variables(sp);
 
 	return ESPANK_SUCCESS;
 }
-#endif
+
+// Helper function
+int slurm_spank_user_init_eard(spank_t sp)
+{
+	plug_verbose(sp, 2, "function slurm_spank_user_init_eard");
+
+	// If no shared services, EARD contact won't work, so plugin disabled
+	if (fail(plug_shared_readservs(sp, &sd))) {
+		return ESPANK_ERROR;
+	}
+
+	// If no frequencies the EARD contact can be done, so library is disabled
+	if (fail(plug_shared_readfreqs(sp, &sd))) {
+		return ESPANK_ERROR;
+	}
+
+	// The application can be filled as an empty object if something happen
+	if (fail(plug_read_application(sp, &sd))) {
+		return ESPANK_ERROR;
+	}
+
+	// EARD/s connection/s
+	if (fail(plug_rcom_eard_job_start(sp, &sd))) {
+		return ESPANK_ERROR;
+	}
+
+	//
+	if (plug_context_was(&sd, Context.srun))
+	{
+		if (plug_component_isenabled(sp, Component.library))
+		{
+			if (fail(plug_shared_readsetts(sp, &sd))) {
+				return ESPANK_ERROR;
+			}
+			plug_serialize_task(sp, &sd);
+		}
+	}
+
+	return ESPANK_SUCCESS;
+}
 
 // Function order:
 // 	- Local 0
 // 	- Remote 2
-int slurm_spank_user_init_fini(spank_t sp)
-{
-	plug_verbose(sp, 2, "function slurm_spank_user_init_fini");
-        
-	//
-        plug_print_variables(sp);
-
-        return ESPANK_SUCCESS;
-}
-
 int slurm_spank_user_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_user_init");
 
+	// We are in remote context
 	if (!plug_context_is(sp, Context.remote)) {
 		return ESPANK_SUCCESS;
 	}
 
-	//
 	plug_deserialize_remote(sp, &sd);
-	
+
+	if (plug_context_was(&sd, Context.error)) {
+		plug_component_setenabled(sp, Component.plugin, 0);
+	}
+
 	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}
 
-	//
-	//plug_rcom_eargmd_job_start(sp, &sd);
-
-	// If no shared services, EARD contact won't work, so plugin disabled
-	plug_shared_readservs(sp, &sd);
-
-	// If no frequencies the EARD contact can be done, so library is disabled
-	plug_shared_readfreqs(sp, &sd);
-
-	// The application can be filled as an empty object if something happen
-	plug_read_application(sp, &sd);
-
-	// EARD/s connection/s
-	plug_rcom_eard_job_start(sp, &sd);
-
-	//
-	if (sd.subject.context_local == Context.srun)
-	{
-		if (plug_component_isenabled(sp, Component.library))
-		{
-			plug_shared_readsetts(sp, &sd);
-
-			plug_serialize_task(sp, &sd);
-		}
+	if (sd.subject.is_master) {
+		plug_rcom_eargmd_job_start(sp, &sd);
 	}
+
+	slurm_spank_user_init_eard(sp);
 
 	//
 	if (plug_component_isenabled(sp, Component.test)) {
 		plug_test_result(sp);
 	}
 
-	return slurm_spank_user_init_fini(sp);
+	//
+	plug_print_variables(sp);
+
+	return ESPANK_SUCCESS;
 }
 
 // Function order:
@@ -224,13 +207,13 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 	plug_verbose(sp, 2, "function slurm_spank_exit");
 
 	// EARD disconnection
-	if (plug_context_is(sp, Context.remote))
-	{
-		plug_rcom_eard_job_finish(sp, &sd);
+	if (!plug_context_is(sp, Context.remote)) {
+		return ESPANK_SUCCESS;
 	}
 
-	// EARGMD disconnection
-	if (plug_context_is(sp, Context.local)) {
+	plug_rcom_eard_job_finish(sp, &sd);
+
+	if (sd.subject.is_master) {
 		plug_rcom_eargmd_job_finish(sp, &sd);
 	}
 

@@ -31,34 +31,27 @@
 
 static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 {
-	int port = sd->pack.eard.servs.eard.port;
-	hostlist_t hostlist;
-	char *node;
+	int port   = sd->pack.eard.servs.eard.port;
+	char *node = sd->subject.host;
 
 	// Hostlist get
-	hostlist = slurm_hostlist_create(sd->subject.host);
+	sd->pack.eard.connected = 1;
 
 	//
-	while ((node = slurm_hostlist_shift(hostlist)) != NULL)
-	{
-		plug_verbose(sp, 2, "message connecting to EARD: '%s:%d'", node, port);
+	plug_verbose(sp, 2, "connecting to EARD: '%s:%d'", node, port);
 
-		if (eards_remote_connect(node, port) < 0) {
-			plug_error(sp, "while connecting with EAR daemon");
-			continue;
-		}
-
-		if (new_job) {
-			eards_new_job(&sd->job.app);
-			plug_print_application(sp, &sd->job.app);
-		} else {
-			eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
-		}
-
-		eards_remote_disconnect();
-		
-		free(node);
+	if (eards_remote_connect(node, port) < 0) {
+		plug_error(sp, "while connecting with EAR daemon");
+		sd->pack.eard.connected = 0;
+		return ESPANK_ERROR;
 	}
+	if (new_job) {
+		eards_new_job(&sd->job.app);
+		plug_print_application(sp, &sd->job.app);
+	} else {
+		eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
+	}
+	eards_remote_disconnect();
 
 	return ESPANK_SUCCESS;
 }

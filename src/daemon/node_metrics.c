@@ -56,7 +56,7 @@ unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
 {
 	int i;
 	unsigned long long temp_total=0;
-	if ((id==NULL) || (nm==NULL) || (id->con!=NM_CONNECTED))	return 0;
+	if ((id==NULL) || (nm==NULL) || (id->con!=NM_CONNECTED) || (nm->temp==NULL))	return 0;
 	temp_total=nm->temp[0];
 	for (i=1;i<id->nsockets;i++){
         if (temp_total<nm->temp[i]) temp_total=nm->temp[i];
@@ -199,6 +199,7 @@ int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 	for (i=0;i<id->nsockets;i++){
 		temp_total+=nm->temp[i];
 	}
+	temp_total=temp_total/id->nsockets;
 	sprintf(msg," avg_cpu_freq %.2lf uncore_freq=%llu temp=%llu",(double)nm->avg_cpu_freq/(double)1000000,(long long unsigned int)uncore_total,temp_total);
 	verbose(VNODEPMON,msg);
 	return EAR_SUCCESS;

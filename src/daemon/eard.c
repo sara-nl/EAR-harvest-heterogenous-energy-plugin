@@ -147,7 +147,7 @@ void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 	uint i;
 	for (i=0;i<num_policies;i++){
 		check_policy(&plist[i]);
-		plist[i].p_state=frequency_closest_pstate((unsigned long)(plist[i].def_freq*1000000));
+		compute_policy_def_freq(&plist[i]);
 	}
 }
 
@@ -834,7 +834,9 @@ void signal_handler(int sig) {
 			my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
 			if (my_node_conf == NULL) {
 				error(" Error in cluster configuration, node %s not found\n", nodename);
+				exit(0);
 			} else {
+				check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 				eard_dyn_conf.nconf = my_node_conf;
 				print_my_node_conf(my_node_conf);
 				copy_my_node_conf(&my_original_node_conf, my_node_conf);
@@ -1200,6 +1202,7 @@ int main(int argc, char *argv[]) {
 			error( " Node %s not found in ear.conf, exiting\n", nodename);
 			_exit(0);
 		}
+		check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
 	}

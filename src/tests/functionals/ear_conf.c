@@ -50,12 +50,19 @@ int main(int argc,char *argv[])
 	print_cluster_conf(&my_cluster);
 	gethostname(nodename,sizeof(nodename));
 	strtok(nodename,".");
-  my_node_conf = get_my_node_conf(&my_cluster, nodename);
-  if (my_node_conf==NULL) {
+    my_node_conf = get_my_node_conf(&my_cluster, nodename);
+    if (my_node_conf==NULL) {
 		fprintf(stderr,"get_my_node_conf for node %s returns NULL\n",nodename);
 	}else print_my_node_conf(my_node_conf);
 
-	
-  free_cluster_conf(&my_cluster);
+    free_cluster_conf(&my_cluster);
+    free(my_node_conf);
+    printf("freed cluster_conf\n");
+    printf("reading cluster_conf again\n");
+	read_cluster_conf(ear_path,&my_cluster);
+    printf("freeing cluster_conf again\n");
+    free_cluster_conf(&my_cluster);
+    printf("freed cluster_conf\n");
+
 	return 0;
 }

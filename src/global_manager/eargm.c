@@ -45,7 +45,7 @@
 #include <sys/wait.h>
 #include <common/states.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/types/daemon_log.h>
 #include <common/database/db_helper.h>

@@ -32,7 +32,7 @@
 #include <string.h>
 #include <metrics/energy/gpu/nvml.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 
 static struct error_s {

@@ -48,7 +48,7 @@
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 
-// #define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>
@@ -224,14 +224,20 @@ int dynconf_set_freq(ulong freq) {
 int dyncon_restore_conf() {
 	int pid;
 	policy_conf_t *my_policy;
+	debug("dyncon_restore_conf");
 	/* We copy the original configuration */
 	copy_my_node_conf(my_node_conf,&my_original_node_conf);
+	print_my_node_conf(my_node_conf);
 	pid=dyn_conf->policy;
 	my_policy=get_my_policy_conf(my_node_conf,pid);
+	if (my_policy==NULL){
+		error("Policy %d not detected",pid);
+		return EAR_SUCCESS;
+	}
 	dyn_conf->max_freq=frequency_pstate_to_freq(my_node_conf->max_pstate);
 	dyn_conf->def_freq=frequency_pstate_to_freq(my_policy->p_state);
 	dyn_conf->def_p_state=my_policy->p_state;
-    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
+  memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	
 	resched_conf->force_rescheduling=1;
 	

@@ -35,16 +35,14 @@ static char buffer[SZ_PATH];
 int plug_shared_readservs(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_shared_readservs");
-
-	services_conf_t *servs;
+	services_conf_t *servs = NULL;
 
 	get_services_conf_path(sd->pack.path_temp, buffer);
 	servs = attach_services_conf_shared_area(buffer);
 	plug_verbose(sp, 3, "looking for services in '%s'", buffer);
 
 	if (servs == NULL) {
-		plug_error(sp, "while reading the shared services memory in '%s@%s'",
-			sd->subject.host, buffer);
+		plug_verbose(sp, 2, "while reading the shared services memory in '%s@%s'", sd->subject.host, buffer);
 		return ESPANK_ERROR;
 	}
 
@@ -58,9 +56,8 @@ int plug_shared_readservs(spank_t sp, plug_serialization_t *sd)
 int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_shared_readfreqs");
-
-	ulong *freqs;
-	int n_freqs;
+	ulong *freqs = NULL;
+	int n_freqs = 0;
 
 	get_frequencies_path(sd->pack.path_temp, buffer);
 	plug_verbose(sp, 3, "looking for frequencies in '%s'", buffer);
@@ -80,11 +77,22 @@ int plug_shared_readfreqs(spank_t sp, plug_serialization_t *sd)
 	return ESPANK_SUCCESS;
 }
 
+static int plug_print_settings(spank_t sp, plug_serialization_t *sd)
+{
+        settings_conf_t *setts = &sd->pack.eard.setts;
+
+        plug_verbose(sp, 3, "------------- Settings summary ---");
+        plug_verbose(sp, 3, "library/user type '%d'/'%d'", setts->lib_enabled, setts->user_type);
+        plug_verbose(sp, 3, "freq/P_STATE '%lu'/'%u'", setts->def_freq, setts->def_p_state);
+        plug_verbose(sp, 3, "----------------------------------");
+
+	return ESPANK_SUCCESS;
+}
+
 int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_shared_readsetts");
-
-	settings_conf_t *setts;
+	settings_conf_t *setts = NULL;
 
 	// Opening settings
 	get_settings_conf_path(sd->pack.path_temp, buffer);
@@ -101,10 +109,7 @@ int plug_shared_readsetts(spank_t sp, plug_serialization_t *sd)
 	// Closing shared memory
 	dettach_settings_conf_shared_area();
 
-	// Variable EAR and LD_PRELOAD
-	if (!setts->lib_enabled || setts->user_type == ENERGY_TAG) {
-		return ESPANK_ERROR;
-	}
+	plug_print_settings(sp, sd);
 
 	return ESPANK_SUCCESS;
 }

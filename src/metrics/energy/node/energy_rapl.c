@@ -43,7 +43,7 @@
 #include <metrics/energy/energy_cpu.h>
 #include <common/math_operations.h>
 
-// #define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 0
 #ifdef SHOW_DEBUGS
 #define plug_debug(...) \
 { \

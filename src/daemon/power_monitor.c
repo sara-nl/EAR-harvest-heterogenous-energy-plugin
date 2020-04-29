@@ -45,7 +45,7 @@
 #include <common/config.h>
 #include <common/system/sockets.h>
 
-//#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -425,10 +425,12 @@ void job_end_powermon_app(ehandler_t *ceh) {
 	compute_power(&current_ear_app[ccontext]->energy_init, &c_energy, &app_power);
 
 	current_ear_app[ccontext]->app.power_sig.DC_power = accum_node_power(&app_power);
-	if (app_power.avg_dc > current_ear_app[ccontext]->app.power_sig.max_DC_power)
+	if ((app_power.avg_dc > current_ear_app[ccontext]->app.power_sig.max_DC_power) && (app_power.avg_dc<my_node_conf->max_error_power)){
 		current_ear_app[ccontext]->app.power_sig.max_DC_power = app_power.avg_dc;
-	if (app_power.avg_dc < current_ear_app[ccontext]->app.power_sig.min_DC_power)
+	}
+	if (app_power.avg_dc < current_ear_app[ccontext]->app.power_sig.min_DC_power){
 		current_ear_app[ccontext]->app.power_sig.min_DC_power = app_power.avg_dc;
+	}
 	current_ear_app[ccontext]->app.power_sig.DRAM_power = accum_dram_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.PCK_power = accum_cpu_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
@@ -484,7 +486,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		my_policy = &default_policy_context;
 		return my_policy;
 	}
-	debug("configuring policy for user %u policy %s freq %lu th %lf is_learning %u",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning);
+	debug("configuring policy for user %u policy %s freq %lu th %lf is_learning %u is_mpi %d force_freq %d",user_type,appID->job.policy,appID->job.def_f,appID->job.th,appID->is_learning,appID->is_mpi,my_cluster_conf.eard.force_frequencies);
 	switch (user_type){
 	case NORMAL:
 		appID->is_learning=0;
@@ -576,7 +578,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		break;
 	case ENERGY_TAG:
 		appID->is_learning=0;
-        int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+        int mo_pid = policy_name_to_id("monitoring", &my_cluster_conf);
         if (mo_pid != EAR_ERROR)
             authorized_context.policy = mo_pid;
         else
@@ -936,10 +938,12 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	while (pthread_mutex_trylock(&app_lock));
 
 	if ((ccontext >= 0) && (current_ear_app[ccontext]->app.job.id > 0)) {
-		if (my_current_power->avg_dc > maxpower)
+		if ((my_current_power->avg_dc > maxpower) && (my_current_power->avg_dc<my_node_conf->max_error_power)){
 			current_ear_app[ccontext]->app.power_sig.max_DC_power = my_current_power->avg_dc;
-		if (my_current_power->avg_dc < minpower)
+		}
+		if (my_current_power->avg_dc < minpower){
 			current_ear_app[ccontext]->app.power_sig.min_DC_power = my_current_power->avg_dc;
+		}
 	}
 
 	pthread_mutex_unlock(&app_lock);
@@ -953,6 +957,12 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	if (my_current_power->avg_dc < RAPL) {
 		corrected_power = RAPL;
 	}
+#if USE_GPUS
+	current_sample.DRAM_energy=accum_dram_power(my_current_power);
+	current_sample.PCK_energy=accum_cpu_power(my_current_power);
+  current_sample.GPU_energy=accum_gpu_power(my_current_power);
+#endif
+
 
 	current_sample.DC_energy = corrected_power * (ulong) difftime(my_current_power->end, my_current_power->begin);
 
@@ -975,7 +985,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	if (RAPL == 0) {
 		log_report_eard_rt_error(usedb,useeardbd,jid,sid,RAPL_ERROR,RAPL);
 	}
-	if ((current_sample.avg_f==0) || (current_sample.avg_f>frequency_get_nominal_freq())){
+	if ((current_sample.avg_f==0) || ((current_sample.avg_f>frequency_get_nominal_freq()) && (mpi))){
 		log_report_eard_rt_error(usedb,useeardbd,jid,sid,FREQ_ERROR,current_sample.avg_f);
 	}
 #endif
@@ -1106,6 +1116,9 @@ void powermon_init_nm() {
 		error("init_node_metrics_data end");
 	}
 	if (init_node_metrics_data(&my_nm_id, &nm_diff) != EAR_SUCCESS) {
+		error("init_node_metrics_data diff");
+	}
+	if (init_node_metrics_data(&my_nm_id, &last_nm) != EAR_SUCCESS) {
 		error("init_node_metrics_data diff");
 	}
 }

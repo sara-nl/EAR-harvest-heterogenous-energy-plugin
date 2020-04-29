@@ -64,7 +64,7 @@ typedef struct traces_symbols {
   void (*traces_reconfiguration)(int global_rank, int local_rank);
   int (*traces_are_on)();
   void (*traces_mpi_init)();
-  void (*traces_mpi_call)(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
+  void (*traces_mpi_call)(int global_rank, int local_rank, ulong ev, ulong a1, ulong a2, ulong a3);
   void (*traces_mpi_end)();
 } trace_sym_t;
 
@@ -292,10 +292,10 @@ void traces_mpi_init()
   }
   return;
 }
-void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3)
+void traces_mpi_call(int global_rank, int local_rank, ulong ev, ulong a1, ulong a2, ulong a3)
 {
   if (trace_plugin && trace_syms_fun.traces_mpi_call!=NULL){
-		trace_syms_fun.traces_mpi_call(global_rank,local_rank,time,ev,a1,a2,a3);
+		trace_syms_fun.traces_mpi_call(global_rank,local_rank,ev,a1,a2,a3);
 	}
 	return;
 }

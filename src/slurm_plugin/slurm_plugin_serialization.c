@@ -52,10 +52,15 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 
 	int found_earmgd_port = 0;
 	int found_eargmd_host = 0;
+	int found_eargmd_minn = 0;
 	int found_path_inst = 0;
 	int found_path_temp = 0;
 	int i;
 
+	// Initialization values
+	sd->pack.eargmd.min = 1;
+
+	// Search
 	for (i = 0; i < ac; ++i)
 	{
 		if ((strlen(av[i]) > 8) && (strncmp ("default=", av[i], 8) == 0))
@@ -99,11 +104,21 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 		{
 			strncpy(sd->pack.eargmd.host, &av[i][12], SZ_NAME_MEDIUM);
 			found_eargmd_host = 1;
+			
+			plug_verbose(sp, 2, "plugstack found eargm host '%s'", sd->pack.eargmd.host);
 		}
 		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
 		{
 			sd->pack.eargmd.port = atoi(&av[i][12]);
 			found_earmgd_port = 1;
+			
+			plug_verbose(sp, 2, "plugstack found eargm port '%d'", sd->pack.eargmd.port);
+		}
+		if ((strlen(av[i]) > 11) && (strncmp ("eargmd_min=", av[i], 11) == 0))
+		{
+			sd->pack.eargmd.min = atoi(&av[i][11]);
+			
+			plug_verbose(sp, 2, "plugstack found eargm min '%d'", sd->pack.eargmd.min);
 		}
 	}
 
@@ -142,13 +157,12 @@ static int frequency_exists(spank_t sp, ulong *freqs, int n_freqs, ulong freq)
 
 int plug_print_application(spank_t sp, application_t *app)
 {
-	plug_verbose(sp, 3, "application summary:");
-	plug_verbose(sp, 3, "------------------------------");
+	plug_verbose(sp, 3, "---------- application summary ---");
 	plug_verbose(sp, 3, "job/step/name '%lu'/'%lu'/'%s'", app->job.id, app->job.step_id, app->job.app_id);
 	plug_verbose(sp, 3, "user/group/acc '%s'/'%s'/'%s'", app->job.user_id, app->job.group_id, app->job.user_acc);
 	plug_verbose(sp, 3, "policy/th/freq '%s'/'%f'/'%lu'", app->job.policy, app->job.th, app->job.def_f);
 	plug_verbose(sp, 3, "learning/tag '%u'/'%s'", app->is_learning, app->job.energy_tag);
-	plug_verbose(sp, 3, "------------------------------");
+	plug_verbose(sp, 3, "----------------------------------");
 	return EAR_SUCCESS;
 }
 
@@ -251,19 +265,26 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.tag.loc);
 	printenv_agnostic(sp, Var.path_usdb.loc);
 	printenv_agnostic(sp, Var.path_trac.loc);
+	printenv_agnostic(sp, Var.version.loc);
+	printenv_agnostic(sp, Var.gm_host.loc);
+	printenv_agnostic(sp, Var.gm_port.loc);
+	printenv_agnostic(sp, Var.gm_min.loc);
+	printenv_agnostic(sp, Var.gm_secure.loc);
 	
 	printenv_agnostic(sp, Var.user.rem);
 	printenv_agnostic(sp, Var.group.rem);
 	printenv_agnostic(sp, Var.path_temp.rem);
 	printenv_agnostic(sp, Var.path_inst.rem);
-	printenv_agnostic(sp, Var.ctx_sbac.rem);
-	printenv_agnostic(sp, Var.ctx_srun.rem);
+	printenv_agnostic(sp, Var.ctx_last.rem);
+	printenv_agnostic(sp, Var.was_sbac.rem);
+	printenv_agnostic(sp, Var.was_srun.rem);
 	printenv_agnostic(sp, Var.node_num.loc);
 	printenv_agnostic(sp, Var.name_app.rem);
 	printenv_agnostic(sp, Var.account.rem);
-	printenv_agnostic(sp, Var.node_list.rem);
-	printenv_agnostic(sp, Var.version.loc);
-	printenv_agnostic(sp, Var.gm_secure.loc);
+	printenv_agnostic(sp, Var.job_nodl.rem);
+	printenv_agnostic(sp, Var.job_nodn.rem);
+	printenv_agnostic(sp, Var.step_nodl.rem);
+	printenv_agnostic(sp, Var.step_nodn.rem);
 
 	printenv_agnostic(sp, Var.verbose.ear);
 	printenv_agnostic(sp, Var.policy.ear);
@@ -297,16 +318,16 @@ int plug_clean_components(spank_t sp)
 	 * Components
 	 */
 	if (valenv_agnostic(sp, Var.comp_test.cmp, &test)) {
-			plug_component_setenabled(sp, Component.test, test);
+		plug_component_setenabled(sp, Component.test, test);
 	}
 	if (test || !isenv_agnostic(sp, Var.comp_plug.cmp, "0")) {
-			plug_component_setenabled(sp, Component.plugin, 1);
+		plug_component_setenabled(sp, Component.plugin, 1);
 	}
 	if (test || isenv_agnostic(sp, Var.comp_libr.cmp, "1")) {
-			plug_component_setenabled(sp, Component.library, 1);
+		plug_component_setenabled(sp, Component.library, 1);
 	}
 	if (isenv_agnostic(sp, Var.comp_moni.cmp, "1")) {
-			plug_component_setenabled(sp, Component.monitor, 1);
+		plug_component_setenabled(sp, Component.monitor, 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -365,19 +386,6 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	return ESPANK_SUCCESS;
 }
 
-int plug_deserialize_local_alloc(spank_t sp, plug_serialization_t *sd)
-{
-	plug_verbose(sp, 2, "function plug_deserialize_local_alloc");
-	
-	/*
-	 * Job
-	 */
-	getenv_agnostic(sp, Var.node_num.loc, buffer1, SZ_PATH);
-	sd->job.n_nodes = atoi(buffer1);
-	
-	return ESPANK_SUCCESS;
-}
-
 int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_serialize_remote");
@@ -395,15 +403,26 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 	 */
 
 	if (plug_context_is(sp, Context.srun)) {
-		setenv_agnostic(sp, Var.ctx_srun.rem, "1", 1);
-	}
+		setenv_agnostic(sp, Var.ctx_last.rem, Constring.srun, 1);
+		setenv_agnostic(sp, Var.was_srun.rem, "1", 1);
+	} else
 	if (plug_context_is(sp, Context.sbatch)) {
-		setenv_agnostic(sp, Var.ctx_sbac.rem, "1", 1);
+		setenv_agnostic(sp, Var.ctx_last.rem, Constring.sbatch, 1);
+		setenv_agnostic(sp, Var.was_sbac.rem, "1", 1);
 	}
 
-//fprintf(stderr, "TEMP OIGAN %s\n", sd->pack.path_temp);
-//printenv_agnostic(sp, Var.path_temp.rem);
-//setenv_agnostic(sp, "EAR_CACA", "CACA", 1);
+	/*
+	 * EARGMD
+	 */
+	if (sd->pack.eargmd.enabled == 1)
+	{
+		sprintf(buffer1, "%d", sd->pack.eargmd.port);
+		sprintf(buffer2, "%d", sd->pack.eargmd.min );
+		
+		setenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, 1);
+		setenv_agnostic(sp, Var.gm_port.loc, buffer1             , 1);
+		setenv_agnostic(sp, Var.gm_min.loc , buffer2             , 1);
+	}
 
 	return ESPANK_SUCCESS;
 }
@@ -411,41 +430,110 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_deserialize_remote");
+	int s1, s2;
 
 	// Silence
 	VERB_SET_EN(0);
 	ERROR_SET_EN(0);
-
+	
 	/*
 	 * Options
 	 */
-	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
-	repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
+	repenv_agnostic(sp, Var.verbose.loc, Var.verbose.ear);
+	repenv_agnostic(sp, Var.policy.loc, Var.policy.ear);
 	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
 	repenv_agnostic(sp, Var.frequency.loc, Var.frequency.ear);
-	repenv_agnostic(sp, Var.learning.loc,  Var.learning.ear);
-	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
+	repenv_agnostic(sp, Var.learning.loc, Var.learning.ear);
+	repenv_agnostic(sp, Var.tag.loc, Var.tag.ear);
 	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
 	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
 
 	/*
 	 * User
 	 */
-	getenv_agnostic(sp, Var.user.rem,  sd->job.user.user,  SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, Var.user.rem, sd->job.user.user, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.group.rem, sd->job.user.group, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.account.rem, sd->job.user.account, SZ_NAME_MEDIUM);
 	getenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, SZ_PATH);
 	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
 
 	/*
-  	 * Subject
-  	 */
+	 * Subject
+	 */
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
-	if (isenv_agnostic(sp, Var.ctx_srun.rem, "1")) {
+	if (isenv_agnostic(sp, Var.ctx_last.rem, Constring.srun)) {
 		sd->subject.context_local = Context.srun;
-	} else if (isenv_agnostic(sp, Var.ctx_sbac.rem, "1")) {
+	} else if (isenv_agnostic(sp, Var.ctx_last.rem, Constring.sbatch)) {
 		sd->subject.context_local = Context.sbatch;
+	} else {
+		sd->subject.context_local = Context.error;
+	}
+
+	/*
+	 * Job/step
+	 */
+	s1 = 0;
+	s2 = 0;
+
+	if (plug_context_was(sd, Context.sbatch)) {
+		s1 = getenv_agnostic(sp, Var.job_nodl.rem , buffer1, SZ_BUFF_EXTRA);
+		s2 = getenv_agnostic(sp, Var.job_nodn.rem , buffer2, SZ_BUFF_EXTRA);
+	} else if (plug_context_was(sd, Context.srun)) {
+		s1 = getenv_agnostic(sp, Var.step_nodl.rem, buffer1, SZ_BUFF_EXTRA);
+		s2 = getenv_agnostic(sp, Var.step_nodn.rem, buffer2, SZ_BUFF_EXTRA);
+	}
+
+	if (s1 && s2) {
+		sd->job.node_n = atoi(buffer2);
+	}
+
+	/*
+	 * Master
+	 */
+	hostlist_t p1;
+	char *p2;
+
+	if (plug_context_was(sd, Context.sbatch)) {
+		sd->subject.is_master = 1;
+		s1 = s2 = 0;
+	}
+
+	if (s1 && s2)
+	{
+		p1 = slurm_hostlist_create(buffer1);
+		p2 = slurm_hostlist_shift(p1);
+
+		if (p2 != NULL)
+		{
+			s1 = strlen(sd->subject.host);
+			s2 = strlen(p2);
+
+			if (s1 < s2) {
+				s2 = s1;
+			}
+
+			sd->subject.is_master = (strncmp(sd->subject.host, p2, s2) == 0);
+			plug_verbose(sp, 2, "first node from list of nodes '%s'", p2);
+		}
+	}
+
+	plug_verbose(sp, 2, "subject '%s' is master? '%d'",
+		sd->subject.host, sd->subject.is_master);
+
+	/*
+	 * EARMGD
+	 */
+	sd->pack.eargmd.min = 1;	
+
+	s1 = getenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, SZ_NAME_MEDIUM);
+	s2 = getenv_agnostic(sp, Var.gm_port.loc, buffer1             , SZ_NAME_MEDIUM);
+	     getenv_agnostic(sp, Var.gm_min.loc , buffer2             , SZ_NAME_MEDIUM);
+
+	if (s1 && s2) {
+		sd->pack.eargmd.port = atoi(buffer1);
+		sd->pack.eargmd.min  = atoi(buffer2);
+		sd->pack.eargmd.enabled = 1;
 	}
 
 	/*
@@ -479,6 +567,10 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	// Variable EAR_ENERGY_TAG, unset
 	if (setts->user_type != ENERGY_TAG) {
 		unsetenv_agnostic(sp, Var.tag.ear);
+	}
+	
+	if (sd->pack.eard.connected && !setts->lib_enabled) {
+		return ESPANK_SUCCESS;
 	}
 
 	snprintf(buffer1, 16, "%u", setts->def_p_state);
@@ -515,6 +607,9 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	char ext1[64];
 	char ext2[64];
 
+	buffer1[0] = '\0';
+	buffer2[0] = '\0';
+	
 	if(getenv_agnostic(sp, Var.version.loc, ext1, 64)) {
 		snprintf(ext2, 64, "%s.so", ext1);
 	} else {
