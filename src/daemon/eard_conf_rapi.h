@@ -118,6 +118,8 @@ typedef struct status{
 #define EAR_RC_DEF_FREQ		105
 #define EAR_RC_REST_CONF	106
 #define EAR_RC_SET_POLICY 108
+#define EAR_RC_SET_DEF_PSTATE 109
+#define EAR_RC_SET_MAX_PSTATE 110
 #define EAR_RC_PING		    500
 #define EAR_RC_NEW_POWERCAP	700
 #define EAR_RC_STATUS		600
