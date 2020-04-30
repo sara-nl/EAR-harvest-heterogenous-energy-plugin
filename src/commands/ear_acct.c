@@ -624,6 +624,25 @@ void add_int_filter(char *query, char *addition, int value)
     query_filters ++;
 }
 
+void add_int_comp_filter(char *query, char *addition, int value, char greater_than)
+{
+    char query_tmp[512];
+    strcpy(query_tmp, query);
+    if (query_filters < 1)
+        strcat(query_tmp, " WHERE ");
+    else
+        strcat(query_tmp, " AND ");
+    
+    strcat(query_tmp, addition);
+    if (greater_than)
+        strcat(query_tmp, ">");
+    else
+        strcat(query_tmp, "<");
+    strcat(query_tmp, "%llu");
+    sprintf(query, query_tmp, value);
+    query_filters ++;
+}
+
 void add_int_list_filter(char *query, char *addition, char *value)
 {
     if (query_filters < 1)
@@ -763,6 +782,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 
     strcpy(query, EVENTS_QUERY);
 
+    add_int_comp_filter(query, "event_type", 100, 0);
     if (job_id >= 0)
         add_int_filter(query, "job_id", job_id);
     else if (strlen(job_ids) > 0)
