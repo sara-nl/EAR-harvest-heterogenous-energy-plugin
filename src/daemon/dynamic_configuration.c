@@ -276,12 +276,12 @@ int dynconf_red_pstates(uint p_states) {
 	ulong i;
 	uint def_pstate, max_pstate;
 	ulong new_def_freq, new_max_freq;
-	int variation=(int)pstates;
+	int variation=(int)p_states;
 	def_pstate = frequency_closest_pstate(dyn_conf->def_freq);
 	max_pstate = frequency_closest_pstate(dyn_conf->max_freq);
 	/* Reducing means incresing in the vector of pstates */
 	def_pstate = def_pstate + variation;
-	max_pstate = max_pstate + variation
+	max_pstate = max_pstate + variation;
 
 	new_def_freq = frequency_pstate_to_freq(def_pstate);
 	new_max_freq = frequency_pstate_to_freq(max_pstate);

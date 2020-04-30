@@ -3,22 +3,23 @@ LDFLAGS = $(DB_LDFLAGS) -lpthread
 
 ######## INSTALLATION
 
-eard_BINS = eargmd
-eard_PATH = $(DESTDIR)/sbin
-eard_PERM = 0770
+eargmd_BINS = eargmd
+eargmd_PATH = $(DESTDIR)/sbin
+eargmd_PERM = 0770
 
 ######## FILES
 
 comm_BINS = $(SRCDIR)/daemon/eard_rapi.o \
     $(SRCDIR)/common/libcommon.a \
-    eargm_server_api.o
+    eargm_server_api.o \
+		eargm_ext_rm.o
 
-eard_OBJS = eargm_rapi.o \
+eargmd_OBJS = eargm_rapi.o \
     eargm_server_api.o
 
 ######## RULES
 
-all: $(eard_OBJS) $(eard_BINS) all.others
+all: $(eargmd_OBJS) $(eargmd_BINS) all.others
 
 eargmd: eargm.c $(comm_BINS)
 	$(CC) $(CFLAGS) $(DB_CFLAGS) -o $@ $< $(comm_BINS) $(LDFLAGS)

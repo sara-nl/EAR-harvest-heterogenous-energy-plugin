@@ -50,9 +50,11 @@
 #include <common/types/daemon_log.h>
 #include <common/database/db_helper.h>
 #include <common/types/generic.h>
+#include <common/system/execute.h>
 #include <common/types/gm_warning.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <global_manager/eargm_ext_rm.h>
+#include <daemon/eard_rapi.h>
 
 #if SYSLOG_MSG
 #include <syslog.h>
@@ -112,7 +114,7 @@ double perc_energy,perc_time,perc_power;
 double avg_power_t2,avg_power_t1;
 static int fd_my_log=2;
 double curr_th;
-uint curr_max;
+ulong curr_max;
 
 
 
@@ -160,8 +162,8 @@ void update_eargm_configuration(cluster_conf_t *conf)
         default:break;
     }
 		def_p=conf->default_policy;
-		if ((strcmp(conf->power_policies[def_p].name,"min_time") && (conf->eargm.mode)){
-			verbose(0,"Warning, default_policy is not min_time. AUtomatic mode only supported when min_time is default policy. Setting it to manual"):
+		if ((strcmp(conf->power_policies[def_p].name,"min_time")) && (conf->eargm.mode)){
+			verbose(0,"Warning, default_policy is not min_time. AUtomatic mode only supported when min_time is default policy. Setting it to manual");
 			conf->eargm.mode=0;	
 		}
 		curr_th=conf->power_policies[def_p].settings[0];
@@ -400,8 +402,8 @@ void check_pending_processes()
 
 double adapt_th(uint status)
 {
-	double def_th;
-	def_th=(ulong)(my_cluster_conf->power_policies[def_p].settings[0]*100);
+	ulong def_th;
+	def_th=(ulong)(my_cluster_conf.power_policies[def_p].settings[0]*100);
 	switch (status){
 	case WARNING_3:
 	case WARNING_2:
@@ -420,8 +422,8 @@ unsigned long adapt_pstate(uint status)
 {
 	unsigned int def,max;
 	int variation;
-	def=my_cluster_conf->power_policies[def_p].p_state;
-	max=my_cluster_conf->eard.max_pstate;
+	def=my_cluster_conf.power_policies[def_p].p_state;
+	max=my_cluster_conf.eard.max_pstate;
 	switch (status){
 	case WARNING_3:
 	case WARNING_2:
@@ -430,7 +432,7 @@ unsigned long adapt_pstate(uint status)
 		max=max+pstate_level[status];
 		break;
 	}
-	variation=max-curr_max:
+	variation=max-curr_max;
 	verbose(1,"Setting def pstate %u and max_pstate %u in all nodesi, variation %d",def,max, variation);
 	if (curr_max!=max){
 		//set_max_pstate_all_nodes(max,my_cluster_conf);
