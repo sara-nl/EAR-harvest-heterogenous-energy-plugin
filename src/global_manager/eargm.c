@@ -642,7 +642,7 @@ int main(int argc,char *argv[])
 			switch(current_level){
 			case NO_PROBLEM:
 				verbose(VGM," Safe area. energy budget %.2lf%% ",perc_energy);
-				if (last_level==NO_PROBLEM) restore_conf_all_nodes(&my_cluster_conf);
+				if (last_level==NO_PROBLEM) restore_conf_all_nodes(my_cluster_conf);
 				break;
 			case WARNING_3:
 				in_action+=my_cluster_conf.eargm.grace_periods;
