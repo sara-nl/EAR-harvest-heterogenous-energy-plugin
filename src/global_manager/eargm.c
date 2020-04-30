@@ -418,7 +418,8 @@ double adapt_th(uint status)
 }
 unsigned long adapt_pstate(uint status)
 {
-	unsigned long def,max;
+	unsigned int def,max;
+	int variation;
 	def=my_cluster_conf->power_policies[def_p].p_state;
 	max=my_cluster_conf->eard.max_pstate;
 	switch (status){
@@ -429,10 +430,12 @@ unsigned long adapt_pstate(uint status)
 		max=max+pstate_level[status];
 		break;
 	}
-	verbose(1,"Setting def pstate %lu and max_pstate %lu in all nodes",def,max);
+	variation=max-curr_max:
+	verbose(1,"Setting def pstate %u and max_pstate %u in all nodesi, variation %d",def,max, variation);
 	if (curr_max!=max){
-		set_max_pstate_all_nodes(max,my_cluster_conf);
-		set_def_pstate_all_nodes(def,def_p,my_cluster_conf);
+		//set_max_pstate_all_nodes(max,my_cluster_conf);
+		// set_def_pstate_all_nodes(def,def_p,my_cluster_conf);
+		eards_red_max_and_def_freq((uint)variation);
 	}
 	curr_max=max;
 	return max;
