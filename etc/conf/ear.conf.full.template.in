@@ -9,7 +9,7 @@ MariaDBPassw=password
 MariaDBCommandsUser=root
 MariaDBCommandsPassw=password
 MariaDBDatabase=EAR
-MariaDBPort=1100
+MariaDBPort=3306
 # TODO:
 MaxConnections=20
 # Extended node information saves also the average frequency and temperature.
@@ -21,7 +21,7 @@ ReportLoops=0
 #---------------------------------------------------------------------------------------------------
 # EAR Daemon (EARD)
 #---------------------------------------------------------------------------------------------------
-NodeDaemonPort=5000
+NodeDaemonPort=50001
 # In seconds
 NodeDaemonPowermonFreq=60
 NodeDaemonMaxPstate=1
@@ -36,9 +36,9 @@ NodeUseLog=1
 #---------------------------------------------------------------------------------------------------
 # EAR Database Manager (EARDBD)
 #---------------------------------------------------------------------------------------------------
-DBDaemonPortTCP=4711
-DBDaemonPortSecTCP=4712
-DBDaemonSyncPort=4713
+DBDaemonPortTCP=50002
+DBDaemonPortSecTCP=50003
+DBDaemonSyncPort=50004
 # In seconds
 DBDaemonAggregationTime=60
 DBDaemonInsertionTime=30
