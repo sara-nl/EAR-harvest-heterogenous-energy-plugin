@@ -45,6 +45,7 @@
 //#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/types/application.h>
+#include <common/types/version.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
@@ -110,10 +111,12 @@ unsigned masters_comm_created=0;
 //
 static void print_local_data()
 {
+	char ver[64];
 	#if EAR_LIB_SYNC 
 	if (my_master_rank==0) {
 	#endif
-	verbose(1, "--------------------------------");
+	version_to_str(ver);
+	verbose(1, "------------EAR%s--------------------",ver);
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
