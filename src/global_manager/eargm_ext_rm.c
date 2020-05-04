@@ -68,21 +68,21 @@ void process_remote_requests(int clientfd)
     eargm_request_t command;
     uint req;
     ulong ack=EAR_SUCCESS;
-    debug("connection received\n");
+    debug("connection received");
     req=read_command(clientfd,&command);
     switch (req){
         case EARGM_NEW_JOB:
 			// Computes the total number of nodes in use
-            debug("new_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            debug("new_job command received %d num_nodes %u",command.req,command.num_nodes);
 			total_nodes+=command.num_nodes;
             break;
         case EARGM_END_JOB:
 			// Computes the total number of nodes in use
-            debug("end_job command received %d num_nodes %u\n",command.req,command.num_nodes);
+            debug("end_job command received %d num_nodes %u",command.req,command.num_nodes);
 			total_nodes-=command.num_nodes;
             break;
         default:
-            error("Invalid remote command\n");
+            error("Invalid remote command");
     }  
     send_answer(clientfd,&ack);
 }
@@ -96,20 +96,20 @@ void *eargm_server_api(void *p)
     debug("Creating scoket for remote commands,using port %u",my_port);
     eargm_fd=create_server_socket(my_port);
     if (eargm_fd<0){
-        error("Error creating socket\n");
+        error("Error creating socket");
         pthread_exit(0);
     }
     do{
-        debug("waiting for remote commands port=%u\n",my_port);
+        debug("waiting for remote commands port=%u",my_port);
         eargm_client=wait_for_client(eargm_fd,&eargm_con_client);
         if (eargm_client<0){
-            error(" wait_for_client returns error\n");
+            error(" wait_for_client returns error");
         }else{
             process_remote_requests(eargm_client);
             close(eargm_client);
         }
     }while(1);
-    verbose(VGM,"exiting\n");
+    verbose(VGM,"exiting");
     close_server_socket(eargm_fd);
 	return NULL;
 

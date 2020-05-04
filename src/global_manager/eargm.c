@@ -77,8 +77,8 @@
 #define KILO_U		1000
 #define MEGA_U		1000000
 
-ulong th_level[NUM_LEVELS]={10,10,5,0};
-ulong pstate_level[NUM_LEVELS]={3,2,1,0};
+ulong th_level[NUM_LEVELS]={10,10,10,0};
+ulong pstate_level[NUM_LEVELS]={2,1,0,0};
 
 uint def_p;
 uint use_aggregation;
@@ -87,6 +87,7 @@ uint policy;
 uint divisor = 1;
 uint last_id=0;
 uint process_created=0;
+static uint default_state=1;
 
 uint t1_expired=0;
 uint must_refill=0;
@@ -408,6 +409,7 @@ double adapt_th(uint status)
 	case WARNING_3:
 	case WARNING_2:
 	case PANIC:
+		default_state=1;
 		def_th=def_th+th_level[status];
 		break;
 	}
@@ -428,6 +430,7 @@ unsigned long adapt_pstate(uint status)
 	case WARNING_3:
 	case WARNING_2:
 	case PANIC:
+		default_state=1;
 		def=def+pstate_level[status];
 		max=max+pstate_level[status];
 		break;
@@ -647,7 +650,10 @@ int main(int argc,char *argv[])
 			switch(current_level){
 			case NO_PROBLEM:
 				verbose(VGM," Safe area. energy budget %.2lf%% ",perc_energy);
-				if (last_level==NO_PROBLEM) restore_conf_all_nodes(my_cluster_conf);
+				if ((my_cluster_conf.eargm.mode) && (last_level==NO_PROBLEM) && (!default_state)){ 
+					restore_conf_all_nodes(my_cluster_conf);
+					default_state=1;
+				}
 				break;
 			case WARNING_3:
 				in_action+=my_cluster_conf.eargm.grace_periods;

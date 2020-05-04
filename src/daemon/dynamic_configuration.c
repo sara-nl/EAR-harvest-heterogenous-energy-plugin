@@ -48,7 +48,7 @@
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>

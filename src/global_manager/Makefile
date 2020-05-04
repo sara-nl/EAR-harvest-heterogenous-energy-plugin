@@ -29,7 +29,7 @@ eargmd: eargm.c $(comm_BINS)
 
 ######## OPTIONS
 
-install: install.others eard.ginstall;
+install: install.others eargmd.ginstall;
 
 %.install: %.install.others;
 

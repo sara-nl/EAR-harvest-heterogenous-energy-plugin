@@ -8,7 +8,7 @@
 # Var definitions
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
-%define name    ear-lennox-mysql-intel-withgpus
+%define name    ear-eargm-mysql-intel-withgpus
 %define release   3
 %define version   3.2
 

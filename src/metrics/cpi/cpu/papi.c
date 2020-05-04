@@ -38,7 +38,7 @@
 #define BASIC_SETS		1
 #define BASIC_EVS		2
 
-static const char *PAPI_NAME = "METRICS_INSTRS";
+static const char *PAPI_NAME = "cpi";
 static long long values[BASIC_SETS][BASIC_EVS];
 static long long acum_values[BASIC_EVS];
 static int event_sets[BASIC_SETS];
