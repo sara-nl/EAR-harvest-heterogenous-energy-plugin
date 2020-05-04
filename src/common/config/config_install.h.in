@@ -44,9 +44,12 @@
 
 // Database
 #define DB_MYSQL		@DB_MYSQL@
-#define DB_PSQL	    	@DB_PGSQL@
+#define DB_PSQL			@DB_PGSQL@
 
 // Features
 #define FEAT_AVX512		@FEAT_AVX512@
+
+// Others
+#define RELEASE			"@PACKAGE_VERSION@"
 
 #endif //EAR_PATHS_H
