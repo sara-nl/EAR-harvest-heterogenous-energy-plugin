@@ -11,7 +11,7 @@ m4_include([m4/x_ac_gsl.m4])
 
 # INIT
 AC_PREREQ([2.69])
-AC_INIT([EAR], [3.0])
+AC_INIT([EAR], [3.2])
 AC_LANG(C)
 
 # PROGRAMS TEST
