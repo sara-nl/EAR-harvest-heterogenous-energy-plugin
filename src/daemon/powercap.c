@@ -44,26 +44,15 @@
 #include <daemon/eard_conf_rapi.h>
 #include <daemon/power_monitor.h>
 #include <daemon/powercap.h>
+#include <daemon/powercap_status.h>
+#include <daemon/shared_configuration.h>
+#include <daemon/inm.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #define POWERCAP_MON 0
 
-/* This version is a prototype and should be replaced by an INM plugin+GPU commands for powercap */
 
-#define INM_ENABLE_CMD	"ipmitool raw 0x3a 0xc7 0x01"
-#define INM_ENABLE_XCC_BRIGE "ipmitool raw 0x06 0x32 0 1"
-#define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control enable global" 
-#define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control disable global" 
-#define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id 0 domain platform correction hard power %d  trig_lim 1000 stats 30 enable"
-#define INM_DISABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy remove policy_id 0"
-#define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
 
-#if 0
-#define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 00 00 00" 
-#define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0 -t 0x2c raw 0x2E 0XC0 0X57 01 00 01 00 00" 
-#define INM_SET_POWERCAP_VALUE_CMD "ipmitool -v -b 0 -t 0x2c raw 0x2E 0xD0 0x57 0x01 0x00 %#X %#X %#X"
-#define INM_GET_POWERCAP_CMD "NO_CMD"
-#endif
 
 static node_powercap_opt_t my_pc_opt;
 static int my_ip;
@@ -76,6 +65,8 @@ int fd_powercap_values=0;
 pthread_t powercapmon_th;
 unsigned long powercapmon_freq=1;
 extern int eard_must_exit;
+extern settings_conf_t *dyn_conf;
+extern resched_t *resched_conf;
 
 #define min(a,b) ((a<b)?a:b)
 
@@ -119,49 +110,13 @@ void * powercapmon_f(void * arg)
 	pthread_exit(0);
 }
 #endif
-uint compute_power_to_release(uint current)
+
+void update_node_powercap_opt_shared_info()
 {
-	return my_pc_opt.th_release;
+	memcpy(&dyn_conf->pc_opt,&my_pc_opt,sizeof(node_powercap_opt_t));
+	resched_conf->force_rescheduling=1;
 }
 
-uint compute_power_to_ask(uint current)
-{
-	return my_pc_opt.th_release;
-}
-
-uint more_power(uint current)
-{
-	int dist;
-  dist=(int)my_pc_opt.current_pc-(int)current;
-	debug("More Power check:Computed distance %d",dist);
-	if (dist<0) return 1;
-	if (dist<my_pc_opt.th_inc) return 1;
-	return 0;
-}
-uint free_power(uint current)
-{
-	int dist;
-  dist=(int)my_pc_opt.current_pc-(int)current;
-	debug("Free Power check:Computed distance %d",dist);
-	if (dist<0) return 0;
-	if (dist>=my_pc_opt.th_red) return 1;
-	return 0;
-}
-uint ok_power(uint current)
-{
-	int dist;
-	dist=(int)my_pc_opt.current_pc-(int)current;
-	debug("OK Power check:Computed distance %d",dist);
-	if (dist<0) return 0;
-	if ((dist<my_pc_opt.th_red) && (dist>my_pc_opt.th_inc)) return 1;
-	return 0;
-}
-
-int do_cmd(char *cmd)
-{
-	if (strcmp(cmd,"NO_CMD")==0) return 0;
-	return 1;
-}
 
 void print_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 {
@@ -189,20 +144,9 @@ void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 void powercap_end()
 { 
 	char cmd[1024];
-	debug("1-Disable policy");
-  sprintf(cmd,INM_DISABLE_POWERCAP_POLICY_CMD);
-  if (do_cmd(cmd)){
-  if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error executing policy disable");
-  }
-  }
-  debug("2-Disable policy control");
-  sprintf(cmd,INM_DISABLE_POLICY_CONTROL_CMD);
-  if (do_cmd(cmd)){
-  if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error disabling policy control");
-  }
-  }
+	if (inm_disable_powercap_policy()!=EAR_SUCCESS) error("inm_disable_powercap_policy");
+
+	if (inm_disable_powercap_policies()!=EAR_SUCCESS) error("inm_disable_powercap_policies");
 
 }
 
@@ -218,34 +162,9 @@ int powercap_init()
 	}
 	if (init_ips_ready>0) my_ip=ips[self_id];
 	else my_ip=0;
-	
-	/* 1-Enable XCC-Bridge comm */
-	debug("Enable XCC-Bridge");
-	sprintf(cmd,INM_ENABLE_XCC_BRIGE);
-	if (do_cmd(cmd)){
-	if (execute(cmd)!=EAR_SUCCESS){ 
-		debug("Error executing INM XCC-bridge");
-		return EAR_ERROR;
-	}
-	}
-	/* 2-Enable INM commands */
-	debug("Enable INM");
-	sprintf(cmd,INM_ENABLE_CMD);
-	if (do_cmd(cmd)){
-	if (execute(cmd)!=EAR_SUCCESS){ 
-		debug("Error executing INM CMD enable");
-		return EAR_ERROR;
-	}
-	}
-	/* 3-Enable powercap policy control */
-	sprintf(cmd,INM_ENABLE_POLICY_CONTROL_CMD);
-	debug("Enable INM policy control");
-	if (do_cmd(cmd)){
-	if (execute(cmd)!=EAR_SUCCESS){
-		debug("Error executing INM CMD Policy control");
-		return EAR_ERROR;
-	}
-	}
+
+	if (inm_enable()!=EAR_SUCCESS) error("inm_enable");
+	if (inm_enable_powercap_policies()!=EAR_SUCCESS) error("inm_enable_powercap_policies");	
 	my_pc_opt.powercap_status=PC_STATUS_IDLE;
 	last_status=PC_STATUS_IDLE;
 	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
@@ -264,6 +183,7 @@ int powercap_init()
 		error("Error creating powercapmon_th");
 	}
 	#endif
+	update_node_powercap_opt_shared_info();
 	return EAR_SUCCESS;	
 }
 
@@ -289,15 +209,14 @@ int set_powercap_value(uint domain,uint limit)
 	char c_date[128];
 	state_t ret;
 	if (limit==my_pc_opt.current_pc) return EAR_SUCCESS;
+	update_node_powercap_opt_shared_info();
 	debug("%sset_powercap_value domain %u limit %u%s",COL_BLU,domain,limit,COL_CLR);
 	get_date_str(c_date,sizeof(c_date));
 	if (fd_powercap_values>=0){ 
 		dprintf(fd_powercap_values,"%s domain %u limit %u \n",c_date,domain,limit);
 	}
-	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,limit);
 	my_pc_opt.current_pc=limit;
-	fprintf(stderr,"--------------- executing %s\n",cmd);
-	return execute(cmd);
+	return inm_set_powercap_value(domain,limit);
 }
 
 
@@ -386,22 +305,22 @@ int periodic_metric_info(double cp)
 			break;
 		case PC_STATUS_OK:
 			/******* FREE POWER ******/
-			if (free_power(current) && (last_status!=PC_STATUS_IDLE)){
+			if (free_power(&my_pc_opt,current) && (last_status!=PC_STATUS_IDLE)){
 				debug("status PC_STATUS_OK and free_power");
 				/* We are consuming few power, we can release son percentage */
 				uint TBR,nextpc;
-				TBR=compute_power_to_release(current);
+				TBR=compute_power_to_release(&my_pc_opt,current);
 				nextpc=my_pc_opt.current_pc-TBR; 
 				my_pc_opt.released=TBR;
 				my_pc_opt.requested=0;
 				my_pc_opt.powercap_status=PC_STATUS_RELEASE;
 				set_powercap_value(DOMAIN_NODE,nextpc);	
-			}else if (more_power(current)){
+			}else if (more_power(&my_pc_opt,current)){
 				/******* MORE POWER ******/
 				debug("status PC_STATUS_OK and more_power");
 				if (my_pc_opt.current_pc>=my_pc_opt.def_powercap){
 					/* That should the de typical use case. We want more power,current limit is not modified */
-					uint TBR=compute_power_to_ask(current);
+					uint TBR=compute_power_to_ask(&my_pc_opt,current);
 					my_pc_opt.requested=TBR;
 					my_pc_opt.powercap_status=PC_STATUS_GREEDY;
 				}else if (my_pc_opt.current_pc<my_pc_opt.last_t1_allocated){
@@ -419,7 +338,7 @@ int periodic_metric_info(double cp)
 			}
 			break;
 		case PC_STATUS_GREEDY:
-			if (ok_power(current) || free_power(current)){
+			if (ok_power(&my_pc_opt,current) || free_power(&my_pc_opt,current)){
 				debug("Status greedy and power ok or free power");
 			/* We don't need more power, it was a phase */
 				my_pc_opt.requested=0;
@@ -427,24 +346,24 @@ int periodic_metric_info(double cp)
 			}
 			break;
 		case PC_STATUS_RELEASE:
-			if (more_power(current)){
+			if (more_power(&my_pc_opt,current)){
 				debug("status release and more power");
 				/* We released some power but we want more now , go to last allocation, to simplify things*/	
 				my_pc_opt.released=0;
 				my_pc_opt.powercap_status=PC_STATUS_OK;
 				set_powercap_value(DOMAIN_NODE,my_pc_opt.last_t1_allocated);	
-			}else if (free_power(current)){
+			}else if (free_power(&my_pc_opt,current)){
 				debug("status release and free power ");
 				/* we can still release more power */
 				uint TBR,nextpc;
-				TBR=compute_power_to_release(current);
+				TBR=compute_power_to_release(&my_pc_opt,current);
 				my_pc_opt.released+=TBR;
 				nextpc=my_pc_opt.current_pc-TBR;
 				set_powercap_value(DOMAIN_NODE,nextpc);
 			}
 			break;
 		case PC_STATUS_ASK_DEF:
-			if ((ok_power(current) || free_power(current)) && (last_status!=PC_STATUS_IDLE)){
+			if ((ok_power(&my_pc_opt,current) || free_power(&my_pc_opt,current)) && (last_status!=PC_STATUS_IDLE)){
 				debug("status ask_def and ok power or free power");
 				/* If we are ok, maybe we don't need more */
 				my_pc_opt.powercap_status=PC_STATUS_OK;
@@ -539,6 +458,10 @@ void get_powercap_status(powercap_status_t *my_status)
 	print_power_status(my_status);
 }
 
+void copy_node_powercap_opt(node_powercap_opt_t *dst)
+{
+	memcpy(dst,&my_pc_opt,sizeof(node_powercap_opt_t));
+}
 
 void print_powercap_opt(powercap_opt_t *opt)
 {

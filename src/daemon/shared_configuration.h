@@ -42,6 +42,9 @@
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/coefficient.h>
+#ifdef POWERCAP
+#include <daemon/powercap.h>
+#endif
 
 typedef struct services_conf{
 		eard_conf_t     eard;
@@ -67,7 +70,12 @@ typedef struct settings_conf{
 	double max_power_cap;
 	uint report_loops;
 	conf_install_t 	installation;
+#if POWERCAP
+	node_powercap_opt_t pc_opt;
+#endif
 } settings_conf_t;
+
+
 
 typedef struct resched{
 	int 	force_rescheduling;

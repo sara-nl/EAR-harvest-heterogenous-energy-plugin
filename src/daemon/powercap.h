@@ -72,4 +72,6 @@ int periodic_metric_info(double cp);
 int is_powercap_set();
 int is_powercap_on();
 
+void copy_node_powercap_opt(node_powercap_opt_t *dst);
+
 #endif

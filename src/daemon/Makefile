@@ -16,6 +16,8 @@ eard_OBJS = \
     eard_server_api.o \
     dynamic_configuration.o \
     power_monitor.o \
+		powercap_status.o \
+		inm.o \
 	  powercap.o \
     shared_configuration.o \
     app_api/app_server_api.o \
@@ -39,6 +41,9 @@ power_monitor.o: power_monitor.c power_monitor.h
 powercap.o: powercap.c powercap.h 
 	$(CC) $(CFLAGS) -c $<
 
+powercap_status.o:powercap_status.c powercap_status.h powercap.h
+	$(CC) $(CFLAGS) -c $<	
+
 node_metrics.o:node_metrics.c node_metrics.h
 	$(CC) $(CFLAGS) -c $<
 
@@ -46,6 +51,9 @@ dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
 	$(CC) $(CFLAGS) -c $<
 
 shared_configuration.o: shared_configuration.c shared_configuration.h
+	$(CC) $(CFLAGS) -fPIC -c $<
+
+inm.o:inm.c inm.h
 	$(CC) $(CFLAGS) -fPIC -c $<
 
 eard_api.o: eard_api.c eard_api.h
