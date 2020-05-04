@@ -8,9 +8,9 @@
 # Var definitions
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
-%define name    ear-lennox-mysql-intel-withgpus
+%define name    ear
 %define release   @VERSION_MAJOR@
-%define version   @VERSION_MINOR@
+%define version   @VERSION_MAJOR@.@VERSION_MINOR@
 
 # Information
 # Prefix  Just for when missing any prefix
@@ -20,8 +20,8 @@ Packager: EAR Team
 URL:    https://github.com/BarcelonaSupercomputingCenter/ear_private
 License:  GPL 2.1
 Name:   %{name}
-Version:  %{version}
-Release:  %{release}%{?dist}
+Version:  %{version}%{?dist}
+Release:  %{release}
 Source:   %{name}‑%{version}.tar.gz
 Buildroot:  %{_topdir}/BUILDROOT
 Prefix:   /usr

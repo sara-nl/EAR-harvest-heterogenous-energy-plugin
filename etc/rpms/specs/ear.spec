@@ -8,7 +8,7 @@
 # Var definitions
 %define __requires_exclude libmpi*.*$|libpapi.so.*|libgsl*
 
-%define name    ear-eargm-mysql-intel-withgpus
+%define name    ear
 %define release   3
 %define version   3.2
 
@@ -20,8 +20,8 @@ Packager: EAR Team
 URL:    https://github.com/BarcelonaSupercomputingCenter/ear_private
 License:  GPL 2.1
 Name:   %{name}
-Version:  %{version}
-Release:  %{release}%{?dist}
+Version:  %{version}%{?dist}
+Release:  %{release}
 Source:   %{name}‑%{version}.tar.gz
 Buildroot:  %{_topdir}/BUILDROOT
 Prefix:   /usr
