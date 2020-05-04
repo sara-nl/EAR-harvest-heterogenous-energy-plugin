@@ -77,7 +77,7 @@
 #define KILO_U		1000
 #define MEGA_U		1000000
 
-ulong th_level[NUM_LEVELS]={10,10,10,0};
+ulong th_level[NUM_LEVELS]={10,10,5,0};
 ulong pstate_level[NUM_LEVELS]={2,1,0,0};
 
 uint def_p;
