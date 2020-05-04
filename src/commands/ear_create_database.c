@@ -35,6 +35,7 @@
 #include <mysql/mysql.h>
 #include <common/system/user.h>
 #include <common/config.h>
+#include <common/types/version.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -50,6 +51,7 @@ void usage(char *app)
     fprintf(stdout, "\t-p\t\tSpecify the password for MySQL's root user.\n");
     fprintf(stdout, "\t-o\t\tOutputs the commands that would run.\n");
     fprintf(stdout, "\t-r\t\tRuns the program. If '-o' this option will be override.\n");
+    fprintf(stdout, "\t-v\t\tShows current EAR version.\n");
     fprintf(stdout, "\t-h\t\tShows this message.\n");
 	exit(0);
 }
@@ -709,12 +711,16 @@ int main(int argc,char *argv[])
     strcpy(passw, "");
 
     struct termios t;
-    while ((c = getopt(argc, argv, "phrou")) != -1)
+    while ((c = getopt(argc, argv, "phrouv")) != -1)
     {
         switch(c)
         {
             case 'h':
                usage(argv[0]);
+               break;
+            case 'v':
+               print_version();
+               exit(0);
                break;
             case 'p':
                 tcgetattr(STDIN_FILENO, &t);

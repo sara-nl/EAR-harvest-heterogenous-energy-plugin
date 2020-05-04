@@ -138,6 +138,12 @@ int send_command(request_t *command);
 /** Sets frequency for all nodes. */
 void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
 
+/** Sets the default pstate for a given policy in all nodes */
+void set_def_pstate_all_nodes(uint pstate,ulong policy,cluster_conf_t my_cluster_conf);
+
+/** Sets the maximum pstate in all the nodes */
+void set_max_pstate_all_nodes(uint pstate,cluster_conf_t my_cluster_conf);
+
 /** Sets the th to all nodes. */
 void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf);
 

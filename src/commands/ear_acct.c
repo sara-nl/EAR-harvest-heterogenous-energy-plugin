@@ -38,6 +38,7 @@
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
+#include <common/types/version.h>
 
 #if USE_DB
 #include <common/states.h>
@@ -61,7 +62,8 @@ void usage(char *app)
     printf("Usage: %s [Optional parameters]\n"\
 "\tOptional parameters: \n" \
 "\t\t-h\tdisplays this message\n"\
-"\t\t-v\tverbose mode for debugging purposes\n" \
+"\t\t-v\tdisplays current EAR version\n" \
+"\t\t-b\tverbose mode for debugging purposes\n" \
 "\t\t-u\tspecifies the user whose applications will be retrieved. Only available to privileged users. [default: all users]\n" \
 "\t\t-j\tspecifies the job id and step id to retrieve with the format [jobid.stepid] or the format [jobid1,jobid2,...,jobid_n].\n" \
 "\t\t\t\tA user can only retrieve its own jobs unless said user is privileged. [default: all jobs]\n"\
@@ -73,7 +75,7 @@ void usage(char *app)
 "", app);
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
     #endif
-	exit(1);
+	exit(0);
 }
 
 void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
@@ -969,7 +971,7 @@ int main(int argc, char *argv[])
     if (user_all_ids_get(&user_info) != EAR_SUCCESS)
     {
         warning("Failed to retrieve user data\n");
-        exit(0);
+        exit(1);
     }
 
     char *user = user_info.ruid_name;
@@ -979,7 +981,7 @@ int main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmalc:hx::")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmablc:hx::")) != -1) 
     {
         switch (opt)
         {
@@ -1026,8 +1028,13 @@ int main(int argc, char *argv[])
             case 'l':
                 full_length = 1;
                 break;
-            case 'v':
+            case 'b':
                 verbose = 1;
+                break;
+            case 'v':
+                free_cluster_conf(&my_conf);
+                print_version();
+                exit(0);
                 break;
             case 'm':
                 all_mpi = 1;
@@ -1055,5 +1062,5 @@ int main(int argc, char *argv[])
     else read_from_database(user, job_id, limit, step_id, e_tag, job_ids); 
 
     free_cluster_conf(&my_conf);
-    exit(1);
+    exit(0);
 }
