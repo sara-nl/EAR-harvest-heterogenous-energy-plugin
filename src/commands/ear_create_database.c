@@ -44,12 +44,21 @@ cluster_conf_t my_cluster;
 char signature_detail = !DB_SIMPLE;
 char db_node_detail = DEMO;
 
+void print_version()
+{
+    char msg[256];
+    sprintf(msg, "EAR version %s\n", RELEASE);
+    printf(msg);
+    exit(0);
+}
+
 void usage(char *app)
 {
 	fprintf(stdout, "Usage:%s [options]\n", app);
     fprintf(stdout, "\t-p\t\tSpecify the password for MySQL's root user.\n");
     fprintf(stdout, "\t-o\t\tOutputs the commands that would run.\n");
     fprintf(stdout, "\t-r\t\tRuns the program. If '-o' this option will be override.\n");
+    fprintf(stdout, "\t-v\t\tShows current EAR version.\n");
     fprintf(stdout, "\t-h\t\tShows this message.\n");
 	exit(0);
 }
@@ -709,12 +718,15 @@ int main(int argc,char *argv[])
     strcpy(passw, "");
 
     struct termios t;
-    while ((c = getopt(argc, argv, "phrou")) != -1)
+    while ((c = getopt(argc, argv, "phrouv")) != -1)
     {
         switch(c)
         {
             case 'h':
                usage(argv[0]);
+               break;
+            case 'v':
+               print_version();
                break;
             case 'p':
                 tcgetattr(STDIN_FILENO, &t);
