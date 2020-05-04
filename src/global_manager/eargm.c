@@ -409,7 +409,7 @@ double adapt_th(uint status)
 	case WARNING_3:
 	case WARNING_2:
 	case PANIC:
-		default_state=1;
+		default_state=0;
 		def_th=def_th+th_level[status];
 		break;
 	}
@@ -430,13 +430,13 @@ unsigned long adapt_pstate(uint status)
 	case WARNING_3:
 	case WARNING_2:
 	case PANIC:
-		default_state=1;
+		default_state=0;
 		def=def+pstate_level[status];
 		max=max+pstate_level[status];
 		break;
 	}
 	variation=max-curr_max;
-	verbose(1,"Setting def pstate %u and max_pstate %u in all nodesi, variation %d",def,max, variation);
+	verbose(1,"Setting def pstate %u and max_pstate %u in all nodes, variation %d",def,max, variation);
 	if (curr_max!=max){
 		//set_max_pstate_all_nodes(max,my_cluster_conf);
 		// set_def_pstate_all_nodes(def,def_p,my_cluster_conf);
@@ -651,6 +651,7 @@ int main(int argc,char *argv[])
 			case NO_PROBLEM:
 				verbose(VGM," Safe area. energy budget %.2lf%% ",perc_energy);
 				if ((my_cluster_conf.eargm.mode) && (last_level==NO_PROBLEM) && (!default_state)){ 
+					verbose(VGM,"Restoring default configuration");
 					restore_conf_all_nodes(my_cluster_conf);
 					default_state=1;
 				}
@@ -658,7 +659,7 @@ int main(int argc,char *argv[])
 			case WARNING_3:
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
-				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
+				verbose(VGM,"WARNING1... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 	
 				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
@@ -672,7 +673,7 @@ int main(int argc,char *argv[])
 			case WARNING_2:
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
-				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
+				verbose(VGM,"WARNING2... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					my_warning.inc_th=adapt_th(WARNING_2);            
