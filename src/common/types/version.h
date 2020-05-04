@@ -32,6 +32,7 @@
 
 
 void version_to_str(char *buff);
+void print_version();
 
 
 #endif

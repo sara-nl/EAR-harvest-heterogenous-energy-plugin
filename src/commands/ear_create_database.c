@@ -35,6 +35,7 @@
 #include <mysql/mysql.h>
 #include <common/system/user.h>
 #include <common/config.h>
+#include <common/types/version.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -43,14 +44,6 @@ char print_out = 0;
 cluster_conf_t my_cluster;
 char signature_detail = !DB_SIMPLE;
 char db_node_detail = DEMO;
-
-void print_version()
-{
-    char msg[256];
-    sprintf(msg, "EAR version %s\n", RELEASE);
-    printf(msg);
-    exit(0);
-}
 
 void usage(char *app)
 {
@@ -727,6 +720,7 @@ int main(int argc,char *argv[])
                break;
             case 'v':
                print_version();
+               exit(0);
                break;
             case 'p':
                 tcgetattr(STDIN_FILENO, &t);

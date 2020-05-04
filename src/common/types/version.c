@@ -36,3 +36,10 @@ void version_to_str(char *buff)
 	sprintf(buff,"%s", RELEASE);
 }
 
+void print_version()
+{
+    char msg[256];
+    sprintf(msg, "EAR version %s\n", RELEASE);
+    printf(msg);
+}
+

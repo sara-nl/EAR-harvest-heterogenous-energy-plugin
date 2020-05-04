@@ -39,11 +39,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <common/system/user.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>
+#include <common/system/user.h>
 #include <common/output/verbose.h>
+#include <common/types/version.h>
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -205,13 +206,6 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
         }
         printf("\n");
     }
-}
-
-void print_version()
-{
-    char msg[256];
-    sprintf(msg, "EAR version %s\n", RELEASE);
-    printf(msg);
 }
 
 void usage(char *app)

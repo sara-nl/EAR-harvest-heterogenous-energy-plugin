@@ -38,6 +38,7 @@
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
+#include <common/types/version.h>
 
 #if USE_DB
 #include <common/states.h>
@@ -54,14 +55,6 @@ int query_filters = 0;
 int all_mpi = 0;
 int avx = 0;
 char csv_path[256] = "";
-
-void print_version()
-{
-    char msg[256];
-    sprintf(msg, "EAR version %s\n", RELEASE);
-    printf(msg);
-    exit(0);
-}
 
 void usage(char *app)
 {
@@ -1041,6 +1034,7 @@ int main(int argc, char *argv[])
             case 'v':
                 free_cluster_conf(&my_conf);
                 print_version();
+                exit(0);
                 break;
             case 'm':
                 all_mpi = 1;

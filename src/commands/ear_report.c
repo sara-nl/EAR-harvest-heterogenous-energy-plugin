@@ -42,6 +42,7 @@
 #include <common/system/user.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
+#include <common/types/version.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #if DB_MYSQL
@@ -135,14 +136,6 @@ int query_filters = 0;
 unsigned long long avg_pow = 0;
 time_t global_start_time = 0;
 time_t global_end_time = 0;
-
-void print_version()
-{
-    char msg[256];
-    sprintf(msg, "EAR version %s\n", RELEASE);
-    printf(msg);
-    exit(0);
-}
 
 void usage(char *app)
 {
@@ -1020,6 +1013,7 @@ int main(int argc,char *argv[])
                 break;
             case 'v':
                 print_version();
+                exit(0);
                 break;
             case 'b':
                 verbose=1;
