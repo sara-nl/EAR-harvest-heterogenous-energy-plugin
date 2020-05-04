@@ -228,7 +228,7 @@ void print_full_apps(application_t *apps, int num_apps)
 
     printf("%-6s-%-7s\t %-10s %-15s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-7s %-10s\n",
             "JOB ID", "STEP ID", "NODE ID", "USER ID", "APPLICATION ID", "FREQ", "TIME",
-            "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI", "MAX POWER");
+            "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI(%)", "MAX POWER");
 
     for (i = 0; i < num_apps; i++)
     {
@@ -245,17 +245,17 @@ void print_full_apps(application_t *apps, int num_apps)
             compute_vpi(&vpi, &apps[i].signature);
             if (apps[i].job.step_id != 4294967294)
             {
-                printf("%8lu-%-3lu\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
+                printf("%8lu-%-3lu\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.3lf %-10.2lf\n",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
+                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi*100, apps[i].power_sig.max_DC_power);
             }
             else
             {
-                printf("%8lu-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.2lf %-10.2lf\n",
+                printf("%8lu-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-10.2lf %-20s %-7.3lf %-10.2lf\n",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
                     avg_f, apps[i].signature.time, apps[i].signature.DC_power, apps[i].signature.GBS, apps[i].signature.CPI, 
-                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi, apps[i].power_sig.max_DC_power);
+                    apps[i].signature.time * apps[i].signature.DC_power, buff, vpi*100, apps[i].power_sig.max_DC_power);
             }
         }
         else
@@ -314,17 +314,17 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
         if (avx)
         {
             strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s %-14s %-10s\n");
-            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-10.2lf\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.4lf %-14.3lf %-10.2lf\n");
             strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-14s %-10.2lf\n");
-            strcpy(sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-14.2lf %-10.2lf\n");
+            strcpy(sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.4lf %-14.3lf %-10.2lf\n");
             strcpy(mpi_sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-14s %-10.2lf\n");
         }
         else
         {
             strcpy(header_format, "%6s-%-7s\t %-10s %-20s %-6s %-7s %-10s %-10s %-14s %-10s %-10s %-14s %-14s %-10s\n");
-            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-10.2lf\n");
+            strcpy(line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.4lf %-10.2lf\n");
             strcpy(mpi_line_format, "%8u-%-3u\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-10.2lf\n");
-            strcpy(sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.2lf %-10.2lf\n");
+            strcpy(sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10.2lf %-10.2lf %-14.2lf %-14.4lf %-10.2lf\n");
             strcpy(mpi_sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-10.2lf\n");
         }
     }
@@ -333,24 +333,24 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
         if (avx)
         {
             strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
-            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s;%s;%.2lf\n");
-            strcpy(sbatch_line_format, "%u-%s;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_sbatch_line_format, "%u-%s;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s;%s;%.2lf\n");
+            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n");
+            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%lf;%lf;%lf;%s;%s;%lf;%s;%s;%lf\n");
+            strcpy(sbatch_line_format, "%u-%s;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n");
+            strcpy(mpi_sbatch_line_format, "%u-%s;%s;%s;%s;%u;%lf;%lf;%lf;%s;%s;%lf;%s;%s;%lf\n");
         }
         else
         {
             strcpy(header_format, "%s-%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s;%s\n");
-            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s;%.2lf\n");
-            strcpy(sbatch_line_format, "%u-%u;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf;%.2lf\n");
-            strcpy(mpi_sbatch_line_format, "%u-%s;%s;%s;%s;%u;%.2lf;%.2lf;%.2lf;%s;%s;%.2lf;%s;%.2lf\n");
+            strcpy(line_format, "%u-%u;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n");
+            strcpy(mpi_line_format, "%u-%u;%s;%s;%s;%u;%lf;%lf;%lf;%s;%s;%lf;%s;%lf\n");
+            strcpy(sbatch_line_format, "%u-%u;%s;%s;%s;%u;%lf;%lf;%lf;%lf;%lf;%lf;%lf;%lf\n");
+            strcpy(mpi_sbatch_line_format, "%u-%s;%s;%s;%s;%u;%lf;%lf;%lf;%s;%s;%lf;%s;%lf\n");
         }
     }
     if (avx)
         dprintf(fd, header_format,
             "JOB", "STEP", "USER", "APPLICATION", "POLICY", "NODES#", "FREQ(GHz)", "TIME(s)",
-            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "GFLOPS/WATT", "VPI", "MAX POWER(W)");
+            "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "GFLOPS/WATT", "VPI(%)", "MAX POWER(W)");
 
     else
         dprintf(fd, header_format,
@@ -417,6 +417,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 
 				if (avg_VPI == 0)
 					avg_VPI = -1;
+                else avg_VPI*=100;
 
                 if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
                 {
@@ -520,6 +521,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 
 			if (avg_VPI == 0)
 				avg_VPI = -1;
+            else avg_VPI *=100;
             if (avg_frequency > 0 && avg_time > 0 && total_energy > 0)
             {
                     if (!is_sbatch)
@@ -619,6 +621,25 @@ void add_int_filter(char *query, char *addition, int value)
     
     strcat(query_tmp, addition);
     strcat(query_tmp, "=");
+    strcat(query_tmp, "%llu");
+    sprintf(query, query_tmp, value);
+    query_filters ++;
+}
+
+void add_int_comp_filter(char *query, char *addition, int value, char greater_than)
+{
+    char query_tmp[512];
+    strcpy(query_tmp, query);
+    if (query_filters < 1)
+        strcat(query_tmp, " WHERE ");
+    else
+        strcat(query_tmp, " AND ");
+    
+    strcat(query_tmp, addition);
+    if (greater_than)
+        strcat(query_tmp, ">");
+    else
+        strcat(query_tmp, "<");
     strcat(query_tmp, "%llu");
     sprintf(query, query_tmp, value);
     query_filters ++;
@@ -763,6 +784,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 
     strcpy(query, EVENTS_QUERY);
 
+    add_int_comp_filter(query, "event_type", 100, 0);
     if (job_id >= 0)
         add_int_filter(query, "job_id", job_id);
     else if (strlen(job_ids) > 0)

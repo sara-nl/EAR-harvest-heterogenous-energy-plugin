@@ -35,7 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -51,11 +51,16 @@ extern unsigned long ext_def_freq;
 #define FREQ_DEF(f) f
 #endif
 
+static double *ratios_time;
+static double *ratios_energy;
 
 state_t policy_init(polctx_t *c)
 {
-	if (c!=NULL) return EAR_SUCCESS;
-	else return EAR_ERROR;
+	if (c!=NULL){ 
+		ratios_time=malloc(sizeof(double)*c->num_pstates);
+		ratios_energy=malloc(sizeof(double)*c->num_pstates);
+		return EAR_SUCCESS;
+	}else return EAR_ERROR;
 }
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *l)
@@ -85,6 +90,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	unsigned int ref;
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
 	double power_ref,time_ref,max_penalty,time_max;
+	double energy_nominal,time_nominal;
 
   ulong best_freq,best_pstate,freq_ref;
 	ulong curr_freq,nominal;
@@ -93,6 +99,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 
 	if ((c!=NULL) && (c->app!=NULL)){
+		memset(ratios_time,0,sizeof(double)*c->num_pstates);
+		memset(ratios_energy,0,sizeof(double)*c->num_pstates);
 
 		fprintf(stderr,"Max_freq set to %lu\n",c->app->max_freq);
     if (c->use_turbo) min_pstate=0;
@@ -102,13 +110,17 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		nominal=frequency_pstate_to_freq(min_pstate);
 
+	ratios_time[min_pstate]=1;
+	ratios_energy[min_pstate]=1;
+
 		fprintf(stderr,"nominal %lu\n",nominal);
 
 	// Default values
+  max_penalty=c->app->settings[0];
+	def_freq=FREQ_DEF(c->app->def_freq);
+	def_pstate=frequency_closest_pstate(def_freq);
+	
 
-		max_penalty=c->app->settings[0];
-		def_freq=FREQ_DEF(c->app->def_freq);
-		def_pstate=frequency_closest_pstate(def_freq);
 
 		// This is the frequency at which we were running
 		curr_freq=*(c->ear_frequency);
@@ -128,7 +140,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				st=project_power(my_app,curr_pstate,def_pstate,&power_ref);
 				st=project_time(my_app,curr_pstate,def_pstate,&time_ref);
 				best_freq=def_freq;
-                debug("projecting from %d to %d\t time: %.2lf\t power: %.2lf\n", curr_pstate, i, time_proj, power_proj);
 		}
 		else
 		{
@@ -154,7 +165,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 					project_power(my_app,curr_pstate,min_pstate,&power_ref);
 					project_time(my_app,curr_pstate,min_pstate,&time_ref);
 					best_freq=nominal;
-                    debug("projecting to nominal\t time: %.2lf\t power: %.2lf\n", time_ref, power_ref);
+          debug("projecting to nominal\t time: %.2lf\t power: %.2lf\n", time_ref, power_ref);
 				}else{
         	time_ref=my_app->time;
         	power_ref=my_app->DC_power;
@@ -165,6 +176,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		}
 		energy_ref=power_ref*time_ref;
 		best_solution=energy_ref;
+		energy_nominal=energy_ref;
+		time_nominal=time_ref;
 
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * max_penalty);
@@ -180,19 +193,38 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
-                debug("projected from %d to %d\t time: %.2lf\t power: %.2lf energy: %.2lf\n", curr_pstate, i, time_proj, power_proj, energy_proj);
+        debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
+			ratios_energy[i]=((energy_nominal-energy_proj)/energy_nominal)*100.0;
+			ratios_time[i]=((time_proj-time_nominal)/time_nominal)*100.0;
+			#if 0
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
                     debug("new best solution found\n");
 					best_freq = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
 			}
+			#endif
 		}
 	}
 	}else{ 
 		*ready=0;
 		return EAR_ERROR;
 	}
+	best_pstate=min_pstate;
+	double best_ratio=1,curr;
+	for (i = min_pstate+1; i < c->num_pstates;i++){
+		/* If we save energy */
+		curr=ratios_energy[i]/ratios_time[i];
+		debug("pstate %d reports %lf energy saving and %lf time penalty ratio=%lf",i,ratios_energy[i],ratios_time[i],curr);
+		if (ratios_energy[i]>0){
+			if (curr>best_ratio){
+				best_pstate=i;
+				best_ratio=curr;
+			}
+		}	
+	}
+	best_freq = frequency_pstate_to_freq(best_pstate);	
+	debug("Best ratio is pstate %lu f=%lu with ratio %lf",best_pstate,best_freq,best_ratio);
 	*new_freq=best_freq;
 	return EAR_SUCCESS;
 }

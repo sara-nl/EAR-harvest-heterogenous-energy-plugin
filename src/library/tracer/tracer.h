@@ -69,7 +69,7 @@
 	/** returns true if traces are dynamically activated , is independent on start/stop*/
 	int traces_are_on();
 	void traces_mpi_init();
-	void traces_mpi_call(int global_rank, int local_rank, ulong time, ulong ev, ulong a1, ulong a2, ulong a3);
+	void traces_mpi_call(int global_rank, int local_rank, ulong ev, ulong a1, ulong a2, ulong a3);
 	void traces_mpi_end();
 
 #else
@@ -90,7 +90,7 @@
 	#define traces_stop()
 	#define traces_are_on() 	0
 	#define traces_mpi_init();
-	#define traces_mpi_call(g,l,t,e,a1,a2,a3);
+	#define traces_mpi_call(g,l,e,a1,a2,a3);
 	#define traces_mpi_end();
 
 #endif
