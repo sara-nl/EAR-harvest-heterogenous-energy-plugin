@@ -50,9 +50,10 @@
 #include <common/types/daemon_log.h>
 #include <common/database/db_helper.h>
 #include <common/types/generic.h>
+#include <common/system/execute.h>
 #include <common/types/gm_warning.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <global_manager/eargm_server_api.h>
+#include <global_manager/eargm_ext_rm.h>
 #include <daemon/eard_rapi.h>
 #if POWERCAP
 #include <global_manager/cluster_powercap.h>
@@ -81,11 +82,17 @@
 
 #define min(a,b) (a<b?a:b)
 
+ulong th_level[NUM_LEVELS]={10,10,5,0};
+ulong pstate_level[NUM_LEVELS]={2,1,0,0};
+
+uint def_p;
 uint use_aggregation;
 uint units;
 uint policy;
 uint divisor = 1;
 uint last_id=0;
+uint process_created=0;
+static uint default_state=1;
 
 int last_state=EARGM_NO_PROBLEM;
 unsigned long last_avg_power=0,curr_avg_power=0;
@@ -106,7 +113,7 @@ int verbose_arg=-1;
 uint period_t1,period_t2;
 ulong total_energy_t2,energy_t1;
 uint my_port;
-uint current_sample=0,total_samples=0;
+uint current_sample=0,total_samples=0,last_level=EARGM_NO_PROBLEM,T1_stables=0;
 ulong *energy_consumed;
 ulong energy_budget;
 ulong power_budget;
@@ -115,6 +122,8 @@ uint in_action=0;
 double perc_energy,perc_time,perc_power;
 double avg_power_t2,avg_power_t1;
 static int fd_my_log=2;
+double curr_th;
+ulong curr_max;
 
 
 
@@ -161,7 +170,14 @@ void update_eargm_configuration(cluster_conf_t *conf)
 			break;
         default:break;
     }
-
+		def_p=conf->default_policy;
+		if ((strcmp(conf->power_policies[def_p].name,"min_time")) && (conf->eargm.mode)){
+			verbose(0,"Warning, default_policy is not min_time. AUtomatic mode only supported when min_time is default policy. Setting it to manual");
+			conf->eargm.mode=0;	
+		}
+		curr_th=conf->power_policies[def_p].settings[0];
+		curr_max=conf->eard.max_pstate;
+		verbose(1,"Default th for policy min_time %lf, max_pstate %lu",curr_th,curr_max);
 }
 
 
@@ -283,7 +299,7 @@ uint defcon(ulong e_t2,ulong e_t1,ulong load)
     case MAXPOWER:;
       avg_power_t1=(e_t1/period_t1);
       avg_power_t2=(e_t2/period_t2);
-      verbose(VGM,"Avg. Power for T1 %lfAvg. Power for T2 %lf",avg_power_t1,avg_power_t2);
+      verbose(VGM,"Avg. Power for T1 %lf Avg. Power for T2 %lf",avg_power_t1,avg_power_t2);
       perc_power=(double)avg_power_t1/(double)power_budget;
       perc=perc_power;
       break;
@@ -343,24 +359,12 @@ void process_status(pid_t pid_process_created,int process_created_status)
 int execute_action(ulong e_t1,ulong e_t2,ulong e_limit,uint t2,uint t1,char *units)
 {
   int ret;
+	char command_to_execute[512];
   char *my_command=getenv("EAR_WARNING_COMMAND");
   if (my_command!=NULL){
-    ret=fork();
-    if (ret==0){
-      char command_to_execute[512];
-      sprintf(command_to_execute,"%s %lu %lu %lu %u %u %s",my_command,e_t1,e_t2,e_limit,t2,t1,units);
-      verbose(0,"Executing %s",command_to_execute);
-      ret=system(command_to_execute);
-      if (WIFSIGNALED(ret)){
-        error("Command %s terminates with signal %d",command_to_execute,WTERMSIG(ret));
-      }else if (WIFEXITED(ret) && WEXITSTATUS(ret)){
-        error("Command %s terminates with exit status  %d",command_to_execute,WEXITSTATUS(ret));
-      }
-      exit(0);
-    }else if (ret<0){
-      error("eargm child to execute command can not be forked %s",strerror(errno));
-      return 0;
-    }else return 1;
+		sprintf(command_to_execute,"%s %lu %lu %lu %u %u %s",my_command,e_t1,e_t2,e_limit,t2,t1,units);
+		verbose(0,"Executing %s",command_to_execute);
+		execute_with_fork(command_to_execute);	
   }else{
     debug("eargm warning command not defined");
     return 0;
@@ -376,99 +380,94 @@ int send_mail(uint level, double energy)
   char command[1024];
   char mail_filename[SZ_PATH];
   int fd,ret;
-  ret=fork();
-  if (ret==0){
-    sprintf(buff,"Detected WARNING level %u, %lfi %% of energy from the total energy limit",level,energy);
-    sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.install.dir_temp);
-    fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-    if (fd<0){
+  if (strcmp(my_cluster_conf.eargm.mail,"nomail")){ 
+		sprintf(buff,"Detected WARNING level %u, %lfi %% of energy from the total energy limit\n",level,energy);
+		sprintf(mail_filename,"%s/warning_mail.txt",my_cluster_conf.install.dir_temp);
+		fd=open(mail_filename,O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+  	if (fd<0){
       error("Warning mail file cannot be created at %s (%s)",mail_filename,strerror(errno));
-      exit(1);
-    }   
-    write(fd,buff,strlen(buff));
-    close(fd);
-    sprintf(command,"mailx -s \"Energy limit warning\" %s < %s",my_cluster_conf.eargm.mail,mail_filename);
-    if (strcmp(my_cluster_conf.eargm.mail,"nomail")){ 
-      /* Sending mail */
-      ret=system(command);
-      if (WIFSIGNALED(ret)){
-        error("Command: %s terminates with signal %d",command,WTERMSIG(ret));
-      }else if (WIFEXITED(ret) && WEXITSTATUS(ret)){
-        error("Command: %s terminates with exit status  %d",command,WEXITSTATUS(ret));
-      }
-    }else {
-      /* Mail is not sent, we just print the command hen debugging */
-      debug("%s",command);
-    }
-    exit(0);
-  }else if (ret<0){
-    error("eargm child to send mail can not be forked %s",strerror(errno));
-    return 0;
-  }
-  return 1;
+			return 0;
+  	}   
+  	write(fd,buff,strlen(buff));
+  	close(fd);
+  	sprintf(command,"mailx -s \"Energy limit warning\" %s < %s",my_cluster_conf.eargm.mail,mail_filename);
+		execute_with_fork(command);
+		return 1;
+	}
+	return 0;
 }
 
-/*
-*
-*	THREAD attending external commands. 
-*
-*/
-
-void process_remote_requests(int clientfd)
+void check_pending_processes()
 {
-    eargm_request_t command;
-    uint req;
-    ulong ack=EAR_SUCCESS;
-    debug("connection received");
-    req=read_command(clientfd,&command);
-    switch (req){
-        case EARGM_NEW_JOB:
-			// Computes the total number of nodes in use
-            debug("new_job command received %d num_nodes %u",command.req,command.num_nodes);
-			total_nodes+=command.num_nodes;
-            break;
-        case EARGM_END_JOB:
-			// Computes the total number of nodes in use
-            debug("end_job command received %d num_nodes %u",command.req,command.num_nodes);
-			total_nodes-=command.num_nodes;
-            break;
-        default:
-            error("Invalid remote command");
-    }  
-    send_answer(clientfd,&ack);
-}
-
-
-void *eargm_server_api(void *p)
-{
-	int eargm_fd,eargm_client;
-	struct sockaddr_in eargm_con_client;
-
-    debug("Creating scoket for remote commands,using port %u",my_port);
-    eargm_fd=create_server_socket(my_port);
-    if (eargm_fd<0){
-        error("Error creating socket");
-        pthread_exit(0);
-    }
-    do{
-        debug("waiting for remote commands port=%u",my_port);
-        eargm_client=wait_for_client(eargm_fd,&eargm_con_client);
-        if (eargm_client<0){
-            error(" wait_for_client returns error");
-        }else{
-            process_remote_requests(eargm_client);
-            close(eargm_client);
+      pid_t pid_process_created;
+      int process_created_status;
+      do{
+        /* Processing processes created */
+        if ((pid_process_created=waitpid(-1,&process_created_status,WNOHANG))>0){
+          process_status(pid_process_created,process_created_status);
+          process_created--;
+        }else if (pid_process_created<0){
+          warning("Waitpid returns <0 and process_created pendings to release");
+          process_created=0;
         }
-    }while(1);
-    verbose(VGM,"exiting");
-    close_server_socket(eargm_fd);
-	return NULL;
+      }while(pid_process_created>0);
 
 }
 
+
 /*
-*	ACTIONS for WARNING and PANIC LEVELS
+*	ACTIONS for WARNING and PANIC LEVELS, USED in OLD version
 */
+#if 0
+#define NO_PROBLEM  3
+#define WARNING_3 2
+#define WARNING_2 1
+#define PANIC   0
+
+double adapt_th(uint status)
+{
+	ulong def_th;
+	def_th=(ulong)(my_cluster_conf.power_policies[def_p].settings[0]*100);
+	switch (status){
+	case WARNING_3:
+	case WARNING_2:
+	case PANIC:
+		default_state=0;
+		def_th=def_th+th_level[status];
+		break;
+	}
+	verbose(1,"Setting th in all nodes to %lu",def_th);
+	if (def_th!=curr_th){ 
+		set_th_all_nodes(def_th,def_p,my_cluster_conf);
+	}
+	curr_th=def_th;
+	return def_th;
+}
+unsigned long adapt_pstate(uint status)
+{
+	unsigned int def,max;
+	int variation;
+	def=my_cluster_conf.power_policies[def_p].p_state;
+	max=my_cluster_conf.eard.max_pstate;
+	switch (status){
+	case WARNING_3:
+	case WARNING_2:
+	case PANIC:
+		default_state=0;
+		def=def+pstate_level[status];
+		max=max+pstate_level[status];
+		break;
+	}
+	variation=max-curr_max;
+	verbose(1,"Setting def pstate %u and max_pstate %u in all nodes, variation %d",def,max, variation);
+	if (curr_max!=max){
+		red_def_max_pstate_all_nodes((uint)variation,my_cluster_conf);
+	}
+	curr_max=max;
+	return max;
+}
+#endif
+
 void report_status(gm_warning_t *my_warning)
 {
     #if SYSLOG_MSG
@@ -481,7 +480,6 @@ void set_gm_grace_period_values(gm_warning_t *my_warning)
 	if (my_warning==NULL) return;
 	my_warning->level=GRACE_PERIOD;
 	my_warning->new_p_state=GRACE_PERIOD;
-	my_warning->inc_th=0.0;
 }
 void set_gm_status(gm_warning_t *my_warning,ulong et1,ulong et2,ulong ebudget,uint t1,uint t2,double perc,uint policy)
 {
@@ -559,7 +557,6 @@ int main(int argc,char *argv[])
 	int ret;
 	ulong result;
 	int resulti;
-	uint process_created=0;
 	gm_warning_t my_warning;
 	risk_t current_risk;
     if (argc > 2) usage(argv[0]);
@@ -641,7 +638,6 @@ int main(int argc,char *argv[])
 
     #if USE_DB
     verbose(VGM+1,"Connecting with EAR DB");
-	/*strcpy(my_cluster_conf.database.database,"Report2");*/
     init_db_helper(&my_cluster_conf.database);
     #endif
 	
@@ -659,23 +655,16 @@ int main(int argc,char *argv[])
 	*	MAIN LOOP
 	*			
 	*/
+	if (my_cluster_conf.eargm.mode==0){ 
+		my_warning.inc_th=0; 
+		my_warning.new_p_state=0;
+	}
 	alarm(period_t1);
 	while(1){
 		// Waiting a for period_t1
 		sigsuspend(&set);
-	 if (process_created){
-      pid_t pid_process_created;
-      int process_created_status; 
-      do{ 
-        /* Processing processes created */
-        if ((pid_process_created=waitpid(-1,&process_created_status,WNOHANG))>0){ 
-          process_status(pid_process_created,process_created_status);
-          process_created--;
-        }else if (pid_process_created<0){
-          warning("Waitpid returns <0 and process_created pendings to release");
-          process_created=0;
-        }   
-      }while(pid_process_created>0);
+	 	if (process_created){
+			check_pending_processes();
     }   
 		// ALARM RECEIVED
 		if (t1_expired){
@@ -715,19 +704,24 @@ int main(int argc,char *argv[])
 
 			uint current_level=defcon(total_energy_t2,energy_t1,total_nodes);
 			set_gm_status(&my_warning,energy_t1,total_energy_t2,energy_budget,period_t1,period_t2,perc_energy,policy);
-			
+	
 			if (!in_action){
 			my_warning.level=current_level;
 			my_warning.inc_th=0;my_warning.new_p_state=0;
 			switch(current_level){
 			case EARGM_NO_PROBLEM:
 				verbose(VGM," Safe area. energy budget %.2lf%% ",perc_energy);
+				if ((my_cluster_conf.eargm.mode) && (last_level==EARGM_NO_PROBLEM) && (!default_state)){ 
+					verbose(VGM,"Restoring default configuration");
+					restore_conf_all_nodes(my_cluster_conf);
+					default_state=1;
+				}
 				break;
 			case EARGM_WARNING1:
 				last_state=EARGM_WARNING1;
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
-				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
+				verbose(VGM,"WARNING1... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 	
 				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
@@ -742,7 +736,7 @@ int main(int argc,char *argv[])
 				last_state=EARGM_WARNING2;
 				in_action+=my_cluster_conf.eargm.grace_periods;
 				verbose(VGM,"****************************************************************");
-				verbose(VGM,"WARNING... we are close to the maximum energy budget %.2lf%% ",perc_energy);
+				verbose(VGM,"WARNING2... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_WARNING2);
@@ -774,6 +768,9 @@ int main(int argc,char *argv[])
 				in_action--;
 				set_gm_grace_period_values(&my_warning);
 			}
+			if (current_level!=last_level) T1_stables=0;
+			else T1_stables++;
+			last_level=current_level;
 		}// ALARM
 		#if USE_DB
 		db_insert_gm_warning(&my_warning);

@@ -431,10 +431,12 @@ void job_end_powermon_app(ehandler_t *ceh) {
 	compute_power(&current_ear_app[ccontext]->energy_init, &c_energy, &app_power);
 
 	current_ear_app[ccontext]->app.power_sig.DC_power = accum_node_power(&app_power);
-	if (app_power.avg_dc > current_ear_app[ccontext]->app.power_sig.max_DC_power)
+	if ((app_power.avg_dc > current_ear_app[ccontext]->app.power_sig.max_DC_power) && (app_power.avg_dc<my_node_conf->max_error_power)){
 		current_ear_app[ccontext]->app.power_sig.max_DC_power = app_power.avg_dc;
-	if (app_power.avg_dc < current_ear_app[ccontext]->app.power_sig.min_DC_power)
+	}
+	if (app_power.avg_dc < current_ear_app[ccontext]->app.power_sig.min_DC_power){
 		current_ear_app[ccontext]->app.power_sig.min_DC_power = app_power.avg_dc;
+	}
 	current_ear_app[ccontext]->app.power_sig.DRAM_power = accum_dram_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.PCK_power = accum_cpu_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
@@ -953,10 +955,12 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	while (pthread_mutex_trylock(&app_lock));
 
 	if ((ccontext >= 0) && (current_ear_app[ccontext]->app.job.id > 0)) {
-		if ((my_current_power->avg_dc > maxpower) && (maxpower>0) && (maxpower<my_node_conf->max_error_power))
+		if ((my_current_power->avg_dc > maxpower) && (my_current_power->avg_dc<my_node_conf->max_error_power)){
 			current_ear_app[ccontext]->app.power_sig.max_DC_power = my_current_power->avg_dc;
-		if ((my_current_power->avg_dc < minpower) && (minpower>0))
+		}
+		if ((my_current_power->avg_dc < minpower) && (minpower>0)){
 			current_ear_app[ccontext]->app.power_sig.min_DC_power = my_current_power->avg_dc;
+		}
 	}
 
 	pthread_mutex_unlock(&app_lock);

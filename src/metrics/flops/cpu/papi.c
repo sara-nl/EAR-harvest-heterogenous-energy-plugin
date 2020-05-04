@@ -53,7 +53,7 @@
 #define FP_ARITH_INST_RETIRED_256B_PACKED_DOUBLE_N	"FP_ARITH:256B_PACKED_DOUBLE"
 #define FP_ARITH_INST_RETIRED_512B_PACKED_DOUBLE_N	"FP_ARITH:512B_PACKED_DOUBLE"
 
-static const char *PAPI_NAME = "METRICS_FLOPS";
+static const char *PAPI_NAME = "FLOPS";
 static int weights[FLOPS_SETS][FLOPS_EVS] = {{1,4,8,16}, {1,2,4,8}};
 static long long acum_values[FLOPS_SETS][FLOPS_EVS];
 static long long values[FLOPS_SETS][FLOPS_EVS];

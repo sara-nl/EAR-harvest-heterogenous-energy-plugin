@@ -70,9 +70,7 @@ tests/check/check.sh
 *configuration_check
 *database_eraser
 *eacct
-*ear_cleandb
 *ear_control
-*ear_create_database
 *ear_dbd_stress_test
 *ear_end_job
 *ear_energy_over_time

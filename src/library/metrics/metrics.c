@@ -333,7 +333,12 @@ static int metrics_partial_stop(uint where)
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
 	aux_time=aux_time_stop;
 
-	acum_ipmi[LOO] = c_energy;
+	if (c_power<(system_conf->max_sig_power*1.5)){
+		acum_ipmi[LOO] = c_energy;
+	}else{
+		verbose(1,"Computed power was not correct (%lf) reducing it to %lf\n",c_power,system_conf->min_sig_power);
+		acum_ipmi[LOO] = system_conf->min_sig_power*c_time;
+	}
 	acum_ipmi[APP] += acum_ipmi[LOO];
 	ulong *ei,*ee;
 	ei=(ulong *)metrics_ipmi[LOO];

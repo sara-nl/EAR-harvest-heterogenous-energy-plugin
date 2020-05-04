@@ -102,7 +102,7 @@ void check_policy(policy_conf_t *p)
 void compute_policy_def_freq(policy_conf_t *p)
 {
 	if (p->def_freq==(float)0){
-		p->def_freq=frequency_pstate_to_freq(p->p_state);
+		p->def_freq=(float)frequency_pstate_to_freq(p->p_state)/1000000.0;
 	}else{
 		p->p_state=frequency_closest_pstate((unsigned long)(p->def_freq*1000000));
 	}

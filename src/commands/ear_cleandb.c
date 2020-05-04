@@ -44,6 +44,14 @@
 #define CLEAN_PERIODIC_QUERY "DELETE FROM Periodic_metrics WHERE end_time <= (date_part('epoch',NOW())::int - (%d*24*3600))"
 #endif
 
+void print_version()
+{
+    char msg[256];
+    sprintf(msg, "EAR version %s\n", RELEASE);
+    printf(msg);
+    exit(0);
+}
+
 void usage(char *app)
 {
 	verbose(0, "Usage:%s num_days [options]", app);

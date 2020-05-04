@@ -39,11 +39,12 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <common/system/user.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <daemon/eard_rapi.h>
+#include <common/system/user.h>
 #include <common/output/verbose.h>
+#include <common/types/version.h>
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -223,9 +224,10 @@ void usage(char *app)
             "\n\t\t\t\t\t\t\t--status=node_name retrieves the status of that node individually."\
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
+            "\n\t--version \t\t\t\t->displays current EAR version."\
             "\n\t--help \t\t\t\t\t->displays this message.", app);
     printf("\n\nThis app requires privileged access privileged accesss to execute.\n");
-	exit(1);
+	exit(0);
 }
 
 void check_ip(status_t status, ip_table_t *ips, int num_ips)
@@ -316,7 +318,7 @@ int main(int argc, char *argv[])
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n"); //error
-        exit(0);
+        exit(1);
     }
 
     if (read_cluster_conf(path_name, &my_cluster_conf) != EAR_SUCCESS) printf("ERROR reading cluster configuration\n");
@@ -346,10 +348,11 @@ int main(int argc, char *argv[])
             {"setopt",        required_argument, 0, 'o'},
             {"error",           no_argument, 0, 'e'},
             {"help",         	no_argument, 0, 'h'},
+            {"version",         no_argument, 0, 'v'},
             {0, 0, 0, 0}
         };
 
-        c = getopt_long(argc, argv, "p::shv::", long_options, &option_idx);
+        c = getopt_long(argc, argv, "p::shvb::", long_options, &option_idx);
 
         if (c == -1)
             break;
@@ -599,6 +602,9 @@ int main(int argc, char *argv[])
                 usage(argv[0]);
                 break;
             case 'v':
+                print_version();
+                break;
+            case 'b':
                 verb_enabled = 1;
                 if (optarg) verb_level = atoi(optarg);
                 else verb_level = 1;
