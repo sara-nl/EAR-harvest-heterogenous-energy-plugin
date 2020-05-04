@@ -440,7 +440,7 @@ unsigned long adapt_pstate(uint status)
 	if (curr_max!=max){
 		//set_max_pstate_all_nodes(max,my_cluster_conf);
 		// set_def_pstate_all_nodes(def,def_p,my_cluster_conf);
-		eards_red_max_and_def_freq((uint)variation);
+		red_def_max_pstate_all_nodes((uint)variation,my_cluster_conf);
 	}
 	curr_max=max;
 	return max;
