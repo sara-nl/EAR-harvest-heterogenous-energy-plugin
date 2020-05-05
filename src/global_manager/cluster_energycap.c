@@ -600,13 +600,12 @@ int main(int argc,char *argv[])
 			break;
 	}	
 	
-
+	#if POWERCAP
+	if (policy==MAXPOWER) cluster_powercap_init();
+	#endif
 		
 
 	if ((period_t1<=0) || (period_t2<=0) || (energy_budget<=0)) usage(argv[0]);
-	#if POWERCAP
-	cluster_powercap_init();
-	#endif
 
 	aggregate_samples=period_t2/period_t1;
 	if ((period_t2%period_t1)!=0){
@@ -672,7 +671,7 @@ int main(int argc,char *argv[])
 			t1_expired=0;
 
 
-			#if 0 
+			#if POWERCAP
 			if ((policy==MAXPOWER) && my_cluster_conf.eargm.mode &&  cluster_power_limited()){
 				cluster_check_powercap();
 			}

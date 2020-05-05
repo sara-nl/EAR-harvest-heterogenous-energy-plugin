@@ -26,8 +26,13 @@
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *   The GNU LEsser General Public License is contained in the file COPYING  
 */
+#define _GNU_SOURCE 
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <pthread.h>
 
+#include <common/config.h>
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/colors.h>
@@ -45,6 +50,8 @@ uint total_req_new,total_req_greedy,req_no_extra,num_no_extra,num_greedy,num_ext
 cluster_powercap_status_t *my_cluster_power_status;
 int num_power_status;
 powercap_opt_t cluster_options;
+static uint cluster_powercap_period=120;
+extern uint policy;
 
 #define min(a,b) (a<b?a:b)
 
@@ -271,11 +278,31 @@ void print_cluster_power_status(powercap_status_t *my_cluster_power_status)
   }
 }
 
+pthread_t cluster_powercap_th;
+
+void * eargm_powercap_th(void *noarg)
+{
+	if (pthread_setname_np(pthread_self(), "cluster_powercap")) error("Setting name forcluster_powercap thread %s", strerror(errno));
+
+	#if POWERCAP
+	while(1)
+	{
+		sleep(cluster_powercap_period);
+		if ((policy==MAXPOWER) && my_cluster_conf.eargm.mode &&  cluster_power_limited()){
+			cluster_check_powercap();
+		}
+
+	}
+	#endif
+
+}
 
 void cluster_powercap_init()
 {
   char *max_cluster_power_st=getenv("EAR_MAX_CLUSTER_POWER");
   char *default_power_st=getenv("EAR_DEF_POWER");
+	char *pc_period=getenv("EAR_POWERCAP_FREQ");
+	int ret;
   if (max_cluster_power_st!=NULL) max_cluster_power=atoi(max_cluster_power_st);
   else max_cluster_power=0;
   if (default_power_st!=NULL) default_power=atoi(default_power_st);
@@ -285,6 +312,17 @@ void cluster_powercap_init()
     verbose(0,"Power cap unlimited");
   }
 
+	if (pc_period!=NULL){
+		cluster_powercap_period=atoi(pc_period);
+	}
+
+	if (max_cluster_power==0) return;
+
+  /* This thread accepts external commands */
+  if ((ret=pthread_create(&cluster_powercap_th, NULL, eargm_powercap_th, NULL))){
+        errno=ret;
+    	error("error creating eargm_server for external api %s",strerror(errno));
+  }
 }
 
 int cluster_power_limited()
