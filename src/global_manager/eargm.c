@@ -319,6 +319,7 @@ void create_risk(risk_t *my_risk,int wl)
 		case EARGM_WARNING2:set_risk(my_risk,WARNING2);
 		case EARGM_PANIC:set_risk(my_risk,PANIC);
 	}
+	default_state=0;
 }
 
 void fill_periods(ulong energy)
@@ -725,7 +726,7 @@ int main(int argc,char *argv[])
 				verbose(VGM,"WARNING1... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
 	
-				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				if (my_cluster_conf.eargm.mode && last_level!=EARGM_WARNING1){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_WARNING1);
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
@@ -739,7 +740,7 @@ int main(int argc,char *argv[])
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"WARNING2... we are close to the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
-				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				if (my_cluster_conf.eargm.mode && last_level!=EARGM_WARNING2){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_WARNING2);
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
@@ -754,7 +755,7 @@ int main(int argc,char *argv[])
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"PANIC!... we are close or over the maximum energy budget %.2lf%% ",perc_energy);
 				verbose(VGM,"****************************************************************");
-				if (my_cluster_conf.eargm.mode){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				if (my_cluster_conf.eargm.mode && last_level!=EARGM_PANIC){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_PANIC);	
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
