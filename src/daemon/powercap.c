@@ -201,23 +201,6 @@ int powercap_init()
 	return EAR_SUCCESS;	
 }
 
-int is_powercap_set()
-{
-	/* 0 means unlimited */
-	/* we are not checking hw configuration in this function */
-	return (my_pc_opt.current_pc!=0);
-}
-
-int is_powercap_on()
-{
-	return (is_powercap_set() && (my_pc_opt.powercap_status!=PC_STATUS_ERROR));
-}
-
-uint get_powercap_value()
-{
-	/* we are not checking hw configuration in this function */
-	return my_pc_opt.current_pc;
-}
 
 int set_powercap_value(uint domain,uint limit)
 {
@@ -240,7 +223,7 @@ int powercap_idle_to_run()
 {
 	uint next_pc;
 	uint extra;
-	if (!is_powercap_on()) return EAR_SUCCESS;
+	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); /* can we create some deadlock because of status ? */
 	last_status=PC_STATUS_IDLE;
 	if (my_pc_opt.last_t1_allocated==my_pc_opt.powercap_idle){
@@ -286,7 +269,7 @@ int powercap_idle_to_run()
 int powercap_run_to_idle()
 {
 	uint next_pc;
-	if (!is_powercap_on()) return EAR_SUCCESS;
+	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
@@ -310,7 +293,7 @@ int powercap_run_to_idle()
 int periodic_metric_info(double cp)
 {
 	uint current=(uint)cp;
-	if (!is_powercap_on()) return EAR_SUCCESS;
+	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
 	while(pthread_mutex_trylock(&my_pc_opt.lock));
 	debug("PM event, current power %u powercap %u allocated %u status %u released %u requested %u",
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
@@ -469,7 +452,7 @@ void get_powercap_status(powercap_status_t *my_status)
 	}
 	
 	my_status->current_power+=powermon_current_power();
-	my_status->total_powercap+=get_powercap_value();
+	my_status->total_powercap+=get_powercap_value(&my_pc_opt);
 	pthread_mutex_unlock(&my_pc_opt.lock);
 	print_power_status(my_status);
 }
@@ -493,7 +476,7 @@ void set_powercap_opt(powercap_opt_t *opt)
 {
 	int i;
 	print_powercap_opt(opt);
-	if (!is_powercap_on()) return;	
+	if (!is_powercap_on(&my_pc_opt)) return;	
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
 	my_pc_opt.max_inc_new_jobs=opt->max_inc_new_jobs;
 	/* Here we must check, based on our status, if actions must be taken */

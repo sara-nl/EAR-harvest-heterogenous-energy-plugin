@@ -80,3 +80,22 @@ uint ok_power(node_powercap_opt_t *pc_opt,uint current)
 	return 0;
 }
 
+int is_powercap_set(node_powercap_opt_t *pc_opt)
+{ 
+  /* 0 means unlimited */
+  /* we are not checking hw configuration in this function */
+  return (pc_opt->current_pc!=0);
+}
+
+int is_powercap_on(node_powercap_opt_t *pc_opt)
+{
+  return ((pc_opt->powercap_status!=PC_STATUS_ERROR) && is_powercap_set(pc_opt));
+}
+
+uint get_powercap_value(node_powercap_opt_t *pc_opt)
+{
+  /* we are not checking hw configuration in this function */
+  return pc_opt->current_pc;
+}
+
+
