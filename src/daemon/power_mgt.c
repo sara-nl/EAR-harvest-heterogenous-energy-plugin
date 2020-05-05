@@ -64,20 +64,22 @@ state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
 	if (*phandler!=NULL) return EAR_SUCCESS;
 	return EAR_ERROR;
 }
-state_t pmgt_disable(pwr_mgt_t *phandler)
+state_t pmgt_disable_policy(pwr_mgt_t *phandler,uint pid)
 {
-	state_t ret;
-	ret=inm_disable_powercap_policy();
-	if (ret!=EAR_SUCCESS)  return ret;
+	return inm_disable_powercap_policy(pid);
+}
+
+state_t pmgt_disable_policies(pwr_mgt_t *phandler)
+{
 	return inm_disable_powercap_policies();	
 }
-state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint domain,uint limit)
+state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,uint limit)
 {
-	return inm_set_powercap_value(domain,limit);
+	return inm_set_powercap_value(pid,domain,limit);
 }
-state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint *powercap)
+state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap)
 {
-	return inm_get_powercap_value(powercap);
+	return inm_get_powercap_value(pid,powercap);
 }
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid)
 {

@@ -62,6 +62,7 @@ extern volatile int init_ips_ready;
 int last_status;
 int fd_powercap_values=0;
 static pwr_mgt_t *pcmgr;
+static uint pc_pid=0;
 
 pthread_t powercapmon_th;
 unsigned long powercapmon_freq=1;
@@ -146,9 +147,13 @@ void powercap_end()
 { 
 	char cmd[1024];
 
-	if (pmgt_disable(pcmgr)!=EAR_SUCCESS){
-		error("pmgt_disable");
+	if (pmgt_disable_policy(pcmgr,pc_pid)!=EAR_SUCCESS){
+		error("pmgt_disable_policies %u",pc_pid);
 	}
+	if (pmgt_disable_policies(pcmgr)!=EAR_SUCCESS){
+    error("pmgt_disable_policies");
+  }
+
 }
 
 int powercap_init()
@@ -215,7 +220,7 @@ int set_powercap_value(uint domain,uint limit)
 		dprintf(fd_powercap_values,"%s domain %u limit %u \n",c_date,domain,limit);
 	}
 	my_pc_opt.current_pc=limit;
-	return pmgt_set_powercap_value(pcmgr,domain,limit);
+	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,limit);
 }
 
 

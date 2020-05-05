@@ -52,8 +52,8 @@
 #define INM_ENABLE_XCC_BRIGE "ipmitool raw 0x06 0x32 0 1"
 #define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control enable global" 
 #define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control disable global" 
-#define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id 0 domain platform correction hard power %d  trig_lim 1000 stats 30 enable"
-#define INM_DISABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy remove policy_id 0"
+#define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id %u domain platform correction hard power %d  trig_lim 1000 stats 30 enable"
+#define INM_DISABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy remove policy_id %u"
 #define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
 
 
@@ -63,11 +63,11 @@ int do_cmd(char *cmd)
   return 1;
 }
 
-state_t inm_disable_powercap_policy()
+state_t inm_disable_powercap_policy(uint pid)
 {
   char cmd[1024];
   debug("1-Disable policy");
-  sprintf(cmd,INM_DISABLE_POWERCAP_POLICY_CMD);
+  sprintf(cmd,INM_DISABLE_POWERCAP_POLICY_CMD,pid);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
     debug("Error executing policy disable");
@@ -129,16 +129,16 @@ state_t inm_enable()
 	return EAR_SUCCESS;
 }
 
-state_t inm_set_powercap_value(uint domain,uint limit)
+state_t inm_set_powercap_value(uint pid,uint domain,uint limit)
 {
 	char cmd[1024];
 	char c_date[128];
 	state_t ret;
-	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,limit);
+	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,pid,limit);
 	return execute(cmd);
 }
 
-state_t inm_get_powercap_value(uint *powercap)
+state_t inm_get_powercap_value(uint pid,uint *powercap)
 {
 	/* Pending */
 	*powercap=0;
