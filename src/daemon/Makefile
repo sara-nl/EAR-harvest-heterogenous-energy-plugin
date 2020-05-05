@@ -17,6 +17,7 @@ eard_OBJS = \
     dynamic_configuration.o \
     power_monitor.o \
 		powercap_status.o \
+		power_mgt.o \
 		inm.o \
 	  powercap.o \
     shared_configuration.o \
@@ -43,6 +44,8 @@ powercap.o: powercap.c powercap.h
 
 powercap_status.o:powercap_status.c powercap_status.h powercap.h
 	$(CC) $(CFLAGS) -c $<	
+power_mgt.o:power_mgt.c power_mgt.h
+	$(CC) $(CFLAGS) -c $< 
 
 node_metrics.o:node_metrics.c node_metrics.h
 	$(CC) $(CFLAGS) -c $<

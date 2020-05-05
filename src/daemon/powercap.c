@@ -46,7 +46,7 @@
 #include <daemon/powercap.h>
 #include <daemon/powercap_status.h>
 #include <daemon/shared_configuration.h>
-#include <daemon/inm.h>
+#include <daemon/power_mgt.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #define POWERCAP_MON 0
@@ -61,6 +61,7 @@ extern int self_id;
 extern volatile int init_ips_ready;
 int last_status;
 int fd_powercap_values=0;
+static pwr_mgt_t *pcmgr;
 
 pthread_t powercapmon_th;
 unsigned long powercapmon_freq=1;
@@ -144,10 +145,10 @@ void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 void powercap_end()
 { 
 	char cmd[1024];
-	if (inm_disable_powercap_policy()!=EAR_SUCCESS) error("inm_disable_powercap_policy");
 
-	if (inm_disable_powercap_policies()!=EAR_SUCCESS) error("inm_disable_powercap_policies");
-
+	if (pmgt_disable(pcmgr)!=EAR_SUCCESS){
+		error("pmgt_disable");
+	}
 }
 
 int powercap_init()
@@ -163,8 +164,21 @@ int powercap_init()
 	if (init_ips_ready>0) my_ip=ips[self_id];
 	else my_ip=0;
 
-	if (inm_enable()!=EAR_SUCCESS) error("inm_enable");
-	if (inm_enable_powercap_policies()!=EAR_SUCCESS) error("inm_enable_powercap_policies");	
+	/* Low level power cap managemen initialization */
+	if (pmgt_init()!=EAR_SUCCESS){
+		error("Low level power capping management error");
+		return EAR_ERROR;
+	}
+	if (pmgt_handler_alloc(&pcmgr)!=EAR_SUCCESS){
+		error("Allocating memory for powercap handler");
+		return EAR_ERROR;
+	}
+	if (pmgt_enable(pcmgr)!=EAR_SUCCESS){
+		error("Initializing powercap manager");
+		return EAR_ERROR;
+	}
+
+	/* End Low level power cap managemen initialization */
 	my_pc_opt.powercap_status=PC_STATUS_IDLE;
 	last_status=PC_STATUS_IDLE;
 	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
@@ -190,6 +204,7 @@ int powercap_init()
 int is_powercap_set()
 {
 	/* 0 means unlimited */
+	/* we are not checking hw configuration in this function */
 	return (my_pc_opt.current_pc!=0);
 }
 
@@ -200,6 +215,7 @@ int is_powercap_on()
 
 uint get_powercap_value()
 {
+	/* we are not checking hw configuration in this function */
 	return my_pc_opt.current_pc;
 }
 
@@ -216,7 +232,7 @@ int set_powercap_value(uint domain,uint limit)
 		dprintf(fd_powercap_values,"%s domain %u limit %u \n",c_date,domain,limit);
 	}
 	my_pc_opt.current_pc=limit;
-	return inm_set_powercap_value(domain,limit);
+	return pmgt_set_powercap_value(pcmgr,domain,limit);
 }
 
 

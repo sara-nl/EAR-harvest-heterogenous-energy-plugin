@@ -27,18 +27,19 @@
  * * The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
-#ifndef INM_COMMANDS_H
-#define INM_COMMANDS_H
+#ifndef _PWR_MGT_H
+#define _PWR_MGT_H
 #include <common/states.h>
 
+typedef void * pwr_mgt_t;
 
-state_t inm_disable_powercap_policy();
-state_t inm_disable_powercap_policies();
-state_t inm_enable_powercap_policies();
-state_t inm_enable();
-state_t inm_set_powercap_value(uint domain,uint limit);
-state_t inm_get_powercap_value(uint *powercap);
-uint inm_is_powercap_policy_enabled(uint pid);
-void inm_print_powercap_value(int fd);
-void inm_powercap_to_str(char *b);
+state_t pmgt_init();
+state_t pmgt_enable(pwr_mgt_t *phandler);
+state_t pmgt_handler_alloc(pwr_mgt_t **phandler);
+state_t pmgt_disable(pwr_mgt_t *phandler);
+state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint domain,uint limit);
+state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint *powercap);
+uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid);
+void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd);
+void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b);
 #endif

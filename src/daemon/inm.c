@@ -138,12 +138,25 @@ state_t inm_set_powercap_value(uint domain,uint limit)
 	return execute(cmd);
 }
 
-state_t inm_get_powercap_value(uint powercap)
+state_t inm_get_powercap_value(uint *powercap)
 {
+	/* Pending */
+	*powercap=0;
 	return EAR_SUCCESS;
 }
 
 uint inm_is_powercap_policy_enabled(uint pid)
 {
+	/* Pending */
 	return 0;
 }
+
+void inm_print_powercap_value(int fd)
+{
+	dprintf(fd,"inm_print_powercap_value not yet implemented\n");
+}
+void inm_powercap_to_str(char *b)
+{
+	sprintf(b,"NOT_READY");
+}
+
