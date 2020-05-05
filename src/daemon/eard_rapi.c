@@ -628,6 +628,26 @@ void red_def_max_pstate_all_nodes(ulong pstate, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
+/** Sets the default pstate for a given policy in all nodes */
+void set_def_pstate_all_nodes(uint pstate,ulong pid,cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_SET_DEF_PSTATE;
+    command.my_req.ear_conf.p_states = pstate;
+		command.my_req.ear_conf.p_id = pid;
+    send_command_all(command, my_cluster_conf);
+}
+
+/** Sets the maximum pstate in all the nodes */
+void set_max_pstate_all_nodes(uint pstate,cluster_conf_t my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_SET_MAX_PSTATE;
+    command.my_req.ear_conf.p_states = pstate;
+    send_command_all(command, my_cluster_conf);
+}
+
+
 void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
 {
     request_t command;

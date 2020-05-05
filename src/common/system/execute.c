@@ -7,7 +7,7 @@
 *
 *       It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017
+*       Copyright (C) 2017  
 *   BSC Contact     mailto:ear-support@bsc.es
 *   Lenovo contact  mailto:hpchelp@lenovo.com
 *
@@ -15,41 +15,55 @@
 *   modify it under the terms of the GNU Lesser General Public
 *   License as published by the Free Software Foundation; either
 *   version 2.1 of the License, or (at your option) any later version.
-*
+*   
 *   EAR is distributed in the hope that it will be useful,
 *   but WITHOUT ANY WARRANTY; without even the implied warranty of
 *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *   Lesser General Public License for more details.
-*
+*   
 *   You should have received a copy of the GNU Lesser General Public
 *   License along with EAR; if not, write to the Free Software
 *   Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*   The GNU LEsser General Public License is contained in the file COPYING
+*   The GNU LEsser General Public License is contained in the file COPYING  
 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
-#ifndef EAR_PATHS_H
-#define EAR_PATHS_H
+#include <common/config.h>
+#include <common/states.h>
+#include <common/output/verbose.h>
 
-// Library paths
-#define SLURM_LIB_PATH		"@SLURM_LIBDIR@"
-#define PAPI_LIB_PATH		"@PAPI_LIBDIR@"
-#define GSL_LIB_PATH		"@GSL_LIBDIR@"
-#define EAR_INSTALL_PATH	"@prefix@"
+int execute_with_fork(char *cmd)
+{
+  int ret;
+   ret=fork();
+   if (ret==0){
+      debug("Executing %s",cmd);
+      ret=system(cmd);
+      if (WIFSIGNALED(ret)){
+        error("Command %s terminates with signal %d",cmd,WTERMSIG(ret));
+      }else if (WIFEXITED(ret) && WEXITSTATUS(ret)){
+        error("Command %s terminates with exit status  %d",cmd,WEXITSTATUS(ret));
+      }
+			exit(0);
+    }else if (ret<0){
+      return EAR_ERROR;
+    }else return EAR_SUCCESS;
+}
+int execute(char *cmd)
+{
+  int ret;
+  ret=system(cmd);
+  if (WIFSIGNALED(ret)){
+        error("Command %s terminates with signal %d",cmd,WTERMSIG(ret));
+				return EAR_ERROR;
+  }else if (WIFEXITED(ret) && WEXITSTATUS(ret)){
+        error("Command %s terminates with exit status  %d",cmd,WEXITSTATUS(ret));
+				return EAR_ERROR;
+  }
+	return EAR_SUCCESS;
+}
 
-// File paths
-#define EAR_DAEMON_PATH		""
-#define EAR_CONF_FILE		""
-#define MPI_C_LIB_PATH		"lib/libear"
-#define MPI_F_LIB_PATH		""
-
-// Database
-#define DB_MYSQL		@DB_MYSQL@
-#define DB_PSQL			@DB_PGSQL@
-
-// Features
-#define FEAT_AVX512		@FEAT_AVX512@
-
-// Others
-#define RELEASE			"@PACKAGE_VERSION@"
-
-#endif //EAR_PATHS_H

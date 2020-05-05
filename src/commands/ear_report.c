@@ -42,6 +42,7 @@
 #include <common/system/user.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
+#include <common/types/version.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #if DB_MYSQL
@@ -149,8 +150,9 @@ void usage(char *app)
         "\t-i eardbd_name|all\t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
         "\t-g                \t shows the contents of EAR's database Global_energy table. The default option will show the records for the two previous T2 periods of EARGM.\n\t\t\t\t\t This option can only be modified with -s, not -e\n"
         "\t-x                \t shows the daemon events from -s to -e. If no time frame is specified, it shows the last 20 events. \n"
+        "\t-v                \t shows current EAR version. \n"
         "\t-h                \t shows this message.\n");
-	exit(1);
+	exit(0);
 }
 
 void add_string_filter(char *query, char *addition, char *value)
@@ -1002,20 +1004,18 @@ int main(int argc,char *argv[])
     }
 #endif
 
-    while ((opt = getopt(argc, argv, "t:vhn:u:s:e:i:gx")) != -1)
+    while ((opt = getopt(argc, argv, "t:vhbn:u:s:e:i:gx")) != -1)
     {
         switch(opt)
         {
             case 'h':
                 usage(argv[0]);
-#if DB_MYSQL
-                mysql_close(connection);
-#elif DB_PSQL
-                PQfinish(connection);
-#endif
-                free_cluster_conf(&my_conf);
                 break;
             case 'v':
+                print_version();
+                exit(0);
+                break;
+            case 'b':
                 verbose=1;
                 break;
             case 'n':
@@ -1143,7 +1143,7 @@ int main(int argc,char *argv[])
     free_cluster_conf(&my_conf);
 
 
-    exit(1);
+    exit(0);
 }
 
 

@@ -48,7 +48,7 @@
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>
@@ -244,16 +244,44 @@ int dyncon_restore_conf() {
 	return EAR_SUCCESS;
 }
 
+int dynconf_set_def_pstate(uint p_states,uint p_id)
+{
+	ulong new_freq;
+	if (p_states>frequency_get_num_pstates()) return EAR_ERROR;
+	if (p_id>my_cluster_conf.num_policies) return EAR_ERROR;
+	my_node_conf->policies[p_id].p_state=p_states;
+	if (dyn_conf->policy==p_id){
+		dyn_conf->def_p_state=p_states;
+		dyn_conf->def_freq=frequency_pstate_to_freq(p_states);
+		resched_conf->force_rescheduling=1;	
+	}
+	return EAR_SUCCESS;
+	
+}
+int dynconf_set_max_pstate(uint p_states)
+{
+	ulong new_max_freq;
+	if (p_states>frequency_get_num_pstates()) return EAR_ERROR;
+	new_max_freq=frequency_pstate_to_freq(p_states);
+	/* Update dynamic info */
+	dyn_conf->max_freq = new_max_freq;
+	resched_conf->force_rescheduling = 1;
+	powermon_new_max_freq(new_max_freq);
+	return EAR_SUCCESS;
+}
+
+
 int dynconf_red_pstates(uint p_states) {
 	// Reduces p_states both the maximum and the default
 	ulong i;
 	uint def_pstate, max_pstate;
 	ulong new_def_freq, new_max_freq;
+	int variation=(int)p_states;
 	def_pstate = frequency_closest_pstate(dyn_conf->def_freq);
 	max_pstate = frequency_closest_pstate(dyn_conf->max_freq);
 	/* Reducing means incresing in the vector of pstates */
-	def_pstate = def_pstate + p_states;
-	max_pstate = max_pstate + p_states;
+	def_pstate = def_pstate + variation;
+	max_pstate = max_pstate + variation;
 
 	new_def_freq = frequency_pstate_to_freq(def_pstate);
 	new_max_freq = frequency_pstate_to_freq(max_pstate);
@@ -267,7 +295,7 @@ int dynconf_red_pstates(uint p_states) {
 	/* We must update my_node_info */
 
 	for (i = 0; i < my_node_conf->num_policies; i++) {
-		my_node_conf->policies[i].p_state = my_node_conf->policies[i].p_state + p_states;
+		my_node_conf->policies[i].p_state = my_node_conf->policies[i].p_state + variation;
 	}
 	powermon_new_max_freq(new_max_freq);
 	return EAR_SUCCESS;
@@ -390,6 +418,14 @@ void process_remote_requests(int clientfd) {
 		case EAR_RC_DEF_FREQ:
 			verbose(VRAPI, "set def freq command received");
 			ack = dynconf_def_freq(command.my_req.ear_conf.p_id, command.my_req.ear_conf.max_freq);
+			break;
+		case EAR_RC_SET_DEF_PSTATE:
+			verbose(VRAPI, "set def pstate command received");
+			ack=dynconf_set_def_pstate(command.my_req.ear_conf.p_states,command.my_req.ear_conf.p_id);
+			break;
+		case EAR_RC_SET_MAX_PSTATE:
+			verbose(VRAPI, "set max pstate command received");
+			ack=dynconf_set_max_pstate(command.my_req.ear_conf.p_states);
 			break;
 		case EAR_RC_REST_CONF:
 			verbose(VRAPI, "restore conf command received");
