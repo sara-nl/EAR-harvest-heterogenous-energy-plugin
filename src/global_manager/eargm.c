@@ -637,10 +637,10 @@ int main(int argc,char *argv[])
 	sigdelset(&set,SIGTERM);
 	sigdelset(&set,SIGINT);
 
-    #if USE_DB
-    verbose(VGM+1,"Connecting with EAR DB");
-    init_db_helper(&my_cluster_conf.database);
-    #endif
+  #if USE_DB
+  verbose(VGM+1,"Connecting with EAR DB");
+  init_db_helper(&my_cluster_conf.database);
+  #endif
 	
     
 	
