@@ -42,6 +42,7 @@
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/eard_api.h>
+#include <daemon/powercap_status.h>
 
 typedef unsigned long ulong;
 #ifdef EARL_RESEARCH
@@ -93,6 +94,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 
 	if ((c!=NULL) && (c->app!=NULL)){
+
+#if POWERCAP
+    if (is_powercap_set(&c->app->pc_opt)) verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+#endif
+
 
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_closest_pstate(c->app->max_freq);

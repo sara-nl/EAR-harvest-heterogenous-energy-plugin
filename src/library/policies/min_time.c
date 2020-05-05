@@ -44,6 +44,8 @@
 #include <common/math_operations.h>
 #include <library/common/externs.h>
 #include <common/system/time.h>
+#include <daemon/powercap_status.h>
+
 
 static timestamp pol_time_init;
 
@@ -110,6 +112,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		if (c==NULL) return EAR_ERROR;
 		if (c->app==NULL) return EAR_ERROR;
+
+#if POWERCAP
+  	if (is_powercap_set(&c->app->pc_opt)) verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+#endif
+
 
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_closest_pstate(c->app->max_freq);

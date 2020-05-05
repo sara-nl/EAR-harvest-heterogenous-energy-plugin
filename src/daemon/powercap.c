@@ -163,6 +163,11 @@ int powercap_init()
 	debug("powercap init");
 	set_default_node_powercap_opt(&my_pc_opt);
 	print_node_powercap_opt(&my_pc_opt);
+	/* powercap set to 0 means unlimited */
+	if (powermon_get_powercap_def()==0){ 
+		update_node_powercap_opt_shared_info();
+		return EAR_SUCCESS;
+	}
 	while(init_ips_ready==0){ 
 		sleep(1);
 	}

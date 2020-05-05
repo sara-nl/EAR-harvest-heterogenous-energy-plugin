@@ -39,6 +39,8 @@
 #include <common/output/verbose.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
+#include <daemon/powercap_status.h>
+
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
@@ -57,6 +59,9 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 {
 	*ready=1;
 	*new_freq=DEF_FREQ(c->app->def_freq);
+#if POWERCAP
+	if (is_powercap_set(&c->app->pc_opt)) verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+#endif
 	return EAR_SUCCESS;
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
