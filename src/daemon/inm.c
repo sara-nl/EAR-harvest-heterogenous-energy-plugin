@@ -38,9 +38,9 @@
 #include <common/config.h>
 #include <common/colors.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
-#define SHOW_DEBUGS 1
 
 #define POWERCAP_MON 0
 
@@ -55,6 +55,9 @@
 #define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id %u domain platform correction hard power %d  trig_lim 1000 stats 30 enable"
 #define INM_DISABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy remove policy_id %u"
 #define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
+
+/* To be used to reset the node configuration to default values in case of problems */
+#define RESET_DEFAULT_CONF_POWERCAP "ipmitool -b 0 -t 0x2c raw 0x2E 0xDF 0x57 0x01 0x00 0x02"
 
 
 int do_cmd(char *cmd)
@@ -134,6 +137,7 @@ state_t inm_set_powercap_value(uint pid,uint domain,uint limit)
 	char cmd[1024];
 	char c_date[128];
 	state_t ret;
+	debug("inm_set_powercap_value %u",limit);
 	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,pid,limit);
 	return execute(cmd);
 }

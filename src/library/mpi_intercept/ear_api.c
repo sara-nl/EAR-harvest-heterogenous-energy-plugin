@@ -126,7 +126,7 @@ void *earl_periodic_actions(void *no_arg);
 static void print_local_data()
 {
 	char ver[64];
-	if (my_master_rank==0) {
+	if (masters_info.my_master_rank==0) {
 	version_to_str(ver);
 	verbose(1, "------------EAR%s--------------------",ver);
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);

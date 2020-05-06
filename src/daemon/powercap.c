@@ -165,6 +165,7 @@ int powercap_init()
 	print_node_powercap_opt(&my_pc_opt);
 	/* powercap set to 0 means unlimited */
 	if (powermon_get_powercap_def()==0){ 
+		debug("POWERCAP limit disabled");
 		update_node_powercap_opt_shared_info();
 		return EAR_SUCCESS;
 	}
@@ -234,6 +235,7 @@ int powercap_idle_to_run()
 	uint next_pc;
 	uint extra;
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
+	debug("powercap_idle_to_run");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); /* can we create some deadlock because of status ? */
 	last_status=PC_STATUS_IDLE;
 	if (my_pc_opt.last_t1_allocated==my_pc_opt.powercap_idle){
@@ -280,6 +282,7 @@ int powercap_run_to_idle()
 {
 	uint next_pc;
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
+	debug("powercap_run_to_idle");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
@@ -304,6 +307,7 @@ int periodic_metric_info(double cp)
 {
 	uint current=(uint)cp;
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
+	debug("periodic_metric_info");
 	while(pthread_mutex_trylock(&my_pc_opt.lock));
 	debug("PM event, current power %u powercap %u allocated %u status %u released %u requested %u",
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
@@ -397,6 +401,7 @@ void print_power_status(powercap_status_t *my_status)
 		if (my_status->num_greedy) debug("greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes[i],my_status->greedy_req[i],my_status->extra_power[i]);
 	}
 }
+
 void get_powercap_status(powercap_status_t *my_status)
 {
 	debug("get_powercap_status");
@@ -487,6 +492,7 @@ void set_powercap_opt(powercap_opt_t *opt)
 	int i;
 	print_powercap_opt(opt);
 	if (!is_powercap_on(&my_pc_opt)) return;	
+	debug("set_powercap_opt");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
 	my_pc_opt.max_inc_new_jobs=opt->max_inc_new_jobs;
 	/* Here we must check, based on our status, if actions must be taken */

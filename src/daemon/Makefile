@@ -43,7 +43,7 @@ powercap.o: powercap.c powercap.h
 	$(CC) $(CFLAGS) -c $<
 
 powercap_status.o:powercap_status.c powercap_status.h powercap.h
-	$(CC) $(CFLAGS) -c $<	
+	$(CC) $(CFLAGS) -fPIC -c $<	
 power_mgt.o:power_mgt.c power_mgt.h
 	$(CC) $(CFLAGS) -c $< 
 

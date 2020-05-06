@@ -647,7 +647,7 @@ int main(int argc,char *argv[])
 	
 	time(&end_time);
 	start_time=end_time-period_t2;
-	if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)<0){
+	if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)==EAR_ERROR){
 		error("Asking for total energy system. Using aggregated %d",use_aggregation);
 	}
 	debug("db_select_acum_energy inicial %lu",result);
@@ -671,13 +671,6 @@ int main(int argc,char *argv[])
 		// ALARM RECEIVED
 		if (t1_expired){
 			t1_expired=0;
-
-
-			#if 0 
-			if ((policy==MAXPOWER) && my_cluster_conf.eargm.mode &&  cluster_power_limited()){
-				cluster_check_powercap();
-			}
-			#endif
 
 			// Compute the period
 			time(&end_time);
