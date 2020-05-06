@@ -499,7 +499,7 @@ void dyncon_set_risk(int fd, request_t *command)
 		}
 	}
 	my_node_conf->max_pstate=frequency_freq_to_pstate(dyn_conf->max_freq);
-	verbose(1,"New max frequency is %lu pstate=%lu",new_max_freq,my_node_conf->max_pstate);
+	verbose(1,"New max frequency is %lu pstate=%lu rescheduling %u",new_max_freq,my_node_conf->max_pstate,resched_conf->force_rescheduling);
 }
 
 void process_remote_requests(int clientfd) {

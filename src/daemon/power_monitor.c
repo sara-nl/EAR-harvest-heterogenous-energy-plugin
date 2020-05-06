@@ -705,6 +705,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
     strcpy(dyn_conf->policy_name,  my_policy->name);
 	dyn_conf->def_freq=f;
 	dyn_conf->def_p_state=my_policy->p_state;
+	resched_conf->force_rescheduling=0;
     memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	/* End app configuration */
 	current_node_freq = f;

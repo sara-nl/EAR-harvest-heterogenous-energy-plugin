@@ -114,7 +114,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		if (c->app==NULL) return EAR_ERROR;
 
 #if POWERCAP
-  	if (is_powercap_set(&c->app->pc_opt)) verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+  	if (is_powercap_set(&c->app->pc_opt)){ 
+			verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+		}else{ 
+			verbose(1,"Powercap is not set");
+		}
 #endif
 
 

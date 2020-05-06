@@ -40,7 +40,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/types/log.h>
@@ -243,7 +243,7 @@ static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong
     	if (masters_info.my_master_rank>=0) log_report_dynais_off(application.job.id,application.job.step_id);
     }
 	if (dynais_enabled==DYNAIS_DISABLED){
-    	debug("DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%u min_time=%u",
+    	debug("DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%lu min_time=%lu",
     	loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
 	}
     last_first_event=event;
@@ -296,6 +296,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	signature_t *l_sig;
 	ulong policy_def_freq;
 
+	#if 0
+	if (masters_info.my_master_rank>=0){ 
+		verbose(1,"states_new_iteration");
+	}
+	#endif
+
 	pst=policy_new_iteration(&loop.id);
 
 	prev_f = ear_frequency;
@@ -304,31 +310,19 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	def_pstate=frequency_closest_pstate(policy_def_freq);
 
 	if (system_conf!=NULL){
+	if (masters_info.my_master_rank>=0){
 	if (resched_conf->force_rescheduling){
-		if (masters_info.my_master_rank>=0) traces_reconfiguration(ear_my_rank, my_id);
+		traces_reconfiguration(ear_my_rank, my_id);
 		resched_conf->force_rescheduling=0;
-		debug("EAR: rescheduling forced by eard: max freq %lu def_freq %lu def_th %lf",system_conf->max_freq,system_conf->def_freq,system_conf->settings[0]);
-		if (EAR_STATE==SIGNATURE_STABLE){ 
-
-			// We set the default number of iterations to the default for this loop
-			perf_count_period=loop_perf_count_period;
-			// If the loop was already evaluated, we force the rescheduling
-			debug("EAR state forced to be EVALUATING_SIGNATURE because of power capping policies");
-			EAR_STATE = EVALUATING_SIGNATURE;
-			if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
-			// Should we reset these controls?
-			tries_current_loop_same_freq=0;
-			tries_current_loop=0;
-		}
-		else if (EAR_STATE==PROJECTION_ERROR){	
-			debug("EAR state forced to be FIRST_ITERATION because of power capping policies");
-			EAR_STATE=FIRST_ITERATION;
-		}else if (EAR_STATE==RECOMPUTING_N){	
-			debug("EAR state forced to be SIGNATURE_HAS_CHANGED because of power capping policies");
-			EAR_STATE=SIGNATURE_HAS_CHANGED;
-		}else{
-			debug("EAR state not changed");
-		}
+		verbose(1,"EAR: rescheduling forced by eard: current_state %u max freq %lu def_freq %lu def_th %lf",EAR_STATE,system_conf->max_freq,system_conf->def_freq,system_conf->settings[0]);
+		EAR_STATE = SIGNATURE_HAS_CHANGED;
+		comp_N_begin = metrics_time();
+		traces_policy_state(ear_my_rank, my_id,SIGNATURE_HAS_CHANGED);
+		tries_current_loop_same_freq=0;
+    tries_current_loop=0;
+		verbose(1,"New state by reschedduling %u",EAR_STATE);
+		return;
+	}
 	}
 	}
 
@@ -345,7 +339,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				if (masters_info.my_master_rank>=0) traces_start();
 			}
 			break;
-		case FIRST_ITERATION:
+		case FIRST_ITERATION: /********* FIRST_ITERATION *********/
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
@@ -373,7 +367,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			loop.id.level = level;
 			loop.id.size = period;
 			break;
-		case SIGNATURE_HAS_CHANGED:
+		case SIGNATURE_HAS_CHANGED: /********* SIGNATURE_HAS_CHANGED *************/
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
@@ -387,10 +381,15 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (perf_count_period_10p==0) perf_count_period_10p=1;
 			/**/
 			loop_perf_count_period=perf_count_period;
+			#if 0
+			if (masters_info.my_master_rank>=0){
+				verbose(1,"Going to EVALUATING_SIGNATURE perf_count_period %u- %u",perf_count_period,perf_count_period_10p);
+			}
+			#endif
 			EAR_STATE = EVALUATING_SIGNATURE;
 			if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 			break;
-		case RECOMPUTING_N:
+		case RECOMPUTING_N:/************ RECOMPUTING_N *************/
 
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
@@ -413,21 +412,40 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			EAR_STATE = SIGNATURE_STABLE;
 			if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 			break;
-		case EVALUATING_SIGNATURE:
+		case EVALUATING_SIGNATURE: /********* EVALUATING_SIGNATURE **********/
 			/* We check from time to time if if the signature is ready */
 			/* Included to accelerate the signature computation */
+			#if 0
+			if (masters_info.my_master_rank>=0){
+				verbose(1,"EVALUATING_SIGNATURE");
+			}
+			#endif
 			if ((iterations%perf_count_period_10p)==0){
 				if (time_ready_signature(perf_accuracy_min_time)){	
-					debug("period update fom %u to %u",perf_count_period,iterations - 1);
+					#if 0
+					if (masters_info.my_master_rank>=0){
+						verbose(1,"period update fom %u to %u",perf_count_period,iterations - 1);
+					}
+					#endif
 					perf_count_period=iterations - 1;
 					if (perf_count_period==0) perf_count_period=1;
 				}
 			}
+			#if 0
+			if (masters_info.my_master_rank>=0){ 
+				verbose(1,"iterations %u perf_count_period %u",iterations,perf_count_period);
+			}
+			#endif
 			if (((iterations - 1) % perf_count_period) || (iterations == 1)) return;
 			N_iter = iterations - begin_iter;
 			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
 			if (result == EAR_NOT_READY)
 			{
+			#if 0
+				if (masters_info.my_master_rank>=0){ 
+					verbose(1,"EAR_NOT_READY N_iter %u",N_iter);
+				}
+			#endif
 				perf_count_period++;
 				return;
 			}

@@ -73,9 +73,9 @@ state_t policy_set_risk(policy_conf_t *ref,policy_conf_t *current,risk_t risk_le
 		current->p_state=ref->p_state+WARNING1_MAX_PSTATES_LESS+WARNING2_MAX_PSTATES_LESS;
   }
   if (panic){
+		debug("we are in panic");
 		current->settings[0]=ref->settings[0]+WARNING1_INC+WARNING2_INC+PANIC_INC_TH;
 		current->p_state=ref->p_state+WARNING1_MAX_PSTATES_LESS+WARNING2_MAX_PSTATES_LESS+PANIC_MAX_PSTATES_LESS;
-  	debug("We are in panic");
   }
 	f=frequency_pstate_to_freq_list(current->p_state,f_list,nump);
 	current->def_freq=(float)f/1000000.0;
