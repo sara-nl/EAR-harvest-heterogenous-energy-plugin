@@ -435,7 +435,7 @@ void dyncon_power_management(int fd, request_t *command)
 void update_current_settings(policy_conf_t *cpolicy_settings)
 {
 	verbose(1,"current policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
-	dyn_conf->def_freq=cpolicy_settings->def_freq;
+	dyn_conf->def_freq=frequency_pstate_to_freq(cpolicy_settings->p_state);
 	memcpy(dyn_conf->settings,cpolicy_settings->settings,sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn_conf->def_p_state=cpolicy_settings->p_state;
 	resched_conf->force_rescheduling=1;	
@@ -499,6 +499,7 @@ void dyncon_set_risk(int fd, request_t *command)
 		}
 	}
 	my_node_conf->max_pstate=frequency_freq_to_pstate(dyn_conf->max_freq);
+	powermon_new_max_freq(dyn_conf->max_freq);
 	verbose(1,"New max frequency is %lu pstate=%lu rescheduling %u",new_max_freq,my_node_conf->max_pstate,resched_conf->force_rescheduling);
 }
 

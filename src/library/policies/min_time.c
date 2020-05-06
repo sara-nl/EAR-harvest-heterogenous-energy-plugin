@@ -92,6 +92,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 }
 
 
+
 // This is the main function in this file, it implements power policy
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
@@ -206,10 +207,27 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *ok)
 {
-
 	state_t st=EAR_SUCCESS;
+	ulong eff_f;
+	uint power_status;
 
 	if ((c==NULL) || (curr_sig==NULL) || (last_sig==NULL)) return EAR_ERROR;
+
+#if POWERCAP
+    if (is_powercap_set(&c->app->pc_opt)){
+      verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+			power_status=compute_power_status(&c->app->pc_opt,(uint)(curr_sig->DC_power));
+			eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);
+			if (eff_f<curr_sig->def_f){
+				verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
+			}
+    }else{
+      verbose(1,"Powercap is not set");
+			power_status=PC_STATUS_ERROR;
+    }
+#endif
+
+
 	
 	if (curr_sig->def_f==last_sig->def_f) *ok=1;
 

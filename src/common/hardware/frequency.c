@@ -416,6 +416,18 @@ ulong frequency_closest_frequency(ulong freq)
 	
 }
 
+ulong frequency_closest_high_freq(ulong freq,int minps)
+{
+  int i=0;
+  if (freq>freq_list_rank[minps]) return freq_list_rank[minps];
+  for (i=minps+1;i<num_freqs;i++){
+    if (freq>freq_list_rank[i]) return freq_list_rank[i-1];
+  }
+  return freq_list_rank[num_freqs-1];
+
+}
+
+
 uint frequency_closest_pstate(ulong freq)
 {
 	uint ps;

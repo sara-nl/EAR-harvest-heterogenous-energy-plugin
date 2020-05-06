@@ -99,3 +99,11 @@ uint get_powercap_value(node_powercap_opt_t *pc_opt)
 }
 
 
+uint compute_power_status(node_powercap_opt_t *pc,uint current_power)
+{
+  if (ok_power(pc,current_power)) return PC_STATUS_OK;
+  if (more_power(pc,current_power)) return PC_STATUS_GREEDY;
+  if (free_power(pc,current_power)) return PC_STATUS_RELEASE;
+	return PC_STATUS_OK;
+}
+

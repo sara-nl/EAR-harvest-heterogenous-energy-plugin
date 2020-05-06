@@ -69,6 +69,8 @@ int frequency_is_valid_frequency(ulong freq);
 int frequency_is_valid_pstate(uint pstate);
 uint frequency_closest_pstate(ulong freq);
 ulong frequency_closest_frequency(ulong freq);
+ulong frequency_closest_high_freq(ulong freq,int minps);
+
 
 #ifndef EAR_CPUPOWER
 void get_governor(struct cpufreq_policy *governor);

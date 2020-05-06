@@ -37,6 +37,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+#include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/powercap_status.h>
@@ -66,7 +67,23 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
 {
+	ulong eff_f;
+	uint power_status;
 	*ok=1;
+#if POWERCAP
+    if (is_powercap_set(&c->app->pc_opt)){
+      verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+      power_status=compute_power_status(&c->app->pc_opt,(uint)(curr_sig->DC_power));
+      eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);
+      if (eff_f<curr_sig->def_f){
+        verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
+      }
+    }else{
+      verbose(1,"Powercap is not set");
+      power_status=PC_STATUS_ERROR;
+    }
+#endif
+
 	return EAR_SUCCESS;
 }
 

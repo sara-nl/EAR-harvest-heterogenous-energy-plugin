@@ -87,17 +87,15 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
 	double power_ref,time_ref,max_penalty,time_max;
 
-  ulong best_freq,best_pstate,freq_ref;
+  ulong best_freq,best_pstate,freq_ref,eff_f;
 	ulong curr_freq,nominal;
 	ulong curr_pstate,def_pstate,def_freq;
 	state_t st;
+	uint power_status;
 
 
 	if ((c!=NULL) && (c->app!=NULL)){
 
-#if POWERCAP
-    if (is_powercap_set(&c->app->pc_opt)) verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
-#endif
 
 
     if (c->use_turbo) min_pstate=0;
@@ -115,6 +113,18 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		// This is the frequency at which we were running
 		curr_freq=*(c->ear_frequency);
 		curr_pstate = frequency_closest_pstate(curr_freq);
+
+		eff_f=frequency_closest_high_freq(my_app->avg_f,1);
+
+#if POWERCAP
+    if (is_powercap_set(&c->app->pc_opt)){ 
+			verbose(1,"Powercap is set to %u Watts",get_powercap_value(&c->app->pc_opt));
+      power_status=compute_power_status(&c->app->pc_opt,(uint)(my_app->DC_power));
+			if ((eff_f<curr_freq) && (power_status==PC_STATUS_GREEDY)){
+				verbose(1,"We are running at less effective frequency than selected curr=%lu def=%lu eff=%lu",curr_freq,def_freq,eff_f);
+			}
+		}
+#endif
 
 		*ready=1;
 
@@ -202,9 +212,27 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *ok)
 {
 	double energy_last, energy_curr;
+	uint power_status;
+	ulong eff_f;
 
 	if ((c==NULL) || (curr_sig==NULL) || (last_sig==NULL)) return EAR_ERROR;
+
+#if POWERCAP
+    if (is_powercap_set(&c->app->pc_opt)){
+      verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+      power_status=compute_power_status(&c->app->pc_opt,(uint)(curr_sig->DC_power));
+      eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);
+      if (eff_f<curr_sig->def_f){
+        verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
+      }
+    }else{
+      verbose(1,"Powercap is not set");
+      power_status=PC_STATUS_ERROR;
+    }
+#endif
+
 	if (curr_sig->def_f==last_sig->def_f) *ok=1;
+
 
 	energy_last = last_sig->time*last_sig->DC_power;
 	energy_curr = curr_sig->time * curr_sig->DC_power;
