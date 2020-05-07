@@ -219,13 +219,13 @@ int set_powercap_value(uint domain,uint limit)
 	char c_date[128];
 	state_t ret;
 	if (limit==my_pc_opt.current_pc) return EAR_SUCCESS;
-	update_node_powercap_opt_shared_info();
 	debug("%sset_powercap_value domain %u limit %u%s",COL_BLU,domain,limit,COL_CLR);
 	get_date_str(c_date,sizeof(c_date));
 	if (fd_powercap_values>=0){ 
 		dprintf(fd_powercap_values,"%s domain %u limit %u \n",c_date,domain,limit);
 	}
 	my_pc_opt.current_pc=limit;
+	update_node_powercap_opt_shared_info();
 	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,limit);
 }
 

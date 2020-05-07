@@ -288,7 +288,7 @@ void * eargm_powercap_th(void *noarg)
 	while(1)
 	{
 		sleep(cluster_powercap_period);
-		if ((policy==MAXPOWER) && my_cluster_conf.eargm.mode &&  cluster_power_limited()){
+		if (cluster_power_limited()){
 			cluster_check_powercap();
 		}
 

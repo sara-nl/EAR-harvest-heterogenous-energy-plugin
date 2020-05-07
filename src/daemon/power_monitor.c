@@ -41,6 +41,7 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <common/colors.h>
 
 #include <common/config.h>
 #include <common/system/sockets.h>
@@ -948,8 +949,8 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		mpi = 0;
 		maxpower = minpower = 0;
 	}
-	verbosen(VNODEPMON, "ID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf ",
-			jid, mpi, my_current_power->avg_dc, maxpower, minpower);
+	verbosen(VNODEPMON, "%sID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf%s ",COL_BLU,
+			jid, mpi, my_current_power->avg_dc, maxpower, minpower,COL_CLR);
 	verbose_node_metrics(&my_nm_id, nm);
 
 
