@@ -30,6 +30,7 @@
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <common/system/file.h>
 #include <common/system/symplug.h>
 #include <common/output/verbose.h>
@@ -42,12 +43,18 @@ static mpif_t next_mpif;
 mpic_t ear_mpic;
 mpif_t ear_mpif;
 
+static int module_file_exists(char *path)
+{
+	return (access(path, X_OK) == 0);
+}
+
 static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 {
 	static char buffer[4096];
 	char *extension = NULL;
 	char *path = NULL;
 	char *hack = NULL;
+	char *vers = NULL;
 	int len = 4096;
 	int fndi = 0;
 	int fndo = 0;
@@ -83,10 +90,17 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 		fndi, fndo, fndm);
 
 	//
-	extension = ".so";
+	extension = "so";
 
 	if (fndo) {
-		extension = ".ompi.so";
+		extension = "ompi.so";
+	}
+
+	if ((vers = getenv(FLAG_NAME_LIBR)) != NULL) {
+		if (strlen(vers) > 0) {
+			sprintf(buffer, "%s.so", vers);		
+			extension = buffer;
+		}
 	}
 
 	//
@@ -96,7 +110,8 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 		sprintf(path_so, "%s/%s.%s", hack, REL_NAME_LIBR, extension);
 	}
 	
-	if (!file_is_regular(path_so)) {
+	//if (!file_is_regular(path_so)) {
+	if (!module_file_exists(path_so)) {
 		return;
 	}
 
