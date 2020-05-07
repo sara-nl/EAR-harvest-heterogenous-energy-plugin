@@ -53,6 +53,8 @@
 #define INM_ENABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control enable global" 
 #define INM_DISABLE_POLICY_CONTROL_CMD "ipmitool -b 0x00 -t 0x2c nm control disable global" 
 #define INM_ENABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy add policy_id %u domain platform correction hard power %d  trig_lim 1000 stats 30 enable"
+#define INM_ENABLE_POWERCAP_POLICY_CMD_SOFT "ipmitool -b 0x00 -t 0x2c nm policy add policy_id %u domain platform correction soft power %u trig_lim 1000 stats 5 enable"
+
 #define INM_DISABLE_POWERCAP_POLICY_CMD "ipmitool -b 0x00 -t 0x2c nm policy remove policy_id %u"
 #define INM_GET_POWERCAP_POLICY_CMD "NO_CMD"
 
@@ -73,7 +75,7 @@ state_t inm_disable_powercap_policy(uint pid)
   sprintf(cmd,INM_DISABLE_POWERCAP_POLICY_CMD,pid);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error executing policy disable");
+    error("Error executing policy disable");
 		return EAR_ERROR;
   }
   }
@@ -102,7 +104,7 @@ state_t inm_enable_powercap_policies()
   debug("Enable INM policy control");
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error executing INM CMD Policy control");
+    error("Error executing INM CMD Policy control");
     return EAR_ERROR;
   }
   }
@@ -116,7 +118,7 @@ state_t inm_enable()
   sprintf(cmd,INM_ENABLE_XCC_BRIGE);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error executing INM XCC-bridge");
+    error("Error executing INM XCC-bridge");
     return EAR_ERROR;
   }
   }
@@ -125,7 +127,7 @@ state_t inm_enable()
   sprintf(cmd,INM_ENABLE_CMD);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error executing INM CMD enable");
+    error("Error executing INM CMD enable");
     return EAR_ERROR;
   }
   }
@@ -137,8 +139,9 @@ state_t inm_set_powercap_value(uint pid,uint domain,uint limit)
 	char cmd[1024];
 	char c_date[128];
 	state_t ret;
-	debug("inm_set_powercap_value %u",limit);
+	debug("inm_set_powercap_value policy %u limit %u",pid,limit);
 	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,pid,limit);
+	debug(cmd);
 	return execute(cmd);
 }
 

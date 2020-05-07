@@ -115,6 +115,7 @@ uint period_t1,period_t2;
 ulong total_energy_t2,energy_t1;
 uint my_port;
 uint current_sample=0,total_samples=0,last_level=EARGM_NO_PROBLEM,T1_stables=0;
+uint last_risk_sent=EARGM_NO_PROBLEM;
 ulong *energy_consumed;
 ulong energy_budget;
 ulong power_budget;
@@ -289,7 +290,7 @@ uint defcon(ulong e_t2,ulong e_t1,ulong load)
     case MAXENERGY:
       perc_energy=((double)e_t2/(double)energy_budget)*(double)100;
       perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
-      verbose(VGM,"Percentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)",perc_energy,e_t2,energy_budget);
+      verbose(VGM,"%sPercentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)%s",COL_BLU,perc_energy,e_t2,energy_budget,COL_CLR);
       if (perc_time<100.0){
         if (perc_energy>perc_time){
             warning("WARNING %.2lf%% of energy vs %.2lf%% of time!!",perc_energy,perc_time);
@@ -316,9 +317,9 @@ void create_risk(risk_t *my_risk,int wl)
 {
 	*my_risk=0;
 	switch(wl){
-		case EARGM_WARNING1:set_risk(my_risk,WARNING1);break;
-		case EARGM_WARNING2:set_risk(my_risk,WARNING1);add_risk(my_risk,WARNING2);break;
-		case EARGM_PANIC:set_risk(my_risk,WARNING1);add_risk(my_risk,WARNING2);add_risk(my_risk,PANIC);break;
+		case EARGM_WARNING1:set_risk(my_risk,WARNING1);last_risk_sent=EARGM_WARNING1;break;
+		case EARGM_WARNING2:set_risk(my_risk,WARNING1);add_risk(my_risk,WARNING2);last_risk_sent=EARGM_WARNING2;break;
+		case EARGM_PANIC:set_risk(my_risk,WARNING1);add_risk(my_risk,WARNING2);add_risk(my_risk,PANIC);last_risk_sent=EARGM_PANIC;break;
 	}
 	verbose(1,"EARGM risk level %lu",(ulong)*my_risk);
 	default_state=0;
@@ -714,6 +715,7 @@ int main(int argc,char *argv[])
 				if ((my_cluster_conf.eargm.mode) && (last_level==EARGM_NO_PROBLEM) && (!default_state)){ 
 					verbose(VGM,"Restoring default configuration");
 					restore_conf_all_nodes(my_cluster_conf);
+					last_risk_sent=EARGM_NO_PROBLEM;
 					default_state=1;
 				}
 				break;
@@ -724,7 +726,7 @@ int main(int argc,char *argv[])
 				verbose(VGM,"%sWARNING1... we are close to the maximum energy budget %.2lf%% %s",COL_RED,perc_energy,COL_CLR);
 				verbose(VGM,"****************************************************************");
 	
-				if (my_cluster_conf.eargm.mode && last_level!=EARGM_WARNING1){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_WARNING1){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_WARNING1);
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
@@ -738,7 +740,7 @@ int main(int argc,char *argv[])
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"%sWARNING2... we are close to the maximum energy budget %.2lf%%%s ",COL_RED,perc_energy,COL_CLR);
 				verbose(VGM,"****************************************************************");
-				if (my_cluster_conf.eargm.mode && last_level!=EARGM_WARNING2){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_WARNING2){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_WARNING2);
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
@@ -753,7 +755,7 @@ int main(int argc,char *argv[])
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"%sPANIC!... we are close or over the maximum energy budget %.2lf%%%s ",COL_RED,perc_energy,COL_CLR);
 				verbose(VGM,"****************************************************************");
-				if (my_cluster_conf.eargm.mode && last_level!=EARGM_PANIC){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_PANIC){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_PANIC);	
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}

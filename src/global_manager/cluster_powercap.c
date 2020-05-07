@@ -45,7 +45,7 @@
 #if POWERCAP
 
 extern cluster_conf_t my_cluster_conf;
-uint max_cluster_power,default_power,num_nodes;
+uint max_cluster_power,num_nodes;
 uint total_req_new,total_req_greedy,req_no_extra,num_no_extra,num_greedy,num_extra,extra_power_alloc,total_extra_power;
 cluster_powercap_status_t *my_cluster_power_status;
 int num_power_status;
@@ -300,12 +300,10 @@ void * eargm_powercap_th(void *noarg)
 void cluster_powercap_init()
 {
   char *max_cluster_power_st=getenv("EAR_MAX_CLUSTER_POWER");
-  char *default_power_st=getenv("EAR_DEF_POWER");
 	char *pc_period=getenv("EAR_POWERCAP_FREQ");
 	int ret;
   if (max_cluster_power_st!=NULL) max_cluster_power=atoi(max_cluster_power_st);
   else max_cluster_power=0;
-  if (default_power_st!=NULL) default_power=atoi(default_power_st);
   if (max_cluster_power>0){
     verbose(0,"Power cap limit set to %u",max_cluster_power);
   }else{
