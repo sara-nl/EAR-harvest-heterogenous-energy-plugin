@@ -36,7 +36,7 @@
 
 // Stall cycles
 /** Initializes the event metrics for stall cycles. */
-void init_stall_metrics();
+int init_stall_metrics();
 
 /** Resets the metrics for stall cycles. */
 void reset_stall_metrics();

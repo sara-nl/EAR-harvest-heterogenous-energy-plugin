@@ -34,16 +34,17 @@
 #include <common/output/verbose.h>
 #include <metrics/common/papi.h>
 
-void metrics_get_app_name(char *app_name)
+void  metrics_get_app_name(char *app_name)
 {
 	const PAPI_exe_info_t *prginfo = NULL;
 
-	PAPI_INIT_TEST(__FILE__);
+	//PAPI_INIT_TEST(__FILE__);
 
 	if ((prginfo = PAPI_get_executable_info()) == NULL)
 	{
-		error("executable info not available, exiting");
-		exit(2);
+		error("executable info not available");
+		strcpy(app_name,"NO NAME");
+		return;
 	}
 
 	strcpy(app_name, prginfo->fullname);
@@ -52,7 +53,7 @@ void metrics_get_app_name(char *app_name)
 const PAPI_hw_info_t *metrics_get_hw_info()
 {
 	//
-	PAPI_INIT_TEST(__FILE__);
+	//PAPI_INIT_TEST(__FILE__);
 
 	// General hardware info by PAPI
 	return PAPI_get_hardware_info();
@@ -157,8 +158,8 @@ int _papi_init()
 	}
 
 	if ((papi_init = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
-		error("Error intializing PAPI (%s), exiting", PAPI_strerror(papi_init));
-		exit(1);
+		error("Error intializing PAPI (%s)", PAPI_strerror(papi_init));
+		return 0;
 	}
 
 	debug( "PAPI has been initialized correctly");

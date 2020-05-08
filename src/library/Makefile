@@ -50,8 +50,7 @@ all: all.components $(libs_OBJS)
 
 ######## OPTIONS
 
-install: install.components libs.ginstall
-	echo $(libs_BINS)
+install: install.components libs.ginstall;
 
 %.install: ;
 

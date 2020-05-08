@@ -31,6 +31,7 @@
 #include <papi.h>
 #include <common/includes.h>
 #include <common/environment.h>
+#include <common/types/version.h>
 #include <common/types/application.h>
 #include <common/hardware/frequency.h>
 #include <library/api/mpi.h>
@@ -94,10 +95,12 @@ unsigned masters_comm_created=0;
 //
 static void print_local_data()
 {
+	char ver[64];
 	#if EAR_LIB_SYNC 
 	if (my_master_rank==0) {
 	#endif
-	verbose(1, "--------------------------------");
+	version_to_str(ver);
+	verbose(1, "------------EAR%s--------------------",ver);
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
@@ -390,7 +393,11 @@ void ear_init()
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	
-	metrics_init();
+	if (metrics_init()!=EAR_SUCCESS){
+		    my_id=1;
+				verbose(0,"Error in EAR metrics initialization, setting EARL off");
+				return;
+	}
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
 
 	if (ear_my_rank == 0)
@@ -408,6 +415,9 @@ void ear_init()
 	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
     error("Retrieving architecture description");
 		/* How to proceeed here ? */
+		my_id=1;
+		verbose(0,"Error in EAR metrics initialization, setting EARL off");
+		return;
   }
 
 	#if SHOW_DEBUGS
@@ -566,13 +576,14 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	{
 		unsigned long  ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		//unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
-
+	
+#if 1
 	    traces_mpi_call(ear_my_rank, my_id,
-                        (ulong) PAPI_get_real_usec(),
                         (ulong) ear_event_l,
                         (ulong) buf,
                         (ulong) dest,
                         (ulong) call_type);
+#endif
 
 		total_mpi_calls++;
 		/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
@@ -659,13 +670,13 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
-		/*traces_mpi_call(ear_my_rank, my_id,
-						(ulong) PAPI_get_real_usec(),
+#if 0
+		traces_mpi_call(ear_my_rank, my_id,
 						(ulong) ear_event_l,
 						(ulong) buf,
 						(ulong) dest,
-						(ulong) call_type);*/
-
+						(ulong) call_type);
+#endif
 		mpi_calls_per_loop++;
 		// This is key to detect periods
 		ear_status = dynais(ear_event_s, &ear_size, &ear_level);
@@ -753,7 +764,6 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
 		traces_mpi_call(ear_my_rank, my_id,
-						(unsigned long) PAPI_get_real_usec(),
 						(unsigned long) buf,
 						(unsigned long) dest,
 						(unsigned long) call_type,

@@ -622,7 +622,10 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	n = snprintf(      0,       0, "%s/%s", buffer2, lib_path);
 	n = snprintf(buffer1, t(m, n), "%s/%s", buffer2, lib_path);
 
-	if (file_is_regular(buffer1))
+	plug_verbose(sp, 2, "trying to load file '%s'", buffer1);
+
+	//if (file_is_regular(buffer1))
+	if (access(buffer1, X_OK) == 0)
 	{
 		char *ld_buf = sd->job.user.env.ld_preload;
 

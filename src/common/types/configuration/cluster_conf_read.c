@@ -277,7 +277,7 @@ void parse_island(cluster_conf_t *conf, char *line)
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_error_power=(double)atoi(token);
         }
-        else if (!strcmp(token, "ERROR_TEMP")){
+        else if (!strcmp(token, "MAX_TEMP")){
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_temp=(double)atoi(token);
         }
@@ -557,6 +557,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			}
             curr_policy = &conf->power_policies[conf->num_policies];
             init_policy_conf(curr_policy);
+      /* POLICY DEFINITION */
 			while (token != NULL)
 			{
 				key = strtok_r(token, "=", &secondary_ptr);
@@ -580,6 +581,10 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
                 {
                     curr_policy->def_freq= atof(value);
                 }
+								else if (!strcmp(key, "DEFAULTPSTATE"))
+								{
+									curr_policy->p_state=atoi(value);
+								}
                 else if (!strcmp(key, "PRIVILEGED"))
                 {
 									curr_policy->is_available=(atoi(value)==0);
@@ -841,7 +846,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->eard.use_eardbd = atoi(token);
         }
-        else if (!strcmp(token, "NODEFORCEFREQUENCIES"))
+        else if (!strcmp(token, "NODEDAEMONFORCEFREQUENCIES"))
         {
             token = strtok(NULL, "=");
             conf->eard.force_frequencies = atoi(token);

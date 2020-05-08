@@ -40,6 +40,7 @@
 #include <common/sizes.h>
 #include <common/config.h>
 //#define SHOW_DEBUGS 1
+#include <common/system/time.h>
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <library/metrics/metrics.h>
@@ -310,7 +311,7 @@ static void trace_file_write(int event, ullong value)
   if (num_events==PARAVER_EVENTS){
     trace_file_write_in_file();
   }
-  long long my_time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
+  long long my_time = metrics_usecs_diff((long long) timestamp_getconvert(TIME_USECS), time_sta);
   events_list[num_events].t=my_time;
   events_list[num_events].event=event;
   events_list[num_events].value=value;
@@ -322,7 +323,7 @@ static void trace_file_write_simple_event(int event)
   if (num_events==PARAVER_EVENTS-2){
     trace_file_write_in_file();
   }
-  long long my_time = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
+  long long my_time = metrics_usecs_diff((long long) timestamp_getconvert(TIME_USECS), time_sta);
   events_list[num_events].t=my_time;
   events_list[num_events].event=event;
   events_list[num_events].value=1;
@@ -369,7 +370,7 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 	strcpy(my_app,app);
 
 	//
-	time_sta = PAPI_get_real_usec();
+	time_sta = (long long) timestamp_getconvert(TIME_USECS);
 
 	//
 	gethostname(hostname, SZ_BUFF_BIG);
@@ -397,7 +398,7 @@ void traces_end(int global_rank, int local_rank, unsigned long total_energy)
 {
 	trace_fin=1;
 	//
-	time_end = metrics_usecs_diff(PAPI_get_real_usec(), time_sta);
+	time_end = metrics_usecs_diff((long long) timestamp_getconvert(TIME_USECS), time_sta);
 
 	//
 	trace_file_write(TRA_ENE, total_energy);	

@@ -27,7 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-//#define SHOW_DEBUGS 0
 
 #include <errno.h>
 #include <fcntl.h>
@@ -36,6 +35,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
+//#define SHOW_DEBUGS 0
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -114,7 +114,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		curr_freq=*(c->ear_frequency);
         debug("curr_frequency %lu", curr_freq);
 		curr_pstate = frequency_closest_pstate(curr_freq);
-        debug("curr_pstate %i", curr_pstate);
+        debug("curr_pstate %lu", curr_pstate);
 
 
 		*ready=1;

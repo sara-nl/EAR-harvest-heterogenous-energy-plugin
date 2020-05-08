@@ -9,7 +9,7 @@ MariaDBPassw=password
 MariaDBCommandsUser=root
 MariaDBCommandsPassw=password
 MariaDBDatabase=EAR
-MariaDBPort=1100
+MariaDBPort=3306
 # Extended node information saves also the average frequency and temperature.
 ReportNodeDetail=1
 # Extended signature information saves also the hardware counters.
@@ -19,14 +19,14 @@ reportSIGDetail=1
 #---------------------------------------------------------------------------------------------------
 # In seconds
 NodeDaemonPowermonFreq=60
-NodeDaemonPort=5000
-NodeForceFrequencies=1
+NodeDaemonPort=50001
+NodeDaemonForceFrequencies=1
 #---------------------------------------------------------------------------------------------------
 # EAR Database Manager (EARDBD)
 #---------------------------------------------------------------------------------------------------
-DBDaemonPortTCP=4711
-DBDaemonPortSecTCP=4712
-DBDaemonSyncPort=4713
+DBDaemonPortTCP=50002
+DBDaemonPortSecTCP=50003
+DBDaemonSyncPort=50004
 # In seconds
 DBDaemonAggregationTime=60
 DBDaemonInsertionTime=30
@@ -47,6 +47,10 @@ DefaultPowerPolicy=min_time
 Policy=monitoring Settings=0 DefaultFreq=2.3 Privileged=0
 Policy=min_time Settings=0.7 DefaultFreq=2.0 Privileged=0
 Policy=min_energy Settings=0.1 DefaultFreq=2.3 Privileged=1
+#Policy=monitoring Settings=0 DefaultPstate=1 Privileged=0
+#Policy=min_time Settings=0.7 DefaultPstate=4 Privileged=0
+#Policy=min_energy Settings=0.1 DefaultPstate=1 Privileged=1
+
 
 #---------------------------------------------------------------------------------------------------
 # EAR Global Manager (EARGMD)
@@ -67,7 +71,7 @@ GlobalManagerMode=0
 #---------------------------------------------------------------------------------------------------
 TmpDir=/var/run/ear
 EtcDir=/hpc/opt/ear/etc
-InstDir=/hpc/opt/ear
+InstDir=/hpc/opt/ear3.1
 DataBasePathName=/hpc/opt/ear/etc/ear/dbs/dbs.
 #---------------------------------------------------------------------------------------------------
 # Plugin configuration

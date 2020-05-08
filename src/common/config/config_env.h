@@ -50,11 +50,11 @@
 //
 #define REL_PATH_LIBR "lib"
 #define REL_NAME_LIBR "libear"
-#define REL_PATH_LOAD "lib/libloader.so"
+#define REL_PATH_LOAD "lib/libearld.so"
 
 //
-#define HACK_PATH_LOAD "SLURM_HACK_LIBRARY"
-#define HACK_PATH_LIBR "SLURM_HACK_LOADER"
-#define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION2"
+#define HACK_PATH_LIBR "SLURM_HACK_LIBRARY"
+#define HACK_PATH_LOAD "SLURM_HACK_LOADER"
+#define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION"
 
 #endif //CONFIG_ENVIRONMENT_H

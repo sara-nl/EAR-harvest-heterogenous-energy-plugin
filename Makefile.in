@@ -74,6 +74,9 @@ scripts.install: ;
 doc.install: ;
 	@ $(MAKE) -C 'doc' install || exit 
 
+%.build: ;
+	@ $(MAKE) -C 'src' $*.build || exit
+
 %.install: ;
 	@ $(MAKE) -C src $*.install || exit
 

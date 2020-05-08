@@ -112,6 +112,7 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	
 	//if (!file_is_regular(path_so)) {
 	if (!module_file_exists(path_so)) {
+		verbose(0, "LOADER: impossible to find library '%s'", path_so);
 		return;
 	}
 

@@ -12,7 +12,7 @@ m4_include([m4/x_ac_gsl.m4])
 
 # INIT
 AC_PREREQ([2.69])
-AC_INIT([EAR], [3.0])
+AC_INIT([EAR], [3.2])
 AC_LANG(C)
 
 # PROGRAMS TEST
@@ -172,8 +172,9 @@ AC_CONFIG_FILES([Makefile
                  etc/systemd/eardbd.service
                  etc/systemd/eargmd.service
                  src/common/config/config_install.h
-								 etc/conf/ear.conf.full.template
-                 etc/conf/ear.conf.template])
+                 etc/conf/ear.conf.full.template
+                 etc/conf/ear.conf.template
+                 etc/rpms/specs/ear.spec])
 AC_CONFIG_FILES([src/tests/check/check.sh], [chmod +x src/tests/check/check.sh])
 AC_CONFIG_FILES([etc/rpms/rpmbuild.sh], [chmod +x etc/rpms/rpmbuild.sh])
 AC_OUTPUT

@@ -1,5 +1,5 @@
 /**************************************************************
-*	Energy Aware Runtime (EAR)
+*	Energy Aware Runtime (EA)
 *	This program is part of the Energy Aware Runtime (EAR).
 *
 *	EAR provides a dynamic, transparent and ligth-weigth solution for
@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <common/output/verbose.h>
+#include <common/states.h>
 #include <metrics/stalls/cpu/papi.h>
 
 #define STALL_SETS 		1
@@ -43,7 +44,7 @@ static long long values[STALL_SETS][STALL_EVS];
 static long long acum_values[STALL_EVS];
 static int event_sets[STALL_SETS];
 
-void init_stall_metrics()
+int init_stall_metrics()
 {
 	PAPI_option_t attach_opt[STALL_SETS];
 	int events, sets, cid, ret;
@@ -65,12 +66,12 @@ void init_stall_metrics()
 	    	event_sets[sets]=PAPI_NULL;
 	        if ((ret=PAPI_create_eventset(&event_sets[sets]))!=PAPI_OK){
 			verbose(0, "Creating %d eventset.Exiting:%s", sets,PAPI_strerror(ret));
-			exit(1);
+			return EAR_ERROR;
 		}
 
 		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid))!=PAPI_OK){		
 			verbose(0, "PAPI_assign_eventset_component.Exiting:%s", PAPI_strerror(ret));
-			exit(1);
+			return EAR_ERROR;
 		}
 		attach_opt[sets].attach.eventset=event_sets[sets];
  		attach_opt[sets].attach.tid=getpid();
@@ -93,6 +94,7 @@ void init_stall_metrics()
 			verbose(0,  "PAPI_add_named_event %s.%s","CYCLE_ACTIVITY:STALLS_TOTAL",PAPI_strerror(ret));
 		}
 	}
+	return EAR_SUCCESS;
 }
 void reset_stall_metrics()
 {

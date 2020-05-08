@@ -76,6 +76,6 @@ ullong timestamp_convert(timestamp *ts, ullong time_unit);
 ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit);
 
 /* A combination of getfast and convert. */
-ullong timestamp_getfast_convert(timestamp_t *ts, ullong time_unit);
+ullong timestamp_getconvert(ullong time_unit);
 
 #endif //EAR_COMMON_TIME_H

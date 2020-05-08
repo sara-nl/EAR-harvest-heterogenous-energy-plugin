@@ -10,7 +10,7 @@ load_OBJS = \
     module_mpif.o
 
 load_BINS = \
-    libloader.so
+    libearld.so
 
 load_DEPS = $(SRCDIR)/common/libcommon.a
 
@@ -24,8 +24,8 @@ all: clean $(load_OBJS) $(load_BINS)
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-libloader.so:
-	$(CC) -shared -o libloader.so $(load_OBJS) $(LDFLAGS) $(load_DEPS)
+libearld.so:
+	$(CC) -shared -o libearld.so $(load_OBJS) $(LDFLAGS) $(load_DEPS)
 
 ######## OPTIONS 
 

@@ -31,18 +31,19 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <common/config.h>
+#include <common/states.h>
 #include <common/output/verbose.h>
 #include <metrics/cpi/cpu/papi.h>
 
 #define BASIC_SETS		1
 #define BASIC_EVS		2
 
-static const char *PAPI_NAME = "METRICS_INSTRS";
+static const char *PAPI_NAME = "cpi";
 static long long values[BASIC_SETS][BASIC_EVS];
 static long long acum_values[BASIC_EVS];
 static int event_sets[BASIC_SETS];
 
-void init_basic_metrics()
+int init_basic_metrics()
 {
 	PAPI_option_t attach_op[BASIC_SETS];
 	int sets, events;
@@ -67,13 +68,13 @@ void init_basic_metrics()
 		{
 			error("Creating %d eventset.Exiting:%s",
 					sets,PAPI_strerror(ret));
-			exit(1);
+			return EAR_ERROR;
 		}
 
 		if ((ret=PAPI_assign_eventset_component(event_sets[sets],cid))!=PAPI_OK)
 		{
 			error("PAPI_assign_eventset_component.Exiting:%s", PAPI_strerror(ret));
-			exit(1);
+			return EAR_ERROR;
 		}
 
 		attach_op[sets].attach.eventset=event_sets[sets];
@@ -101,6 +102,7 @@ void init_basic_metrics()
 						"ix86arch::INSTRUCTION_RETIRED", PAPI_strerror(ret));
 		}
 	}
+	return EAR_SUCCESS;
 }
 
 void reset_basic_metrics()

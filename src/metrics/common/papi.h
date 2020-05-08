@@ -31,15 +31,16 @@
 #define EAR_PAPI_MACROS_H
 
 #include <papi.h>
+#include <common/states.h>
 
 // Use along with <ear_verbose.h> and by defining
 #define PAPI_INIT_TEST(name) \
     int papi_init; \
     if (PAPI_is_initialized() == PAPI_NOT_INITED) { \
 		if ((papi_init = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) { \
-			verbose(0, "%s: ERROR initializing the PAPI library (%s), exiting\n", \
-				name, PAPI_strerror(papi_init)); \
-			exit(1); \
+			verbose(0, "%s: ERROR initializing the PAPI library (%s), exiting,current %d papi %d\n", \
+				name, PAPI_strerror(papi_init),PAPI_VER_CURRENT,papi_init); \
+			return EAR_ERROR; \
         } \
     }
 
@@ -53,7 +54,7 @@
 	if ((cid = PAPI_get_component_index(event)) < 0) { \
 		verbose(0, "%s: '%s' component not found (%s), exiting", \
 			name, event, PAPI_strerror(cid)); \
-		exit(1); \
+		return EAR_ERROR; \
 	}
 
 // Metrics generic functions

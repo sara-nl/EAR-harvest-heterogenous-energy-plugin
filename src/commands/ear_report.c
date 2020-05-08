@@ -42,6 +42,7 @@
 #include <common/system/user.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
+#include <common/types/version.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #if DB_MYSQL
@@ -131,6 +132,7 @@ char *user_name = NULL;
 char *etag = NULL;
 char *eardbd_host = NULL;
 int verbose = 0;
+int query_filters = 0;
 unsigned long long avg_pow = 0;
 time_t global_start_time = 0;
 time_t global_end_time = 0;
@@ -147,8 +149,77 @@ void usage(char *app)
         "\t-t energy_tag|all \t requests the energy consumed by energy tag in the selected period of time. Default: none (all tags computed). \n\t\t\t\t\t 'all' option shows all tags individually, not aggregated.\n"
         "\t-i eardbd_name|all\t indicates from which eardbd (island) the energy will be computed. Default: none (all islands computed) \n\t\t\t\t\t 'all' option shows all eardbds individually, not aggregated.\n"
         "\t-g                \t shows the contents of EAR's database Global_energy table. The default option will show the records for the two previous T2 periods of EARGM.\n\t\t\t\t\t This option can only be modified with -s, not -e\n"
+        "\t-x                \t shows the daemon events from -s to -e. If no time frame is specified, it shows the last 20 events. \n"
+        "\t-v                \t shows current EAR version. \n"
         "\t-h                \t shows this message.\n");
-	exit(1);
+	exit(0);
+}
+
+void add_string_filter(char *query, char *addition, char *value)
+{
+    if (query_filters < 1)
+        strcat(query, " WHERE ");
+    else
+        strcat(query, " AND ");
+
+    strcat(query, addition);
+    strcat(query, "=");
+    strcat(query, "'");
+    strcat(query, value);
+    strcat(query, "'");
+//    sprintf(query, query, value);
+    query_filters ++;
+}
+
+void add_int_filter(char *query, char *addition, int value)
+{
+    char query_tmp[512];
+    strcpy(query_tmp, query);
+    if (query_filters < 1)
+        strcat(query_tmp, " WHERE ");
+    else
+        strcat(query_tmp, " AND ");
+    
+    strcat(query_tmp, addition);
+    strcat(query_tmp, "=");
+    strcat(query_tmp, "%llu");
+    sprintf(query, query_tmp, value);
+    query_filters ++;
+}
+
+void add_int_comp_filter(char *query, char *addition, int value, char greater_than)
+{
+    char query_tmp[512];
+    strcpy(query_tmp, query);
+    if (query_filters < 1)
+        strcat(query_tmp, " WHERE ");
+    else
+        strcat(query_tmp, " AND ");
+    
+    strcat(query_tmp, addition);
+    if (greater_than)
+        strcat(query_tmp, ">");
+    else
+        strcat(query_tmp, "<");
+    strcat(query_tmp, "%llu");
+    sprintf(query, query_tmp, value);
+    query_filters ++;
+}
+
+void add_int_list_filter(char *query, char *addition, char *value)
+{
+    if (query_filters < 1)
+        strcat(query, " WHERE ");
+    else
+        strcat(query, " AND ");
+
+    strcat(query, addition);
+    strcat(query, " IN ");
+    strcat(query, "(");
+    strcat(query, value);
+    strcat(query, ")");
+//    sprintf(query, query, value);
+    query_filters ++;
 }
 
 
@@ -485,6 +556,170 @@ void compute_pow(PGconn *connection, int start_time, int end_time, unsigned long
 }
 #endif
 
+#define PM_CREATION_ERROR			100
+#define APP_API_CREATION_ERROR	101
+#define DYN_CREATION_ERROR			102
+#define UNCORE_INIT_ERROR		103
+#define RAPL_INIT_ERROR 104
+#define ENERGY_INIT_ERROR 105
+#define CONNECTOR_INIT_ERROR 106
+#define RCONNECTOR_INIT_ERROR 107
+
+
+
+/* EARD runtime events */
+#define DC_POWER_ERROR		300
+#define TEMP_ERROR				301
+#define FREQ_ERROR				302
+#define RAPL_ERROR				303
+#define GBS_ERROR					304
+#define CPI_ERROR					305
+void print_event_type(int type)
+{
+    switch(type)
+    {
+        case 300:
+            printf("%15s ", "DC_POW_ERROR");
+            break;
+        case 301:
+            printf("%15s ", "TEMP_ERROR");
+            break;
+        case 302:
+            printf("%15s ", "FREQ_ERROR");
+            break;
+        case 303:
+            printf("%15s ", "RAPL_ERROR");
+            break;
+        case 304:
+            printf("%15s ", "GBS_ERROR");
+            break;
+        case 305:
+            printf("%15s ", "CPI_ERROR");
+            break;
+        default:
+            printf("%11s(%d) ", "UNKNOWN", type);
+            break;
+    }
+}
+
+#if DB_MYSQL
+void mysql_print_events(MYSQL_RES *result)
+{
+
+    int i;
+    int num_fields = mysql_num_fields(result);
+
+    MYSQL_ROW row;
+    int has_records = 0;
+    while ((row = mysql_fetch_row(result))!= NULL) 
+    { 
+        if (!has_records)
+        {
+            printf("%12s %20s %15s %8s %8s %20s %12s\n",
+               "Event ID", "Timestamp", "Event type", "Job id", "Step id", "Freq.", "node_id");
+            has_records = 1;
+        }
+        for(i = 0; i < num_fields; i++) {
+            if (i == 2)
+               print_event_type(atoi(row[i]));  
+            else if (i == 1)
+               printf("%20s ", row[i] ? row[i] : "NULL");
+            else if (i == 4 || i == 3)
+               printf("%8s ", row[i] ? row[i] : "NULL");
+            else if (i == 5)
+               printf("%20s ", row[i] ? row[i] : "NULL");
+            else
+               printf("%12s ", row[i] ? row[i] : "NULL");
+        }
+        printf("\n");
+    }
+    if (!has_records)
+    {
+        printf("There are no events with the specified properties.\n\n");
+    }
+
+}
+#elif DB_PSQL
+void postgresql_print_events(PGresult *res)
+{
+    int i, j, num_fields, has_records = 0;
+    num_fields = PQnfields(res);
+
+    for (i = 0; i < PQntuples(res); i++)
+    {
+        if (!has_records)
+        {
+            printf("%12s %22s %15s %8s %8s %20s %12s\n",
+               "Event ID", "Timestamp", "Event type", "Job id", "Step id", "Freq.", "node_id");
+            has_records = 1;
+        }
+        for (j = 0; j < num_fields; j++) {
+            if (j == 2)
+                print_event_type(atoi(PQgetvalue(res, i, j)));
+            else if (i == 1)
+               printf("%22s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+            else if (i == 4 || i == 3)
+               printf("%8s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+            else if (i == 5)
+               printf("%20s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+            else
+               printf("%12s ", PQgetvalue(res, i, j) ? PQgetvalue(res, i, j) : "NULL");
+        }
+        printf("\n");
+    }
+}
+#endif
+
+#if DB_MYSQL
+#define EVENTS_QUERY "SELECT id, FROM_UNIXTIME(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
+#elif DB_PSQL
+#define EVENTS_QUERY "SELECT id, to_timestamp(timestamp), event_type, job_id, step_id, freq, node_id FROM Events"
+#endif
+
+void read_events(int start_time, int end_time, cluster_conf_t *my_conf) 
+{
+    char query[512];
+    char subquery[128];
+    int limit = 0;
+
+    init_db_helper(&my_conf->database);
+    strcpy(query, EVENTS_QUERY);
+
+    if (start_time > 0)
+        add_int_comp_filter(query, "timestamp", start_time, 1);
+    else limit = 20;
+    if (end_time > 0)
+        add_int_comp_filter(query, "timestamp", end_time, 0);
+
+    add_int_comp_filter(query, "event_type", 100, 1);
+
+    if (limit > 0)
+    {
+        sprintf(subquery, " ORDER BY timestamp desc LIMIT %d", limit);
+        strcat(query, subquery);
+    }
+
+    if (verbose) printf("QUERY: %s\n", query);
+  
+  
+#if DB_MYSQL
+    MYSQL_RES *result = db_run_query_result(query);
+#elif DB_PSQL
+    PGresult *result = db_run_query_result(query);
+#endif
+  
+    if (result == NULL) 
+    {
+        printf("Database error\n");
+        return;
+    }
+
+#if DB_MYSQL
+    mysql_print_events(result);
+#elif DB_PSQL
+    postgresql_print_events(result);
+#endif
+}
 #define GLOBAL_ENERGY_TYPE  1
 #define PER_METRIC_TYPE     2
 void print_warning_level(int warn_level)
@@ -709,6 +944,7 @@ int main(int argc,char *argv[])
     char all_nodes = 0;
     char all_tags = 0;
     char all_eardbds = 0;
+    char report_events = 0;
     char global_energy = 0;
     struct tm tinfo = {0};
 
@@ -768,20 +1004,18 @@ int main(int argc,char *argv[])
     }
 #endif
 
-    while ((opt = getopt(argc, argv, "t:vhn:u:s:e:i:g")) != -1)
+    while ((opt = getopt(argc, argv, "t:vhbn:u:s:e:i:gx")) != -1)
     {
         switch(opt)
         {
             case 'h':
                 usage(argv[0]);
-#if DB_MYSQL
-                mysql_close(connection);
-#elif DB_PSQL
-                PQfinish(connection);
-#endif
-                free_cluster_conf(&my_conf);
                 break;
             case 'v':
+                print_version();
+                exit(0);
+                break;
+            case 'b':
                 verbose=1;
                 break;
             case 'n':
@@ -840,10 +1074,13 @@ int main(int argc,char *argv[])
                 }
                 start_time = mktime(&tinfo);
                 break;
+            case 'x':
+                report_events = 1;
+                break;
         }
     }
 
-    if (!all_users && !all_nodes && !all_tags && !all_eardbds && !global_energy)
+    if (!all_users && !all_nodes && !all_tags && !all_eardbds && !global_energy && !report_events)
     {
         long long result = get_sum(connection, start_time, end_time, divisor);
         compute_pow(connection, start_time, end_time, result);
@@ -892,6 +1129,12 @@ int main(int argc,char *argv[])
         else
             print_all(connection, start_time, time_period, GLOB_ENERGY, GLOBAL_ENERGY_TYPE);
     }
+    else if (report_events)
+    {
+        //read_events(char *user, int job_id, int limit, int step_id, char *job_ids) 
+        read_events(start_time, end_time, &my_conf); 
+
+    }
 #if DB_MYSQL
     mysql_close(connection);
 #elif DB_PSQL
@@ -900,7 +1143,7 @@ int main(int argc,char *argv[])
     free_cluster_conf(&my_conf);
 
 
-    exit(1);
+    exit(0);
 }
 
 
