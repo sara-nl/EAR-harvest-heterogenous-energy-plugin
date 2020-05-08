@@ -32,6 +32,7 @@
 #include <string.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
+#include <daemon/app_mgt.h>
 
 void app_mgt_new_job(app_mgt_t *a)
 {

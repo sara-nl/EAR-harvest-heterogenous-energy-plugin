@@ -146,7 +146,7 @@ void resched_shared_area_dispose(char * path)
 
 /************* APP_MGT
  *
- /** Sets in path the filename for the shared memory area app_area between EARD and EARL
+ * Sets in path the filename for the shared memory area app_area between EARD and EARL
  * * @param path (output)
  * */
 int get_app_mgt_path(char *tmp,char *path)
@@ -181,7 +181,7 @@ app_mgt_t * attach_app_mgt_shared_area(char * path)
  *  *  * */
 void dettach_app_mgt_shared_area()
 {
-	dettach_shared_area(fd_mgt);
+	dettach_shared_area(fd_app_mgt);
 }
 
 /** Releases a shared memory area previously created. It is used by EARD (server)
