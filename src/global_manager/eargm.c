@@ -509,9 +509,9 @@ void compute_efficiency_of_actions(unsigned long curr_avg_power,unsigned long la
 	uint estimated_t1_needed;
 	uint required_saving=5;
 	power_red=1.0-(curr_avg_power/last_avg_power);
-	verbose(0,"Power has been reduced by %f in t1",power_red);
+	//verbose(0,"Power has been reduced by %f in t1",power_red);
 	power_red_t2=power_red/aggregate_samples;	
-	verbose(0,"Power has been reduced by %f in t2",power_red_t2);
+	verbose(0,"Power has been reduced by %f in t2 and %f in t1",power_red_t2,power_red);
 	switch(last_state){
 		case EARGM_WARNING1:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L4];break;
 		case EARGM_WARNING2:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L3];break;
@@ -519,9 +519,11 @@ void compute_efficiency_of_actions(unsigned long curr_avg_power,unsigned long la
 	}
 	estimated_t1_needed=required_saving/power_red_t2;	
 	verbose(0,"%u grace periods are needed to reduce the warning level,required saving %u",estimated_t1_needed,required_saving);
+	#if 0
 	if (estimated_t1_needed>in_action){
 		verbose(0,"We will not reach our target with this number of grace periods");
 	}
+	#endif
 	if (estimated_t1_needed<aggregate_samples){
 		/* ACTION */	
 	}else{
@@ -766,7 +768,7 @@ int main(int argc,char *argv[])
 			}
 			}else{ 
 				/* We can check here the effect of actions */				
-				compute_efficiency_of_actions(curr_avg_power,last_avg_power,in_action);
+				//compute_efficiency_of_actions(curr_avg_power,last_avg_power,in_action);
 				in_action--;
 				set_gm_grace_period_values(&my_warning);
 			}

@@ -37,7 +37,7 @@
 #include <pthread.h>
 #include <common/config.h>
 #include <common/colors.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/powercap.h>

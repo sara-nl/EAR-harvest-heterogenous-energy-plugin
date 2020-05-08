@@ -46,7 +46,7 @@
 #include <common/config.h>
 #include <common/system/sockets.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -670,7 +670,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	policy_conf_t *my_policy;
 	ulong f;
 	uint user_type;
-	verbose(VJOBPMON, "powermon_new_job (%lu,%lu)", appID->job.id, appID->job.step_id);
+	verbose(VJOBPMON, "%spowermon_new_job (%lu,%lu)%s", COL_BLU,appID->job.id, appID->job.step_id,COL_CLR);
 #if POWERCAP
 	if (powermon_is_idle()) powercap_idle_to_run();
 #endif
@@ -718,8 +718,8 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	new_job_for_period(&current_sample, appID->job.id, appID->job.step_id);
 	pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);
-	verbose(VJOBPMON + 1, "Job created (%lu,%lu) is_mpi %d", current_ear_app[ccontext]->app.job.id,
-			current_ear_app[ccontext]->app.job.step_id, current_ear_app[ccontext]->app.is_mpi);
+	verbose(VJOBPMON + 1, "%sJob created (%lu,%lu) is_mpi %d%s", COL_BLU,current_ear_app[ccontext]->app.job.id,
+			current_ear_app[ccontext]->app.job.step_id, current_ear_app[ccontext]->app.is_mpi,COL_CLR);
 	verbose(VJOBPMON + 1, "*******************");
 	sig_reported = 0;
 
@@ -747,8 +747,8 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	}
 	/* We set ccontex to the specific one */
 	ccontext = cc;
-	verbose(VJOBPMON, "powermon_end_job (%lu,%lu)", current_ear_app[ccontext]->app.job.id,
-			current_ear_app[ccontext]->app.job.step_id);
+	verbose(VJOBPMON, "%spowermon_end_job (%lu,%lu)%s",COL_BLU, current_ear_app[ccontext]->app.job.id,
+			current_ear_app[ccontext]->app.job.step_id,COL_CLR);
 	while (pthread_mutex_trylock(&app_lock));
 	idleNode = 1;
 	job_end_powermon_app(eh);
@@ -906,7 +906,7 @@ void powermon_set_freq(ulong freq) {
 	if (ccontext >= 0) {
 		if (freq != current_node_freq) {
 			if ((my_cluster_conf.eard.force_frequencies) || (current_ear_app[ccontext]->app.is_mpi)) {
-				verbose(VJOBPMON, "SetFreq:  changing freq from %lu to %lu", current_node_freq, freq);
+				verbose(VJOBPMON, "%sSetFreq:  changing freq from %lu to %lu%s",COL_RED, current_node_freq, freq,COL_CLR);
 				frequency_set_all_cpus(freq);
 				current_node_freq = freq;
 			}
@@ -949,7 +949,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		mpi = 0;
 		maxpower = minpower = 0;
 	}
-	verbosen(VNODEPMON, "%sID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf%s ",COL_BLU,
+	verbose(VNODEPMON, "%sID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf%s ",COL_BLU,
 			jid, mpi, my_current_power->avg_dc, maxpower, minpower,COL_CLR);
 	verbose_node_metrics(&my_nm_id, nm);
 
@@ -1211,7 +1211,7 @@ void *eard_power_monitoring(void *noinfo) {
 	debug("Starting power monitoring loop, reporting metrics every %d seconds",f_monitoring);
 
 	while (!eard_must_exit) {
-		debug("------------------- NEW PERIOD -------------------");
+		verbose(1,"%s------------------- NEW PERIOD -------------------%s",COL_BLU,COL_CLR);
 		// Wait for N usecs
 		sleep(f_monitoring);
 

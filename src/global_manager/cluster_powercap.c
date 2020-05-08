@@ -66,15 +66,13 @@ void aggregate_data(powercap_status_t *cs)
 	for (i=0;i<cs->num_greedy;i++){
 		total_req_greedy+=cs->greedy_req[i];
 		total_extra_power+=cs->extra_power[i];
+		if (cs->greedy_req[i]) num_greedy++;
     if ((cs->greedy_req[i]) && (!cs->extra_power[i])){
       req_no_extra+=cs->greedy_req[i];
       num_no_extra++;
-    }else{ 
-			num_greedy++;
-			if (cs->extra_power[i]){
+    }else if ((cs->greedy_req[i]) && (cs->extra_power[i])){ 
 				num_extra++;
 				extra_power_alloc+=cs->extra_power[i];
-			}
 		}
 	}
 }
