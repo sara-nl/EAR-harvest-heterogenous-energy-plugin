@@ -83,6 +83,9 @@ resched_t *resched_conf;
 services_conf_t *my_services_conf;
 ulong *shared_frequencies;
 ulong *frequencies;
+#ifdef POWERCAP
+app_mgt_t *app_mgt_info;
+#endif
 /* END Shared memory regions */
 
 coefficient_t *my_coefficients;
@@ -95,6 +98,7 @@ char eardbd_user[GENERIC_NAME];
 char eardbd_pass[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
+char app_mgt_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
 char coeffs_default_path[GENERIC_NAME];
 char services_conf_path[GENERIC_NAME];
@@ -433,6 +437,7 @@ void eard_exit(uint restart) {
 	coeffs_shared_area_dispose(coeffs_path);
 	coeffs_default_shared_area_dispose(coeffs_default_path);
 	services_conf_shared_area_dispose(services_conf_path);
+	app_mgt_shared_area_dispose(app_mgt_path);
 	/* end releasing shared memory */
 	if (restart) {
 		verbose(VCONF, "Restarting EARD\n");
@@ -1249,9 +1254,19 @@ int main(int argc, char *argv[]) {
 	verbose(VCONF + 1, "Using %s as resched path (shared memory region)", resched_path);
 	resched_conf = create_resched_shared_area(resched_path);
 	if (resched_conf == NULL) {
-		error("Error creating shared memory between EARD & EARL\n");
+		error("Error creating shared memory between EARD & EARL");
 		_exit(0);
 	}
+	/* This area is for application data */
+	#if POWERCAP
+	get_app_mgt_path(my_cluster_conf.install.dir_temp,app_mgt_path);
+	verbose(VCONF + 1, "Using %s as app_mgt data path (shared memory region)", app_mgt_path);
+	app_mgt_info=create_app_mgt_shared_area(app_mgt_path);
+	if (app_mgt_info==NULL){
+		error("Error creating shared memory between EARD & EARL for app_mgt");
+		_exit(0);
+	}
+	#endif
 	verbose(0, "Basic shared memory regions created");
 	/* Coefficients */
 	verbose(0,"Loading coefficients");

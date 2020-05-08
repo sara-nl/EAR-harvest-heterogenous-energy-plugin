@@ -103,6 +103,9 @@ static int fd_powermon = -1;
 static int fd_periodic = -1;
 extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
+#if POWERCAP
+extern app_mgt_t *app_mgt_info;
+#endif
 static int sig_reported = 0;
 
 periodic_metric_t current_sample;
@@ -637,6 +640,9 @@ void powermon_mpi_init(ehandler_t *eh, application_t *appID) {
 	start_mpi(&current_ear_app[ccontext]->app.job);
 	current_ear_app[ccontext]->app.is_mpi = 1;
 	save_eard_conf(&eard_dyn_conf);
+	#if POWERCAP
+	print_app_mgt_data(app_mgt_info);
+	#endif
 }
 
 void powermon_mpi_finalize(ehandler_t *eh) {
@@ -697,17 +703,21 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	debug("Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->settings[0]);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
+	/* Info shared with the job */
+	#if POWERCAP
+	app_mgt_new_job(app_mgt_info);
+	#endif
 	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
 	if (user_type==AUTHORIZED) dyn_conf->learning=appID->is_learning;
 	else dyn_conf->learning=0;
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
 	dyn_conf->policy=my_policy->policy;
-    strcpy(dyn_conf->policy_name,  my_policy->name);
+  strcpy(dyn_conf->policy_name,  my_policy->name);
 	dyn_conf->def_freq=f;
 	dyn_conf->def_p_state=my_policy->p_state;
 	resched_conf->force_rescheduling=0;
-    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
+  memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	/* End app configuration */
 	current_node_freq = f;
 	appID->job.def_f = dyn_conf->def_freq;
@@ -791,7 +801,9 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 		}
 		ccontext = select_last_context();
 	}
+	
 #if POWERCAP
+	app_mgt_end_job(app_mgt_info);
   if (powermon_is_idle()) powercap_run_to_idle();
 #endif
 

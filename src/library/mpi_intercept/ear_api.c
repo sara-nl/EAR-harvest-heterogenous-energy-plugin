@@ -68,6 +68,7 @@
 #include <common/hardware/frequency.h>
 #include <metrics/common/papi.h>
 #include <daemon/eard_api.h>
+#include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
 
 
@@ -120,6 +121,10 @@ char lib_shared_region_path[GENERIC_NAME];
 char shsignature_region_path[GENERIC_NAME];
 char block_file[GENERIC_NAME];
 float ratio_PPN;
+#if POWERCAP
+app_mgt_t *app_mgt_info;
+char app_mgt_path[GENERIC_NAME];
+#endif
 
 void *earl_periodic_actions(void *no_arg);
 //
@@ -344,6 +349,19 @@ void attach_shared_regions()
 	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
 	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
 	/* No masters processes don't allocate memory for data sharing between nodes */	
+}
+
+void fill_application_mgt_data(app_mgt_t *a)
+{
+	uint total=0,i;
+	a->master_rank=masters_info.my_master_rank;
+  for (i=0;i<masters_info.my_master_size;i++){
+    total+=masters_info.ppn[i];
+  }
+	a->ppn=lib_shared_region->num_processes;
+	a->nodes=masters_info.my_master_size;
+	a->total_processes=total;
+	a->max_ppn=masters_info.max_ppn;
 }
 /* Connects the mpi process to a new communicator composed by masters */
 void attach_to_master_set(int master)
@@ -664,6 +682,16 @@ void ear_init()
   }
 
 	if (masters_info.my_master_rank>=0){
+	  #if POWERCAP
+  	get_app_mgt_path(get_ear_tmp(),app_mgt_path);
+  	debug("app_mgt_path %s",app_mgt_path);
+  	app_mgt_info=attach_app_mgt_shared_area(app_mgt_path);
+  	if (app_mgt_info==NULL){
+    	error("Application shared area not found");
+  	}
+		fill_application_mgt_data(app_mgt_info);
+  	#endif
+
 		//print_affinity_mask(&arch_desc.top);
 		int is_set;
 		if (is_affinity_set(&arch_desc.top,getpid(),&is_set)!=EAR_SUCCESS){

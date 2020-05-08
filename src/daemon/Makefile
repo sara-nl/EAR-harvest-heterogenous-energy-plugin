@@ -19,6 +19,7 @@ eard_OBJS = \
 		powercap_status.o \
 		power_mgt.o \
 		inm.o \
+	  app_mgt.o \
 	  powercap.o \
     shared_configuration.o \
     app_api/app_server_api.o \

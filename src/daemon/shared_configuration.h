@@ -44,6 +44,7 @@
 #include <common/types/coefficient.h>
 #ifdef POWERCAP
 #include <daemon/powercap.h>
+#include <daemon/app_mgt.h>
 #endif
 
 typedef struct services_conf{
@@ -135,6 +136,34 @@ void dettach_resched_shared_area();
 /** Releases a shared memory area previously created. It is used by EARD (server)
  * */
 void resched_shared_area_dispose(char * path);
+
+
+/****************** APP AREA ***************/
+
+/** Sets in path the filename for the shared memory area app_area between EARD and EARL
+* @param path (output)
+*/
+int get_app_mgt_path(char *tmp,char *path);
+
+/** Creates the shared mmemory. It is used by EARD and APP. App puts information here
+ *  * *   @param ear_conf_path specifies the path (folder) to create the file used by mmap
+ *   * */
+
+app_mgt_t * create_app_mgt_shared_area(char *path);
+
+/** Connects with a previously created shared memory region. It is used by EARLib (client)
+ *  * *   @param ear_conf_path specifies the path (folder) where the mapped file were created
+ *   * */
+app_mgt_t * attach_app_mgt_shared_area(char * path);
+
+/** Disconnect from a previously connected shared memory region. It is used by EARLib (client)
+ *  * */
+void dettach_app_mgt_shared_area();
+
+/** Releases a shared memory area previously created. It is used by EARD (server)
+ *  * */
+void app_mgt_shared_area_dispose(char * path);
+
 
 /***************** COEFFICIENTS **********/
 int get_coeffs_path(char *tmp,char *path);

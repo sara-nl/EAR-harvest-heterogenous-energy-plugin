@@ -45,6 +45,7 @@
 #include <daemon/shared_configuration.h>
 
 static int fd_settings,fd_resched,fd_coeffs,fd_services,fd_freq;
+static int fd_app_mgt;
 static coefficient_t null_coeffs[1],null_coeffs_default[1];
 
 /** These functions created path names, just to avoid problems if changing the path name in the future */
@@ -141,6 +142,55 @@ void resched_shared_area_dispose(char * path)
 {
 	dispose_shared_area(path,fd_resched);
 }
+
+
+/************* APP_MGT
+ *
+ /** Sets in path the filename for the shared memory area app_area between EARD and EARL
+ * * @param path (output)
+ * */
+int get_app_mgt_path(char *tmp,char *path)
+{
+  if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
+  sprintf(path,"%s/.ear_app_mgt",tmp);
+  return EAR_SUCCESS;
+}
+
+/** Creates the shared mmemory. It is used by EARD and APP. App puts information here
+ *  *  * *   @param ear_conf_path specifies the path (folder) to create the file used by mmap
+ *   *   * */
+
+app_mgt_t * create_app_mgt_shared_area(char *path)
+{
+  app_mgt_t my_app_data;
+
+  return (app_mgt_t *)create_shared_area(path,(char *)&my_app_data,sizeof(my_app_data),&fd_app_mgt,1);
+
+}
+
+/** Connects with a previously created shared memory region. It is used by EARLib (client)
+ *  *  * *   @param ear_conf_path specifies the path (folder) where the mapped file were created
+ *   *   * */
+app_mgt_t * attach_app_mgt_shared_area(char * path)
+{
+    return (app_mgt_t *)attach_shared_area(path,sizeof(app_mgt_t),O_RDWR,&fd_app_mgt,NULL);
+
+}
+
+/** Disconnect from a previously connected shared memory region. It is used by EARLib (client)
+ *  *  * */
+void dettach_app_mgt_shared_area()
+{
+	dettach_shared_area(fd_mgt);
+}
+
+/** Releases a shared memory area previously created. It is used by EARD (server)
+ *  *  * */
+void app_mgt_shared_area_dispose(char * path)
+{
+	dispose_shared_area(path,fd_app_mgt);
+}
+
 
 /* COEFFS */
 
