@@ -1,5 +1,3 @@
-MPICC = $(CC)
-MPICC_FLAGS = $(CC_FLAGS)
 CFLAGS  = -I$(SRCDIR) $(PAPI_CFLAGS) 
 LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
 
