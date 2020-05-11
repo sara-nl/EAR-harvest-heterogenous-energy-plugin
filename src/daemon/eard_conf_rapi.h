@@ -134,22 +134,26 @@ typedef struct status{
     eard_policy_info_t    policy_conf[TOTAL_POLICIES];
 } status_t;
 
+typedef struct performance{
+	float cpi;
+	float gbs;
+	float gflops_watt;
+}performance_t;
+
 typedef struct powercap_status{
 	uint total_nodes;
 	uint idle_nodes; 	        /* Total number of idle nodes */
-	uint released;        /* Accumulated released power in last T1 */
-    uint requested;         //accumulated new_req
-	uint num_greedy;            /* Number of greedy nodes */
-	int *greedy_nodes;           /* List of greedy nodes */
-	uint *greedy_req; //->extra_power
-    uint *extra_power;
-#if 0
-	uint num_newjob_nodes;      /* Number of nodes asking for powercap_def*/
-	int *powerdef_nodes;	    /* List of nodes asking for powercap_def */ //esto se va
-	uint *new_req; //->requested, acumulado no vector
-#endif
+	uint released;        		/* Accumulated released power in last T1 */
+  uint requested;         	/*accumulated new_req */
+	uint num_greedy;          /* Number of greedy nodes */
+	int *greedy_nodes;        /* List of greedy nodes */
+	uint *greedy_req; 				/* extra_power requested */
+  uint *extra_power;				/* extra power already allocated */
+	#if POWERCAP_EXT
+	performance_t	*perf_info;	/* Performance metrics used by powercap scheduler */
+	#endif
 	uint current_power; 	    /* Accumulated power */
-    uint total_powercap;        /* Accumulated current powercap limits */
+  uint total_powercap;      /* Accumulated current powercap limits */
 }powercap_status_t;
 
 

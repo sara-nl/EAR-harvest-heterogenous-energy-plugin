@@ -80,6 +80,19 @@ int loop_init(loop_t *loop, job_t *job,ulong event, ulong size, ulong level)
 	return EAR_SUCCESS;
 }
 
+int set_null_loop(loop_t *loop)
+{
+	return create_loop(loop);
+	
+}
+/** Returns true if the loop data is not, return -1 in case of error */
+int is_null(loop_t *loop)
+{
+	if (loop==NULL) return EAR_ERROR;
+	return (loop->total_iterations==0);
+}
+
+
 
 void add_loop_signature(loop_t *loop,  signature_t *sig)
 {

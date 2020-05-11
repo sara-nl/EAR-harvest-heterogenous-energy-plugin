@@ -91,6 +91,7 @@ extern policy_conf_t default_policy_context, energy_tag_context, authorized_cont
 extern int ear_ping_fd;
 extern int ear_fd_ack[1];
 extern int application_id;
+extern  loop_t current_loop_data;
 
 /* This variable controls the frequency for periodic power monitoring */
 extern uint f_monitoring;
@@ -718,6 +719,8 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	dyn_conf->def_p_state=my_policy->p_state;
 	resched_conf->force_rescheduling=0;
   memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
+	verbose(1,"Cleaning loop info (new)");
+	set_null_loop(&current_loop_data);
 	/* End app configuration */
 	current_node_freq = f;
 	appID->job.def_f = dyn_conf->def_freq;
@@ -768,6 +771,7 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	end_job_for_period(&current_sample);
 	pthread_mutex_unlock(&app_lock);
 	report_powermon_app(&summary);
+	set_null_loop(&current_loop_data);
 	save_eard_conf(&eard_dyn_conf);
 	/* RESTORE FREQUENCY */
 	#ifndef EAR_CPUPOWER

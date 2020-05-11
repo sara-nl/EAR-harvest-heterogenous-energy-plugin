@@ -59,6 +59,11 @@ typedef struct loop
 /** Create a new loop_id_t based on dynais information. */
 int create_loop_id(loop_id_t *id,ulong event, ulong size, ulong level);
 
+/** Sets a loop to null values */
+int set_null_loop(loop_t *loop);
+/** Returns true if the loop data is not, return -1 in case of error */
+int is_null(loop_t *loop);
+
 /** Initalizes the loop given by parameter. */
 int loop_init(loop_t *loop, job_t *job,ulong event, ulong size, ulong level);
 
