@@ -39,7 +39,15 @@
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <daemon/power_mgt.h>
+//#define INM
+#define DVFS
+#ifdef INM
 #include <daemon/inm.h>
+#endif
+#ifdef DVFS
+#include <daemon/pc_dvfs.h>
+#endif
+
 #define SHOW_DEBUGS 1
 
 
@@ -53,9 +61,23 @@ state_t pmgt_init()
 state_t pmgt_enable(pwr_mgt_t *phandler)
 {
 	state_t ret;
+	#ifdef INM
 	ret=inm_enable();
-	if (ret!=EAR_SUCCESS)  return ret;
-	ret=inm_enable_powercap_policies();
+	#endif
+	#ifdef DVFS
+	ret=dvfs_enable();
+	#endif
+	return ret;
+}
+state_t pmgt_disable(pwr_mgt_t *phandler)
+{
+	state_t ret;
+#ifdef INM
+	ret=inm_disable();
+#endif
+#ifdef DVFS
+	ret=dvfs_disable();
+#endif
 	return ret;
 }
 state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
@@ -64,6 +86,8 @@ state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
 	if (*phandler!=NULL) return EAR_SUCCESS;
 	return EAR_ERROR;
 }
+
+#ifdef INM
 state_t pmgt_disable_policy(pwr_mgt_t *phandler,uint pid)
 {
 	return inm_disable_powercap_policy(pid);
@@ -73,24 +97,50 @@ state_t pmgt_disable_policies(pwr_mgt_t *phandler)
 {
 	return inm_disable_powercap_policies();	
 }
+#endif
 state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,uint limit)
 {
+#ifdef INM
 	return inm_set_powercap_value(pid,domain,limit);
+#endif
+#ifdef DVFS
+	return dvfs_set_powercap_value(pid,domain,limit);
+#endif
 }
 state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap)
 {
+#ifdef INM
 	return inm_get_powercap_value(pid,powercap);
+#endif
+#ifdef DVFS
+	return dvfs_get_powercap_value(pid,powercap);
+#endif
 }
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid)
 {
+#ifdef INM
 	return inm_is_powercap_policy_enabled(pid);
+#endif
+#ifdef DVFS
+	return dvfs_is_powercap_policy_enabled(pid);
+#endif
 }
 void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd)
 {
+#ifdef INM
 	inm_print_powercap_value(fd);
+#endif
+#ifdef DVFS
+	dvfs_print_powercap_value(fd);
+#endif
 }
 void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b)
 {
+#ifdef INM
 	inm_powercap_to_str(b);
+#endif
+#ifdef DVFS
+	dvfs_powercap_to_str(b);
+#endif
 }
 

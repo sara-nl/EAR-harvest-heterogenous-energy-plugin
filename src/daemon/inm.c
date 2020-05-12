@@ -96,6 +96,15 @@ state_t inm_disable_powercap_policies()
 
 }
 
+state_t inm_disable()
+{
+	state_t ret;
+	/* Policies is still pending to manage */
+	ret=inm_disable_powercap_policy(0);
+	if (ret!=EAR_SUCCESS) return ret;
+	return inm_disable_powercap_policies();
+}
+
 state_t inm_enable_powercap_policies()
 {
 	char cmd[1024];
@@ -113,6 +122,7 @@ state_t inm_enable_powercap_policies()
 state_t inm_enable()
 {
 	char cmd[1024];
+	state_t ret;
   /* 1-Enable XCC-Bridge comm */
   debug("Enable XCC-Bridge");
   sprintf(cmd,INM_ENABLE_XCC_BRIGE);
@@ -131,7 +141,8 @@ state_t inm_enable()
     return EAR_ERROR;
   }
   }
-	return EAR_SUCCESS;
+  ret=inm_enable_powercap_policies();
+  return ret;
 }
 
 state_t inm_set_powercap_value(uint pid,uint domain,uint limit)

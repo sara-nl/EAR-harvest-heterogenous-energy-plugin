@@ -147,12 +147,9 @@ void powercap_end()
 { 
 	char cmd[1024];
 
-	if (pmgt_disable_policy(pcmgr,pc_pid)!=EAR_SUCCESS){
-		error("pmgt_disable_policies %u",pc_pid);
+	if (pmgt_disable(pcmgr)!=EAR_SUCCESS){
+		error("pmgt_disable");
 	}
-	if (pmgt_disable_policies(pcmgr)!=EAR_SUCCESS){
-    error("pmgt_disable_policies");
-  }
 
 }
 

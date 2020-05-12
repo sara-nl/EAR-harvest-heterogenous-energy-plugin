@@ -27,21 +27,29 @@
  * * The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
-#ifndef _PWR_MGT_H
-#define _PWR_MGT_H
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#define _GNU_SOURCE
+#include <pthread.h>
+#include <common/config.h>
+#include <common/colors.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
+#include <common/system/execute.h>
 
-typedef void * pwr_mgt_t;
+#define POWERCAP_MON 0
 
-state_t pmgt_init();
-state_t pmgt_enable(pwr_mgt_t *phandler);
-state_t pmgt_disable(pwr_mgt_t *phandler);
-state_t pmgt_handler_alloc(pwr_mgt_t **phandler);
-state_t pmgt_disable_policy(pwr_mgt_t *phandler,uint pid);
-state_t pmgt_disable_policies(pwr_mgt_t *phandler);
-state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,uint limit);
-state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap);
-uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid);
-void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd);
-void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b);
-#endif
+
+state_t dvfs_disable();
+state_t dvfs_enable();
+state_t dvfs_set_powercap_value(uint pid,uint domain,uint limit);
+state_t dvfs_get_powercap_value(uint pid,uint *powercap);
+uint dvfs_is_powercap_policy_enabled(uint pid);
+void dvfs_print_powercap_value(int fd);
+void dvfs_powercap_to_str(char *b);
+

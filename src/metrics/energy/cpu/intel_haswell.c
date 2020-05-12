@@ -62,6 +62,10 @@
 static pthread_mutex_t rapl_msr_lock = PTHREAD_MUTEX_INITIALIZER;
 static int rapl_msr_instances=0;
 
+#define RAPL_ENERGY_EV 2
+#define RAPL_DRAM_EV 0
+#define RAPL_PCK_EV 1
+
 
 
 double power_units, cpu_energy_units, time_units, dram_energy_units;
@@ -96,7 +100,7 @@ int init_rapl_msr(int *fd_map)
     return EAR_SUCCESS;
 }
 
-
+/* DRAM 0, DRAM 1,..DRAM N, PCK0,PCK1,...PCKN */
 int read_rapl_msr(int *fd_map,unsigned long long *_values)
 {
 	unsigned long long result;
@@ -138,3 +142,56 @@ void dispose_rapl_msr(int *fd_map)
 	pthread_mutex_unlock(&rapl_msr_lock);
 }
 
+void diff_rapl_msr_energy(unsigned long long *diff,unsigned long long *end, unsigned long long *init)
+{
+  unsigned long long ret = 0;
+  int nump,j;
+  nump=get_total_packages();
+
+	for(j=0;j<nump*RAPL_ENERGY_EV;j++) {
+  	if (end[j] >= init[j]) {
+    	ret = end[j] - init[j];
+  	} else {
+    	ret = ullong_diff_overflow(init[j], end[j]);
+  	}
+		diff[j]=ret;
+	}
+}
+
+unsigned long long acum_rapl_energy(unsigned long long *values)
+{
+	unsigned long long ret = 0;
+  int nump,j;
+  nump=get_total_packages();
+	for(j=0;j<nump*RAPL_ENERGY_EV;j++) {
+		ret=ret+values[j];
+	}	
+	return ret;
+}
+
+
+
+void rapl_msr_energy_to_str(char *b,unsigned long long *values)
+{
+	int nump,j;
+  nump=get_total_packages();
+
+  sprintf(b,", CPU (");
+  for (j = 0; j < nump; j++) {
+  	if (j < (nump - 1)) {
+  		sprintf(b,"%llu,", values[nump*RAPL_PCK_EV+j]);
+  	} else {
+  		sprintf(b,"%llu)", values[nump*RAPL_PCK_EV+j]);
+  	}
+  }
+
+	sprintf(b,", DRAM (");
+	for (j = 0; j < nump; j++) {
+		if (j < (nump - 1)) {
+			sprintf(b,"%llu,", values[nump*RAPL_DRAM_EV+j]);
+		} else {
+			sprintf(b,"%llu)", values[nump*RAPL_DRAM_EV+j]);
+		}
+	}
+
+}
