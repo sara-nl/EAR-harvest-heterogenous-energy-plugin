@@ -969,6 +969,11 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 			jid, mpi, my_current_power->avg_dc, maxpower, minpower,COL_CLR);
 	verbose_node_metrics(&my_nm_id, nm);
 
+	
+	if (!(is_null(&current_loop_data)==1)){
+		print_loop_fd(verb_channel,&current_loop_data);
+	}
+
 
 	while (pthread_mutex_trylock(&app_lock));
 

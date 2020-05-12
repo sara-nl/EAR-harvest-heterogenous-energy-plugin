@@ -122,6 +122,7 @@ void print_loop_fd(int fd, loop_t *loop)
 	dprintf(fd, "%lu\n", loop->total_iterations);
 }
 
+
 int append_loop_text_file(char *path, loop_t *loop,job_t *job)
 {
 	#if DB_FILES
