@@ -27,32 +27,29 @@
  * * The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#define _GNU_SOURCE
-#include <pthread.h>
-#include <common/config.h>
-#include <common/colors.h>
-#include <common/states.h>
-#define SHOW_DEBUGS 1
-#include <common/output/verbose.h>
-#include <common/system/execute.h>
+#ifndef _PC_STATUS_H_
+#define _PC_STATUS_H_
 
-#define POWERCAP_MON 0
+#define DOMAIN_NODE 0
+#define DOMAIN_CPU 1
+
+#define PC_STATUS_OK      0
+#define PC_STATUS_GREEDY  1
+#define PC_STATUS_RELEASE 2
+#define PC_STATUS_ASK_DEF 3
+#define PC_STATUS_IDLE    4
+#define PC_STATUS_STOP		5
+#define PC_STATUS_START 	6
+#define PC_STATUS_RUN			7
+
+#define PC_DVFS						50
+#define PC_POWER					51
 
 
-state_t dvfs_disable();
-state_t dvfs_enable();
-state_t dvfs_set_powercap_value(uint pid,uint domain,uint limit);
-state_t dvfs_get_powercap_value(uint pid,uint *powercap);
-uint dvfs_is_powercap_policy_enabled(uint pid);
-void dvfs_print_powercap_value(int fd);
-void dvfs_powercap_to_str(char *b);
-void dvfs_set_status(uint status);
-uint dvfs_get_powercap_strategy();
-void dvfs_set_pc_mode(uint mode);
+#define PC_MODE_LIMIT			200
+#define PC_MODE_TARGET		201				
 
+#define PC_STATUS_ERROR   100
+
+
+#endif

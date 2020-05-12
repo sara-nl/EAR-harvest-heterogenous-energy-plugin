@@ -60,7 +60,9 @@
 
 /* To be used to reset the node configuration to default values in case of problems */
 #define RESET_DEFAULT_CONF_POWERCAP "ipmitool -b 0 -t 0x2c raw 0x2E 0xDF 0x57 0x01 0x00 0x02"
-
+static uint c_limit;
+static uint policy_enabled=0;
+static uint pc_on=0;
 
 int do_cmd(char *cmd)
 {
@@ -142,6 +144,7 @@ state_t inm_enable()
   }
   }
   ret=inm_enable_powercap_policies();
+	if (ret==EAR_SUCCESS) policy_enabled=1;
   return ret;
 }
 
@@ -150,7 +153,10 @@ state_t inm_set_powercap_value(uint pid,uint domain,uint limit)
 	char cmd[1024];
 	char c_date[128];
 	state_t ret;
+	if (!policy_enabled) return EAR_SUCCESS;
 	debug("inm_set_powercap_value policy %u limit %u",pid,limit);
+	c_limit=limit;
+	pc_on=1;
 	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,pid,limit);
 	debug(cmd);
 	return execute(cmd);
@@ -159,22 +165,21 @@ state_t inm_set_powercap_value(uint pid,uint domain,uint limit)
 state_t inm_get_powercap_value(uint pid,uint *powercap)
 {
 	/* Pending */
-	*powercap=0;
+	*powercap=c_limit;
 	return EAR_SUCCESS;
 }
 
 uint inm_is_powercap_policy_enabled(uint pid)
 {
-	/* Pending */
-	return 0;
+	return policy_enabled;
 }
 
 void inm_print_powercap_value(int fd)
 {
-	dprintf(fd,"inm_print_powercap_value not yet implemented\n");
+	dprintf(fd,"%u",c_limit);
 }
 void inm_powercap_to_str(char *b)
 {
-	sprintf(b,"NOT_READY");
+	sprintf(b,"%s",c_limit);
 }
 

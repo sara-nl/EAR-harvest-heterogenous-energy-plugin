@@ -174,24 +174,29 @@ unsigned long long acum_rapl_energy(unsigned long long *values)
 void rapl_msr_energy_to_str(char *b,unsigned long long *values)
 {
 	int nump,j;
+	char baux[512];
   nump=get_total_packages();
 
-  sprintf(b,", CPU (");
+  sprintf(baux,", CPU (");
   for (j = 0; j < nump; j++) {
   	if (j < (nump - 1)) {
   		sprintf(b,"%llu,", values[nump*RAPL_PCK_EV+j]);
   	} else {
   		sprintf(b,"%llu)", values[nump*RAPL_PCK_EV+j]);
   	}
+		strcat(baux,b);
   }
 
 	sprintf(b,", DRAM (");
+	strcat(baux,b);
 	for (j = 0; j < nump; j++) {
 		if (j < (nump - 1)) {
 			sprintf(b,"%llu,", values[nump*RAPL_DRAM_EV+j]);
 		} else {
 			sprintf(b,"%llu)", values[nump*RAPL_DRAM_EV+j]);
 		}
+		strcat(baux,b);
 	}
+	strcpy(b,baux);
 
 }
