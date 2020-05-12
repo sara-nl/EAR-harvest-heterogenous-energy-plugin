@@ -191,9 +191,9 @@ int powercap_init()
 	/* End Low level power cap managemen initialization */
 	my_pc_opt.powercap_status=PC_STATUS_IDLE;
 	last_status=PC_STATUS_IDLE;
-	pc_strategy=pmgt_get_powercap_strategy();
-	if (pc_strategy==PC_DVFS) pmgt_set_pc_mode(PC_MODE_LIMIT);
-	else pmgt_set_pc_mode(PC_MODE_TARGET);
+	pc_strategy=pmgt_get_powercap_strategy(pcmgr);
+	if (pc_strategy==PC_DVFS) pmgt_set_pc_mode(pcmgr,PC_MODE_LIMIT);
+	else pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
 	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
 	debug("powercap initialization finished");
 	#if POWERCAP_MON
@@ -239,7 +239,7 @@ int powercap_idle_to_run()
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
 	debug("powercap_idle_to_run");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); /* can we create some deadlock because of status ? */
-	pmgt_set_status(PC_STATUS_RUN);
+	pmgt_set_status(pcmgr,PC_STATUS_RUN);
 	last_status=PC_STATUS_IDLE;
 	if (my_pc_opt.last_t1_allocated==my_pc_opt.powercap_idle){
 		extra=my_pc_opt.max_inc_new_jobs;
@@ -303,7 +303,7 @@ int powercap_run_to_idle()
 		set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
     break;
   }
-	pmgt_set_status(PC_STATUS_IDLE);
+	pmgt_set_status(pcmgr,PC_STATUS_IDLE);
   pthread_mutex_unlock(&my_pc_opt.lock);
   return EAR_SUCCESS;
 }

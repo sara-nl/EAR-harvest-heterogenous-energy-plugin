@@ -41,6 +41,7 @@
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
+#include <daemon/powercap_status_conf.h>
 
 #define POWERCAP_MON 0
 
@@ -180,6 +181,17 @@ void inm_print_powercap_value(int fd)
 }
 void inm_powercap_to_str(char *b)
 {
-	sprintf(b,"%s",c_limit);
+	sprintf(b,"%u",c_limit);
+}
+
+void inm_set_status(uint status)
+{
+}
+uint inm_get_powercap_stragetgy()
+{
+	return PC_POWER;
+}
+void inm_set_pc_mode(uint mode)
+{
 }
 

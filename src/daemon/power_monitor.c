@@ -641,9 +641,6 @@ void powermon_mpi_init(ehandler_t *eh, application_t *appID) {
 	start_mpi(&current_ear_app[ccontext]->app.job);
 	current_ear_app[ccontext]->app.is_mpi = 1;
 	save_eard_conf(&eard_dyn_conf);
-	#if POWERCAP
-	print_app_mgt_data(app_mgt_info);
-	#endif
 }
 
 void powermon_mpi_finalize(ehandler_t *eh) {
@@ -965,6 +962,10 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		mpi = 0;
 		maxpower = minpower = 0;
 	}
+  #if POWERCAP
+  print_app_mgt_data(app_mgt_info);
+  #endif
+
 	verbose(VNODEPMON, "%sID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf%s ",COL_BLU,
 			jid, mpi, my_current_power->avg_dc, maxpower, minpower,COL_CLR);
 	verbose_node_metrics(&my_nm_id, nm);

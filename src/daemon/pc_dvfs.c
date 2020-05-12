@@ -52,11 +52,12 @@
 #define POWERCAP_MON 0
 #define RAPL_VS_NODE_POWER 0.85
 #define RAPL_VS_NODE_POWER_limit 0.7
+#define DEBUG_PERIOD 5
 
 pthread_t dvfs_pc_th;
 static uint current_dvfs_pc=0,set_dvfs_pc=0;
 static uint dvfs_pc_enabled=0;
-static uint c_status=PC_IDLE;
+static uint c_status=PC_STATUS_IDLE;
 static uint c_mode=PC_MODE_LIMIT;
 
 
@@ -64,6 +65,7 @@ void dvfs_pc_thread(void *d)
 {
 	uint num_packs;
 	state_t s;
+	uint secs=0;
 	uint node_size;
 	unsigned long long *values_rapl_init,*values_rapl_end,*values_diff,acum_energy;
 	float power_rapl;
@@ -107,6 +109,7 @@ void dvfs_pc_thread(void *d)
 	while(1)
 	{
 		sleep(1);
+		secs=(secs+1)%DEBUG_PERIOD;
 		read_rapl_msr(fd_rapl,values_rapl_end);	
 		if (c_status==PC_STATUS_RUN){
 			/* Calcular power */
@@ -115,9 +118,13 @@ void dvfs_pc_thread(void *d)
 			//debug(rapl_energy_str);
 			acum_energy=acum_rapl_energy(values_diff);
 			power_rapl=(float)acum_energy/(1*RAPL_MSR_UNITS);
-			debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
-			//debug("DRAM0 %f DRAM1 %f PCK0 %f PCK1 %f",((float)values_diff[0]/(1*RAPL_MSR_UNITS)),((float)values_diff[1]/(1*RAPL_MSR_UNITS)),
-			//((float)values_diff[2]/(1*RAPL_MSR_UNITS)),((float)values_diff[3]/(1*RAPL_MSR_UNITS)));
+			if (!secs){ 
+				debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
+			}
+			#if 0
+			debug("DRAM0 %f DRAM1 %f PCK0 %f PCK1 %f",((float)values_diff[0]/(1*RAPL_MSR_UNITS)),((float)values_diff[1]/(1*RAPL_MSR_UNITS)),
+			((float)values_diff[2]/(1*RAPL_MSR_UNITS)),((float)values_diff[3]/(1*RAPL_MSR_UNITS)));
+			#endif
 			/* Aplicar limites */
 			if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
 			if (power_rapl>(current_dvfs_pc*RAPL_VS_NODE_POWER)){
@@ -138,8 +145,7 @@ void dvfs_pc_thread(void *d)
 					debug("%sIncreasing freq to %lu%s",COL_RED,c_freq,COL_CLR);
 					frequency_set_all_cpus(c_freq);
 				}
-			}
-			}
+		}
 		}
 		/* Copiar init=end */	
 		memcpy(values_rapl_init,  values_rapl_end,num_packs * RAPL_POWER_EVS* sizeof(unsigned long long));
