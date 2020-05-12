@@ -44,4 +44,8 @@ state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap);
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid);
 void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd);
 void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b);
+void pmgt_set_status(pwr_mgt_t *phandler,uint status);
+uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler);
+void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode);
+
 #endif

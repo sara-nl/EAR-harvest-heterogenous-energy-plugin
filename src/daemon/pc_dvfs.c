@@ -119,7 +119,7 @@ void dvfs_pc_thread(void *d)
 			//debug("DRAM0 %f DRAM1 %f PCK0 %f PCK1 %f",((float)values_diff[0]/(1*RAPL_MSR_UNITS)),((float)values_diff[1]/(1*RAPL_MSR_UNITS)),
 			//((float)values_diff[2]/(1*RAPL_MSR_UNITS)),((float)values_diff[3]/(1*RAPL_MSR_UNITS)));
 			/* Aplicar limites */
-			if (current_dvfs_pc>0){
+			if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
 			if (power_rapl>(current_dvfs_pc*RAPL_VS_NODE_POWER)){
 				c_freq=frequency_get_cpu_freq(0);
 				c_pstate=frequency_freq_to_pstate(c_freq);
@@ -128,7 +128,8 @@ void dvfs_pc_thread(void *d)
 				debug("%sReducing freq to %lu%s",COL_RED,c_freq,COL_CLR);
 				frequency_set_all_cpus(c_freq);
 			}
-			if (power_rapl<(current_dvfs_pc*RAPL_VS_NODE_POWER_limit)){
+			}
+			if ((power_rapl<(current_dvfs_pc*RAPL_VS_NODE_POWER_limit) && (c_mode==PC_MODE_TARGET))){
 				c_freq=frequency_get_cpu_freq(0);
 				c_pstate=frequency_freq_to_pstate(c_freq);
 				if (c_pstate>frequency_get_nominal_pstate()){
@@ -137,7 +138,7 @@ void dvfs_pc_thread(void *d)
 					debug("%sIncreasing freq to %lu%s",COL_RED,c_freq,COL_CLR);
 					frequency_set_all_cpus(c_freq);
 				}
-				}
+			}
 			}
 		}
 		/* Copiar init=end */	

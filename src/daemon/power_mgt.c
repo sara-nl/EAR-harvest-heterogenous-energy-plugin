@@ -144,3 +144,32 @@ void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b)
 #endif
 }
 
+void pmgt_set_status(pwr_mgt_t *phandler,uint status)
+{
+#ifdef INM
+	inm_set_status(status);
+#endif
+#ifdef DVFS
+	dvfs_set_status(status);
+#endif
+}
+uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler)
+{
+#ifdef INM
+	return inm_get_powercap_strategy();
+#endif
+#ifdef DVFS
+	return dvfs_get_powercap_strategy();
+#endif
+}
+void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode)
+{
+#ifdef INM
+	inm_set_pc_mode(mode);
+#endif
+#ifdef DVFS
+	dvfs_set_pc_mode(mode);
+#endif
+}
+
+
