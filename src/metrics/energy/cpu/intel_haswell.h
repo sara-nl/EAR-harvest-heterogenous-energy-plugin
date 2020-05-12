@@ -37,7 +37,7 @@
 #define RAPL_DRAM1          1
 #define RAPL_PACKAGE0       2
 #define RAPL_PACKAGE1       3
-#define RAPL_MSR_UNITS 			1000000000
+#define RAPL_MSR_UNITS 			1000000000.0
 
 /** Opens the necessary fds to read the MSR registers. Returns 0 on success
 * 	and -1 on error. */

@@ -31,15 +31,8 @@
 #define _EAR_POWERCAP_H
 #include <pthread.h>
 #include <daemon/eard_conf_rapi.h>
+#include <daemon/powercap_status_conf.h>
 
-#define DOMAIN_NODE 0
-#define DOMAIN_CPU 1
-#define PC_STATUS_OK 			0
-#define PC_STATUS_GREEDY 	1
-#define PC_STATUS_RELEASE 2
-#define PC_STATUS_ASK_DEF	3
-#define PC_STATUS_IDLE		4
-#define PC_STATUS_ERROR		100
 
 typedef struct node_powercap_opt {
 	pthread_mutex_t lock;

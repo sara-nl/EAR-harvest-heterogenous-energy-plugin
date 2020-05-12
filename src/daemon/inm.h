@@ -46,5 +46,10 @@ state_t inm_enable();
 state_t inm_disable();
 
 
+void inm_set_status(uint status);
+uint inm_get_powercap_stragetgy();
+
+
+
 
 #endif

@@ -34,4 +34,9 @@ state_t hw_get_powercap_value(uint pid,uint *powercap);
 uint hw_is_powercap_policy_enabled(uint pid);
 void hw_print_powercap_value(int fd);
 void hw_powercap_to_str(char *b);
+void hw_set_status(uint status);
+void hw_stop_powercap();
+void hw_start_powercap();
+uint hw_get_powercap_stragetgy();
+
 

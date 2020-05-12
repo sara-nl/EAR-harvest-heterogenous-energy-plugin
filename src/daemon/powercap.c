@@ -47,6 +47,7 @@
 #include <daemon/powercap_status.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/power_mgt.h>
+#include <daemon/powercap_status_conf.h>
 #include <common/types/configuration/cluster_conf.h>
 
 #define POWERCAP_MON 0
