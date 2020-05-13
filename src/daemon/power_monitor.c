@@ -972,7 +972,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 
 	
 	if (!(is_null(&current_loop_data)==1)){
-		print_loop_fd(verb_channel,&current_loop_data);
+		signature_print_simple_fd(verb_channel,&current_loop_data.signature);
 	}
 
 

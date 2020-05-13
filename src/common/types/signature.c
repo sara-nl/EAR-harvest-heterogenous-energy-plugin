@@ -62,6 +62,11 @@ void signature_print_fd(int fd, signature_t *sig, char is_extended)
     }
 }
 
+void signature_print_simple_fd(int fd, signature_t *sig)
+{
+	dprintf(fd, "[AVGF=%lu DEFF=%lu TIME=%lf CPI=%lf GBS=%lf POWER=%lf]",sig->avg_f, sig->def_f,sig->time, sig->CPI,sig->GBS,sig->DC_power);
+}
+
 
 void compute_vpi(double *vpi,signature_t *sig)
 {

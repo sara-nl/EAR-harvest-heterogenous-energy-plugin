@@ -30,6 +30,7 @@
 #include <mpi.h>
 #endif
 #include <dlfcn.h>
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/system/symplug.h>
 #include <common/hardware/frequency.h>
@@ -86,7 +87,7 @@ polctx_t my_pol_ctx;
 
 state_t policy_load(char *obj_path)
 {
-	return symplug_open(obj_path, (void **)&polsyms_fun, polsyms_nam, polsyms_n);
+	return symplug_open_lazy(obj_path, (void **)&polsyms_fun, polsyms_nam, polsyms_n);
 }
 
 state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)

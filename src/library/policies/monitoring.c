@@ -60,13 +60,17 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 {
 	*ready=1;
 	*new_freq=DEF_FREQ(c->app->def_freq);
+	printf("policy_apply %d\n",is_powercap_set(&c->app->pc_opt));
 #if POWERCAP
 	if (is_powercap_set(&c->app->pc_opt)){ 
 		verbose(1,"Powercap is set to %uWatts",get_powercapopt_value(&c->app->pc_opt));
 	}else{
 		verbose(1,"Powercap is NOT set ");
 	}
+#else
+	verbose(1,"Powercap not defined");
 #endif
+	
 	return EAR_SUCCESS;
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)

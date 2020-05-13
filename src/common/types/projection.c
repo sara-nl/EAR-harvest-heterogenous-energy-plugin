@@ -70,7 +70,7 @@ const char     *models_syms_nam[] = {
 
 static state_t models_load(char *obj_path)
 {
-	return symplug_open(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
+	return symplug_open_lazy(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
 }
 
 state_t projections_init(uint user_type, conf_install_t *data, architecture_t * arch_desc)

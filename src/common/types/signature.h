@@ -84,5 +84,7 @@ void print_signature_fd_binary(int fd, signature_t *sig);
 void read_signature_fd_binary(int fd, signature_t *sig);
 
 void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN);
+void signature_print_simple_fd(int fd, signature_t *sig);
+
 
 #endif

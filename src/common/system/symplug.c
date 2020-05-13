@@ -66,3 +66,19 @@ state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 	debug("dlopen returned correctly");
 	return symplug_join(handle, calls, names, n);
 }
+
+state_t symplug_open_lazy(char *path, void *calls[], const char *names[], uint n)
+{
+  void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
+
+  if (!handle)
+  {
+
+    debug("error when loading shared object (%s)", dlerror());
+    state_return_msg(EAR_DL_ERROR, 0, dlerror());
+  }
+
+  debug("dlopen returned correctly");
+  return symplug_join(handle, calls, names, n);
+}
+
