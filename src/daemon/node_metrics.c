@@ -86,20 +86,25 @@ int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq)
 		return EAR_ERROR;
 	}
 
+	//
 	id->con=-1;
 	id->ncpus=cpus_per_socket;
 	id->nsockets=sockets;
 	id->def_f=def_freq;
+
 	// CPU Frequency
 	freq_cpu_init(topo);
 	freq_cpu_data_alloc(&freq_period2, NULL, NULL);
 	freq_cpu_data_alloc(&freq_period1, NULL, NULL);
+
 	// IMC Frequency
 	freq_imc_init(topo);
 	freq_imc_data_alloc(&freq_perimc2, NULL, NULL);
-	freq_imc_data_alloc(&freq_perimc1, NULL, NULL);
+	freq_imc_data_alloc(&freq_perimc1, &nm->uncore_freq, NULL);
+
 	// CPU Temperature
 	init_temp_msr(nm_temp_fd);
+
 	//
 	id->con=NM_CONNECTED;
 
@@ -112,11 +117,7 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
 		return EAR_ERROR;
 	}
 	nm->avg_cpu_freq=0;
-	nm->uncore_freq=(uint64_t *)malloc(sizeof(uint64_t)*id->nsockets);
-	if (nm->uncore_freq==NULL){
-		debug("init_node_metrics_data not enough memory\n");
-		return EAR_ERROR;
-	}
+
 	nm->temp=(unsigned long long *)malloc(sizeof(uint64_t)*id->nsockets);
     if (nm->temp==NULL){
         debug("init_node_metrics_data not enough memory\n");
@@ -144,22 +145,23 @@ int start_compute_node_metrics(nm_t *id,nm_data_t *nm)
 int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 {
 	int i;
+
 	if ((nm==NULL)|| (id==NULL) || (id->con!=NM_CONNECTED)){
 		debug("end_compute_node_metrics invalid argument");
 		return EAR_ERROR;
 	}
-	nm->avg_cpu_freq=0;
-	for (i=0;i<id->nsockets;i++) nm->uncore_freq[i]=0;
-	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
+
 	// CPU & IMC Frequency
-	freq_cpu_read_diff(&freq_period2, &freq_period1, NULL, &nm->avg_cpu_freq);
-	freq_imc_read_diff(&freq_perimc2, &freq_perimc1, NULL, &nm->avg_imc_freq);
-	printf("average %lu ", nm->avg_cpu_freq);
-	printf("average %lu\n", nm->avg_imc_freq);
-	freq_cpu_data_print(NULL, &nm->avg_cpu_freq);
-	freq_imc_data_print(NULL, &nm->avg_imc_freq);
+	freq_cpu_read_diff(&freq_period2, &freq_period1,            NULL, &nm->avg_cpu_freq);
+	freq_imc_read_diff(&freq_perimc2, &freq_perimc1, nm->uncore_freq, &nm->avg_imc_freq);
+
+	printf("u0 %lu\n", nm->uncore_freq[0]);
+	printf("u1 %lu\n", nm->uncore_freq[1]);
+
 	// CPU Temperature
+	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
 	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
+
 	return EAR_SUCCESS;
 }
 
@@ -202,9 +204,11 @@ int print_node_metrics(nm_t *id,nm_data_t *nm)
 		debug("print_node_metrics invalid argument");
 		return EAR_ERROR;
 	}
+
 	printf("node_metrics avg_cpu_freq %lu ",nm->avg_cpu_freq);
-	for (i=0;i<id->nsockets;i++) printf("uncore_freq[%d]=%llu ",i,(long long unsigned int)nm->uncore_freq[i]);
+	printf("node_metrics avg_imc_freq %lu ",nm->avg_imc_freq);
 	for (i=0;i<id->nsockets;i++) printf("temp[%d]=%llu ",i,nm->temp[i]);
+
 	return EAR_SUCCESS;
 }
 
@@ -212,22 +216,21 @@ int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 {
 	int i;
 	char msg[1024];
-	uint64_t uncore_total=0;
 	unsigned long long temp_total=0;
 	if ((nm==NULL) || (id==NULL) || (id->con!=NM_CONNECTED)){
 		debug("verbose_node_metrics invalid argument");
 		return EAR_ERROR;
 	}
-	for (i=0;i<id->nsockets;i++){
-		uncore_total+=nm->uncore_freq[i];
-	}
-	uncore_total=uncore_total/2600000000;
+
 	for (i=0;i<id->nsockets;i++){
 		temp_total+=nm->temp[i];
 	}
 	temp_total=temp_total/id->nsockets;
-	sprintf(msg," avg_cpu_freq=%.2lf, avg_imc_freq=%.2lf temp=%llu",
-		(double)nm->avg_cpu_freq/(double)1000000, (double)nm->avg_imc_freq/(double)1000000, temp_total);
+
+	sprintf(msg," avg_cpu_freq=%.2lf, avg_imc_freq=%.2lf, temp=%llu",
+		(double)nm->avg_cpu_freq/(double)1000000,
+		(double)nm->avg_imc_freq/(double)1000000,
+		temp_total);
 
 	verbose(VNODEPMON,msg);
 	return EAR_SUCCESS;
