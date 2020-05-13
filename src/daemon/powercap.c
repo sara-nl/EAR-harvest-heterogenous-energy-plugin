@@ -242,6 +242,7 @@ int powercap_idle_to_run()
 	debug("powercap_idle_to_run");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); /* can we create some deadlock because of status ? */
 	pmgt_set_status(pcmgr,PC_STATUS_RUN);
+	debug("pc status modified");
 	last_status=PC_STATUS_IDLE;
 	if (my_pc_opt.last_t1_allocated==my_pc_opt.powercap_idle){
 		extra=my_pc_opt.max_inc_new_jobs;

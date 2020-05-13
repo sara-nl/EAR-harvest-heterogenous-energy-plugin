@@ -67,16 +67,16 @@ const char     *pcsyms_names[] ={
   "enable",
   "disable",
   "set_powercap_value",
-  "get_get_powercap_value",
+  "get_powercap_value",
   "is_powercap_policy_enabled",
-  "powercap_to_str",
   "set_status",
 	"set_pc_mode",
-  "get_powercap_stragetgy",
+  "get_powercap_strategy",
+  "powercap_to_str",
 	"print_powercap_value"
 };
 
-#define freturn(call, ...) ((call==NULL)?EAR_UNDEFINED:call (__VA_ARGS__));
+#define freturn(call, ...) ((call==NULL)?EAR_UNDEFINED:call(__VA_ARGS__));
 
 #define DEFAULT_PC_PLUGIN_NAME "pc_dvfs"
 static uint pc_plugin_loaded=0;
@@ -143,11 +143,13 @@ void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b)
 
 void pmgt_set_status(pwr_mgt_t *phandler,uint status)
 {
+	debug("pmgt_set_status");
 	freturn(pcsyms_fun.set_status,status);
 }
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler)
 {
 	uint ret;
+	debug("pmgt_strategy");
 	ret=freturn(pcsyms_fun.get_powercap_strategy);
 	return ret;
 }

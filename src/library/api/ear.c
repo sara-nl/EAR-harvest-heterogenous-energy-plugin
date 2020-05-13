@@ -47,6 +47,7 @@
 
 #define SHOW_DEBUGS 1
 #include <common/config.h>
+#include <common/colors.h>
 #include <common/environment.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
@@ -400,6 +401,7 @@ static int get_local_id(char *node_name)
 
 #if USE_LOCK_FILES
 	#if MPI
+	debug("MPI activated");
 	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
 
 	if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
@@ -408,12 +410,14 @@ static int get_local_id(char *node_name)
 		master = 0;
 	}
 	#else
+	debug("MPI not activated");
 	master=0;
 	#endif
 
 	if (master) {
 		debug("Rank %d is not the master in node %s", ear_my_rank, node_name);
 	}else{
+		debug("Rank %d is the master in node %s", ear_my_rank, node_name);
 		verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
 	}
 #else
@@ -440,6 +444,7 @@ static void get_job_identification()
 	char *account_id=getenv("SLURM_JOB_ACCOUNT");
 
 	// It is missing to use SLURM_JOB_ACCOUNT
+	
 
 	if (job_id != NULL) {
 		my_job_id=atoi(job_id);
@@ -459,6 +464,7 @@ static void get_job_identification()
 	}
 	if (account_id==NULL) strcpy(my_account,"NO_SLURM_ACCOUNT");	
 	else strcpy(my_account,account_id);
+	debug("JOB ID %d STEP ID %d ",my_job_id,my_step_id);
 }
 
 static void get_app_name(char *my_name)
@@ -522,7 +528,7 @@ void ear_init()
 	my_size=1;
 	#endif
 
-	debug("Reading the environment");
+	//debug("Reading the environment");
 
 	// Environment initialization
 	ear_lib_environment();
@@ -560,7 +566,7 @@ void ear_init()
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
 
-	debug("attach to master %d",my_id);
+	//debug("attach to master %d",my_id);
 
 	/* All masters connect in a new MPI communicator */
 	attach_to_master_set(my_id==0);
@@ -571,23 +577,26 @@ void ear_init()
 		return;
 	}
 #endif
-	debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
+	//debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
-	debug("system_conf_path %s",system_conf_path);
+	//debug("system_conf_path %s",system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
-	debug("resched_conf_path %s",resched_conf_path);
+	//debug("resched_conf_path %s",resched_conf_path);
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
 	/* Updating configuration */
 	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
+		debug("Updating the configuration sent by the EARD");
 		update_configuration();	
 	}else{
 		eard_ok=0;
-		debug("Shared memory not present");
+		//debug("Shared memory not present");
 #if USE_LOCK_FILES
-    debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-    if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
+    if (!my_id){ 
+    	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+			file_unlock_master(fd_master_lock,fd_lock_filename);
+		}
 #endif
 		/* Only the node master will notify the problem to the other masters */
 		if (!my_id) notify_eard_connection(0);
@@ -628,9 +637,9 @@ void ear_init()
 	start_job(&application.job);
 
 	if (!my_id){ //only the master will connect with eard
-		verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
+		verbose(1, "%sConnecting with EAR Daemon (EARD) %d%s", COL_BLU,ear_my_rank,COL_CLR);
 		if (eards_connect(&application) == EAR_SUCCESS) {
-			debug("Rank %d connected with EARD", ear_my_rank);
+			debug("%sRank %d connected with EARD%s", COL_BLU,ear_my_rank,COL_CLR);
 			notify_eard_connection(1);
 		}else{   
 			eard_ok=0;
@@ -642,6 +651,7 @@ void ear_init()
 
 
 	if (!my_id){
+		debug("%sI'm the master, creating shared regions%s",COL_BLU,COL_CLR);
 		create_shared_regions();
 	}else{
 		attach_shared_regions();
