@@ -47,7 +47,7 @@ state_t omsr_close(int *fd);
 state_t omsr_read(int *fd, void *buffer, size_t count, off_t offset);
 
 /* */
-state_t msr_write(int *fd, const void *buffer, size_t count, off_t offset);
+state_t omsr_write(int *fd, const void *buffer, size_t count, off_t offset);
 
 
 int get_msr_ids(int *dest_fd_map);

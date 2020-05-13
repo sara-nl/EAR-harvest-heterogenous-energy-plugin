@@ -98,7 +98,7 @@ int reset_temp_limit_msr(int *fds)
 	    /* PKG reading */    
         if (omsr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
         result &= ~(0x2);
-        if (msr_write(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+        if (omsr_write(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
 
     }
 	return EAR_SUCCESS;

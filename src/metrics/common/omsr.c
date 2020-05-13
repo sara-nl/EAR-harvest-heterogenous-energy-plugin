@@ -154,7 +154,7 @@ state_t omsr_read(int *fd, void *buffer, size_t size, off_t offset)
 }
 
 /* */
-state_t msr_write(int *fd, const void *buffer, size_t size, off_t offset)
+state_t omsr_write(int *fd, const void *buffer, size_t size, off_t offset)
 {
 	int ret;
 	char *b=(char *)buffer;
@@ -169,7 +169,7 @@ state_t msr_write(int *fd, const void *buffer, size_t size, off_t offset)
 		total+=ret;	
 	}while((ret>=0) && (pending>0));
 	if (ret<0){
-		debug("msr_write returns error %s",strerror(errno));
+		debug("omsr_write returns error %s",strerror(errno));
 		return EAR_ERROR;
 	}
 	if (pending==0) return EAR_SUCCESS;

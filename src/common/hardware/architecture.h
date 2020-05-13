@@ -38,11 +38,11 @@
 #define MAX_FREQ_AVX512 2200000
 
 typedef struct architecture{
-	topology_t 		top;
 	unsigned long max_freq_avx512;
 	unsigned long max_freq_avx2;
-	int 					pstates;
+	int pstates;
 }architecture_t;
+
 /** Fills the current architecture in arch*/
 state_t get_arch_desc(architecture_t *arch);
 
