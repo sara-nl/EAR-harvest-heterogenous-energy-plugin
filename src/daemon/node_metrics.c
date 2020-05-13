@@ -35,8 +35,8 @@
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/node_metrics.h>
-#include <metrics/frequency/frequency_cpu.h>
-#include <metrics/frequency/frequency_imc.h>
+#include <metrics/frequency/imc.h>
+#include <metrics/frequency/cpu.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/temperature/temperature.h>
 

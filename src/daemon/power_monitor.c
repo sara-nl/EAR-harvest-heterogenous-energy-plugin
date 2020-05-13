@@ -53,7 +53,7 @@
 #include <common/types/periodic_metric.h>
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <metrics/frequency/frequency_cpu.h>
+#include <metrics/frequency/cpu.h>
 #include <common/hardware/hardware_info.h>
 #include <common/hardware/frequency.h>
 #include <daemon/power_monitor.h>

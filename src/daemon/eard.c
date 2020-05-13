@@ -37,11 +37,11 @@
 #include <common/environment.h>
 #include <common/types/log_eard.h>
 #include <common/hardware/frequency.h>
+#include <metrics/frequency/cpu.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
 #include <common/hardware/hardware_info.h>
-#include <metrics/frequency/frequency_cpu.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_checkpoint.h>
