@@ -69,7 +69,6 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'stalls'       $* || exit
 	@ $(MAKE) -C 'accumulators' $* || exit
 	@ $(MAKE) -C 'temperature'  $* || exit
-	@ $(MAKE) -C 'powercap'     $* || exit
 
 ######## DEPENDENCIES
 

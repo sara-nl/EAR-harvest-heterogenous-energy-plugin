@@ -99,7 +99,7 @@ state_t inm_disable_powercap_policies()
 
 }
 
-state_t inm_disable()
+state_t disable()
 {
 	state_t ret;
 	/* Policies is still pending to manage */
@@ -122,7 +122,7 @@ state_t inm_enable_powercap_policies()
   }
 	return EAR_SUCCESS;
 }
-state_t inm_enable()
+state_t enable()
 {
 	char cmd[1024];
 	state_t ret;
@@ -149,7 +149,7 @@ state_t inm_enable()
   return ret;
 }
 
-state_t inm_set_powercap_value(uint pid,uint domain,uint limit)
+state_t set_powercap_value(uint pid,uint domain,uint limit)
 {
 	char cmd[1024];
 	char c_date[128];
@@ -163,35 +163,35 @@ state_t inm_set_powercap_value(uint pid,uint domain,uint limit)
 	return execute(cmd);
 }
 
-state_t inm_get_powercap_value(uint pid,uint *powercap)
+state_t get_powercap_value(uint pid,uint *powercap)
 {
 	/* Pending */
 	*powercap=c_limit;
 	return EAR_SUCCESS;
 }
 
-uint inm_is_powercap_policy_enabled(uint pid)
+uint is_powercap_policy_enabled(uint pid)
 {
 	return policy_enabled;
 }
 
-void inm_print_powercap_value(int fd)
+void print_powercap_value(int fd)
 {
 	dprintf(fd,"%u",c_limit);
 }
-void inm_powercap_to_str(char *b)
+void powercap_to_str(char *b)
 {
 	sprintf(b,"%u",c_limit);
 }
 
-void inm_set_status(uint status)
+void set_status(uint status)
 {
 }
-uint inm_get_powercap_stragetgy()
+uint get_powercap_stragetgy()
 {
 	return PC_POWER;
 }
-void inm_set_pc_mode(uint mode)
+void set_pc_mode(uint mode)
 {
 }
 

@@ -52,7 +52,7 @@
 #define POWERCAP_MON 0
 #define RAPL_VS_NODE_POWER 0.85
 #define RAPL_VS_NODE_POWER_limit 0.7
-#define DEBUG_PERIOD 5
+#define DEBUG_PERIOD 1
 
 pthread_t dvfs_pc_th;
 static uint current_dvfs_pc=0,set_dvfs_pc=0;
@@ -111,15 +111,16 @@ void dvfs_pc_thread(void *d)
 		sleep(1);
 		secs=(secs+1)%DEBUG_PERIOD;
 		read_rapl_msr(fd_rapl,values_rapl_end);	
-		if (c_status==PC_STATUS_RUN){
 			/* Calcular power */
 				diff_rapl_msr_energy(values_diff,values_rapl_end,values_rapl_init);
 			rapl_msr_energy_to_str(rapl_energy_str,values_diff);
 			//debug(rapl_energy_str);
 			acum_energy=acum_rapl_energy(values_diff);
 			power_rapl=(float)acum_energy/(1*RAPL_MSR_UNITS);
+			debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
+		if (c_status==PC_STATUS_RUN){
 			if (!secs){ 
-				debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
+		//		debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
 			}
 			#if 0
 			debug("DRAM0 %f DRAM1 %f PCK0 %f PCK1 %f",((float)values_diff[0]/(1*RAPL_MSR_UNITS)),((float)values_diff[1]/(1*RAPL_MSR_UNITS)),
@@ -154,14 +155,14 @@ void dvfs_pc_thread(void *d)
 }
 
 
-state_t dvfs_disable()
+state_t disable()
 {
 	return EAR_SUCCESS;
 	/* Stop thread */
 	pthread_kill(dvfs_pc_th,SIGSTOP);
 }
 
-state_t dvfs_enable()
+state_t enable()
 {
 	int ret;
 	/* Create thread */
@@ -173,45 +174,50 @@ state_t dvfs_enable()
 	return EAR_SUCCESS;
 }
 
-state_t dvfs_set_powercap_value(uint pid,uint domain,uint limit)
+state_t set_powercap_value(uint pid,uint domain,uint limit)
 {
 	/* Set data */
+	debug("set_powercap_value %u",limit);
 	current_dvfs_pc=limit;
 	return EAR_SUCCESS;
 }
 
-state_t dvfs_get_powercap_value(uint pid,uint *powercap)
+state_t get_powercap_value(uint pid,uint *powercap)
 {
 	/* copy data */
+	debug("get_powercap_value");
 	*powercap=current_dvfs_pc;
 	return EAR_SUCCESS;
 }
 
-uint dvfs_is_powercap_policy_enabled(uint pid)
+uint is_powercap_policy_enabled(uint pid)
 {
 	return dvfs_pc_enabled;
 }
 
-void dvfs_print_powercap_value(int fd)
+void print_powercap_value(int fd)
 {
 	dprintf(fd,"dvfs_powercap_value %u\n",current_dvfs_pc);
 }
-void dvfs_powercap_to_str(char *b)
+void powercap_to_str(char *b)
 {
 	sprintf(b,"%u",current_dvfs_pc);
 }
 
-void dvfs_set_status(uint status)
+void set_status(uint status)
 {
+	debug("set_status %u",status);
 	c_status=status;
 }
-uint dvfs_get_powercap_strategy()
+uint get_powercap_strategy()
 {
+	debug("get_powercap_strategy");
 	return PC_DVFS;
 }
 
-void dvfs_set_pc_mode(uint mode)
+void set_pc_mode(uint mode)
 {
+	debug("set_pc_mode");
 	c_mode=mode;
 }
 

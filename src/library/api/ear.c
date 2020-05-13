@@ -45,7 +45,7 @@
 #include <papi.h>
 
 
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/environment.h>
 #include <common/output/verbose.h>

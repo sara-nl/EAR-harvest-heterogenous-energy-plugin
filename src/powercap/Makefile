@@ -10,8 +10,10 @@ powercap_BINS = \
 		pc_dvfs.so
 powercap_PATH = $(DESTDIR)/lib/plugins/powercap
 powercap_PERM = 0775
-powercap_DEPS = \
-	$(SRCDIR)/daemon/powercap_status.o
+dvfs_DEPS = \
+	$(SRCDIR)/daemon/powercap_status.o \
+	$(SRCDIR)/metrics/libmetrics.a \
+	$(SRCDIR)/common/libcommon.a 
 
 ######## RULES
 
@@ -19,6 +21,8 @@ all: $(powercap_BINS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
+pc_dvfs.so:pc_dvfs.o $(dvfs_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(dvfs_DEPS)
 
 
 %.so: %.o 

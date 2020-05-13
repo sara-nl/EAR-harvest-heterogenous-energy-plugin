@@ -8,6 +8,7 @@ ifdef PAPI_BASE
 	COMPONENTS += \
                   metrics \
                   daemon \
+									powercap \
                   commands \
                   tests \
                   library
