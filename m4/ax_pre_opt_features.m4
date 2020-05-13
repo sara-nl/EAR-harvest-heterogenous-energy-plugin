@@ -67,7 +67,7 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	AC_ARG_VAR([MPI_VERSION],[Adds a suffix to the EAR library referring the MPI version used to compile])
 
 	# !I && !O
-	if test -z "$MPICC" && test -z "$OMPICC"; then
+	if test -z "$MPICC"; then
 		MPICC=mpicc
 	fi
 
@@ -89,32 +89,19 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		if which $MPICC &> /dev/null; then
 			MPICC="`which $MPICC`"
 		else
-			MPICC="mpicaca"
+			MPICC="mpicc"
 		fi
 	fi
+
 	if echo "$CC" | grep -q "/"; then
 		echo nothing &> /dev/null
 	else
 		CC="`which $CC`"
 	fi
 
-    #
-    # Fortran
-    #
-	
-	AC_ARG_WITH(
-		[fortran],
-		AS_HELP_STRING(--with-fortran,Adds MPI Fortran symbols.),
-		[
-           	enable_fort="$withval"
-		]
-	)
-	
-	FEAT_FORT=0
-
-	if test -n "$enable_fort"; then
-		FEAT_FORT=1
-	fi
+	MPI_DIR=`dirname $MPICC`
+	MPI_DIR=`(cd $MPI_DIR/.. && pwd)`
+	MPI_CPPFLAGS="-I\$(MPI_BASE)/include"
 
 	#
 	# Architecture
@@ -129,31 +116,9 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		FEAT_AVX512=0
 	fi
 	
-	# AC_ARG_VAR([ARCH],[Compiles the code for a CPU architecture dis/enabling some specific features (sandy, ivy, haswell, broadwell, skylake (def))])
-
-	# if test -z "$ARCH"; then
-	# 	MARCH="skylake"
-	# else
-	# 	MARCH=`echo $ARCH | tr '[:upper:]' '[:lower:]'`
-	# fi
-
-	# case $MARCH in
-	# 	skylake) ARCH=5;;
-	# 	broadwell) ARCH=4;;
-	# 	haswell) ARCH=3;;
-	# 	ivy) ARCH=2;;
-	# 	sandy) ARCH=1;;
-	# 	*) ARCH=5;;
-	# esac
-
  	#
 	# Installation user/group
 	#
 	AC_ARG_VAR([USER],[Sets the owner user of your installed files])
 	AC_ARG_VAR([GROUP],[Sets the owner group of your installed files])
-
-	#
-	# Other calls
-	#
-	#X_AC_GET_LD_LIBRARY_PATHS([])
 ])

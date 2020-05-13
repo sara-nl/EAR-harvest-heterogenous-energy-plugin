@@ -27,16 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_PRIVATE_SYMPLUG_H
-#define EAR_PRIVATE_SYMPLUG_H
+#ifndef COMMON_SYSTEM_SYMPLUG_H
+#define COMMON_SYSTEM_SYMPLUG_H
 
 #include <dlfcn.h>
+#include <common/types.h>
 #include <common/states.h>
 #include <common/plugins.h>
-#include <common/types/generic.h>
+#include <common/attributes.h>
 
 state_t symplug_join(void *handle, void *calls[], const char *names[], uint n);
 
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n);
 
-#endif //EAR_PRIVATE_SYMPLUG_H
+#endif //COMMON_SYSTEM_SYMPLUG_H

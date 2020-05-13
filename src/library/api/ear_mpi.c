@@ -27,28 +27,42 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef PROCESS_MPI_H
-#define PROCESS_MPI_H
+#include <library/api/ear.h>
+#include <library/api/ear_mpi.h>
+#include <library/policies/policy.h>
+#include <common/output/debug.h>
 
-#include <library/mpi_intercept/MPI_types.h>
+void before_init()
+{
+	debug("before_init");
+}
 
-/** called before the MPI_init. Connects with ear_daemon */
-void before_init();
+void after_init()
+{
+	debug("after_init");
+	ear_init();
+}
 
-/** called after the MPI_init */
-void after_init();
+void before_mpi(mpi_call call_type, p2i buf, p2i dest)
+{
+	debug("before_mpi");
+	policy_mpi_init();
+	ear_mpi_call(call_type,buf,dest);
+}
 
-/** called before all the mpi calls except mpi_init and mpi_finalize. It calls dynais and, based on 
-*    dynais reported status, calls the main EAR functionallity */
-void before_mpi(int call, p2i buf, p2i dest);
+void after_mpi(mpi_call call_type)
+{
+	debug("after_mpi");
+	policy_mpi_end();
+}
 
-/** called after all the mpi calls excel mpi_init and mpi_finalize. */
-void after_mpi();
+void before_finalize()
+{
+	debug("before_finalize");
+	ear_finalize();
+}
 
-/** called before mpi_finalize, it calls EAR functions to summarize metrics */
-void before_finalize();
-
-/** called after mpi_finalize */
-void after_finalize();
-
-#endif //PROCESS_MPI_H
+void after_finalize()
+{
+	debug("after_finalize");
+}

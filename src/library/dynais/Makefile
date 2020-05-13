@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -fPIC -O2 -I$(SRCDIR)
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -O3 -fPIC -march=native
 
 ######## FILES
 
@@ -18,15 +18,15 @@ DEPS = $(FOLD)/dynais.o \
 
 all: dynais.a
 
-dynais.a: $(DEPS)
-	$(AR) rvs $@ $(OBJS)
-
 $(FOLD)/dynais_core.o: $(FOLD)/dynais_core.c $(FOLD)/dynais_core.h
-	$(CC) $(CC_FLAGS) $(CFLAGS) -DDYN_CORE_N -march=native -o $(FOLD)/dynais_core_n.o -c $<
-	$(CC) $(CC_FLAGS) $(CFLAGS) -DDYN_CORE_0 -march=native -o $(FOLD)/dynais_core_0.o -c $<
+	$(CC) $(CFLAGS) -DDYN_CORE_N -o $(FOLD)/dynais_core_n.o -c $<
+	$(CC) $(CFLAGS) -DDYN_CORE_0 -o $(FOLD)/dynais_core_0.o -c $<
 
 $(FOLD)/dynais.o: $(FOLD)/dynais.c
-	$(CC) $(CFLAGS) -march=native -o $(FOLD)/dynais.o -c $< 
+	$(CC) $(CFLAGS) -o $(FOLD)/dynais.o -c $< 
+
+dynais.a: $(DEPS)
+	$(AR) rvs $@ $(OBJS)
 
 ######## OPTIONS
 

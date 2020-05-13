@@ -27,40 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/includes.h>
-#include <common/system/symplug.h>
+#ifndef COMMON_SYSTEM_ATTRIBUTES_H
+#define COMMON_SYSTEM_ATTRIBUTES_H
 
-state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
-{
-	char *error;
-	uint i;
+#define attr2(a1, a2)	__attribute__ ((a1, a2))
+#define attr(a)			__attribute__ ((a))
+#define attr_hidden		visibility("hidden")
+#define attr_weak		weak
 
-	for (i = 0; i < n; ++i)
-	{
-		calls[i] = dlsym(handle, names[i]);
-		error    = dlerror();
-	
-		if ((calls[i] != NULL) && (error == NULL)) {
-			//debug("symbol %s found (%p)", names[i], calls[i]);
-		} else {
-			debug("symbol %s not found (%s)", names[i], error);
-			calls[i] = NULL;
-		}
-	}
+//#define ATTR_PROTECTED	__attribute__ ((visibility ("protected")))
+//#define ATTR_INTERNAL 	__attribute__ ((visibility ("internal")))
+//#define ATTR_HIDDEN		__attribute__ ((visibility ("hidden")))
+//#define ATTR_WEAK		__attribute__((weak))
 
-	return EAR_SUCCESS;
-}
-
-state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
-{
-	void *handle = dlopen(path, RTLD_LOCAL | RTLD_NOW);
-
-	if (!handle)
-	{
-		debug("error when loading shared object (%s)", dlerror());
-		state_return_msg(EAR_DL_ERROR, 0, dlerror());
-	}
-	
-	debug("dlopen returned correctly");
-	return symplug_join(handle, calls, names, n);
-}
+#endif //COMMON_SYSTEM_ATTRIBUTES_H

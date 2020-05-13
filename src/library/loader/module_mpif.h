@@ -27,40 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <common/includes.h>
-#include <common/system/symplug.h>
+#ifndef LIBRARY_LOADER_MPIF_H
+#define LIBRARY_LOADER_MPIF_H
 
-state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
-{
-	char *error;
-	uint i;
+#include <library/api/mpi.h>
 
-	for (i = 0; i < n; ++i)
-	{
-		calls[i] = dlsym(handle, names[i]);
-		error    = dlerror();
-	
-		if ((calls[i] != NULL) && (error == NULL)) {
-			//debug("symbol %s found (%p)", names[i], calls[i]);
-		} else {
-			debug("symbol %s not found (%s)", names[i], error);
-			calls[i] = NULL;
-		}
-	}
-
-	return EAR_SUCCESS;
-}
-
-state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
-{
-	void *handle = dlopen(path, RTLD_LOCAL | RTLD_NOW);
-
-	if (!handle)
-	{
-		debug("error when loading shared object (%s)", dlerror());
-		state_return_msg(EAR_DL_ERROR, 0, dlerror());
-	}
-	
-	debug("dlopen returned correctly");
-	return symplug_join(handle, calls, names, n);
-}
+#endif //LIBRARY_LOADER_MPIF_H

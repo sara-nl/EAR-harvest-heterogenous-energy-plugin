@@ -84,12 +84,12 @@ AC_DEFUN([X_AC_SLURM],
         [
 			X_AC_SLURM_FIND_ROOT_DIR([])
 
-    		if test -z "$_cv_slurm_dir_root"; then
-				_x_ac_slurm_dirs_root="${_ax_ld_dirs_root}"
-				_x_ac_slurm_custom="yes"
+				if test -z "$_cv_slurm_dir_root"; then
+					_x_ac_slurm_dirs_root="${_ax_ld_dirs_root}"
+					_x_ac_slurm_custom="yes"
 
-				X_AC_SLURM_FIND_ROOT_DIR([])
-			fi
+					X_AC_SLURM_FIND_ROOT_DIR([])
+				fi
         ]
     )
 

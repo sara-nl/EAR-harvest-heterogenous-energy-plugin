@@ -27,19 +27,14 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_MPI_H
-#define LIBRARY_MPI_H
+#ifndef LIBRARY_LOADER_MPI_H
+#define LIBRARY_LOADER_MPI_H
 
-#include <mpi.h>
+#include <library/api/mpic.h>
+#include <library/api/mpif.h>
+#include <library/loader/module_mpic.h>
+#include <library/loader/module_mpif.h>
 
-#ifndef MPI3_CONST
-#  if MPI_VERSION >= 3
-#    define MPI3_CONST const
-#  else
-#    define MPI3_CONST
-#  endif
-#endif
+void module_mpi();
 
-#define p2i unsigned long
-
-#endif //LIBRARY_MPI_H
+#endif //LIBRARY_LOADER_MPI_H

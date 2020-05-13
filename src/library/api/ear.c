@@ -27,25 +27,14 @@
  *	The GNU LEsser General Public License is contained in the file COPYING	
  */
 
-#include <mpi.h>
-#include <time.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
+//#define SHOW_DEBUGS 1
 #include <papi.h>
-#include <common/config.h>
-#include <common/states.h>
+#include <common/includes.h>
 #include <common/environment.h>
-//#define SHOW_DEBUGS 0
-#include <common/output/verbose.h>
-#include <common/types/application.h>
 #include <common/types/version.h>
+#include <common/types/application.h>
+#include <common/hardware/frequency.h>
+#include <library/api/mpi.h>
 #include <library/common/externs_alloc.h>
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
@@ -54,14 +43,9 @@
 #include <library/models/models.h>
 #include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
-#include <library/mpi_intercept/ear_api.h>
-#include <library/mpi_intercept/MPI_types.h>
-#include <library/mpi_intercept/MPI_calls_coded.h>
-#include <common/hardware/frequency.h>
-#include <metrics/common/papi.h>
 #include <daemon/eard_api.h>
 #include <daemon/shared_configuration.h>
-
+#include <metrics/common/papi.h>
 
 // Statics
 #define BUFFSIZE 			128
@@ -305,8 +289,6 @@ void ear_init()
 	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
 	architecture_t arch_desc;
 
-
-
 	// MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
@@ -408,7 +390,6 @@ void ear_init()
 		notify_eard_connection(0);
 	}
 	}
-	
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	
