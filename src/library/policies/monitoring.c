@@ -61,7 +61,7 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 	*ready=1;
 	*new_freq=DEF_FREQ(c->app->def_freq);
 #if POWERCAP
-	if (is_powercap_set(&c->app->pc_opt)) verbose(1,"Powercap is set to %uWatts",get_powercap_value(&c->app->pc_opt));
+	if (is_powercap_set(&c->app->pc_opt)) verbose(1,"Powercap is set to %uWatts",get_powercapopt_value(&c->app->pc_opt));
 #endif
 	return EAR_SUCCESS;
 }
@@ -74,7 +74,7 @@ state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *
     if (is_powercap_set(&c->app->pc_opt)){
       power_status=compute_power_status(&c->app->pc_opt,(uint)(curr_sig->DC_power));
       eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);
-      verbose(1,"Powercap is set to %u Watts, status %u effective freq %lu",get_powercap_value(&c->app->pc_opt),power_status,eff_f);
+      verbose(1,"Powercap is set to %u Watts, status %u effective freq %lu",get_powercapopt_value(&c->app->pc_opt),power_status,eff_f);
       if (eff_f<curr_sig->def_f){
         verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
       }

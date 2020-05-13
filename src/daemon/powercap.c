@@ -473,7 +473,7 @@ void get_powercap_status(powercap_status_t *my_status)
 	}
 	
 	my_status->current_power+=powermon_current_power();
-	my_status->total_powercap+=get_powercap_value(&my_pc_opt);
+	my_status->total_powercap+=get_powercapopt_value(&my_pc_opt);
 	pthread_mutex_unlock(&my_pc_opt.lock);
 	print_power_status(my_status);
 }

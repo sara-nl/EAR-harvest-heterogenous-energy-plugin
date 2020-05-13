@@ -37,12 +37,12 @@
 #include <pthread.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/power_mgt.h>
 
-#define SHOW_DEBUGS 1
 
 typedef struct powercap_symbols {
   state_t (*enable)        ();
@@ -91,6 +91,7 @@ state_t pmgt_init()
     	sprintf(basic_path,"%s/powercap/%s.so",my_cluster_conf.install.dir_plug,DEFAULT_PC_PLUGIN_NAME);
     	obj_path=basic_path;
 	}
+	debug("Loading %s powercap plugin",obj_path);
 	ret=symplug_open(obj_path, (void **)&pcsyms_fun, pcsyms_names, pcsyms_n);
 	return ret;
 }
