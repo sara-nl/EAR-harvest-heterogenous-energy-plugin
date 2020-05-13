@@ -42,6 +42,11 @@
 
 #define NM_CONNECTED	100
 
+static freq_cpu_t freq_period2;
+static freq_cpu_t freq_period1;
+static freq_imc_t freq_perimc2;
+static freq_imc_t freq_perimc1;
+
 /*
 typedef struct node_metrics{
 ulong avg_cpu_freq;
@@ -70,23 +75,34 @@ ulong get_nm_cpufreq(nm_t *id,nm_data_t *nm)
 	return nm->avg_cpu_freq;
 }
 
-int init_node_metrics(nm_t *id,int sockets, int cpus_per_socket,int cores_model,ulong def_freq)
+int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq)
 {
+	int sockets = topo->socket_count;
+	int cpus_per_socket = topo->core_count;
+
 	if ((id==NULL)	|| (sockets<=0) || (cpus_per_socket <=0) || (def_freq<=0)){
-		debug("init_node_metrics invalid argument id null=%d sockets=%u cpus_per_socket %u def_freq %lu\n",(id==NULL),sockets,cpus_per_socket,def_freq);
+		debug("init_node_metrics invalid argument id null=%d sockets=%u cpus_per_socket %u def_freq %lu\n",
+			  (id==NULL),sockets,cpus_per_socket,def_freq);
 		return EAR_ERROR;
 	}
+
 	id->con=-1;
 	id->ncpus=cpus_per_socket;
 	id->nsockets=sockets;
 	id->def_f=def_freq;
-	if (frequency_uncore_init(sockets,cpus_per_socket,cores_model)!=EAR_SUCCESS){ 
-		debug("Error when initializing frequency_uncore_init");
-		return EAR_ERROR;
-	}
-	aperf_periodic_avg_frequency_init_all_cpus();
+	// CPU Frequency
+	freq_cpu_init(topo);
+	freq_cpu_data_alloc(&freq_period2, NULL, NULL);
+	freq_cpu_data_alloc(&freq_period1, NULL, NULL);
+	// IMC Frequency
+	freq_imc_init(topo);
+	freq_imc_data_alloc(&freq_perimc2, NULL, NULL);
+	freq_imc_data_alloc(&freq_perimc1, NULL, NULL);
+	// CPU Temperature
 	init_temp_msr(nm_temp_fd);
+	//
 	id->con=NM_CONNECTED;
+
 	return EAR_SUCCESS;
 }
 int init_node_metrics_data(nm_t *id,nm_data_t *nm)
@@ -116,7 +132,12 @@ int start_compute_node_metrics(nm_t *id,nm_data_t *nm)
 		debug("start_compute_node_metrics invalid argument");
 		return EAR_ERROR;
 	}
-	if (frequency_uncore_counters_start()!=EAR_SUCCESS) return EAR_ERROR;
+
+	// CPU Frequency
+	freq_cpu_read(&freq_period1);
+	// IMC Frequency
+	freq_imc_read(&freq_perimc1);
+
 	return EAR_SUCCESS;
 }
 
@@ -130,8 +151,14 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	nm->avg_cpu_freq=0;
 	for (i=0;i<id->nsockets;i++) nm->uncore_freq[i]=0;
 	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
-	nm->avg_cpu_freq=aperf_periodic_avg_frequency_end_all_cpus();
-	if (frequency_uncore_counters_stop(nm->uncore_freq)!=EAR_SUCCESS) return EAR_ERROR;
+	// CPU & IMC Frequency
+	freq_cpu_read_diff(&freq_period2, &freq_period1, NULL, &nm->avg_cpu_freq);
+	freq_imc_read_diff(&freq_perimc2, &freq_perimc1, NULL, &nm->avg_imc_freq);
+	printf("average %lu ", nm->avg_cpu_freq);
+	printf("average %lu\n", nm->avg_imc_freq);
+	freq_cpu_data_print(NULL, &nm->avg_cpu_freq);
+	freq_imc_data_print(NULL, &nm->avg_imc_freq);
+	// CPU Temperature
 	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
 	return EAR_SUCCESS;
 }
@@ -152,10 +179,9 @@ int dispose_node_metrics(nm_t *id)
 		debug("dispose_node_metrics invalid id");
 		return EAR_ERROR;
 	}
-	if (frequency_uncore_dispose()!=EAR_SUCCESS){
-		debug("dispose_node_metrics frequency_uncore_dispose error");
-		return EAR_ERROR;
-	}
+
+	freq_imc_dispose();
+
 	return EAR_SUCCESS;
 }
 

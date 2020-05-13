@@ -27,27 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_MSR_H
-#define EAR_MSR_H
+#ifndef COMMON_HARDWARE_TOPOLOGY_FREQUENCY_H_
+#define COMMON_HARDWARE_TOPOLOGY_FREQUENCY_H_
 
-#include <unistd.h>
-#include <common/types.h>
-#include <common/states.h>
+state_t topology_freq_getbase(uint cpu, ulong *freq_base);
 
-#define msr_clean(fd) \
-	*fd = -1
-
-/* */
-state_t msr_open(uint cpu);
-
-/* */
-state_t msr_close(uint cpu);
-
-/* */
-state_t msr_read(uint cpu, void *buffer, size_t count, off_t offset);
-
-/* */
-state_t msr_write(uint cpu, const void *buffer, size_t count, off_t offset);
-
-
-#endif //EAR_MSR_H
+#endif

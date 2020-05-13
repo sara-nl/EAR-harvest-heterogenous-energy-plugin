@@ -1,27 +1,21 @@
-CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS) 
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-comm_OBJS = \
-    msr.o \
-    omsr.o \
-    pci.o \
-    papi.o
+freq_OBJS = frequency_imc.o frequency_cpu.o
 
 ######## RULES
 
-all: $(comm_OBJS)
+all: all.components $(freq_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
-
-papi.o: papi.c papi.h
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $< 
 
 ######## SUBFOLDERS
 
 %.components:
 	@ $(MAKE) -C 'cpu' $* || exit
+	@ $(MAKE) -C 'imc' $* || exit
 
 ######## OPTIONS
 
@@ -29,7 +23,7 @@ install: ;
 
 %.install: ;
 
-clean: rclean;
+clean: rclean clean.components;
 
 ######## DEPENDENCIES
 

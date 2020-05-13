@@ -51,7 +51,7 @@ typedef struct node_metrics{
     unsigned long long *temp;  
 }nm_data_t;
 
-int init_node_metrics(nm_t *id,int sockets, int cpus_per_socket,int cores_model,ulong def_freq);
+int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq);
 int init_node_metrics_data(nm_t *id,nm_data_t *mm);
 int start_compute_node_metrics(nm_t *id,nm_data_t *nm);
 int end_compute_node_metrics(nm_t *id,nm_data_t *nm);

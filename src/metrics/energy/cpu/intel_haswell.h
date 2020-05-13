@@ -30,7 +30,7 @@
 #ifndef _RAPL_METRICS_H_
 #define _RAPL_METRICS_H_
 
-#include <metrics/common/msr.h>
+#include <metrics/common/omsr.h>
 
 #define RAPL_POWER_EVS            2
 #define RAPL_DRAM0          0

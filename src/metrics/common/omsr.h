@@ -29,25 +29,30 @@
 
 #ifndef EAR_MSR_H
 #define EAR_MSR_H
-
 #include <unistd.h>
-#include <common/types.h>
 #include <common/states.h>
-
-#define msr_clean(fd) \
-	*fd = -1
+#include <common/types/generic.h>
 
 /* */
-state_t msr_open(uint cpu);
+
+#define MAX_PACKAGES 16
+#define NUM_SOCKETS 2
+
+state_t omsr_open(uint cpu, int *fd);
 
 /* */
-state_t msr_close(uint cpu);
+state_t omsr_close(int *fd);
 
 /* */
-state_t msr_read(uint cpu, void *buffer, size_t count, off_t offset);
+state_t omsr_read(int *fd, void *buffer, size_t count, off_t offset);
 
 /* */
-state_t msr_write(uint cpu, const void *buffer, size_t count, off_t offset);
+state_t msr_write(int *fd, const void *buffer, size_t count, off_t offset);
 
+
+int get_msr_ids(int *dest_fd_map);
+int get_total_packages();
+int is_msr_initialized();
+int init_msr(int *dest_fd_map);
 
 #endif //EAR_MSR_H

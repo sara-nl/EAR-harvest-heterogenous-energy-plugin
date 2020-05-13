@@ -31,7 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <metrics/common/msr.h>
+#include <metrics/common/omsr.h>
 #include <metrics/frequency/imc/intel_haswell.h>
 #include <common/hardware/hardware_info.h>
 
@@ -102,7 +102,7 @@ state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model
 	{
 		_fds[i_socket] = -1;
 
-		if ((r = msr_open(i_cpu, &_fds[i_socket])) != EAR_SUCCESS)
+		if ((r = omsr_open(i_cpu, &_fds[i_socket])) != EAR_SUCCESS)
 		{
 			frequency_uncore_dispose();
 			return r;
@@ -126,7 +126,7 @@ state_t frequency_uncore_dispose()
 	}
 
 	for (i = 0; i < _cpus_num; ++i) {
-		msr_close(&_fds[i]);
+		omsr_close(&_fds[i]);
 	}
 
 	free(_clocks_start);
@@ -154,7 +154,7 @@ state_t frequency_uncore_counters_start()
 	for (i = 0; i < _cpus_num; ++i)
 	{
 		// Read
-		if ((r = msr_read(&_fds[i], &_clocks_start[i], sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
+		if ((r = omsr_read(&_fds[i], &_clocks_start[i], sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
 			return r;
 		}
 		// Start
@@ -187,7 +187,7 @@ state_t frequency_uncore_counters_stop(uint64_t *buffer)
 			return r;
 		}
 		// Read
-		if ((r = msr_read(&_fds[i], &_clocks_stop[i], sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
+		if ((r = omsr_read(&_fds[i], &_clocks_stop[i], sizeof(uint64_t), _offctr)) != EAR_SUCCESS) {
 			return r;
 		}
 
@@ -240,7 +240,7 @@ state_t frequency_uncore_get_limits(uint32_t *buffer)
 		buffer[j+1] = 0;
 
 		// Read
-		if ((r = msr_read(&_fds[i], &result0, sizeof(uint64_t), _offurl)) != EAR_SUCCESS) {
+		if ((r = omsr_read(&_fds[i], &result0, sizeof(uint64_t), _offurl)) != EAR_SUCCESS) {
 			return r;
 		}
 

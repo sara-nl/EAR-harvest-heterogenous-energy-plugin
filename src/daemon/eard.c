@@ -131,8 +131,13 @@ struct daemon_req req;
 
 int RAPL_counting = 0;
 int eard_must_exit = 0;
+static freq_cpu_t freq_global2;
+static freq_cpu_t freq_global1;
+static freq_cpu_t freq_local2;
+static freq_cpu_t freq_local1;
+freq_cpu_t freq_job2;
+freq_cpu_t freq_job1;
 topology_t node_desc;
-
 
 /* EARD init errors control */
 static uint error_uncore=0;
@@ -402,8 +407,6 @@ void eard_exit(uint restart) {
 	if (state_fail(energy_dispose(&eard_handler_energy))) {
 		error("Error disposing energy for eard");
 	}
-	dispose_uncores();
-	aperf_dispose();
 
 	// Database cache daemon disconnect
 #if USE_EARDB
@@ -419,6 +422,12 @@ void eard_exit(uint restart) {
 		close(ear_fd_req[i]);
 
 	}
+
+	// CPU Frequency
+	freq_cpu_dispose();
+	// RAM Bandwidth
+	dispose_uncores();
+
 	/* Releasing shared memory */
 	settings_conf_shared_area_dispose(dyn_conf_path);
 	resched_shared_area_dispose(resched_path);
@@ -613,8 +622,10 @@ void eard_set_freq(unsigned long new_freq, unsigned long max_freq) {
 	write(ear_fd_ack[freq_req], &ear_ok, sizeof(unsigned long));
 }
 
-int eard_freq(int must_read) {
-	unsigned long ack;
+int eard_freq(int must_read)
+{
+	ulong ack;
+	state_t s;
 
 	if (must_read) {
 		if (read(ear_fd_req[freq_req], &req, sizeof(req)) != sizeof(req))
@@ -630,12 +641,16 @@ int eard_freq(int must_read) {
 			eard_set_freq(req.req_data.req_value, min(eard_max_freq, max_dyn_freq()));
 			break;
 		case START_GET_FREQ:
-			aperf_get_avg_frequency_init_all_cpus();
 			ack = EAR_COM_OK;
+			if (xtate_fail(s, freq_cpu_read(&freq_local1))) {
+				error("when reading CPU local frequency (%d, %s)", s, state_msg);
+			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case END_GET_FREQ:
-			ack = aperf_get_avg_frequency_end_all_cpus();
+			if (xtate_fail(s, freq_cpu_read_diff(&freq_local2, &freq_local1, NULL, &ack))) {
+				error("when reading CPU local frequency (%d, %s)", s, state_msg);
+			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case SET_TURBO:
@@ -651,12 +666,16 @@ int eard_freq(int must_read) {
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case START_APP_COMP_FREQ:
-			aperf_get_global_avg_frequency_init_all_cpus();
 			ack = EAR_COM_OK;
+			if (xtate_fail(s, freq_cpu_read(&freq_global1))) {
+				error("when reading CPU global frequency (%d, %s)", s, state_msg);
+			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case END_APP_COMP_FREQ:
-			ack = aperf_get_global_avg_frequency_end_all_cpus();
+			if (xtate_fail(s, freq_cpu_read_diff(&freq_global2, &freq_global1, NULL, &ack))) {
+				error("when reading CPU global frequency (%d, %s)", s, state_msg);
+			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 
@@ -1147,37 +1166,40 @@ int main(int argc, char *argv[]) {
 	verbose(0,"Executed in node name %s", nodename);
 
 	/** CONFIGURATION **/
-        int node_size;
-        state_t s;
+	int node_size;
+	state_t s;
 
-				init_eard_rt_log();
-				log_report_eard_min_interval(MIN_INTERVAL_RT_ERROR);
-				verbose(0,"Reading hardware topology");
-        /* We initialize topology */
-        s = hardware_gettopology(&node_desc);
-        node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
-        if (state_fail(s) || node_size <= 0) {
-                error("topology information can't be initialized (%d)", s);
-                _exit(1);
-        }
-				num_packs=detect_packages(NULL);
-				if (num_packs==0) error("Num packages cannot be detected");
+	init_eard_rt_log();
+	log_report_eard_min_interval(MIN_INTERVAL_RT_ERROR);
+	verbose(0,"Reading hardware topology");
 
-				verbose(0,"Topology detected: packages %d Sockets %d, cores_per_sockets %d threads %d",
-					num_packs,node_desc.sockets,node_desc.cores,node_desc.threads);
-				verbose(0,"Initializing frequency list");
-				values_rapl=(unsigned long long*)calloc(num_packs*RAPL_POWER_EVS,sizeof(unsigned long long));
-				if (values_rapl==NULL) error("values_rapl returns NULL in eard initialization");
+	/* We initialize topology */
+	s = topology_init(&node_desc);
+	node_size = node_desc.core_count;
+	num_packs = node_desc.socket_count;
 
-        /* We initialize frecuency */
-        if (frequency_init(node_size) < 0) {
-                error("frequency information can't be initialized");
-                _exit(1);
-        }
+	if (state_fail(s) || node_size <= 0 || num_packs <= 0) {
+		error("topology information can't be initialized (%d)", s);
+		_exit(1);
+	}
+
+	verbose(0,"Topology detected: sockets %d, cores %d, threads %d",
+			node_desc.socket_count, node_desc.core_count, node_desc.thread_count);
+
+	//
+	verbose(0,"Initializing frequency list");
+	values_rapl=(unsigned long long*)calloc(num_packs*RAPL_POWER_EVS,sizeof(unsigned long long));
+	if (values_rapl==NULL) error("values_rapl returns NULL in eard initialization");
+
+	/* We initialize frecuency */
+	if (frequency_init(node_size) < 0) {
+			error("frequency information can't be initialized");
+			_exit(1);
+	}
 
 
 
-			verbose(0,"Reading ear.conf configuration");
+	verbose(0,"Reading ear.conf configuration");
 	// We read the cluster configuration and sets default values in the shared memory
 	if (get_ear_conf_path(my_ear_conf_path) == EAR_ERROR) {
 		error("Error opening ear.conf file, not available at regular paths ($EAR_ETC/ear/ear.conf)");
@@ -1315,11 +1337,14 @@ int main(int argc, char *argv[]) {
 	eard_max_freq = ear_node_freq;
 	verbose(VCONF, "Default max frequency defined to %lu", eard_max_freq);
 
-	// Aperf (later on inside frequency_init(), but no more
-	uint num_cpus = frequency_get_num_online_cpus();
-	uint max_freq = frequency_get_nominal_freq();
-	aperf_init_all_cpus(num_cpus, max_freq);
-
+	// CPU Frequency
+	freq_cpu_init(&node_desc);
+	freq_cpu_data_alloc(&freq_global2, NULL, NULL);
+	freq_cpu_data_alloc(&freq_global1, NULL, NULL);
+	freq_cpu_data_alloc(&freq_local2, NULL, NULL);
+	freq_cpu_data_alloc(&freq_local1, NULL, NULL);
+	freq_cpu_data_alloc(&freq_job2, NULL, NULL);
+	freq_cpu_data_alloc(&freq_job1, NULL, NULL);
 
 #if EARD_LOCK
 	eard_lock(ear_tmp);

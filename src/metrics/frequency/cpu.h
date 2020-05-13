@@ -27,27 +27,37 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_MSR_H
-#define EAR_MSR_H
+#ifndef METRICS_FREQUENCY_CPU_H
+#define METRICS_FREQUENCY_CPU_H
 
-#include <unistd.h>
 #include <common/types.h>
 #include <common/states.h>
+#include <common/hardware/topology.h>
 
-#define msr_clean(fd) \
-	*fd = -1
+typedef struct freq_cpu_s {
+	void *data;
+} freq_cpu_t;
 
-/* */
-state_t msr_open(uint cpu);
+state_t freq_cpu_init(topology_t *tp);
 
-/* */
-state_t msr_close(uint cpu);
+state_t freq_cpu_dispose();
 
-/* */
-state_t msr_read(uint cpu, void *buffer, size_t count, off_t offset);
+state_t freq_cpu_read(freq_cpu_t *ef);
 
-/* */
-state_t msr_write(uint cpu, const void *buffer, size_t count, off_t offset);
+state_t freq_cpu_read_diff(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, ulong *average);
 
+state_t freq_cpu_read_copy(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, ulong *average);
 
-#endif //EAR_MSR_H
+state_t freq_cpu_data_alloc(freq_cpu_t *ef, ulong *freqs[], ulong *freqs_count);
+
+state_t freq_cpu_data_count(uint *count);
+
+state_t freq_cpu_data_copy(freq_cpu_t *ef_dst, freq_cpu_t *ef_src);
+
+state_t freq_cpu_data_free(freq_cpu_t *ef, ulong *freqs[]);
+
+state_t freq_cpu_data_diff(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, ulong *average);
+
+state_t freq_cpu_data_print(ulong *freqs, ulong *average);
+
+#endif //EAR_PRIVATE_CACHE_H

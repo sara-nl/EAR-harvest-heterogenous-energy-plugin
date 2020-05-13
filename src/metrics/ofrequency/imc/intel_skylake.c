@@ -45,7 +45,7 @@ state_t r;
 int fd=-1;
 
 /* Open*/
-if ((r = msr_open(cpu, &fd)) != EAR_SUCCESS) {
+if ((r = omsr_open(cpu, &fd)) != EAR_SUCCESS) {
 return r;
 }
 
@@ -68,11 +68,11 @@ state_t r;
 int fd = -1;
 
 /* Open */
-if ((r = msr_open(cpu, &fd)) != EAR_SUCCESS) {
+if ((r = omsr_open(cpu, &fd)) != EAR_SUCCESS) {
 return r;
 }
 
-if ((r = msr_read(&fd, &snap->freq, sizeof(uint64_t), U_MSR_PMON_FIXED_CTR_OFF)) != EAR_SUCCESS) {
+if ((r = omsr_read(&fd, &snap->freq, sizeof(uint64_t), U_MSR_PMON_FIXED_CTR_OFF)) != EAR_SUCCESS) {
 return r;
 }
 

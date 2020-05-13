@@ -66,6 +66,22 @@ char *state_msg;
 #define xtate_fail(s, function) \
 	(s = function) != EAR_SUCCESS
 
+struct generr_s {
+	char *api_undefined;
+	char *api_incompatible;
+	char *api_uninitialized;
+	char *alloc_error;
+	char *input_null;
+	char *input_uninitialized;
+} Generr __attribute__((weak)) = {
+	.api_undefined = "the API is undefined",
+	.api_incompatible = "the current hardware is not supported by the API",
+	.api_uninitialized = "the API is not initialized",
+	.alloc_error = "error ocurred during allocation",
+	.input_null = "an argument of the input is NULL",
+	.input_uninitialized = "an argument is not initialized",
+};
+
 /*
  *
  * Legacy
