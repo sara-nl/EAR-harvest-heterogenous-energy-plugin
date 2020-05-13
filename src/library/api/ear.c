@@ -26,6 +26,7 @@
  *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *	The GNU LEsser General Public License is contained in the file COPYING	
  */
+#define _GNU_SOURCE
 
 #if MPI
 #include <mpi.h>
@@ -40,18 +41,24 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <papi.h>
-#include <common/config.h>
-#include <common/states.h>
-#include <common/environment.h>
-#define _GNU_SOURCE
 #include <pthread.h>
+#include <papi.h>
+
+
 //#define SHOW_DEBUGS 0
+#include <common/config.h>
+#include <common/environment.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <common/types/version.h>
+#include <common/types/application.h>
+#include <common/hardware/frequency.h>
+#include <library/api/mpi.h>
+
 #include <library/common/externs_alloc.h>
 #include <library/common/global_comm.h>
+#include <library/common/library_shared_data.h>
+
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
@@ -59,18 +66,12 @@
 #include <library/models/models.h>
 #include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
-#include <library/mpi_intercept/ear_api.h>
-#if MPI
-#include <library/mpi_intercept/MPI_types.h>
-#include <library/mpi_intercept/MPI_calls_coded.h>
-#endif
-#include <library/common/library_shared_data.h>
-#include <common/hardware/frequency.h>
-#include <metrics/common/papi.h>
+
 #include <daemon/eard_api.h>
 #include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
 
+#include <metrics/common/papi.h>
 
 // Statics
 #define BUFFSIZE 			128
@@ -511,8 +512,6 @@ void ear_init()
 	state_t st;
 	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
 	architecture_t arch_desc;
-
-
 
 	// MPI
 	#if MPI
@@ -1192,7 +1191,7 @@ void ear_new_iteration(unsigned long loop_id)
 /**************** New for iterative code ********************/
 void *earl_periodic_actions(void *no_arg)
 {
-		//if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
+		if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
 		if (!my_id) traces_start();
     states_periodic_begin_period(my_id, NULL, 1, 1);
     ear_iterations=0;

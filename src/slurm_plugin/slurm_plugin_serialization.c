@@ -254,7 +254,7 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.comp_moni.cmp);
 	printenv_agnostic(sp, Var.comp_test.cmp);
 	printenv_agnostic(sp, Var.comp_verb.cmp);
-	printenv_agnostic(sp, Var.hack_libr.hck);
+	printenv_agnostic(sp, Var.hack_load.hck);
 
 	printenv_agnostic(sp, Var.verbose.loc);
 	printenv_agnostic(sp, Var.policy.loc);
@@ -543,6 +543,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	 * out of APP serialization.
 	 */ 	
 	repenv_agnostic(sp, Var.path_temp.rem, Var.path_temp.ear);
+	repenv_agnostic(sp, Var.path_inst.rem, Var.path_inst.ear);
 
 	/*
 	 * Clean
@@ -603,19 +604,11 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	 * LD_PRELOAD
 	 */
 	#if !EAR_CORE
-	char *lib_path = MPI_C_LIB_PATH;
-	char ext1[64];
-	char ext2[64];
+	char *lib_path = REL_PATH_LOAD;
 
 	buffer1[0] = '\0';
 	buffer2[0] = '\0';
 	
-	if(getenv_agnostic(sp, Var.version.loc, ext1, 64)) {
-		snprintf(ext2, 64, "%s.so", ext1);
-	} else {
-		snprintf(ext2, 64, "so");
-	}
-
 	// Appending libraries to LD_PRELOAD
 	apenv_agnostic(buffer2, sd->pack.path_inst, 64);
 
@@ -626,14 +619,17 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	const int m = SZ_BUFF_EXTRA;
 	int n;
 	
-	n = snprintf(      0,       0, "%s/%s.%s", buffer2, lib_path, ext2);
-	n = snprintf(buffer1, t(m, n), "%s/%s.%s", buffer2, lib_path, ext2);
+	n = snprintf(      0,       0, "%s/%s", buffer2, lib_path);
+	n = snprintf(buffer1, t(m, n), "%s/%s", buffer2, lib_path);
 
-	if (file_is_regular(buffer1))
+	plug_verbose(sp, 2, "trying to load file '%s'", buffer1);
+
+	//if (file_is_regular(buffer1))
+	if (access(buffer1, X_OK) == 0)
 	{
 		char *ld_buf = sd->job.user.env.ld_preload;
 
-		if (getenv_agnostic(sp, Var.hack_libr.hck, buffer2, m)) {
+		if (getenv_agnostic(sp, Var.hack_load.hck, buffer2, m)) {
 			n = snprintf(      0,       0, "%s", buffer2);
 			n = snprintf(buffer1, t(m, n), "%s", buffer2);
 		}

@@ -27,11 +27,28 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef _MPI_TYPES_H_
-#define _MPI_TYPES_H
+#ifndef _EAR_API_H_
+#define _EAR_API_H_
 
-#include <library/mpi_intercept/mpi.h>
+#include <library/api/mpi.h>
+
+/** Initializes all the elements of the library as well as connecting to the daemon. */
+void ear_init();
+
+/** Given the information corresponding a MPI call, creates a DynAIS event
+*   and processes it as well as creating the trace. If the library is in
+*   a learning phase it does nothing. */
+void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest);
+
+/** Finalizes the processes, closing and registering metrics and traces, as well as
+*   closing the connection to the daemon and releasing the memory from DynAIS. */
+void ear_finalize();
+
+/***** API for manual application modification *********/
+void ear_new_iteration(unsigned long loop_id);
+
+void ear_end_loop(unsigned long loop_id);
+
+unsigned long ear_new_loop();
 
 #endif
-
-

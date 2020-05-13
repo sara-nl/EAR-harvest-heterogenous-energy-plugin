@@ -2,13 +2,9 @@ CC           = @CC@
 CC_FLAGS     = @CC_FLAGS@
 MPICC        = @MPICC@
 MPICC_FLAGS  = @MPICC_FLAGS@
+MPI_BASE     = @MPI_DIR@
+MPI_CFLAGS   = @MPI_CPPFLAGS@
 MPI_VERSION  = @MPI_VERSION@
-ROOTDIR      = $(shell pwd)
-SRCDIR       = $(ROOTDIR)/src
-DESTDIR      = @prefix@
-ETCDIR       = @sysconfdir@
-TMPDIR       = @localstatedir@
-DOCDIR       = @docdir@
 PAPI_BASE    = @PAPI_DIR@
 PAPI_CFLAGS  = @PAPI_CPPFLAGS@
 PAPI_LDFLAGS = @PAPI_LDFLAGS@ @PAPI_LIBS@
@@ -20,46 +16,25 @@ SLURM_CFLAGS = @SLURM_CPPFLAGS@
 DB_BASE      = @DB_DIR@
 DB_CFLAGS    = @DB_CPPFLAGS@
 DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
+
+ROOTDIR      = $(shell pwd)
+SRCDIR       = $(ROOTDIR)/src
+DESTDIR      = @prefix@
+ETCDIR       = @sysconfdir@
+TMPDIR       = @localstatedir@
+DOCDIR       = @docdir@
+
+FEAT_AVX512  = @FEAT_AVX512@
+VER_MAJOR    = 3
+VER_MINOR    = 1
 CHOWN_USR    = @USER@
 CHOWN_GRP    = @GROUP@
 CONSTANTS    = -DSEC_KEY=10001
 REPLACE      =
-FEAT_AVX512  = @FEAT_AVX512@
-FEAT_FORT    = @FEAT_FORT@
 
-######## VARS
+######## EXPORTS
 
-export CC
-export CC_FLAGS
-export MPICC
-export MPICC_FLAGS
-export MPI_VERSION
-export ROOTDIR
-export SRCDIR
-export DESTDIR
-export ETCDIR
-export TMPDIR
-export DOCDIR
-export PAPI_BASE
-export PAPI_CFLAGS
-export PAPI_LDFLAGS
-export GSL_BASE
-export GSL_CFLAGS
-export GSL_LDFLAGS
-export SLURM_BASE
-export SLURM_CFLAGS
-export DB_BASE
-export DB_CFLAGS
-export DB_LDFLAGS
-export CHOWN_USR
-export CHOWN_GRP
-export CONSTANTS
-export REPLACE
-export FEAT_AVX512
-export FEAT_FORT
-export VER_MAJOR
-export VER_MINOR
-
+include ./Makefile.exports
 
 ######## RULES
 

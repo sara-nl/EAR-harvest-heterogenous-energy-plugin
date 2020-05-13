@@ -1,3 +1,4 @@
+
 /**************************************************************
 *	Energy Aware Runtime (EAR)
 *	This program is part of the Energy Aware Runtime (EAR).
@@ -27,19 +28,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_MPI_H
-#define LIBRARY_MPI_H
+#ifndef COMMON_TYPES_H
+#define COMMON_TYPES_H
 
-#include <mpi.h>
+#include <common/types/generic.h>
 
-#ifndef MPI3_CONST
-#  if MPI_VERSION >= 3
-#    define MPI3_CONST const
-#  else
-#    define MPI3_CONST
-#  endif
-#endif
-
-#define p2i unsigned long
-
-#endif //LIBRARY_MPI_H
+#endif //COMMON_TYPES_H

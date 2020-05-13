@@ -1,4 +1,4 @@
-######## FILES
+CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
 
 OBJS = \
     global_comm.o\

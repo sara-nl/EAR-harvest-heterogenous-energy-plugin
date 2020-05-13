@@ -1,7 +1,10 @@
+CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
+
 ######## FILES
 
 poli_OBJS = \
-       policy.o
+    policy.o
+
 modl_BINS = \
        min_time.so  \
        min_energy.so \
@@ -38,10 +41,10 @@ monitoring_eard.o:monitoring_eard.c
 	$(CC) $(CC_FLAGS)  $(CFLAGS) -c $<
 
 %.o: %.c 
-	$(MPICC) $(MPICC_FLAGS)  $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 %.so: %.o 
-	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 	
+	$(CC) -shared -o $@ $<
 
 min_energy_eard.so:min_energy_eard.o $(SRCDIR)/common/libcommon.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@   $(SRCDIR)/common/libcommon.a

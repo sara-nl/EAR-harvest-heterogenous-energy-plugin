@@ -30,11 +30,11 @@
 #ifndef EAR_SLURM_PLUGIN_H
 #define EAR_SLURM_PLUGIN_H
 
+#include <common/types.h>
 #include <common/sizes.h>
-#include <common/config.h>
 #include <common/output/verbose.h>
-#include <common/types/generic.h>
 #include <common/types/application.h>
+#include <common/config/config_install.h>
 #include <daemon/eard_rapi.h>
 #include <daemon/shared_configuration.h>
 #include <global_manager/eargm_rapi.h>

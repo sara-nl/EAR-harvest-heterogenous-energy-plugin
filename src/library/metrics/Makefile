@@ -1,7 +1,11 @@
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) -O2 -fPIC
+
+########
+
 all: metrics.o
 
-metrics.o: metrics.c metrics.h
-	$(MPICC) $(CC_FLAGS) $(CFLAGS) -c metrics.c
+%.o: %.c %.h
+	$(MPICC) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 

@@ -27,17 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef COMMON_SYSTEM_SYMPLUG_H
-#define COMMON_SYSTEM_SYMPLUG_H
+#ifndef COMMON_SYSTEM_ATTRIBUTES_H
+#define COMMON_SYSTEM_ATTRIBUTES_H
 
-#include <dlfcn.h>
-#include <common/types.h>
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/attributes.h>
+#define attr2(a1, a2)	__attribute__ ((a1, a2))
+#define attr(a)			__attribute__ ((a))
+#define attr_hidden		visibility("hidden")
+#define attr_weak		weak
 
-state_t symplug_join(void *handle, void *calls[], const char *names[], uint n);
+//#define ATTR_PROTECTED	__attribute__ ((visibility ("protected")))
+//#define ATTR_INTERNAL 	__attribute__ ((visibility ("internal")))
+//#define ATTR_HIDDEN		__attribute__ ((visibility ("hidden")))
+//#define ATTR_WEAK		__attribute__((weak))
 
-state_t symplug_open(char *path, void *calls[], const char *names[], uint n);
-
-#endif //COMMON_SYSTEM_SYMPLUG_H
+#endif //COMMON_SYSTEM_ATTRIBUTES_H

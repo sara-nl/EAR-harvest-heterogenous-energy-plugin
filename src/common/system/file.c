@@ -86,7 +86,9 @@ void file_unlock_master(int fd,char *lock_file_name)
 int file_is_regular(const char *path)
 {
 	struct stat path_stat;
-	stat(path, &path_stat);
+	int s = stat(path, &path_stat);
+fprintf(stderr, "LOOKING AT %s => %d (%d)\n", path, S_ISREG(path_stat.st_mode), s);
+
 	return S_ISREG(path_stat.st_mode);
 }
 

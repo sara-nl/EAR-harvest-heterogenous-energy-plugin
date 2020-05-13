@@ -1,10 +1,12 @@
+CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) -O2 -fPIC
+
 ######## FILES
 
-modl_OBJS = models.o \
-       basic_model.o \
-			avx512_model.o
-
-modl_BINS = basic_model.so avx512_model.so
+modl_OBJS = \
+    models.o
+modl_BINS = \
+    basic_model.so \
+    avx512_model.so
 modl_PATH = $(DESTDIR)/lib/plugins/models
 modl_PERM = 0775
 
@@ -13,11 +15,11 @@ modl_PERM = 0775
 all: $(modl_OBJS) $(modl_BINS)
 
 %.o: %.c %.h
-	$(MPICC) -I${SRCDIR} $(MPICC_FLAGS) $(CFLAGS) -c $<
+	$(MPICC) $(CFLAGS) -c $<
+
 
 %.so: %.o
-	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@  
-
+	$(CC) -shared -o $@ $<
 
 ######## OPTIONS 
 
