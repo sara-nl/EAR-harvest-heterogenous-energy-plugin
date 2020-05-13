@@ -1337,20 +1337,14 @@ int main(int argc, char *argv[]) {
 	eard_max_freq = ear_node_freq;
 	verbose(VCONF, "Default max frequency defined to %lu", eard_max_freq);
 
-#define xtate_assert(s, f, consecuence) \
-	if (xtate_fail(s, f)) { \
-		error(#f " returned %d (%s)", s, state_msg); \
-		consecuence; \
-	}
-
 	// CPU Frequency
-	xtate_assert(s, freq_cpu_init(&node_desc), _exit(0));
-	xtate_assert(s, freq_cpu_data_alloc(&freq_global2, NULL, NULL), _exit(0));
-	xtate_assert(s, freq_cpu_data_alloc(&freq_global1, NULL, NULL), _exit(0);
-	xtate_assert(s, freq_cpu_data_alloc(&freq_local2, NULL, NULL)), _exit(0);
-	xtate_assert(s, freq_cpu_data_alloc(&freq_local1, NULL, NULL)), _exit(0);
-	xtate_assert(s, freq_cpu_data_alloc(&freq_job2, NULL, NULL)), _exit(0);
-	xtate_assert(s, freq_cpu_data_alloc(&freq_job1, NULL, NULL)), _exit(0);
+	state_assert(s, freq_cpu_init(&node_desc), _exit(0));
+	state_assert(s, freq_cpu_data_alloc(&freq_global2, NULL, NULL), _exit(0));
+	state_assert(s, freq_cpu_data_alloc(&freq_global1, NULL, NULL), _exit(0));
+	state_assert(s, freq_cpu_data_alloc(&freq_local2, NULL, NULL), _exit(0));
+	state_assert(s, freq_cpu_data_alloc(&freq_local1, NULL, NULL), _exit(0));
+	state_assert(s, freq_cpu_data_alloc(&freq_job2, NULL, NULL), _exit(0));
+	state_assert(s, freq_cpu_data_alloc(&freq_job1, NULL, NULL), _exit(0));
 
 #if EARD_LOCK
 	eard_lock(ear_tmp);

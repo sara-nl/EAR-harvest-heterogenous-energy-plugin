@@ -36,7 +36,7 @@
 #define _NODE_METRICS_H_
 
 #include <common/types/generic.h>
-
+#include <common/hardware/topology.h>
 
 typedef struct nm{
 	uint ncpus;
@@ -47,6 +47,7 @@ typedef struct nm{
 
 typedef struct node_metrics{
     ulong avg_cpu_freq;
+	ulong avg_imc_freq;
     uint64_t *uncore_freq;
     unsigned long long *temp;  
 }nm_data_t;

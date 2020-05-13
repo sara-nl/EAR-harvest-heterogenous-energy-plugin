@@ -226,7 +226,9 @@ int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 		temp_total+=nm->temp[i];
 	}
 	temp_total=temp_total/id->nsockets;
-	sprintf(msg," avg_cpu_freq %.2lf uncore_freq=%llu temp=%llu",(double)nm->avg_cpu_freq/(double)1000000,(long long unsigned int)uncore_total,temp_total);
+	sprintf(msg," avg_cpu_freq=%.2lf, avg_imc_freq=%.2lf temp=%llu",
+		(double)nm->avg_cpu_freq/(double)1000000, (double)nm->avg_imc_freq/(double)1000000, temp_total);
+
 	verbose(VNODEPMON,msg);
 	return EAR_SUCCESS;
 }

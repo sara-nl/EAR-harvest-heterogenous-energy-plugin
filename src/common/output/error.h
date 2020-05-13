@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <syslog.h>
+#include <common/colors.h>
 #include <common/output/timestamp.h>
 #include <common/output/output_conf.h>
 
@@ -49,7 +50,7 @@ int error_enabled	__attribute__((weak)) = 1;
 	if (error_enabled) \
 	{ \
 		timestamp(error_channel); \
-		dprintf(error_channel, "ERROR: " __VA_ARGS__); \
+		dprintf(error_channel, COL_RED "ERROR" COL_CLR ", " __VA_ARGS__); \
 		dprintf(error_channel, "\n"); \
 	}
 #else
@@ -58,9 +59,9 @@ int error_enabled	__attribute__((weak)) = 1;
 
 // Log
 #if SHOW_LOGS
-#define log_write(...) 		syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__);
-#define log_open(package)	openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
-#define log_close()		closelog();
+#define log_write(...) syslog(LOG_DAEMON|LOG_ERR, "LOG: " __VA_ARGS__);
+#define log_open(package) openlog(package, LOG_PID|LOG_PERROR, LOG_DAEMON);
+#define log_close() closelog();
 #else
 #define log_write(...)
 #define log_open(package);

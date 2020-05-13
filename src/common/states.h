@@ -31,6 +31,7 @@
 #define STATES_H
 
 #include <errno.h>
+#include <common/output/error.h>
 
 /* error definitions */
 #define EAR_SUCCESS              0
@@ -65,6 +66,12 @@ char *state_msg;
 
 #define xtate_fail(s, function) \
 	(s = function) != EAR_SUCCESS
+
+#define state_assert(s, func, cons) \
+    if (xtate_fail(s, func)) { \
+        error(#func " returned %d (%s)\n", s, state_msg); \
+        cons; \
+    }
 
 struct generr_s {
 	char *api_undefined;
