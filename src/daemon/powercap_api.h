@@ -27,16 +27,14 @@
  * * The GNU LEsser General Public License is contained in the file COPYING  
  * */
 
-state_t hw_disable();
-state_t hw_enable();
-state_t hw_set_powercap_value(uint pid,uint domain,uint limit);
-state_t hw_get_powercap_value(uint pid,uint *powercap);
-uint hw_is_powercap_policy_enabled(uint pid);
-void hw_print_powercap_value(int fd);
-void hw_powercap_to_str(char *b);
-void hw_set_status(uint status);
-void hw_stop_powercap();
-void hw_start_powercap();
-uint hw_get_powercap_stragetgy();
+state_t disable();
+state_t enable();
+state_t set_powercap_value(uint pid,uint domain,uint limit);
+state_t get_powercap_value(uint pid,uint *powercap);
+uint is_powercap_policy_enabled(uint pid);
+void print_powercap_value(int fd);
+void powercap_to_str(char *b);
+void set_status(uint status);
+uint get_powercap_stragetgy();
 
 

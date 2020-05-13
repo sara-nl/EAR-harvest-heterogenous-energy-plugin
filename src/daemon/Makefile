@@ -18,8 +18,6 @@ eard_OBJS = \
     power_monitor.o \
 		powercap_status.o \
 		power_mgt.o \
-		inm.o \
-		pc_dvfs.o \
 	  app_mgt.o \
 	  powercap.o \
     shared_configuration.o \
@@ -56,9 +54,6 @@ dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
 	$(CC) $(CFLAGS) -c $<
 
 shared_configuration.o: shared_configuration.c shared_configuration.h
-	$(CC) $(CFLAGS) -fPIC -c $<
-
-inm.o:inm.c inm.h
 	$(CC) $(CFLAGS) -fPIC -c $<
 
 eard_api.o: eard_api.c eard_api.h

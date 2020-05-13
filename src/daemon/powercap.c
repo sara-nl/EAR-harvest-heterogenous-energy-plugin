@@ -74,6 +74,8 @@ static uint pc_strategy;
 
 #define min(a,b) ((a<b)?a:b)
 
+
+
 void get_date_str(char *msg,int size)
 {
 	struct tm *current_t;

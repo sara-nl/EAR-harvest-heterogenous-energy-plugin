@@ -8,7 +8,6 @@ poli_OBJS = \
 modl_BINS = \
        min_time.so  \
        min_energy.so \
-       min_energy2.so \
        min_time_no_models.so \
        min_energy_no_models.so \
        monitoring.so \

@@ -38,46 +38,72 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+#include <common/system/symplug.h>
+#include <common/types/configuration/cluster_conf.h>
 #include <daemon/power_mgt.h>
-//#define INM
-#define DVFS
-#ifdef INM
-#include <daemon/inm.h>
-#endif
-#ifdef DVFS
-#include <daemon/pc_dvfs.h>
-#endif
 
 #define SHOW_DEBUGS 1
 
+typedef struct powercap_symbols {
+  state_t (*enable)        ();
+  state_t (*disable)       ();
+  state_t (*set_powercap_value)(uint pid,uint domain,uint limit);
+  state_t (*get_powercap_value)(uint pid,uint *powercap);
+  uint    (*is_powercap_policy_enabled)(uint pid);
+  void    (*set_status)(uint status);
+	void		(*set_pc_mode)(uint mode);
+  uint    (*get_powercap_strategy)();
+  void    (*powercap_to_str)(char *b);
+	void 		(*print_powercap_value)(int fd);
+	
+} powercapsym_t;
 
+static powercapsym_t pcsyms_fun;
+static void *pcsyms_obj = NULL;
+const int   pcsyms_n = 10;
+extern cluster_conf_t my_cluster_conf;
 
+const char     *pcsyms_names[] ={
+  "enable",
+  "disable",
+  "set_powercap_value",
+  "get_get_powercap_value",
+  "is_powercap_policy_enabled",
+  "powercap_to_str",
+  "set_status",
+	"set_pc_mode",
+  "get_powercap_stragetgy",
+	"print_powercap_value"
+};
+
+#define freturn(call, ...) ((call==NULL)?EAR_UNDEFINED:call (__VA_ARGS__));
+
+#define DEFAULT_PC_PLUGIN_NAME "pc_dvfs"
+static uint pc_plugin_loaded=0;
 
 /* This function will load any plugin , detect components etc . It must me executed just once */
 state_t pmgt_init()
 {
-	return EAR_SUCCESS;
+	state_t ret;
+	char basic_path[SZ_PATH_INCOMPLETE];
+	char *obj_path = getenv("EAR_POWERCAP_POLICY");
+  if (obj_path==NULL){
+    	sprintf(basic_path,"%s/powercap/%s.so",my_cluster_conf.install.dir_plug,DEFAULT_PC_PLUGIN_NAME);
+    	obj_path=basic_path;
+	}
+	ret=symplug_open(obj_path, (void **)&pcsyms_fun, pcsyms_names, pcsyms_n);
+	return ret;
 }
 state_t pmgt_enable(pwr_mgt_t *phandler)
 {
 	state_t ret;
-	#ifdef INM
-	ret=inm_enable();
-	#endif
-	#ifdef DVFS
-	ret=dvfs_enable();
-	#endif
+	ret=freturn(pcsyms_fun.enable);
 	return ret;
 }
 state_t pmgt_disable(pwr_mgt_t *phandler)
 {
 	state_t ret;
-#ifdef INM
-	ret=inm_disable();
-#endif
-#ifdef DVFS
-	ret=dvfs_disable();
-#endif
+	ret=freturn(pcsyms_fun.disable);
 	return ret;
 }
 state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
@@ -87,89 +113,46 @@ state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
 	return EAR_ERROR;
 }
 
-#ifdef INM
-state_t pmgt_disable_policy(pwr_mgt_t *phandler,uint pid)
-{
-	return inm_disable_powercap_policy(pid);
-}
-
-state_t pmgt_disable_policies(pwr_mgt_t *phandler)
-{
-	return inm_disable_powercap_policies();	
-}
-#endif
 state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,uint limit)
 {
-#ifdef INM
-	return inm_set_powercap_value(pid,domain,limit);
-#endif
-#ifdef DVFS
-	return dvfs_set_powercap_value(pid,domain,limit);
-#endif
+	state_t ret;
+	ret=freturn(pcsyms_fun.set_powercap_value,pid,domain,limit);
+	return ret;
 }
 state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap)
 {
-#ifdef INM
-	return inm_get_powercap_value(pid,powercap);
-#endif
-#ifdef DVFS
-	return dvfs_get_powercap_value(pid,powercap);
-#endif
+	state_t ret;
+	ret=freturn(pcsyms_fun.get_powercap_value,pid,powercap);
+	return ret;
 }
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid)
 {
-#ifdef INM
-	return inm_is_powercap_policy_enabled(pid);
-#endif
-#ifdef DVFS
-	return dvfs_is_powercap_policy_enabled(pid);
-#endif
+	uint ret;
+	ret=freturn(pcsyms_fun.is_powercap_policy_enabled,pid);
+	return ret;
 }
 void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd)
 {
-#ifdef INM
-	inm_print_powercap_value(fd);
-#endif
-#ifdef DVFS
-	dvfs_print_powercap_value(fd);
-#endif
+	freturn(pcsyms_fun.print_powercap_value,fd);
 }
 void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b)
 {
-#ifdef INM
-	inm_powercap_to_str(b);
-#endif
-#ifdef DVFS
-	dvfs_powercap_to_str(b);
-#endif
+	freturn(pcsyms_fun.powercap_to_str,b);
 }
 
 void pmgt_set_status(pwr_mgt_t *phandler,uint status)
 {
-#ifdef INM
-	inm_set_status(status);
-#endif
-#ifdef DVFS
-	dvfs_set_status(status);
-#endif
+	freturn(pcsyms_fun.set_status,status);
 }
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler)
 {
-#ifdef INM
-	return inm_get_powercap_strategy();
-#endif
-#ifdef DVFS
-	return dvfs_get_powercap_strategy();
-#endif
+	uint ret;
+	ret=freturn(pcsyms_fun.get_powercap_strategy);
+	return ret;
 }
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode)
 {
-#ifdef INM
-	inm_set_pc_mode(mode);
-#endif
-#ifdef DVFS
-	dvfs_set_pc_mode(mode);
-#endif
+	freturn(pcsyms_fun.set_pc_mode,mode);
 }
 
 

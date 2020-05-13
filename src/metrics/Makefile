@@ -33,9 +33,8 @@ mets_OBJS = \
     $(SRCDIR)/metrics/frequency/imc/intel_haswell.o \
     $(SRCDIR)/metrics/stalls/stalls.o \
     $(SRCDIR)/metrics/stalls/cpu/papi.o \
-    $(SRCDIR)/metrics/temperature/temperature.o
+    $(SRCDIR)/metrics/temperature/temperature.o 
 
-# $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
 
 ######## RULES
 
@@ -69,7 +68,8 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'frequency'    $* || exit
 	@ $(MAKE) -C 'stalls'       $* || exit
 	@ $(MAKE) -C 'accumulators' $* || exit
-	@ $(MAKE) -C 'temperature' $* || exit
+	@ $(MAKE) -C 'temperature'  $* || exit
+	@ $(MAKE) -C 'powercap'     $* || exit
 
 ######## DEPENDENCIES
 
