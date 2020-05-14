@@ -34,7 +34,7 @@
 #include <common/config.h>
 #include <common/types/projection.h>
 #include <common/system/symplug.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/hardware/architecture.h>
@@ -70,7 +70,7 @@ const char     *models_syms_nam[] = {
 
 static state_t models_load(char *obj_path)
 {
-	return symplug_open_lazy(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
+	return symplug_open(obj_path,(void **) &models_syms_fun, models_syms_nam,  models_funcs_n);
 }
 
 state_t projections_init(uint user_type, conf_install_t *data, architecture_t * arch_desc)

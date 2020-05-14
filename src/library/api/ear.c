@@ -45,7 +45,7 @@
 #include <papi.h>
 
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/config.h>
 #include <common/colors.h>
 #include <common/environment.h>
@@ -718,6 +718,7 @@ void ear_init()
 	init_power_policy(system_conf,resched_conf);
 	debug("init_power_models");
 	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
+	if (masters_info.my_master_rank>=0) verbose(1,"Policies and models initialized");	
 
 	if (ext_def_freq==0){
 		EAR_default_frequency=system_conf->def_freq;

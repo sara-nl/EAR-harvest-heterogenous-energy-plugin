@@ -27,6 +27,8 @@ eard_modl_BINS = \
 eard_modl_PATH = $(DESTDIR)/lib/plugins/eard_policies
 eard_modl_PERM = 0775
 
+deps= $(SRCDIR)/common/libcommon.a $(SRCDIR)/daemon/powercap_status.o
+
 ########
 
 all: $(poli_OBJS) $(modl_BINS) $(eard_modl_BINS)
@@ -42,8 +44,8 @@ monitoring_eard.o:monitoring_eard.c
 %.o: %.c 
 	$(CC) $(CFLAGS) -c $<
 
-%.so: %.o 
-	$(CC) -shared -o $@ $<
+%.so: %.o $(deps)
+	$(CC) -shared -o $@ $< 
 
 min_energy_eard.so:min_energy_eard.o $(SRCDIR)/common/libcommon.a
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@   $(SRCDIR)/common/libcommon.a

@@ -44,7 +44,7 @@
 
 
 #ifdef EARL_RESEARCH
-extern unsigned long ext_def_freq;
+unsigned long ext_def_freq=0;
 #define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
 #else
 #define DEF_FREQ(f) f

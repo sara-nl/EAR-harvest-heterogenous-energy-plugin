@@ -60,8 +60,11 @@ state_t init_power_models(uint user_type,conf_install_t *data,architecture_t *ar
 	state_t st;
 	st=projections_init(user_type,data,arch_desc);
 	ear_models_pstates = arch_desc->pstates;
+	verbose(1,"Projections for %d pstates",arch_desc->pstates);
 	projection_create(arch_desc->pstates);
+	verbose(1,"Projections reset for %d pstates",arch_desc->pstates);
 	projection_reset(arch_desc->pstates);
+	verbose(1,"init_power_models end");
 	return EAR_SUCCESS;
 }
 
