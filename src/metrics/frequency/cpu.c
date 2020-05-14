@@ -93,7 +93,7 @@ state_t freq_cpu_read_copy(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, ulong
 	opreturn(ops.read_copy, ef2, ef1, freqs, average);
 }
 
-state_t freq_cpu_data_alloc(freq_cpu_t *ef, ulong *freqs[], ulong *freqs_count)
+state_t freq_cpu_data_alloc(freq_cpu_t *ef, ulong **freqs, ulong *freqs_count)
 {
 	opreturn(ops.data_alloc, ef, freqs, freqs_count);
 }
@@ -108,7 +108,7 @@ state_t freq_cpu_data_copy(freq_cpu_t *ef_dst, freq_cpu_t *ef_src)
 	opreturn(ops.data_copy, ef_dst, ef_src);
 }
 
-state_t freq_cpu_data_free(freq_cpu_t *ef, ulong *freqs[])
+state_t freq_cpu_data_free(freq_cpu_t *ef, ulong **freqs)
 {
 	opreturn(ops.data_free, ef, freqs);
 }

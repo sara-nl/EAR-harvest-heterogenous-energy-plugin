@@ -48,13 +48,13 @@ state_t freq_cpu_read_diff(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, ulong
 
 state_t freq_cpu_read_copy(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, ulong *average);
 
-state_t freq_cpu_data_alloc(freq_cpu_t *ef, ulong *freqs[], ulong *freqs_count);
+state_t freq_cpu_data_alloc(freq_cpu_t *ef, ulong **freqs, ulong *freqs_count);
 
 state_t freq_cpu_data_count(uint *count);
 
 state_t freq_cpu_data_copy(freq_cpu_t *ef_dst, freq_cpu_t *ef_src);
 
-state_t freq_cpu_data_free(freq_cpu_t *ef, ulong *freqs[]);
+state_t freq_cpu_data_free(freq_cpu_t *ef, ulong **freqs);
 
 state_t freq_cpu_data_diff(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, ulong *average);
 

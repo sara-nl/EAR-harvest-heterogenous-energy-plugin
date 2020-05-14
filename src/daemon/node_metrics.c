@@ -42,19 +42,6 @@
 
 #define NM_CONNECTED	100
 
-static freq_cpu_t freq_period2;
-static freq_cpu_t freq_period1;
-static freq_imc_t freq_perimc2;
-static freq_imc_t freq_perimc1;
-
-/*
-typedef struct node_metrics{
-ulong avg_cpu_freq;
-uint64_t *uncore_freq;
-uint64_t *temp;
-}nm_data_t;
-*/
-
 static int nm_temp_fd[MAX_PACKAGES];
 
 unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
@@ -92,16 +79,6 @@ int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq)
 	id->nsockets=sockets;
 	id->def_f=def_freq;
 
-	// CPU Frequency
-	freq_cpu_init(topo);
-	freq_cpu_data_alloc(&freq_period2, NULL, NULL);
-	freq_cpu_data_alloc(&freq_period1, NULL, NULL);
-
-	// IMC Frequency
-	freq_imc_init(topo);
-	freq_imc_data_alloc(&freq_perimc2, NULL, NULL);
-	freq_imc_data_alloc(&freq_perimc1, &nm->uncore_freq, NULL);
-
 	// CPU Temperature
 	init_temp_msr(nm_temp_fd);
 
@@ -116,16 +93,25 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
 		debug("init_node_metrics_data invalid argument\n");
 		return EAR_ERROR;
 	}
-	nm->avg_cpu_freq=0;
 
+	// CPU Temperature
 	nm->temp=(unsigned long long *)malloc(sizeof(uint64_t)*id->nsockets);
-    if (nm->temp==NULL){
+
+	if (nm->temp==NULL){
         debug("init_node_metrics_data not enough memory\n");
         return EAR_ERROR;
     }
+
+	// CPU/IMC Frequency
+	freq_cpu_init(topo);
+	freq_imc_init(topo);
+	freq_cpu_data_alloc(&nm->freq_cpu, NULL, NULL);
+	freq_imc_data_alloc(&nm->freq_imc, NULL, NULL);
+	nm->avg_cpu_freq=0;
+	nm->avg_imc_freq=0;
+
 	return EAR_SUCCESS;
 }
-
 
 int start_compute_node_metrics(nm_t *id,nm_data_t *nm)
 {
@@ -134,10 +120,9 @@ int start_compute_node_metrics(nm_t *id,nm_data_t *nm)
 		return EAR_ERROR;
 	}
 
-	// CPU Frequency
-	freq_cpu_read(&freq_period1);
-	// IMC Frequency
-	freq_imc_read(&freq_perimc1);
+	// CPU/IMC Frequency
+	freq_cpu_read(&nm->freq_cpu);
+	freq_imc_read(&nm->freq_imc);
 
 	return EAR_SUCCESS;
 }
@@ -151,16 +136,16 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 		return EAR_ERROR;
 	}
 
-	// CPU & IMC Frequency
-	freq_cpu_read_diff(&freq_period2, &freq_period1,            NULL, &nm->avg_cpu_freq);
-	freq_imc_read_diff(&freq_perimc2, &freq_perimc1, nm->uncore_freq, &nm->avg_imc_freq);
-
-	printf("u0 %lu\n", nm->uncore_freq[0]);
-	printf("u1 %lu\n", nm->uncore_freq[1]);
-
 	// CPU Temperature
 	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
 	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
+
+	// CPU/IMC Frequency
+	freq_cpu_read(&nm->freq_cpu);
+	freq_imc_read(&nm->freq_imc);
+
+	printf("u0 %lu\n", nm->uncore_freq[0]);
+	printf("u1 %lu\n", nm->uncore_freq[1]);
 
 	return EAR_SUCCESS;
 }
@@ -171,7 +156,14 @@ int diff_node_metrics(nm_t *id,nm_data_t *init,nm_data_t *end,nm_data_t *diff_nm
 		debug("diff_node_metrics invalid argument");
 		return EAR_ERROR;
 	}
-	memcpy(diff_nm,end,sizeof(nm_data_t));
+
+	// ????????????
+	// memcpy(diff_nm, end, sizeof(nm_data_t));
+
+	// CPU & IMC Frequency
+	freq_cpu_data_diff(&end->freq_cpu, &init->freq_cpu, NULL, &diff_nm->avg_cpu_freq);
+	freq_imc_data_diff(&end->freq_imc, &init->freq_imc, NULL, &diff_nm->avg_imc_freq);
+
 	return EAR_SUCCESS;
 }
 
@@ -182,18 +174,32 @@ int dispose_node_metrics(nm_t *id)
 		return EAR_ERROR;
 	}
 
+	// Alomejor podemos implementar un sistema de contadores aquí para poder
+	// cerrar también el de la CPU?
 	freq_imc_dispose();
 
 	return EAR_SUCCESS;
 }
 
-int copy_node_metrics(nm_t *id,nm_data_t* dest, nm_data_t * src)
+int copy_node_metrics(nm_t *id, nm_data_t *dest, nm_data_t *src)
 {
 	if ((dest==NULL) || (src==NULL)){
 		debug("copy_node_metrics invalid argument");
 		return EAR_ERROR;
 	}
-	memcpy(dest,src,sizeof(nm_data_t));
+
+	// ??????????
+	// memcpy(dest,src,sizeof(nm_data_t));
+
+	for (i=0;i<id->nsockets;i++){
+		dest->temp[i]=nm->temp[i];
+	}
+
+	freq_cpu_data_copy(&dest->freq_cpu, &src->freq_cpu);
+	freq_imc_data_copy(&dest->freq_imc, &src->freq_imc);
+	dest->avg_cpu_freq = src->avg_cpu_freq;
+	dest->avg_imc_freq = src->avg_imc_freq;
+
 	return EAR_SUCCESS;
 }
 
@@ -214,9 +220,10 @@ int print_node_metrics(nm_t *id,nm_data_t *nm)
 
 int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 {
-	int i;
+	ullong temp_total=0;
 	char msg[1024];
-	unsigned long long temp_total=0;
+	int i;
+
 	if ((nm==NULL) || (id==NULL) || (id->con!=NM_CONNECTED)){
 		debug("verbose_node_metrics invalid argument");
 		return EAR_ERROR;
