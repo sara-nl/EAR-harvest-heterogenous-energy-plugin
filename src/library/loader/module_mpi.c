@@ -141,7 +141,7 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 	verbose(3, "LOADER: dlsym for F init returned %p", next_mpif.init);
 
 	//
-	libear = dlopen(path_so, RTLD_NOW | RTLD_LOCAL);
+	libear = dlopen(path_so, RTLD_NOW | RTLD_GLOBAL);
 	verbose(3, "LOADER: dlopen returned %p", libear);
 
 	if (libear != NULL)
@@ -201,13 +201,16 @@ void module_mpi()
 	int lang_c;
 	int lang_f;
 
+
 	module_mpi_init();
+	
+	verbose(3, "module mpi in '%s'", program_invocation_name);
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");
 		return;
 	}
-
+	
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
 	module_mpi_dlsym(path_so, lang_c, lang_f);
 }

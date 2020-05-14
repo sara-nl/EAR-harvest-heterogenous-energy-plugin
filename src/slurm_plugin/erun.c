@@ -219,6 +219,9 @@ int job(int argc, char *argv[])
 	if ((p = getenv("EAR_DEFAULT")) != NULL) {
 		sprintf(plug_def, "default=%s", p);
 		err_def = 0;
+	} else {
+		sprintf(plug_def, "default=on");
+		err_def = 0;
 	}
 	
 	for (i = 0; i < argc; ++i) {
@@ -269,7 +272,7 @@ int job(int argc, char *argv[])
 	print_argv(_argc, _argv);
 	
 	// Going inactive?
-	_inactive = isenv_agnostic(_sp, Var.was_srun.rem, "1");
+	//_inactive = isenv_agnostic(_sp, Var.was_srun.rem, "1");
 
 	if (_inactive) {
 		_error = 2;

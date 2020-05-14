@@ -29,14 +29,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <common/config.h>
+#include <common/states.h>
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/states.h>
 #include <daemon/node_metrics.h>
-#include <metrics/frequency/imc.h>
-#include <metrics/frequency/cpu.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/temperature/temperature.h>
 
@@ -82,6 +79,10 @@ int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq)
 	// CPU Temperature
 	init_temp_msr(nm_temp_fd);
 
+	// CPU/IMC Frequency	
+	freq_cpu_init(topo);
+	freq_imc_init(topo);
+
 	//
 	id->con=NM_CONNECTED;
 
@@ -103,8 +104,6 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
     }
 
 	// CPU/IMC Frequency
-	freq_cpu_init(topo);
-	freq_imc_init(topo);
 	freq_cpu_data_alloc(&nm->freq_cpu, NULL, NULL);
 	freq_imc_data_alloc(&nm->freq_imc, NULL, NULL);
 	nm->avg_cpu_freq=0;
@@ -140,18 +139,19 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
 	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
 
+	printf("temps %llu %llu\n", nm->temp[0], nm->temp[1]);
+
 	// CPU/IMC Frequency
 	freq_cpu_read(&nm->freq_cpu);
 	freq_imc_read(&nm->freq_imc);
-
-	printf("u0 %lu\n", nm->uncore_freq[0]);
-	printf("u1 %lu\n", nm->uncore_freq[1]);
 
 	return EAR_SUCCESS;
 }
 
 int diff_node_metrics(nm_t *id,nm_data_t *init,nm_data_t *end,nm_data_t *diff_nm)
 {
+	int i;
+
 	if ((init==NULL) || (end==NULL) || (diff_nm==NULL)){
 		debug("diff_node_metrics invalid argument");
 		return EAR_ERROR;
@@ -159,6 +159,10 @@ int diff_node_metrics(nm_t *id,nm_data_t *init,nm_data_t *end,nm_data_t *diff_nm
 
 	// ????????????
 	// memcpy(diff_nm, end, sizeof(nm_data_t));
+	
+	for (i=0;i<id->nsockets;i++){
+		diff_nm->temp[i]=end->temp[i];
+	}
 
 	// CPU & IMC Frequency
 	freq_cpu_data_diff(&end->freq_cpu, &init->freq_cpu, NULL, &diff_nm->avg_cpu_freq);
@@ -183,6 +187,8 @@ int dispose_node_metrics(nm_t *id)
 
 int copy_node_metrics(nm_t *id, nm_data_t *dest, nm_data_t *src)
 {
+	int i;
+
 	if ((dest==NULL) || (src==NULL)){
 		debug("copy_node_metrics invalid argument");
 		return EAR_ERROR;
@@ -192,7 +198,7 @@ int copy_node_metrics(nm_t *id, nm_data_t *dest, nm_data_t *src)
 	// memcpy(dest,src,sizeof(nm_data_t));
 
 	for (i=0;i<id->nsockets;i++){
-		dest->temp[i]=nm->temp[i];
+		dest->temp[i]=src->temp[i];
 	}
 
 	freq_cpu_data_copy(&dest->freq_cpu, &src->freq_cpu);

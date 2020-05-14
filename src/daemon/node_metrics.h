@@ -37,6 +37,8 @@
 
 #include <common/types/generic.h>
 #include <common/hardware/topology.h>
+#include <metrics/frequency/imc.h>
+#include <metrics/frequency/cpu.h>
 
 typedef struct nm{
 	uint ncpus;
