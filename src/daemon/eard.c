@@ -386,7 +386,9 @@ void eard_restart() {
 /*
 *	Depending on restart argument, exits eard or restart it
 */
-void eard_exit(uint restart) {
+void eard_exit(uint restart)
+{
+	state_t s;
 	int i;
 
 	verbose(VCONF, "Exiting");
@@ -424,7 +426,7 @@ void eard_exit(uint restart) {
 	}
 
 	// CPU Frequency
-	freq_cpu_dispose();
+	state_assert(s, freq_cpu_dispose(), );
 	// RAM Bandwidth
 	dispose_uncores();
 

@@ -392,7 +392,9 @@ void form_database_paths()
 *
 */
 
-void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
+void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi)
+{
+	state_t s;
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
 	copy_application(&current_ear_app[ccontext]->app, new_app);
@@ -411,12 +413,15 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 	read_enegy_data(ceh, &c_energy);
 	copy_energy_data(&current_ear_app[ccontext]->energy_init, &c_energy);
 	// CPU Frequency
-	freq_cpu_read(&freq_job1);
+	state_assert(s, freq_cpu_read(&freq_job1), );
 }
 
 
-void job_end_powermon_app(ehandler_t *ceh) {
+void job_end_powermon_app(ehandler_t *ceh)
+{
 	power_data_t app_power;
+	state_t s;
+
 	alloc_power_data(&app_power);
 	check_context("job_end_powermon_app");
 	time(&current_ear_app[ccontext]->app.job.end_time);
@@ -439,7 +444,7 @@ void job_end_powermon_app(ehandler_t *ceh) {
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
 
 	// CPU Frequency
-	freq_cpu_read_diff(&freq_job2, &freq_job1, NULL, &current_ear_app[ccontext]->app.power_sig.avg_f);
+	state_assert(s, freq_cpu_read_diff(&freq_job2, &freq_job1, NULL, &current_ear_app[ccontext]->app.power_sig.avg_f), );
 
 	// nominal is still pending
 
@@ -1134,7 +1139,8 @@ void powermon_init_nm()
 
 
 // frequency_monitoring will be expressed in usecs
-void *eard_power_monitoring(void *noinfo) {
+void *eard_power_monitoring(void *noinfo)
+{
 	energy_data_t e_begin;
 	energy_data_t e_end;
 	power_data_t my_current_power;

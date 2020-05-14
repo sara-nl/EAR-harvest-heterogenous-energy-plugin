@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <common/output/verbose.h>
 #include <common/system/time.h>
 #include <metrics/common/msr.h>
 #include <metrics/frequency/imc/intel63.h>
@@ -74,6 +75,7 @@ state_t ifreq_intel63_init(topology_t *_tp)
 	// Opening MSR
 	for (cpu = 0; cpu < cpu_count; ++cpu)
 	{
+		verbose(0, "ifreq_intel63_init cpu %d", cpu);
 		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
 			return s;
 		}
@@ -156,6 +158,7 @@ state_t ifreq_intel63_read(freq_imc_t *ef)
 		if ((s = msr_read(tp.cpus[cpu].id, &a[cpu].freq, sizeof(ulong), UBOX_CTR_OFS)) != EAR_SUCCESS) {
 			return s;
 		}
+		verbose(0, "ifreq_intel63_read %lu\n", a[cpu].freq);
 		a[cpu].error = state_fail(s);
 	}
 

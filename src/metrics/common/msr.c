@@ -37,6 +37,7 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
 #include <metrics/common/msr.h>
 
 #define MSR_MAX	4096
@@ -92,6 +93,7 @@ state_t msr_open(uint cpu)
 	if (counters[cpu] == 0) {
 		sprintf(msr_file_name, "/dev/cpu/%d/msr", cpu);
 		fds[cpu] = open(msr_file_name, O_RDWR);
+		verbose(0, "msr open %d", fds[cpu]);
 	}
 		
 	if (fds[cpu] < 0) {
