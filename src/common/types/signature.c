@@ -102,3 +102,19 @@ void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN)
 	dest->DC_power=new_DC_power;
 }
 
+
+void from_sig_to_mini(mini_sig_t *minis,signature_t *s)
+{
+	minis->DC_power=(float)s->DC_power;
+	minis->GBS=(float)s->GBS;
+	minis->CPI=(float)s->CPI;
+	minis->Gflops=(float)s->Gflops;
+	minis->time=(float)s->time;
+	minis->avg_f=s->avg_f;
+	minis->def_f=s->def_f;
+}
+void copy_mini_sig(mini_sig_t *dst,mini_sig_t *src)
+{
+	memcpy(dst,src,sizeof(mini_sig_t));
+}
+
