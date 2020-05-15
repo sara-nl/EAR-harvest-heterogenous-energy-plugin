@@ -58,6 +58,9 @@ uint get_powercapopt_value(node_powercap_opt_t *pc_opt);
 /** Given a current power , when running an application, returns the powercap status. It must be used only when powercap is set */
 uint compute_power_status(node_powercap_opt_t *pc,uint current_power);
 
+void powercap_status_to_str(uint s,char *b);
+uint compute_next_status(node_powercap_opt_t *pc,uint current_power,ulong eff_f, ulong req_f);
+
 
 #endif
 

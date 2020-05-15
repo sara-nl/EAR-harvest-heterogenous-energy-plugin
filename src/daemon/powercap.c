@@ -54,7 +54,6 @@
 
 
 
-
 static node_powercap_opt_t my_pc_opt;
 static int my_ip;
 extern int *ips;
@@ -64,6 +63,7 @@ int last_status;
 int fd_powercap_values=0;
 static pwr_mgt_t *pcmgr;
 static uint pc_pid=0;
+static uint pc_status_config=AUTO_CONFIG;
 
 pthread_t powercapmon_th;
 unsigned long powercapmon_freq=1;
@@ -319,6 +319,8 @@ int periodic_metric_info(double cp)
 	debug("PM event, current power %u powercap %u allocated %u status %u released %u requested %u",
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
 		my_pc_opt.requested);
+	/* If mode is AUTO_CONFIG EARD takes care of status changes, if not, the EARL will take care of it */
+	if (pc_status_config==AUTO_CONFIG){
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
 			debug("Idle node, no actions");
@@ -390,6 +392,8 @@ int periodic_metric_info(double cp)
 				my_pc_opt.requested=0;
 			}
 			break;
+	}
+	}else{
 	}
 	debug("PM new state, current power %u powercap %u allocated %u status %u released %u requested %u",
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
@@ -546,5 +550,11 @@ void set_powercap_opt(powercap_opt_t *opt)
   }
 	pthread_mutex_unlock(&my_pc_opt.lock);
 
+}
+
+
+void set_powercapstatus_mode(uint mode)
+{
+	pc_status_config=mode;
 }
 

@@ -640,6 +640,9 @@ void powermon_mpi_init(ehandler_t *eh, application_t *appID) {
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
 	start_mpi(&current_ear_app[ccontext]->app.job);
 	current_ear_app[ccontext]->app.is_mpi = 1;
+#ifdef POWERCAP
+	//set_powercapstatus_mode(EARL_CONFIG);
+#endif
 	save_eard_conf(&eard_dyn_conf);
 }
 
@@ -648,6 +651,9 @@ void powermon_mpi_finalize(ehandler_t *eh) {
 	verbose(VJOBPMON + 1, "powermon_mpi_finalize (%lu,%lu)", current_ear_app[ccontext]->app.job.id,
 			current_ear_app[ccontext]->app.job.step_id);
 	end_mpi(&current_ear_app[ccontext]->app.job);
+	#ifdef POWERCAP
+	set_powercapstatus_mode(AUTO_CONFIG);
+	#endif
 	if (!current_ear_app[ccontext]->job_created) {  // If the job is not submitted through slurm, end_job would not be submitted
 		powermon_end_job(eh, current_ear_app[ccontext]->app.job.id, current_ear_app[ccontext]->app.job.step_id);
 	}
@@ -677,6 +683,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	verbose(VJOBPMON, "%spowermon_new_job (%lu,%lu)%s", COL_BLU,appID->job.id, appID->job.step_id,COL_CLR);
 #if POWERCAP
 	if (powermon_is_idle()) powercap_idle_to_run();
+  set_powercapstatus_mode(AUTO_CONFIG);
 #endif
 	if (new_context(appID->job.id, appID->job.step_id) != EAR_SUCCESS) {
 		error("Maximum number of contexts reached, no more concurrent jobs supported");
@@ -966,7 +973,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
   print_app_mgt_data(app_mgt_info);
   #endif
 
-	verbose(VNODEPMON, "%sID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf%s ",COL_BLU,
+	verbose(VNODEPMON, "%sID %lu EARL=%lu  Current power %.1lf max %.1lf min %.1lf%s ",COL_BLU,
 			jid, mpi, my_current_power->avg_dc, maxpower, minpower,COL_CLR);
 	verbose_node_metrics(&my_nm_id, nm);
 
@@ -1208,6 +1215,7 @@ void *eard_power_monitoring(void *noinfo) {
 	init_periodic_metric(&current_sample);
 #if POWERCAP
 	powercap_init();
+	set_powercapstatus_mode(AUTO_CONFIG);
 #endif
 	create_powermon_out();
 

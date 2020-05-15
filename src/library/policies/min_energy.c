@@ -52,6 +52,7 @@ extern unsigned long ext_def_freq;
 #define FREQ_DEF(f) f
 #endif
 
+static ulong req_f;
 
 state_t policy_init(polctx_t *c)
 {
@@ -111,7 +112,12 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		def_pstate=frequency_closest_pstate(def_freq);
 
 		// This is the frequency at which we were running
-		curr_freq=*(c->ear_frequency);
+    #ifdef POWERCAP
+    curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+    #else
+    curr_freq=*(c->ear_frequency);
+    #endif
+
 		curr_pstate = frequency_closest_pstate(curr_freq);
 
 		eff_f=frequency_closest_high_freq(my_app->avg_f,1);
@@ -130,6 +136,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// If is not the default P_STATE selected in the environment, a projection
 		// is made for the reference P_STATE in case the coefficents were available.
+		// 
 		if (curr_freq != def_freq) // Use configuration when available
 		{
 		if (projection_available(curr_pstate,def_pstate)==EAR_SUCCESS)
@@ -183,6 +190,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
 
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
+	// Calcular el min_pstate que este dentro del limite
 	for (i = min_pstate; i < c->num_pstates;i++)
 	{
 		if (projection_available(curr_pstate,i)==EAR_SUCCESS)
@@ -191,19 +199,37 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
-                debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
+        debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
-                    debug("new best solution found");
+          debug("new best solution found");
 					best_freq = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
+					best_pstate=i;
 			}
 		}
 	}
+	/* Corregir frecuencia por powercap y activar greedy si es necesario */
 	}else{ 
 		*ready=0;
 		return EAR_ERROR;
 	}
+  #ifdef POWERCAP
+  projection_t *p;
+  uint plimit;
+  req_f=best_freq;
+  plimit=c->app->pc_opt.last_t1_allocated;
+  p=projection_get(best_pstate);
+  if (p->Power>plimit){
+  	do{
+        best_pstate++;
+        p=projection_get(best_pstate);
+  	}while((p->Power>plimit) && (best_pstate<c->num_pstates));
+  	best_freq=frequency_pstate_to_freq(best_pstate);
+  	verbose(1,"Frequency selected is not valid because powercap limits req_f %lu selected %lu, status should be greedy",req_f,best_freq);
+  }
+  #endif
+
 	*new_freq=best_freq;
 	return EAR_SUCCESS;
 }
@@ -212,7 +238,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *ok)
 {
 	double energy_last, energy_curr;
-	uint power_status;
+	uint power_status,next_status;
 	ulong eff_f;
 
 	if ((c==NULL) || (curr_sig==NULL) || (last_sig==NULL)) return EAR_ERROR;
@@ -225,6 +251,8 @@ state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *o
       if (eff_f<curr_sig->def_f){
         verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
       }
+      next_status=compute_next_status(&c->app->pc_opt,(uint)(curr_sig->DC_power),eff_f,req_f);
+      verbose(1,"New application state should be %u",next_status);
     }else{
       verbose(1,"Powercap is not set");
       power_status=PC_STATUS_ERROR;

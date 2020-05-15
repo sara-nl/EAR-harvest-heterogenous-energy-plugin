@@ -101,9 +101,37 @@ uint get_powercapopt_value(node_powercap_opt_t *pc_opt)
 
 uint compute_power_status(node_powercap_opt_t *pc,uint current_power)
 {
+	if (pc->last_t1_allocated<pc->def_powercap) return PC_STATUS_ASK_DEF;
   if (ok_power(pc,current_power)) return PC_STATUS_OK;
   if (more_power(pc,current_power)) return PC_STATUS_GREEDY;
   if (free_power(pc,current_power)) return PC_STATUS_RELEASE;
 	return PC_STATUS_OK;
 }
 
+
+uint compute_next_status(node_powercap_opt_t *pc,uint current_power,ulong eff_f, ulong req_f)
+{
+	uint pstate=compute_power_status(pc,current_power);
+	switch (pstate){
+		case PC_STATUS_RELEASE:if (eff_f==req_f) return PC_STATUS_RELEASE; break;
+		case PC_STATUS_GREEDY:if (eff_f<req_f) return PC_STATUS_GREEDY; break;
+		case PC_STATUS_OK:if (eff_f< req_f) return PC_STATUS_GREEDY;break;
+		default: return pstate;
+	}
+	return PC_STATUS_OK;
+}
+
+void powercap_status_to_str(uint s,char *b)
+{	
+	switch (s){
+	case PC_STATUS_OK:sprintf(b,"OK");break;
+	case PC_STATUS_GREEDY:sprintf(b,"greedy");break;
+	case PC_STATUS_RELEASE:sprintf(b,"release");break;
+	case PC_STATUS_ASK_DEF:sprintf(b,"ask_def");break;
+	case PC_STATUS_IDLE:sprintf(b,"idle");break;
+	case PC_STATUS_STOP:sprintf(b,"stop");break;
+	case PC_STATUS_START:sprintf(b,"start");break;
+	case PC_STATUS_RUN:sprintf(b,"run");break;
+	default:	sprintf(b,"undef");break;
+	}
+}

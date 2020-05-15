@@ -42,6 +42,7 @@
 #include <library/policies/policy_api.h>
 #include <daemon/powercap_status.h>
 
+static uint last_pc=0;
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
@@ -64,16 +65,19 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 	f=DEF_FREQ(c->app->def_freq);
 #if POWERCAP
 	if (is_powercap_set(&c->app->pc_opt)){ 
-		eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);
+		eff_f=frequency_closest_high_freq(my_sig->avg_f,1);
 		if (eff_f<f){
 			/* If we are below the requested freq, we adapt it */
-			f=eff_f;
+			if (last_pc<c->app->pc_opt.last_t1_allocated){ 
+				f=eff_f;
+			}
 		}
 		verbose(1,"Powercap is set to %u Watts eff_f %lu f %lu",get_powercapopt_value(&c->app->pc_opt),eff_f,f);
 	}else{
 		verbose(1,"Powercap is NOT set f %lu ",f);
 	}
 	*new_freq=f;
+	last_pc=c->app->pc_opt.last_t1_allocated;
 #else
 	*new_freq=f;
 #endif
@@ -83,7 +87,7 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
 {
 	ulong eff_f;
-	uint power_status;
+	uint power_status,next_status;
 	*ok=1;
 #if POWERCAP
     if (is_powercap_set(&c->app->pc_opt)){
@@ -93,6 +97,8 @@ state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *
       if (eff_f<curr_sig->def_f){
         verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
       }
+			next_status=compute_next_status(&c->app->pc_opt,(uint)(curr_sig->DC_power),eff_f,c->app->def_freq);
+			verbose(1,"New application state should be %u",next_status);
     }
 #endif
 

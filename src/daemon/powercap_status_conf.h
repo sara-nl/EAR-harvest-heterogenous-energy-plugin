@@ -51,5 +51,8 @@
 
 #define PC_STATUS_ERROR   100
 
+#define AUTO_CONFIG 0
+#define EARL_CONFIG 1
+
 
 #endif
