@@ -44,7 +44,7 @@
 
 
 #ifdef EARL_RESEARCH
-unsigned long ext_def_freq=0;
+extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
 #else
 #define DEF_FREQ(f) f
@@ -58,17 +58,24 @@ state_t policy_init(polctx_t *c)
 }
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
+	ulong eff_f,f;
+	
 	*ready=1;
-	*new_freq=DEF_FREQ(c->app->def_freq);
-	printf("policy_apply %d\n",is_powercap_set(&c->app->pc_opt));
+	f=DEF_FREQ(c->app->def_freq);
 #if POWERCAP
 	if (is_powercap_set(&c->app->pc_opt)){ 
-		verbose(1,"Powercap is set to %uWatts",get_powercapopt_value(&c->app->pc_opt));
+		eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);
+		if (eff_f<f){
+			/* If we are below the requested freq, we adapt it */
+			f=eff_f;
+		}
+		verbose(1,"Powercap is set to %u Watts eff_f %lu f %lu",get_powercapopt_value(&c->app->pc_opt),eff_f,f);
 	}else{
-		verbose(1,"Powercap is NOT set ");
+		verbose(1,"Powercap is NOT set f %lu ",f);
 	}
+	*new_freq=f;
 #else
-	verbose(1,"Powercap not defined");
+	*new_freq=f;
 #endif
 	
 	return EAR_SUCCESS;
@@ -86,9 +93,6 @@ state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *
       if (eff_f<curr_sig->def_f){
         verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
       }
-    }else{
-      verbose(1,"Powercap is not set");
-      power_status=PC_STATUS_ERROR;
     }
 #endif
 

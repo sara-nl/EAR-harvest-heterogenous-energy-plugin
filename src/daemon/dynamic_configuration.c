@@ -81,6 +81,10 @@ int last_command_time = -1;
 #if USE_NEW_PROP
 int node_found = EAR_ERROR;
 #endif
+#if POWERCAP
+extern app_mgt_t *app_mgt_info;
+#endif
+
 
 /* New to manage risk */
 typedef struct eard_policy_symbols {
