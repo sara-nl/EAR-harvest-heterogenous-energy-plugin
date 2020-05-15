@@ -31,8 +31,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <common/output/verbose.h>
 #include <common/system/time.h>
+#include <common/output/debug.h>
 #include <metrics/common/msr.h>
 #include <metrics/frequency/imc/intel63.h>
 
@@ -75,7 +75,6 @@ state_t ifreq_intel63_init(topology_t *_tp)
 	// Opening MSR
 	for (cpu = 0; cpu < cpu_count; ++cpu)
 	{
-		verbose(0, "ifreq_intel63_init cpu %d", cpu);
 		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
 			return s;
 		}
@@ -114,6 +113,10 @@ static state_t ifreq_intel63_is_enabled(int *enabled)
 			*enabled = 0;
 			return s;
 		}
+		if (command != UBOX_CMD_STA) {
+			*enabled = 0;
+			return s;
+		}
 	}
 	return EAR_SUCCESS;
 }
@@ -142,12 +145,10 @@ state_t ifreq_intel63_read(freq_imc_t *ef)
 	int cpu;
 
 	if (xtate_fail(s, ifreq_intel63_is_enabled(&enabled))) {
-		printf("ifreq_intel63_is_enabled %d", s);
 		return s;
 	}
 	if (!enabled) {
 		if (xtate_fail(s, ifreq_intel63_enable())) {
-			printf("ifreq_intel63_enable %d", s);
 			return s;
 		}
 	}
@@ -158,7 +159,7 @@ state_t ifreq_intel63_read(freq_imc_t *ef)
 		if ((s = msr_read(tp.cpus[cpu].id, &a[cpu].freq, sizeof(ulong), UBOX_CTR_OFS)) != EAR_SUCCESS) {
 			return s;
 		}
-		verbose(0, "ifreq_intel63_read %lu\n", a[cpu].freq);
+		debug(0, "msr_read returned %lu\n", a[cpu].freq);
 		a[cpu].error = state_fail(s);
 	}
 
@@ -170,7 +171,6 @@ state_t ifreq_intel63_read_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, 
 	state_t s;
 
 	if (xtate_fail(s, ifreq_intel63_read(ef2))) {
-		printf("ifreq_intel63_read %d", s);
 		return s;
 	}
 

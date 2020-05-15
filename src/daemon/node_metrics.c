@@ -125,6 +125,7 @@ int start_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	}
 
 	// CPU/IMC Frequency
+	verbose(VNODEPMON, "start_compute_node_metrics");
 	state_assert(s, freq_cpu_read(&nm->freq_cpu),);
 	state_assert(s, freq_imc_read(&nm->freq_imc),);
 
@@ -148,6 +149,7 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	printf("temps %llu %llu\n", nm->temp[0], nm->temp[1]);
 
 	// CPU/IMC Frequency
+	verbose(VNODEPMON, "end_compute_node_metrics");
 	state_assert(s, freq_cpu_read(&nm->freq_cpu),);
 	state_assert(s, freq_imc_read(&nm->freq_imc),);
 
@@ -172,6 +174,7 @@ int diff_node_metrics(nm_t *id,nm_data_t *init,nm_data_t *end,nm_data_t *diff_nm
 	}
 
 	// CPU & IMC Frequency
+	verbose(VNODEPMON, "diff_compute_node_metrics");
 	state_assert(s, freq_cpu_data_diff(&end->freq_cpu, &init->freq_cpu, NULL, &diff_nm->avg_cpu_freq),);
 	state_assert(s, freq_imc_data_diff(&end->freq_imc, &init->freq_imc, NULL, &diff_nm->avg_imc_freq),);
 	verbose(VNODEPMON, "cpu %lu", diff_nm->avg_cpu_freq);
