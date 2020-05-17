@@ -558,3 +558,8 @@ void set_powercapstatus_mode(uint mode)
 	pc_status_config=mode;
 }
 
+uint powercap_get_strategy()
+{
+	return pmgt_get_powercap_strategy(pcmgr);
+}
+

@@ -42,9 +42,11 @@
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/coefficient.h>
+
 #ifdef POWERCAP
 #include <daemon/powercap.h>
 #include <daemon/app_mgt.h>
+#include <common/types/pc_app_info.h>
 #endif
 
 typedef struct services_conf{
@@ -137,7 +139,7 @@ void dettach_resched_shared_area();
  * */
 void resched_shared_area_dispose(char * path);
 
-
+#if POWERCAP
 /****************** APP AREA ***************/
 
 /** Sets in path the filename for the shared memory area app_area between EARD and EARL
@@ -163,6 +165,7 @@ void dettach_app_mgt_shared_area();
 /** Releases a shared memory area previously created. It is used by EARD (server)
  *  * */
 void app_mgt_shared_area_dispose(char * path);
+#endif
 
 
 /***************** COEFFICIENTS **********/
@@ -222,6 +225,14 @@ void frequencies_shared_area_dispose(char * path);
 /** Unmmaps the shared memory for the list of frequencies */
 void dettach_frequencies_shared_area();
 
+#if POWERCAP
+/************** PC_APP_INFO_T ****************/
+int get_pc_app_info_path(char *tmp,char *path);
+pc_app_info_t  * create_pc_app_info_shared_area(char *path);
+pc_app_info_t * attach_pc_app_info_shared_area(char * path);
+void dettach_pc_app_info_shared_area();
+void pc_app_info_shared_area_dispose(char * path);
+#endif
 
 
 

@@ -103,7 +103,7 @@ void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN)
 }
 
 
-void from_sig_to_mini(mini_sig_t *minis,signature_t *s)
+void from_sig_to_mini(ssig_t *minis,signature_t *s)
 {
 	minis->DC_power=(float)s->DC_power;
 	minis->GBS=(float)s->GBS;
@@ -113,8 +113,14 @@ void from_sig_to_mini(mini_sig_t *minis,signature_t *s)
 	minis->avg_f=s->avg_f;
 	minis->def_f=s->def_f;
 }
-void copy_mini_sig(mini_sig_t *dst,mini_sig_t *src)
+void copy_mini_sig(ssig_t *dst,ssig_t *src)
 {
-	memcpy(dst,src,sizeof(mini_sig_t));
+	memcpy(dst,src,sizeof(ssig_t));
+}
+
+void minis_to_str(ssig_t *s,char *b)
+{
+	sprintf(b,"[power %f GBs %f CPI %f GFlops %f time %f avgf %lu deff %lu]",s->DC_power,s->GBS,s->CPI,s->Gflops,s->time,
+	s->avg_f,s->def_f);
 }
 

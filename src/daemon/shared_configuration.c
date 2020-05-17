@@ -45,7 +45,7 @@
 #include <daemon/shared_configuration.h>
 
 static int fd_settings,fd_resched,fd_coeffs,fd_services,fd_freq;
-static int fd_app_mgt;
+static int fd_app_mgt,fd_pc_app_info;
 static coefficient_t null_coeffs[1],null_coeffs_default[1];
 
 /** These functions created path names, just to avoid problems if changing the path name in the future */
@@ -144,6 +144,7 @@ void resched_shared_area_dispose(char * path)
 }
 
 
+#if POWERCAP
 /************* APP_MGT
  *
  * Sets in path the filename for the shared memory area app_area between EARD and EARL
@@ -190,6 +191,34 @@ void app_mgt_shared_area_dispose(char * path)
 {
 	dispose_shared_area(path,fd_app_mgt);
 }
+
+/****************************** PC_APP_INFO REGION *******************/
+int get_pc_app_info_path(char *tmp,char *path)
+{
+  if ((tmp==NULL) || (path==NULL)) return EAR_ERROR;
+  sprintf(path,"%s/.ear_pc_app_info",tmp);
+  return EAR_SUCCESS;
+}
+pc_app_info_t  * create_pc_app_info_shared_area(char *path)
+{
+	pc_app_info_t my_data;
+  return (pc_app_info_t *)create_shared_area(path,(char *)&my_data,sizeof(my_data),&fd_pc_app_info,1);
+
+}
+pc_app_info_t * attach_pc_app_info_shared_area(char * path)
+{
+    return (pc_app_info_t *)attach_shared_area(path,sizeof(pc_app_info_t),O_RDWR,&fd_pc_app_info,NULL);
+}
+void dettach_pc_app_info_shared_area()
+{
+	dettach_shared_area(fd_pc_app_info);
+}
+void pc_app_info_shared_area_dispose(char * path)
+{
+	dispose_shared_area(path,fd_pc_app_info);
+}
+
+#endif
 
 
 /* COEFFS */

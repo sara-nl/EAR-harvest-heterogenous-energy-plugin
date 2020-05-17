@@ -106,6 +106,7 @@ extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 #if POWERCAP
 extern app_mgt_t *app_mgt_info;
+extern pc_app_info_t *pc_app_info_data;
 #endif
 static int sig_reported = 0;
 
@@ -711,6 +712,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	/* Info shared with the job */
 	#if POWERCAP
 	app_mgt_new_job(app_mgt_info);
+	pcapp_info_new_job(pc_app_info_data);
 	#endif
 	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
@@ -813,6 +815,7 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 #if POWERCAP
 	app_mgt_end_job(app_mgt_info);
   if (powermon_is_idle()) powercap_run_to_idle();
+	pcapp_info_end_job(pc_app_info_data);
 #endif
 
 }
@@ -1216,6 +1219,7 @@ void *eard_power_monitoring(void *noinfo) {
 #if POWERCAP
 	powercap_init();
 	set_powercapstatus_mode(AUTO_CONFIG);
+	pc_app_info_data->mode=powercap_get_strategy();
 #endif
 	create_powermon_out();
 

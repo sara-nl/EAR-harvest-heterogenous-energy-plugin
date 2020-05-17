@@ -68,5 +68,7 @@ int is_powercap_on();
 void set_powercapstatus_mode(uint mode);
 
 void copy_node_powercap_opt(node_powercap_opt_t *dst);
+uint powercap_get_strategy();
+
 
 #endif

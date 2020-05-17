@@ -53,6 +53,7 @@
 #include <common/types/application.h>
 #include <common/types/version.h>
 #include <common/types/application.h>
+#include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
 #include <library/api/mpi.h>
 
@@ -126,6 +127,8 @@ float ratio_PPN;
 #if POWERCAP
 app_mgt_t *app_mgt_info;
 char app_mgt_path[GENERIC_NAME];
+pc_app_info_t *pc_app_info_data;
+char pc_app_info_path[GENERIC_NAME];
 #endif
 
 void *earl_periodic_actions(void *no_arg);
@@ -699,6 +702,13 @@ void ear_init()
     	error("Application shared area not found");
   	}
 		fill_application_mgt_data(app_mgt_info);
+		/* This area is RW */
+		get_app_mgt_path(get_ear_tmp(),pc_app_info_path);
+		debug("pc_app_info path %s",pc_app_info_path);
+		pc_app_info_data=attach_pc_app_info_shared_area(pc_app_info_path);
+		if (pc_app_info_data==NULL){
+			error("pc_application_info area not found");
+		}
   	#endif
 
 		//print_affinity_mask(&arch_desc.top);

@@ -36,12 +36,15 @@
 #include <common/includes.h>
 #include <common/environment.h>
 #include <common/types/log_eard.h>
+#include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
+#include <common/hardware/hardware_info.h>
+
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
-#include <common/hardware/hardware_info.h>
 #include <metrics/frequency/frequency_cpu.h>
+
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
 #include <daemon/powercap.h>
@@ -85,6 +88,7 @@ ulong *shared_frequencies;
 ulong *frequencies;
 #ifdef POWERCAP
 app_mgt_t *app_mgt_info;
+pc_app_info_t *pc_app_info_data;
 #endif
 /* END Shared memory regions */
 
@@ -99,6 +103,7 @@ char eardbd_pass[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
 char app_mgt_path[GENERIC_NAME];
+char pc_app_info_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
 char coeffs_default_path[GENERIC_NAME];
 char services_conf_path[GENERIC_NAME];
@@ -1264,6 +1269,13 @@ int main(int argc, char *argv[]) {
 	app_mgt_info=create_app_mgt_shared_area(app_mgt_path);
 	if (app_mgt_info==NULL){
 		error("Error creating shared memory between EARD & EARL for app_mgt");
+		_exit(0);
+	}
+	get_pc_app_info_path(my_cluster_conf.install.dir_temp,pc_app_info_path);
+	verbose(VCONF + 1, "Using %s as pc_app_info dat apath (shared memory region)",pc_app_info_path);
+	pc_app_info_data=create_pc_app_info_shared_area(pc_app_info_path);
+	if (pc_app_info_data==NULL){
+		error("Error creating shared memory between EARD & EARL for pc_app_info");
 		_exit(0);
 	}
 	#endif
