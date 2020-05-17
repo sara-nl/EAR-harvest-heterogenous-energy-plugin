@@ -54,5 +54,48 @@
 #define AUTO_CONFIG 0
 #define EARL_CONFIG 1
 
+#define TEMP_NUM_NODES 10
+
+typedef struct node_powercap_opt {
+  pthread_mutex_t lock;
+  uint def_powercap; /* powercap default value defined in ear.conf */
+  uint powercap_idle; /* powercap to be applied at idle periods */
+  uint current_pc;    /* Current limit */
+  uint last_t1_allocated; /* Power allocated at last T1,guaranteed */
+  uint released;      /* Power released since last T1 */
+  uint max_node_power; /* Maximum node power */
+  uint th_inc; /* Percentage to mark powercap_status as greedy */
+  uint th_red; /* Percentage to mark powercap_status as released */
+  uint th_release; /* Percentage of power to be released */
+  uint powercap_status; /* Current status */
+  uint max_inc_new_jobs; /* Max extra power for new jobs */
+  uint requested; /* Extra power requested, used when node is greedy or powercap < def_powercap */
+}node_powercap_opt_t;
+
+typedef struct powercap_status{
+	uint total_nodes;
+	uint idle_nodes; 	        /* Total number of idle nodes */
+	uint released;        		/* Accumulated released power in last T1 */
+  uint requested;         	/*accumulated new_req */
+	uint num_greedy;          /* Number of greedy nodes */
+	int *greedy_nodes;        /* List of greedy nodes */
+	uint *greedy_req; 				/* extra_power requested */
+  uint *extra_power;				/* extra power already allocated */
+	#if POWERCAP_EXT
+	performance_t	*perf_info;	/* Performance metrics used by powercap scheduler */
+	#endif
+	uint current_power; 	    /* Accumulated power */
+  uint total_powercap;      /* Accumulated current powercap limits */
+}powercap_status_t;
+
+#define TEMP_NUM_NODES 10
+
+typedef struct powercap_opt{
+  uint num_greedy;      /* Number of greedy nodes */
+  int greedy_nodes[TEMP_NUM_NODES];     /* List of greedy nodes */
+  int extra_power[TEMP_NUM_NODES];    /* Extra power received by each greedy node */
+  uint max_inc_new_jobs; /* Max power allowed to be received by new jobs since last powercap reported */
+}powercap_opt_t;
+
 
 #endif

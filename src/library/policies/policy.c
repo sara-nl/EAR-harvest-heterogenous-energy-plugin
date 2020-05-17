@@ -40,6 +40,11 @@
 #include <library/common/global_comm.h>
 #include <common/environment.h>
 #include <daemon/eard_api.h>
+#if POWERCAP
+#include <daemon/powercap_status_conf.h>
+#include <common/types/pc_app_info.h>
+#include <library/policies/pc_suport.h>
+#endif
 
 extern masters_info_t masters_info;
 #ifdef EARL_RESEARCH
@@ -49,6 +54,9 @@ extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) f
 #endif
 
+#if POWERCAP
+extern pc_app_info_t *pc_app_info_data;
+#endif
 
 typedef struct policy_symbols {
 	state_t (*init)        (polctx_t *c);
@@ -149,6 +157,17 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 			return EAR_SUCCESS;
 		}
 		st=polsyms_fun.apply(c, my_sig,freq_set,ready);
+#if POWERCAP
+		if (pc_app_info_data->mode==PC_DVFS){
+			ulong f;
+			pcapp_info_set_req_f(pc_app_info_data,*freq_set);
+			f=pc_support_adapt_freq(&my_pol_ctx.app->pc_opt,*freq_set,my_sig);
+			debug("Adapting frequency because pc: selected %lu new %lu",*freq_set,f);
+			*freq_set=f;
+		}else{
+			pcapp_info_set_req_f(pc_app_info_data,*freq_set);		
+		}	
+#endif
   	if (*freq_set != *(c->ear_frequency))
   	{
     	*(c->ear_frequency) =  eards_change_freq(*freq_set);

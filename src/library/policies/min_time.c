@@ -207,7 +207,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 			}
 		}	
 		/* Controlar la freq por power cap , si capado poner GREEDY, gestionar req-f */	
-		#ifdef POWERCAP
+		#if 0
 		projection_t *p;
 		uint plimit;
 		req_f=best_freq;

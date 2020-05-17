@@ -122,7 +122,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		eff_f=frequency_closest_high_freq(my_app->avg_f,1);
 
-#if POWERCAP
+#if 0
     if (is_powercap_set(&c->app->pc_opt)){ 
 			verbose(1,"Powercap is set to %u Watts",get_powercapopt_value(&c->app->pc_opt));
       power_status=compute_power_status(&c->app->pc_opt,(uint)(my_app->DC_power));
@@ -214,7 +214,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		*ready=0;
 		return EAR_ERROR;
 	}
-  #ifdef POWERCAP
+  #if 0
   projection_t *p;
   uint plimit;
   req_f=best_freq;

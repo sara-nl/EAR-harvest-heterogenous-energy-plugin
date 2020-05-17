@@ -63,7 +63,7 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 	
 	*ready=1;
 	f=DEF_FREQ(c->app->def_freq);
-#if POWERCAP
+#if 0
 	if (is_powercap_set(&c->app->pc_opt)){ 
 		eff_f=frequency_closest_high_freq(my_sig->avg_f,1);
 		if (eff_f<f){

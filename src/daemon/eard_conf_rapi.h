@@ -43,8 +43,8 @@
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/risk.h>
+#include <daemon/powercap_status_conf.h>
 
-#define TEMP_NUM_NODES 10
 
 typedef struct end_job_req{
 	job_id jid;
@@ -75,12 +75,6 @@ typedef struct risk_dec{
 	risk_t level;
 	unsigned long target;
 }risk_dec_t;
-typedef struct powercap_opt{
-	uint num_greedy;			/* Number of greedy nodes */
-	int greedy_nodes[TEMP_NUM_NODES]; 		/* List of greedy nodes */
-	int extra_power[TEMP_NUM_NODES];		/* Extra power received by each greedy node */
-	uint max_inc_new_jobs; /* Max power allowed to be received by new jobs since last powercap reported */
-}powercap_opt_t;
 
 typedef union req_data{
 		application_t 		new_job;
@@ -140,21 +134,6 @@ typedef struct performance{
 	float gflops_watt;
 }performance_t;
 
-typedef struct powercap_status{
-	uint total_nodes;
-	uint idle_nodes; 	        /* Total number of idle nodes */
-	uint released;        		/* Accumulated released power in last T1 */
-  uint requested;         	/*accumulated new_req */
-	uint num_greedy;          /* Number of greedy nodes */
-	int *greedy_nodes;        /* List of greedy nodes */
-	uint *greedy_req; 				/* extra_power requested */
-  uint *extra_power;				/* extra power already allocated */
-	#if POWERCAP_EXT
-	performance_t	*perf_info;	/* Performance metrics used by powercap scheduler */
-	#endif
-	uint current_power; 	    /* Accumulated power */
-  uint total_powercap;      /* Accumulated current powercap limits */
-}powercap_status_t;
 
 
 #define EAR_RC_NEW_JOB     0
