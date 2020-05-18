@@ -1827,6 +1827,7 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
 #endif
             temp.sin_addr.s_addr = ips[i][j];
             strcpy(next_ip, inet_ntoa(temp.sin_addr));
+            memset(&head, 0, sizeof(request_header_t));
             
             rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
             if (rc<0){
