@@ -51,8 +51,8 @@
 
 #define POWERCAP_MON 0
 #define RAPL_VS_NODE_POWER 1
-#define RAPL_VS_NODE_POWER_limit 0.15
-#define DEBUG_PERIOD 5
+#define RAPL_VS_NODE_POWER_limit 0.85
+#define DEBUG_PERIOD 15
 
 pthread_t dvfs_pc_th;
 static uint current_dvfs_pc=0,set_dvfs_pc=0;

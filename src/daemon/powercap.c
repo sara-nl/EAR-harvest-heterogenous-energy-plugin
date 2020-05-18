@@ -339,27 +339,25 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl)
 				debug("status PC_STATUS_OK and free_power");
 				/* We are consuming few power, we can release son percentage */
 				/* We must check the application status before relasing (and loosing) power */
-				if (use_earl && pc_app_info_data->pc_status!=PC_STATUS_RELEASE){
-					verbose(1,"%sWarning, application uses EARL, status is %u and going to release%s",COL_RED,pc_app_info_data->pc_status,COL_CLR);
+				if ((use_earl && pc_app_info_data->pc_status==PC_STATUS_RELEASE) || (!use_earl)){
+					uint TBR,nextpc;
+					TBR=compute_power_to_release(&my_pc_opt,current);
+					nextpc=my_pc_opt.current_pc-TBR; 
+					my_pc_opt.released=TBR;
+					my_pc_opt.requested=0;
+					my_pc_opt.powercap_status=PC_STATUS_RELEASE;
+					set_powercap_value(DOMAIN_NODE,nextpc);	
 				}
-				uint TBR,nextpc;
-				TBR=compute_power_to_release(&my_pc_opt,current);
-				nextpc=my_pc_opt.current_pc-TBR; 
-				my_pc_opt.released=TBR;
-				my_pc_opt.requested=0;
-				my_pc_opt.powercap_status=PC_STATUS_RELEASE;
-				set_powercap_value(DOMAIN_NODE,nextpc);	
 			}else if (more_power(&my_pc_opt,current)){
 				/******* MORE POWER ******/
 				debug("status PC_STATUS_OK and more_power");
 				if (my_pc_opt.current_pc>=my_pc_opt.def_powercap){
 					/* That should the de typical use case. We want more power,current limit is not modified */
 					uint TBR=compute_power_to_ask(&my_pc_opt,current);
-					if (use_earl && pc_app_info_data->pc_status!=PC_STATUS_GREEDY){
-					verbose(1,"%sWarning, application uses EARL, status is %u and going to greedy%s",COL_RED,pc_app_info_data->pc_status,COL_CLR);
+					if ((use_earl && pc_app_info_data->pc_status==PC_STATUS_GREEDY) || (!use_earl)){
+						my_pc_opt.requested=TBR;
+						my_pc_opt.powercap_status=PC_STATUS_GREEDY;
 					}
-					my_pc_opt.requested=TBR;
-					my_pc_opt.powercap_status=PC_STATUS_GREEDY;
 				}else if (my_pc_opt.current_pc<my_pc_opt.last_t1_allocated){
 					/* We have more power we can use it */
 					set_powercap_value(DOMAIN_NODE,my_pc_opt.last_t1_allocated);
@@ -372,17 +370,22 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl)
 				}
 			}else{
 				debug("status PC_STATUS_OK and ok_power");
+				if (use_earl && pc_app_info_data->pc_status==PC_STATUS_GREEDY){
+					debug("Going to GREEDY because of EARL");
+					uint TBR=compute_power_to_ask(&my_pc_opt,current);
+					my_pc_opt.requested=TBR;
+					my_pc_opt.powercap_status=PC_STATUS_GREEDY;
+				}
 			}
 			break;
 		case PC_STATUS_GREEDY:
 			if (ok_power(&my_pc_opt,current) || free_power(&my_pc_opt,current)){
 				debug("Status greedy and power ok or free power");
-				if (use_earl && pc_app_info_data->pc_status!=PC_STATUS_OK){
-					verbose(1,"%sWarning, application uses EARL, status is %u and going to OK%s",COL_RED,pc_app_info_data->pc_status,COL_CLR);
+				if ((use_earl && pc_app_info_data->pc_status==PC_STATUS_OK) || (!use_earl)){
+					/* We don't need more power, it was a phase */
+					my_pc_opt.requested=0;
+					my_pc_opt.powercap_status=PC_STATUS_OK;
 				}
-			/* We don't need more power, it was a phase */
-				my_pc_opt.requested=0;
-				my_pc_opt.powercap_status=PC_STATUS_OK;
 			}
 			break;
 		case PC_STATUS_RELEASE:

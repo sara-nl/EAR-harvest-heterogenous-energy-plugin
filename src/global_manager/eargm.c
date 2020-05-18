@@ -655,7 +655,7 @@ int main(int argc,char *argv[])
 	if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)==EAR_ERROR){
 		error("Asking for total energy system. Using aggregated %d",use_aggregation);
 	}
-	debug("db_select_acum_energy inicial %lu",result);
+	verbose(1,"db_select_acum_energy inicial %lu",result);
 	if (result<(0.95*energy_budget)) result=0.95*energy_budget;
 	fill_periods(result);
 	/*
