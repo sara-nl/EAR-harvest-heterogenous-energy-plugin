@@ -714,6 +714,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	#if POWERCAP
 	app_mgt_new_job(app_mgt_info);
 	pcapp_info_new_job(pc_app_info_data);
+	powercap_set_app_req_freq(f);
 	#endif
 	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
@@ -817,6 +818,7 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	app_mgt_end_job(app_mgt_info);
   if (powermon_is_idle()) powercap_run_to_idle();
 	pcapp_info_end_job(pc_app_info_data);
+	powercap_set_app_req_freq(current_node_freq);
 #endif
 
 }
@@ -1027,7 +1029,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	pdomain.cpu=accum_cpu_power(my_current_power);
 	pdomain.dram=accum_dram_power(my_current_power);
 	pdomain.gpu=accum_gpu_power(my_current_power);
-	periodic_metric_info(&pdomain);
+	periodic_metric_info(&pdomain,mpi);
 #endif
 	copy_node_metrics(&my_nm_id, &last_nm, nm);
 

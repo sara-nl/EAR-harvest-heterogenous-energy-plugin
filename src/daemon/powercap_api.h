@@ -35,6 +35,7 @@ uint is_powercap_policy_enabled(uint pid);
 void print_powercap_value(int fd);
 void powercap_to_str(char *b);
 void set_status(uint status);
-uint get_powercap_stragetgy();
+uint get_powercap_strategy();
+void set_app_req_freq(ulong f);
 
 

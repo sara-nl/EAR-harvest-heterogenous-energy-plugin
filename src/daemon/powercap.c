@@ -70,6 +70,7 @@ extern int eard_must_exit;
 extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
 static uint pc_strategy;
+extern pc_app_info_t *pc_app_info_data;
 
 #define min(a,b) ((a<b)?a:b)
 
@@ -229,6 +230,7 @@ int set_powercap_value(uint domain,uint limit)
 	}
 	my_pc_opt.current_pc=limit;
 	update_node_powercap_opt_shared_info();
+	pmgt_set_app_req_freq(pcmgr,pc_app_info_data->req_f);
 	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,limit);
 }
 
@@ -309,7 +311,7 @@ int powercap_run_to_idle()
   pthread_mutex_unlock(&my_pc_opt.lock);
   return EAR_SUCCESS;
 }
-int periodic_metric_info(dom_power_t *cp)
+int periodic_metric_info(dom_power_t *cp,uint use_earl)
 {
 	uint current=(uint)cp->platform;
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
@@ -320,7 +322,9 @@ int periodic_metric_info(dom_power_t *cp)
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
 		my_pc_opt.requested);
 	/* If mode is AUTO_CONFIG EARD takes care of status changes, if not, the EARL will take care of it */
-	if (pc_status_config==AUTO_CONFIG){
+	if (pc_status_config!=AUTO_CONFIG){
+		error("ONLY AUTO_CONFIG is supported for now, change and recompile");
+	}
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
 			debug("Idle node, no actions");
@@ -330,6 +334,10 @@ int periodic_metric_info(dom_power_t *cp)
 			if (free_power(&my_pc_opt,current) && (last_status!=PC_STATUS_IDLE)){
 				debug("status PC_STATUS_OK and free_power");
 				/* We are consuming few power, we can release son percentage */
+				/* We must check the application status before relasing (and loosing) power */
+				if (use_earl && pc_app_info_data->pc_status!=PC_STATUS_RELEASE){
+					verbose(1,"%sWarning, application uses EARL, status is %u and going to release%s",COL_RED,pc_app_info_data->pc_status,COL_CLR);
+				}
 				uint TBR,nextpc;
 				TBR=compute_power_to_release(&my_pc_opt,current);
 				nextpc=my_pc_opt.current_pc-TBR; 
@@ -343,6 +351,9 @@ int periodic_metric_info(dom_power_t *cp)
 				if (my_pc_opt.current_pc>=my_pc_opt.def_powercap){
 					/* That should the de typical use case. We want more power,current limit is not modified */
 					uint TBR=compute_power_to_ask(&my_pc_opt,current);
+					if (use_earl && pc_app_info_data->pc_status!=PC_STATUS_GREEDY){
+					verbose(1,"%sWarning, application uses EARL, status is %u and going to greedy%s",COL_RED,pc_app_info_data->pc_status,COL_CLR);
+					}
 					my_pc_opt.requested=TBR;
 					my_pc_opt.powercap_status=PC_STATUS_GREEDY;
 				}else if (my_pc_opt.current_pc<my_pc_opt.last_t1_allocated){
@@ -362,6 +373,9 @@ int periodic_metric_info(dom_power_t *cp)
 		case PC_STATUS_GREEDY:
 			if (ok_power(&my_pc_opt,current) || free_power(&my_pc_opt,current)){
 				debug("Status greedy and power ok or free power");
+				if (use_earl && pc_app_info_data->pc_status!=PC_STATUS_OK){
+					verbose(1,"%sWarning, application uses EARL, status is %u and going to OK%s",COL_RED,pc_app_info_data->pc_status,COL_CLR);
+				}
 			/* We don't need more power, it was a phase */
 				my_pc_opt.requested=0;
 				my_pc_opt.powercap_status=PC_STATUS_OK;
@@ -392,8 +406,6 @@ int periodic_metric_info(dom_power_t *cp)
 				my_pc_opt.requested=0;
 			}
 			break;
-	}
-	}else{
 	}
 	debug("PM new state, current power %u powercap %u allocated %u status %u released %u requested %u",
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
@@ -563,3 +575,7 @@ uint powercap_get_strategy()
 	return pmgt_get_powercap_strategy(pcmgr);
 }
 
+void powercap_set_app_req_freq(ulong f)
+{
+	pmgt_set_app_req_freq(pcmgr,f);
+}

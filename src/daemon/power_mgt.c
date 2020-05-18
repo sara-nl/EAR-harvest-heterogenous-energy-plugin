@@ -55,6 +55,7 @@ typedef struct powercap_symbols {
   uint    (*get_powercap_strategy)();
   void    (*powercap_to_str)(char *b);
 	void 		(*print_powercap_value)(int fd);
+	void 		(*set_app_req_freq)(ulong f);
 	
 } powercapsym_t;
 
@@ -63,7 +64,7 @@ static float pdomains[NUM_DOMAINS]={1.0,0.85,0,0};
 static uint domains_loaded[NUM_DOMAINS]={0,0,0,0};
 static powercapsym_t pcsyms_fun[NUM_DOMAINS];
 static void *pcsyms_obj[NUM_DOMAINS] ={ NULL,NULL,NULL,NULL};
-const int   pcsyms_n = 10;
+const int   pcsyms_n = 11;
 extern cluster_conf_t my_cluster_conf;
 
 const char     *pcsyms_names[] ={
@@ -76,7 +77,8 @@ const char     *pcsyms_names[] ={
 	"set_pc_mode",
   "get_powercap_strategy",
   "powercap_to_str",
-	"print_powercap_value"
+	"print_powercap_value",
+	"set_app_req_freq"
 };
 
 
@@ -281,4 +283,11 @@ void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain)
 	verbose(1,"[NODE %f CPU %f DRAM %f GPU %f]",pnode,pcpu,pdram,pgpu);
 }
 
+void pmgt_set_app_req_freq(pwr_mgt_t *phandler,ulong f)
+{
+	int i;
+  for (i=0;i<NUM_DOMAINS;i++){
+    freturn(pcsyms_fun[i].set_app_req_freq,f);
+  }
+}
 

@@ -45,7 +45,7 @@ void print_powercap_opt(powercap_opt_t *opt);
 int powercap_idle_to_run();
 int powercap_run_to_idle();
 int powercap_init();
-int periodic_metric_info(dom_power_t *pdomain);
+int periodic_metric_info(dom_power_t *pdomain,uint use_earl);
 int is_powercap_set();
 int is_powercap_on();
 
@@ -53,6 +53,7 @@ void set_powercapstatus_mode(uint mode);
 
 void copy_node_powercap_opt(node_powercap_opt_t *dst);
 uint powercap_get_strategy();
+void powercap_set_app_req_freq(ulong f);
 
 
 #endif

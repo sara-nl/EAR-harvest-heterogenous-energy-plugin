@@ -51,5 +51,6 @@ void pmgt_set_status(pwr_mgt_t *phandler,uint status);
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler);
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode);
 void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain);
+void pmgt_set_app_req_freq(pwr_mgt_t *phandler,ulong f);
 
 #endif

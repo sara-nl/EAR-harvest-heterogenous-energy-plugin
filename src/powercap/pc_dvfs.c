@@ -59,6 +59,7 @@ static uint current_dvfs_pc=0,set_dvfs_pc=0;
 static uint dvfs_pc_enabled=0;
 static uint c_status=PC_STATUS_IDLE;
 static uint c_mode=PC_MODE_LIMIT;
+static ulong c_req_f;
 
 
 void dvfs_pc_thread(void *d)
@@ -71,7 +72,7 @@ void dvfs_pc_thread(void *d)
 	float power_rapl;
 	char rapl_energy_str[512];
 	int *fd_rapl;
-	uint c_pstate;
+	uint c_pstate,t_pstate;
 	ulong c_freq;
 	topology_t node_desc;
   num_packs=detect_packages(NULL);
@@ -140,7 +141,8 @@ void dvfs_pc_thread(void *d)
 			if ((power_rapl<(current_dvfs_pc*RAPL_VS_NODE_POWER_limit) && (c_mode==PC_MODE_TARGET))){
 				c_freq=frequency_get_cpu_freq(0);
 				c_pstate=frequency_freq_to_pstate(c_freq);
-				if (c_pstate>frequency_get_nominal_pstate()){
+				t_pstate=frequency_freq_to_pstate(c_req_f);
+				if (c_pstate>t_pstate){
 					c_pstate=c_pstate-1;
 					c_freq=frequency_pstate_to_freq(c_pstate);
 					debug("%sIncreasing freq to %lu%s",COL_RED,c_freq,COL_CLR);
@@ -222,3 +224,9 @@ void set_pc_mode(uint mode)
 }
 
 
+
+void set_app_req_freq(ulong f)
+{
+	debug("Requested application freq set to %lu",f);
+	c_req_f=f;	
+}
