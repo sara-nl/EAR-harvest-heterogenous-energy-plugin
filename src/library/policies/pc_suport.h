@@ -33,6 +33,8 @@
 #if POWERCAP
 
 ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s);
+void pc_support_compute_next_state(node_powercap_opt_t *pc,signature_t *s);
+
 #endif
 #endif
 

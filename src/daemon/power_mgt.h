@@ -30,8 +30,11 @@
 #ifndef _PWR_MGT_H
 #define _PWR_MGT_H
 #include <common/states.h>
+#include <daemon/powercap_status_conf.h>
 
 typedef void * pwr_mgt_t;
+
+
 
 state_t pmgt_init();
 state_t pmgt_enable(pwr_mgt_t *phandler);
@@ -47,5 +50,6 @@ void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b);
 void pmgt_set_status(pwr_mgt_t *phandler,uint status);
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler);
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode);
+void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain);
 
 #endif

@@ -107,6 +107,7 @@ extern resched_t *resched_conf;
 #if POWERCAP
 extern app_mgt_t *app_mgt_info;
 extern pc_app_info_t *pc_app_info_data;
+dom_power_t pdomain;
 #endif
 static int sig_reported = 0;
 
@@ -958,6 +959,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	ulong jid, mpi,sid;
 	uint usedb,useeardbd;
 	double maxpower, minpower, RAPL, corrected_power;
+	ulong time_consumed;
 	usedb=my_cluster_conf.eard.use_mysql;
 	useeardbd=my_cluster_conf.eard.use_eardbd;
 	if (ccontext >= 0) {
@@ -1008,19 +1010,24 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	if (my_current_power->avg_dc < RAPL) {
 		corrected_power = RAPL;
 	}
+	time_consumed=(ulong) difftime(my_current_power->end, my_current_power->begin);
 #if USE_GPUS
-	current_sample.DRAM_energy=accum_dram_power(my_current_power);
-	current_sample.PCK_energy=accum_cpu_power(my_current_power);
-  current_sample.GPU_energy=accum_gpu_power(my_current_power);
+	current_sample.DRAM_energy=accum_dram_power(my_current_power)*time_consumed;
+	current_sample.PCK_energy=accum_cpu_power(my_current_power)*time_consumed;
+  current_sample.GPU_energy=accum_gpu_power(my_current_power)*time_consumed;
 #endif
 
 
-	current_sample.DC_energy = corrected_power * (ulong) difftime(my_current_power->end, my_current_power->begin);
+	current_sample.DC_energy = corrected_power * time_consumed;
 
 	/* To be usd by status */
 	last_power_reported = my_current_power->avg_dc;
 #if POWERCAP
-	periodic_metric_info(last_power_reported);
+	pdomain.platform=last_power_reported;
+	pdomain.cpu=accum_cpu_power(my_current_power);
+	pdomain.dram=accum_dram_power(my_current_power);
+	pdomain.gpu=accum_gpu_power(my_current_power);
+	periodic_metric_info(&pdomain);
 #endif
 	copy_node_metrics(&my_nm_id, &last_nm, nm);
 

@@ -37,6 +37,7 @@
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #if POWERCAP
+extern pc_app_info_t *pc_app_info_data;
 
 ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s)
 {
@@ -44,7 +45,7 @@ ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s)
     uint plimit,cpstate,ppstate;
 		double ppower;
     req_f=f;
-    plimit=c->app->pc_opt.last_t1_allocated; 				/* limit */
+    plimit=pc->last_t1_allocated; 				/* limit */
 		cfreq=frequency_closest_high_freq(s->avg_f,1); 	/* current freq */
 		cpstate=frequency_closest_pstate(cfreq);			 	/* current pstate */
 		ppstate=frequency_closest_pstate(req_f);				/* pstate for freq selected */
@@ -62,5 +63,26 @@ ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s)
 		req_f=frequency_pstate_to_freq(ppstate);
 		return req_f;
 
+}
+
+void pc_support_compute_next_state(node_powercap_opt_t *pc,signature_t *s)
+{
+		uint power_status;
+		ulong eff_f;
+    if (is_powercap_set(pc)){
+      power_status=compute_power_status(pc,(uint)(s->DC_power));
+      eff_f=frequency_closest_high_freq(s->avg_f,1);
+			if (eff_f < pc_app_info_data->req_f){
+      	verbose(1,"Powercap is set to %u Watts, status %u effective freq %lu",get_powercapopt_value(pc,power_status,eff_f);
+				verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,pc_app_info_data->req_f);
+    		pc_app_info_data->pc_status=compute_next_status(pc,(uint)(s->DC_power),eff_f,pc_app_info_data->req_f);
+    		verbose(1,"New application state should be %u",pc_app_info_data->pc_status);
+			}else{
+				pc_app_info_data->pc_status=PC_STATUS_OK;
+			}
+    }else{
+      verbose(1,"Powercap is not set");
+      power_status=PC_STATUS_ERROR;
+    }
 }
 #endif

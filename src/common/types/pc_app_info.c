@@ -26,13 +26,20 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-
+#include <common/config.h>
+#include <common/output/verbose.h>
+#if POWERCAP
 #include <common/types/pc_app_info.h>
+#include <daemon/powercap_status_conf.h>
 
 void pcapp_info_new_job(pc_app_info_t *t)
 {
 	t->req_f=0;
+	t->pc_status=PC_STATUS_IDLE;
 }
 void pcapp_info_end_job(pc_app_info_t *t)
 {
@@ -41,5 +48,8 @@ void pcapp_info_end_job(pc_app_info_t *t)
 void pcapp_info_set_req_f(pc_app_info_t *t,ulong f)
 {
 	t->req_f=f;
+	t->pc_status=PC_STATUS_OK;
 }
+
+#endif
 

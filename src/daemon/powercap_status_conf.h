@@ -32,6 +32,9 @@
 
 #define DOMAIN_NODE 0
 #define DOMAIN_CPU 1
+#define DOMAIN_DRAM     2
+#define DOMAIN_GPU      3
+
 
 #define PC_STATUS_OK      0
 #define PC_STATUS_GREEDY  1
@@ -96,6 +99,14 @@ typedef struct powercap_opt{
   int extra_power[TEMP_NUM_NODES];    /* Extra power received by each greedy node */
   uint max_inc_new_jobs; /* Max power allowed to be received by new jobs since last powercap reported */
 }powercap_opt_t;
+
+typedef struct dom_power{
+	uint platform;
+	uint cpu;
+	uint dram;
+	uint gpu;
+}dom_power_t;
+
 
 
 #endif

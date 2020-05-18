@@ -89,7 +89,7 @@ state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *
 	ulong eff_f;
 	uint power_status,next_status;
 	*ok=1;
-#if POWERCAP
+#if 0
     if (is_powercap_set(&c->app->pc_opt)){
       power_status=compute_power_status(&c->app->pc_opt,(uint)(curr_sig->DC_power));
       eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);

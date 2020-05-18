@@ -309,12 +309,13 @@ int powercap_run_to_idle()
   pthread_mutex_unlock(&my_pc_opt.lock);
   return EAR_SUCCESS;
 }
-int periodic_metric_info(double cp)
+int periodic_metric_info(dom_power_t *cp)
 {
-	uint current=(uint)cp;
+	uint current=(uint)cp->platform;
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
 	debug("periodic_metric_info");
 	while(pthread_mutex_trylock(&my_pc_opt.lock));
+	pmgt_set_power_per_domain(pcmgr,cp);
 	debug("PM event, current power %u powercap %u allocated %u status %u released %u requested %u",
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
 		my_pc_opt.requested);

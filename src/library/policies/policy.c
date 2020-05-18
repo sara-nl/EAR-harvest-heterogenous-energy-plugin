@@ -207,6 +207,9 @@ state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
 {
 	polctx_t *c=&my_pol_ctx;
 	if (polsyms_fun.ok!=NULL){
+#if POWERCAP
+		pc_support_compute_next_state(&my_pol_ctx.app->pc_opt,curr);
+#endif
 		return polsyms_fun.ok(c, curr,prev,ok);
 	}else{
 		*ok=1;

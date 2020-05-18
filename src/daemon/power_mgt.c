@@ -76,6 +76,9 @@ const char     *pcsyms_names[] ={
 	"print_powercap_value"
 };
 
+
+static dom_power_t pdist_per_domain;
+
 #define freturn(call, ...) ((call==NULL)?EAR_UNDEFINED:call(__VA_ARGS__));
 
 #define DEFAULT_PC_PLUGIN_NAME "pc_dvfs"
@@ -156,6 +159,11 @@ uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler)
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode)
 {
 	freturn(pcsyms_fun.set_pc_mode,mode);
+}
+
+void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain)
+{
+	memcpy(&pdist_per_domain,pdomain,sizeof(dom_power_t));
 }
 
 
