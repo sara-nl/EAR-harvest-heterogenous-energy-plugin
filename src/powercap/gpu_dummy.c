@@ -33,26 +33,84 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+#include <unistd.h>
 #define _GNU_SOURCE
 #include <pthread.h>
 #include <common/config.h>
+#include <signal.h>
 #include <common/colors.h>
 #include <common/states.h>
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/system/execute.h>
-
-#define POWERCAP_MON 0
+#include <daemon/powercap_status_conf.h>
 
 
-state_t dvfs_disable();
-state_t dvfs_enable();
-state_t dvfs_set_powercap_value(uint pid,uint domain,uint limit);
-state_t dvfs_get_powercap_value(uint pid,uint *powercap);
-uint dvfs_is_powercap_policy_enabled(uint pid);
-void dvfs_print_powercap_value(int fd);
-void dvfs_powercap_to_str(char *b);
-void dvfs_set_status(uint status);
-uint dvfs_get_powercap_strategy();
-void dvfs_set_pc_mode(uint mode);
+
+static uint current_gpu_pc=0,set_gpu_pc=0;
+static uint gpu_pc_enabled=0;
+static uint c_status=PC_STATUS_IDLE;
+static uint c_mode=PC_MODE_LIMIT;
+
+
+
+state_t disable()
+{
+	return EAR_SUCCESS;
+}
+
+state_t enable()
+{
+	int ret;
+	debug("gpu power cap  enable");
+	gpu_pc_enabled=1;
+	return EAR_SUCCESS;
+}
+
+state_t set_powercap_value(uint pid,uint domain,uint limit)
+{
+	/* Set data */
+	debug("gpu set_powercap_value %u",limit);
+	current_gpu_pc=limit;
+	return EAR_SUCCESS;
+}
+
+state_t get_powercap_value(uint pid,uint *powercap)
+{
+	/* copy data */
+	debug("gpu:get_powercap_value");
+	*powercap=current_gpu_pc;
+	return EAR_SUCCESS;
+}
+
+uint is_powercap_policy_enabled(uint pid)
+{
+	return gpu_pc_enabled;
+}
+
+void print_powercap_value(int fd)
+{
+	dprintf(fd,"gpu_powercap_value %u\n",current_gpu_pc);
+}
+void powercap_to_str(char *b)
+{
+	sprintf(b,"%u",current_gpu_pc);
+}
+
+void set_status(uint status)
+{
+	debug("set_status %u",status);
+	c_status=status;
+}
+uint get_powercap_strategy()
+{
+	debug("get_powercap_strategy");
+	return PC_POWER;
+}
+
+void set_pc_mode(uint mode)
+{
+	debug("set_pc_mode");
+	c_mode=mode;
+}
+
 

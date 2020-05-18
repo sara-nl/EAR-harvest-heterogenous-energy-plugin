@@ -4,10 +4,14 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 powercap_OBJS = \
     inm.o \
-		pc_dvfs.o
+		pc_dvfs.o \
+		gpu_dummy.o
+
 powercap_BINS = \
     inm.so \
-		pc_dvfs.so
+		pc_dvfs.so \
+		gpu_dummy.so
+
 powercap_PATH = $(DESTDIR)/lib/plugins/powercap
 powercap_PERM = 0775
 dvfs_DEPS = \

@@ -109,6 +109,8 @@ state_t pmgt_init()
 		debug("Loading %s powercap plugin domain node",obj_path);
 		ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_NODE], pcsyms_names, pcsyms_n);
 		if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_NODE]=1;
+	}else{
+		debug("DOMAIN_NODE not loaded");
 	}
 	if (!domains_loaded[DOMAIN_NODE]){
 	/* DOMAIN_CPU */
@@ -124,7 +126,9 @@ state_t pmgt_init()
     debug("Loading %s powercap plugin domain cpu",obj_path);
     ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_CPU], pcsyms_names, pcsyms_n);
     if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_CPU]=1;
-  }
+  }else{
+		debug("DOMAIN_CPU not loaded");
+	}
 
 	/* DOMAIN_DRAM */
   obj_path = getenv("EAR_POWERCAP_POLICY_DRAM");
@@ -139,7 +143,9 @@ state_t pmgt_init()
     debug("Loading %s powercap plugin domain dram",obj_path);
     ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_DRAM], pcsyms_names, pcsyms_n);
     if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_DRAM]=1;
-  }
+  }else{
+		debug("DOMAIN_DRAM not loaded");
+	}
 	}
 
 	/* DOMAIN_GPU */
@@ -155,7 +161,9 @@ state_t pmgt_init()
     debug("Loading %s powercap plugin domain gpu",obj_path);
     ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_GPU], pcsyms_names, pcsyms_n);
     if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_GPU]=1;
-  }
+  }else{
+		debug("DOMAIN_GPU not loaded");
+	}
 	if (domains_loaded[DOMAIN_NODE]  || domains_loaded[DOMAIN_CPU] || domains_loaded[DOMAIN_DRAM] || domains_loaded[DOMAIN_GPU]) ret=EAR_SUCCESS;
 	else ret=EAR_ERROR;
 	return ret;
