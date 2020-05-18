@@ -194,8 +194,11 @@ int powercap_init()
 	my_pc_opt.powercap_status=PC_STATUS_IDLE;
 	last_status=PC_STATUS_IDLE;
 	pc_strategy=pmgt_get_powercap_strategy(pcmgr);
+	#if 0
 	if (pc_strategy==PC_DVFS) pmgt_set_pc_mode(pcmgr,PC_MODE_LIMIT);
 	else pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
+	#endif
+	pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
 	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
 	debug("powercap initialization finished");
 	#if POWERCAP_MON
