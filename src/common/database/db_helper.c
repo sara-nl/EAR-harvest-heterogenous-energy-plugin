@@ -914,7 +914,7 @@ int stmt_error(MYSQL *connection, MYSQL_STMT *statement)
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     mysql_close(connection);
-    return -1;
+    return EAR_ERROR;
 }
 #endif
 
