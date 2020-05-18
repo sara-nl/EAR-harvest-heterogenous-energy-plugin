@@ -50,8 +50,8 @@
 
 
 #define POWERCAP_MON 0
-#define RAPL_VS_NODE_POWER 0.85
-#define RAPL_VS_NODE_POWER_limit 0.7
+#define RAPL_VS_NODE_POWER 1
+#define RAPL_VS_NODE_POWER_limit 0.15
 #define DEBUG_PERIOD 1
 
 pthread_t dvfs_pc_th;

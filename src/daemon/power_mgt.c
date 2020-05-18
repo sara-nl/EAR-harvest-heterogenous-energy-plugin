@@ -58,8 +58,11 @@ typedef struct powercap_symbols {
 	
 } powercapsym_t;
 
-static powercapsym_t pcsyms_fun;
-static void *pcsyms_obj = NULL;
+static dom_power_t pdist_per_domain;
+static float pdomains[NUM_DOMAINS]={1.0,0.85,0,0};
+static uint domains_loaded[NUM_DOMAINS]={0,0,0,0};
+static powercapsym_t pcsyms_fun[NUM_DOMAINS];
+static void *pcsyms_obj[NUM_DOMAINS] ={ NULL,NULL,NULL,NULL};
 const int   pcsyms_n = 10;
 extern cluster_conf_t my_cluster_conf;
 
@@ -77,11 +80,14 @@ const char     *pcsyms_names[] ={
 };
 
 
-static dom_power_t pdist_per_domain;
+
 
 #define freturn(call, ...) ((call==NULL)?EAR_UNDEFINED:call(__VA_ARGS__));
 
-#define DEFAULT_PC_PLUGIN_NAME "pc_dvfs"
+#define DEFAULT_PC_PLUGIN_NAME_NODE "noplugin"
+#define DEFAULT_PC_PLUGIN_NAME_CPU  "pc_dvfs"
+#define DEFAULT_PC_PLUGIN_NAME_DRAM "noplugin"
+#define DEFAULT_PC_PLUGIN_NAME_GPU  "noplugin"
 static uint pc_plugin_loaded=0;
 
 /* This function will load any plugin , detect components etc . It must me executed just once */
@@ -89,25 +95,88 @@ state_t pmgt_init()
 {
 	state_t ret;
 	char basic_path[SZ_PATH_INCOMPLETE];
-	char *obj_path = getenv("EAR_POWERCAP_POLICY");
+	/* DOMAIN_NODE is not cmpatible with CPU+DRAM */
+	/* DOMAIN_NODE */
+	char *obj_path = getenv("EAR_POWERCAP_POLICY_NODE");
   if (obj_path==NULL){
-    	sprintf(basic_path,"%s/powercap/%s.so",my_cluster_conf.install.dir_plug,DEFAULT_PC_PLUGIN_NAME);
+		/* Plugin per domain node defined */
+		if (strcmp(DEFAULT_PC_PLUGIN_NAME_NODE,"noplugin")){
+    	sprintf(basic_path,"%s/powercap/%s.so",my_cluster_conf.install.dir_plug,DEFAULT_PC_PLUGIN_NAME_NODE);
     	obj_path=basic_path;
+		}
 	}
-	debug("Loading %s powercap plugin",obj_path);
-	ret=symplug_open(obj_path, (void **)&pcsyms_fun, pcsyms_names, pcsyms_n);
+	if (obj_path!=NULL){
+		debug("Loading %s powercap plugin domain node",obj_path);
+		ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_NODE], pcsyms_names, pcsyms_n);
+		if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_NODE]=1;
+	}
+	if (!domains_loaded[DOMAIN_NODE]){
+	/* DOMAIN_CPU */
+  obj_path = getenv("EAR_POWERCAP_POLICY_CPU");
+  if (obj_path==NULL){
+    /* Plugin per domain node defined */
+    if (strcmp(DEFAULT_PC_PLUGIN_NAME_CPU,"noplugin")){
+      sprintf(basic_path,"%s/powercap/%s.so",my_cluster_conf.install.dir_plug,DEFAULT_PC_PLUGIN_NAME_CPU);
+      obj_path=basic_path;
+    }
+  } 
+  if (obj_path!=NULL){
+    debug("Loading %s powercap plugin domain cpu",obj_path);
+    ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_CPU], pcsyms_names, pcsyms_n);
+    if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_CPU]=1;
+  }
+
+	/* DOMAIN_DRAM */
+  obj_path = getenv("EAR_POWERCAP_POLICY_DRAM");
+  if (obj_path==NULL){
+    /* Plugin per domain node defined */
+    if (strcmp(DEFAULT_PC_PLUGIN_NAME_DRAM,"noplugin")){
+      sprintf(basic_path,"%s/powercap/%s.so",my_cluster_conf.install.dir_plug,DEFAULT_PC_PLUGIN_NAME_DRAM);
+      obj_path=basic_path;
+    }
+  } 
+  if (obj_path!=NULL){
+    debug("Loading %s powercap plugin domain dram",obj_path);
+    ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_DRAM], pcsyms_names, pcsyms_n);
+    if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_DRAM]=1;
+  }
+	}
+
+	/* DOMAIN_GPU */
+  obj_path = getenv("EAR_POWERCAP_POLICY_GPU");
+  if (obj_path==NULL){
+    /* Plugin per domain node defined */
+    if (strcmp(DEFAULT_PC_PLUGIN_NAME_GPU,"noplugin")){
+      sprintf(basic_path,"%s/powercap/%s.so",my_cluster_conf.install.dir_plug,DEFAULT_PC_PLUGIN_NAME_GPU);
+      obj_path=basic_path;
+    }
+  } 
+  if (obj_path!=NULL){
+    debug("Loading %s powercap plugin domain gpu",obj_path);
+    ret=symplug_open(obj_path, (void **)&pcsyms_fun[DOMAIN_GPU], pcsyms_names, pcsyms_n);
+    if (ret==EAR_SUCCESS) domains_loaded[DOMAIN_GPU]=1;
+  }
+	if (domains_loaded[DOMAIN_NODE]  || domains_loaded[DOMAIN_CPU] || domains_loaded[DOMAIN_DRAM] || domains_loaded[DOMAIN_GPU]) ret=EAR_SUCCESS;
+	else ret=EAR_ERROR;
 	return ret;
 }
 state_t pmgt_enable(pwr_mgt_t *phandler)
 {
-	state_t ret;
-	ret=freturn(pcsyms_fun.enable);
-	return ret;
+	state_t ret,gret=EAR_SUCCESS;
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		ret=freturn(pcsyms_fun[i].enable);
+		if (ret!=EAR_SUCCESS) gret=ret;
+	}
+	return gret;
 }
 state_t pmgt_disable(pwr_mgt_t *phandler)
 {
 	state_t ret;
-	ret=freturn(pcsyms_fun.disable);
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		ret=freturn(pcsyms_fun[i].disable);
+	}
 	return ret;
 }
 state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
@@ -119,51 +188,89 @@ state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
 
 state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,uint limit)
 {
-	state_t ret;
-	ret=freturn(pcsyms_fun.set_powercap_value,pid,domain,limit);
-	return ret;
+	state_t ret,gret=EAR_SUCCESS;
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		ret=freturn(pcsyms_fun[i].set_powercap_value,pid,domain,limit*pdomains[i]);
+		if (ret!=EAR_SUCCESS) gret=ret;
+	}
+	return gret;
 }
 state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap)
 {
-	state_t ret;
-	ret=freturn(pcsyms_fun.get_powercap_value,pid,powercap);
-	return ret;
+	state_t ret,gret;
+	uint total=0,parc;
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		ret=freturn(pcsyms_fun[i].get_powercap_value,pid,&parc);
+		total+=parc;
+		if (ret!=EAR_SUCCESS) gret=ret;
+	}
+	*powercap=total;
+	return gret;
 }
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid)
 {
-	uint ret;
-	ret=freturn(pcsyms_fun.is_powercap_policy_enabled,pid);
+	uint ret=0;
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		ret+=freturn(pcsyms_fun[i].is_powercap_policy_enabled,pid);
+	}
 	return ret;
 }
 void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd)
 {
-	freturn(pcsyms_fun.print_powercap_value,fd);
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		freturn(pcsyms_fun[i].print_powercap_value,fd);
+	}
 }
 void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b)
 {
-	freturn(pcsyms_fun.powercap_to_str,b);
+	int i;
+	char new_s[512];
+	for (i=0;i<NUM_DOMAINS;i++){
+		freturn(pcsyms_fun[i].powercap_to_str,new_s);
+		strcat(b,new_s);
+	}
 }
 
 void pmgt_set_status(pwr_mgt_t *phandler,uint status)
 {
 	debug("pmgt_set_status");
-	freturn(pcsyms_fun.set_status,status);
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		freturn(pcsyms_fun[i].set_status,status);
+	}
 }
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler)
 {
-	uint ret;
+	uint ret,gret;
+	int i;
 	debug("pmgt_strategy");
-	ret=freturn(pcsyms_fun.get_powercap_strategy);
+	for (i=0;i<NUM_DOMAINS;i++){
+		ret=freturn(pcsyms_fun[i].get_powercap_strategy);
+		if (ret==PC_DVFS) gret=ret;	
+	}
 	return ret;
 }
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode)
 {
-	freturn(pcsyms_fun.set_pc_mode,mode);
+	int i;
+	for (i=0;i<NUM_DOMAINS;i++){
+		freturn(pcsyms_fun[i].set_pc_mode,mode);
+	}
 }
 
 void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain)
 {
+	float pnode,pcpu,pdram,pgpu;
 	memcpy(&pdist_per_domain,pdomain,sizeof(dom_power_t));
+	pnode=(float)(pdomain->platform-pdomain->gpu)/(float)pdomain->platform;
+	pcpu=(float)(pdomain->cpu)/(float)pdomain->platform;
+	pdram=(float)(pdomain->dram)/(float)pdomain->platform;
+	pgpu=(float)(pdomain->gpu)/(float)pdomain->platform;
+	verbose(1,"[NODE %f CPU %f DRAM %f GPU %f]",pnode,pcpu,pdram,pgpu);
 }
 
 

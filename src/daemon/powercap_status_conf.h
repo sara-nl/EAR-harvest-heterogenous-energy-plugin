@@ -35,6 +35,8 @@
 #define DOMAIN_DRAM     2
 #define DOMAIN_GPU      3
 
+#define NUM_DOMAINS 4
+
 
 #define PC_STATUS_OK      0
 #define PC_STATUS_GREEDY  1
