@@ -44,6 +44,7 @@ void pcapp_info_new_job(pc_app_info_t *t)
 void pcapp_info_end_job(pc_app_info_t *t)
 {
 	t->req_f=0;
+	t->pc_status=PC_STATUS_IDLE;
 }
 void pcapp_info_set_req_f(pc_app_info_t *t,ulong f)
 {
