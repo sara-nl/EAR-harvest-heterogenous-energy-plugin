@@ -26,7 +26,7 @@ all: $(powercap_BINS)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
 pc_dvfs.so:pc_dvfs.o $(dvfs_DEPS)
-	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(dvfs_DEPS)
 
 
 %.so: %.o 

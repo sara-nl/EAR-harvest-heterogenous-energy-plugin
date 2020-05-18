@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/includes.h>
 #include <common/system/symplug.h>
 
@@ -56,7 +56,7 @@ state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 {
-	void *handle = dlopen(path, RTLD_LOCAL | RTLD_NOW);
+	void *handle = dlopen(path, RTLD_GLOBAL | RTLD_NOW);
 	int i;
 	if (!handle)
 	{

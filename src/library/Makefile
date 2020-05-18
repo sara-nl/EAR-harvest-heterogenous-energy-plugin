@@ -37,6 +37,7 @@ core_OBJS = \
     metrics/metrics.o \
     models/models.o \
     policies/policy.o \
+    policies/pc_suport.o \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \

@@ -32,10 +32,11 @@
 
 #include <common/config.h>
 #include <common/includes.h>
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap_status.h>
 #include <common/types/signature.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
+#include <common/types/pc_app_info.h>
 #if POWERCAP
 extern pc_app_info_t *pc_app_info_data;
 
@@ -43,6 +44,7 @@ ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s)
 {
 		ulong req_f,cfreq;
     uint plimit,cpstate,ppstate;
+		uint numpstates;
 		double ppower;
     req_f=f;
     plimit=pc->last_t1_allocated; 				/* limit */
@@ -73,7 +75,6 @@ void pc_support_compute_next_state(node_powercap_opt_t *pc,signature_t *s)
       power_status=compute_power_status(pc,(uint)(s->DC_power));
       eff_f=frequency_closest_high_freq(s->avg_f,1);
 			if (eff_f < pc_app_info_data->req_f){
-      	verbose(1,"Powercap is set to %u Watts, status %u effective freq %lu",get_powercapopt_value(pc,power_status,eff_f);
 				verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,pc_app_info_data->req_f);
     		pc_app_info_data->pc_status=compute_next_status(pc,(uint)(s->DC_power),eff_f,pc_app_info_data->req_f);
     		verbose(1,"New application state should be %u",pc_app_info_data->pc_status);

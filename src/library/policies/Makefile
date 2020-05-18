@@ -3,7 +3,8 @@ CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
 ######## FILES
 
 poli_OBJS = \
-    policy.o
+    policy.o \
+		pc_suport.o
 
 modl_BINS = \
        min_time.so  \

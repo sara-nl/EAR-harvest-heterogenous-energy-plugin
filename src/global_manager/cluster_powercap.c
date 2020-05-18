@@ -269,6 +269,10 @@ void print_cluster_power_status(powercap_status_t *my_cluster_power_status)
 {
   int i;
 	powercap_status_t *cs=my_cluster_power_status;
+	if (cs==NULL){
+		debug("cluster status is NULL");
+		return;
+	}
 	debug("Total %u Idle  %u power (released %u requested %u consumed %u allocated %u) total_greedy_nodes %u",cs->total_nodes,cs->idle_nodes, cs->released,cs->requested,cs->current_power,cs->total_powercap,cs->num_greedy);
   debug("%d power_status received",num_power_status);
   for (i=0;i<cs->num_greedy;i++){
@@ -331,6 +335,10 @@ void cluster_check_powercap()
 {
 				debug("%sSTART cluster_check_powercap---------%s",COL_BLU,COL_CLR);
         num_power_status=cluster_get_powercap_status(&my_cluster_conf,&my_cluster_power_status);
+				if (num_power_status==0){
+					verbose(1,"num_power_status in cluster_check_powercap is 0");
+					return;
+				}
         print_cluster_power_status(my_cluster_power_status);
 				aggregate_data(my_cluster_power_status);
         powercap_reallocation(my_cluster_power_status,&cluster_options);

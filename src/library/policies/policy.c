@@ -30,7 +30,7 @@
 #include <mpi.h>
 #endif
 #include <dlfcn.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/includes.h>
 #include <common/system/symplug.h>
 #include <common/hardware/frequency.h>
