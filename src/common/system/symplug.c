@@ -56,7 +56,7 @@ state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 {
-	void *handle = dlopen(path, RTLD_LOCAL | RTLD_NOW);
+	void *handle = dlopen(path, RTLD_LOCAL | RTLD_LAZY);
 	int i;
 	if (!handle)
 	{

@@ -46,6 +46,7 @@
 
 
 //#define SHOW_DEBUGS 0
+#define NO_VAL (0xfffffffe)
 #include <common/config.h>
 #include <common/colors.h>
 #include <common/environment.h>
@@ -458,7 +459,8 @@ static void get_job_identification()
 			if (step_id != NULL) {
 				my_step_id=atoi(step_id);
 			} else {
-				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using SLURM_JOB_ID");
+				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using stepid=0");
+				my_step_id=NO_VAL;
 			}
 		}
 	} else {
@@ -552,8 +554,11 @@ void ear_init()
 	strtok(node_name, ".");
 
 	debug("Running in %s",node_name);
-
+	#if MPI
 	verb_level = get_ear_verbose();
+	#else
+	verb_level=1;
+	#endif
 	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
@@ -1212,6 +1217,7 @@ void ear_new_iteration(unsigned long loop_id)
 /**************** New for iterative code ********************/
 void *earl_periodic_actions(void *no_arg)
 {
+		verbose(1,"EARL periodic thread ON");
 		if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
 		if (!my_id) traces_start();
     states_periodic_begin_period(my_id, NULL, 1, 1);
