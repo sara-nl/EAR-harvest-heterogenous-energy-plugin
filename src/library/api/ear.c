@@ -533,6 +533,8 @@ void ear_init()
 	my_size=1;
 	#endif
 
+	printf("EAR_INIT\n");
+
 	//debug("Reading the environment");
 
 	// Environment initialization
@@ -708,7 +710,7 @@ void ear_init()
   	}
 		fill_application_mgt_data(app_mgt_info);
 		/* This area is RW */
-		get_app_mgt_path(get_ear_tmp(),pc_app_info_path);
+		get_pc_app_info_path(get_ear_tmp(),pc_app_info_path);
 		debug("pc_app_info path %s",pc_app_info_path);
 		pc_app_info_data=attach_pc_app_info_shared_area(pc_app_info_path);
 		if (pc_app_info_data==NULL){

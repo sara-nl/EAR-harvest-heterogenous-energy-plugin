@@ -176,7 +176,7 @@ state_t pmgt_enable(pwr_mgt_t *phandler)
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
 		ret=freturn(pcsyms_fun[i].enable);
-		if (ret!=EAR_SUCCESS) gret=ret;
+		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
 	return gret;
 }
@@ -202,7 +202,7 @@ state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,uint li
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
 		ret=freturn(pcsyms_fun[i].set_powercap_value,pid,domain,limit*pdomains[i]);
-		if (ret!=EAR_SUCCESS) gret=ret;
+		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
 	return gret;
 }
@@ -213,26 +213,27 @@ state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap)
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
 		ret=freturn(pcsyms_fun[i].get_powercap_value,pid,&parc);
-		total+=parc;
-		if (ret!=EAR_SUCCESS) gret=ret;
+		if (domains_loaded[i]) total+=parc;
+		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
 	*powercap=total;
 	return gret;
 }
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid)
 {
-	uint ret=0;
+	uint ret=0,gret=0;
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
-		ret+=freturn(pcsyms_fun[i].is_powercap_policy_enabled,pid);
+		ret=freturn(pcsyms_fun[i].is_powercap_policy_enabled,pid);
+		if (domains_loaded[i]) gret+=ret;
 	}
-	return ret;
+	return gret;
 }
 void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd)
 {
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
-		freturn(pcsyms_fun[i].print_powercap_value,fd);
+		if (domains_loaded[i]) freturn(pcsyms_fun[i].print_powercap_value,fd);
 	}
 }
 void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b)
@@ -240,8 +241,10 @@ void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b)
 	int i;
 	char new_s[512];
 	for (i=0;i<NUM_DOMAINS;i++){
-		freturn(pcsyms_fun[i].powercap_to_str,new_s);
-		strcat(b,new_s);
+		if (domains_loaded[i]){ 
+			freturn(pcsyms_fun[i].powercap_to_str,new_s);
+			strcat(b,new_s);
+		}
 	}
 }
 
@@ -250,19 +253,21 @@ void pmgt_set_status(pwr_mgt_t *phandler,uint status)
 	debug("pmgt_set_status");
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
-		freturn(pcsyms_fun[i].set_status,status);
+		if (domains_loaded[i]) freturn(pcsyms_fun[i].set_status,status);
 	}
 }
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler)
 {
-	uint ret,gret;
+	uint ret,gret=PC_POWER;
 	int i;
 	debug("pmgt_strategy");
 	for (i=0;i<NUM_DOMAINS;i++){
-		ret=freturn(pcsyms_fun[i].get_powercap_strategy);
-		if (ret==PC_DVFS) gret=ret;	
+		if (domains_loaded[i]){
+			ret=freturn(pcsyms_fun[i].get_powercap_strategy);
+			if (ret==PC_DVFS) gret=ret;	
+		}
 	}
-	return ret;
+	return gret;
 }
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode)
 {

@@ -1,4 +1,4 @@
-MPI_API = 
+MPI_API = 1
 ifdef MPI_API
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread -DMPI=1
 else
@@ -44,6 +44,7 @@ core_OBJS = \
     metrics/metrics.o \
     models/models.o \
     policies/policy.o \
+    policies/pc_suport.o \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \

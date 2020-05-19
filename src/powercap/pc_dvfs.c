@@ -51,8 +51,8 @@
 
 #define POWERCAP_MON 0
 #define RAPL_VS_NODE_POWER 1
-#define RAPL_VS_NODE_POWER_limit 0.15
-#define DEBUG_PERIOD 1
+#define RAPL_VS_NODE_POWER_limit 0.85
+#define DEBUG_PERIOD 15
 
 pthread_t dvfs_pc_th;
 static uint current_dvfs_pc=0,set_dvfs_pc=0;
@@ -118,10 +118,10 @@ void dvfs_pc_thread(void *d)
 			//debug(rapl_energy_str);
 			acum_energy=acum_rapl_energy(values_diff);
 			power_rapl=(float)acum_energy/(1*RAPL_MSR_UNITS);
-			debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
+			//debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
 		if (c_status==PC_STATUS_RUN){
 			if (!secs){ 
-		//		debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
+				debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
 			}
 			#if 0
 			debug("DRAM0 %f DRAM1 %f PCK0 %f PCK1 %f",((float)values_diff[0]/(1*RAPL_MSR_UNITS)),((float)values_diff[1]/(1*RAPL_MSR_UNITS)),
