@@ -46,7 +46,6 @@
 
 
 //#define SHOW_DEBUGS 0
-#define NO_VAL (0xfffffffe)
 #include <common/config.h>
 #include <common/colors.h>
 #include <common/environment.h>
@@ -75,6 +74,7 @@
 #include <daemon/shared_configuration.h>
 
 #include <metrics/common/papi.h>
+#include <schedulers/sched_definitions.h>
 
 // Statics
 #define BUFFSIZE 			128
@@ -460,7 +460,7 @@ static void get_job_identification()
 				my_step_id=atoi(step_id);
 			} else {
 				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using stepid=0");
-				my_step_id=NO_VAL;
+				my_step_id=NULL_STEPID;
 			}
 		}
 	} else {
