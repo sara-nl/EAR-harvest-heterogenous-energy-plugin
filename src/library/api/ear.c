@@ -459,7 +459,7 @@ static void get_job_identification()
 			if (step_id != NULL) {
 				my_step_id=atoi(step_id);
 			} else {
-				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using stepid=0");
+				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using stepid=0\n");
 				my_step_id=NULL_STEPID;
 			}
 		}

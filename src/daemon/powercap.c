@@ -321,10 +321,10 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl)
 	debug("periodic_metric_info");
 	while(pthread_mutex_trylock(&my_pc_opt.lock));
 	pmgt_set_power_per_domain(pcmgr,cp);
-	debug("pc_app_info req_f %lu pc_status %u",pc_app_info_data->req_f,pc_app_info_data->pc_status);
-	debug("PM event, current power %u powercap %u allocated %u status %u released %u requested %u",
-		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,
-		my_pc_opt.requested);
+	debug("%spc_app_info req_f %lu pc_status %u%s",COL_GRE,pc_app_info_data->req_f,pc_app_info_data->pc_status,COL_CLR);
+	debug("%sPM event, current power %u powercap %u allocated %u status %u released %u requested %u%s",\
+		COL_GRE,current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,\
+		my_pc_opt.requested,COL_CLR);
 	/* If mode is AUTO_CONFIG EARD takes care of status changes, if not, the EARL will take care of it */
 	if (pc_status_config!=AUTO_CONFIG){
 		error("ONLY AUTO_CONFIG is supported for now, change and recompile");

@@ -56,15 +56,15 @@ typedef struct powercap_symbols {
   void    (*powercap_to_str)(char *b);
 	void 		(*print_powercap_value)(int fd);
 	void 		(*set_app_req_freq)(ulong f);
-	
+	void 		(*set_verb_channel)(int fd);	
 } powercapsym_t;
 
 static dom_power_t pdist_per_domain;
-static float pdomains[NUM_DOMAINS]={1.0,0.85,0,0};
+static float pdomains[NUM_DOMAINS]={1.0,0.85,0,0.1};
 static uint domains_loaded[NUM_DOMAINS]={0,0,0,0};
 static powercapsym_t pcsyms_fun[NUM_DOMAINS];
 static void *pcsyms_obj[NUM_DOMAINS] ={ NULL,NULL,NULL,NULL};
-const int   pcsyms_n = 11;
+const int   pcsyms_n = 12;
 extern cluster_conf_t my_cluster_conf;
 
 const char     *pcsyms_names[] ={
@@ -78,7 +78,8 @@ const char     *pcsyms_names[] ={
   "get_powercap_strategy",
   "powercap_to_str",
 	"print_powercap_value",
-	"set_app_req_freq"
+	"set_app_req_freq",	
+	"set_verb_channel"
 };
 
 
@@ -89,7 +90,7 @@ const char     *pcsyms_names[] ={
 #define DEFAULT_PC_PLUGIN_NAME_NODE "noplugin"
 #define DEFAULT_PC_PLUGIN_NAME_CPU  "pc_dvfs"
 #define DEFAULT_PC_PLUGIN_NAME_DRAM "noplugin"
-#define DEFAULT_PC_PLUGIN_NAME_GPU  "noplugin"
+#define DEFAULT_PC_PLUGIN_NAME_GPU  "gpu_dummy"
 static uint pc_plugin_loaded=0;
 
 /* This function will load any plugin , detect components etc . It must me executed just once */
@@ -178,6 +179,10 @@ state_t pmgt_enable(pwr_mgt_t *phandler)
 		ret=freturn(pcsyms_fun[i].enable);
 		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
+	if (gret!=EAR_SUCCESS) return gret;
+  for (i=0;i<NUM_DOMAINS;i++){
+    freturn(pcsyms_fun[i].set_verb_channel,verb_channel);
+  }
 	return gret;
 }
 state_t pmgt_disable(pwr_mgt_t *phandler)

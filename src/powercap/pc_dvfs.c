@@ -145,7 +145,7 @@ void dvfs_pc_thread(void *d)
 				if (c_pstate>t_pstate){
 					c_pstate=c_pstate-1;
 					c_freq=frequency_pstate_to_freq(c_pstate);
-					debug("%sIncreasing freq to %lu%s",COL_RED,c_freq,COL_CLR);
+					debug("%sIncreasing freq to %lu (t_pstate %u c_pstate %u)%s",COL_RED,c_freq,t_pstate,c_pstate,COL_CLR);
 					frequency_set_all_cpus(c_freq);
 				}
 		}
@@ -230,3 +230,11 @@ void set_app_req_freq(ulong f)
 	debug("Requested application freq set to %lu",f);
 	c_req_f=f;	
 }
+
+void set_verb_channel(int fd)
+{
+  WARN_SET_FD(fd);
+  VERB_SET_FD(fd);
+  DEBUG_SET_FD(fd);
+}
+

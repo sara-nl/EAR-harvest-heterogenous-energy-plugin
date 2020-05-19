@@ -177,11 +177,13 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		i=best_pstate-1;
 		time_current=time_ref;
 		debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
+		debug("Starting at pstate %d, curr_freq %lu def_freq %lu min_pstate %d",i,curr_freq,def_freq,min_pstate);
 
 		while(try_next && (i >= min_pstate))
 		{
 			if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 			{
+				debug("Looking for pstate %d",i);
 				st=project_power(my_app,curr_pstate,i,&power_proj);
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
@@ -207,21 +209,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 			}
 		}	
 		/* Controlar la freq por power cap , si capado poner GREEDY, gestionar req-f */	
-		#if 0
-		projection_t *p;
-		uint plimit;
-		req_f=best_freq;
-		plimit=c->app->pc_opt.last_t1_allocated;
-		p=projection_get(best_pstate);
-		if (p->Power>plimit){
-			do{
-				best_pstate++;
-				p=projection_get(best_pstate);
-			}while((p->Power>plimit) && (best_pstate<c->num_pstates));
-			best_freq=frequency_pstate_to_freq(best_pstate);
-			verbose(1,"Frequency selected is not valid because powercap limits req_f %lu selected %lu, status should be greedy",req_f,best_freq);
-		}
-		#endif
+		if (best_freq<def_freq) best_freq=def_freq;
 		*new_freq=best_freq;
 		return EAR_SUCCESS;
 }
@@ -236,21 +224,6 @@ state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *o
 
 	if ((c==NULL) || (curr_sig==NULL) || (last_sig==NULL)) return EAR_ERROR;
 
-#if 0
-    if (is_powercap_set(&c->app->pc_opt)){
-			power_status=compute_power_status(&c->app->pc_opt,(uint)(curr_sig->DC_power));
-			eff_f=frequency_closest_high_freq(curr_sig->avg_f,1);
-			verbose(1,"Powercap is set to %u Watts, status %u effective freq %lu",get_powercapopt_value(&c->app->pc_opt),power_status,eff_f);
-			if (eff_f<curr_sig->def_f){
-				verbose(1,"Running with powercap, status %u and effective freq %lu vs selected %lu",power_status,eff_f,curr_sig->def_f);
-			}
-    	next_status=compute_next_status(&c->app->pc_opt,(uint)(curr_sig->DC_power),eff_f,req_f);
-    	verbose(1,"New application state should be %u",next_status);
-    }else{
-      verbose(1,"Powercap is not set");
-			power_status=PC_STATUS_ERROR;
-    }
-#endif
 
 
 	

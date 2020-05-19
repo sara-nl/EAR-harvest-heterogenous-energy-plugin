@@ -31,6 +31,7 @@
 #include <string.h>
 
 #include <common/config.h>
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <daemon/powercap_status.h>
 #include <common/types/signature.h>
@@ -56,6 +57,7 @@ ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s)
 		if ((uint)ppower<=plimit){
 			return req_f;
 		}else{
+			pc_app_info_data->pc_status=PC_STATUS_GREEDY;
 			numpstates=frequency_get_num_pstates();
 			do{
 				ppstate++;
@@ -79,6 +81,7 @@ void pc_support_compute_next_state(node_powercap_opt_t *pc,signature_t *s)
     		pc_app_info_data->pc_status=compute_next_status(pc,(uint)(s->DC_power),eff_f,pc_app_info_data->req_f);
     		verbose(1,"New application state should be %u",pc_app_info_data->pc_status);
 			}else{
+				verbose(1,"eff_f %lu req_f %lu , going to status OK",eff_f,pc_app_info_data->req_f);
 				pc_app_info_data->pc_status=PC_STATUS_OK;
 			}
     }else{

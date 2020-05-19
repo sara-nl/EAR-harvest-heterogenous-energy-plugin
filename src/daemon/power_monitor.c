@@ -404,6 +404,7 @@ void form_database_paths()
 */
 
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
+	verbose(1,"job_init_powermon_app init");
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
 	copy_application(&current_ear_app[ccontext]->app, new_app);
@@ -422,6 +423,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 	read_enegy_data(ceh, &c_energy);
 	copy_energy_data(&current_ear_app[ccontext]->energy_init, &c_energy);
 	aperf_job_avg_frequency_init_all_cpus();
+	verbose(1,"job_init_powermon_app end");
 }
 
 
@@ -729,6 +731,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
   memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	verbose(1,"Cleaning loop info (new)");
 	set_null_loop(&current_loop_data);
+	verbose(1,"End loop info");
 	/* End app configuration */
 	current_node_freq = f;
 	appID->job.def_f = dyn_conf->def_freq;
@@ -818,7 +821,7 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	app_mgt_end_job(app_mgt_info);
   if (powermon_is_idle()) powercap_run_to_idle();
 	pcapp_info_end_job(pc_app_info_data);
-	powercap_set_app_req_freq(current_node_freq);
+	powercap_set_app_req_freq(current_ear_app[ccontext]->current_freq);
 #endif
 
 }

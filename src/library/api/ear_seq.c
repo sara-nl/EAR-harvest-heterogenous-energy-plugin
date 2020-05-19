@@ -31,3 +31,7 @@ void ear_init()
 {
 	printf("NO_FUNCIONA\n");
 }
+void ear_finalize()
+{
+	printf("NO_FUNCIONA\n");
+}

@@ -27,3 +27,4 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 void __attribute__((weak))  ear_init();
+void __attribute__((weak))  ear_finalize();

@@ -195,3 +195,9 @@ void set_pc_mode(uint mode)
 {
 }
 
+void set_verb_channel(int fd)
+{
+	WARN_SET_FD(fd);
+	VERB_SET_FD(fd);
+	DEBUG_SET_FD(fd);
+}
