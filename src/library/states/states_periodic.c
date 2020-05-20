@@ -148,6 +148,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
 void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP,VPI;
+	ulong AVGF;
 	unsigned long long VI;
 	unsigned long prev_f;
 	int result;
@@ -195,6 +196,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					POWER = loop_signature.signature.DC_power;
 					TPI = loop_signature.signature.TPI;
 					TIME = loop_signature.signature.time;
+					AVGF = loop_signature.signature.avg_f;
 
 		      VI=metrics_vec_inst(&loop_signature.signature);
 		      VPI=(double)VI/(double)loop_signature.signature.instructions;
@@ -218,8 +220,8 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					if (masters_info.my_master_rank>=0){
 						verbose(1,
-									"\n\nEAR+P(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ TPI=%.5lf)--> New frequency selected %lu\n",
-									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, TPI,
+									"\n\nEAR+P(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%lu)--> New frequency selected %lu\n",
+									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGF,
 									policy_freq);
 					}	
 					// Loop printing algorithm

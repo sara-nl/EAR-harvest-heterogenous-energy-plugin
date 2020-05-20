@@ -102,6 +102,7 @@ extern uint check_periodic_mode;
       POWER = loop_signature.signature.DC_power; \
       TPI = loop_signature.signature.TPI; \
       TIME = loop_signature.signature.time; \
+			AVGF = loop_signature.signature.avg_f; \
       loop_signature.signature.def_f=prev_f; \
       VI=metrics_vec_inst(&loop_signature.signature); \
       VPI=(double)VI/(double)loop_signature.signature.instructions; \
@@ -120,7 +121,7 @@ extern uint check_periodic_mode;
 #define VERBOSE_SIG() \
 			if (masters_info.my_master_rank>=0){\
       	verbose(1,"EAR+D(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
-      	verbose(1,"\t (CPI=%.3lf GBS=%.3lf Power=%.2lf Time=%.3lf Energy=%.1lfJ TPI=%.2lf):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, TPI,policy_freq);\
+      	verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lf Time=%.3lf Energy=%.1lfJ AVGF=%lu):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, AVGF,policy_freq);\
 			}
 
 
@@ -286,6 +287,7 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC;
+	ulong AVGF;
 	unsigned long prev_f;
 	int ready;
 	ull VI;

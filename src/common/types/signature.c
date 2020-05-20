@@ -64,7 +64,7 @@ void signature_print_fd(int fd, signature_t *sig, char is_extended)
 
 void signature_print_simple_fd(int fd, signature_t *sig)
 {
-	dprintf(fd, "[AVGF=%lu DEFF=%lu TIME=%lf CPI=%lf GBS=%lf POWER=%lf]",sig->avg_f, sig->def_f,sig->time, sig->CPI,sig->GBS,sig->DC_power);
+	dprintf(fd, "[AVGF=%lu DEFF=%lu TIME=%.3lf CPI=%.3lf GBS=%.2lf POWER=%.2lf]",sig->avg_f, sig->def_f,sig->time, sig->CPI,sig->GBS,sig->DC_power);
 }
 
 
@@ -120,7 +120,7 @@ void copy_mini_sig(ssig_t *dst,ssig_t *src)
 
 void minis_to_str(ssig_t *s,char *b)
 {
-	sprintf(b,"[power %f GBs %f CPI %f GFlops %f time %f avgf %lu deff %lu]",s->DC_power,s->GBS,s->CPI,s->Gflops,s->time,
+	sprintf(b,"[power %.2f GBs %.2f CPI %.3f GFlops %.2f time %.3f avgf %lu deff %lu]",s->DC_power,s->GBS,s->CPI,s->Gflops,s->time,
 	s->avg_f,s->def_f);
 }
 
