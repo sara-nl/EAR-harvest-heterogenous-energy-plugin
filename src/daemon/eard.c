@@ -1177,7 +1177,7 @@ int main(int argc, char *argv[]) {
 
 	/* We initialize topology */
 	s = topology_init(&node_desc);
-	node_size = node_desc.core_count;
+	node_size = node_desc.cpu_count;
 	num_packs = node_desc.socket_count;
 
 	if (state_fail(s) || node_size <= 0 || num_packs <= 0) {

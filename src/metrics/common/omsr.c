@@ -73,25 +73,29 @@ int get_total_packages()
 /* It is supposed to be checked it is not already initialized before calling it */
 int init_msr(int *dest_fd_map)
 {
-    total_packages = detect_packages(&package_map);
-		if (total_packages==0)
-    {
-				debug("Totall packages detected in init_msr is zero");	
-        return EAR_ERROR;
-    }
+	total_packages = detect_packages(&package_map);
+
+	if (total_packages==0)
+	{
+		debug("Totall packages detected in init_msr is zero");	
+		return EAR_ERROR;
+	}
+
 	unsigned long long result;
 	int j;
+	
 	for(j=0;j<total_packages;j++) 
-    {
-        int ret;
-        fd_map[j] = -1;
-        if ((ret = omsr_open(package_map[j], &fd_map[j])) != EAR_SUCCESS)
-      	{   
-  	    	return EAR_ERROR;
-  	    }
+	{
+        	int ret;
+        	fd_map[j] = -1;
+		if ((ret = omsr_open(package_map[j], &fd_map[j])) != EAR_SUCCESS) {   
+  	    		return EAR_ERROR;
+		}
 	}
+
 	memcpy(dest_fd_map,fd_map,sizeof(int)*total_packages);
-    msr_initialised = 1;
+	msr_initialised = 1;
+
 	return EAR_SUCCESS;
 }
 

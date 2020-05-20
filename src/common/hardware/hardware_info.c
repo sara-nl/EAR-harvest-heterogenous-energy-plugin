@@ -58,18 +58,30 @@ int detect_packages(int **mypackage_map)
 		topology_select(&topo1, &topo2, TPSelect.socket, TPGroup.merge, 0);
 		init = 1;
 	}
-    	
-	num_cpus     = topo1.socket_count;
-    num_cores    = topo1.core_count;
+    
+	num_cores    = topo1.core_count;
 	num_packages = topo1.socket_count;
+	num_cpus     = topo1.socket_count;
+	
+	if (num_cpus < 1 || num_cores < 1) {
+        	return 0;
+	}
 
 	if (mypackage_map != NULL) {
-    	*mypackage_map = calloc(num_cores, sizeof(int));
+		*mypackage_map = calloc(num_cores, sizeof(int));
 		package_map = *mypackage_map;
 	}
 
 	for (i = 0; mypackage_map != NULL && i < topo2.cpu_count; ++i) {
 		package_map[i] = topo2.cpus[i].id;
+	}
+
+
+	fprintf(stderr, "detect_packages\n");
+	fprintf(stderr, "num_packages %d\n", num_packages);
+	if (mypackage_map != NULL) {
+		fprintf(stderr, "package_map[0] %d\n", package_map[0]);
+		fprintf(stderr, "package_map[1] %d\n", package_map[1]);
 	}
 
 	return num_packages;
