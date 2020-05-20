@@ -76,14 +76,6 @@ int detect_packages(int **mypackage_map)
 		package_map[i] = topo2.cpus[i].id;
 	}
 
-
-	fprintf(stderr, "detect_packages\n");
-	fprintf(stderr, "num_packages %d\n", num_packages);
-	if (mypackage_map != NULL) {
-		fprintf(stderr, "package_map[0] %d\n", package_map[0]);
-		fprintf(stderr, "package_map[1] %d\n", package_map[1]);
-	}
-
 	return num_packages;
 }
 
