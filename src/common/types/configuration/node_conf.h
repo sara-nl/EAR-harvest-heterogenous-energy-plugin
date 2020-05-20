@@ -73,23 +73,26 @@ typedef struct node_conf
 
 typedef struct my_node_conf
 {
-	uint cpus;
-	uint island;
-	ulong max_pstate;
-	char db_ip[NODE_PREFIX];
-	char db_sec_ip[NODE_PREFIX];
-	char *coef_file;
-	uint num_policies;
-	policy_conf_t *policies;
-  double min_sig_power;
-  double max_sig_power;
-  double max_error_power;
-	ulong  max_temp;
-	double max_power_cap;
-	char power_cap_type[SHORT_NAME];
-	uint 	use_log;
-    int num_tags;
-    char **tags;
+    uint cpus;
+    uint island;
+    ulong max_pstate;
+    char db_ip[NODE_PREFIX];
+    char db_sec_ip[NODE_PREFIX];
+    char *coef_file;
+    char *energy_plugin;
+    char *energy_model;
+    char *powercap_plugin;
+    uint num_policies;
+    policy_conf_t *policies;
+    double  min_sig_power;
+    double  max_sig_power;
+    double  max_error_power;
+    ulong   max_temp;
+    ulong   max_avx512_freq;
+    ulong   max_avx2_freq;
+    double  max_power_cap;
+    char    powercap_type;
+    uint 	use_log;
 }my_node_conf_t;
 
 

@@ -230,6 +230,132 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 	island->num_ranges += range_count;
 }
 
+void parse_tag(cluster_conf_t *conf, char *line)
+{
+    char *buffer_ptr, *second_ptr; //auxiliary pointers
+    char *token; //group token
+    char *key, *value; //main tokens
+
+    int i;
+    int idx = -1;
+
+    if (conf->num_tags == 0)
+        conf->tags = NULL;
+
+    token = strtok_r(line, " ", &buffer_ptr);
+
+    while (token != NULL)
+    {
+        key = strtok_r(token, "=", &second_ptr); 
+        value = strtok_r(NULL, "=", &second_ptr);
+
+        if (key == NULL || value == NULL || !strlen(key) || !strlen(value))
+        {
+            token = strtok_r(NULL, " ", &buffer_ptr);
+            warning("Error while parsing tags, continuing to next line\n");
+            continue;
+        }
+
+        //printf("token: %s\t key: %s\tvalue:%s\tstrlen of tok: %u\n", token, key, value, strlen(token));
+        strclean(value, '\n');
+        strtoup(key);
+
+        if (!strcmp(key, "TAG"))
+        {
+            for (i = 0; i < conf->num_tags; i++)
+                if (!strcmp(conf->tags[i].id, value)) idx = i;
+
+            if (idx < 0)
+            {
+                conf->tags = realloc(conf->tags, sizeof(tag_t) * (conf->num_tags + 1));
+                idx = conf->num_tags;
+                conf->num_tags++;
+                memset(&conf->tags[idx], 0, sizeof(tag_t));
+                strcpy(conf->tags[idx].energy_model, "");
+                strcpy(conf->tags[idx].energy_plugin, "");
+                strcpy(conf->tags[idx].powercap_plugin, "");
+                strcpy(conf->tags[idx].id, value);
+             //   printf("Allocated new tag: %s\n", conf->tags[idx].id);
+            }
+            //else printf("Found previously allocated tag: %s\n", conf->tags[idx].id);
+        }
+        //SIMPLE VALUES
+        else if (!strcmp(key, "MAX_AVX512"))
+        {
+            //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
+            if (strchr(value, '.') != NULL || atol(value) < 10)
+                conf->tags[idx].max_avx2_freq = (ulong)(atof(value) * 1000000);
+            else
+                conf->tags[idx].max_avx2_freq = (atol(value));
+        }
+        else if (!strcmp(key, "MAX_AVX2"))
+        {
+            //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
+            if (strchr(value, '.') != NULL || atol(value) < 10)
+                conf->tags[idx].max_avx512_freq = (ulong)(atof(value) * 1000000);
+            else
+                conf->tags[idx].max_avx512_freq = (atol(value));
+        }
+        else if (!strcmp(key, "MAX_POWER"))
+        {
+            conf->tags[idx].max_power = atol(value);
+        }
+        else if (!strcmp(key, "MIN_POWER"))
+        {
+            conf->tags[idx].min_power = atol(value);
+        }
+        else if (!strcmp(key, "ERROR_POWER"))
+        {
+            conf->tags[idx].error_power = atol(value);
+        }
+        else if (!strcmp(key, "POWERCAP"))
+        {
+            conf->tags[idx].powercap = atol(value);
+        }
+
+        //MODELS
+        else if (!strcmp(key, "ENERGY_MODEL"))
+        {
+            strcpy(conf->tags[idx].energy_model, value);
+        }
+        else if (!strcmp(key, "ENERGY_PLUGIN"))
+        {
+            strcpy(conf->tags[idx].energy_plugin, value);
+        }
+        else if (!strcmp(key, "POWERCAP_PLUGIN"))
+        {
+            strcpy(conf->tags[idx].powercap_plugin, value);
+        }
+
+        //TYPE OF POWERCAP AND TAGS -> pending
+        else if (!strcmp(key, "DEFAULT"))
+        {
+            strtoup(value);
+            if (!strcmp(value, "YES") || !strcmp(value, "Y"))
+                conf->tags[idx].is_default = 1;
+            else
+                conf->tags[idx].is_default = 0;
+        }
+        else if (!strcmp(key, "TYPE"))
+        {
+            strtoup(value);
+            if (!strcmp(value, "ARCH"))
+                conf->tags[idx].type = TAG_TYPE_ARCH;
+        }
+        else if (!strcmp(key, "POWERCAP_TYPE"))
+        {
+            strtoup(value);
+            if (!strcmp(value, "APP") || !strcmp(value, "APPLICATION"))
+                conf->tags[idx].powercap_type = POWERCAP_TYPE_APP;
+            if (!strcmp(value, "NODE"))
+                conf->tags[idx].powercap_type = POWERCAP_TYPE_NODE;
+        }
+
+
+        token = strtok_r(NULL, " ", &buffer_ptr);
+    }            
+}
+
 void parse_island(cluster_conf_t *conf, char *line)
 {
     int idx = -1, i = 0;
@@ -238,7 +364,7 @@ void parse_island(cluster_conf_t *conf, char *line)
     char tag_parsing = 0;
     char *token;
 
-    if (conf->num_islands == 0)
+    if (conf->num_islands < 1)
         conf->islands = NULL;
 
     int current_ranges = 0;
@@ -258,10 +384,10 @@ void parse_island(cluster_conf_t *conf, char *line)
             if (idx < 0)
             {
                 conf->islands = realloc(conf->islands, sizeof(node_island_t)*(conf->num_islands+1));
-                            if (conf->islands==NULL){
-                                error("NULL pointer in allocating islands");
-                                return;
-                            }
+                if (conf->islands==NULL){
+                     error("NULL pointer in allocating islands");
+                     return;
+                }
                 set_default_island_conf(&conf->islands[conf->num_islands],atoi(token));
             }
         }
@@ -414,6 +540,8 @@ void parse_island(cluster_conf_t *conf, char *line)
             int id_f = idx < 0 ? conf->num_islands: idx;
             int current_num_tags = 0;
             int *current_tags = NULL;
+            if (conf->islands[id_f].num_specific_tags < 1)
+                    conf->islands[id_f].specific_tags = NULL;
             char found = 0;
             while (token)
             {
@@ -496,7 +624,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 	//filling the default policies before starting
     conf->num_policies=0;
-	conf->num_tags=0;
+	conf->num_etags=0;
     conf->power_policies = calloc(TOTAL_POLICIES, sizeof(policy_conf_t));
 	fill_policies(conf);
 	while (fgets(line, 256, conf_file) != NULL)
@@ -694,25 +822,25 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				//this must always be the first one
 				if (!strcmp(token, "ENERGYTAG"))
 				{
-					conf->num_tags++;
-					if (conf->num_tags==1) conf->e_tags=NULL;
-					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_tags));
+					conf->num_etags++;
+					if (conf->num_etags==1) conf->e_tags=NULL;
+					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_etags));
 					if (conf->e_tags==NULL){
 						error("NULL pointer reading energy tags");
 						return;
 					}
 					token = strtok_r(NULL, "=", &secondary_ptr);
-					memset(&conf->e_tags[conf->num_tags-1], 0, sizeof(energy_tag_t));
-          remove_chars(token, ' ');
-					strcpy(conf->e_tags[conf->num_tags-1].tag, token);
-					conf->e_tags[conf->num_tags-1].users = NULL;
-					conf->e_tags[conf->num_tags-1].groups = NULL;
-					conf->e_tags[conf->num_tags-1].accounts = NULL;
+					memset(&conf->e_tags[conf->num_etags-1], 0, sizeof(energy_tag_t));
+                    remove_chars(token, ' ');
+					strcpy(conf->e_tags[conf->num_etags-1].tag, token);
+					conf->e_tags[conf->num_etags-1].users = NULL;
+					conf->e_tags[conf->num_etags-1].groups = NULL;
+					conf->e_tags[conf->num_etags-1].accounts = NULL;
 				}
 				else if (!strcmp(token, "PSTATE"))
 				{
 					token = strtok_r(NULL, "=", &secondary_ptr);
-					conf->e_tags[conf->num_tags-1].p_state = atoi(token);
+					conf->e_tags[conf->num_etags-1].p_state = atoi(token);
 				}
 				else if (!strcmp(token, "USERS"))
 				{
@@ -720,17 +848,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					token = strtok_r(token, ",", &secondary_ptr);
 					while (token != NULL)
 					{
-						conf->e_tags[conf->num_tags-1].users = realloc(conf->e_tags[conf->num_tags-1].users,
-																	   sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_users+1));
-						if (conf->e_tags[conf->num_tags-1].users==NULL){
+						conf->e_tags[conf->num_etags-1].users = realloc(conf->e_tags[conf->num_etags-1].users,
+																	   sizeof(char *)*(conf->e_tags[conf->num_etags-1].num_users+1));
+						if (conf->e_tags[conf->num_etags-1].users==NULL){
 							error("NULL pointer in allocating etags");
 							return;
 						}
-						conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users] = malloc(strlen(token)+1);
+						conf->e_tags[conf->num_etags-1].users[conf->e_tags[conf->num_etags-1].num_users] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
 						remove_chars(token, '\n');
-						strcpy(conf->e_tags[conf->num_tags-1].users[conf->e_tags[conf->num_tags-1].num_users], token);
-						conf->e_tags[conf->num_tags-1].num_users++;
+						strcpy(conf->e_tags[conf->num_etags-1].users[conf->e_tags[conf->num_etags-1].num_users], token);
+						conf->e_tags[conf->num_etags-1].num_users++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
@@ -740,17 +868,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					token = strtok_r(token, ",", &secondary_ptr);
 					while (token != NULL)
 					{
-						conf->e_tags[conf->num_tags-1].groups = realloc(conf->e_tags[conf->num_tags-1].groups,
-																		sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_groups+1));
-						if (conf->e_tags[conf->num_tags-1].groups==NULL){
+						conf->e_tags[conf->num_etags-1].groups = realloc(conf->e_tags[conf->num_etags-1].groups,
+																		sizeof(char *)*(conf->e_tags[conf->num_etags-1].num_groups+1));
+						if (conf->e_tags[conf->num_etags-1].groups==NULL){
 							error("NULL pointer in allocating etags");
 							return;
 						}
-						conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups] = malloc(strlen(token)+1);
+						conf->e_tags[conf->num_etags-1].groups[conf->e_tags[conf->num_etags-1].num_groups] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
 						remove_chars(token, '\n');
-						strcpy(conf->e_tags[conf->num_tags-1].groups[conf->e_tags[conf->num_tags-1].num_groups], token);
-						conf->e_tags[conf->num_tags-1].num_groups++;
+						strcpy(conf->e_tags[conf->num_etags-1].groups[conf->e_tags[conf->num_etags-1].num_groups], token);
+						conf->e_tags[conf->num_etags-1].num_groups++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
@@ -760,17 +888,17 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					token = strtok_r(token, ",", &secondary_ptr);
 					while (token != NULL)
 					{
-						conf->e_tags[conf->num_tags-1].accounts = realloc(conf->e_tags[conf->num_tags-1].accounts,
-																		  sizeof(char *)*(conf->e_tags[conf->num_tags-1].num_accounts+1));
-						if (conf->e_tags[conf->num_tags-1].accounts==NULL){
+						conf->e_tags[conf->num_etags-1].accounts = realloc(conf->e_tags[conf->num_etags-1].accounts,
+																		  sizeof(char *)*(conf->e_tags[conf->num_etags-1].num_accounts+1));
+						if (conf->e_tags[conf->num_etags-1].accounts==NULL){
 							error("NULL pointer in allocating etags");
 							return;
 						}
-						conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts] = malloc(strlen(token)+1);
+						conf->e_tags[conf->num_etags-1].accounts[conf->e_tags[conf->num_etags-1].num_accounts] = malloc(strlen(token)+1);
                         remove_chars(token, ' ');
 						remove_chars(token, '\n');
-						strcpy(conf->e_tags[conf->num_tags-1].accounts[conf->e_tags[conf->num_tags-1].num_accounts], token);
-						conf->e_tags[conf->num_tags-1].num_accounts++;
+						strcpy(conf->e_tags[conf->num_etags-1].accounts[conf->e_tags[conf->num_etags-1].num_accounts], token);
+						conf->e_tags[conf->num_etags-1].num_accounts++;
                         token = strtok_r(NULL, ",", &secondary_ptr);
 					}
 				}
@@ -1115,6 +1243,13 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             conf->database.report_loops = atoi(token);
         }
 
+        //TAGS definition
+        else if (!strcmp(token, "TAG"))
+        {
+            line[strlen(line)] = '=';
+            parse_tag(conf, line);
+        }
+
 		    //ISLES config
 		else if (!strcmp(token, "ISLAND"))
 		{
@@ -1300,7 +1435,8 @@ void free_cluster_conf(cluster_conf_t *conf)
 
 	free(conf->islands);
 
-	for (i = 0; i < conf->num_tags; i++)
+    free(conf->tags);
+	for (i = 0; i < conf->num_etags; i++)
 	{
 		for (j = 0; j < conf->e_tags[i].num_users; j++)
 			free(conf->e_tags[i].users[j]);

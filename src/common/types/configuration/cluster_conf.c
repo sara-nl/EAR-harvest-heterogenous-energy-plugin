@@ -228,6 +228,25 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 	return n;
 }
 
+char tag_id_exists(cluster_conf_t *conf, char *tag)
+{
+    int i;
+    if (tag == NULL) return 0;
+    for (i = 0; i < conf->num_tags; i++)
+        if (!strcmp(tag, conf->tags[i].id)) return 1;
+
+    return 0;
+
+}
+
+int get_default_tag_id(cluster_conf_t *conf)
+{
+    int i, id = -1;
+    for (i = 0; i < conf->num_tags; i++)
+        if (conf->tags[i].is_default) id = i;
+
+    return id;
+}
 
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
@@ -237,6 +256,9 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     n->policies=malloc(sizeof(policy_conf_t)*n->num_policies);
     int num_spec_nodes = 0;
     int range_id = -1;
+    //char tag[GENERIC_NAME] = "";
+    int tag_id = -1;
+
     while(i<my_conf->num_nodes)
     {
 		if (range_conf_contains_node(&my_conf->nodes[i], nodename)) {
@@ -261,13 +283,19 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 			if ((my_conf->islands[i].ranges[range_id].sec_ip>=0) && (my_conf->islands[i].num_backups)){
             	strcpy(n->db_sec_ip, my_conf->islands[i].backup_ips[my_conf->islands[i].ranges[range_id].sec_ip]);
 			}
-			n->max_sig_power=my_conf->islands[i].max_sig_power;
-			n->min_sig_power=my_conf->islands[i].min_sig_power;
-			n->max_error_power=my_conf->islands[i].max_error_power;
-			n->max_temp=my_conf->islands[i].max_temp;
-			n->max_power_cap=my_conf->islands[i].max_power_cap;
-			strcpy(n->power_cap_type,my_conf->islands[i].power_cap_type);
 			n->use_log=my_conf->eard.use_log;
+
+            j = 0;
+            if (my_conf->islands[i].ranges[range_id].num_tags > 0)
+            {
+                for (j = 0; j < my_conf->islands[i].ranges[range_id].num_tags; j++)
+                {
+                    if (tag_id_exists(my_conf, my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]])) {
+                        tag_id = j;
+                        break;
+                    }
+                }
+            }
 		}
 		i++;
 	}while(i<my_conf->num_islands);
@@ -278,10 +306,32 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         return NULL;
     }
 
+    if (tag_id < 0) tag_id = get_default_tag_id(my_conf);
+    if (tag_id >= 0)
+    {
+        printf("Found my_node_conf with tag: %s\n", my_conf->tags[tag_id].id);
+        n->max_sig_power = (double)my_conf->tags[tag_id].max_power;
+        n->min_sig_power = (double)my_conf->tags[tag_id].min_power;
+        n->max_error_power = (double)my_conf->tags[tag_id].error_power;
+        n->max_temp = my_conf->tags[tag_id].max_temp;
+        n->max_power_cap = (double)my_conf->tags[tag_id].powercap;
+        n->max_avx512_freq = my_conf->tags[tag_id].max_avx512_freq;
+        n->max_avx2_freq = my_conf->tags[tag_id].max_avx2_freq;
+        n->powercap_type = my_conf->tags[tag_id].powercap_type;
+        n->energy_plugin = my_conf->tags[tag_id].energy_plugin;
+        n->energy_model = my_conf->tags[tag_id].energy_model;
+        n->powercap_plugin = my_conf->tags[tag_id].powercap_plugin;
+
+        
+    }
+    else warning("No tag found for current node in ear.conf\n");
+
 
     //pending checks for policies
-		memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
-		n->max_pstate=my_conf->eard.max_pstate;
+    memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
+    n->max_pstate=my_conf->eard.max_pstate;
+
+
 
 	return n;
 }
@@ -405,7 +455,7 @@ energy_tag_t * is_energy_tag_privileged(cluster_conf_t *my_conf, char *user,char
 	energy_tag_t *my_tag;
 	if (energy_tag==NULL) return NULL;
 	i=0;
-	while((i<my_conf->num_tags) && (!found)){
+	while((i<my_conf->num_etags) && (!found)){
 		if (strcmp(energy_tag,my_conf->e_tags[i].tag)==0){
 			found=1;
 			my_tag=&my_conf->e_tags[i];
@@ -422,7 +472,7 @@ energy_tag_t * energy_tag_exists(cluster_conf_t *my_conf,char *etag)
 	int found=0;
 	if (etag==NULL)	return NULL;
 	i=0;
-	while ((i<my_conf->num_tags) && (!found)){
+	while ((i<my_conf->num_etags) && (!found)){
 		if (strcmp(etag,my_conf->e_tags[i].tag)==0)	found=1;
 		else i++;
 	}
@@ -755,7 +805,7 @@ int validate_configuration(cluster_conf_t *conf)
     int i;
     for (i = 0; i < conf->num_islands; i++)
         if (conf->islands[i].num_ips < 1 || conf->islands[i].num_backups < 1) return EAR_ERROR;
-    for (i = 0; i < conf->num_tags; i++)
+    for (i = 0; i < conf->num_etags; i++)
         if (conf->e_tags[i].num_users < 1 && conf->e_tags[i].num_groups < 1 && conf->e_tags[i].num_accounts < 1) return EAR_ERROR;
 
 
