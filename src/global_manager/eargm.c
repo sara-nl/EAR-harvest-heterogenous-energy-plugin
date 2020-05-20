@@ -682,9 +682,14 @@ int main(int argc,char *argv[])
 			time(&end_time);
 			start_time=end_time-period_t1;
 	
-    
-	    	if ( db_select_acum_energy_idx(  divisor, use_aggregation,&last_id,&result)<0){
-				error("Asing for last T1 energy period. Using aggregated %d.Last id =%u",use_aggregation,last_id);
+   			if (last_id==0){
+					if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)==EAR_ERROR){
+			    	error("Asking for total energy system. Using aggregated %d",use_aggregation);
+  				}
+ 				}else{
+	    		if ( db_select_acum_energy_idx(  divisor, use_aggregation,&last_id,&result)<0){
+					error("Asing for last T1 energy period. Using aggregated %d.Last id =%u",use_aggregation,last_id);
+					}
 				}
 				debug("Energy consumed in last T1 %lu",result);
 	    	if (!result){ 

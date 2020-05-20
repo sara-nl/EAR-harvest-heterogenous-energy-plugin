@@ -262,7 +262,8 @@ void connect_service(int req, application_t *new_app) {
 	job_t *new_job = &new_app->job;
 	int pid = create_ID(new_job->id, new_job->step_id);
 	// Let's check if there is another application
-	verbose(VEARD + 1, "request for connection at service %d", req);
+	verbose(1, "request for connection at service %d (%lu,%lu)", req,new_job->id,new_job->step_id);
+	
 	if (is_new_application() || is_new_service(req, pid)) {
 		connect = 1;
 	} else {
@@ -327,6 +328,7 @@ void connect_service(int req, application_t *new_app) {
 		verbose(VEARD + 1, "Process pid %d selected as master", pid);
 		verbose(VEARD + 1, "service %d connected", req);
 	}
+	verbose(1,"Application connected with locall API");
 }
 
 // Checks application connections

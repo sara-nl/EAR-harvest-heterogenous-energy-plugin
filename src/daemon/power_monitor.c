@@ -744,9 +744,9 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	new_job_for_period(&current_sample, appID->job.id, appID->job.step_id);
 	pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);
-	verbose(VJOBPMON + 1, "%sJob created (%lu,%lu) is_mpi %d%s", COL_BLU,current_ear_app[ccontext]->app.job.id,
+	verbose(VJOBPMON , "%sJob created (%lu,%lu) is_mpi %d%s", COL_BLU,current_ear_app[ccontext]->app.job.id,
 			current_ear_app[ccontext]->app.job.step_id, current_ear_app[ccontext]->app.is_mpi,COL_CLR);
-	verbose(VJOBPMON + 1, "*******************");
+	verbose(VJOBPMON , "*******************");
 	sig_reported = 0;
 
 }

@@ -32,6 +32,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <linux/version.h>
+#include <math.h>
 //#define SHOW_DEBUGS 0
 #include <common/config.h>
 
@@ -410,7 +411,7 @@ ulong frequency_closest_frequency(ulong freq)
 	if (freq>freq_list_rank[0]) return freq_list_rank[1];
 	if (freq<freq_list_rank[num_freqs-1]) return freq_list_rank[num_freqs-1];
 	for (i=0;i<num_freqs;i++){
-		if (freq>freq_list_rank[i]) return freq_list_rank[i];
+		if (freq>=freq_list_rank[i]) return freq_list_rank[i];
 	}
 	return freq_list_rank[num_freqs-1];
 	
@@ -419,12 +420,12 @@ ulong frequency_closest_frequency(ulong freq)
 ulong frequency_closest_high_freq(ulong freq,int minps)
 {
   int i=0;
-  if (freq>freq_list_rank[minps]) return freq_list_rank[minps];
-  for (i=minps+1;i<num_freqs;i++){
-    if (freq>freq_list_rank[i]) return freq_list_rank[i-1];
-  }
-  return freq_list_rank[num_freqs-1];
-
+	ulong newf;
+	float ff;
+	ff=roundf((float)freq/100000.0);
+	newf=(ulong)((ff/10.0)*1000000);
+  if (newf>freq_list_rank[minps]) return freq_list_rank[minps];
+	return frequency_closest_frequency(newf);
 }
 
 

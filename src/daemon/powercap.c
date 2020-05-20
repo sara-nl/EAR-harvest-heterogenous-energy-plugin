@@ -134,7 +134,7 @@ void print_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 {
 	my_powercap_opt->def_powercap=powermon_get_powercap_def();
-	my_powercap_opt->powercap_idle=powermon_get_powercap_def()/2;
+	my_powercap_opt->powercap_idle=powermon_get_powercap_def();
 	my_powercap_opt->current_pc=powermon_get_powercap_def();
 	my_powercap_opt->last_t1_allocated=powermon_get_powercap_def();
 	my_powercap_opt->released=my_powercap_opt->last_t1_allocated-my_powercap_opt->powercap_idle;

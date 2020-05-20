@@ -52,21 +52,21 @@ ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s)
 		cfreq=frequency_closest_high_freq(s->avg_f,1); 	/* current freq */
 		cpstate=frequency_closest_pstate(cfreq);			 	/* current pstate */
 		ppstate=frequency_closest_pstate(req_f);				/* pstate for freq selected */
-		if (projection_available(cpstate,ppstate)){
+		if (projection_available(cpstate,ppstate)==EAR_SUCCESS){
 			project_power(s,cpstate,ppstate,&ppower);				/* Power at freq selected */
 			adapted=1;
 		}else{
 			ppower=plimit;
 		}
-		debug("checking frequency: cfreq %lu cpstate %u power %lf limit %u",cfreq,cpstate,ppower,plimit);		
-		if ((uint)ppower<=plimit){
+		debug("checking frequency: cfreq %lu cpstate %u ppstate %u power %lf limit %u",cfreq,cpstate,ppstate,ppower,plimit);		
+		if (((uint)ppower<=plimit) && (adapted)){
 			return req_f;
 		}else{
 			pc_app_info_data->pc_status=PC_STATUS_GREEDY;
 			numpstates=frequency_get_num_pstates();
 			do{
 				ppstate++;
-				if (projection_available(cpstate,ppstate)){			
+				if (projection_available(cpstate,ppstate)==EAR_SUCCESS){			
 					adapted=1;
 					project_power(s,cpstate,ppstate,&ppower);
 				}else ppower = plimit;
