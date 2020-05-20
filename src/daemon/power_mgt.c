@@ -88,7 +88,7 @@ const char     *pcsyms_names[] ={
 #define freturn(call, ...) ((call==NULL)?EAR_UNDEFINED:call(__VA_ARGS__));
 
 #define DEFAULT_PC_PLUGIN_NAME_NODE "noplugin"
-#define DEFAULT_PC_PLUGIN_NAME_CPU  "pc_dvfs"
+#define DEFAULT_PC_PLUGIN_NAME_CPU  "dvfs"
 #define DEFAULT_PC_PLUGIN_NAME_DRAM "noplugin"
 #define DEFAULT_PC_PLUGIN_NAME_GPU  "gpu_dummy"
 static uint pc_plugin_loaded=0;

@@ -80,7 +80,7 @@ void dvfs_pc_thread(void *d)
 		error("Num packages cannot be detected in dvfs_pc thread initialization");
 		pthread_exit(NULL);
 	}
-	debug("Num pcks detected in dvfs_pc thread %u",num_packs);
+	debug("DVFS:Num pcks detected in dvfs_pc thread %u",num_packs);
   values_rapl_init=(unsigned long long*)calloc(num_packs*RAPL_POWER_EVS,sizeof(unsigned long long));
   values_rapl_end=(unsigned long long*)calloc(num_packs*RAPL_POWER_EVS,sizeof(unsigned long long));
   values_diff=(unsigned long long*)calloc(num_packs*RAPL_POWER_EVS,sizeof(unsigned long long));
@@ -94,7 +94,7 @@ void dvfs_pc_thread(void *d)
 		error("fd_rapl cannot be allocated in dvfs_pc thread initialization");
 		pthread_exit(NULL);
 	}
-	debug("Initializing RAPL in dvfs_pc");
+	debug("DVFS:Initializing RAPL in dvfs_pc");
 	if (init_rapl_msr(fd_rapl)<0){ 
 		error("Error initializing rapl in dvfs_pc thread initialization");
 		pthread_exit(NULL);
@@ -105,7 +105,7 @@ void dvfs_pc_thread(void *d)
 	read_rapl_msr(fd_rapl,values_rapl_init);
   s = hardware_gettopology(&node_desc);
   node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
-	debug("Initializing frequency in dvfs_pc %u cpus",node_size);
+	debug("DVFS:Initializing frequency in dvfs_pc %u cpus",node_size);
 	frequency_init(node_size);
 	while(1)
 	{
@@ -121,7 +121,7 @@ void dvfs_pc_thread(void *d)
 			//debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
 		if (c_status==PC_STATUS_RUN){
 			if (!secs){ 
-				debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
+				debug("DVFS:%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
 			}
 			#if 0
 			debug("DRAM0 %f DRAM1 %f PCK0 %f PCK1 %f",((float)values_diff[0]/(1*RAPL_MSR_UNITS)),((float)values_diff[1]/(1*RAPL_MSR_UNITS)),
@@ -134,7 +134,7 @@ void dvfs_pc_thread(void *d)
 				c_pstate=frequency_freq_to_pstate(c_freq);
 				c_pstate=c_pstate+1;
 				c_freq=frequency_pstate_to_freq(c_pstate);
-				debug("%sReducing freq to %lu%s",COL_RED,c_freq,COL_CLR);
+				debug("DVFS:%sReducing freq to %lu%s",COL_RED,c_freq,COL_CLR);
 				frequency_set_all_cpus(c_freq);
 			}
 			}
@@ -145,7 +145,7 @@ void dvfs_pc_thread(void *d)
 				if (c_pstate>t_pstate){
 					c_pstate=c_pstate-1;
 					c_freq=frequency_pstate_to_freq(c_pstate);
-					debug("%sIncreasing freq to %lu (t_pstate %u c_pstate %u)%s",COL_RED,c_freq,t_pstate,c_pstate,COL_CLR);
+					debug("DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u)%s",COL_RED,c_freq,t_pstate,c_pstate,COL_CLR);
 					frequency_set_all_cpus(c_freq);
 				}
 		}
@@ -179,7 +179,7 @@ state_t enable()
 state_t set_powercap_value(uint pid,uint domain,uint limit)
 {
 	/* Set data */
-	debug("set_powercap_value %u",limit);
+	debug("DVFS:set_powercap_value %u",limit);
 	current_dvfs_pc=limit;
 	return EAR_SUCCESS;
 }
@@ -187,7 +187,7 @@ state_t set_powercap_value(uint pid,uint domain,uint limit)
 state_t get_powercap_value(uint pid,uint *powercap)
 {
 	/* copy data */
-	debug("get_powercap_value");
+	debug("DVFS:get_powercap_value");
 	*powercap=current_dvfs_pc;
 	return EAR_SUCCESS;
 }
@@ -208,18 +208,18 @@ void powercap_to_str(char *b)
 
 void set_status(uint status)
 {
-	debug("set_status %u",status);
+	debug("DVFS:set_status %u",status);
 	c_status=status;
 }
 uint get_powercap_strategy()
 {
-	debug("get_powercap_strategy");
+	debug("DVFS:get_powercap_strategy");
 	return PC_DVFS;
 }
 
 void set_pc_mode(uint mode)
 {
-	debug("set_pc_mode");
+	debug("DVFS:set_pc_mode");
 	c_mode=mode;
 }
 
@@ -227,7 +227,7 @@ void set_pc_mode(uint mode)
 
 void set_app_req_freq(ulong f)
 {
-	debug("Requested application freq set to %lu",f);
+	debug("DVFS:Requested application freq set to %lu",f);
 	c_req_f=f;	
 }
 

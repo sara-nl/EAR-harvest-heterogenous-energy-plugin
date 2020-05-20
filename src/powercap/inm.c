@@ -74,7 +74,7 @@ int do_cmd(char *cmd)
 state_t inm_disable_powercap_policy(uint pid)
 {
   char cmd[1024];
-  debug("1-Disable policy");
+  debug("INM:1-Disable policy");
   sprintf(cmd,INM_DISABLE_POWERCAP_POLICY_CMD,pid);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
@@ -87,11 +87,11 @@ state_t inm_disable_powercap_policy(uint pid)
 state_t inm_disable_powercap_policies()
 {
 	char cmd[1024];
-  debug("2-Disable policy control");
+  debug("INM:2-Disable policy control");
   sprintf(cmd,INM_DISABLE_POLICY_CONTROL_CMD);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
-    debug("Error disabling policy control");
+    debug("INM:Error disabling policy control");
 		return EAR_ERROR;
   }
   }
@@ -113,7 +113,7 @@ state_t inm_enable_powercap_policies()
 	char cmd[1024];
   /* 3-Enable powercap policy control */
   sprintf(cmd,INM_ENABLE_POLICY_CONTROL_CMD);
-  debug("Enable INM policy control");
+  debug("INM:Enable INM policy control");
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
     error("Error executing INM CMD Policy control");
@@ -127,7 +127,7 @@ state_t enable()
 	char cmd[1024];
 	state_t ret;
   /* 1-Enable XCC-Bridge comm */
-  debug("Enable XCC-Bridge");
+  debug("INM:Enable XCC-Bridge");
   sprintf(cmd,INM_ENABLE_XCC_BRIGE);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
@@ -136,7 +136,7 @@ state_t enable()
   }
   }
   /* 2-Enable INM commands */
-  debug("Enable INM");
+  debug("INM:Enable INM");
   sprintf(cmd,INM_ENABLE_CMD);
   if (do_cmd(cmd)){
   if (execute(cmd)!=EAR_SUCCESS){
@@ -155,7 +155,7 @@ state_t set_powercap_value(uint pid,uint domain,uint limit)
 	char c_date[128];
 	state_t ret;
 	if (!policy_enabled) return EAR_SUCCESS;
-	debug("inm_set_powercap_value policy %u limit %u",pid,limit);
+	debug("INM:inm_set_powercap_value policy %u limit %u",pid,limit);
 	c_limit=limit;
 	pc_on=1;
 	sprintf(cmd,INM_ENABLE_POWERCAP_POLICY_CMD,pid,limit);
@@ -165,7 +165,7 @@ state_t set_powercap_value(uint pid,uint domain,uint limit)
 
 state_t get_powercap_value(uint pid,uint *powercap)
 {
-	/* Pending */
+	debug("INM. get_powercap_value");
 	*powercap=c_limit;
 	return EAR_SUCCESS;
 }
@@ -186,6 +186,7 @@ void powercap_to_str(char *b)
 
 void set_status(uint status)
 {
+	debug("INM. pending");
 }
 uint get_powercap_stragetgy()
 {
@@ -193,6 +194,7 @@ uint get_powercap_stragetgy()
 }
 void set_pc_mode(uint mode)
 {
+	debug("INM. pending");
 }
 
 void set_verb_channel(int fd)

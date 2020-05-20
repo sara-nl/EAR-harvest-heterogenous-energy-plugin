@@ -4,12 +4,12 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 powercap_OBJS = \
     inm.o \
-		pc_dvfs.o \
+		dvfs.o \
 		gpu_dummy.o
 
 powercap_BINS = \
     inm.so \
-		pc_dvfs.so \
+		dvfs.so \
 		gpu_dummy.so
 
 powercap_PATH = $(DESTDIR)/lib/plugins/powercap
@@ -25,7 +25,7 @@ all: $(powercap_BINS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
-pc_dvfs.so:pc_dvfs.o $(dvfs_DEPS)
+dvfs.so:dvfs.o $(dvfs_DEPS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(dvfs_DEPS)
 
 

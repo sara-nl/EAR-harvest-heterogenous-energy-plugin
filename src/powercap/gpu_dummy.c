@@ -61,7 +61,7 @@ state_t disable()
 state_t enable()
 {
 	int ret;
-	debug("gpu power cap  enable");
+	debug("GPU: power cap  enable");
 	gpu_pc_enabled=1;
 	return EAR_SUCCESS;
 }
@@ -69,7 +69,7 @@ state_t enable()
 state_t set_powercap_value(uint pid,uint domain,uint limit)
 {
 	/* Set data */
-	debug("gpu set_powercap_value %u",limit);
+	debug("GPU: set_powercap_value %u",limit);
 	current_gpu_pc=limit;
 	return EAR_SUCCESS;
 }
@@ -77,7 +77,7 @@ state_t set_powercap_value(uint pid,uint domain,uint limit)
 state_t get_powercap_value(uint pid,uint *powercap)
 {
 	/* copy data */
-	debug("gpu:get_powercap_value");
+	debug("GPU::get_powercap_value");
 	*powercap=current_gpu_pc;
 	return EAR_SUCCESS;
 }
@@ -98,18 +98,18 @@ void powercap_to_str(char *b)
 
 void set_status(uint status)
 {
-	debug("set_status %u",status);
+	debug("GPU. set_status %u",status);
 	c_status=status;
 }
 uint get_powercap_strategy()
 {
-	debug("get_powercap_strategy");
+	debug("GPU. get_powercap_strategy");
 	return PC_POWER;
 }
 
 void set_pc_mode(uint mode)
 {
-	debug("set_pc_mode");
+	debug("GPU. set_pc_mode");
 	c_mode=mode;
 }
 

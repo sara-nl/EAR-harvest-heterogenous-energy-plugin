@@ -115,6 +115,8 @@ periodic_metric_t current_sample;
 double last_power_reported = 0;
 static energy_data_t c_energy;
 
+static ulong * powermon_freq_list;
+static int powermon_num_pstates;
 
 
 /****************** CONTEXT MANAGEMENT ********************/
@@ -819,9 +821,13 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	
 #if POWERCAP
 	app_mgt_end_job(app_mgt_info);
-  if (powermon_is_idle()) powercap_run_to_idle();
 	pcapp_info_end_job(pc_app_info_data);
-	powercap_set_app_req_freq(current_ear_app[ccontext]->current_freq);
+  if (powermon_is_idle()){ 
+		powercap_set_app_req_freq(powermon_freq_list[powermon_num_pstates-1]);
+		powercap_run_to_idle();
+	}else{ 
+		powercap_set_app_req_freq(current_ear_app[ccontext]->current_freq);
+	}
 #endif
 
 }
@@ -1250,6 +1256,9 @@ void *eard_power_monitoring(void *noinfo) {
 #if SYSLOG_MSG
 	openlog("eard",LOG_PID|LOG_PERROR,LOG_DAEMON);
 #endif
+
+	powermon_freq_list=frequency_get_freq_rank_list();
+	powermon_num_pstates=frequency_get_num_pstates();
 
 	/*
 	*	MAIN LOOP
