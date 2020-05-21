@@ -34,7 +34,7 @@
 #include <common/config.h>
 #include <common/types/projection.h>
 #include <common/system/symplug.h>
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/hardware/architecture.h>
@@ -86,7 +86,7 @@ state_t projections_init(uint user_type, conf_install_t *data, architecture_t * 
 		if ((strcmp(data->obj_power_model,"default")==0) || (data->obj_power_model==NULL)){
 			sprintf(basic_path, "%s/models/basic_model.so", data->dir_plug);
 		}else if (data->obj_power_model!=NULL){
-			sprintf(basic_path, "%s/models/%s.so", data->dir_plug,data->obj_power_model);
+			sprintf(basic_path, "%s/models/%s", data->dir_plug,data->obj_power_model);
 		}
 		obj_path = basic_path;
 		
@@ -98,7 +98,7 @@ state_t projections_init(uint user_type, conf_install_t *data, architecture_t * 
 	if (st == EAR_SUCCESS) {
 		freturn(models_syms_fun.init,data->dir_conf, data->dir_temp, arch_desc);
 	}else{
-		debug("Error when loading shared object %s",obj_path);
+		error("Error when loading shared object %s",obj_path);
 	}
 	
 	return st;

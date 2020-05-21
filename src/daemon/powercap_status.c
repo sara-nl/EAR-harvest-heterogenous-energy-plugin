@@ -53,7 +53,7 @@ uint compute_power_to_release_with_earl(node_powercap_opt_t *pc_opt,uint current
 {
 	/* Is signature is still not computed, we will not release the power */
 	if (app->req_f==0) return 0;
-	if (app->req_f<avg_f) return 0;
+	if (avg_f<app->req_f) return 0;
 	return pc_opt->th_release;
 }
 
@@ -66,10 +66,12 @@ uint compute_power_to_ask_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_
 {
 	ulong adapted_f;
 	int curr_pstate,target_pstate,diff_pstates;
+	if (app->req_f==0) return 0;
 	adapted_f=frequency_closest_high_freq(avg_f,1);
-	curr_pstate=frequency_closest_frequency(adapted_f);
-	target_pstate=frequency_closest_frequency(app->req_f);
-	diff_pstates=target_pstate-curr_pstate;
+	curr_pstate=frequency_closest_pstate(adapted_f);
+	target_pstate=frequency_closest_pstate(app->req_f);
+	diff_pstates=curr_pstate-target_pstate;
+	debug("Computing extra power avg_f %lu adapted_f %lu cpstate %d tpstate %d diff %d",avg_f,adapted_f,curr_pstate,target_pstate,diff_pstates);
 	return pc_opt->th_release*diff_pstates;
 }
 

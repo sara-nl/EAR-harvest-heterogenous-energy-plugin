@@ -109,7 +109,9 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
     	obj_path=basic_path;
 	}
   debug("loading policy %s",obj_path);
-	policy_load(obj_path);
+	if (policy_load(obj_path)!=EAR_SUCCESS){
+		error("Error loading policy %s",obj_path);
+	}
 	ear_frequency=DEF_FREQ(app_settings->def_freq);
 	my_pol_ctx.app=app_settings;
 	my_pol_ctx.reconfigure=res;

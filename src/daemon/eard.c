@@ -328,7 +328,7 @@ void connect_service(int req, application_t *new_app) {
 		verbose(VEARD + 1, "Process pid %d selected as master", pid);
 		verbose(VEARD + 1, "service %d connected", req);
 	}
-	verbose(1,"Application connected with locall API");
+	verbose(1,"Application connected with local API");
 }
 
 // Checks application connections

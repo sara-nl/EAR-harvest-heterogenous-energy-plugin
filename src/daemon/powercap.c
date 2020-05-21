@@ -135,7 +135,7 @@ void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 {
 	my_powercap_opt->def_powercap=powermon_get_powercap_def();
 	my_powercap_opt->powercap_idle=powermon_get_powercap_def()*POWERCAP_IDLE_PERC;
-	my_powercap_opt->current_pc=powermon_get_powercap_def();
+	my_powercap_opt->current_pc=0;
 	my_powercap_opt->last_t1_allocated=powermon_get_powercap_def();
 	my_powercap_opt->released=my_powercap_opt->last_t1_allocated-my_powercap_opt->powercap_idle;
 	my_powercap_opt->th_inc=10;
@@ -357,7 +357,7 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 					uint TBR;
 					if (!use_earl) TBR=compute_power_to_ask(&my_pc_opt,current);
 					else TBR=compute_power_to_ask_with_earl(&my_pc_opt,current,pc_app_info_data,avg_f);
-					if ((use_earl && pc_app_info_data->pc_status==PC_STATUS_GREEDY) || (!use_earl)){
+					if (TBR && ((use_earl && pc_app_info_data->pc_status==PC_STATUS_GREEDY) || (!use_earl))){
 						my_pc_opt.requested=TBR;
 						my_pc_opt.powercap_status=PC_STATUS_GREEDY;
 					}
@@ -378,8 +378,10 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
           uint TBR;
           if (!use_earl) TBR=compute_power_to_ask(&my_pc_opt,current);
           else TBR=compute_power_to_ask_with_earl(&my_pc_opt,current,pc_app_info_data,avg_f);
-					my_pc_opt.requested=TBR;
-					my_pc_opt.powercap_status=PC_STATUS_GREEDY;
+					if (TBR){
+						my_pc_opt.requested=TBR;
+						my_pc_opt.powercap_status=PC_STATUS_GREEDY;
+					}
 				}
 			}
 			break;

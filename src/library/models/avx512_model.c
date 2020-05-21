@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
@@ -183,6 +184,7 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 	coefficient_t *coeff,*avx512_coeffs;
 	double power_nosimd,power_avx2=0,power_avx512=0,cpower;
 	double perc_avx512=0,perc_avx2=0;
+  debug("projct power init %d valid %d",basic_model_init,valid_range(from,to));
 	if ((basic_model_init) && (valid_range(from,to))){
 		coeff=&coefficients[from][to];
 		if (coeff->available){
@@ -195,7 +197,10 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 				}
 				cpower=power_nosimd*(1-perc_avx512)+power_avx512*perc_avx512;
 				*ppower=cpower;
+				debug("power projection from %lu to %lu power_nosimd %lf power avx512 %lf perc_avx512 %lf",from,to,
+				power_nosimd,power_avx512,perc_avx512);
 		}else{
+			debug("Coeffs from %lu to %lu not available",from,to);
 			*ppower=0;
 			st=EAR_ERROR;
 		}

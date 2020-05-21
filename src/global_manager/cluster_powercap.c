@@ -231,7 +231,8 @@ void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
 			}
     }else{
       verbose(0,"There is not enough power for all the greedy nodes (free %u req %u)(used %u allocated %u)",total_free,total_req_greedy,cluster_status->current_power,cluster_status->total_powercap);
-			if (cluster_status->current_power<(cluster_status->total_powercap*075)){
+			// Pedir release
+			if (cluster_status->current_power<(cluster_status->total_powercap*0.75)){
 				verbose(0,"The difference bettween used and allocated is more than 25%");
 			}
       cluster_options->num_greedy=cluster_status->num_greedy;
@@ -240,6 +241,7 @@ void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
   }else{
     /* There is not enough power for new jobs, we must reduce the extra allocation */
     verbose(0,"We must reduce the extra allocation (used %u allocated %u)",cluster_status->current_power,cluster_status->total_powercap);
+		// release
 		if (cluster_status->current_power<(cluster_status->total_powercap*075)){
 				verbose(0,"The difference bettween used and allocated is more than 25%");
 		}

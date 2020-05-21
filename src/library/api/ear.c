@@ -533,7 +533,6 @@ void ear_init()
 	my_size=1;
 	#endif
 
-	printf("EAR_INIT\n");
 
 	//debug("Reading the environment");
 
