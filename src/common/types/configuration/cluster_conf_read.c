@@ -394,28 +394,34 @@ void parse_island(cluster_conf_t *conf, char *line)
         else if (!strcmp(token, "MAX_POWER")){
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_sig_power=(double)atoi(token);
+            warning("Parsing for this option (MAX_POWER) in Island configuration will be deprecated in the future, please change it to a TAG structure\n");
         }
         else if (!strcmp(token, "MIN_POWER")){
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].min_sig_power=(double)atoi(token);
+            warning("Parsing for this option (MIN_POWER) in Island configuration will be deprecated in the future, please change it to a TAG structure\n");
         }
         else if (!strcmp(token, "ERROR_POWER")){
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_error_power=(double)atoi(token);
+            warning("Parsing for this option (ERROR_POWER) in Island configuration will be deprecated in the future, please change it to a TAG structure\n");
         }
         else if (!strcmp(token, "MAX_TEMP")){
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_temp=(double)atoi(token);
+            warning("Parsing for this option (MAX_TEMP) in Island configuration will be deprecated in the future, please change it to a TAG structure\n");
         }
         else if (!strcmp(token, "POWER_CAP")){
             token = strtok(NULL, " ");
             conf->islands[conf->num_islands].max_power_cap=(double)atoi(token);
+            warning("Parsing for this option (POWER_CAP) in Island configuration will be deprecated in the future, please change it to a TAG structure\n");
         }
         else if (!strcmp(token, "POWER_CAP_TYPE")){
             token = strtok(NULL, " ");
             strclean(token, '\n');
             remove_chars(token, ' ');
             strcpy(conf->islands[conf->num_islands].power_cap_type,token);
+            warning("Parsing for this option (POWER_CAP_TYPE) in Island configuration will be deprecated in the future, please change it to a TAG structure\n");
         }
         else if (!strcmp(token, "DBIP"))
         {
