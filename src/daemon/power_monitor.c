@@ -1033,17 +1033,16 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 
 	/* To be usd by status */
 	last_power_reported = my_current_power->avg_dc;
+	copy_node_metrics(&my_nm_id, &last_nm, nm);
+	current_sample.avg_f = (ulong) get_nm_cpufreq(&my_nm_id, nm);;
+	current_sample.temp = (ulong) get_nm_temp(&my_nm_id, nm);
 #if POWERCAP
 	pdomain.platform=last_power_reported;
 	pdomain.cpu=accum_cpu_power(my_current_power);
 	pdomain.dram=accum_dram_power(my_current_power);
 	pdomain.gpu=accum_gpu_power(my_current_power);
-	periodic_metric_info(&pdomain,mpi);
+	periodic_metric_info(&pdomain,mpi,current_sample.avg_f);
 #endif
-	copy_node_metrics(&my_nm_id, &last_nm, nm);
-
-	current_sample.avg_f = (ulong) get_nm_cpufreq(&my_nm_id, nm);;
-	current_sample.temp = (ulong) get_nm_temp(&my_nm_id, nm);
 
 #if SYSLOG_MSG
 	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< my_node_conf->min_sig_power) || (my_current_power->avg_dc>my_node_conf->max_sig_power)){

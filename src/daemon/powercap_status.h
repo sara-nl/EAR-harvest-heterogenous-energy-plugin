@@ -30,12 +30,16 @@
 #ifndef _POWERCAP_STATUS_H
 #define _POWERCAP_STATUS_H
 #include <daemon/powercap.h>
+#include <common/types/pc_app_info.h>
 
 /** Given a powercap settings and a given power consumption computes the power to be released */
 uint compute_power_to_release(node_powercap_opt_t *pc_opt,uint current);
+uint compute_power_to_release_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f);
 
 /** Given a powercap settings and a given power consumption computes the extra power to ask for */
 uint compute_power_to_ask(node_powercap_opt_t *pc_opt,uint current);
+uint compute_power_to_ask_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f);
+
 
 /** Given a powercap settings and a given power consumption estimates if the application needs more power: GREEDY state */
 uint more_power(node_powercap_opt_t *pc_opt,uint current);

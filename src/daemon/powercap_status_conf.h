@@ -30,6 +30,8 @@
 #ifndef _PC_STATUS_H_
 #define _PC_STATUS_H_
 
+#define POWERCAP_IDLE_PERC 1
+
 #define DOMAIN_NODE 0
 #define DOMAIN_CPU 1
 #define DOMAIN_DRAM     2

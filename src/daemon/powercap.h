@@ -45,7 +45,7 @@ void print_powercap_opt(powercap_opt_t *opt);
 int powercap_idle_to_run();
 int powercap_run_to_idle();
 int powercap_init();
-int periodic_metric_info(dom_power_t *pdomain,uint use_earl);
+int periodic_metric_info(dom_power_t *pdomain,uint use_earl,ulong eff_f);
 int is_powercap_set();
 int is_powercap_on();
 

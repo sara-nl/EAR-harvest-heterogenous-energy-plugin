@@ -134,7 +134,7 @@ void print_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 void set_default_node_powercap_opt(node_powercap_opt_t *my_powercap_opt)
 {
 	my_powercap_opt->def_powercap=powermon_get_powercap_def();
-	my_powercap_opt->powercap_idle=powermon_get_powercap_def();
+	my_powercap_opt->powercap_idle=powermon_get_powercap_def()*POWERCAP_IDLE_PERC;
 	my_powercap_opt->current_pc=powermon_get_powercap_def();
 	my_powercap_opt->last_t1_allocated=powermon_get_powercap_def();
 	my_powercap_opt->released=my_powercap_opt->last_t1_allocated-my_powercap_opt->powercap_idle;
@@ -314,7 +314,7 @@ int powercap_run_to_idle()
   pthread_mutex_unlock(&my_pc_opt.lock);
   return EAR_SUCCESS;
 }
-int periodic_metric_info(dom_power_t *cp,uint use_earl)
+int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 {
 	uint current=(uint)cp->platform;
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
@@ -341,7 +341,8 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl)
 				/* We must check the application status before relasing (and loosing) power */
 				if ((use_earl && pc_app_info_data->pc_status==PC_STATUS_RELEASE) || (!use_earl)){
 					uint TBR,nextpc;
-					TBR=compute_power_to_release(&my_pc_opt,current);
+					if (!use_earl) TBR=compute_power_to_release(&my_pc_opt,current);
+					else TBR=compute_power_to_release_with_earl(&my_pc_opt,current,pc_app_info_data,avg_f);
 					nextpc=my_pc_opt.current_pc-TBR; 
 					my_pc_opt.released=TBR;
 					my_pc_opt.requested=0;
@@ -353,7 +354,9 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl)
 				debug("status PC_STATUS_OK and more_power");
 				if (my_pc_opt.current_pc>=my_pc_opt.def_powercap){
 					/* That should the de typical use case. We want more power,current limit is not modified */
-					uint TBR=compute_power_to_ask(&my_pc_opt,current);
+					uint TBR;
+					if (!use_earl) TBR=compute_power_to_ask(&my_pc_opt,current);
+					else TBR=compute_power_to_ask_with_earl(&my_pc_opt,current,pc_app_info_data,avg_f);
 					if ((use_earl && pc_app_info_data->pc_status==PC_STATUS_GREEDY) || (!use_earl)){
 						my_pc_opt.requested=TBR;
 						my_pc_opt.powercap_status=PC_STATUS_GREEDY;
@@ -372,7 +375,9 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl)
 				debug("status PC_STATUS_OK and ok_power");
 				if (use_earl && pc_app_info_data->pc_status==PC_STATUS_GREEDY){
 					debug("Going to GREEDY because of EARL");
-					uint TBR=compute_power_to_ask(&my_pc_opt,current);
+          uint TBR;
+          if (!use_earl) TBR=compute_power_to_ask(&my_pc_opt,current);
+          else TBR=compute_power_to_ask_with_earl(&my_pc_opt,current,pc_app_info_data,avg_f);
 					my_pc_opt.requested=TBR;
 					my_pc_opt.powercap_status=PC_STATUS_GREEDY;
 				}
@@ -399,7 +404,8 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl)
 				debug("status release and free power ");
 				/* we can still release more power */
 				uint TBR,nextpc;
-				TBR=compute_power_to_release(&my_pc_opt,current);
+        if (!use_earl) TBR=compute_power_to_release(&my_pc_opt,current);
+        else TBR=compute_power_to_release_with_earl(&my_pc_opt,current,pc_app_info_data,avg_f);
 				my_pc_opt.released+=TBR;
 				nextpc=my_pc_opt.current_pc-TBR;
 				set_powercap_value(DOMAIN_NODE,nextpc);

@@ -39,17 +39,38 @@
 #include <common/colors.h>
 //#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
+#include <common/hardware/frequency.h>
 #include <common/states.h>
 #include <daemon/powercap.h>
+#include <common/types/pc_app_info.h>
 
 uint compute_power_to_release(node_powercap_opt_t *pc_opt,uint current)
 {
 	return pc_opt->th_release;
 }
 
+uint compute_power_to_release_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f)
+{
+	/* Is signature is still not computed, we will not release the power */
+	if (app->req_f==0) return 0;
+	if (app->req_f<avg_f) return 0;
+	return pc_opt->th_release;
+}
+
 uint compute_power_to_ask(node_powercap_opt_t *pc_opt,uint current)
 {
 	return pc_opt->th_release;
+}
+
+uint compute_power_to_ask_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f)
+{
+	ulong adapted_f;
+	int curr_pstate,target_pstate,diff_pstates;
+	adapted_f=frequency_closest_high_freq(avg_f,1);
+	curr_pstate=frequency_closest_frequency(adapted_f);
+	target_pstate=frequency_closest_frequency(app->req_f);
+	diff_pstates=target_pstate-curr_pstate;
+	return pc_opt->th_release*diff_pstates;
 }
 
 uint more_power(node_powercap_opt_t *pc_opt,uint current)
