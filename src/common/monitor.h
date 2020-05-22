@@ -27,65 +27,45 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <stdio.h>
-#include <unistd.h>
+#ifndef COMMON_APIS_SUSCRIPTOR_H
+#define COMMON_APIS_SUSCRIPTOR_H
+
+#include <common/types.h>
+#include <common/states.h>
 #include <common/system/time.h>
 
-void timestamp_get(timestamp *ts)
+#define sus(context) \
+		((suscription_t *) context->suscription)
+
+#define suscribed(context) \
+		context->suscribed == 1
+
+typedef state_t (*suscall_f) (void *);
+typedef state_t (*suscription_f) (void *);
+
+typedef struct suscription_s
 {
-	timestamp_getfast(ts);
-}
+	suscall_f	call_init;
+	suscall_f	call_main;
+	void		*memm_init;
+	void		*memm_main;
+	int			time_relax; // miliseconds
+	int			time_burst; // miliseconds
+    int			id;
+} suscription_t;
 
-void timestamp_getprecise(timestamp *ts)
-{
-	clock_gettime(CLOCK_MONOTONIC, ts);
-}
+state_t monitor_init();
 
-void timestamp_getfast(timestamp *ts)
-{
-	clock_gettime(CLOCK_MONOTONIC_COARSE, ts);
-}
+state_t monitor_dispose();
 
-void timestamp_getreal(timestamp *ts)
-{
-	clock_gettime(CLOCK_REALTIME_COARSE, ts);
-}
+state_t monitor_register(suscription_t *suscription);
 
-ullong timestamp_convert(timestamp *ts, ullong time_unit)
-{
-	ullong stamp;
-	stamp  = (ullong) (ts->tv_sec * 1000000000);
-	stamp += (ullong) (ts->tv_nsec);
-	stamp /= time_unit;
-	return stamp;
-}
+state_t monitor_unregister(suscription_t *suscription);
 
-ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
-{
-	ullong stamp;
+state_t monitor_burst(suscription_t *suscription);
 
-	if (ts2->tv_nsec < ts1->tv_nsec) {
-		ts2->tv_sec   = ts2->tv_sec - 1;
-		ts2->tv_nsec += 1000000000;
-	}
+state_t monitor_relax(suscription_t *suscription);
 
-	stamp  = (ullong) ((ts2->tv_sec - ts1->tv_sec) * 1000000000);
-	stamp += (ullong) ((ts2->tv_nsec - ts1->tv_nsec));
-	stamp /= time_unit;
+suscription_t *suscription();
 
-	return stamp;
-}
-
-ullong timestamp_getconvert(ullong time_unit)
-{
-	timestamp_t ts;
-	timestamp_getfast(&ts);
-	return timestamp_convert(&ts, time_unit);
-}
-
-void timestamp_revert(timestamp *ts, ullong *tr, ullong time_unit)
-{
-    ullong aux_ns = (*tr) * time_unit;
-    ts->tv_sec    = aux_ns / 1000000000; 
-    ts->tv_nsec   = aux_ns - (ts->tv_sec * 1000000000);
-}
+#endif //EAR_STASH_MONITOR_H
