@@ -57,6 +57,7 @@
 #include <common/types/configuration/cluster_conf_verbose.h>
 #include <global_manager/eargm_ext_rm.h>
 #include <daemon/eard_rapi.h>
+#include <global_manager/cluster_energy_status.h>
 #if POWERCAP
 #include <global_manager/cluster_powercap.h>
 #endif
@@ -70,10 +71,6 @@
 */
 
 #define GRACE_PERIOD 100
-#define EARGM_NO_PROBLEM 	3
-#define EARGM_WARNING1	2
-#define EARGM_WARNING2	1
-#define EARGM_PANIC		0
 #define DEFCON_L4	0
 #define DEFCON_L3	1
 #define DEFCON_L2	2
@@ -94,7 +91,7 @@ uint policy;
 uint divisor = 1;
 uint last_id=0;
 uint process_created=0;
-static uint default_state=1;
+uint default_state=1;
 uint  max_cluster_power;
 uint  cluster_powercap_period;
 
@@ -104,6 +101,7 @@ unsigned long last_avg_power=0,curr_avg_power=0;
 
 uint t1_expired=0;
 uint must_refill=0;
+uint powercap_th_start=0;
 
 pthread_t eargm_server_api_th;
 cluster_conf_t my_cluster_conf;
@@ -142,7 +140,12 @@ uint reload_eargm_configuration(cluster_conf_t *current,cluster_conf_t *new)
 		must_refil=1;
 	}
 	if ((cc->power!=newc->power) || (cc->t1_power!=newc->t1_power)){
-		verbose(1,"New poercap arguments: Powercap %lu Power cap period %lu",newc->power,newc->t1_power);
+		verbose(1,"New powercap arguments: Powercap %lu Power cap period %lu",newc->power,newc->t1_power);
+		#if 0
+		if (cc->power>new->power)    set_default_powercap_all_nodes(&my_cluster_conf);  
+  	#endif
+		if ((cc->power==0) && (newc->power>0)) powercap_th_start=1;
+
 	}
 	if (cc->use_log!=newc->use_log){
 		verbose(1,"Log output cannot be dynamically changed, Stop and Start the service");
@@ -328,17 +331,6 @@ uint defcon(ulong e_t2,ulong e_t1,ulong load)
 
 }
 
-void create_risk(risk_t *my_risk,int wl)
-{
-	*my_risk=0;
-	switch(wl){
-		case EARGM_WARNING1:set_risk(my_risk,WARNING1);last_risk_sent=EARGM_WARNING1;break;
-		case EARGM_WARNING2:set_risk(my_risk,WARNING1);add_risk(my_risk,WARNING2);last_risk_sent=EARGM_WARNING2;break;
-		case EARGM_PANIC:set_risk(my_risk,WARNING1);add_risk(my_risk,WARNING2);add_risk(my_risk,PANIC);last_risk_sent=EARGM_PANIC;break;
-	}
-	verbose(1,"EARGM risk level %lu",(ulong)*my_risk);
-	default_state=0;
-}
 
 void fill_periods(ulong energy)
 {
@@ -613,7 +605,10 @@ int main(int argc,char *argv[])
   init_db_helper(&my_cluster_conf.database);
   #endif
 	
-    
+   #if 0
+  set_default_powercap_all_nodes(&my_cluster_conf);  
+  #endif
+   
 	
 	time(&end_time);
 	start_time=end_time-period_t2;
@@ -713,8 +708,11 @@ int main(int argc,char *argv[])
 				verbose(VGM,"%sWARNING2... we are close to the maximum energy budget %.2lf%%%s ",COL_RED,perc_energy,COL_CLR);
 				verbose(VGM,"****************************************************************");
 				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_WARNING2){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+					manage_warning(&current_risk,EARGM_WARNING2,my_cluster_conf);
+					#if 0
 					create_risk(&current_risk,EARGM_WARNING2);
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
+					#endif
 				}
 				my_warning.energy_percent=perc_energy;
 				process_created+=send_mail(EARGM_WARNING2,perc_energy);
@@ -728,8 +726,11 @@ int main(int argc,char *argv[])
 				verbose(VGM,"%sPANIC!... we are close or over the maximum energy budget %.2lf%%%s ",COL_RED,perc_energy,COL_CLR);
 				verbose(VGM,"****************************************************************");
 				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_PANIC){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+					manage_warning(&current_risk,EARGM_PANIC,my_cluster_conf);
+					#if 0
 					create_risk(&current_risk,EARGM_PANIC);	
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
+					#endif
 				}
 				process_created+=send_mail(EARGM_PANIC,perc_energy);
 				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
@@ -749,6 +750,10 @@ int main(int argc,char *argv[])
 		#if USE_DB
 		db_insert_gm_warning(&my_warning);
 		#endif
+		if (powercap_th_start){
+			cluster_powercap_init(&my_cluster_conf);	
+			powercap_th_start=0;
+		}
 		if (must_refill){
 			must_refill=0;
     		aggregate_samples=period_t2/period_t1;
