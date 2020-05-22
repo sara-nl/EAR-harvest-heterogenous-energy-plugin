@@ -36,27 +36,14 @@
 //#define SHOW_DEBUGS 0
 #include <common/config.h>
 
-#ifdef EAR_CPUPOWER
 #include <common/hardware/cpupower.h>
-#else
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
-#include <cpupower.h>
-#else
-#include <cpufreq.h>
-#endif
-#endif
-
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/hardware/hardware_info.h>
 
-#ifndef EAR_CPUPOWER
-static struct cpufreq_policy previous_cpu0_policy;
-#else
 static governor_t previous_cpu0_policy;
-#endif
 static ulong previous_cpu0_freq;
 static int saved_previous_policy;
 static int saved_previous_freq;
@@ -103,11 +90,7 @@ static ulong *get_frequencies_cpu()
 		status=0;
 
 		if (status == 0) {
-			#ifdef EAR_CPUPOWER
 			freqs[i] = CPUfreq_get(i);
-			#else
-			freqs[i] = cpufreq_get(i);
-			#endif
 
 			if (freqs[i] == 0) {
 				error( "ERROR, CPU %d is online but the returned freq is 0", i);
@@ -123,31 +106,12 @@ static ulong *get_frequencies_cpu()
 //
 static ulong *get_frequencies_rank()
 {
-	#ifndef EAR_CPUPOWER
-	struct cpufreq_available_frequencies *list, *first;
-	#else
 	unsigned long *list;
-	#endif
 	ulong *pointer;
 	int i;
 
 	// Kernel alloc
-	#ifndef EAR_CPUPOWER	
-	list = cpufreq_get_available_frequencies(0);
-	first = list;
-
-	if (list == NULL) {
-		error("unable to find an available frequencies list");
-	}
-
-	while(list != NULL)
-	{
-		list = list->next;
-		num_freqs++;
-	}
-	#else
 	list=CPUfreq_get_available_frequencies(0,&num_freqs);
-	#endif
 
 	debug("%lu frequencies available ", num_freqs); // 2
 
@@ -160,23 +124,8 @@ static ulong *get_frequencies_rank()
 	}
 
 	//
-	#ifndef EAR_CPUPOWER
-	list = first;
-	i = 0;
-
-	while(list!=NULL)
-	{
-		pointer[i] = list->frequency;
-		list = list->next;
-		i++;
-	}
-
-	// Kernel dealloc
-	cpufreq_put_available_frequencies(first);
-	#else
 	memcpy(pointer,list,sizeof(ulong)*num_freqs);
 	CPUfreq_put_available_frequencies(list);
-	#endif
 	return pointer;
 }
 
@@ -259,11 +208,7 @@ ulong frequency_set_all_cpus(ulong freq)
 			freq_list_cpu[i] = freq;
 
 			// This is a privileged function
-			#ifndef EAR_CPUPOWER
-			result = cpufreq_set_frequency(i, freq);
-			#else
 			result=CPUfreq_set_frequency(i,freq);
-			#endif
 
 			if (result < 0) {
 				//verbose(0, "ERROR while switching cpu %d frequency to %lu (%s)", i, freq, strerror(-result));
@@ -296,11 +241,7 @@ ulong frequency_get_cpu_freq(uint cpu)
 	}
 
 	// Kernel asking (not hardware)
-	#ifndef EAR_CPUPOWER
-	freq_list_cpu[cpu] = cpufreq_get(cpu);
-	#else
 	freq_list_cpu[cpu] = CPUfreq_get(cpu);
-	#endif
 
 	return freq_list_cpu[cpu];
 }
@@ -447,11 +388,7 @@ void frequency_set_performance_governor_all_cpus()
 	int i;
 
 	for (i = 0; i < num_cpus; i++) {
-		#ifndef EAR_CPUPOWER
-		cpufreq_modify_policy_governor(i, "performance");
-		#else
 		CPUfreq_set_cpufreq_governor(i,"performance");
-		#endif
 	}
 }
 
@@ -461,11 +398,7 @@ void frequency_set_ondemand_governor_all_cpus()
     int i;
 
     for (i = 0; i < num_cpus; i++) {
-			#ifndef EAR_CPUPOWER
-        cpufreq_modify_policy_governor(i, "ondemand");
-			#else
 				CPUfreq_set_cpufreq_governor(i,"ondemand");
-			#endif
     }
 }
 
@@ -476,11 +409,7 @@ void frequency_set_userspace_governor_all_cpus()
 	int i;
 
 	for (i = 0; i < num_cpus; i++) {
-	#ifndef EAR_CPUPOWER
-		cpufreq_modify_policy_governor(i, "userspace");
-	#else
 		CPUfreq_set_cpufreq_governor(i,"userspace");
-	#endif
 	}
 }
 
@@ -508,69 +437,22 @@ void frequency_recover_previous_frequency()
 
 void frequency_save_previous_policy()
 {
-	#ifndef EAR_CPUPOWER
-	struct cpufreq_policy *policy;
-	
-	// Kernel alloc
-	policy = cpufreq_get_policy(0);
-
-	previous_cpu0_policy.min = policy->min;
-	previous_cpu0_policy.max = policy->max;
-
-	previous_cpu0_policy.governor = (char *) malloc(strlen(policy->governor) + 1);
-	strcpy(previous_cpu0_policy.governor, policy->governor);
-	debug("previous policy governor was %s", policy->governor);
-	#else
 	governor_t policy;
 	CPUfreq_get_policy(0,&policy);
 	memcpy(&previous_cpu0_policy,&policy,sizeof(governor_t));
 	debug("previous policy governor was %s", policy.name);
-	#endif
 
 
 	// Kernel dealloc
-	#ifndef EAR_CPUPOWER
-	cpufreq_put_policy(policy);
-	#endif
 	saved_previous_policy = 1;
 }
 
-#ifndef EAR_CPUPOWER
-void get_governor(struct cpufreq_policy *governor)
-{
-	struct cpufreq_policy *policy;	
-    policy = cpufreq_get_policy(0);
-
-    governor->min = policy->min;
-    governor->max = policy->max;
-
-    governor->governor = (char *) malloc(strlen(policy->governor) + 1);
-    strcpy(governor->governor, policy->governor);
-    cpufreq_put_policy(policy);
-	
-}
-#else
 void get_governor(governor_t *gov)
 {
 	CPUfreq_get_policy(0,gov);
 }
 
-#endif
 
-#ifndef EAR_CPUPOWER
-void set_governor(struct cpufreq_policy *governor)
-{
-	int status,i;
-	for (i = 0; i < num_cpus; i++)
-    {
-        status = cpufreq_set_policy(i, governor);
-
-        if (status < 0) {
-			error( "ERROR while switching policy for cpu %d ", i);
-		}
-	}		
-}
-#else
 void set_governor(governor_t *gov)
 {
 	int i;
@@ -578,7 +460,6 @@ void set_governor(governor_t *gov)
 		CPUfreq_set_policy(i,gov);
 	}
 }
-#endif
 void frequency_recover_previous_policy()
 {
 	int status, i;
@@ -590,19 +471,12 @@ void frequency_recover_previous_policy()
 
 	for (i = 0; i < num_cpus; i++)
 	{
-		#ifndef EAR_CPUPOWER
-		status = cpufreq_set_policy(i, &previous_cpu0_policy);
-		#else
 		status=CPUfreq_set_policy(i,&previous_cpu0_policy);
-		#endif	
 
 		if (status < 0) {
 			//verbose(0, "ERROR while switching policy for cpu %d (%s)", i, strerror(-status));
 			error("ERROR while switching policy for cpu %d ", i);
 		}
 	}
-	#ifndef EAR_CPUPOWER
-	free(previous_cpu0_policy.governor);
-	#endif
 	saved_previous_policy = 0;
 }

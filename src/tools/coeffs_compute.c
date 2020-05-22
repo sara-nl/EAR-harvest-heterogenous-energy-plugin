@@ -36,11 +36,7 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <sys/types.h>
-#ifndef EAR_CPUPOWER
-#include <cpufreq.h>
-#else
 #include <common/hardware/cpupower.h>
-#endif
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
@@ -110,37 +106,12 @@ uint freq_to_p_state(ulong freq)
 
 uint fill_list_p_states()
 {
-	  #ifndef EAR_CPUPOWER
-    struct cpufreq_available_frequencies *list_freqs, *first_freq;
-    int num_pstates = 0;
-
-    list_freqs = cpufreq_get_available_frequencies(0);
-    first_freq = list_freqs;
-
-    while (list_freqs != NULL) {
-        list_freqs = list_freqs->next;
-        num_pstates++;
-    }
-
-    MALLOC(node_freq_list, unsigned long, num_pstates);
-    list_freqs = first_freq;
-
-    for (i = 0; i < num_pstates; i++)
-    {
-        if (i == 1) nom_freq = list_freqs->frequency;
-        node_freq_list[i] = list_freqs->frequency;
-        list_freqs = list_freqs->next;
-    }
-
-    cpufreq_put_available_frequencies(first_freq);
-		#else
 	  unsigned long num_pstates = 0;
 		unsigned long *flist;
 		flist=CPUfreq_get_available_frequencies(0,&num_pstates);
 		MALLOC(node_freq_list, unsigned long, num_pstates);
 		memcpy(node_freq_list,flist,sizeof(unsigned long)*num_pstates);
 		CPUfreq_put_available_frequencies(flist);
-		#endif
     return (uint)num_pstates;
 }
 

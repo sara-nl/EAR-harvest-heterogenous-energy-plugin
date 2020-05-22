@@ -174,9 +174,6 @@ void end_context(int cc) {
 	debug("end_context %d", cc);
 	check_context("end_context: invalid job context");
 	if (current_ear_app[cc] != NULL) {
-		#ifndef EAR_CPUPOWER
-		if (current_ear_app[cc]->governor.governor != NULL) free(current_ear_app[cc]->governor.governor);
-		#endif
 	  free_energy_data(&current_ear_app[cc]->energy_init);
 		free(current_ear_app[cc]);
 		current_ear_app[cc] = NULL;
@@ -343,16 +340,9 @@ void copy_powermon_app(powermon_app_t *dest, powermon_app_t *src) {
 	dest->job_created = src->job_created;
 	copy_energy_data(&dest->energy_init,&src->energy_init);
 	copy_application(&(dest->app), &(src->app));
-	#ifndef EAR_CPUPOWER
-	dest->governor.min = src->governor.min;
-	dest->governor.max = src->governor.max;
-	dest->governor.governor = (char *) malloc(strlen(src->governor.governor) + 1);
-	strcpy(dest->governor.governor, src->governor.governor);
-	#else
 	dest->governor.min_f = src->governor.min_f;
 	dest->governor.max_f = src->governor.max_f;
 	strcpy(dest->governor.name, src->governor.name);
-	#endif
 	dest->current_freq = src->current_freq;
 
 }
@@ -699,11 +689,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	check_context("powermon_new_job: after new_context!");
 	current_ear_app[ccontext]->current_freq = frequency_get_cpu_freq(0);
 	get_governor(&current_ear_app[ccontext]->governor);
-	#ifndef EAR_CPUPOWER
-	verbose(VJOBPMON, "Saving governor %s", current_ear_app[ccontext]->governor.governor);
-	#else
 	debug("Saving governor %s", current_ear_app[ccontext]->governor.name);
-	#endif
 	/* Setting userspace */
 	user_type = get_user_type(&my_cluster_conf, appID->job.energy_tag, appID->job.user_id, appID->job.group_id,
 							  appID->job.user_acc, &my_tag);
@@ -787,17 +773,9 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	set_null_loop(&current_loop_data);
 	save_eard_conf(&eard_dyn_conf);
 	/* RESTORE FREQUENCY */
-	#ifndef EAR_CPUPOWER
-	verbose(VJOBPMON, "restoring governor %s", current_ear_app[ccontext]->governor.governor);
-	#else
 	verbose(VJOBPMON, "restoring governor %s", current_ear_app[ccontext]->governor.name);
-	#endif
 	set_governor(&current_ear_app[ccontext]->governor);
-	#ifndef EAR_CPUPOWER
-	if (strcmp(current_ear_app[ccontext]->governor.governor, "userspace") == 0) {
-	#else
 	if (strcmp(current_ear_app[ccontext]->governor.name, "userspace") == 0) {
-	#endif
 		frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
 	}
 	current_node_freq = frequency_get_cpu_freq(0);

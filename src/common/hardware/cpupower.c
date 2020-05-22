@@ -37,7 +37,6 @@
 #include <linux/version.h>
 //#define SHOW_DEBUGS 1
 #include <common/config.h>
-#ifdef EAR_CPUPOWER
 #include <common/sizes.h>
 #include <common/output/verbose.h>
 #include <common/states.h>
@@ -424,4 +423,3 @@ unsigned long CPUfreq_get(int cpu_num)
 }
 
 
-#endif
