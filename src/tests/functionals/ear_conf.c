@@ -40,6 +40,8 @@ int main(int argc,char *argv[])
 	char ear_path[256];
 	if (argc>1){
 		strcpy(ear_path,argv[1]);
+        if (argc > 2)
+            strcpy(nodename, argv[2]);
 	}else{
 		if (get_ear_conf_path(ear_path)==EAR_ERROR){
 			printf("Error getting ear.conf path\n");
@@ -48,15 +50,22 @@ int main(int argc,char *argv[])
 	}
 	read_cluster_conf(ear_path,&my_cluster);
 	print_cluster_conf(&my_cluster);
-	gethostname(nodename,sizeof(nodename));
-	strtok(nodename,".");
-    my_node_conf = get_my_node_conf(&my_cluster, nodename);
-    if (my_node_conf==NULL) {
-		fprintf(stderr,"get_my_node_conf for node %s returns NULL\n",nodename);
-	}else print_my_node_conf(my_node_conf);
+    //gethostname(nodename,sizeof(nodename));
+	//strtok(nodename,".");
+    if (strlen(nodename) > 0)
+    {
+        my_node_conf = get_my_node_conf(&my_cluster, nodename);
+        if (my_node_conf==NULL) {
+          	fprintf(stderr,"get_my_node_conf for node %s returns NULL\n",nodename);
+    	} else {
+            printf("\nNODE_CONF FOR NODE: %s\n\n", nodename);
+            print_my_node_conf(my_node_conf);
+            free(my_node_conf->policies);
+            free(my_node_conf);
+        }
+    }
 
     free_cluster_conf(&my_cluster);
-    free(my_node_conf);
     printf("freed cluster_conf\n");
     printf("reading cluster_conf again\n");
 	read_cluster_conf(ear_path,&my_cluster);

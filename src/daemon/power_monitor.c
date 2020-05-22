@@ -968,9 +968,9 @@ void powermon_reload_conf() {
 //
 void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	ulong jid, mpi,sid;
+	ulong time_consumed;
 	uint usedb,useeardbd;
 	double maxpower, minpower, RAPL, corrected_power;
-	ulong time_consumed;
 	usedb=my_cluster_conf.eard.use_mysql;
 	useeardbd=my_cluster_conf.eard.use_eardbd;
 	if (ccontext >= 0) {

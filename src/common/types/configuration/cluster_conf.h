@@ -89,6 +89,10 @@ typedef struct eard_conf
 * EARGMPort=
 */
 
+#define POWERCAP_TYPE_NODE  0 //default type
+#define POWERCAP_TYPE_APP   1
+#define TAG_TYPE_ARCH       0 //default type
+
 #define MAXENERGY   0
 #define MAXPOWER    1
 #define BASIC 	0
@@ -146,6 +150,24 @@ typedef struct energy_tag
 	char **accounts;
 	uint num_accounts;
 } energy_tag_t;
+
+typedef struct tags
+{
+    char id[GENERIC_NAME];
+    char type;
+    char is_default;
+    char powercap_type;
+    ulong max_avx512_freq;
+    ulong max_avx2_freq;
+    ulong max_power;
+    ulong min_power;
+    ulong max_temp;
+    ulong error_power;
+    long powercap;
+    char energy_model[GENERIC_NAME];
+    char energy_plugin[GENERIC_NAME];
+    char powercap_plugin[GENERIC_NAME];
+} tag_t;
 
 typedef struct db_conf
 {
@@ -207,7 +229,9 @@ typedef struct cluster_conf
 	node_conf_t *nodes;
 	db_conf_t database;
 	eardb_conf_t db_manager;
-	uint num_tags;
+    uint num_tags;
+    tag_t *tags;
+	uint num_etags;
 	energy_tag_t *e_tags;
 	uint num_islands;
 	node_island_t *islands;

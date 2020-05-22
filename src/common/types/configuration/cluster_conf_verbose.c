@@ -112,6 +112,14 @@ static void print_islands_conf(node_island_t *conf)
 	}
 }
 
+void print_tags_conf(tag_t *tag)
+{
+    verbosen(VCCONF, "--> Tag: %s\ttype: %d\tdefault: %d\tpowercap_type: %d\n", tag->id, tag->type, tag->is_default, tag->powercap_type);
+    verbosen(VCCONF, "\t\tavx512_freq: %lu\tavx2_freq: %lu\tmax_power: %lu\tmin_power: %lu\terror_power: %lu\tpowercap: %lu\n", 
+                     tag->max_avx512_freq, tag->max_avx2_freq, tag->max_power, tag->min_power, tag->error_power, tag->powercap);
+    verbosen(VCCONF, "\t\tenergy_model: %s\tenergy_plugin: %s\tpowercap_plugin: %s\n", tag->energy_model, tag->energy_plugin, tag->powercap_plugin);
+}
+
 void print_energy_tag(energy_tag_t *etag)
 {
 	verbosen(VCCONF, "--> Tag: %s\t pstate: %u\n", etag->tag, etag->p_state);
@@ -183,8 +191,12 @@ void print_cluster_conf(cluster_conf_t *conf)
 	for (i = 0; i < conf->num_islands; i++)
 		print_islands_conf(&conf->islands[i]);
 	
+    verbosen(VCCONF, "\nGENERAL TAGS\n");
+    for (i = 0; i < conf->num_tags; i++)
+        print_tags_conf(&conf->tags[i]);
+
 	verbosen(VCCONF, "\nENERGY TAGS\n");
-	for (i = 0; i < conf->num_tags; i++)
+	for (i = 0; i < conf->num_etags; i++)
 		print_energy_tag(&conf->e_tags[i]);
 
     verbosen(VCCONF, "\nLIBRARY CONF\n");
