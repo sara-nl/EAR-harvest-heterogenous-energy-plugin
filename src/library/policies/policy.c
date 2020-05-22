@@ -108,7 +108,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
     	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
     	obj_path=basic_path;
 	}
-  debug("loading policy %s",obj_path);
+  if (masters_info.my_master_rank>=0) debug("loading policy %s",obj_path);
 	if (policy_load(obj_path)!=EAR_SUCCESS){
 		error("Error loading policy %s",obj_path);
 	}

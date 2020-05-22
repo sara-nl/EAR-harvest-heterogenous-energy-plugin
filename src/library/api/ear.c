@@ -828,7 +828,7 @@ void ear_finalize()
 	// Closing and obtaining global metrics
 	debug("metrics dispose");
 	dispose=1;
-	verbose(1,"Total resources computed %lu",get_total_resources());
+	if (masters_info.my_master_rank>=0) verbose(1,"Total resources computed %lu",get_total_resources());
 	metrics_dispose(&application.signature, get_total_resources());
 	dynais_dispose();
 	if (!my_id) frequency_dispose();
