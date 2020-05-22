@@ -6,7 +6,7 @@ CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread -DMPI=0
 MPI_VERSION = seq
 endif
 export CFLAGS
-LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
+LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl -lm
 
 ########
 
