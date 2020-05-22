@@ -3,7 +3,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) $(DB_FLAGS)
 ######## FILES
 
 ips_check_OBJS = \
-        $(SRCDIR)/common/libcommon.a 
+        $(SRCDIR)/common/libcommon.a -lm
 
 BINS = ear_conf ips_check postgres_test temperature_check
 

@@ -22,7 +22,7 @@ tool_PERM = 0770
 
 ######## FILES
 
-comm_OBJS = $(ROOTDIR)/src/common/libcommon.a
+comm_OBJS = $(ROOTDIR)/src/common/libcommon.a -lm
 
 ######## RULES
 
