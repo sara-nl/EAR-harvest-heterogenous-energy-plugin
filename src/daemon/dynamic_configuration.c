@@ -78,9 +78,7 @@ static uint num_f;
 int last_command = -1;
 int last_dist = -1;
 int last_command_time = -1;
-#if USE_NEW_PROP
 int node_found = EAR_ERROR;
-#endif
 #if POWERCAP
 extern app_mgt_t *app_mgt_info;
 #endif
@@ -625,11 +623,7 @@ void process_remote_requests(int clientfd) {
 			req = NO_COMMAND;
 	}
 	send_answer(clientfd, &ack);
-#if USE_NEW_PROP
 	if (req != EAR_RC_PING && req != NO_COMMAND && req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB && node_found != EAR_ERROR)
-#else
-	if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
-#endif
 	{
 		verbose(VRAPI + 1, "command=%d propagated distance=%d", req, command.node_dist);
 		propagate_req(&command, my_cluster_conf.eard.port);
@@ -676,12 +670,10 @@ void *eard_dynamic_configuration(void *tmp)
 	f_list = frequency_get_freq_rank_list();
 	print_f_list(num_f, f_list);
 	verbose(VRAPI + 2, "We have %u valid p_states", num_f);
-#if USE_NEW_PROP
 	verbose(0, "Init for ips");
 	node_found = init_ips(&my_cluster_conf);
   if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file");
 	verbose(0,"Init ips ready");
-#endif
 
 
 	verbose(VRAPI, "Creating socket for remote commands");
@@ -714,9 +706,7 @@ void *eard_dynamic_configuration(void *tmp)
 		}
 	} while (eard_must_exit == 0);
 	warning("eard_dynamic_configuration exiting\n");
-#if USE_NEW_PROP
 	close_ips();
-#endif
 	//ear_conf_shared_area_dispose(my_tmp);
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);
