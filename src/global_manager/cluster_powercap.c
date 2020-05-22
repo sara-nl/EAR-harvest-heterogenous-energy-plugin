@@ -305,22 +305,16 @@ void * eargm_powercap_th(void *noarg)
 
 }
 
-void cluster_powercap_init()
+void cluster_powercap_init(cluster_conf_t *cc)
 {
-  char *max_cluster_power_st=getenv("EAR_MAX_CLUSTER_POWER");
-	char *pc_period=getenv("EAR_POWERCAP_FREQ");
 	int ret;
-  if (max_cluster_power_st!=NULL) max_cluster_power=atoi(max_cluster_power_st);
-  else max_cluster_power=0;
+	max_cluster_power=cc->eargm.power;
+	cluster_powercap_period=cc->eargm.t1_power;
   if (max_cluster_power>0){
     verbose(0,"Power cap limit set to %u",max_cluster_power);
   }else{
     verbose(0,"Power cap unlimited");
   }
-
-	if (pc_period!=NULL){
-		cluster_powercap_period=atoi(pc_period);
-	}
 
 	if (max_cluster_power==0) return;
 
