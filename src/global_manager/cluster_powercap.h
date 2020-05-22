@@ -38,7 +38,7 @@
 //void aggregate_powercap_status(powercap_status_t *my_cluster_power_status,int num_st,cluster_powercap_status_t *cluster_status);
 void allocate_free_power_to_greedy_nodes(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint *total_free);
 void reduce_allocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint min_reduction);
-void powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options);
+uint powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_opt_t *cluster_options,uint released);
 void send_powercap_options_to_cluster(powercap_opt_t *cluster_options);
 void print_cluster_power_status(cluster_powercap_status_t *my_cluster_power_status);
 void cluster_powercap_init();
