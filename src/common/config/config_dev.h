@@ -51,7 +51,6 @@
 #define EARDBD_TYPES						7
 /** Specifies if the new version of the commands propagation is used and the number
  * of jumps per node. */
-#define USE_NEW_PROP                        1
 #define NUM_PROPS                           3
 // #define EAR_TRACER_MPI 1
 

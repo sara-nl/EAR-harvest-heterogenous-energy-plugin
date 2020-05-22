@@ -223,8 +223,6 @@ request_header_t recieve_data(int fd, void **data)
 
 }
 
-#define NEW_STATUS 1
-#ifdef NEW_STATUS
 int send_status(request_t *command, status_t **status)
 {
     request_header_t head;
@@ -241,67 +239,6 @@ int send_status(request_t *command, status_t **status)
 
 }
 
-#else
-//specifically sends and reads the ack of a status command
-int send_status(request_t *command, status_t **status)
-{
-	ulong ack;
-	int ret;
-	int total, pending;
-    status_t *return_status;
-	debug("Sending command %u",command->req);
-	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
-		if (ret<0){ 
-			error("Error sending command (status) %s",strerror(errno));
-		}else{ 
-			debug("Error sending command (status) ret=%d expected=%d",ret,sizeof(request_t));
-		}
-	}
-	debug("Reading ack size ");
-	/* We assume first long will not block */
-	ret=read(eards_sfd,&ack,sizeof(ulong));
-	//ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
-	if (ret<0){
-		error("Error receiving ack in (status) (%s) ",strerror(errno));
-        return EAR_ERROR;
-	}
-    if (ack < 1){
-        error("Number of status expected is not valid: %lu", ack);
-        return EAR_ERROR;
-    }
-	debug("Waiting for %d ack bytes",ack);
-    return_status = calloc(ack, sizeof(status_t));
-	if (return_status==NULL){
-		error("Not enough memory at send_status");
-		return EAR_ERROR;
-	}
-	total=0;
-	pending=sizeof(status_t)*ack;
-    ret = read(eards_sfd, (char *)return_status+total, pending);
-    //ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
-	if (ret<0){
-		error("Error by reading status (%s)",strerror(errno));
-        free(return_status);
-		return EAR_ERROR;
-	}
-	total+=ret;
-	pending-=ret;
-	while ((ret>0) && (pending>0)){
-    	ret = read(eards_sfd, (char *)return_status+total, pending);
-    	//ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
-		if (ret<0){
-			error("Error by reading status (%s)",strerror(errno));
-        	free(return_status);
-			return EAR_ERROR;
-		}
-		total+=ret;
-		pending-=ret;
-	}
-    *status = return_status;
-	debug("Returning from send_status with %d",ack);
-	return ack;
-}
-#endif
 
 int set_socket_block(int sfd, char blocking)
 {
@@ -438,6 +375,15 @@ int eards_remote_connect(char *nodename,uint port)
 
 }
 
+int eards_remote_disconnect()
+{
+	eards_remote_connected=0;
+	close(eards_sfd);
+	return EAR_SUCCESS;
+}
+
+
+/** REMOTE FUNCTIONS FOR SINGLE NODE COMMUNICATION */
 int eards_new_job(application_t *new_job)
 {
 	request_t command;
@@ -461,7 +407,6 @@ int eards_end_job(job_id jid,job_id sid)
     command.time_code = time(NULL);
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
-//	command.my_req.end_job.status=status;
 	debug("command %u job_id %lu step_id %lu ",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
 	return send_non_block_command(&command);
 }
@@ -495,7 +440,6 @@ int eards_set_def_freq(unsigned long freq)
     return send_command(&command);
 }
 
-
 int eards_red_max_and_def_freq(uint p_states)
 {
     request_t command;
@@ -514,8 +458,6 @@ int eards_restore_conf()
     command.time_code = time(NULL);
     return send_command(&command);
 }
-
-
 
 // New th must be passed as % th=0.75 --> 75
 int eards_set_th(unsigned long th)
@@ -538,6 +480,7 @@ int eards_inc_th(unsigned long th)
     command.my_req.ear_conf.th=th;
     return send_command(&command);
 }
+
 int eards_ping()
 {
     request_t command;
@@ -603,7 +546,6 @@ void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t my_clu
 
 /* End new functions for power limit management */
 
-
 int eards_set_policy_info(new_policy_cont_t *p)
 {
     request_t command;
@@ -614,119 +556,12 @@ int eards_set_policy_info(new_policy_cont_t *p)
     return send_command(&command);
 }
 
-
-int eards_remote_disconnect()
-{
-	eards_remote_connected=0;
-	close(eards_sfd);
-	return EAR_SUCCESS;
-}
+/* END OF SINGLE NODE COMMUNICATION */
 
 
 /*
 *	SAME FUNCTIONALLITY BUT SENT TO ALL NODES
 */
-void old_increase_th_all_nodes(ulong th, cluster_conf_t my_cluster_conf)
-{
-	int i, j, k, rc;
-    char node_name[256];
-	debug("Sending old_increase_th_all_nodes ");
-
-    for (i=0;i < my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {
-                if (k == -1)
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                }
-    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-        	    if (rc<0){
-	    		    debug("Error connecting with node %s", node_name);
-            	}else{
-	        		debug("Increasing the PerformanceEfficiencyGain in node %s by %lu", node_name,th);
-		        	if (!eards_inc_th(th)) debug("Error increasing the th for node %s", node_name);
-			        eards_remote_disconnect();
-        		}
-	        }
-        }
-    }
-}
-
-void old_red_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
-{
-	int i, j, k, rc;
-    char node_name[256];
-	debug("Sending old_red_max_freq_all_nodes");
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {
-                if (k == -1)
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                }
-    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-        	    if (rc<0){
-	    		    debug("Error connecting with node %s", node_name);
-            	}else{
-    
-                debug("Reducing  the frequency in node %s by %lu", node_name,ps);
-		        	if (!eards_red_max_and_def_freq(ps)) debug("Error reducing the max freq for node %s", node_name);
-			        eards_remote_disconnect();
-        		}
-	        }
-        }
-    }
-}
-
-void old_ping_all_nodes(cluster_conf_t my_cluster_conf)
-{
-    int i, j, k, rc; 
-    char node_name[256];
-	debug("Sengind old_ping_all_nodes");
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {   
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {   
-                if (k == -1) 
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                    else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                }   
-                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-                if (rc<0){
-                    error("Error connecting with node %s", node_name);
-                }else{
-
-                    debug("Node %s ping!", node_name);
-                    if (!eards_ping()) error("Error doing ping for node %s", node_name);
-                    eards_remote_disconnect();
-                }
-            }
-        }
-    }
-}
 
 void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
 {
@@ -746,7 +581,8 @@ void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void ping_all_nodes(cluster_conf_t my_cluster_conf)
+
+void ping_all_nodes_propagated(cluster_conf_t my_cluster_conf)
 {
     request_t command;
     command.req = EAR_RC_PING;
@@ -890,179 +726,6 @@ request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, requ
 
 }
 
-#if USE_NEW_PROP
-int correct_status(int target_idx, int total_ips, int *ips, request_t *command, uint port, status_t **status)
-{
-    status_t **temp_status, *final_status;
-    int num_status[NUM_PROPS];
-    int rc, i;
-    struct sockaddr_in temp;
-    unsigned int  current_dist;
-	char next_ip[50]; 
-    memset(num_status, 0, sizeof(num_status));
-    temp_status = calloc(NUM_PROPS, sizeof(status_t*));
-
-	debug("correct_status for ip %d with distance %d",ips[target_idx],command->node_dist);
-    if (command->node_dist > total_ips)
-    {
-        final_status = calloc(1, sizeof(status_t));
-        final_status[0].ip = ips[target_idx];
-        final_status[0].ok = STATUS_BAD;
-        *status = final_status;
-        return 1;
-    }
-
-    current_dist = command->node_dist;
-
-    for (i = 1; i <= NUM_PROPS; i++)
-    {
-        //check that the next ip exists within the range
-        if ((target_idx + current_dist + i*NUM_PROPS) >= total_ips) break;
-
-        //prepare next node data
-        temp.sin_addr.s_addr = ips[target_idx + current_dist + i*NUM_PROPS];
-        strcpy(next_ip, inet_ntoa(temp.sin_addr));
-        //prepare next node distance
-        command->node_dist = current_dist + i*NUM_PROPS;
-
-        //connect and send data
-        rc = eards_remote_connect(next_ip, port);
-        if (rc < 0)
-        {
-            debug("propagate_req:Error connecting to node: %s", next_ip);
-            num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
-        }
-        else
-        {
-            if ((num_status[i-1] = send_status(command, &temp_status[i-1])) < 1) 
-            {
-                debug("propagate_req: Error propagating command to node %s", next_ip);
-                eards_remote_disconnect();
-                num_status[i-1] = correct_status(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, &temp_status[i-1]);
-            }
-            else eards_remote_disconnect();
-        }
-    }
-
-    //memory allocation for final status
-    int total_status = 0;
-    for (i = 0; i < NUM_PROPS; i++){
-        total_status += num_status[i];
-		}
-		debug("Total status collected from propagation %d",total_status);    
-    final_status = calloc(total_status + 1, sizeof(status_t));
-    
-    //copy results to final status
-    int temp_idx = 0;
-    for (i = 0; i < NUM_PROPS; i++)
-	{
-        memcpy(&final_status[temp_idx], temp_status[i], sizeof(status_t)*num_status[i]);
-		temp_idx += num_status[i];
-	}
-
-    //set self ip
-    final_status[total_status].ip = ips[target_idx];
-    final_status[total_status].ok = STATUS_BAD;
-    *status = final_status;
-
-
-    for (i = 0; i < NUM_PROPS; i++)
-    {
-        //check that the next ip exists within the range
-        if ((target_idx + current_dist + (i+1)*NUM_PROPS) >= total_ips) break;
-        free(temp_status[i]);
-    }
-    return total_status + 1;
-
-}
-
-#else
-int correct_status(uint target_ip, request_t *command, uint port, status_t **status)
-{
-    status_t *final_status, *status1 = NULL, *status2 = NULL;
-    int total_status, num_status1 = 0, num_status2 = 0;
-		debug("correct_status for ip %d with distance %d",target_ip,command->node_dist);
-    if (command->node_dist < 1) {
-        final_status = calloc(1, sizeof(status_t));
-        final_status[0].ip = target_ip;
-        final_status[0].ok = STATUS_BAD;
-        *status = final_status;
-        return 1;
-    }
-
-    char nextip1[50], nextip2[50];
-
-    struct sockaddr_in temp;
-    unsigned int self_ip, ip1, ip2; 
-    self_ip = ip1 = ip2 = htonl(target_ip);
-    ip1 += command->node_dist;
-    temp.sin_addr.s_addr = ntohl(ip1);
-
-    strcpy(nextip1, inet_ntoa(temp.sin_addr));
-
-    ip2 -= command->node_dist;
-    temp.sin_addr.s_addr = ntohl(ip2);
-    strcpy(nextip2, inet_ntoa(temp.sin_addr));
-
-    //the next node will propagate the command at half the distance
-    command->node_dist /= 2;
-    int actual_dist = command->node_dist;
-    //connect to first subnode
-    int rc = eards_remote_connect(nextip1, port);
-    if (rc < 0)
-    {
-        debug("Error connecting to node: %s", nextip1);
-        num_status1 = correct_status(ntohl(ip1), command, port, &status1);
-    }
-    else
-    {
-		debug("connection ok, sending status requests %s",nextip1);
-        if ((num_status1 = send_status(command, &status1)) < 1)
-        {
-            debug("Error propagating command to node %s", nextip1);
-            eards_remote_disconnect();
-            num_status1 = correct_status(ntohl(ip1), command, port, &status1);
-        }
-        else eards_remote_disconnect();
-    }
-
-	debug("Correcting second node");
-
-    command->node_dist = actual_dist;
-    //connect to second subnode
-    rc = eards_remote_connect(nextip2, port);
-    if (rc < 0)
-    {
-        debug("Error connecting to node: %s", nextip2);
-        num_status2 = correct_status(ntohl(ip2), command, port, &status2);
-    }
-    else
-    {
-		debug("connection ok, sending status requests %s",nextip2);
-        if ((num_status2 = send_status(command, &status2)) < 1)
-        {
-            debug("Error propagating command to node %s", nextip2);
-            eards_remote_disconnect();
-            num_status2 = correct_status(ntohl(ip2), command, port, &status2);
-        }
-        else eards_remote_disconnect();
-    } 
-
-    total_status = num_status1 + num_status2;
-    final_status = calloc(total_status + 1, sizeof(status_t));
-    memcpy(final_status, status1, sizeof(status_t)*num_status1);
-    memcpy(&final_status[num_status1], status2, sizeof(status_t)*num_status2);
-    final_status[total_status].ip = ntohl(self_ip);
-    final_status[total_status].ok = STATUS_BAD;
-    *status = final_status;
-    free(status1);
-    free(status2);
-		debug("correct_status ends return value=%d",total_status + 1);
-    return total_status + 1;
-}
-#endif
-
-#if USE_NEW_PROP
 void correct_error(int target_idx, int total_ips, int *ips, request_t *command, uint port)
 {
     if (command->node_dist > total_ips) return;
@@ -1105,142 +768,7 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
         }
     }
 }
-#else
-void correct_error(uint target_ip, request_t *command, uint port)
-{
-    if (command->node_dist < 1) return;
-    char nextip1[50], nextip2[50];
 
-    struct sockaddr_in temp;
-    unsigned int ip1, ip2; 
-    ip1 = ip2 = htonl(target_ip);
-    ip1 += command->node_dist;
-    temp.sin_addr.s_addr = ntohl(ip1);
-
-    strcpy(nextip1, inet_ntoa(temp.sin_addr));
-
-    ip2 -= command->node_dist;
-    temp.sin_addr.s_addr = ntohl(ip2);
-    strcpy(nextip2, inet_ntoa(temp.sin_addr));
-
-    //the next node will propagate the command at half the distance
-    command->node_dist /= 2;
-    int actual_dist = command->node_dist;
-    //connect to first subnode
-    int rc = eards_remote_connect(nextip1, port);
-    if (rc < 0)
-    {
-        debug("Error connecting to node: %s", nextip1);
-        correct_error(ntohl(ip1), command, port);
-    }
-    else
-    {
-        if (!send_command(command))
-        {
-            debug("Error propagating command to node %s", nextip1);
-            eards_remote_disconnect();
-            correct_error(ntohl(ip1), command, port);
-        }
-        else eards_remote_disconnect();
-    }
-
-    command->node_dist = actual_dist;
-    //connect to second subnode
-    rc = eards_remote_connect(nextip2, port);
-    if (rc < 0)
-    {
-        debug("Error connecting to node: %s", nextip2);
-        correct_error(ntohl(ip2), command, port);
-    }
-    else
-    {
-        if (!send_command(command))
-        {
-            debug("Error propagating command to node %s", nextip2);
-            eards_remote_disconnect();
-            correct_error(ntohl(ip2), command, port);
-        }
-        else eards_remote_disconnect();
-    } 
-}
-#endif
-
-#if !USE_NEW_PROP
-int correct_status_starter(char *host_name, request_t *command, uint port, status_t **status)
-{
-    struct addrinfo hints;
-    struct addrinfo *result, *rp;
-    int sfd, s;
-    int ip1, ip2;
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len;
-    ssize_t nread;
-    int host_ip = 0;
-
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
-    hints.ai_protocol = 0;          /* Any protocol */
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
-
-   	s = getaddrinfo(host_name, NULL, &hints, &result);
-    if (s != 0) {
-		debug("getaddrinfo fails for host %s (%s)",host_name,strerror(errno));
-		return EAR_ERROR;
-    }
-
-   	for (rp = result; rp != NULL; rp = rp->ai_next) {
-        if (rp->ai_addr->sa_family == AF_INET)
-        {
-            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
-            host_ip = saddr->sin_addr.s_addr;
-        }
-    }
-    freeaddrinfo(result);
-    return correct_status(host_ip, command, port, status);
-}
-
-void correct_error_starter(char *host_name, request_t *command, uint port)
-{
-	if (command->node_dist < 1) return;
-    struct addrinfo hints;
-    struct addrinfo *result, *rp;
-    int sfd, s;
-    int ip1, ip2;
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len;
-    ssize_t nread;
-    int host_ip = 0;
-
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
-    hints.ai_protocol = 0;          /* Any protocol */
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
-
-   	s = getaddrinfo(host_name, NULL, &hints, &result);
-    if (s != 0) {
-		debug("getaddrinfo fails for host %s (%s)",host_name,strerror(errno));
-		return;
-    }
-
-   	for (rp = result; rp != NULL; rp = rp->ai_next) {
-        if (rp->ai_addr->sa_family == AF_INET)
-        {
-            struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
-            host_ip = saddr->sin_addr.s_addr;
-        }
-    }
-    freeaddrinfo(result);
-    correct_error(host_ip, command, port);
-}
-#endif
-
-#if USE_NEW_PROP
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
 {
     int i, j,  rc, total_ranges;
@@ -1281,59 +809,6 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
     free(ip_counts);
 
 }
-#else
-void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
-{
-    int i, j, k, rc; 
-    char node_name[256];
-    time_t ctime = time(NULL);
-	debug("send_command_all %d",command.req);
-    command.time_code = ctime;
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {   
-            k = my_cluster_conf.islands[i].ranges[j].start;
-            command.node_dist = 0;
-            if (k == -1) 
-                sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-            else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-            else {
-                k += (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
-                if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
-                    sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                else 
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-
-                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
-                int t = 1;
-                while (t < command.node_dist) t *= 2;
-                command.node_dist = t;
-            }   
-            
-            /*#if USE_EXT
-            strcat(node_name, NW_EXT);
-            #endif*/
-            if (strlen(my_cluster_conf.net_ext))
-                strcat(node_name, my_cluster_conf.net_ext);
-
-            rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
-            if (rc<0){
-                debug("Error connecting with node %s, trying to correct it", node_name);
-                correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
-            }
-            else{
-                debug("Node %s with distance %d contacted!", node_name, command.node_dist);
-                if (!send_command(&command)) {
-                    debug("Error sending command to node %s, trying to correct it", node_name);
-                    correct_error_starter(node_name, &command, my_cluster_conf.eard.port);
-                }
-                eards_remote_disconnect();
-            }
-        }
-    }
-}
-#endif
 
 request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_conf, void **data)
 {
@@ -1371,11 +846,10 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
         
             if (head.size > 0 && head.type != EAR_ERROR)
             {
-                 default_type = head.type;
-                 all_data = realloc(all_data, final_size + head.size);
-                 memcpy(&all_data[final_size], temp_data, head.size);
-                 final_size += head.size;
-                 free(temp_data);
+                head = process_data(head, (char **)&temp_data, (char **)&all_data, final_size);
+                free(temp_data);
+                final_size = head.size;
+                default_type = head.type;
             }
             
         }
@@ -1391,10 +865,17 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
     }
     else if (final_size < 1 && default_type != EAR_ERROR) head.type = EAR_ERROR;
 
+    // Freeing allocated memory
+    if (total_ranges > 0) {
+        for (i = 0; i < total_ranges; i++)
+            free(ips[i]);
+        free(ip_counts);
+        free(ips);
+    }
+
     return head;
 }
 
-#if NEW_STATUS
 int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 {
     request_t command;
@@ -1423,132 +904,6 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
 
 }
 
-#else
-
-#if USE_NEW_PROP
-int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
-{
-    int i, j,  rc, total_ranges, num_all_status = 0, num_temp_status;
-    int **ips, *ip_counts;
-    struct sockaddr_in temp;
-    status_t *temp_status, *all_status = NULL;
-    request_t command;
-    char next_ip[256];
-    time_t ctime = time(NULL);
-    
-    command.time_code = ctime;
-    command.req = EAR_RC_STATUS;
-
-    total_ranges = get_ip_ranges(&my_cluster_conf, &ip_counts, &ips);
-    for (i = 0; i < total_ranges; i++)
-    {
-        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
-        {
-            command.node_dist = 0;
-            temp.sin_addr.s_addr = ips[i][j];
-            strcpy(next_ip, inet_ntoa(temp.sin_addr));
-            
-            rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
-            if (rc<0){
-                debug("Error connecting with node %s, trying to correct it", next_ip);
-                num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
-            }
-            else{
-                debug("Node %s with distance %d contacted!", next_ip, command.node_dist);
-                if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
-                    debug("Error sending command to node %s, trying to correct it", next_ip);
-                    eards_remote_disconnect();
-                    num_temp_status = correct_status(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port, &temp_status);
-                }
-            }
-        
-            if (num_temp_status > 0)
-            {
-                all_status = realloc(all_status, sizeof(status_t)*(num_all_status+num_temp_status));
-                memcpy(&all_status[num_all_status], temp_status, sizeof(status_t)*num_temp_status);
-                free(temp_status);
-                num_all_status += num_temp_status;
-            }
-            else
-            {
-                debug("Connection to node %s returned 0 status", next_ip)
-            }
-            
-        }
-    }
-    *status = all_status;
-
-    return num_all_status;
-}
-#else
-int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
-{
-    int i, j, k, rc; 
-    char node_name[256];
-    status_t *temp_status, *all_status = NULL;
-    int num_all_status = 0, num_temp_status;
-    request_t command;
-    time_t ctime = time(NULL);
-    command.time_code = ctime;
-    command.req = EAR_RC_STATUS;
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {   
-            num_temp_status = 0;
-            k = my_cluster_conf.islands[i].ranges[j].start;
-            command.node_dist = 0;
-            if (k == -1) 
-                sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-            else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-            else {
-                k += (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2;
-                if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
-                    sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-                else 
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
-
-                command.node_dist = (my_cluster_conf.islands[i].ranges[j].end - my_cluster_conf.islands[i].ranges[j].start)/2 + 1;
-                int t = 1;
-                while (t < command.node_dist) t *= 2;
-                command.node_dist = t;
-            }   
-            /*#if USE_EXT
-            strcat(node_name, NW_EXT);
-            #endif*/
-            if (strlen(my_cluster_conf.net_ext) > 0)
-                strcat(node_name, my_cluster_conf.net_ext);
-
-            rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
-            if (rc<0){
-                debug("Error connecting with node %s, trying to correct it", node_name);
-                num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
-            }
-            else{
-                debug("Node %s with distance %d contacted with status!", node_name, command.node_dist);
-                if ((num_temp_status = send_status(&command, &temp_status)) < 1) {
-                    debug("Error doing status for node %s, trying to correct it", node_name);
-                    num_temp_status = correct_status_starter(node_name, &command, my_cluster_conf.eard.port, &temp_status);
-                }
-                eards_remote_disconnect();
-            }
-            if (num_temp_status > 0)
-            {
-                all_status = realloc(all_status, sizeof(status_t)*(num_all_status+num_temp_status));
-                memcpy(&all_status[num_all_status], temp_status, sizeof(status_t)*num_temp_status);
-                free(temp_status);
-                num_all_status += num_temp_status;
-            }
-
-        }
-    }
-    *status = all_status;
-    return num_all_status;
-}
-#endif
-#endif
-
-#if NEW_STATUS
 
 powercap_status_t *mem_alloc_powercap_status(char *final_data)
 {
@@ -1709,68 +1064,6 @@ request_header_t send_powercap_status(request_t *command, powercap_status_t **st
 
 }
 
-#else
-int send_powercap_status(request_t *command, powercap_status_t **status)
-{
-	ulong ack;
-	int ret;
-	int total, pending;
-    powercap_status_t *return_status;
-	debug("Sending command %u",command->req);
-	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
-		if (ret<0){ 
-			error("Error sending command (status) %s",strerror(errno));
-		}else{ 
-			debug("Error sending command (status) ret=%d expected=%d",ret,sizeof(request_t));
-		}
-	}
-	debug("Reading ack size ");
-	/* We assume first long will not block */
-	ret=read(eards_sfd,&ack,sizeof(ulong));
-	//ret = recv(eards_sfd, &ack, sizeof(ulong), MSG_DONTWAIT);
-	if (ret<0){
-		error("Error receiving ack in (status) (%s) ",strerror(errno));
-        return EAR_ERROR;
-	}
-    if (ack < 1){
-        error("Number of status expected is not valid: %lu", ack);
-        return EAR_ERROR;
-    }
-	debug("Waiting for %d ack bytes",ack);
-    return_status = calloc(ack, sizeof(powercap_status_t));
-	if (return_status==NULL){
-		error("Not enough memory at send_status");
-		return EAR_ERROR;
-	}
-	total=0;
-	pending=sizeof(powercap_status_t)*ack;
-    ret = read(eards_sfd, (char *)return_status+total, pending);
-    //ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
-	if (ret<0){
-		error("Error by reading status (%s)",strerror(errno));
-        free(return_status);
-		return EAR_ERROR;
-	}
-	total+=ret;
-	pending-=ret;
-	while ((ret>0) && (pending>0)){
-    	ret = read(eards_sfd, (char *)return_status+total, pending);
-    	//ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
-		if (ret<0){
-			error("Error by reading status (%s)",strerror(errno));
-        	free(return_status);
-			return EAR_ERROR;
-		}
-		total+=ret;
-		pending-=ret;
-	}
-    *status = return_status;
-	debug("Returning from send_status with %d",ack);
-	return ack;
-}
-#endif
-
-
 int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status) 
 {
     int num_temp_status;
@@ -1780,106 +1073,44 @@ int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t 
     command.node_dist = 0;
     command.req = EAR_RC_GET_POWERCAP_STATUS;
     command.time_code = time(NULL);
-#if NEW_STATUS
     request_header_t head;
+
     head = send_powercap_status(&command, &temp_status);
     if (head.size < sizeof(powercap_status_t) || head.type != EAR_TYPE_POWER_STATUS) {
-#else
-    if ((num_temp_status = send_powercap_status(&command, &temp_status)) < 1) {
-#endif
         debug("Error sending command to node");
     }
     *pc_status = temp_status;
-#if NEW_STATUS
+
     return head.size >= sizeof(powercap_status_t);
-#else
-    return num_temp_status;
-#endif
 }
 
 /** Asks for powercap_status for all nodes */
 int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status)
 {
-
-    int i, j,  rc, total_ranges, num_all_status = 0, num_temp_status;
-    int **ips, *ip_counts;
-    struct sockaddr_in temp;
-    powercap_status_t *temp_status, *all_status = NULL;
     request_t command;
+    powercap_status_t *temp_status;
     request_header_t head;
-    char next_ip[256];
     time_t ctime = time(NULL);
-    
+    int num_status = 0;
+
     command.time_code = ctime;
     command.req = EAR_RC_GET_POWERCAP_STATUS;
+    command.node_dist = 0;
 
-    total_ranges = get_ip_ranges(my_cluster_conf, &ip_counts, &ips);
-    for (i = 0; i < total_ranges; i++)
+    head = data_all_nodes(&command, my_cluster_conf, (void **)&temp_status);
+    num_status = head.size / sizeof(powercap_status_t);
+
+    if (head.type != EAR_TYPE_POWER_STATUS || head.size < sizeof(powercap_status_t))
     {
-#if NEW_STATUS
-        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
-        {
-            command.node_dist = 0;
-#else
-        for (j = 0; j < ip_counts[i]; j++)
-        {
-            command.node_dist = ip_counts[i]+10;
-#endif
-            temp.sin_addr.s_addr = ips[i][j];
-            strcpy(next_ip, inet_ntoa(temp.sin_addr));
-            memset(&head, 0, sizeof(request_header_t));
-            
-            rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
-            if (rc<0){
-                debug("Error connecting with node %s, trying to correct it", next_ip);
-                num_temp_status = 0;
-            }
-            else{
-#if NEW_STATUS
-                head = send_powercap_status(&command, &temp_status);
-                if (head.size < sizeof(powercap_status_t) || head.type != EAR_TYPE_POWER_STATUS) {
-#else
-                if ((num_temp_status = send_powercap_status(&command, &temp_status)) < 1) {
-#endif
-                    debug("Error sending command to node %s, trying to correct it", next_ip);
-                }
-                eards_remote_disconnect();
-            }
-        
-#if NEW_STATUS
-            if (head.size >= sizeof(powercap_status_t) && head.type == EAR_TYPE_POWER_STATUS)
-            {
-                head = process_data(head, (char **)&temp_status, (char **)&all_status, num_all_status);
-                num_all_status = 1;
-                free(temp_status);
-            }
-#else
-            if (num_temp_status > 0)
-            {
-                all_status = realloc(all_status, sizeof(powercap_status_t)*(num_all_status+num_temp_status));
-                memcpy(&all_status[num_all_status], temp_status, sizeof(powercap_status_t)*num_temp_status);
-                free(temp_status);
-                num_all_status += num_temp_status;
-            }
-#endif
-            else
-            {
-                num_temp_status = 0;
-                debug("Connection to node %s returned 0 status", next_ip)
-            }
-            
-        }
-    }
-    *pc_status = all_status;
-
-    if (total_ranges > 0) {
-        for (i = 0; i < total_ranges; i++)
-            free(ips[i]);
-        free(ip_counts);
-        free(ips);
+        if (head.size > 0) free (temp_status);
+        *pc_status = temp_status;
+        num_status = 0;
     }
 
-    return num_all_status;
+    *pc_status = temp_status;
+
+    return num_status;
+
 }
 
 /** Send powercap_options to all nodes */
@@ -1898,144 +1129,37 @@ int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_
   return EAR_SUCCESS;
 }
 
-
-
-void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
+/* pings all nodes */
+void ping_all_nodes(cluster_conf_t my_cluster_conf)
 {
-	int i, j, k, rc;
+    int i, j, k, rc; 
     char node_name[256];
+    debug("Sendind ping_all_nodes");
+    //it is always secuential as it is only used for debugging purposes
     for (i=0;i< my_cluster_conf.num_islands;i++){
         for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {
+        {   
             for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {
-                if (k == -1)
+            {   
+                if (k == -1) 
                     sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
                 else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
                 else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
+                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
+                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
                     else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                }
-    	        rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-        	    if (rc<0){
-	    		    debug("Error connecting with node %s", node_name);
-            	}else{
-                	debug("Reducing  the default and maximumfrequency in node %s by %lu", node_name,ps);
-		        	if (!eards_red_max_and_def_freq(ps)) debug("Error reducing the default freq for node %s", node_name);
-			        eards_remote_disconnect();
-        		}
-	        }
-        }
-    }
-}
-
-
-
-void old_reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
-{
-    int i, j, k, rc;
-    char node_name[256];
-
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {
-                if (k == -1)
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    
-                }
-
+                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                }   
                 rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
                 if (rc<0){
-                    debug("Error connecting with node %s",node_name);
+                    error("Error connecting with node %s", node_name);
                 }else{
-                	debug("Setting  the frequency in node %s to %lu", node_name, freq);
-                	if (!eards_set_freq(freq)) debug("Error reducing the freq for node %s", node_name);
-            	    eards_remote_disconnect();
-		        }
+                    debug("Node %s ping!", node_name);
+                    if (!eards_ping()) error("Error doing ping for node %s", node_name);
+                    eards_remote_disconnect();
+                }
             }
         }
     }
-}
-
-void old_set_def_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
-{
-    int i, j, k, rc;
-    char node_name[256];
-
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {
-                if (k == -1)
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    
-                }
-
-                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-                if (rc<0){
-                    debug("Error connecting with node %s",node_name);
-                }else{
-                	debug("Setting  the frequency in node %s to %lu", node_name, freq);
-                	if (!eards_set_def_freq(freq)) debug("Error setting the freq for node %s", node_name);
-            	    eards_remote_disconnect();
-		        }
-            }
-        }
-    }
-}
-
-void old_restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
-{
-    int i, j, k, rc;
-    char node_name[256];
-
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
-        {
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
-            {
-                if (k == -1)
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10)
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k);
-                    
-                }
-
-                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
-                if (rc<0){
-                    debug("Error connecting with node %s",node_name);
-                }else{
-                	debug("Restoring the configuartion in node %s", node_name);
-                	if (!eards_restore_conf()) debug("Error restoring the configuration for node %s", node_name);
-            	    eards_remote_disconnect();
-		        }
-            }
-        }
-    }
-
 }

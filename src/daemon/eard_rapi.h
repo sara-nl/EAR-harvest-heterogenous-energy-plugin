@@ -124,14 +124,12 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
 void restore_conf_all_nodes(cluster_conf_t my_cluster_conf);
 
 /** Executes a simple ping to all nodes */
-void ping_all_nodes(cluster_conf_t my_cluster_conf);
+void ping_all_nodes_propagated(cluster_conf_t my_cluster_conf);
 
 /** Executes a simple ping to all nodes in a sequential manner */
-void old_ping_all_nodes(cluster_conf_t my_cluster_conf);
+void ping_all_nodes(cluster_conf_t my_cluster_conf);
 
-/** Executes a simple ping to all nodes with the next nodes calculated at runtime */
-void new_ping_all_nodes(cluster_conf_t my_cluster_conf);
-
+/** Asks all the nodes for their current status */
 int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status);
 
 /** Asks for powercap_status for all nodes */
@@ -164,19 +162,7 @@ void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf);
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
 
 /** Corrects a propagation error, sending to the child nodes when the parent isn't responding. */
-#if USE_NEW_PROP
 void correct_error(int target_idx, int total_ips, int *ips, request_t *command, uint port);
-#else
-void correct_error(uint target_ip, request_t *command, uint port);
-#endif
-
-/** Corrects a status propagation error, sending to the child nodes when the parent isn't responding. 
-*   The corresponding status are placed in status, while the return value is the amount of status obtained. */
-#if USE_NEW_PROP
-int correct_status(int target_idx, int total_ips, int *ips, request_t *command, uint port, status_t **status);
-#else
-int correct_status(uint target_ip, request_t *command, uint port, status_t **status);
-#endif
 
 /** Sends the status command through the currently open fd, reads the returning value and places it
 *   in **status. Returns the amount of status_t placed in **status. */

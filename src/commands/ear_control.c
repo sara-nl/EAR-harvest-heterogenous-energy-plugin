@@ -141,6 +141,8 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
                     strcat(node_name, my_cluster_conf.net_ext);
 
                 fill_ip(node_name, &new_ips[num_ips]);
+                free(aux_node_conf->policies);
+                free(aux_node_conf);
                 num_ips++;
             }
         }
@@ -270,6 +272,7 @@ void process_status(int num_status, status_t *status, char error_only)
         for (i = 0; i < num_status; i++)
             check_ip(status[i], ips, num_ips);
         print_ips(ips, num_ips, error_only);
+        free(ips);
         free(status);
     }
     else printf("An error retrieving status has occurred.\n");
@@ -475,7 +478,7 @@ int main(int argc, char *argv[])
                     }
                 }
                 else
-                    old_ping_all_nodes(my_cluster_conf);
+                    ping_all_nodes(my_cluster_conf);
                 break;
             case 's':
                 if (optarg)
