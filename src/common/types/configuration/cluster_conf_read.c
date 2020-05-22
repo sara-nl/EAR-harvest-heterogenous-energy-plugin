@@ -1125,7 +1125,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			token = strtok(NULL, "=");
 			/* It mas be included in power */
-			conf->eargm.energy = atoi(token);
+			conf->eargm.power = atoi(token);
+		}
+		else if (!strcmp(token, "GLOBALMANAGERPOWERPERIOD"))
+		{
+			token = strtok(NULL, "=");
+			conf->eargm.t1_power = atoi(token);
 		}
 		else if (!strcmp(token, "GLOBALMANAGERWARNINGSPERC"))
 		{

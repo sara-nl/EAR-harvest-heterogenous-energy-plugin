@@ -600,8 +600,10 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->verbose=1;
 	eargmc->use_aggregation=1;
 	eargmc->t1=DEFAULT_T1;
+	eargmc->t1_power=0;
 	eargmc->t2=DEFAULT_T2;
 	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
+	eargmc->power=0;
 	eargmc->units=1;
 	eargmc->policy=MAXPOWER;
 	eargmc->port=EARGM_PORT_NUMBER;

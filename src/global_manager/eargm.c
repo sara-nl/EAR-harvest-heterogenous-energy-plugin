@@ -611,7 +611,7 @@ int main(int argc,char *argv[])
 
 	if ((period_t1<=0) || (period_t2<=0) || (energy_budget<=0)) usage(argv[0]);
 	#if POWERCAP
-	cluster_powercap_init();
+	cluster_powercap_init(&my_cluster_conf);
 	#endif
 
 	aggregate_samples=period_t2/period_t1;
