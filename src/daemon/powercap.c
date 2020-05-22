@@ -199,7 +199,7 @@ int powercap_init()
 	else pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
 	#endif
 	pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
-	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
+	set_powercap_value(DOMAIN_NODE,my_pc_opt.last_t1_allocated);
 	debug("powercap initialization finished");
 	#if POWERCAP_MON
 	fd_powercap_values=open("/var/run/ear/powercap_values.txt",O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
@@ -444,15 +444,16 @@ void get_powercap_status(powercap_status_t *my_status)
 {
 	debug("get_powercap_status");
 	while(pthread_mutex_trylock(&my_pc_opt.lock)); 
-	//memset(my_status,0,sizeof(powercap_status_t));
 	my_status->total_nodes++;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
 						debug("%sIdle%s node!, release %u allocated power %u",COL_BLU,COL_CLR,my_pc_opt.released,my_pc_opt.current_pc);
             my_status->idle_nodes++;
+						#if 0
 						my_status->released+=my_pc_opt.released;
             my_pc_opt.released=0;
             my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
+						#endif
             break;
 		case PC_STATUS_GREEDY:
 					debug("%sGreedy%s node asking for %u watts current pc %u",COL_BLU,COL_CLR,my_pc_opt.requested,my_pc_opt.last_t1_allocated);
@@ -593,4 +594,19 @@ uint powercap_get_strategy()
 void powercap_set_app_req_freq(ulong f)
 {
 	pmgt_set_app_req_freq(pcmgr,f);
+}
+
+void powercap_release_idle_power(pc_release_data_t *release)
+{
+  while(pthread_mutex_trylock(&my_pc_opt.lock));
+  switch(my_pc_opt.powercap_status){
+  case PC_STATUS_IDLE:
+  	debug("%sReleasing %u allocated IDLE power %s",COL_BLU,my_pc_opt.released,COL_CLR);
+  	release->released+=my_pc_opt.released;
+  	my_pc_opt.released=0;
+  	my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
+  	break;
+	default:break;
+	}
+	pthread_mutex_unlock(&my_pc_opt.lock);
 }

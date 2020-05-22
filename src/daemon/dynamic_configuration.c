@@ -446,6 +446,16 @@ void update_current_settings(policy_conf_t *cpolicy_settings)
 	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
 }
 
+void dyncon_release_idle_power(int fd, request_t *command)
+{
+  pc_release_data_t rel_data;
+ 
+	/* Hay que alocatar memoria? No es un vector */ 
+  powercap_release_idle_power(&rel_data);
+	/* Y aqui que? */
+
+}
+
 void dyncon_get_powerstatus(int fd, request_t *command)
 {
 	powercap_status_t *status;
@@ -465,6 +475,7 @@ void dyncon_get_powerstatus(int fd, request_t *command)
     if (return_status < 1) 
     {
             //error
+			error("dyncon_get_powerstatus and return status < 1 ");
     }
 	debug("return_status %d status=%p", return_status, status);
 
@@ -514,6 +525,7 @@ void process_remote_requests(int clientfd) {
 	verbose(VRAPI, "connection received");
 	req = read_command(clientfd, &command);
 	/* New job and end job are different */
+	/* Is it necesary */
 	if (req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB) {
 		if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time) {
 			verbose(VRAPI + 1, "Recieved repeating command: %u", req);
@@ -526,6 +538,7 @@ void process_remote_requests(int clientfd) {
 			return;
 		}
 	}
+	/**/
 	last_dist = command.node_dist;
 	last_command = req;
 	last_command_time = command.time_code;
@@ -604,6 +617,9 @@ void process_remote_requests(int clientfd) {
     case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd, &command);
             return;
+		case EAR_RC_RELEASE_IDLE:
+						dyncon_release_idle_power(clientfd, &command);
+						return;
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;

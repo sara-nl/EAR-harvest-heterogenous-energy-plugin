@@ -81,7 +81,7 @@ typedef union req_data{
 		end_job_req_t 		end_job;
 		new_conf_t 				ear_conf;
 		new_policy_cont_t	pol_conf;
-	    power_limit_t     pc;
+	  power_limit_t     pc;
 		risk_dec_t 			risk;
 		powercap_opt_t  pc_opt;
 }req_data_t;
@@ -136,6 +136,7 @@ typedef struct performance{
 
 
 
+
 #define EAR_RC_NEW_JOB     0
 #define EAR_RC_END_JOB     1
 #define EAR_RC_MAX_FREQ    100
@@ -159,6 +160,7 @@ typedef struct performance{
 #define EAR_RC_GET_POWERCAP_STATUS 	704
 #define EAR_RC_SET_POWERCAP_OPT			705
 #define EAR_RC_SET_RISK 800
+#define EAR_RC_RELEASE_IDLE		801
 
 
 

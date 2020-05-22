@@ -30,7 +30,7 @@
 #ifndef _PC_STATUS_H_
 #define _PC_STATUS_H_
 
-#define POWERCAP_IDLE_PERC 1
+#define POWERCAP_IDLE_PERC 0.5
 
 #define DOMAIN_NODE 0
 #define DOMAIN_CPU 1
@@ -110,6 +110,11 @@ typedef struct dom_power{
 	uint dram;
 	uint gpu;
 }dom_power_t;
+
+typedef struct pc_release_data{
+  uint released;
+}pc_release_data_t;
+
 
 
 

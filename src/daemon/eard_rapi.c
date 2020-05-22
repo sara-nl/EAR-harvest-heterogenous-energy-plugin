@@ -1888,10 +1888,16 @@ int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_
     request_t command;
     command.req=EAR_RC_SET_POWERCAP_OPT;
     command.time_code = time(NULL);
-    command.my_req.pc_opt = *pc_opt;
     send_command_all(command, my_cluster_conf);
 	return EAR_SUCCESS;
 }
+
+/** Asks nodes to release idle power */
+int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_t *released)
+{
+  return EAR_SUCCESS;
+}
+
 
 
 void old_red_def_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf)
