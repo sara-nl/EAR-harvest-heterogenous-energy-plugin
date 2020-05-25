@@ -210,7 +210,7 @@ state_t monitor_dispose()
 state_t monitor_register(suscription_t *s)
 {
 	if (s             == NULL) return_msg(EAR_BAD_ARGUMENT, "the suscription can't be NULL");
-	if (s->time_relax <= 100 ) return_msg(EAR_BAD_ARGUMENT, "time can't be zero");
+	if (s->time_relax  < 100 ) return_msg(EAR_BAD_ARGUMENT, "time can't be zero");
 	if (s->call_main  == NULL) return_msg(EAR_BAD_ARGUMENT, "reading call is NULL");
 	if (s->id          < 0   ) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 
