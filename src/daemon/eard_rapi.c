@@ -162,7 +162,7 @@ int send_data(int fd, size_t size, char *data, int type)
 
 char is_valid_type(int type)
 {
-    if (type == EAR_TYPE_STATUS || type == EAR_TYPE_POWER_STATUS) return 1;
+    if (type >= MIN_TYPE_VALUE && type <= MAX_TYPE_VALUE) return 1;
     return 0;
 }
 

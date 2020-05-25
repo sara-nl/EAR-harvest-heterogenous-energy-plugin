@@ -164,10 +164,18 @@ typedef struct performance{
 
 
 
+/******************* IMPORTANT ***********************/
+// UPDATE MAX_TYPE_VALUE FOR EACH NEW TYPE OR THE NEW TYPE WON'T BE ACCEPTED
 #define EAR_TYPE_STATUS         2001
 #define EAR_TYPE_POWER_STATUS   2002
 #define EAR_TYPE_RELEASED       2003
-
+///  |||||
+///  vvvvv
+/******************* IMPORTANT ***********************/
+// UPDATE MAX_TYPE_VALUE FOR EACH NEW TYPE OR THE NEW TYPE WON'T BE ACCEPTED
+#define MAX_TYPE_VALUE  EAR_TYPE_RELEASED
+#define MIN_TYPE_VALUE  EAR_TYPE_STATUS
+/*****************************************************/
 
 #define NO_COMMAND 100000
 
