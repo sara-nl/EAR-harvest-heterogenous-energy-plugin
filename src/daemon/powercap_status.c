@@ -121,6 +121,13 @@ uint get_powercapopt_value(node_powercap_opt_t *pc_opt)
   return pc_opt->current_pc;
 }
 
+uint get_powercap_allocated(node_powercap_opt_t *pc_opt)
+{
+  /* we are not checking hw configuration in this function */
+  return pc_opt->last_t1_allocated;
+}
+
+
 
 uint compute_power_status(node_powercap_opt_t *pc,uint current_power)
 {
