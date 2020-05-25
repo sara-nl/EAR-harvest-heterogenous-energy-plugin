@@ -53,7 +53,16 @@ void print_ordered_node_info(uint numn,node_info_t * einfo)
 {
 	int i;
 	for (i=0;i<numn;i++){
-		verbose(1,"node[%d] ip=%d dist %u",i,einfo[i].ip,einfo[i].dist_pstate);
+		verbose(1,"node[%d] ip=%d dist %u power_red %f victim %u",i,einfo[i].ip,einfo[i].dist_pstate,einfo[i].power_red,einfo[i].victim);
+	}
+}
+void select_victim_nodes(uint numn,node_info_t * einfo,float target)
+{
+	int i=0;
+	float total=0,limit=target;
+	while((i<numn) && (total<target)){
+		total+=einfo[i].power_red;
+		einfo[i].victim=1;	
 	}
 }
 
@@ -80,8 +89,11 @@ state_t get_nodes_status(cluster_conf_t my_cluster_conf,uint *nnodes,node_info_t
 		diff_f=my_status[i].node.max_freq-newf;
 		cinfo[i].dist_pstate=diff_f/100000;
 		cinfo[i].ip=my_status[i].ip;
+		if (cinfo[i].dist_pstate==1) cinfo[i].power_red=0.1/num_n;
+		else cinfo[i].power_red=0.05/num_n;
+		cinfo[i].victim=0;
 	}	
-	qsort((void *)cinfo,*nnodes,sizeof(node_info_t),compare_node_info_lower_first);
+	qsort((void *)cinfo,num_n,sizeof(node_info_t),compare_node_info_lower_first);
 
 	/* ES un vector consecutivo ? */
 	free(my_status);
@@ -104,12 +116,14 @@ void create_risk(risk_t *my_risk,int wl)
 
 
 
-void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf)
+void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf,float target)
 {
 	uint numn;
+	verbose(1,"Our target is to reduce %f Watts",target);
 	if (get_nodes_status(my_cluster_conf,&numn,&einfo)!=EAR_SUCCESS){
 		error("Getting node status");
 	}else{
+		select_victim_nodes(numn,einfo,target);
 		print_ordered_node_info(numn,einfo);
 	}
 	create_risk(risk,level);
