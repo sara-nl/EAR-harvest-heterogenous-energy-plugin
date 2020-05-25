@@ -284,17 +284,17 @@ void parse_tag(cluster_conf_t *conf, char *line)
         {
             //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
             if (strchr(value, '.') != NULL || atol(value) < 10)
-                conf->tags[idx].max_avx2_freq = (ulong)(atof(value) * 1000000);
+                conf->tags[idx].max_avx512_freq = (ulong)(atof(value) * 1000000);
             else
-                conf->tags[idx].max_avx2_freq = (atol(value));
+                conf->tags[idx].max_avx512_freq = (atol(value));
         }
         else if (!strcmp(key, "MAX_AVX2"))
         {
             //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
             if (strchr(value, '.') != NULL || atol(value) < 10)
-                conf->tags[idx].max_avx512_freq = (ulong)(atof(value) * 1000000);
+                conf->tags[idx].max_avx2_freq = (ulong)(atof(value) * 1000000);
             else
-                conf->tags[idx].max_avx512_freq = (atol(value));
+                conf->tags[idx].max_avx2_freq = (atol(value));
         }
         else if (!strcmp(key, "MAX_POWER"))
         {
@@ -325,6 +325,10 @@ void parse_tag(cluster_conf_t *conf, char *line)
         else if (!strcmp(key, "POWERCAP_PLUGIN"))
         {
             strcpy(conf->tags[idx].powercap_plugin, value);
+        }
+        else if (!strcmp(key, "COEFFS"))
+        {
+            strcpy(conf->tags[idx].coeffs, value);
         }
 
         //TYPE OF POWERCAP AND TAGS -> pending
