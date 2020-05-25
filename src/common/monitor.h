@@ -34,14 +34,7 @@
 #include <common/states.h>
 #include <common/system/time.h>
 
-#define sus(context) \
-		((suscription_t *) context->suscription)
-
-#define suscribed(context) \
-		context->suscribed == 1
-
 typedef state_t (*suscall_f) (void *);
-typedef state_t (*suscription_f) (void *);
 
 typedef struct suscription_s
 {
@@ -49,10 +42,26 @@ typedef struct suscription_s
 	suscall_f	call_main;
 	void		*memm_init;
 	void		*memm_main;
-	int			time_relax; // miliseconds
-	int			time_burst; // miliseconds
+	int		time_relax; // In miliseconds.
+	int		time_burst; // In miliseconds.
     int			id;
 } suscription_t;
+
+// Example (test will receive NULL):
+//	state_t test(void *arg);
+//
+// 	suscription_t sus;
+// 	state_t s;
+//
+// 	sus = suscription();
+//	sus->call_main  = test;
+//	sus->time_relax = 1000;
+//	sus->time_burst =  300;
+//	
+//	s = monitor_init();
+//	s = monitor_register(sus);
+//	s = monitor_burst(sus);
+//	s = monitor_relax(sus);
 
 state_t monitor_init();
 

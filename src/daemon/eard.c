@@ -1186,7 +1186,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	verbose(0,"Topology detected: sockets %d, cores %d, threads %d",
-			node_desc.socket_count, node_desc.core_count, node_desc.thread_count);
+			node_desc.socket_count, node_desc.core_count, node_desc.cpu_count);
 
 	//
 	verbose(0,"Initializing frequency list");

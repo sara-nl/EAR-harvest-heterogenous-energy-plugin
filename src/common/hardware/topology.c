@@ -232,7 +232,6 @@ state_t topology_init(topology_t *topo)
 	topo->cpu_count = 0;
 	topo->core_count = 0;
 	topo->socket_count = 0;
-	topo->thread_count = 0;
 	topo->threads_per_core = 1;
 	topo->smt_enabled = 0;
 	topo->l3_count = 0;
@@ -249,7 +248,6 @@ state_t topology_init(topology_t *topo)
 	
 	//
 	topo->cpus = calloc(topo->cpu_count, sizeof(core_t));
-	topo->thread_count = topo->cpu_count;
 	
 	for (i = 0; i < topo->cpu_count; ++i)
 	{
