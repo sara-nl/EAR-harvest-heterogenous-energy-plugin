@@ -446,11 +446,19 @@ void update_current_settings(policy_conf_t *cpolicy_settings)
 
 void dyncon_release_idle_power(int fd, request_t *command)
 {
-  pc_release_data_t rel_data;
+    pc_release_data_t rel_data;
+    int return_status;
+    long int ack;
+
+    send_answer(fd, &ack);
  
-	/* Hay que alocatar memoria? No es un vector */ 
-  powercap_release_idle_power(&rel_data);
-	/* Y aqui que? */
+    return_status = propagate_release_idle(command, my_cluster_conf.eard.port, (pc_release_data_t *)&rel_data);
+    
+    if (return_status < 1) error("dyncon_get_powerstatus and return status < 1");
+
+    powercap_release_idle_power(&rel_data);
+
+    send_data(fd, sizeof(pc_release_data_t), (char *)&rel_data, EAR_TYPE_RELEASED);
 
 }
 
@@ -458,34 +466,25 @@ void dyncon_get_powerstatus(int fd, request_t *command)
 {
 	powercap_status_t *status;
     int return_status;
-#if NEW_STATUS
     long int ack;
 	send_answer(fd, &ack);
     char *status_data;
 	return_status = propagate_powercap_status(command, my_cluster_conf.eard.port, (powercap_status_t **)&status_data);
     status = mem_alloc_powercap_status(status_data);
     free(status_data);
-#else
-    return_status = 1;
-    status = calloc(1, sizeof(powercap_status_t));
-#endif
 
     if (return_status < 1) 
     {
-            //error
-			error("dyncon_get_powerstatus and return status < 1 ");
+        //error
+        error("dyncon_get_powerstatus and return status < 1 ");
     }
 	debug("return_status %d status=%p", return_status, status);
 
 	get_powercap_status(&status[return_status - 1]);
-#ifdef NEW_STATUS
     status_data = mem_alloc_char_powercap_status(status);
     send_data(fd, sizeof(powercap_status_t) * return_status + ((sizeof(uint)*2 + sizeof(int)) * (status->num_greedy)), status_data, EAR_TYPE_POWER_STATUS);
+
     free(status_data);
-#else
-	write(fd, &return_status, sizeof(return_status));
-	write(fd, status, sizeof(powercap_status_t) * return_status);
-#endif
 	debug("Returning from dyncon_get_powerstatus");
 	free(status);
 	debug("powerstatus released");
@@ -612,12 +611,12 @@ void process_remote_requests(int clientfd) {
 			dyncon_set_risk(clientfd, &command);
 			return;
 			break;
-    case EAR_RC_GET_POWERCAP_STATUS:
+        case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd, &command);
             return;
 		case EAR_RC_RELEASE_IDLE:
-						dyncon_release_idle_power(clientfd, &command);
-						return;
+            dyncon_release_idle_power(clientfd, &command);
+            return;
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;

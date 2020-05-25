@@ -978,6 +978,21 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
     head.type = data_head.type;
     switch(data_head.type)
     {
+        case EAR_TYPE_RELEASED:
+            if (final_data != NULL)
+            {
+               pc_release_data_t *released = (pc_release_data_t *)final_data; 
+               pc_release_data_t *new_released = (pc_release_data_t *)temp_data; 
+               released->released += new_released->released;
+            }
+            else
+            {
+                final_data = realloc(final_data, final_size + data_head.size);
+                memcpy(&final_data[final_size], temp_data, data_head.size);
+                head.size = data_head.size;
+                //cannot directly assign final_data = temp_data because the caller function (data_all_nodes) frees temp_data after passing through here
+            }
+            break;
         case EAR_TYPE_STATUS:
             final_data = realloc(final_data, final_size + data_head.size);
             memcpy(&final_data[final_size], temp_data, data_head.size);
@@ -1090,10 +1105,9 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
     request_t command;
     powercap_status_t *temp_status;
     request_header_t head;
-    time_t ctime = time(NULL);
     int num_status = 0;
 
-    command.time_code = ctime;
+    command.time_code = time(NULL);
     command.req = EAR_RC_GET_POWERCAP_STATUS;
     command.node_dist = 0;
 
@@ -1113,6 +1127,26 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
 
 }
 
+/** Asks nodes to release idle power */
+int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_t *released)
+{
+    request_t command;
+    request_header_t head;
+
+    command.req = EAR_RC_RELEASE_IDLE;
+    command.time_code = time(NULL);
+    command.node_dist = 0;
+
+    head = data_all_nodes(&command, my_cluster_conf, (void **)&released);
+    if (head.type != EAR_TYPE_RELEASED || head.size < sizeof(pc_release_data_t))
+    {
+        if (head.size > 0) free(released);
+        return 0;
+    }
+
+    return 1;
+}
+
 /** Send powercap_options to all nodes */
 int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_opt)
 {
@@ -1121,12 +1155,6 @@ int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_
     command.time_code = time(NULL);
     send_command_all(command, my_cluster_conf);
 	return EAR_SUCCESS;
-}
-
-/** Asks nodes to release idle power */
-int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_t *released)
-{
-  return EAR_SUCCESS;
 }
 
 /* pings all nodes */

@@ -47,6 +47,7 @@ int read_command(int s,request_t *command);
 void send_answer(int s,long *ack);
 void propagate_req(request_t *command, uint port);
 int propagate_status(request_t *command, uint port, status_t **status);
+int propagate_release_idle(request_t *command, uint port, pc_release_data_t *release);
 int propagate_powercap_status(request_t *command, uint port, powercap_status_t **status);
 
 powercap_status_t *mem_alloc_powercap_status(char *final_data);

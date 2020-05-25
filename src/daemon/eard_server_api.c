@@ -418,6 +418,32 @@ int propagate_powercap_status(request_t *command, uint port, powercap_status_t *
     return num_status;
 }
 
+int propagate_release_idle(request_t *command, uint port, pc_release_data_t *release)
+{
+    pc_release_data_t *new_released;
+    
+    // if the current node is a leaf node (either last node or ip_init had failed)
+    // we allocate the power_status in this node and return
+    if (command->node_dist > total_ips || self_id < 0 || ips == NULL || total_ips < 1)
+    {
+        memset(release, 0, sizeof(pc_release_data_t));
+        return 1;
+    }
+    request_header_t head = propagate_data(command, port, (void **)&new_released);
+
+    if (head.type != EAR_TYPE_RELEASED || head.size < sizeof(pc_release_data_t))
+    {
+        memset(release, 0, sizeof(pc_release_data_t));
+        if (head.size > 0) free(new_released);
+        return 1;
+    }
+
+    *release = *new_released;
+
+    return 1;
+
+}
+
 int propagate_status(request_t *command, uint port, status_t **status)
 {
     status_t *temp_status, *final_status;

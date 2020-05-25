@@ -166,6 +166,7 @@ typedef struct performance{
 
 #define EAR_TYPE_STATUS         2001
 #define EAR_TYPE_POWER_STATUS   2002
+#define EAR_TYPE_RELEASED       2003
 
 
 #define NO_COMMAND 100000
