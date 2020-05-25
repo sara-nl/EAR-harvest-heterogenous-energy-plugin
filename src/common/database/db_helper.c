@@ -1173,7 +1173,6 @@ int mysql_select_acum_energy_idx(MYSQL *connection, ulong divisor, char is_aggre
         if (mysql_stmt_prepare(statement, query, strlen(query)))
             return stmt_error(connection, statement);
     }
-		verbose(1,"query %s",query);
     //Query parameters binding
     MYSQL_BIND bind[1];
     memset(bind, 0, sizeof(bind));
