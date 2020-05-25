@@ -298,6 +298,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             {
                 for (j = 0; j < my_conf->islands[i].ranges[range_id].num_tags; j++)
                 {
+                    // tags for each island are stored in specific_tags
+                    // each range of an island stores the ids in the array of specific_tags that they have assigned
                     tag_id = tag_id_exists(my_conf, my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]]);
                     if (tag_id >= 0) {
                         debug("found tag: %s\n", my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]]);

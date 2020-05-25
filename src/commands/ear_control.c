@@ -347,6 +347,7 @@ int main(int argc, char *argv[])
 	        {"ping", 	     	optional_argument, 0, 'p'},
             {"status",       	optional_argument, 0, 's'},
             {"powerstatus",     optional_argument, 0, 'w'},
+            {"release",         optional_argument, 0, 'l'},
             {"set-risk",        required_argument, 0, 'r'},
             {"setopt",        required_argument, 0, 'o'},
             {"error",           no_argument, 0, 'e'},
@@ -597,6 +598,14 @@ int main(int argc, char *argv[])
                    
                 }
                 break;
+            case 'l':
+                if (optarg) {}
+                else
+                {
+                    pc_release_data_t pc;
+                    cluster_release_idle_power(&my_cluster_conf, &pc);
+                    printf("released %u watts\n", pc.released);
+                }
             case 'e':
                 num_status = status_all_nodes(my_cluster_conf, &status);
                 process_status(num_status, status, 1);
