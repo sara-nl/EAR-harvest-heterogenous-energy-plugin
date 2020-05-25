@@ -200,24 +200,21 @@ static void module_mpi_init()
 	}
 }
 
-int module_mpi()
+void module_mpi()
 {
 	static char path_so[4096];
 	int lang_c;
 	int lang_f;
 
-
 	module_mpi_init();
 	
-	verbose(3, "module mpi in '%s'", program_invocation_name);
+	verbose(3, "LOADER: function module_mpi in '%s'", program_invocation_name);
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");
-		return 0;
+		return;
 	}
 	
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
 	module_mpi_dlsym(path_so, lang_c, lang_f);
-
-	return 1;
 }

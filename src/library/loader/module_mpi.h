@@ -35,6 +35,6 @@
 #include <library/loader/module_mpic.h>
 #include <library/loader/module_mpif.h>
 
-int module_mpi();
+void module_mpi();
 
 #endif //LIBRARY_LOADER_MPI_H

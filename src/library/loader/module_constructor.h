@@ -30,6 +30,8 @@
 #ifndef LIBRARY_LOADER_CONSTURCTOR_H
 #define LIBRARY_LOADER_CONSTRUCTOR_H
 
-int module_constructor();
+void module_constructor();
+
+void module_destructor();
 
 #endif //LIBRARY_LOADER_CONSTRUCTOR_H
