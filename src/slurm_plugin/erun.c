@@ -219,6 +219,9 @@ int job(int argc, char *argv[])
 	if ((p = getenv("EAR_DEFAULT")) != NULL) {
 		sprintf(plug_def, "default=%s", p);
 		err_def = 0;
+	} else {
+		sprintf(plug_def, "default=on");
+		err_def = 0;
 	}
 	
 	for (i = 0; i < argc; ++i) {

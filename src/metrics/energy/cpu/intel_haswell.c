@@ -41,7 +41,7 @@
 #include <common/hardware/hardware_info.h>
 #include <common/math_operations.h>
 #include <metrics/energy/energy_cpu.h>
-#include <metrics/common/msr.h>
+#include <metrics/common/omsr.h>
 
 
 
@@ -81,8 +81,8 @@ int init_rapl_msr(int *fd_map)
     /* Ask for msr info */
     for(j=0;j<get_total_packages();j++) 
     {
-        if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT)){ 
-					debug("Error in msr_read init_rapl_msr");
+        if (omsr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_RAPL_POWER_UNIT)){ 
+					debug("Error in omsr_read init_rapl_msr");
 					pthread_mutex_unlock(&rapl_msr_lock);
 					return EAR_ERROR;
 				}
@@ -106,16 +106,16 @@ int read_rapl_msr(int *fd_map,unsigned long long *_values)
 
 	for(j=0;j<nump;j++) {
 		/* PKG reading */	    
-	    if (msr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_PKG_ENERGY_STATUS)){
-				debug("Error in msr_read read_rapl_msr");
+	    if (omsr_read(&fd_map[j], &result, sizeof result, MSR_INTEL_PKG_ENERGY_STATUS)){
+				debug("Error in omsr_read read_rapl_msr");
 				return EAR_ERROR;
 			}
 		result &= 0xffffffff;
 		_values[nump+j] = (unsigned long long)result*(cpu_energy_units*1000000000);
 
 		/* DRAM reading */
-	    if (msr_read(&fd_map[j], &result, sizeof result, MSR_DRAM_ENERGY_STATUS)){
-				debug("Error in msr_read read_rapl_msr");
+	    if (omsr_read(&fd_map[j], &result, sizeof result, MSR_DRAM_ENERGY_STATUS)){
+				debug("Error in omsr_read read_rapl_msr");
 				return EAR_ERROR;
 			}
 		result &= 0xffffffff;
@@ -133,7 +133,7 @@ void dispose_rapl_msr(int *fd_map)
   rapl_msr_instances--;
 	if (rapl_msr_instances==0){
 		tp=get_total_packages();
-		for (j = 0; j < tp; j++) msr_close(&fd_map[j]);
+		for (j = 0; j < tp; j++) omsr_close(&fd_map[j]);
 	}
 	pthread_mutex_unlock(&rapl_msr_lock);
 }

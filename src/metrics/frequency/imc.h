@@ -27,33 +27,37 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_FREQUENCY_UNCORE_H
-#define EAR_FREQUENCY_UNCORE_H
+#ifndef METRICS_FREQUENCY_IMC_H
+#define METRICS_FREQUENCY_IMC_H
 
+#include <common/types.h>
 #include <common/states.h>
-#include <common/types/generic.h>
+#include <common/hardware/topology.h>
 
-#define U_MSR_PMON_FIXED_CTR_OFF	0x000704
-#define U_MSR_PMON_FIXED_CTL_OFF	0x000703
-#define U_MSR_PMON_FIXED_CTL_STA	0x400000
-#define U_MSR_PMON_FIXED_CTL_STO	0x000000
-#define U_MSR_UNCORE_RATIO_LIMIT	0x000620
-#define U_MSR_UNCORE_RL_MASK_MAX	0x00007F
-#define U_MSR_UNCORE_RL_MASK_MIN	0x007F00
+typedef struct freq_imc_s {
+	void *data;
+} freq_imc_t;
 
-/* */
-state_t frequency_uncore_init(uint sockets_num, uint cores_num, uint cores_model);
+state_t freq_imc_init(topology_t *tp);
 
-/* */
-state_t frequency_uncore_dispose();
+state_t freq_imc_dispose();
 
-/* */
-state_t frequency_uncore_counters_start();
+state_t freq_imc_read(freq_imc_t *ef);
 
-/* */
-state_t frequency_uncore_counters_stop(uint64_t *buffer);
+state_t freq_imc_read_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong *average);
 
-state_t frequency_uncore_get_limits(uint32_t *buffer);
-state_t frequency_uncore_set_limits(uint32_t *buffer);
+state_t freq_imc_read_copy(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong *average);
 
-#endif //EAR_FREQUENCY_UNCORE_H
+state_t freq_imc_data_alloc(freq_imc_t *ef, ulong *freqs[], ulong *freqs_count);
+
+state_t freq_imc_data_count(uint *count);
+
+state_t freq_imc_data_copy(freq_imc_t *ef_dst, freq_imc_t *ef_src);
+
+state_t freq_imc_data_free(freq_imc_t *ef, ulong *freqs[]);
+
+state_t freq_imc_data_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong *average);
+
+state_t freq_imc_data_print(ulong *freqs, ulong *average);
+
+#endif //METRICS_FREQUENCY_IMC_H

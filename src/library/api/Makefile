@@ -13,7 +13,7 @@ OBJS = \
 all: $(OBJS)
 
 ear.o: ear.c ear.h
-	$(CC) $(CFLAGS)  $(PAPI_CFLAGS) -c $<	
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $<	
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

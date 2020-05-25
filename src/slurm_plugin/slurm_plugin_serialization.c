@@ -609,8 +609,6 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	buffer1[0] = '\0';
 	buffer2[0] = '\0';
 	
-	// Appending libraries to LD_PRELOAD
-	apenv_agnostic(buffer2, sd->pack.path_inst, 64);
 
 	#define t(max, val) \
 		((val + 1) > max) ? max : val + 1
@@ -618,9 +616,17 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	//
 	const int m = SZ_BUFF_EXTRA;
 	int n;
-	
-	n = snprintf(      0,       0, "%s/%s", buffer2, lib_path);
-	n = snprintf(buffer1, t(m, n), "%s/%s", buffer2, lib_path);
+
+	if (getenv_agnostic(sp, Var.hack_load.hck, buffer2, m)) {
+		n = snprintf(      0,       0, "%s", buffer2);
+		n = snprintf(buffer1, t(m, n), "%s", buffer2);
+	} else {	
+		// Appending libraries to LD_PRELOAD
+		apenv_agnostic(buffer2, sd->pack.path_inst, 64);
+
+		n = snprintf(      0,       0, "%s/%s", buffer2, lib_path);
+		n = snprintf(buffer1, t(m, n), "%s/%s", buffer2, lib_path);
+	}
 
 	plug_verbose(sp, 2, "trying to load file '%s'", buffer1);
 
@@ -629,10 +635,6 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 	{
 		char *ld_buf = sd->job.user.env.ld_preload;
 
-		if (getenv_agnostic(sp, Var.hack_load.hck, buffer2, m)) {
-			n = snprintf(      0,       0, "%s", buffer2);
-			n = snprintf(buffer1, t(m, n), "%s", buffer2);
-		}
 		if (getenv_agnostic(sp, Var.ld_prel.ear, ld_buf, m))
 		{
 			if (n > 0) {

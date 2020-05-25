@@ -36,11 +36,6 @@
 #include <common/types/generic.h>
 #include <common/hardware/cpuid.h>
 
-// Linux files
-#define PATH_SYS_SYSTEM		"/sys/devices/system"
-#define PATH_SYS_CPU0_TOCO	"/sys/devices/system/cpu/cpu0/topology/core_siblings"
-#define PATH_SYS_CPU0_TOTH	"/sys/devices/system/cpu/cpu0/topology/thread_siblings"
-
 // Intel models, Based on arch/x86/include/asm/intel-family.h
 // Tip: X means E, EP, ED and Server.
 #define CPU_UNIDENTIFIED        -1
@@ -50,7 +45,7 @@
 #define CPU_IVY_BRIDGE_X        62
 #define CPU_HASWELL             60
 #define CPU_HASWELL_X           63
-#define CPU_BROADWELL		61
+#define CPU_BROADWELL			61
 #define CPU_BROADWELL_X         79
 #define CPU_BROADWELL_XEON_D	86
 #define CPU_SKYLAKE             94
@@ -61,20 +56,6 @@
 
 #define INTEL_VENDOR_NAME       "GenuineIntel"
 #define AMD_VENDOR_NAME         "AuthenticAMD"
-
-
-typedef struct topology {
-	int cores;
-	int threads;
-	int sockets;
-	int numas;
-} topology_t;
-
-/** */
-state_t hardware_gettopology(topology_t *topo);
-
-/** */
-state_t hardware_topology_getsize(uint *size);
 
 /** Returns if the cpu is examinable by this library */
 int is_cpu_examinable();
