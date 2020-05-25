@@ -228,14 +228,14 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 	return n;
 }
 
-char tag_id_exists(cluster_conf_t *conf, char *tag)
+int tag_id_exists(cluster_conf_t *conf, char *tag)
 {
     int i;
     if (tag == NULL) return 0;
     for (i = 0; i < conf->num_tags; i++)
-        if (!strcmp(tag, conf->tags[i].id)) return 1;
+        if (!strcmp(tag, conf->tags[i].id)) return i;
 
-    return 0;
+    return -1;
 
 }
 
@@ -298,8 +298,9 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             {
                 for (j = 0; j < my_conf->islands[i].ranges[range_id].num_tags; j++)
                 {
-                    if (tag_id_exists(my_conf, my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]])) {
-                        tag_id = j;
+                    tag_id = tag_id_exists(my_conf, my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]]);
+                    if (tag_id >= 0) {
+                        debug("found tag: %s\n", my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]]);
                         break;
                     }
                 }
@@ -317,7 +318,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     if (tag_id < 0) tag_id = get_default_tag_id(my_conf);
     if (tag_id >= 0)
     {
-        printf("Found my_node_conf with tag: %s\n", my_conf->tags[tag_id].id);
+        debug("Found my_node_conf with tag: %s\n", my_conf->tags[tag_id].id);
         n->max_sig_power = (double)my_conf->tags[tag_id].max_power;
         n->min_sig_power = (double)my_conf->tags[tag_id].min_power;
         n->max_error_power = (double)my_conf->tags[tag_id].error_power;
