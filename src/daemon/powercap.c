@@ -199,7 +199,7 @@ int powercap_init()
 	else pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
 	#endif
 	pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
-	set_powercap_value(DOMAIN_NODE,my_pc_opt.last_t1_allocated);
+	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
 	debug("powercap initialization finished");
 	#if POWERCAP_MON
 	fd_powercap_values=open("/var/run/ear/powercap_values.txt",O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
