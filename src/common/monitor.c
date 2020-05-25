@@ -68,7 +68,8 @@ static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 
 	//
 	units = ((llong) wait_units) * 100LL;
-	timestamp_revert(&time, &units, TIME_MSECS);
+	/* Jordi */
+	timestamp_revert(&time, (unsigned long long*)&units, TIME_MSECS);
 
 	// Sleeping
 	timestamp_t t2;
@@ -152,7 +153,9 @@ static void *monitor(void *p)
 			if (!reg->suscribed) {
 				continue;
 			}
-
+			/* Jordi */
+			pass_units=1;
+			alignment=1;
 			monitor_time_calc(reg, &wait_units, pass_units, alignment);
 
 			if (reg->ok_main) {
