@@ -116,7 +116,7 @@ void create_risk(risk_t *my_risk,int wl)
 
 
 
-void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf,float target)
+void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf,float target,uint mode)
 {
 	uint numn;
 	verbose(1,"Our target is to reduce %f Watts",target);
@@ -126,7 +126,9 @@ void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf,floa
 		select_victim_nodes(numn,einfo,target);
 		print_ordered_node_info(numn,einfo);
 	}
-	create_risk(risk,level);
-	set_risk_all_nodes(*risk,0,my_cluster_conf);
+	if (mode){
+		create_risk(risk,level);
+		set_risk_all_nodes(*risk,0,my_cluster_conf);
+	}
 }
 

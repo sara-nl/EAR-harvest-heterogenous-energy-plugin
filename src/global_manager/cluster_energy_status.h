@@ -55,7 +55,7 @@ typedef struct node_info{
 }node_info_t;
 
 state_t get_nodes_status(cluster_conf_t my_cluster_conf,uint *nnodes,node_info_t **einfo);
-void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf,float target);
+void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf,float target,uint mode);
 void create_risk(risk_t *my_risk,int wl);
 
 
