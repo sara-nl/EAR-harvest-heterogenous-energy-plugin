@@ -707,8 +707,8 @@ int main(int argc,char *argv[])
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"%sWARNING2... we are close to the maximum energy budget %.2lf%%%s ",COL_RED,perc_energy,COL_CLR);
 				verbose(VGM,"****************************************************************");
-				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_WARNING2){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-					manage_warning(&current_risk,EARGM_WARNING2,my_cluster_conf);
+				if (last_risk_sent!=EARGM_WARNING2){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+					manage_warning(&current_risk,EARGM_WARNING2,my_cluster_conf,0.05,my_cluster_conf.eargm.mode);
 					#if 0
 					create_risk(&current_risk,EARGM_WARNING2);
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
@@ -725,8 +725,8 @@ int main(int argc,char *argv[])
 				verbose(VGM,"****************************************************************");
 				verbose(VGM,"%sPANIC!... we are close or over the maximum energy budget %.2lf%%%s ",COL_RED,perc_energy,COL_CLR);
 				verbose(VGM,"****************************************************************");
-				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_PANIC){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
-					manage_warning(&current_risk,EARGM_PANIC,my_cluster_conf);
+				if (last_risk_sent!=EARGM_PANIC){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
+					manage_warning(&current_risk,EARGM_PANIC,my_cluster_conf,0.1,my_cluster_conf.eargm.mode);
 					#if 0
 					create_risk(&current_risk,EARGM_PANIC);	
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
