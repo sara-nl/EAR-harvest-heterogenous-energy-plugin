@@ -32,7 +32,6 @@
 #include <common/output/verbose.h>
 #include <common/sizes.h>
 #include <common/states.h>
-#include <common/hardware/hardware_info.h>
 #include <common/hardware/cpupower.h>
 #include <common/hardware/architecture.h>
 
@@ -41,11 +40,10 @@ state_t get_arch_desc(architecture_t *arch)
 {
 	state_t ret;
 	if (arch==NULL) return EAR_ERROR;
-	ret=hardware_gettopology(&arch->top);
-	if (ret!=EAR_SUCCESS) return ret;
 	arch->max_freq_avx512=MAX_FREQ_AVX512;
 	arch->max_freq_avx2=MAX_FREQ_AVX2;
 	arch->pstates=CPUfreq_get_num_pstates(0);
+	topology_init(&arch->top);
 	return EAR_SUCCESS;	
 }
 
@@ -64,7 +62,6 @@ void print_arch_desc(architecture_t *arch)
 		printf("arch NULL pointer\n");
 		return;
 	}
-	printf("cores %d threads %d sockets %d numas %d ", arch->top.cores,arch->top.threads,arch->top.sockets,arch->top.numas);
 	printf("max avx512 %lu max freq for avx2 instructions %lu num pstates %d\n",arch->max_freq_avx512,
 	arch->max_freq_avx2,arch->pstates);
 	
@@ -77,7 +74,6 @@ void verbose_architecture(int v, architecture_t *arch)
 		verbose(v,"arch NULL pointer\n");
 		return;
 	}
-	verbose(v,"cores %d threads %d sockets %d numas %d ", arch->top.cores,arch->top.threads,arch->top.sockets,arch->top.numas);
 	verbose(v,"max avx512 %lu max freq for avx2 instructions %lu num pstates %d\n",arch->max_freq_avx512,
 	arch->max_freq_avx2,arch->pstates);
 }

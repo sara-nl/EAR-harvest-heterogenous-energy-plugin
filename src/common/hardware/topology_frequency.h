@@ -26,3 +26,10 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
+
+#ifndef COMMON_HARDWARE_TOPOLOGY_FREQUENCY_H_
+#define COMMON_HARDWARE_TOPOLOGY_FREQUENCY_H_
+
+state_t topology_freq_getbase(uint cpu, ulong *freq_base);
+
+#endif

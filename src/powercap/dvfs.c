@@ -75,7 +75,8 @@ void dvfs_pc_thread(void *d)
 	uint c_pstate,t_pstate;
 	ulong c_freq;
 	topology_t node_desc;
-  num_packs=detect_packages(NULL);
+  s = topology_init(&node_desc);
+  num_packs=node_desc.socket_count;
   if (num_packs==0){ 
 		error("Num packages cannot be detected in dvfs_pc thread initialization");
 		pthread_exit(NULL);
@@ -103,8 +104,7 @@ void dvfs_pc_thread(void *d)
 	verbose(1,"Power measurement initialized in dvfs_pc thread initialization");
 	/* RAPL is initialized */
 	read_rapl_msr(fd_rapl,values_rapl_init);
-  s = hardware_gettopology(&node_desc);
-  node_size = node_desc.sockets * node_desc.cores * node_desc.threads;
+  node_size = node_desc.cpu_count;
 	debug("DVFS:Initializing frequency in dvfs_pc %u cpus",node_size);
 	frequency_init(node_size);
 	while(1)

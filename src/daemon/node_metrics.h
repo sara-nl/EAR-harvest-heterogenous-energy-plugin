@@ -36,7 +36,9 @@
 #define _NODE_METRICS_H_
 
 #include <common/types/generic.h>
-
+#include <common/hardware/topology.h>
+#include <metrics/frequency/imc.h>
+#include <metrics/frequency/cpu.h>
 
 typedef struct nm{
 	uint ncpus;
@@ -46,12 +48,14 @@ typedef struct nm{
 }nm_t;
 
 typedef struct node_metrics{
-    ulong avg_cpu_freq;
-    uint64_t *uncore_freq;
-    unsigned long long *temp;  
-}nm_data_t;
+	freq_cpu_t freq_cpu;
+	freq_imc_t freq_imc;
+	ulong avg_cpu_freq;
+	ulong avg_imc_freq;
+	ullong *temp;
+} nm_data_t;
 
-int init_node_metrics(nm_t *id,int sockets, int cpus_per_socket,int cores_model,ulong def_freq);
+int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq);
 int init_node_metrics_data(nm_t *id,nm_data_t *mm);
 int start_compute_node_metrics(nm_t *id,nm_data_t *nm);
 int end_compute_node_metrics(nm_t *id,nm_data_t *nm);

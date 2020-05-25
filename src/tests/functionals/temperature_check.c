@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <metrics/common/msr.h>
+#include <metrics/common/omsr.h>
 #include <metrics/temperature/temperature.h>
 #include <common/types/configuration/cluster_conf.h>
 

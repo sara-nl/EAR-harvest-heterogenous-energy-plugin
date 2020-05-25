@@ -54,7 +54,7 @@
 #include <common/types/periodic_metric.h>
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <metrics/frequency/frequency_cpu.h>
+#include <metrics/frequency/cpu.h>
 #include <common/hardware/hardware_info.h>
 #include <common/hardware/frequency.h>
 #include <daemon/power_monitor.h>
@@ -81,6 +81,8 @@ nm_t my_nm_id;
 nm_data_t nm_init, nm_end, nm_diff, last_nm;
 
 extern topology_t node_desc;
+extern freq_cpu_t freq_job2;
+extern freq_cpu_t freq_job1;
 
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
@@ -396,6 +398,7 @@ void form_database_paths()
 */
 
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
+	state_t s;
 	verbose(1,"job_init_powermon_app init");
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
@@ -414,13 +417,17 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 	// Initialize energy
 	read_enegy_data(ceh, &c_energy);
 	copy_energy_data(&current_ear_app[ccontext]->energy_init, &c_energy);
-	aperf_job_avg_frequency_init_all_cpus();
+	// CPU Frequency
+	state_assert(s, freq_cpu_read(&freq_job1), );
 	verbose(1,"job_init_powermon_app end");
 }
 
 
-void job_end_powermon_app(ehandler_t *ceh) {
+void job_end_powermon_app(ehandler_t *ceh)
+{
 	power_data_t app_power;
+	state_t s;
+
 	alloc_power_data(&app_power);
 	check_context("job_end_powermon_app");
 	time(&current_ear_app[ccontext]->app.job.end_time);
@@ -441,7 +448,9 @@ void job_end_powermon_app(ehandler_t *ceh) {
 	current_ear_app[ccontext]->app.power_sig.DRAM_power = accum_dram_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.PCK_power = accum_cpu_power(&app_power);
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
-	current_ear_app[ccontext]->app.power_sig.avg_f = aperf_job_avg_frequency_end_all_cpus();
+
+	// CPU Frequency
+	state_assert(s, freq_cpu_read_diff(&freq_job2, &freq_job1, NULL, &current_ear_app[ccontext]->app.power_sig.avg_f), );
 
 	// nominal is still pending
 
@@ -1153,9 +1162,9 @@ void powermon_mpi_signature(application_t *app) {
 	save_eard_conf(&eard_dyn_conf);
 }
 
-void powermon_init_nm() {
-	if (init_node_metrics(&my_nm_id, node_desc.sockets, node_desc.cores, get_model(), frequency_get_nominal_freq()) !=
-		EAR_SUCCESS) {
+void powermon_init_nm()
+{
+	if (init_node_metrics(&my_nm_id, &node_desc, frequency_get_nominal_freq()) != EAR_SUCCESS) {
 		error("Initializing node metrics");
 	}
 	if (init_node_metrics_data(&my_nm_id, &nm_init) != EAR_SUCCESS) {
@@ -1178,7 +1187,8 @@ void powermon_init_nm() {
 
 
 // frequency_monitoring will be expressed in usecs
-void *eard_power_monitoring(void *noinfo) {
+void *eard_power_monitoring(void *noinfo)
+{
 	energy_data_t e_begin;
 	energy_data_t e_end;
 	power_data_t my_current_power;

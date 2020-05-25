@@ -284,17 +284,17 @@ void parse_tag(cluster_conf_t *conf, char *line)
         {
             //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
             if (strchr(value, '.') != NULL || atol(value) < 10)
-                conf->tags[idx].max_avx2_freq = (ulong)(atof(value) * 1000000);
+                conf->tags[idx].max_avx512_freq = (ulong)(atof(value) * 1000000);
             else
-                conf->tags[idx].max_avx2_freq = (atol(value));
+                conf->tags[idx].max_avx512_freq = (atol(value));
         }
         else if (!strcmp(key, "MAX_AVX2"))
         {
             //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
             if (strchr(value, '.') != NULL || atol(value) < 10)
-                conf->tags[idx].max_avx512_freq = (ulong)(atof(value) * 1000000);
+                conf->tags[idx].max_avx2_freq = (ulong)(atof(value) * 1000000);
             else
-                conf->tags[idx].max_avx512_freq = (atol(value));
+                conf->tags[idx].max_avx2_freq = (atol(value));
         }
         else if (!strcmp(key, "MAX_POWER"))
         {
@@ -325,6 +325,10 @@ void parse_tag(cluster_conf_t *conf, char *line)
         else if (!strcmp(key, "POWERCAP_PLUGIN"))
         {
             strcpy(conf->tags[idx].powercap_plugin, value);
+        }
+        else if (!strcmp(key, "COEFFS"))
+        {
+            strcpy(conf->tags[idx].coeffs, value);
         }
 
         //TYPE OF POWERCAP AND TAGS -> pending
@@ -445,8 +449,10 @@ void parse_island(cluster_conf_t *conf, char *line)
                 conf->islands[id_f].db_ips[conf->islands[id_f].num_ips] = malloc(strlen(token)+1);
                 remove_chars(token, ' ');
                 strcpy(conf->islands[id_f].db_ips[conf->islands[id_f].num_ips], token);
+
                 for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
                     conf->islands[id_f].ranges[i].db_ip = conf->islands[id_f].num_ips;
+
                 conf->islands[id_f].num_ips++;
             }
             else
@@ -473,10 +479,10 @@ void parse_island(cluster_conf_t *conf, char *line)
                 {
                     conf->islands[id_f].backup_ips = realloc(conf->islands[id_f].backup_ips,
                                                                         (conf->islands[id_f].num_backups+1)*sizeof(char *));
-                                                        if (conf->islands[id_f].backup_ips==NULL){
-                                                            error("NULL pointer in DB backup ip");
-                                                            return;
-                                                        }
+                    if (conf->islands[id_f].backup_ips==NULL){
+                        error("NULL pointer in DB backup ip");
+                        return;
+                    }
                     conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups] = malloc(strlen(token)+1);
                     strcpy(conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups], token);
                     for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
@@ -594,7 +600,7 @@ void parse_island(cluster_conf_t *conf, char *line)
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].db_ip = 0;
     }
-    else
+    else if (!contains_ip)
     {
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].db_ip = -1;
@@ -604,7 +610,7 @@ void parse_island(cluster_conf_t *conf, char *line)
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].sec_ip = 0;
     }
-    else
+    else if (!contains_sec_ip)
     {
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].sec_ip = -1;

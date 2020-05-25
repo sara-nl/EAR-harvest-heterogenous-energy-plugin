@@ -1,4 +1,6 @@
 basic_model.o: basic_model.c ../../common/states.h \
+ ../../common/output/error.h ../../common/colors.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
  ../../common/types/signature.h ../../common/types/generic.h \
  ../../common/config.h ../../common/config/config_def.h \
  ../../common/config/config_dev.h ../../common/config/config_install.h \
@@ -12,6 +14,8 @@ basic_model.o: basic_model.c ../../common/states.h \
  ../../common/hardware/hardware_info.h ../../common/system/file.h \
  ../../common/hardware/cpuid.h ../../library/models/models_api.h
 avx512_model.o: avx512_model.c ../../common/states.h \
+ ../../common/output/error.h ../../common/colors.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
  ../../common/types/signature.h ../../common/types/generic.h \
  ../../common/config.h ../../common/config/config_def.h \
  ../../common/config/config_dev.h ../../common/config/config_install.h \
@@ -26,9 +30,9 @@ avx512_model.o: avx512_model.c ../../common/states.h \
  ../../common/hardware/cpuid.h ../../library/models/models_api.h
 models.o: models.c ../../common/config.h ../../common/config/config_def.h \
  ../../common/config/config_dev.h ../../common/config/config_install.h \
- ../../common/states.h ../../common/output/verbose.h \
- ../../common/output/error.h ../../common/output/timestamp.h \
- ../../common/output/output_conf.h ../../common/output/debug.h \
+ ../../common/states.h ../../common/output/error.h ../../common/colors.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
+ ../../common/output/verbose.h ../../common/output/debug.h \
  ../../common/hardware/architecture.h ../../common/sizes.h \
  ../../common/hardware/hardware_info.h ../../common/system/file.h \
  ../../common/types/generic.h ../../common/hardware/cpuid.h \

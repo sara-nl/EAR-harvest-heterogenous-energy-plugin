@@ -32,7 +32,7 @@
 //#define SHOW_DEBUGS 0
 
 #include <common/config.h>
-#include <metrics/common/msr.h>
+#include <metrics/common/omsr.h>
 #include <common/output/verbose.h>
 /* Thermal Domain */
 #define IA32_THERM_STATUS               0x19C
@@ -51,7 +51,7 @@ int init_temp_msr(int *fd_map)
 
     throttling_temp = calloc(get_total_packages(), sizeof(int));
     for(j=0;j<get_total_packages();j++) {
-        if (msr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
+        if (omsr_read(fd_map, &result, sizeof result, MSR_TEMPERATURE_TARGET)) return EAR_ERROR;
             throttling_temp[j] = (result >> 16);
     }
 
@@ -66,7 +66,7 @@ int read_temp_msr(int *fds,unsigned long long *_values)
 	for(j=0;j<get_total_packages();j++)
 	{
 	    /* PKG reading */    
-        if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+        if (omsr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
 	    _values[j] = throttling_temp[j] - ((result>>16)&0xff);
 
     }
@@ -81,7 +81,7 @@ int read_temp_limit_msr(int *fds, unsigned long long *_values)
 	for(j=0;j<get_total_packages();j++)
 	{
 	    /* PKG reading */    
-        if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+        if (omsr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
 	    _values[j] = ((result)&0x2);
 
     }
@@ -96,9 +96,9 @@ int reset_temp_limit_msr(int *fds)
 	for(j=0;j<get_total_packages();j++)
 	{
 	    /* PKG reading */    
-        if (msr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+        if (omsr_read(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
         result &= ~(0x2);
-        if (msr_write(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
+        if (omsr_write(&fds[j], &result, sizeof result, IA32_PKG_THERM_STATUS)) return EAR_ERROR;
 
     }
 	return EAR_SUCCESS;

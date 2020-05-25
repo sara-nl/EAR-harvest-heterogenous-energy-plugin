@@ -169,6 +169,7 @@ typedef struct tags
     char energy_model[GENERIC_NAME];
     char energy_plugin[GENERIC_NAME];
     char powercap_plugin[GENERIC_NAME];
+    char coeffs[GENERIC_NAME];
 } tag_t;
 
 typedef struct db_conf

@@ -205,13 +205,16 @@ void module_mpi()
 	int lang_c;
 	int lang_f;
 
+
 	module_mpi_init();
+	
+	verbose(3, "module mpi in '%s'", program_invocation_name);
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");
 		return;
 	}
-
+	
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
 	module_mpi_dlsym(path_so, lang_c, lang_f);
 }

@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,44 +15,43 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef _RAPL_METRICS_H_
-#define _RAPL_METRICS_H_
+#ifndef METRICS_FREQUENCY_IMC_INTEL63_H
+#define METRICS_FREQUENCY_IMC_INTEL63_H
 
-#include <metrics/common/omsr.h>
+#include <metrics/frequency/imc.h>
 
-#define RAPL_POWER_EVS            2
-#define RAPL_DRAM0          0
-#define RAPL_DRAM1          1
-#define RAPL_PACKAGE0       2
-#define RAPL_PACKAGE1       3
-#define RAPL_MSR_UNITS 			1000000000.0
+state_t ifreq_intel63_init(topology_t *tp);
 
-/** Opens the necessary fds to read the MSR registers. Returns 0 on success
-* 	and -1 on error. */
-int init_rapl_msr(int *fd_map);
+state_t ifreq_intel63_dispose();
 
-/** */
-void dispose_rapl_msr(int *fd_map);
+state_t ifreq_intel63_read(freq_imc_t *ef);
 
-/** Reads rapl counters and stores them in values array. Returns 0 on success 
-*	and -1 on error. */
-int read_rapl_msr(int *fd_map,unsigned long long *_values);
+state_t ifreq_intel63_read_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong *average);
 
-void rapl_msr_energy_to_str(char *b,unsigned long long *values);
-unsigned long long acum_rapl_energy(unsigned long long *values);
-void diff_rapl_msr_energy(unsigned long long *diff,unsigned long long *end, unsigned long long *init);
+state_t ifreq_intel63_read_copy(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong *average);
 
+state_t ifreq_intel63_data_alloc(freq_imc_t *ef, ulong *freqs[], ulong *freqs_count);
 
-#endif
+state_t ifreq_intel63_data_count(uint *count);
+
+state_t ifreq_intel63_data_copy(freq_imc_t *ef_dst, freq_imc_t *ef_src);
+
+state_t ifreq_intel63_data_free(freq_imc_t *ef, ulong *freqs[]);
+
+state_t ifreq_intel63_data_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong *average);
+
+state_t ifreq_intel63_data_print(ulong *freqs, ulong *average);
+
+#endif //EAR_FREQUENCY_UNCORE_H

@@ -15,7 +15,7 @@ ener_PERM = 0775
 ener_DEPS = \
     $(SRCDIR)/common/libcommon.a
 rapl_DEPS = \
-    $(SRCDIR)/metrics/common/msr.o \
+    $(SRCDIR)/metrics/common/omsr.o \
     $(SRCDIR)/metrics/energy/cpu/intel_haswell.o
 
 ######## RULES

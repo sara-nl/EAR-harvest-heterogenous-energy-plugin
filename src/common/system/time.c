@@ -87,3 +87,10 @@ ullong timestamp_getconvert(ullong time_unit)
 	timestamp_getfast(&ts);
 	return timestamp_convert(&ts, time_unit);
 }
+
+void timestamp_revert(timestamp *ts, ullong *tr, ullong time_unit)
+{
+    ullong aux_ns = (*tr) * time_unit;
+    ts->tv_sec    = aux_ns / 1000000000; 
+    ts->tv_nsec   = aux_ns - (ts->tv_sec * 1000000000);
+}

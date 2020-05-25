@@ -32,7 +32,7 @@
 
 #include <common/sizes.h>
 #include <common/states.h>
-#include <common/hardware/hardware_info.h>
+#include <common/hardware/topology.h>
 
 #define CPUMODEL 6126
 #if CPUMODEL == 6148
@@ -46,11 +46,12 @@
 
 
 typedef struct architecture{
-	topology_t 		top;
 	unsigned long max_freq_avx512;
 	unsigned long max_freq_avx2;
-	int 					pstates;
+	int pstates;
+	topology_t top;
 }architecture_t;
+
 /** Fills the current architecture in arch*/
 state_t get_arch_desc(architecture_t *arch);
 

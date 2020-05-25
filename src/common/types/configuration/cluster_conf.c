@@ -325,10 +325,14 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         n->max_power_cap = (double)my_conf->tags[tag_id].powercap;
         n->max_avx512_freq = my_conf->tags[tag_id].max_avx512_freq;
         n->max_avx2_freq = my_conf->tags[tag_id].max_avx2_freq;
+
         n->powercap_type = my_conf->tags[tag_id].powercap_type;
+
         n->energy_plugin = my_conf->tags[tag_id].energy_plugin;
         n->energy_model = my_conf->tags[tag_id].energy_model;
         n->powercap_plugin = my_conf->tags[tag_id].powercap_plugin;
+
+        n->coef_file = strlen(my_conf->tags[tag_id].coeffs) > 0 ? my_conf->tags[tag_id].coeffs : "coeffs.default";
 
         
     }

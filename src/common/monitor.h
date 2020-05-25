@@ -27,27 +27,54 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_MSR_H
-#define EAR_MSR_H
+#ifndef COMMON_APIS_SUSCRIPTOR_H
+#define COMMON_APIS_SUSCRIPTOR_H
 
-#include <unistd.h>
 #include <common/types.h>
 #include <common/states.h>
+#include <common/system/time.h>
 
-#define msr_clean(fd) \
-	*fd = -1
+typedef state_t (*suscall_f) (void *);
 
-/* */
-state_t msr_open(uint cpu);
+typedef struct suscription_s
+{
+	suscall_f	call_init;
+	suscall_f	call_main;
+	void		*memm_init;
+	void		*memm_main;
+	int		time_relax; // In miliseconds.
+	int		time_burst; // In miliseconds.
+    int			id;
+} suscription_t;
 
-/* */
-state_t msr_close(uint cpu);
+// Example (test will receive NULL):
+//	state_t test(void *arg);
+//
+// 	suscription_t sus;
+// 	state_t s;
+//
+// 	sus = suscription();
+//	sus->call_main  = test;
+//	sus->time_relax = 1000;
+//	sus->time_burst =  300;
+//	
+//	s = monitor_init();
+//	s = monitor_register(sus);
+//	s = monitor_burst(sus);
+//	s = monitor_relax(sus);
 
-/* */
-state_t msr_read(uint cpu, void *buffer, size_t count, off_t offset);
+state_t monitor_init();
 
-/* */
-state_t msr_write(uint cpu, const void *buffer, size_t count, off_t offset);
+state_t monitor_dispose();
 
+state_t monitor_register(suscription_t *suscription);
 
-#endif //EAR_MSR_H
+state_t monitor_unregister(suscription_t *suscription);
+
+state_t monitor_burst(suscription_t *suscription);
+
+state_t monitor_relax(suscription_t *suscription);
+
+suscription_t *suscription();
+
+#endif //EAR_STASH_MONITOR_H

@@ -79,5 +79,7 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit);
 ullong timestamp_getconvert(ullong time_unit);
 
 void print_timestamp(timestamp *ts);
+/* Converts a time to timestamp */
+void timestamp_revert(timestamp *ts, ullong *tr, ullong time_unit);
 
 #endif //EAR_COMMON_TIME_H

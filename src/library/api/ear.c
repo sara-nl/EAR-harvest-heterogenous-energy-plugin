@@ -55,6 +55,7 @@
 #include <common/types/application.h>
 #include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
+#include <common/hardware/hardware_info.h>
 #include <library/api/mpi.h>
 
 #include <library/common/externs_alloc.h>
