@@ -109,6 +109,11 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	} else {
 		sprintf(path_so, "%s/%s.%s", hack, REL_NAME_LIBR, extension);
 	}
+
+	// Last chance to force a concrete library file.
+	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
+		sprintf(path_so, "%s", hack);
+        }
 	
 	//if (!file_is_regular(path_so)) {
 	if (!module_file_exists(path_so)) {
@@ -201,10 +206,9 @@ void module_mpi()
 	int lang_c;
 	int lang_f;
 
-
 	module_mpi_init();
 	
-	verbose(3, "module mpi in '%s'", program_invocation_name);
+	verbose(3, "LOADER: function module_mpi in '%s'", program_invocation_name);
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");
