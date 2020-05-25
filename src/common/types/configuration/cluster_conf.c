@@ -333,7 +333,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         n->powercap_plugin = my_conf->tags[tag_id].powercap_plugin;
 
         n->coef_file = strlen(my_conf->tags[tag_id].coeffs) > 0 ? my_conf->tags[tag_id].coeffs : "coeffs.default";
-
+				strcpy(my_conf->install.obj_ener,n->energy_plugin);
+				strcpy(my_conf->install.obj_power_model,n->energy_model);
         
     }
     else warning("No tag found for current node in ear.conf\n");

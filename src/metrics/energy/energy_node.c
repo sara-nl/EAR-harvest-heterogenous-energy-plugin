@@ -34,6 +34,7 @@
 #include <common/system/symplug.h>
 #include <common/hardware/hardware_info.h>
 #include <metrics/energy/energy_node.h>
+#include <common/types/configuration/cluster_conf.h>
 
 struct energy_op
 {

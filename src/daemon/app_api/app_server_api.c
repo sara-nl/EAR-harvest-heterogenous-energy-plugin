@@ -66,6 +66,7 @@ static fd_set rfds_basic;
 static int numfds_req;
 
 extern cluster_conf_t my_cluster_conf;
+extern my_node_conf_t my_node_conf;
 extern int eard_must_exit;
 static ehandler_t my_eh_app_api;
 
