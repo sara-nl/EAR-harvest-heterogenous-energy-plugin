@@ -109,6 +109,11 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	} else {
 		sprintf(path_so, "%s/%s.%s", hack, REL_NAME_LIBR, extension);
 	}
+
+	// Last chance to force a concrete library file.
+	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
+		sprintf(path_so, "%s", hack);
+        }
 	
 	//if (!file_is_regular(path_so)) {
 	if (!module_file_exists(path_so)) {
@@ -195,7 +200,7 @@ static void module_mpi_init()
 	}
 }
 
-void module_mpi()
+int module_mpi()
 {
 	static char path_so[4096];
 	int lang_c;
@@ -208,9 +213,11 @@ void module_mpi()
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");
-		return;
+		return 0;
 	}
 	
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
 	module_mpi_dlsym(path_so, lang_c, lang_f);
+
+	return 1;
 }

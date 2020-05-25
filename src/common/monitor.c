@@ -58,16 +58,15 @@ typedef struct register_s
 } register_t;
 
 static register_t	queue[N_QUEUE];
-static uint			queue_last;
+static uint		queue_last;
 
 static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 {
 	timestamp_t time;
-	llong units;
-	int s;
+	ullong units;
 
 	//
-	units = ((llong) wait_units) * 100LL;
+	units = ((ullong) wait_units) * 100LL;
 	timestamp_revert(&time, &units, TIME_MSECS);
 
 	// Sleeping
@@ -135,9 +134,9 @@ static void *monitor(void *p)
 {
 	register_t *reg;
 	suscription_t *sus;
-	int wait_units;
-	int pass_units;
-	int alignment;
+	int wait_units = 0;
+	int pass_units = 0;
+	int alignment = 0;
 	int i;
 
 	while (enabled)

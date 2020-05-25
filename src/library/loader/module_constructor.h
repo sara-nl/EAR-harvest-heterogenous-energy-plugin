@@ -27,14 +27,9 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef LIBRARY_LOADER_MPI_H
-#define LIBRARY_LOADER_MPI_H
+#ifndef LIBRARY_LOADER_CONSTURCTOR_H
+#define LIBRARY_LOADER_CONSTRUCTOR_H
 
-#include <library/api/mpic.h>
-#include <library/api/mpif.h>
-#include <library/loader/module_mpic.h>
-#include <library/loader/module_mpif.h>
+int module_constructor();
 
-int module_mpi();
-
-#endif //LIBRARY_LOADER_MPI_H
+#endif //LIBRARY_LOADER_CONSTRUCTOR_H

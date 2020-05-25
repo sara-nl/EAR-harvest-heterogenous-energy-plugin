@@ -705,6 +705,10 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 		{
 			p = is->db_ips[is->ranges[k].db_ip];
 
+if (p == NULL) printf("p is NULL\n");
+printf("alias %s\n", a);
+printf("name %s\n", n);
+printf("p %s\n", p);
 			if (!found_server && p != NULL &&
 				((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a)) == 0)))
 			{
