@@ -344,6 +344,8 @@ void set_default_island_conf(node_island_t *isl_conf,uint id);
 /** Initializes the installation configuration values */
 void set_default_conf_install(conf_install_t *inst);
 
+/** Initializes the default values for TAGS */
+void set_default_tag_values(tag_t *tag);
 // Concrete data functions
 int get_node_island(cluster_conf_t *conf, char *hostname);
 
