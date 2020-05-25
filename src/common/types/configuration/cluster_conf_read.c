@@ -445,8 +445,10 @@ void parse_island(cluster_conf_t *conf, char *line)
                 conf->islands[id_f].db_ips[conf->islands[id_f].num_ips] = malloc(strlen(token)+1);
                 remove_chars(token, ' ');
                 strcpy(conf->islands[id_f].db_ips[conf->islands[id_f].num_ips], token);
+
                 for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
                     conf->islands[id_f].ranges[i].db_ip = conf->islands[id_f].num_ips;
+
                 conf->islands[id_f].num_ips++;
             }
             else
@@ -473,10 +475,10 @@ void parse_island(cluster_conf_t *conf, char *line)
                 {
                     conf->islands[id_f].backup_ips = realloc(conf->islands[id_f].backup_ips,
                                                                         (conf->islands[id_f].num_backups+1)*sizeof(char *));
-                                                        if (conf->islands[id_f].backup_ips==NULL){
-                                                            error("NULL pointer in DB backup ip");
-                                                            return;
-                                                        }
+                    if (conf->islands[id_f].backup_ips==NULL){
+                        error("NULL pointer in DB backup ip");
+                        return;
+                    }
                     conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups] = malloc(strlen(token)+1);
                     strcpy(conf->islands[id_f].backup_ips[conf->islands[id_f].num_backups], token);
                     for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
@@ -594,7 +596,7 @@ void parse_island(cluster_conf_t *conf, char *line)
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].db_ip = 0;
     }
-    else
+    else if (!contains_ip)
     {
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].db_ip = -1;
@@ -604,7 +606,7 @@ void parse_island(cluster_conf_t *conf, char *line)
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].sec_ip = 0;
     }
-    else
+    else if (!contains_sec_ip)
     {
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
             conf->islands[id_f].ranges[i].sec_ip = -1;
