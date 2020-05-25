@@ -100,6 +100,7 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 	{
 		reg->aligned = (alignment == 0);
 		reg->ok_main = reg->aligned;
+		reg->ok_init = reg->aligned;
 
 		if (!reg->ok_main) {
 			wait_required = 10 - alignment;
@@ -110,6 +111,8 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 		
 			return;
 		}
+
+		
 		debug("MONITOR: aligned %d", reg->suscription.id);
 	}
 
@@ -154,6 +157,10 @@ static void *monitor(void *p)
 
 			monitor_time_calc(reg, &wait_units, pass_units, alignment);
 
+			if (reg->ok_init) {
+				sus->call_init(sus->memm_init);
+				reg->ok_init = 0;
+			}
 			if (reg->ok_main) {
 				sus->call_main(sus->memm_main);
 				reg->ok_main = 0;
