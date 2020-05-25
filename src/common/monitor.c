@@ -31,12 +31,13 @@
 #include <string.h>
 #include <pthread.h>
 #include <common/monitor.h>
+#include <common/output/debug.h>
 
 #define N_QUEUE 128
 
 static pthread_mutex_t	lock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_t 		thread;
-static uint				enabled;
+static pthread_t	thread;
+static uint		enabled;
 
 typedef struct wait_s {
 	int relax;
@@ -46,14 +47,14 @@ typedef struct wait_s {
 typedef struct register_s
 {
 	suscription_t	suscription;
-	wait_t 			wait_units;
-	wait_t			wait_saves;
-	int				suscribed;
-	int				delivered;
-	int				bursted;
-	int				aligned;
-	int				ok_init;
-	int			 	ok_main;
+	wait_t		wait_units;
+	wait_t		wait_saves;
+	int		suscribed;
+	int		delivered;
+	int		bursted;
+	int		aligned;
+	int		ok_init;
+	int		ok_main;
 } register_t;
 
 static register_t	queue[N_QUEUE];
@@ -289,7 +290,6 @@ suscription_t *suscription()
 		return NULL;
 	}
 
-	printf("returning suscription %d\n", i);
 	queue[i].suscription.id = i;
 	queue[i].delivered      = 1;
 	pthread_mutex_unlock(&lock);
