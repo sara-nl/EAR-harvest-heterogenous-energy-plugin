@@ -60,9 +60,10 @@ char *state_msg;
 #define state_is(state1, state2) \
 	state1 == state2
 
-#define return_msg(no, msg) \
+#define return_msg(no, msg) { \
 	state_msg = msg; \
-	return no;
+	return no; \
+	}
 
 #define xtate_fail(s, function) \
 	(s = function) != EAR_SUCCESS

@@ -576,6 +576,23 @@ void set_default_eardbd_conf(eardb_conf_t *eardbdc)
 	eardbdc->mem_size_types[6] = 1;
 }
 
+void set_default_tag_values(tag_t *tag)
+{
+    tag->type           = TAG_TYPE_ARCH;
+    tag->powercap_type  = POWERCAP_TYPE_NODE;
+
+    tag->max_power      = MAX_SIG_POWER;
+	tag->error_power    = MAX_ERROR_POWER;
+	tag->powercap       = MAX_POWER_CAP;
+	tag->min_power      = MIN_SIG_POWER;
+	tag->max_temp       = MAX_TEMP;
+    
+    strcpy(tag->coeffs, "coeffs.default");
+    strcpy(tag->energy_model, "");
+    strcpy(tag->energy_plugin, "");
+    strcpy(tag->powercap_plugin, "");
+}
+
 void set_default_eard_conf(eard_conf_t *eardc)
 {
 	eardc->verbose=1;           /* default 1 */

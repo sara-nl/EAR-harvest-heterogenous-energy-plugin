@@ -271,6 +271,7 @@ void parse_tag(cluster_conf_t *conf, char *line)
                 idx = conf->num_tags;
                 conf->num_tags++;
                 memset(&conf->tags[idx], 0, sizeof(tag_t));
+                set_default_tag_values(&conf->tags[idx]);
                 strcpy(conf->tags[idx].energy_model, "");
                 strcpy(conf->tags[idx].energy_plugin, "");
                 strcpy(conf->tags[idx].powercap_plugin, "");
