@@ -583,7 +583,7 @@ void set_default_tag_values(tag_t *tag)
 
     tag->max_power      = MAX_SIG_POWER;
 	tag->error_power    = MAX_ERROR_POWER;
-	tag->powercap       = DEF_POWER_CAP;
+	tag->powercap       = MAX_POWER_CAP;
 	tag->min_power      = MIN_SIG_POWER;
 	tag->max_temp       = MAX_TEMP;
     
