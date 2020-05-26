@@ -1132,17 +1132,22 @@ int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_
 {
     request_t command;
     request_header_t head;
+    pc_release_data_t *temp_released;
 
     command.req = EAR_RC_RELEASE_IDLE;
     command.time_code = time(NULL);
     command.node_dist = 0;
 
-    head = data_all_nodes(&command, my_cluster_conf, (void **)&released);
+    head = data_all_nodes(&command, my_cluster_conf, (void **)&temp_released);
     if (head.type != EAR_TYPE_RELEASED || head.size < sizeof(pc_release_data_t))
     {
-        if (head.size > 0) free(released);
+        if (head.size > 0) free(temp_released);
+        memset(released, 0, sizeof(pc_release_data_t));
         return 0;
     }
+
+    memcpy(released, temp_released, sizeof(pc_release_data_t));
+    free(temp_released);
 
     return 1;
 }
