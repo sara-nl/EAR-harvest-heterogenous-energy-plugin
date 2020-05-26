@@ -82,11 +82,13 @@ void aggregate_data(powercap_status_t *cs)
 void print_powercap_opt(powercap_opt_t *opt)
 {
   int i;
+	debug("%s",COL_GRE);
   debug("num_greedy %u",opt->num_greedy);
   for (i=0;i<opt->num_greedy;i++){
     debug("greedy_node %d extra power %d",opt->greedy_nodes[i],opt->extra_power[i]);
   }
   debug("Max extra power for new jobs %u",opt->max_inc_new_jobs);
+	debug("%s",COL_CLR);
 }
 
 
@@ -346,9 +348,10 @@ void cluster_check_powercap()
 		      if (cluster_release_idle_power(&my_cluster_conf,&rel_power)==0){
 	  	      error("Error in cluster_release_idle_power");
 		      } else{
-        		verbose(0,"%u Watts from idle nodes released",rel_power.released);
+        		verbose(0,"%s%u Watts from idle nodes released%s",COL_GRE,rel_power.released,COL_CLR);
 					}
         	my_cluster_power_status->released+=rel_power.released;
+					my_cluster_power_status->total_powercap = my_cluster_power_status->total_powercap - rel_power.released;
 					powercap_reallocation(my_cluster_power_status,&cluster_options,1);
       	}
 

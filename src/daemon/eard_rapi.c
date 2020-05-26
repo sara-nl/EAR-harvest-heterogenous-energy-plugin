@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 1
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -979,6 +979,7 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
     switch(data_head.type)
     {
         case EAR_TYPE_RELEASED:
+						head.size = data_head.size;
             if (final_data != NULL)
             {
                pc_release_data_t *released = (pc_release_data_t *)final_data; 
@@ -989,7 +990,6 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
             {
                 final_data = realloc(final_data, final_size + data_head.size);
                 memcpy(&final_data[final_size], temp_data, data_head.size);
-                head.size = data_head.size;
                 //cannot directly assign final_data = temp_data because the caller function (data_all_nodes) frees temp_data after passing through here
             }
             break;
@@ -1010,7 +1010,7 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 char *final_status = calloc(total_size, sizeof(char));
                 powercap_status_t *status = (powercap_status_t *)final_status;
 
-				status->total_nodes = original_status->total_nodes + new_status->total_nodes;
+								status->total_nodes = original_status->total_nodes + new_status->total_nodes;
                 status->idle_nodes = original_status->idle_nodes + new_status->idle_nodes;
                 status->released= original_status->released + new_status->released;
                 status->num_greedy = original_status->num_greedy + new_status->num_greedy;
@@ -1160,6 +1160,7 @@ int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_
     request_t command;
     command.req=EAR_RC_SET_POWERCAP_OPT;
     command.time_code = time(NULL);
+		command.my_req.pc_opt=*pc_opt;
     send_command_all(command, my_cluster_conf);
 	return EAR_SUCCESS;
 }
