@@ -452,13 +452,16 @@ void dyncon_release_idle_power(int fd, request_t *command)
 
     send_answer(fd, &ack);
  
+    debug("propagating release_idle_power");
     return_status = propagate_release_idle(command, my_cluster_conf.eard.port, (pc_release_data_t *)&rel_data);
     
     if (return_status < 1) error("dyncon_get_powerstatus and return status < 1");
 
+    debug("releasing idle power");
     powercap_release_idle_power(&rel_data);
 
     send_data(fd, sizeof(pc_release_data_t), (char *)&rel_data, EAR_TYPE_RELEASED);
+    debug("returning from release_idle_power");
 
 }
 
