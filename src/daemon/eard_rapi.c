@@ -27,7 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -1139,6 +1139,8 @@ int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_
     command.node_dist = 0;
 
     head = data_all_nodes(&command, my_cluster_conf, (void **)&temp_released);
+    debug("head.type: %d\t head.size: %d\n", head.type, head.size);
+
     if (head.type != EAR_TYPE_RELEASED || head.size < sizeof(pc_release_data_t))
     {
         if (head.size > 0) free(temp_released);
