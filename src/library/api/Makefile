@@ -5,6 +5,7 @@ CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
 OBJS = \
     ear.o \
     ear_mpi.o \
+    ear_constructor.o \
     mpic.o \
     mpif.o \
 

@@ -55,6 +55,11 @@ static int module_constructor_dlsym(char *path_so)
 
 	sprintf(path_so, "%s", hack);
 	verbose(2, "LOADER: module_constructor_dlsym loading library %s", path_so);
+
+	if (!module_file_exists(path_so)) {
+		verbose(0, "LOADER: impossible to find library '%s'", path_so);
+		return 0;
+	}
 	
 	//
 	libear = dlopen(path_so, RTLD_NOW | RTLD_GLOBAL);
@@ -79,7 +84,7 @@ void module_constructor()
 	}
 
 	if (atexit(module_destructor) != 0) {
-		verbose(3, "LOADER: cannot set exit function");
+		verbose(0, "LOADER: cannot set exit function");
 	}
 		
 	

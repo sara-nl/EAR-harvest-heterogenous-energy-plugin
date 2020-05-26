@@ -27,6 +27,7 @@ comm_OBJS = \
 mpix_OBJS = \
     api/ear.o \
     api/ear_mpi.o \
+    api/ear_constructor.o \
     api/mpic.o \
     api/mpif.o \
 
