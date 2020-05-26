@@ -343,7 +343,7 @@ void cluster_check_powercap()
 				aggregate_data(my_cluster_power_status);
         if (powercap_reallocation(my_cluster_power_status,&cluster_options,0)==0){
 		      pc_release_data_t rel_power;
-		      if (cluster_release_idle_power(&my_cluster_conf,&rel_power)!=EAR_SUCCESS){
+		      if (cluster_release_idle_power(&my_cluster_conf,&rel_power)==0){
 	  	      error("Error in cluster_release_idle_power");
 		      } else{
         		verbose(0,"%u Watts from idle nodes released",rel_power.released);
