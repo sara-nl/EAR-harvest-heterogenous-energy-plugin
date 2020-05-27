@@ -30,21 +30,20 @@
 #ifndef COMMON_HARDWARE_TOPOLOGY_H_
 #define COMMON_HARDWARE_TOPOLOGY_H_
 
+// List1: https://en.wikichip.org/wiki/intel/cpuid
+
 #define MODEL_UNIDENTIFIED			-1
-#define MODEL_SANDY_BRIDGE			42
-#define MODEL_SANDY_BRIDGE_X		45
-#define MODEL_IVY_BRIDGE			58
+#define MODEL_SANDY_BRIDGE_X			45  //X means Server
 #define MODEL_IVY_BRIDGE_X			62
-#define MODEL_HASWELL				60
 #define MODEL_HASWELL_X				63
-#define MODEL_BROADWELL				61
 #define MODEL_BROADWELL_X			79
-#define MODEL_BROADWELL_XEON_D		86
-#define MODEL_SKYLAKE				94
 #define MODEL_SKYLAKE_X				85
-#define MODEL_KABYLAKE				158
-#define MODEL_KNIGHTS_LANDING		87
-#define MODEL_KNIGHTS_MILL			133
+#define MODEL_CASCADE_LAKE_X			85
+#define MODEL_COOPER_LAKE_X			85
+#define MODEL_HEWITT_LAKE_X			86  //Broadwell X arch based
+#define MODEL_XEON_D_X				86  //Broadwell X arch based
+#define MODEL_KNIGHTS_LANDING_MIC		87  //MIC means Many Integrated Cores
+#define MODEL_KNIGHTS_MILL_MIC			133
 
 #define VENDOR_INTEL				0
 #define VENDOR_AMD				1

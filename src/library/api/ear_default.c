@@ -27,17 +27,10 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#include <library/api/ear.h>
-#include <library/api/ear_mpi.h>
-#include <library/policies/policy.h>
-#include <common/output/debug.h>
-
 void ear_constructor()
 {
-	fprintf(stderr, "ear_constructor()\n");
 }
 
 void ear_destructor()
 {
-	fprintf(stderr, "ear_destructor()\n");
 }

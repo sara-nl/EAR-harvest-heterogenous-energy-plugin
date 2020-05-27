@@ -33,7 +33,7 @@
 #include <unistd.h>
 #include <common/output/verbose.h>
 #include <common/config/config_env.h>
-#include <library/loader/module_constructor.h>
+#include <library/loader/module_default.h>
 
 void (*func_con) (void);
 void (*func_des) (void);
@@ -65,10 +65,13 @@ static int module_constructor_dlsym(char *path_so)
 	libear = dlopen(path_so, RTLD_NOW | RTLD_GLOBAL);
 	verbose(3, "LOADER: dlopen returned %p", libear);
 
-	if (libear != NULL) {
-		func_con = dlsym(libear, "ear_constructor");
-		func_des = dlsym(libear, "ear_destructor");
+	if (libear == NULL) {
+		verbose(0, "LOADER: dlopen failed %s", dlerror());
+		return 0;
 	}
+
+	func_con = dlsym(libear, "ear_constructor");
+	func_des = dlsym(libear, "ear_destructor");
 
 	return 1;
 }
@@ -87,7 +90,6 @@ void module_constructor()
 		verbose(0, "LOADER: cannot set exit function");
 	}
 		
-	
 	if (func_con != NULL) {
 		func_con();
 	}
