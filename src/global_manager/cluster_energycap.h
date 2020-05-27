@@ -52,6 +52,7 @@ typedef struct node_info{
 	int ip;
 	float power_red;
 	uint victim;
+	uint idle;
 }node_info_t;
 
 state_t get_nodes_status(cluster_conf_t my_cluster_conf,uint *nnodes,node_info_t **einfo);

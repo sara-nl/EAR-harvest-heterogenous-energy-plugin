@@ -60,7 +60,7 @@ ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s)
 		}
 		debug("checking frequency: cfreq %lu cpstate %u ppstate %u power %lf limit %u",cfreq,cpstate,ppstate,ppower,plimit);		
 		if (((uint)ppower<=plimit) && (adapted)){
-			power_status=compute_power_status(plimit-20,(uint)ppower);
+			power_status=compute_power_status(pc,(uint)ppower);
 			if (power_status == PC_STATUS_RELEASE) pc_app_info_data->pc_status=power_status;
 			return req_f;
 		}else{
