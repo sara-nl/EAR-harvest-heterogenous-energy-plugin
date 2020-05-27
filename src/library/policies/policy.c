@@ -167,7 +167,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 			debug("Adapting frequency because pc: selected %lu new %lu",*freq_set,f);
 			*freq_set=f;
 		}else{
-			debug("PC mode %u",pc_app_info_data->mode);
+			debug("PC mode %u (should be PC_POWER)",pc_app_info_data->mode);
 			pcapp_info_set_req_f(pc_app_info_data,*freq_set);		
 		}	
 #endif

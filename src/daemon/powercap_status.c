@@ -54,7 +54,9 @@ uint compute_power_to_release_with_earl(node_powercap_opt_t *pc_opt,uint current
 	/* Is signature is still not computed, we will not release the power */
 	if (app->req_f==0) return 0;
 	if (avg_f<app->req_f) return 0;
-	return pc_opt->th_release;
+	/* we release the power progresivelly, we can be more aggresive */
+	if ((app->req_power>0)  && (app->req_power<current)) return (current-app->req_power)/2;
+	else return pc_opt->th_release;
 }
 
 uint compute_power_to_ask(node_powercap_opt_t *pc_opt,uint current)
@@ -72,7 +74,10 @@ uint compute_power_to_ask_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_
 	target_pstate=frequency_closest_pstate(app->req_f);
 	diff_pstates=curr_pstate-target_pstate;
 	debug("Computing extra power avg_f %lu adapted_f %lu cpstate %d tpstate %d diff %d",avg_f,adapted_f,curr_pstate,target_pstate,diff_pstates);
-	return pc_opt->th_release*diff_pstates;
+	//return pc_opt->th_release*diff_pstates;
+	/* We ask power based on earl estimations if available */
+	if (app->req_power>current) return app->req_power-current;
+	else return pc_opt->th_release;
 }
 
 uint more_power(node_powercap_opt_t *pc_opt,uint current)

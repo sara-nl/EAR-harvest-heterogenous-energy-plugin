@@ -34,12 +34,14 @@
 typedef struct pc_app_info{
 	uint 	mode;
 	ulong req_f;
+	ulong req_power;
 	uint  pc_status;
 }pc_app_info_t;
 
 void pcapp_info_new_job(pc_app_info_t *t);
 void pcapp_info_end_job(pc_app_info_t *t);
 
+/** Sets the req_f and the status to OK */
 void pcapp_info_set_req_f(pc_app_info_t *t,ulong f);
 
 
