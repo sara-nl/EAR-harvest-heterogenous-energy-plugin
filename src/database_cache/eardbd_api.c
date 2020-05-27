@@ -35,6 +35,7 @@
 #include <sys/types.h>
 #include <common/system/time.h>
 #include <common/output/verbose.h>
+#include <common/config/config_def.h>
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_api.h>
 
@@ -213,7 +214,7 @@ edb_state_t eardbd_reconnect(cluster_conf_t *conf, my_node_conf_t *node, edb_sta
 	//
 	time_now = timestamp_getconvert(TIME_SECS);
 
-	if((time_now - time_rec) < 60) {
+	if((time_now - time_rec) < EARDBD_API_RETRY_SECS) {
 		edb_state_return_msg(state_con, EAR_NOT_READY, "to many reconnections, wait a little longer");
 	}
 
