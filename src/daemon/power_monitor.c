@@ -975,10 +975,11 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
   #if POWERCAP
   print_app_mgt_data(app_mgt_info);
   #endif
-
-	verbose(VNODEPMON, "%sID %lu EARL=%lu  Current power %.1lf max %.1lf min %.1lf%s ",COL_BLU,
-			jid, mpi, my_current_power->avg_dc, maxpower, minpower,COL_CLR);
+	verbose(VNODEPMON,"%s",COL_BLU);
+	verbose(VNODEPMON, "ID %lu EARL=%lu  Current power %.1lf max %.1lf min %.1lf ",
+			jid, mpi, my_current_power->avg_dc, maxpower, minpower);
 	verbose_node_metrics(&my_nm_id, nm);
+	verbose(VNODEPMON,"%s",COL_CLR);
 
 	
 	if (!(is_null(&current_loop_data)==1)){
@@ -1253,12 +1254,12 @@ void *eard_power_monitoring(void *noinfo)
 	debug("Starting power monitoring loop, reporting metrics every %d seconds",f_monitoring);
 
 	while (!eard_must_exit) {
-		verbose(1,"%s------------------- NEW PERIOD -------------------%s",COL_BLU,COL_CLR);
+		verbose(1,"\n%s------------------- NEW PERIOD -------------------%s",COL_BLU,COL_CLR);
 		// Wait for N usecs
 		sleep(f_monitoring);
 
 		// Get time and Energy
-		debug("Reading energy");
+		//debug("Reading energy");
 		read_enegy_data(&my_eh_pm, &e_end);
 
 		if (e_end.DC_node_energy == 0) {
@@ -1266,7 +1267,7 @@ void *eard_power_monitoring(void *noinfo)
 		} else {
 
 			// Get node metrics
-			debug("Reading node metrics");
+			//debug("Reading node metrics");
 			end_compute_node_metrics(&my_nm_id, &nm_end);
 			diff_node_metrics(&my_nm_id, &nm_init, &nm_end, &nm_diff);
 			start_compute_node_metrics(&my_nm_id, &nm_init);

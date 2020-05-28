@@ -201,16 +201,19 @@ void update_eargm_configuration(cluster_conf_t *conf)
     switch(units)
     {
         case BASIC:divisor=BASIC_U;
-					strcpy(unit_name,"Joules");break;
+					strcpy(unit_name,"Joules");
 					strcpy(unit_energy,"J");
+					strcpy(unit_power,"W");
 					break;
         case KILO:divisor=KILO_U;
-					strcpy(unit_name,"Kilo Joules");break;
+					strcpy(unit_name,"Kilo Joules");
 					strcpy(unit_energy,"KJ");
+					strcpy(unit_power,"KW");
 					break;
         case MEGA:divisor=MEGA_U;	
-					strcpy(unit_name,"Mega Joules");break;
+					strcpy(unit_name,"Mega Joules");
 					strcpy(unit_energy,"MJ");
+					strcpy(unit_power,"MW");
 					break;
         default:break;
     }
@@ -314,7 +317,7 @@ uint defcon(ulong e_t2,ulong e_t1,ulong load)
     case MAXENERGY:
       perc_energy=((double)e_t2/(double)energy_budget)*(double)100;
       perc_time=((double)total_samples/(double)aggregate_samples)*(double)100;
-      verbose(VGM,"%sPercentage over energy budget %.2lf%% (total energy t2 %lu , energy limit %lu)%s",COL_BLU,perc_energy,e_t2,energy_budget,COL_CLR);
+      verbose(VGM,"%sPercentage over energy budget %.2lf%% (total energy t2 %lu %s , energy limit %lu %s)%s",COL_BLU,perc_energy,e_t2,unit_energy,energy_budget,unit_energy,COL_CLR);
       if (perc_time<100.0){
         if (perc_energy>perc_time){
             warning("WARNING %.2lf%% of energy vs %.2lf%% of time!!",perc_energy,perc_time);
@@ -345,7 +348,7 @@ void fill_periods(ulong energy)
 	switch (policy)
 	{
 	case MAXENERGY:
-		verbose(VGM,"Initializing T2 period with %lu %s, each sample with %lu %s",energy,unit_name,e_persample,unit_name);
+		verbose(VGM,"Initializing T2 period with %lu %s, each sample with %lu %s",energy,unit_energy,e_persample,unit_energy);
 		break;
 	case MAXPOWER:
 		verbose(VGM,"AVG power in last %d seconds %lu %s",period_t1,e_persample/period_t1,unit_name);
@@ -469,14 +472,14 @@ void compute_efficiency_of_actions(unsigned long curr_avg_power,unsigned long la
 	power_red=1.0-(curr_avg_power/last_avg_power);
 	//verbose(0,"Power has been reduced by %f in t1",power_red);
 	power_red_t2=power_red/aggregate_samples;	
-	verbose(0,"Power has been reduced by %f in t2 and %f in t1",power_red_t2,power_red);
+	debug("Power has been reduced by %f in t2 and %f in t1",power_red_t2,power_red);
 	switch(last_state){
 		case EARGM_WARNING1:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L4];break;
 		case EARGM_WARNING2:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L3];break;
 		case EARGM_PANIC:required_saving=curr_avg_power-my_cluster_conf.eargm.defcon_limits[DEFCON_L2];break;
 	}
 	estimated_t1_needed=required_saving/power_red_t2;	
-	verbose(0,"%u grace periods are needed to reduce the warning level,required saving %u",estimated_t1_needed,required_saving);
+	debug("%u grace periods are needed to reduce the warning level,required saving %u",estimated_t1_needed,required_saving);
 	#if 0
 	if (estimated_t1_needed>in_action){
 		verbose(0,"We will not reach our target with this number of grace periods");
@@ -605,7 +608,7 @@ int main(int argc,char *argv[])
   init_db_helper(&my_cluster_conf.database);
   #endif
 	
-   #if 0
+  #if 0
   set_default_powercap_all_nodes(&my_cluster_conf);  
   #endif
    
@@ -615,7 +618,7 @@ int main(int argc,char *argv[])
 	if (db_select_acum_energy( start_time, end_time, divisor, use_aggregation,&last_id,&result)==EAR_ERROR){
 		error("Asking for total energy system. Using aggregated %d",use_aggregation);
 	}
-	verbose(1,"db_select_acum_energy inicial %lu",result);
+	verbose(1,"db_select_acum_energy inicial %lu%s",result,unit_energy);
 	if (result<(0.95*energy_budget)) result=0.95*energy_budget;
 	fill_periods(result);
 	/*
@@ -651,7 +654,7 @@ int main(int argc,char *argv[])
 					error("Asing for last T1 energy period. Using aggregated %d.Last id =%u",use_aggregation,last_id);
 					}
 				}
-				debug("Energy consumed in last T1 %lu",result);
+				debug("Energy consumed in last T1 %lu %s",result,unit_energy);
 	    	if (!result){ 
 				verbose(VGM+1,"No results in that period of time found");
 	    	}else{ 

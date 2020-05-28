@@ -321,7 +321,7 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 	debug("periodic_metric_info");
 	while(pthread_mutex_trylock(&my_pc_opt.lock));
 	pmgt_set_power_per_domain(pcmgr,cp);
-	debug("%spc_app_info req_f %lu pc_status %u%s",COL_GRE,pc_app_info_data->req_f,pc_app_info_data->pc_status,COL_CLR);
+	debug("%spc_app_info req_f %lu req_power %lu pc_status %u%s",COL_GRE,pc_app_info_data->req_f,pc_app_info_data->req_power,pc_app_info_data->pc_status,COL_CLR);
 	debug("%sPM event, current power %u powercap %u allocated %u status %u released %u requested %u%s",\
 		COL_GRE,current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,\
 		my_pc_opt.requested,COL_CLR);

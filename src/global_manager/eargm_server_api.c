@@ -74,7 +74,7 @@ int create_server_socket(uint use_port)
 
    	s = getaddrinfo(NULL, buff, &hints, &result);
     if (s != 0) {
-		error("eargmd:getaddrinfo fails for port %s \n",buff);
+			error("eargmd:getaddrinfo fails for port %s \n",buff);
 		return EAR_ERROR;
     }
 
@@ -86,7 +86,7 @@ int create_server_socket(uint use_port)
             continue;
 
        while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){
-		verbose(VGM+1,"Waiting for connection");
+		debug("Waiting for connection");
 		sleep(10);
 		}
             break;                  /* Success */
@@ -98,7 +98,7 @@ int create_server_socket(uint use_port)
 		error("bind fails for eargm server\n");
 		return EAR_ERROR;
     }else{
-		verbose(VGM+2,"socket and bind for erads socket success\n");
+			debug("socket and bind for erads socket success\n");
 	}
 
    	freeaddrinfo(result);           /* No longer needed */
@@ -108,7 +108,7 @@ int create_server_socket(uint use_port)
 		close(sfd);
  		return EAR_ERROR;
 	}
-	verbose(VGM+1,"socket listen ready!\n");
+	debug("socket listen ready!\n");
  	return sfd;
 }
 int wait_for_client(int s,struct sockaddr_in *client)
@@ -122,7 +122,7 @@ int wait_for_client(int s,struct sockaddr_in *client)
 		error("accept for eargm socket fails %s\n",strerror(errno));
 		return EAR_ERROR;
 	}
-	verbose(VGM,"new connection \n");
+	debug("new connection \n");
 	return new_sock;
 }
 void close_server_socket(int sock)
