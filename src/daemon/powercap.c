@@ -447,10 +447,10 @@ void get_powercap_status(powercap_status_t *my_status)
 	my_status->total_nodes++;
 	switch(my_pc_opt.powercap_status){
 		case PC_STATUS_IDLE:
-						debug("%sIdle%s node!, release %u allocated power %u",COL_BLU,COL_CLR,my_pc_opt.released,my_pc_opt.current_pc);
+						debug("%sIdle%s node!, potential release %u allocated power %u",COL_BLU,COL_CLR,my_pc_opt.released,my_pc_opt.current_pc);
             my_status->idle_nodes++;
-						#if 0
 						my_status->released+=my_pc_opt.released;
+						#if 0
             my_pc_opt.released=0;
             my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
 						#endif
