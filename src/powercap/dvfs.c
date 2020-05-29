@@ -47,6 +47,7 @@
 #include <common/hardware/frequency.h>
 #include <common/hardware/hardware_info.h>
 #include <daemon/powercap_status_conf.h>
+#include <daemon/powercap_status.h>
 
 
 #define POWERCAP_MON 0
@@ -64,7 +65,7 @@ static ulong c_req_f;
 
 void dvfs_pc_thread(void *d)
 {
-	uint num_packs;
+	uint num_packs,extra;
 	state_t s;
 	uint secs=0;
 	uint node_size;
@@ -129,27 +130,34 @@ void dvfs_pc_thread(void *d)
 			#endif
 			/* Aplicar limites */
 			if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
-			if (power_rapl>(current_dvfs_pc*RAPL_VS_NODE_POWER)){
+			if (power_rapl>(current_dvfs_pc*RAPL_VS_NODE_POWER)){ /* We are above the PC */
 				c_freq=frequency_get_cpu_freq(0);
 				c_pstate=frequency_freq_to_pstate(c_freq);
 				c_pstate=c_pstate+1;
 				c_freq=frequency_pstate_to_freq(c_pstate);
 				debug("DVFS:%sReducing freq to %lu%s",COL_RED,c_freq,COL_CLR);
 				frequency_set_all_cpus(c_freq);
-			}
-			}
-			if ((power_rapl<(current_dvfs_pc*RAPL_VS_NODE_POWER_limit) && (c_mode==PC_MODE_TARGET))){
+			}else{ /* We are below the PC */
+				t_pstate=frequency_freq_to_pstate(c_req_f);
 				c_freq=frequency_get_cpu_freq(0);
 				c_pstate=frequency_freq_to_pstate(c_freq);
-				t_pstate=frequency_freq_to_pstate(c_req_f);
 				if (c_pstate>t_pstate){
-					c_pstate=c_pstate-1;
-					c_freq=frequency_pstate_to_freq(c_pstate);
-					debug("DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u)%s",COL_RED,c_freq,t_pstate,c_pstate,COL_CLR);
-					frequency_set_all_cpus(c_freq);
+					extra=compute_extra_power(power_rapl,1,t_pstate);
+					if (((power_rapl+extra)<current_dvfs_pc) && (c_mode==PC_MODE_TARGET)){
+						c_pstate=c_pstate-1;
+						c_freq=frequency_pstate_to_freq(c_pstate);
+						debug("DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u)%s",COL_RED,c_freq,t_pstate,c_pstate,COL_CLR);
+						frequency_set_all_cpus(c_freq);
+					}else{
+						if (!secs) debug("DVFS:Not increasing becase not enough power");
+					}
+				}else{
+					if (!secs) debug("DVFS: Not increasing because c_pstate %u == t_pstate %u",c_pstate,t_pstate);
 				}
-		}
-		}
+			}
+
+		} /* (current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN) */
+		} /* c_status==PC_STATUS_RUN */
 		/* Copiar init=end */	
 		memcpy(values_rapl_init,  values_rapl_end,num_packs * RAPL_POWER_EVS* sizeof(unsigned long long));
 	}

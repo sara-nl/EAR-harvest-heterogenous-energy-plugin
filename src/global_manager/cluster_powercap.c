@@ -68,14 +68,15 @@ void aggregate_data(powercap_status_t *cs)
 	for (i=0;i<cs->num_greedy;i++){
 		total_req_greedy+=cs->greedy_req[i];
 		total_extra_power+=cs->extra_power[i];
+		if (cs->extra_power[i]){ 
+			num_extra++;
+			extra_power_alloc+=cs->extra_power[i];
+		}
 		if (cs->greedy_req[i]) num_greedy++;
     if ((cs->greedy_req[i]) && (!cs->extra_power[i])){
       req_no_extra+=cs->greedy_req[i];
       num_no_extra++;
-    }else if ((cs->greedy_req[i]) && (cs->extra_power[i])){ 
-				num_extra++;
-				extra_power_alloc+=cs->extra_power[i];
-		}
+    }
 	}
 }
 
@@ -164,11 +165,11 @@ void reduce_allocation(cluster_powercap_status_t *cs,powercap_opt_t *cluster_opt
 	while((min_reduction>0) && (i<cs->num_greedy)){
 		/* cluster_options->extra_power[i] is a negative value */
     if ((cs->extra_power[i]+cluster_options->extra_power[i])>0){
-      red1=cs->extra_power[i]+cluster_options->extra_power[i];;
+      red1=cs->extra_power[i]+cluster_options->extra_power[i];
 			red=min(red1,min_reduction);
 			new_extra=-red;
       verbose(0,"%sreducing %d W to node %d %s",COL_RED,new_extra,i,COL_CLR);
-      cluster_options->extra_power[i]=new_extra;
+      cluster_options->extra_power[i]+=new_extra;
       min_reduction-=red;
     }
     i++;
@@ -197,7 +198,9 @@ uint powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
     total_free=max_cluster_power-(cluster_status->total_powercap+cluster_status->requested);
 		verbose(0,"Free power after allocating power to new jobs %u",total_free);
 		if (total_req_greedy==0){
+			#if  0
 			if ((total_free) && (cluster_status->idle_nodes>0))  cluster_options->max_inc_new_jobs=total_free/cluster_status->idle_nodes;
+			#endif
 			return 1;
 		}
 		/* At this point we know there is greedy power requested */
@@ -208,26 +211,28 @@ uint powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
 			must_send_pc_options=1;
     }else{
       verbose(0,"There is not enough power for all the greedy nodes (free %u req %u)(used %u allocated %u)",total_free,total_req_greedy,cluster_status->current_power,cluster_status->total_powercap);
-			if (released || (!released && cluster_status->released==0)){
+			if (cluster_status->released==0 ){
 				verbose(0,"Anyway there is not enough power ");
       	cluster_options->num_greedy=cluster_status->num_greedy;
       	allocate_free_power_to_greedy_nodes(cluster_status,cluster_options,&total_free);
-			}else return 0;
+			}else if (cluster_status->released) return 0;
     }
   }else{
     /* There is not enough power for new jobs, we must reduce the extra allocation */
-		if (released || (!released && cluster_status->released==0)){
+		if (cluster_status->released==0){
     	verbose(0,"We must reduce the extra allocation (used %u allocated %u)",cluster_status->current_power,cluster_status->total_powercap);
-    	min_reduction=max_cluster_power-(cluster_status->total_powercap+cluster_status->requested);
+    	min_reduction=(cluster_status->total_powercap+cluster_status->requested)-max_cluster_power;
     	total_free=0;
     	reduce_allocation(cluster_status,cluster_options,min_reduction);
 			must_send_pc_options=1;
-		}else return 0;
+		}else if (cluster_status->released) return 0;
   }
+	#if 0
   if ((total_free) && (cluster_status->idle_nodes>0)){  
 		cluster_options->max_inc_new_jobs=total_free/cluster_status->idle_nodes;
 		must_send_pc_options=1;
 	}
+	#endif
 	return 1;
 }
 
@@ -327,7 +332,7 @@ void cluster_check_powercap()
 		      } else{
         		verbose(0,"%s%u Watts from idle nodes released%s",COL_GRE,rel_power.released,COL_CLR);
 					}
-        	my_cluster_power_status->released+=rel_power.released;
+        	my_cluster_power_status->released=rel_power.released;
 					my_cluster_power_status->total_powercap = my_cluster_power_status->total_powercap - rel_power.released;
 					powercap_reallocation(my_cluster_power_status,&cluster_options,1);
       	}

@@ -29,7 +29,7 @@
 
 #ifndef _POWERCAP_STATUS_H
 #define _POWERCAP_STATUS_H
-#include <daemon/powercap.h>
+#include <daemon/powercap_status_conf.h>
 #include <common/types/pc_app_info.h>
 
 /** Given a powercap settings and a given power consumption computes the power to be released */
@@ -59,7 +59,7 @@ int is_powercap_on(node_powercap_opt_t *pc_opt);
 /** Returns the powercap limit */
 uint get_powercapopt_value(node_powercap_opt_t *pc_opt);
 uint get_powercap_allocated(node_powercap_opt_t *pc_opt);
-
+uint compute_extra_power(uint current,uint diff,uint target);
 
 /** Given a current power , when running an application, returns the powercap status. It must be used only when powercap is set */
 uint compute_power_status(node_powercap_opt_t *pc,uint current_power);

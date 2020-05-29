@@ -476,7 +476,7 @@ void get_powercap_status(powercap_status_t *my_status)
 			break;
 		case PC_STATUS_RELEASE:
 			debug("%sReleasing%s %u W allocated %u W",COL_BLU,COL_CLR,my_pc_opt.released,my_pc_opt.current_pc);
-            my_status->released+=my_pc_opt.released;
+            //my_status->released+=my_pc_opt.released;
 		    my_pc_opt.powercap_status=PC_STATUS_OK;my_pc_opt.released=0;my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;break;
 		case PC_STATUS_ASK_DEF: 
             /* Data management */
