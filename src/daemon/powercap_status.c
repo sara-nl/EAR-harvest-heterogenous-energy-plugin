@@ -59,9 +59,30 @@ uint compute_power_to_release_with_earl(node_powercap_opt_t *pc_opt,uint current
 	else return pc_opt->th_release;
 }
 
-uint compute_power_to_ask(node_powercap_opt_t *pc_opt,uint current)
+uint compute_extra_power(uint current,uint diff,uint target)
 {
-	return pc_opt->th_release;
+	uint i=0;
+	uint total=0;
+	if (diff==0) return 0;
+	if (target==1) total=25;
+	else total=10;
+	for (i=1;i<diff;i++){
+		total=total+10;
+	}
+	return total;
+}
+
+uint compute_power_to_ask(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f)
+{
+	ulong adapted_f;
+  int curr_pstate,target_pstate,diff_pstates;
+  if (app->req_f==0) return 0;
+  adapted_f=frequency_closest_high_freq(avg_f,1);
+  curr_pstate=frequency_closest_pstate(adapted_f);
+  target_pstate=frequency_closest_pstate(app->req_f);
+  diff_pstates=curr_pstate-target_pstate;
+	
+	return compute_extra_power(current,diff_pstates,target_pstate);
 }
 
 uint compute_power_to_ask_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f)
@@ -76,8 +97,7 @@ uint compute_power_to_ask_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_
 	debug("Computing extra power avg_f %lu adapted_f %lu cpstate %d tpstate %d diff %d",avg_f,adapted_f,curr_pstate,target_pstate,diff_pstates);
 	//return pc_opt->th_release*diff_pstates;
 	/* We ask power based on earl estimations if available */
-	if (app->req_power>current) return app->req_power-current;
-	else return pc_opt->th_release;
+	return compute_extra_power(current,diff_pstates,target_pstate);
 }
 
 uint more_power(node_powercap_opt_t *pc_opt,uint current)
