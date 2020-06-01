@@ -65,7 +65,10 @@ state_t enable()
 	int ret;
 	char cmd[256];
 	debug("GPU: power cap  enable");
-	gpu_pc_enabled=1;
+	sprintf(cmd,NVIDIA_CPU_TEST_CMD);
+	if (execute(cmd)!=EAR_SUCCESS){
+		gpu_pc_enabled=0;
+	}else gpu_pc_enabled=1;
 	return EAR_SUCCESS;
 }
 
@@ -75,6 +78,11 @@ state_t set_powercap_value(uint pid,uint domain,uint limit)
 	/* Set data */
 	debug("GPU: set_powercap_value %u",limit);
 	current_gpu_pc=limit;
+	sprintf(cmd,NVIDIA_GPU_SET_POWER_LIMIT_CMD,limit);
+  if (execute(cmd)!=EAR_SUCCESS){
+    error("Error executing policy disable");
+    return EAR_ERROR;
+  }
 	return EAR_SUCCESS;
 }
 
