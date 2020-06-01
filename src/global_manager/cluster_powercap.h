@@ -44,4 +44,5 @@ void print_cluster_power_status(cluster_powercap_status_t *my_cluster_power_stat
 void cluster_powercap_init();
 int cluster_power_limited();
 void cluster_check_powercap();
+void cluster_power_monitor();
 #endif

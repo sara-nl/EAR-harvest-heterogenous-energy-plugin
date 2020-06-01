@@ -91,6 +91,7 @@ uint policy;
 uint divisor = 1;
 uint last_id=0;
 uint process_created=0;
+pthread_mutex_t plocks = PTHREAD_MUTEX_INITIALIZER;
 uint default_state=1;
 uint  max_cluster_power;
 uint  cluster_powercap_period;
@@ -374,13 +375,14 @@ int execute_action(ulong e_t1,ulong e_t2,ulong e_limit,uint t2,uint t1,char *uni
 {
   int ret;
 	char command_to_execute[512];
-  char *my_command=getenv("EAR_WARNING_COMMAND");
-  if (my_command!=NULL){
+  char *my_command=my_cluster_conf.eargm.energycap_action;
+	/* If action text is different from no_action, we must execute it */
+  if (strcmp(my_command,"no_action")){
 		sprintf(command_to_execute,"%s %lu %lu %lu %u %u %s",my_command,e_t1,e_t2,e_limit,t2,t1,units);
-		verbose(0,"Executing %s",command_to_execute);
+		verbose(0,"Executing energycap_action: %s",command_to_execute);
 		execute_with_fork(command_to_execute);	
   }else{
-    debug("eargm warning command not defined");
+    debug("eargm warning energycap_action not defined");
     return 0;
   }
   return 1;
@@ -419,10 +421,14 @@ void check_pending_processes()
         /* Processing processes created */
         if ((pid_process_created=waitpid(-1,&process_created_status,WNOHANG))>0){
           process_status(pid_process_created,process_created_status);
+					pthread_mutex_lock(&plocks);
           process_created--;
+					pthread_mutex_unlock(&plocks);
         }else if (pid_process_created<0){
           warning("Waitpid returns <0 and process_created pendings to release");
+					pthread_mutex_lock(&plocks);
           process_created=0;
+					pthread_mutex_unlock(&plocks);
         }
       }while(pid_process_created>0);
 
@@ -525,6 +531,7 @@ int main(int argc,char *argv[])
 	ulong result;
 	int resulti;
 	gm_warning_t my_warning;
+	unsigned int new_actions;
 	risk_t current_risk;
     if (argc > 2) usage(argv[0]);
 	if (argc==2) parse_args(argv);
@@ -700,8 +707,11 @@ int main(int argc,char *argv[])
 					create_risk(&current_risk,EARGM_WARNING1);
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 				}
-				process_created+=send_mail(EARGM_WARNING1,perc_energy);
-				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
+				new_actions=send_mail(EARGM_WARNING1,perc_energy);
+				new_actions+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
+				pthread_mutex_lock(&plocks);
+				process_created+=new_actions;
+				pthread_mutex_unlock(&plocks);
 				report_status(&my_warning);
 				break;
 			case EARGM_WARNING2:
@@ -718,8 +728,11 @@ int main(int argc,char *argv[])
 					#endif
 				}
 				my_warning.energy_percent=perc_energy;
-				process_created+=send_mail(EARGM_WARNING2,perc_energy);
-				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
+				new_actions=send_mail(EARGM_WARNING2,perc_energy);
+				new_actions+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
+				pthread_mutex_lock(&plocks);
+        process_created+=new_actions;
+        pthread_mutex_unlock(&plocks);
 				report_status(&my_warning);
 				break;
 			case EARGM_PANIC:
@@ -735,8 +748,11 @@ int main(int argc,char *argv[])
 					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
 					#endif
 				}
-				process_created+=send_mail(EARGM_PANIC,perc_energy);
-				process_created+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
+				new_actions=send_mail(EARGM_PANIC,perc_energy);
+				new_actions+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
+				pthread_mutex_lock(&plocks);
+        process_created+=new_actions;
+        pthread_mutex_unlock(&plocks);
 				report_status(&my_warning);
 				break;
 			}

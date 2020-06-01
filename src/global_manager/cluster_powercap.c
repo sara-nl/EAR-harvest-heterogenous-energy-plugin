@@ -33,6 +33,7 @@
 #include <pthread.h>
 
 #include <common/config.h>
+#include <common/system/execute.h>
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/colors.h>
@@ -47,6 +48,11 @@
 extern cluster_conf_t my_cluster_conf;
 extern uint  max_cluster_power;
 extern uint  cluster_powercap_period;
+
+extern uint process_created;
+extern pthread_mutex_t plocks;
+void check_pending_processes();
+
 
 uint num_nodes;
 uint total_req_new,total_req_greedy,req_no_extra,num_no_extra,num_greedy,num_extra,extra_power_alloc,total_extra_power;
@@ -241,20 +247,6 @@ void send_powercap_options_to_cluster(powercap_opt_t *cluster_options)
   cluster_set_powercap_opt(my_cluster_conf,cluster_options);
 }
 
-#if 0
-void print_cluster_power_status(int num_power_status,powercap_status_t *my_cluster_power_status)
-{
-  int i;
-  fprintf(stderr,"%d power_status received\n",num_power_status);
-  for (i=0;i<num_power_status;i++){
-    fprintf(stderr,"Node %d\n",i);
-    fprintf(stderr,"\tidle nodes %u num_greedy %u \n",my_cluster_power_status[i].idle_nodes,my_cluster_power_status[i].num_greedy);
-    fprintf(stderr,"\tgreedy_req %u new_req %u current_power %u total_powercap %u\n",
-    my_cluster_power_status[i].greedy_req,my_cluster_power_status[i].requested,
-    my_cluster_power_status[i].current_power,my_cluster_power_status[i].total_powercap);
-  }
-}
-#endif
 
 void print_cluster_power_status(powercap_status_t *my_cluster_power_status)
 {
@@ -275,14 +267,22 @@ pthread_t cluster_powercap_th;
 
 void * eargm_powercap_th(void *noarg)
 {
-	if (pthread_setname_np(pthread_self(), "cluster_powercap")) error("Setting name forcluster_powercap thread %s", strerror(errno));
+	if (pthread_setname_np(pthread_self(), "cluster_powercap")!=0) error("Setting name forcluster_powercap thread %s", strerror(errno));
 
 	#if POWERCAP
 	while(1)
 	{
 		sleep(cluster_powercap_period);
+		/* we check if there are zombie processes */
+		if (process_created){
+      check_pending_processes();
+    }
 		if (cluster_power_limited()){
-			cluster_check_powercap();
+			if (my_cluster_conf.eargm.powercap_mode){
+				cluster_check_powercap();
+			}else{
+				cluster_power_monitor();
+			}
 		}
 
 	}
@@ -311,6 +311,40 @@ void cluster_powercap_init(cluster_conf_t *cc)
 int cluster_power_limited()
 {
 	return (max_cluster_power);
+}
+
+/* This function is executed when we are close to the limit , consumed or allocated, depending of powercap_mode*/
+void execute_powercap_action()
+{
+	char cmd[256];
+	/* If action is different than no_action we run the command */
+	if (strcmp(my_cluster_conf.eargm.powercap_action,"no_action")){
+	  /* Format is current_power current_limit total_idle_nodes */
+		sprintf(cmd,"%s %u %u %u", my_cluster_conf.eargm.powercap_action,my_cluster_power_status->current_power,max_cluster_power,my_cluster_power_status->idle_nodes);
+		verbose(0,"Executing powercap_action: %s",cmd);
+		execute_with_fork(cmd);
+		pthread_mutex_lock(&plocks);
+    process_created++;
+    pthread_mutex_unlock(&plocks);
+
+	}
+}
+
+void cluster_power_monitor()
+{
+	debug("%sGlobal POWER monitoring INIT----%s",COL_BLU,COL_CLR);
+	/* We use this function for now, we must use a new light one */
+	num_power_status=cluster_get_powercap_status(&my_cluster_conf,&my_cluster_power_status);
+  if (num_power_status==0){
+      verbose(1,"num_power_status in cluster_check_powercap is 0");
+      return;
+  }
+	if (my_cluster_power_status->current_power>=((float)(max_cluster_power*my_cluster_conf.eargm.defcon_power_limit)/100.0)){
+		execute_powercap_action();
+	}
+	free(my_cluster_power_status);
+	debug("%sGlobal POWER monitoring END-----%s",COL_BLU,COL_CLR);
+	
 }
 
 
@@ -342,6 +376,12 @@ void cluster_check_powercap()
 				}else{
 					verbose(1,"There is no need to send the pc_options");
 				}
+				
+			  if (my_cluster_power_status->total_powercap>=((float)(max_cluster_power*my_cluster_conf.eargm.defcon_power_limit)/100.0))
+				{
+   				 execute_powercap_action();
+  			}
+
 				free(my_cluster_power_status);
 				debug("%sEND cluster_check_powercap----------%s",COL_BLU,COL_CLR);
 }

@@ -50,7 +50,14 @@ void print_eargm_conf(eargm_conf_t *conf)
 	verbosen(VCCONF,"\t eargm: defcon levels [%u,%u,%u] grace period %u\n",conf->defcon_limits[0],conf->defcon_limits[1],conf->defcon_limits[2],
 	conf->grace_periods);
 	verbosen(VCCONF,"\t policy %u (0=MaxEnergy,other=error) units=%u (-,K,M)\n",conf->policy,conf->units); 
-	verbosen(VCCONF,"\t use_log %u cluster_power_limit %lu powercap_check_period %lu\n",conf->use_log,conf->power,conf->t1_power);
+	verbosen(VCCONF,"\t use_log %u\n",conf->use_log);
+	#if POWERCAP
+	verbosen(VCCONF,"\t cluster_power_limit %lu powercap_check_period %lu\n",conf->power,conf->t1_power);
+	verbosen(VCCONF,"\t powercap_mode %lu (0=monitoring, 1=auto [def])\n",conf->powercap_mode);
+	verbosen(VCCONF,"\t power limit for action %lu\n",conf->defcon_power_limit);
+	verbosen(VCCONF,"\t powercap_action %s\n",conf->powercap_action);
+	verbosen(VCCONF,"\t energycap_action %s\n",conf->energycap_action);
+	#endif
 }
 
 void print_db_manager(eardb_conf_t *conf)
