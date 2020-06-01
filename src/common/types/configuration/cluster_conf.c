@@ -625,10 +625,8 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->verbose=1;
 	eargmc->use_aggregation=1;
 	eargmc->t1=DEFAULT_T1;
-	eargmc->t1_power=0;
 	eargmc->t2=DEFAULT_T2;
 	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
-	eargmc->power=0;
 	eargmc->units=1;
 	eargmc->policy=MAXPOWER;
 	eargmc->port=EARGM_PORT_NUMBER;
@@ -639,6 +637,16 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->grace_periods=GRACE_T1;
 	strcpy(eargmc->mail,"nomail");
 	eargmc->use_log=EARGMD_FILE_LOG;
+	/* Values for POWERCAP */
+	#if POWERCAP
+	eargmc->power=EARGM_DEF_POWERCAP_LIMIT;
+	eargmc->t1_power=EARGM_DEF_T1_POWER;
+	eargmc->powercap_mode=EARGM_POWERCAP_DEF_MODE;	/* 1=auto by default, 0=monitoring_only */
+	sprintf(eargmc->powercap_action,EARGM_POWERCAP_DEF_ACTION);	
+	sprintf(eargmc->energycap_action,EARGM_ENERGYCAP_DEF_ACTION);	
+	eargmc->defcon_power_limit=EARGM_POWERCAP_DEF_ACTION_LIMIT;
+	#endif
+
 }
 
 void set_default_db_conf(db_conf_t *db_conf)
