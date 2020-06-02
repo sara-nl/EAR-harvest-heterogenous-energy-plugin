@@ -319,7 +319,7 @@ void execute_powercap_action()
 	char cmd[256];
 	/* If action is different than no_action we run the command */
 	if (strcmp(my_cluster_conf.eargm.powercap_action,"no_action")){
-	  /* Format is current_power current_limit total_idle_nodes */
+	  /* Format is: command current_power current_limit total_idle_nodes */
 		sprintf(cmd,"%s %u %u %u", my_cluster_conf.eargm.powercap_action,my_cluster_power_status->current_power,max_cluster_power,my_cluster_power_status->idle_nodes);
 		verbose(0,"Executing powercap_action: %s",cmd);
 		execute_with_fork(cmd);

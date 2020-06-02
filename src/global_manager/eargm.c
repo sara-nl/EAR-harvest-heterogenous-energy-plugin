@@ -378,6 +378,7 @@ int execute_action(ulong e_t1,ulong e_t2,ulong e_limit,uint t2,uint t1,char *uni
   char *my_command=my_cluster_conf.eargm.energycap_action;
 	/* If action text is different from no_action, we must execute it */
   if (strcmp(my_command,"no_action")){
+		/* Format for action is: command energy_T1 energy_T2 energy_limit T2 T1 units */
 		sprintf(command_to_execute,"%s %lu %lu %lu %u %u %s",my_command,e_t1,e_t2,e_limit,t2,t1,units);
 		verbose(0,"Executing energycap_action: %s",command_to_execute);
 		execute_with_fork(command_to_execute);	
