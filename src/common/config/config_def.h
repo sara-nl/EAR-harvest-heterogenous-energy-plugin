@@ -107,6 +107,8 @@
 
 /* Number of max tries  */
 #define MAX_SOCKET_COMM_TRIES           10000000
+/* Seconds between each EARDBD API connection retrys. */
+#define EARDBD_API_RETRY_SECS		60
 
 
 #define MIN_MPI_FOR_LOW_FREQ		20

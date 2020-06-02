@@ -5,6 +5,7 @@ API_CFLAGS = $(CFLAGS) $(MPI_CFLAGS)
 OBJS = \
     ear.o \
     ear_mpi.o \
+    ear_default.o \
     mpic.o \
     mpif.o \
 		ear_seq.o

@@ -36,6 +36,7 @@ api_OBJS=api/ear.o
 
 mpix_OBJS = \
     api/ear_mpi.o \
+    api/ear_default.o \
     api/mpic.o \
     api/mpif.o \
 		common/global_comm.o

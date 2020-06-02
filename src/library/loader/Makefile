@@ -7,7 +7,8 @@ load_OBJS = \
     loader.o \
     module_mpi.o \
     module_mpic.o \
-    module_mpif.o
+    module_mpif.o \
+    module_default.o
 
 load_BINS = \
     libearld.so

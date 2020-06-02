@@ -71,18 +71,6 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 		MPICC=mpicc
 	fi
 
-	if echo "$CC" | grep -q "icc" && test -z "$CC_FLAGS"; then
-		CC_FLAGS=-static-intel
-	fi
-
-	if echo "$MPICC" | grep -q "mpiicc" && test -z "$MPICC_FLAGS"; then	
-		MPICC_FLAGS="-static-intel"
-		
-		if test "x$enable_rpath" = "xno"; then
-			MPICC_FLAGS="$MPICC_FLAGS -norpath"
-		fi
-	fi
-	
 	if echo "$MPICC" | grep -q "/"; then
 		echo nothing &> /dev/null
 	else

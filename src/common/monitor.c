@@ -58,18 +58,16 @@ typedef struct register_s
 } register_t;
 
 static register_t	queue[N_QUEUE];
-static uint			queue_last;
+static uint		queue_last;
 
 static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 {
 	timestamp_t time;
-	llong units;
-	int s;
+	ullong units;
 
 	//
-	units = ((llong) wait_units) * 100LL;
-	/* Jordi */
-	timestamp_revert(&time, (unsigned long long*)&units, TIME_MSECS);
+	units = ((ullong) wait_units) * 100LL;
+	timestamp_revert(&time, &units, TIME_MSECS);
 
 	// Sleeping
 	timestamp_t t2;
@@ -102,6 +100,7 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 	{
 		reg->aligned = (alignment == 0);
 		reg->ok_main = reg->aligned;
+		reg->ok_init = reg->aligned;
 
 		if (!reg->ok_main) {
 			wait_required = 10 - alignment;
@@ -112,6 +111,8 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 		
 			return;
 		}
+
+		
 		debug("MONITOR: aligned %d", reg->suscription.id);
 	}
 
@@ -136,9 +137,9 @@ static void *monitor(void *p)
 {
 	register_t *reg;
 	suscription_t *sus;
-	int wait_units;
-	int pass_units;
-	int alignment;
+	int wait_units = 0;
+	int pass_units = 0;
+	int alignment = 0;
 	int i;
 
 	while (enabled)
@@ -153,11 +154,13 @@ static void *monitor(void *p)
 			if (!reg->suscribed) {
 				continue;
 			}
-			/* Jordi */
-			pass_units=1;
-			alignment=1;
+
 			monitor_time_calc(reg, &wait_units, pass_units, alignment);
 
+			if (reg->ok_init) {
+				sus->call_init(sus->memm_init);
+				reg->ok_init = 0;
+			}
 			if (reg->ok_main) {
 				sus->call_main(sus->memm_main);
 				reg->ok_main = 0;
@@ -207,7 +210,7 @@ state_t monitor_dispose()
 state_t monitor_register(suscription_t *s)
 {
 	if (s             == NULL) return_msg(EAR_BAD_ARGUMENT, "the suscription can't be NULL");
-	if (s->time_relax <= 100 ) return_msg(EAR_BAD_ARGUMENT, "time can't be zero");
+	if (s->time_relax  < 100 ) return_msg(EAR_BAD_ARGUMENT, "time can't be zero");
 	if (s->call_main  == NULL) return_msg(EAR_BAD_ARGUMENT, "reading call is NULL");
 	if (s->id          < 0   ) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 
