@@ -1151,10 +1151,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		}else if (!strcmp(token, "GLOBALMANAGERPOWERCAPACTION") || !strcmp(token,"EARGMPOWERCAPACTION"))
 		{
 			token = strtok(NULL, "=");
+			strclean(token, '\n');
 			strcpy(conf->eargm.powercap_action,token);
 		}else if (!strcmp(token, "GLOBALMANAGERENERGYACTION") || !strcmp(token, "EARGMENERGYACTION"))
 		{
 			token = strtok(NULL, "=");
+			strclean(token, '\n');
 			strcpy(conf->eargm.energycap_action,token);
 		}
 		#endif

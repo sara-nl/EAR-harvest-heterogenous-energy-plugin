@@ -431,7 +431,7 @@ void check_pending_processes()
           process_created=0;
 					pthread_mutex_unlock(&plocks);
         }
-      }while(pid_process_created>0);
+      }while(process_created>0);
 
 }
 

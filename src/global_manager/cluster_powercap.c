@@ -341,6 +341,8 @@ void cluster_power_monitor()
   }
 	if (my_cluster_power_status->current_power>=((float)(max_cluster_power*my_cluster_conf.eargm.defcon_power_limit)/100.0)){
 		execute_powercap_action();
+	}else{
+		verbose(1,"Total power %u limit for action %lu",my_cluster_power_status->current_power,(max_cluster_power*my_cluster_conf.eargm.defcon_power_limit)/100);
 	}
 	free(my_cluster_power_status);
 	debug("%sGlobal POWER monitoring END-----%s",COL_BLU,COL_CLR);
