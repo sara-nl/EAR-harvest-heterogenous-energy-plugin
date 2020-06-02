@@ -93,6 +93,8 @@ GlobalManagerPeriodT2=259200
 # '-' are Joules, 'K' KiloJoules and 'M' MegaJoules.
 GlobalManagerUnits=K
 GlobalManagerEnergyLimit=550000
+GlobalManagerPowerLimit=0
+GlobalManagerPowerPeriod=60
 GlobalManagerPolicy=MaxEnergy
 GlobalManagerPort=50000
 # Two modes are supported '0=manual' and '1=automatic'.
