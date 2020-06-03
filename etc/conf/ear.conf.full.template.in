@@ -132,6 +132,16 @@ AuthorizedUsers=usr1,usr2
 AuthorizedAccounts=acc1,acc2,acc3
 AuthorizedGroups=grp1,grp2
 #---------------------------------------------------------------------------------------------------
+# Tags
+#---------------------------------------------------------------------------------------------------
+# Tags are used for architectural descriptions. Max. AVX frequencies are used in predictor models
+# and are SKU-specific. Max. and min. power are used for warning and error tracking. Powercap options
+# describe the baseline power that a node has at a new job start. At least a default tag is mandatory
+# to be included in this file for a cluster to work properly.
+Tag=tag1 default=yes max_avx512=2.2 max_avx2=2.9 energy_model=avx512_model.so energy_plugin=energy_nm.so
+Tag=tag1 max_power=500 min_power=50 error_power=600 powercap=0 powercap_type=node powercap_plugin=inm.so
+Tag=tag1 coeffs=coeffs.default
+#---------------------------------------------------------------------------------------------------
 # Energy Tags
 #---------------------------------------------------------------------------------------------------
 # Privileged users,accounts and groups are allowed to use EnergyTags. The "allowed" TAGs are defined
