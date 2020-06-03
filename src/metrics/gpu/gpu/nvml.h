@@ -27,20 +27,37 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef COMMON_PLUGINS_H
-#define COMMON_PLUGINS_H
+#ifndef METRICS_GPU_NVML
+#define METRICS_GPU_NVML
 
-#include <common/states.h>
+#include <metrics/gpu/gpu.h>
 
-typedef struct ctx_s {
-	int initialized;
-	void *context;
-} ctx_t;
+state_t nvml_status();
 
-#define preturn(call, ...) \
-	if (call == NULL) { \
-		return EAR_UNDEFINED; \
-	} \
-	return call (__VA_ARGS__);
+state_t nvml_init(ctx_t *c);
 
-#endif //EAR_PRIVATE_PLUGINS_H
+state_t nvml_dispose(ctx_t *c);
+
+state_t nvml_count(ctx_t *c, uint *gpu_count);
+
+state_t nvml_pool(void *c);
+
+state_t nvml_read(ctx_t *c, gpu_t *data);
+
+state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t data_diff);
+
+state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
+
+state_t nvml_data_alloc(gpu_t **data);
+
+state_t nvml_data_free(gpu_t **data);
+
+state_t nvml_data_null(gpu_t *data);
+
+state_t nvml_data_copy(gpu_t *data_dst, gpu_t *data_src);
+
+state_t nvml_data_print(gpu_t *data, int fd);
+
+state_t nvml_data_tostr(gpu_t *data, char *buffer, int length);
+
+#endif //METRICS_GPU_NVML

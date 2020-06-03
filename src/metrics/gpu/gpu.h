@@ -30,12 +30,12 @@
 #ifndef METRICS_ENERGY_GPU_H
 #define METRICS_ENERGY_GPU_H
 
+#include <common/types.h>
 #include <common/states.h>
 #include <common/plugins.h>
 #include <common/system/time.h>
-#include <common/types/generic.h>
 
-typedef struct gpu_power_s
+typedef struct gpu_s
 {
 	timestamp_t time;
 	ulong samples;
@@ -47,25 +47,38 @@ typedef struct gpu_power_s
 	ulong temp_mem; // celsius
 	double energy_j;
 	double power_w;
+	uint working;
 	uint correct;
-} gpu_energy_t;
+} gpu_t;
 
-state_t energy_gpu_init(pcontext_t *c, uint loop_ms);
+typedef struct ctx_s {
+	void *context;
+} ctx_t;
 
-state_t energy_gpu_dispose(pcontext_t *c);
+state_t gpu_load();
 
-state_t energy_gpu_count(pcontext_t *c, uint *count);
+state_t gpu_init(ctx_t *c);
 
-state_t energy_gpu_read(pcontext_t *c, gpu_energy_t *data_read);
+state_t gpu_dispose(ctx_t *c);
 
-state_t energy_gpu_data_alloc(pcontext_t *c, gpu_energy_t **data_read);
+state_t gpu_count(ctx_t *c);
 
-state_t energy_gpu_data_free(pcontext_t *c, gpu_energy_t **data_read);
+state_t gpu_read(ctx_t *c, gpu_t *data);
 
-state_t energy_gpu_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg);
+state_t gpu_read_copy(ctx_t *c, gpu_t *data, gpu_t *data_diff);
 
-state_t energy_gpu_data_null(pcontext_t *c, gpu_energy_t *data_read);
+state_t gpu_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 
-state_t energy_gpu_data_copy(pcontext_t *c, gpu_energy_t *data_dst, gpu_energy_t *data_src);
+state_t gpu_data_alloc(gpu_t **data);
+
+state_t gpu_data_free(gpu_t **data);
+
+state_t gpu_data_null(gpu_t *data);
+
+state_t gpu_data_copy(gpu_t *data_dst, gpu_t *data_src);
+
+state_t gpu_data_print(gpu_t *data, int fd);
+
+state_t gpu_data_tostr(gpu_t *data, char *buffer, int length);
 
 #endif

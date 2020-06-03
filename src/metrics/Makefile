@@ -25,7 +25,8 @@ mets_OBJS = \
     $(SRCDIR)/metrics/energy/energy_node.o \
     $(SRCDIR)/metrics/energy/energy_node_lib.o \
     $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
-    $(SRCDIR)/metrics/energy/gpu/nvsmi.o \
+    $(SRCDIR)/metrics/gpu/gpu.o \
+    $(SRCDIR)/metrics/gpu/gpu/nvml.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/papi.o \
     $(SRCDIR)/metrics/frequency/imc.o \
@@ -68,9 +69,10 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'energy'       $* || exit
 	@ $(MAKE) -C 'flops'        $* || exit
 	@ $(MAKE) -C 'frequency'    $* || exit
+	@ $(MAKE) -C 'gpu'          $* || exit
 	@ $(MAKE) -C 'stalls'       $* || exit
 	@ $(MAKE) -C 'accumulators' $* || exit
-	@ $(MAKE) -C 'temperature' $* || exit
+	@ $(MAKE) -C 'temperature'  $* || exit
 
 ######## DEPENDENCIES
 
