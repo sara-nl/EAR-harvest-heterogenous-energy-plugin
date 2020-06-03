@@ -1,5 +1,5 @@
-MPI_API = 1
-ifdef MPI_API
+#MPI_API = 1
+ifdef MPI_API 
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread -DMPI=1
 else
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread -DMPI=0

@@ -516,6 +516,7 @@ void update_configuration()
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
 }
+/**************************************** ear_init ************************/
 
 void ear_init()
 {
@@ -801,6 +802,9 @@ void ear_init()
 	}
 	#endif
 }
+
+
+/**************************************** ear_finalize ************************/
 
 void ear_finalize()
 {
@@ -1233,3 +1237,16 @@ void *earl_periodic_actions(void *no_arg)
       states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
 		}while(1);
 }
+
+
+/************** Constructor & Destructor for NOt MPI versions **************/
+#if !MPI 
+void ear_constructor()
+{
+	ear_init();
+}
+void ear_destructor()
+{
+	ear_finalize();
+}
+#endif
