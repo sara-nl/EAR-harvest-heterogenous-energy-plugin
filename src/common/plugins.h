@@ -39,7 +39,7 @@ typedef struct ctx_s {
 
 #define preturn(call, ...) \
 	if (call == NULL) { \
-		return EAR_UNDEFINED; \
+		return_msg(EAR_UNDEFINED, Generr.api_undefined); \
 	} \
 	return call (__VA_ARGS__);
 

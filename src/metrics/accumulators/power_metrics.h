@@ -38,10 +38,10 @@
 #define ACCUMULATORS_POWER_METRICS_H
 
 #include <common/states.h>
-#include <metrics/accumulators/types.h>
-#include <metrics/energy/energy_node.h>
+#include <metrics/gpu/gpu.h>
 #include <metrics/energy/energy_cpu.h>
-#include <metrics/energy/energy_gpu.h>
+#include <metrics/energy/energy_node.h>
+#include <metrics/accumulators/types.h>
 
 typedef long long rapl_data_t;
 typedef edata_t   node_data_t;

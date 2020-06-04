@@ -44,7 +44,7 @@ state_t nvml_pool(void *c);
 
 state_t nvml_read(ctx_t *c, gpu_t *data);
 
-state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t data_diff);
+state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 
 state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 

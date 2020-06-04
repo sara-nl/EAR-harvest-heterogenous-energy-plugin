@@ -51,21 +51,17 @@ typedef struct gpu_s
 	uint correct;
 } gpu_t;
 
-typedef struct ctx_s {
-	void *context;
-} ctx_t;
-
 state_t gpu_load();
 
 state_t gpu_init(ctx_t *c);
 
 state_t gpu_dispose(ctx_t *c);
 
-state_t gpu_count(ctx_t *c);
+state_t gpu_count(ctx_t *c, uint *dev_count);
 
 state_t gpu_read(ctx_t *c, gpu_t *data);
 
-state_t gpu_read_copy(ctx_t *c, gpu_t *data, gpu_t *data_diff);
+state_t gpu_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 
 state_t gpu_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 

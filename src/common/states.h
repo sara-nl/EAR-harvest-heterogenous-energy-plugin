@@ -81,6 +81,7 @@ struct generr_s {
 	char *alloc_error;
 	char *input_null;
 	char *input_uninitialized;
+	char *lock;
 } Generr __attribute__((weak)) = {
 	.api_undefined = "the API is undefined",
 	.api_incompatible = "the current hardware is not supported by the API",
@@ -88,6 +89,7 @@ struct generr_s {
 	.alloc_error = "error ocurred during allocation",
 	.input_null = "an argument of the input is NULL",
 	.input_uninitialized = "an argument is not initialized",
+	.lock = "error while using mutex_lock",
 };
 
 /*

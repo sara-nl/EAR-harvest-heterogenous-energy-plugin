@@ -1,13 +1,14 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
+CUDA_ROOT  = /hpc/base/cuda/cuda-10.1
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -I$(CUDA_ROOT)/include
 
 ######## FILES
 
-ener_OBJS = \
-    nvsmi.o
+gpu_OBJS = \
+    nvml.o
 
 ######## RULES
 
-all: $(ener_OBJS)
+all: $(gpu_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

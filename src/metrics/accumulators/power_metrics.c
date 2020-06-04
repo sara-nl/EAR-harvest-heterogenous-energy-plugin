@@ -36,13 +36,10 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <common/config.h>
-#include <common/states.h>
 //#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
-#include <metrics/energy/energy_cpu.h>
-#include <metrics/energy/energy_gpu.h>
 #include <metrics/accumulators/power_metrics.h>
 
 uint8_t 		power_mon_connected = 0;
@@ -58,11 +55,11 @@ static int 		num_packs = 0;
 static int 		*pm_fds_rapl;
 
 // GPU
-gpu_energy_t *gpu_data;
-pcontext_t gpu_context;
-uint       gpu_loop_ms;
-uint       gpu_init;
-uint       gpu_num;
+gpu_t		*gpu_data;
+ctx_t		 gpu_context;
+uint		 gpu_loop_ms;
+uint		 gpu_initialized;
+uint		 gpu_num;
 
 // Things to do
 //	1: replace time calls by our common/system/time.
@@ -98,8 +95,8 @@ static void pm_disconnect(ehandler_t *my_eh)
 	{
 		energy_dispose(my_eh);
 
-		if (gpu_init == 1) {
-			energy_gpu_dispose(&gpu_context);
+		if (gpu_initialized == 1) {
+			gpu_dispose(&gpu_context);
 		}
 	}
 }
@@ -198,18 +195,19 @@ static int pm_connect(ehandler_t *my_eh)
 	memset((char *) RAPL_metrics, 0, rapl_size);
 
 	// Initializing GPU energy
-	state_t s = energy_gpu_init(&gpu_context, gpu_loop_ms);
+	//state_t s = gpu_init(&gpu_context, gpu_loop_ms);
+	state_t s = gpu_init(&gpu_context);
 
 	if (state_ok(s))
 	{
 		// Allocating GPU energy data
-		s = energy_gpu_count(&gpu_context, &gpu_num);
-		s = energy_gpu_data_alloc(&gpu_context, &gpu_data);
+		s = gpu_count(&gpu_context, &gpu_num);
+		s = gpu_data_alloc(&gpu_data);
 		
-		gpu_init = state_ok(s) && gpu_num > 0;
+		gpu_initialized = state_ok(s) && gpu_num > 0;
 	}
 
-	if (gpu_init == 0) {
+	if (gpu_initialized == 0) {
 		error("GPU initialization APIs failed (%s)", intern_error_str);
 	}
 
@@ -271,7 +269,7 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 	memcpy(acc_energy->CPU_energy , &RAPL_metrics[num_packs], num_packs * sizeof(rapl_data_t));
 
 	// GPU
-	energy_gpu_read(&gpu_context, gpu_data);
+	gpu_read(&gpu_context, gpu_data);
 
 	for (p = 0; p < gpu_num; ++p) {
 		acc_energy->GPU_energy[p] = (ulong) gpu_data[p].energy_j;

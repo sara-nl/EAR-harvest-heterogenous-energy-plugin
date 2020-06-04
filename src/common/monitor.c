@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+#define SHOW_DEBUGS 1
 #include <error.h>
 #include <string.h>
 #include <pthread.h>
@@ -73,7 +74,7 @@ static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 	timestamp_t t2;
 	timestamp_t t1;
 
-	debug("MONITOR: waiting %d units", units);
+	debug("waiting %lld units", units);
 
 	timestamp_getfast(&t1);
 	nanosleep(&time, NULL);
@@ -87,7 +88,7 @@ static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 	*alignment += *pass_units;
 	*alignment %= 10;
 
-	debug("MONITOR: waited %d units (alignment %d)",
+	debug("waited %d units (alignment %d)",
 		*pass_units, *alignment);
 }
 
@@ -99,8 +100,8 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 	if (!reg->aligned)
 	{
 		reg->aligned = (alignment == 0);
+		reg->ok_init = reg->aligned && (reg->suscription.call_init != NULL);
 		reg->ok_main = reg->aligned;
-		reg->ok_init = reg->aligned;
 
 		if (!reg->ok_main) {
 			wait_required = 10 - alignment;
@@ -113,7 +114,7 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 		}
 
 		
-		debug("MONITOR: aligned %d", reg->suscription.id);
+		debug("sus %d, aligned suscription", reg->suscription.id);
 	}
 
 	// Normal processing
@@ -158,10 +159,12 @@ static void *monitor(void *p)
 			monitor_time_calc(reg, &wait_units, pass_units, alignment);
 
 			if (reg->ok_init) {
+				debug("sus %d, called init", i);
 				sus->call_init(sus->memm_init);
 				reg->ok_init = 0;
 			}
 			if (reg->ok_main) {
+				debug("sus %d, called main", i);
 				sus->call_main(sus->memm_main);
 				reg->ok_main = 0;
 			}
@@ -207,6 +210,12 @@ state_t monitor_dispose()
 	return EAR_SUCCESS;
 }
 
+static state_t monitor_register_void(void *p)
+{
+	suscription_t *s = (suscription_t *) p;
+	return monitor_register(s);
+}
+
 state_t monitor_register(suscription_t *s)
 {
 	if (s             == NULL) return_msg(EAR_BAD_ARGUMENT, "the suscription can't be NULL");
@@ -216,13 +225,15 @@ state_t monitor_register(suscription_t *s)
 
 	while (pthread_mutex_trylock(&lock));
 
-	queue[s->id].ok_init		= (s->call_init == NULL);
 	queue[s->id].suscribed      = 1;
 	queue[s->id].aligned		= 0;
 	queue[s->id].bursted        = 0;
-
 	queue[s->id].wait_saves.relax = (s->time_relax / 100);
 	queue[s->id].wait_saves.burst = (s->time_burst / 100);
+
+	debug("registered suscription %d", s->id);
+	debug("times relax/burst: %d/%d", queue[s->id].wait_saves.relax, queue[s->id].wait_saves.burst);
+	debug("calls init/main: %p/%p (%d)", s->call_init, s->call_main, queue[s->id].ok_init);
 
 	if (s->id >= queue_last) {
 		queue_last = s->id + 1;
@@ -296,8 +307,9 @@ suscription_t *suscription()
 		return NULL;
 	}
 
-	queue[i].suscription.id = i;
-	queue[i].delivered      = 1;
+	queue[i].suscription.id			= i;
+	queue[i].delivered				= 1;
+	queue[i].suscription.suscribe	= monitor_register_void;
 	pthread_mutex_unlock(&lock);
 
 	return &queue[i].suscription;
