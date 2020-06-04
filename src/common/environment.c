@@ -36,6 +36,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <common/config.h>
+//#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <common/environment.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -497,31 +499,33 @@ void ear_print_lib_environment()
 
 int check_threads()
 {
-        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_num_threads");
+        my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
         if (my_omp_get_max_threads==NULL){
+							debug("mkl_get_num_threads symbol not found");
                 my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_num_threads");
-                if (my_omp_get_max_threads==NULL) return 0;
-                else return 1;
-        }
-        else return 1;
+                if (my_omp_get_max_threads==NULL){ 
+									debug("omp_get_num_threads symbol not found");
+									return 0;
+								}
+                else{ 
+									debug("omp_get_num_threads symbol found");
+									return 1;
+								}
+        }else{
+					debug("mkl_get_num_threads symbol found");
+				}
+        return 1;
 }
 
 
 
 int get_num_threads()
 {
-    //int num_th;
+    int num_th;
     if (my_omp_get_max_threads!=NULL){
-        char *omp_numth=getenv("OMP_NUM_THREADS");
-        // we check first for openmp
-        if (omp_numth!=NULL){
-            return atoi(omp_numth);
-        }   
-        omp_numth=getenv("MKL_NUM_THREADS");
-        // we check for MKL
-        if (omp_numth!=NULL){
-            return atoi(omp_numth);
-        }   
+    	num_th=my_omp_get_max_threads();
+			debug("num_threads_detected %d",num_th);
+			return num_th;
     }   
     return 1;
 } 
