@@ -79,20 +79,24 @@ typedef struct node_powercap_opt {
   uint requested; /* Extra power requested, used when node is greedy or powercap < def_powercap */
 }node_powercap_opt_t;
 
+#define POWERCAP_STATUS_ACUM_ELEMS 8
 typedef struct powercap_status{
+		/* Static part */
 	uint total_nodes;
 	uint idle_nodes; 	        /* Total number of idle nodes */
 	uint released;        		/* Accumulated released power in last T1 */
   uint requested;         	/*accumulated new_req */
+	uint total_idle_power;		/* Total power allocated to idle nodes */
+	uint current_power; 	    /* Accumulated power */
+  uint total_powercap;      /* Accumulated current powercap limits */
 	uint num_greedy;          /* Number of greedy nodes */
+		/* Dynamic part */
 	int *greedy_nodes;        /* List of greedy nodes */
 	uint *greedy_req; 				/* extra_power requested */
   uint *extra_power;				/* extra power already allocated */
 	#if POWERCAP_EXT
 	performance_t	*perf_info;	/* Performance metrics used by powercap scheduler */
 	#endif
-	uint current_power; 	    /* Accumulated power */
-  uint total_powercap;      /* Accumulated current powercap limits */
 }powercap_status_t;
 
 #define TEMP_NUM_NODES 10
