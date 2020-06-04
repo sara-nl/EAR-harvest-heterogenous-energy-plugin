@@ -256,7 +256,7 @@ void print_cluster_power_status(powercap_status_t *my_cluster_power_status)
 		debug("cluster status is NULL");
 		return;
 	}
-	debug("Total %u Idle  %u power (released %u requested %u consumed %u allocated %u) total_greedy_nodes %u",cs->total_nodes,cs->idle_nodes, cs->released,cs->requested,cs->current_power,cs->total_powercap,cs->num_greedy);
+	debug("Total %u Idle  %u power (released %u requested %u consumed %u allocated %u allocated_to_idle %u) total_greedy_nodes %u",cs->total_nodes,cs->idle_nodes, cs->released,cs->requested,cs->current_power,cs->total_powercap,cs->num_greedy,cs->total_idle_power);
   debug("%d power_status received",num_power_status);
   for (i=0;i<cs->num_greedy;i++){
    debug("\t[%d] ip %d greedy_req %u extra_power %u",i,cs->greedy_nodes[i],cs->greedy_req[i],cs->extra_power[i]);
@@ -319,8 +319,8 @@ void execute_powercap_action()
 	char cmd[256];
 	/* If action is different than no_action we run the command */
 	if (strcmp(my_cluster_conf.eargm.powercap_action,"no_action")){
-	  /* Format is: command current_power current_limit total_idle_nodes */
-		sprintf(cmd,"%s %u %u %u", my_cluster_conf.eargm.powercap_action,my_cluster_power_status->current_power,max_cluster_power,my_cluster_power_status->idle_nodes);
+	  /* Format is: command current_power current_limit total_idle_nodes allocated_idle_power*/
+		sprintf(cmd,"%s %u %u %u %u", my_cluster_conf.eargm.powercap_action,my_cluster_power_status->current_power,max_cluster_power,my_cluster_power_status->idle_nodes,my_cluster_power_status->total_idle_power);
 		verbose(0,"Executing powercap_action: %s",cmd);
 		execute_with_fork(cmd);
 		pthread_mutex_lock(&plocks);
