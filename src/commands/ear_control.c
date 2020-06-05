@@ -235,7 +235,7 @@ void usage(char *app)
 void check_ip(status_t status, ip_table_t *ips, int num_ips)
 {
     int i, j;
-    printf("checking ip %d with status %d and power %lu\n", status.ip, status.ok, status.node.power);
+    //printf("checking ip %d with status %d and power %lu\n", status.ip, status.ok, status.node.power);
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
 		{
