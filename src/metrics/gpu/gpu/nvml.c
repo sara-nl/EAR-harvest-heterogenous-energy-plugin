@@ -36,14 +36,11 @@
 #include <common/output/debug.h>
 #include <metrics/gpu/gpu/nvml.h>
 
-typedef struct nvsml_s {
-	pthread_mutex_t lock;
-	suscription_t *sus;
-	uint bursting;
-	gpu_t *pool;
-} nvml_t;
-
+static pthread_mutex_t lock;
+static suscription_t *sus;
 static uint dev_count;
+static uint bursting;
+static gpu_t *pool;
 
 static struct error_s {
 	char *init;
@@ -59,122 +56,106 @@ static struct error_s {
 	.gpus_not     = "no GPUs detected"
 };
 
+static state_t nvml_init()
+{
+	nvmlReturn_t r;
+	while (pthread_mutex_trylock(&lock));
+	if (initialized) {
+		pthread_mutex_unlock(lock);
+		return EAR_SUCCESS;
+	}
+	if ((r = nvmlInit()) != NVML_SUCCESS) {
+		pthread_mutex_unlock(lock);
+		return_msg(EAR_ERROR, (char *) nvmlErrorString(r));
+	}
+	initialized = 1;
+	pthread_mutex_unlock(lock);
+	return EAR_SUCCESS;
+}
+
 state_t nvml_status()
 {
 	nvmlReturn_t r;
-	uint n_gpus;
 
-	if ((r = nvmlInit()) != NVML_SUCCESS) {
-		return_msg(EAR_ERROR, (char *) nvmlErrorString(r));
+	// DLOPEN
+	if (xtate_fail(s, nvml_count(NULL, NULL))) {
+		return s;
 	}
-	if ((r = nvmlDeviceGetCount_v2(&n_gpus)) != NVML_SUCCESS) {
-		return_msg(EAR_ERROR, (char *) nvmlErrorString(r));
-	}
-	if (n_gpus == 0) {
+	if (dev_count == 0) {
 		return_msg(EAR_ERROR, Error.gpus_not);
 	}
-
 	return EAR_SUCCESS;
 }
 
 state_t nvml_init(ctx_t *c)
 {
 	nvmlReturn_t ret;
-	nvml_t *ntx;
 	state_t s;
 
-	if (c->initialized == 1) {
-		return_msg(EAR_INITIALIZED, Error.init);
-	}
-	if ((ret = nvmlInit()) != NVML_SUCCESS) {
-		return_msg(EAR_ERROR, (char *) nvmlErrorString(ret));
-	}
-
-	c->initialized = 1;
-	c->context = calloc(1, sizeof(nvml_t));
-	ntx = (nvml_t *) c->context;
-
-	if (ntx == NULL) {
-		nvml_dispose(c);
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
-	if (dev_count == 0) {
-		if (xtate_fail(s, nvml_count(c, &dev_count))) {
-			nvml_dispose(c);
-			return s;
-		}
-	}
-	if (xtate_fail(s, nvml_data_alloc(&ntx->pool))) {
-		nvml_dispose(c);
+	if ((r = nvml_init()) != NVML_SUCCESS) {
 		return s;
 	}
-	
-	// Lock
-	if (pthread_mutex_init(&ntx->lock, NULL) != 0) {
-		return_msg(EAR_ERROR, Generr.lock);
+	if (initialized) {
+		return EAR_SUCCESS;
 	}
-
+	if (xtate_fail(s, nvml_count(NULL, NULL))) {
+		return s;
+	}
+	if (xtate_fail(s, nvml_data_alloc(&pool))) {
+		return s;
+	}
 	// All is ok
-	ntx->sus = suscription();
-	ntx->sus.call_main  = nvml_pool;
-	ntx->sus.memm_main  = c;
-	ntx->sus.time_relax = 1000;
-	ntx->sus.time_burst = 300;
-	monitor_register(ntx->sus);
+	sus = suscription();
+	sus.call_main  = nvml_pool;
+	sus.memm_main  = c;
+	sus.time_relax = 1000;
+	sus.time_burst = 300;
+	monitor_register(sus);
 	
 	return EAR_SUCCESS;
 }
 
 state_t nvml_dispose(ctx_t *c)
 {
-	if (c->initialized != 1) {
+	if (!initialized) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
-	if (c->context != NULL)
-	{
-		nvml_t *ntx = c->context;
-		pthread_mutex_destroy(ntx->lock);
-		monitor_unregister(ntx->sus);
-		free(c->context);
-	}
-	// Cleaning context
-	c->context     = NULL;
-	c->initialized = 0;
-	
 	return EAR_SUCCESS;
 }
 
 state_t nvml_count(ctx_t *c, uint *_dev_count)
 {
 	nvmlReturn_t r;
-
-	if (c->initialized != 1) {
+	*_dev_count = 0;
+	if (!initialized) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
-	if (c->context == NULL) {
-		return_msg(EAR_ERROR, Error.null_context);
+	while (pthread_mutex_trylock(&lock));
+	if (dev_count != 0) {
+		if( _dev_count != NULL) {
+			*_dev_count = dev_count;
+		}
+		pthread_mutex_unlock(lock);
+		return EAR_SUCCESS;
 	}
-	if ((r = nvmlDeviceGetCount(_dev_count)) != NVML_SUCCESS) {
-		*_dev_count = 0;
+	if ((r = nvmlDeviceGetCount_v2(&dev_count)) != NVML_SUCCESS) {
+		pthread_mutex_unlock(lock);
 		return_msg(EAR_ERROR, (char *) nvmlErrorString(r));
 	}
-	if (((int) *_dev_count) <= 0) {
-		*_dev_count = 0;
+	pthread_mutex_unlock(lock);
+	if (((int) dev_count) <= 0) {
 		return_msg(EAR_ERROR, Error.gpus_not);
+	}
+	if (_dev_count != NULL) {
+		*_dev_count = dev_count;
 	}
 	return EAR_SUCCESS;
 }
 
 state_t nvml_pool(void *p)
 {
-	ctx_t *c = (ctx_t *) p;
-	nvml_t *ntx;
-
-	if (c->initialized != 1) {
+	if (!initialized) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
-	}
-	if (c->context == NULL) {
-		return_msg(EAR_ERROR, Error.null_context);
 	}
 
 	//
@@ -182,11 +163,9 @@ state_t nvml_pool(void *p)
 	int working = 0;
 	int i;
 
-	timestamp_getfast(&time);
-	ntx = c->context;
-
 	// Lock
-	while (pthread_mutex_trylock(ntx->lock));
+	while (pthread_mutex_trylock(lock));
+	timestamp_getfast(&time);
 
 	//
 	for (i = 0; i < dev_count; ++i)
@@ -223,21 +202,21 @@ state_t nvml_pool(void *p)
 		s = nvmlDeviceGetComputeRunningProcesses(device, &proc_count, procs);
 
 		// Pooling the data
-		ntx->pool[i].samples      += 1;
-		ntx->pool[i].time          = time;
-		ntx->pool[i].freq_mem_mhz += (ulong) freq_mem_mhz;
-		ntx->pool[i].freq_gpu_mhz += (ulong) freq_gpu_mhz;
-		ntx->pool[i].util_mem     += (ulong) util.memory;
-		ntx->pool[i].util_gpu     += (ulong) util.gpu;
-		ntx->pool[i].temp_gpu     += (ulong) temp_gpu;
-		ntx->pool[i].temp_mem      = 0;
-		ntx->pool[i].energy_j      = 0;
-		ntx->pool[i].power_w      += (double) power_mw;
-		ntx->pool[i].working       = proc_count > 0;
-		ntx->pool[i].correct       = 1;
+		pool[i].samples      += 1;
+		pool[i].time          = time;
+		pool[i].freq_mem_mhz += (ulong) freq_mem_mhz;
+		pool[i].freq_gpu_mhz += (ulong) freq_gpu_mhz;
+		pool[i].util_mem     += (ulong) util.memory;
+		pool[i].util_gpu     += (ulong) util.gpu;
+		pool[i].temp_gpu     += (ulong) temp_gpu;
+		pool[i].temp_mem      = 0;
+		pool[i].energy_j      = 0;
+		pool[i].power_w      += (double) power_mw;
+		pool[i].working       = proc_count > 0;
+		pool[i].correct       = 1;
 
 		// Burst or not
-		working += ntx->pool[i].working;
+		working += pool[i].working;
 	}
 		
 	if (working  > 0 && !bursting) {
@@ -250,15 +229,14 @@ state_t nvml_pool(void *p)
 	}
 
 	// Lock
-	pthread_mutex_unlock(ntx->lock);
+	pthread_mutex_unlock(lock);
 
 	return EAR_SUCCESS;
 }
 
 state_t nvml_read(ctx_t *c, gpu_t *data)
 {
-	nvml_t *ntx = c->context;
-	return nvml_data_copy(data, ntx->pool);
+	return nvml_data_copy(data, pool);
 }
 
 state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
@@ -281,15 +259,15 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	ullong utime;
 	double dtime;
 
+	// Cleaning
+	nvml_data_null(d3);
+
 	if (d2->correct != 1 || d1->correct != 1) {
-		memset(d3, 0, sizeof(gpu_t));
 		return;
 	}
-
 	// Computing time
-	utime = timestamp_diff(&d2->time, &d1->time, TIME_USECS);
-	dtime = ((double) utime) / 1000000.0;
-
+	time_i = timestamp_diff(&d2->time, &d1->time, TIME_USECS);
+	time_f = ((double) time_i) / 1000000.0;
 	// Averages
 	d3->samples = d2->samples - d1->samples;
 
@@ -297,7 +275,7 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 		memset(d3, 0, sizeof(gpu_t));
 		return;
 	}
-
+	// No overflow control is required (64-bits are enough)
 	d3->freq_gpu_mhz = (d2->freq_gpu_mhz - d1->freq_gpu_mhz) / d3->samples;
 	d3->freq_mem_mhz = (d2->freq_mem_mhz - d1->freq_mem_mhz) / d3->samples;
 	d3->util_gpu     = (d2->util_gpu     - d1->util_gpu)     / d3->samples;
@@ -305,9 +283,9 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	d3->temp_gpu     = (d2->temp_gpu     - d1->temp_gpu)     / d3->samples;
 	d3->temp_mem     = 0;
 	d3->power_w      = (d2->power_w      - d1->power_w )     / (d3->samples * 1000);
-	d3->energy_j     = (d2->power_w)     * dtime;
+	d3->energy_j     = (d2->power_w)     * time_f;
 	d3->working      = (d2->working);
-	
+	//
 	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu_mhz, d2->freq_gpu_mhz, d1->freq_gpu_mhz);
 	debug("%d freq mem (MHz), %lu = %lu - %lu", i, d3->freq_mem_mhz, d2->freq_mem_mhz, d1->freq_mem_mhz);
 	debug("%d power    (W)  , %0.2lf = %0.2lf - %0.2lf", i, d3->power_w, d2->power_w, d1->power_w);
@@ -360,16 +338,28 @@ state_t nvml_data_copy(gpu_t *data_dst, gpu_t *data_src)
 	if (data_dst == NULL || data_src == NULL) {
 		return_msg(EAR_ERROR, Error.null_data);
 	}
-	while (pthread_mutex_trylock(ntx->lock));
+	while (pthread_mutex_trylock(lock));
 	memcpy(data_dst, data_src, dev_count * sizeof(gpu_t));
-	pthread_mutex_unlock(ntx-lock);
+	pthread_mutex_unlock(lock);
 	return EAR_SUCCESS;
 }
 
 state_t nvml_data_print(gpu_t *data, int fd)
 {
+	char buffer[1024];
+	nvml_data_tostr(data, buffer, 1024);
+	fprintf(fd, "s", buffer);
+	return EAR_SUCCESS;
 }
 
 state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 {
+	snprintf(buffer, length, "gpu%u: %lu;%0.2lf;%0.2lf;%lu;%lu;%lu;%lu;%lu;%lu;%u;%lu\n",
+		i                 , data->time,
+		data->energy_j    , data->power_w,
+		data->freq_gpu_mhz, data->freq_mem_mhz,
+		data->util_gpu    , data->util_mem,
+		data->temp_gpu    , data->temp_mem,
+		data->working     , data->samples);
+	return EAR_SUCCESS;
 }
