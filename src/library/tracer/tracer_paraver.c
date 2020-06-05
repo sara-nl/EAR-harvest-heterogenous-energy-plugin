@@ -39,6 +39,7 @@
 #include <papi.h>
 #include <common/sizes.h>
 #include <common/config.h>
+#include <common/config/config_env.h>
 //#define SHOW_DEBUGS 1
 #include <common/system/time.h>
 #include <common/output/verbose.h>
@@ -355,7 +356,7 @@ void traces_stop()
 
 void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
-	pathname = getenv("SLURM_EAR_TRACE_PATH");
+	pathname = getenv(SCHED_EAR_TRACE_PATH);
 
 	//
 	file_prv = -1;
@@ -363,7 +364,7 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 	file_row = -1;
 
 	if (pathname == NULL) {
-		debug("trace path not defined SLURM_EAR_TRACE_PATH, trace disabled");
+		debug("trace path not defined %s, trace disabled",SCHED_EAR_TRACE_PATH);
 		enabled = 0;
 		return;
 	}

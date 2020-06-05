@@ -32,6 +32,7 @@
 #include <dlfcn.h>
 #define SHOW_DEBUGS 1
 #include <common/includes.h>
+#include <common/config/config_env.h>
 #include <common/system/symplug.h>
 #include <common/hardware/frequency.h>
 #include <library/policies/policy_ctx.h>
@@ -103,7 +104,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
   char basic_path[SZ_PATH_INCOMPLETE];
 	conf_install_t *data=&app_settings->installation;
 
-  char *obj_path = getenv("SLURM_EAR_POWER_POLICY");
+  char *obj_path = getenv(SCHED_EAR_POWER_POLICY);
   if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
     	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
     	obj_path=basic_path;

@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/config.h>
+#include <common/config/config_env.h>
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/tracer/tracer.h>
@@ -111,7 +112,7 @@ void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank
 {
   int found=0,ret;
 	char *traces_plugin;
-	traces_plugin=getenv("SLURM_EAR_TRACE_PLUGIN");
+	traces_plugin=getenv(SCHED_EAR_TRACE_PLUGIN);
 	if (traces_plugin==NULL) trace_plugin=0;
 	else trace_plugin=1;
 

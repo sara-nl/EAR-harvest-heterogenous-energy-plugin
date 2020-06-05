@@ -47,6 +47,7 @@
 
 //#define SHOW_DEBUGS 0
 #include <common/config.h>
+#include <common/config/config_env.h>
 #include <common/colors.h>
 #include <common/environment.h>
 #include <common/output/verbose.h>
@@ -75,7 +76,6 @@
 #include <daemon/shared_configuration.h>
 
 #include <metrics/common/papi.h>
-#include <schedulers/sched_definitions.h>
 
 // Statics
 #define BUFFSIZE 			128
@@ -444,11 +444,11 @@ static int get_local_id(char *node_name)
 // Getting the job identification (job_id * 100 + job_step_id)
 static void get_job_identification()
 {
-	char *job_id  = getenv("SLURM_JOB_ID");
-	char *step_id = getenv("SLURM_STEP_ID");
-	char *account_id=getenv("SLURM_JOB_ACCOUNT");
+	char *job_id  = getenv(SCHED_JOB_ID);
+	char *step_id = getenv(SCHED_STEP_ID);
+	char *account_id=getenv(SCHED_JOB_ACCOUNT);
 
-	// It is missing to use SLURM_JOB_ACCOUNT
+	// It is missing to use JOB_ACCOUNT
 	
 
 	if (job_id != NULL) {
@@ -456,11 +456,11 @@ static void get_job_identification()
 		if (step_id != NULL) {
 			my_step_id=atoi(step_id);
 		} else {
-			step_id = getenv("SLURM_STEPID");
+			step_id = getenv(SCHED_STEPID);
 			if (step_id != NULL) {
 				my_step_id=atoi(step_id);
 			} else {
-				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using stepid=0\n");
+				warning("Neither %s nor %s are defined, using stepid=0\n",SCHED_STEP_ID,SCHED_STEPID);
 				my_step_id=NULL_STEPID;
 			}
 		}
@@ -468,7 +468,7 @@ static void get_job_identification()
 		my_job_id = getppid();
 		my_step_id=0;
 	}
-	if (account_id==NULL) strcpy(my_account,"NO_SLURM_ACCOUNT");	
+	if (account_id==NULL) strcpy(my_account,NULL_ACCOUNT);	
 	else strcpy(my_account,account_id);
 	debug("JOB ID %d STEP ID %d ",my_job_id,my_step_id);
 }
@@ -505,7 +505,7 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	/* Included for dynais tunning */
-	cdynais_window=getenv("SLURM_EAR_DYNAIS_WINDOW_SIZE");
+	cdynais_window=getenv(SCHED_EAR_DYNAIS_WINDOW_SIZE);
   if ((cdynais_window!=NULL) && (system_conf->user_type==AUTHORIZED)){
 		dynais_window=atoi(cdynais_window);
 	}
@@ -523,7 +523,7 @@ void ear_init()
 	char *summary_pathname;
 	char *tmp;
 	state_t st;
-	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
+	char *ext_def_freq_str=getenv(SCHED_EAR_DEF_FREQ);
 	architecture_t arch_desc;
 
 	// MPI
