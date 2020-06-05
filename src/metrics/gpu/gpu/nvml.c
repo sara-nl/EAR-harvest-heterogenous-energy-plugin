@@ -217,6 +217,7 @@ state_t nvml_pool(void *p)
 	if (working  > 0 && !monitor_is_bursting(sus)) {
 		debug("bursting");
 		monitor_burst(sus);
+		debug("bursting return");
 	}
 	if (working == 0 &&  monitor_is_bursting(sus)) {
 		debug("relaxing");

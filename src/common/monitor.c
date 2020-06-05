@@ -36,10 +36,11 @@
 
 #define N_QUEUE 128
 
+static pthread_t		thread;
 static pthread_mutex_t	lock_gen = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t	lock[N_QUEUE];
-static pthread_t		thread;
 static uint				enabled;
+static uint				locked;
 
 typedef struct wait_s {
 	int relax;
@@ -95,6 +96,7 @@ static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 
 static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, int alignment)
 {
+	int _bursted = reg->bursted;
 	int wait_required;
 
 	// Alignment processing
@@ -121,15 +123,15 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 	reg->wait_units.burst -= pass_units;
 	reg->wait_units.relax -= pass_units;
 
-	if (reg->wait_units.burst <= 0 &&  reg->bursted) reg->ok_main = 1;
-	if (reg->wait_units.relax <= 0 && !reg->bursted) reg->ok_main = 1;
+	if (reg->wait_units.burst <= 0 &&  _bursted) reg->ok_main = 1;
+	if (reg->wait_units.relax <= 0 && !_bursted) reg->ok_main = 1;
 
 	if (reg->wait_units.burst <= 0) reg->wait_units.burst = reg->wait_saves.burst;
 	if (reg->wait_units.relax <= 0) reg->wait_units.relax = reg->wait_saves.relax;
 
-	if (reg->bursted && reg->wait_units.burst < *wait_units) {
+	if (_bursted && reg->wait_units.burst < *wait_units) {
 		*wait_units = reg->wait_units.burst;
-	} else 	if (!reg->bursted && reg->wait_units.relax < *wait_units) {
+	} else 	if (!_bursted && reg->wait_units.relax < *wait_units) {
 		*wait_units = reg->wait_units.relax;
 	}
 }
@@ -145,7 +147,7 @@ static void *monitor(void *p)
 
 	while (enabled)
 	{
-		for (i = 0, wait_units = 10 && enabled; i < queue_last; ++i)
+		for (i = 0, wait_units = 10; i < queue_last && enabled; ++i)
 		{
 			while (pthread_mutex_trylock(&lock[i]));
 
@@ -189,7 +191,7 @@ static state_t monitor_lock_alloc()
 		}
 	}
 	for (i = 0; i < N_QUEUE && error; ++i) {
-		pthread_mutex_destroy(&lock[i], NULL);
+		pthread_mutex_destroy(&lock[i]);
 	}
 	if (error) {
 		return_msg(EAR_ERROR, Generr.lock);
@@ -275,16 +277,16 @@ state_t monitor_unregister(suscription_t *s)
 	if (s->id  > queue_last) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 	if (s->id  < 0         ) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 
-	while (pthread_mutex_trylock(&lock[i]));
+	while (pthread_mutex_trylock(&lock[s->id]));
 	memset(&queue[s->id], 0, sizeof(register_t));
-	pthread_mutex_unlock(&lock[i]);
+	pthread_mutex_unlock(&lock[s->id]);
 
 	return EAR_SUCCESS;
 }
 
 int monitor_is_bursting(suscription_t *s)
 {
-	return sus[s->id].bursted;
+	return queue[s->id].bursted;
 }
 
 state_t monitor_burst(suscription_t *s)
@@ -298,11 +300,7 @@ state_t monitor_burst(suscription_t *s)
 	if (s->time_burst  < 0) {
 		return_msg(EAR_BAD_ARGUMENT, "burst time cant be less than relax time");
 	}
-
-	while (pthread_mutex_trylock(&lock[i]));
 	queue[s->id].bursted = 1;
-	pthread_mutex_unlock(&lock[i]);
-
 	return EAR_SUCCESS;
 }
 
@@ -311,11 +309,7 @@ state_t monitor_relax(suscription_t *s)
 	if (s == NULL) {
 		return_msg(EAR_BAD_ARGUMENT, "the suscription can't be NULL");
 	}
-
-	while (pthread_mutex_trylock(&lock[i]));
 	queue[s->id].bursted = 0;
-	pthread_mutex_unlock(&lock[i]);
-
 	return EAR_SUCCESS;
 }
 
@@ -323,7 +317,8 @@ suscription_t *suscription()
 {
 	int i = 0;
 
-	while (pthread_mutex_trylock(&lock[i]));
+	while (pthread_mutex_trylock(&lock_gen));
+
 	for (; i < N_QUEUE; ++i)
 	{
 		if (queue[i].delivered == 0) {
@@ -331,19 +326,20 @@ suscription_t *suscription()
 		}
 	}
 	if (queue_last == N_QUEUE) {
-		pthread_mutex_unlock(&lock[i]);
+		pthread_mutex_unlock(&lock_gen);
 		return NULL;
 	}
 
 	queue[i].suscription.id			= i;
 	queue[i].delivered				= 1;
 	queue[i].suscription.suscribe	= monitor_register_void;
+	queue[i].bursted				= 0;
 
 	if (queue[i].suscription.id >= queue_last) {
 		queue_last = queue[i].suscription.id + 1;
 	}
 
-	pthread_mutex_unlock(&lock[i]);
+	pthread_mutex_unlock(&lock_gen);
 
 	return &queue[i].suscription;
 }

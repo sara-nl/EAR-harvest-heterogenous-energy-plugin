@@ -52,7 +52,7 @@ typedef struct energy_mon_data {
 	node_data_t  DC_node_energy;
 	rapl_data_t  *DRAM_energy;
 	rapl_data_t  *CPU_energy;
-	ulong        *GPU_energy;
+	gpu_t 		 *gpu_data;
 } energy_data_t;
 
 typedef struct power_data {

@@ -36,7 +36,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 0
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
@@ -55,7 +55,10 @@ static int 		num_packs = 0;
 static int 		*pm_fds_rapl;
 
 // GPU
-gpu_t		*gpu_data;
+//gpu_t		*gpu_data_diff;
+//gpu_t		*gpu_data2;
+//gpu_t		*gpu_data1;
+
 ctx_t		 gpu_context;
 uint		 gpu_loop_ms;
 uint		 gpu_initialized;
@@ -196,20 +199,25 @@ static int pm_connect(ehandler_t *my_eh)
 
 	// Initializing GPU energy
 	//state_t s = gpu_init(&gpu_context, gpu_loop_ms);
-	state_t s = gpu_init(&gpu_context);
+	state_t s;
 
-	if (state_ok(s))
-	{
-		// Allocating GPU energy data
-		s = gpu_count(&gpu_context, &gpu_num);
-		s = gpu_data_alloc(&gpu_data);
+	if (xtate_fail(s, gpu_load())) {
+		error("gpu_load returned %d (%s)", s, state_msg);
+	}
+	if (state_ok(s) && xtate_fail(s, gpu_init(&gpu_context))) {
+		error("gpu_init returned %d (%s)", s, state_msg);
+	}
+	if (state_ok(s) && xtate_fail(s, gpu_count(&gpu_context, &gpu_num))) {
+		error("gpu_count returned %d (%s)", s, state_msg);
+	}
+	if (state_ok(s) && xtate_fail(s, gpu_data_alloc(&gpu_data2))) {
+		error("gpu_data_alloc returned %d (%s)", s, state_msg);
+	}
+	if (state_ok(s) && xtate_fail(s, gpu_data_alloc(&gpu_data_diff))) {
+		error("gpu_data_alloc returned %d (%s)", s, state_msg);
+	}
 		
-		gpu_initialized = state_ok(s) && gpu_num > 0;
-	}
-
-	if (gpu_initialized == 0) {
-		error("GPU initialization APIs failed (%s)", intern_error_str);
-	}
+	gpu_initialized = state_ok(s) && gpu_num > 0;
 
 	return pm_connected_status;
 }
@@ -304,17 +312,17 @@ void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *m
 	// CPU/DRAM
 	dram = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
 	pack = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
-	gpus = (ulong *) calloc(gpu_num, sizeof(ulong));
+	//gpus = (ulong *) calloc(gpu_num, sizeof(ulong));
 
 	// Compute the difference
 	for (p = 0; p < num_packs; p++) dram[p] = diff_RAPL_energy(e_end->DRAM_energy[p], e_begin->DRAM_energy[p]);
 	for (p = 0; p < num_packs; p++) pack[p] = diff_RAPL_energy(e_end->CPU_energy[p] , e_begin->CPU_energy[p]);
-	for (p = 0; p < gpu_num  ; p++) gpus[p] = e_end->GPU_energy[p] - e_begin->GPU_energy[p];
+	//for (p = 0; p < gpu_num  ; p++) gpus[p] = e_end->GPU_energy[p] - e_begin->GPU_energy[p];
 
 	#ifdef SHOW_DEBUGS
 	for (p = 0; p < num_packs; p++) debug("energy dram pack %d %llu", p, dram[p]);
 	for (p = 0; p < num_packs; p++) debug("energy cpu pack %d %llu" , p, pack[p]);
-	for (p = 0; p < gpu_num  ; p++) debug("energy gpu pack %d %llu" , p, gpus[p]);
+	//for (p = 0; p < gpu_num  ; p++) debug("energy gpu pack %d %llu" , p, gpus[p]);
 	#endif
 
 	// eh is not needed here
@@ -330,17 +338,17 @@ void compute_power(energy_data_t *e_begin, energy_data_t *e_end, power_data_t *m
 
 	for (p = 0; p < num_packs; p++) my_power->avg_dram[p] = (double) (dram[p]) / (t_diff * 1000000000);
 	for (p = 0; p < num_packs; p++) my_power->avg_cpu[p]  = (double) (pack[p]) / (t_diff * 1000000000);
-	for (p = 0; p < gpu_num  ; p++) my_power->avg_gpu[p]  = (double) (gpus[p]) / (t_diff);
+	//for (p = 0; p < gpu_num  ; p++) my_power->avg_gpu[p]  = (double) (gpus[p]) / (t_diff);
 
 	#ifdef SHOW_DEBUGS
 	for (p = 0; p < num_packs; p++) debug("power dram p = %d %lf", p, my_power->avg_dram[p]);
 	for (p = 0; p < num_packs; p++) debug("power pack p = %d %lf", p, my_power->avg_cpu[p]);
-	for (p = 0; p < gpu_num  ; p++) debug("power gpu  p = %d %lf", p, my_power->avg_gpu[p]);
+	//for (p = 0; p < gpu_num  ; p++) debug("power gpu  p = %d %lf", p, my_power->avg_gpu[p]);
 	#endif
 
 	free(dram);
 	free(pack);
-	free(gpus);
+	//free(gpus);
 }
 
 /*
@@ -488,7 +496,10 @@ void alloc_energy_data(energy_data_t *e)
 	e->DRAM_energy = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
 	e->CPU_energy  = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
 	// GPU
-	e->GPU_energy  = (ulong *) calloc(gpu_num, sizeof(ulong));
+	if (state_ok(s) && xtate_fail(s, gpu_data_alloc(&gpu_data1))) {
+		error("gpu_data_alloc returned %d (%s)", s, state_msg);
+	}
+	//e->GPU_energy  = (ulong *) calloc(gpu_num, sizeof(ulong));
 }
 
 void free_energy_data(energy_data_t *e)
@@ -577,7 +588,7 @@ void null_power_data(power_data_t *p)
 	memset(p->avg_dram, 0, num_packs * sizeof(double));
 	memset(p->avg_cpu , 0, num_packs * sizeof(double));
 	// GPU
-	memset(p->avg_gpu , 0, gpu_num   * sizeof(double));
+	//memset(p->avg_gpu , 0, gpu_num   * sizeof(double));
 }
 
 /*

@@ -78,6 +78,8 @@ state_t monitor_burst(suscription_t *suscription);
 
 state_t monitor_relax(suscription_t *suscription);
 
+int monitor_is_bursting(suscription_t *s);
+
 suscription_t *suscription();
 
 #endif //EAR_STASH_MONITOR_H
