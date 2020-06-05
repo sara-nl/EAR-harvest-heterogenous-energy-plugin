@@ -114,7 +114,6 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 			return;
 		}
 
-		
 		debug("sus %d, aligned suscription", reg->suscription.id);
 	}
 
@@ -146,14 +145,15 @@ static void *monitor(void *p)
 
 	while (enabled)
 	{
-		for (i = 0, wait_units = 10; i < queue_last; ++i)
+		for (i = 0, wait_units = 10 && enabled; i < queue_last; ++i)
 		{
+			while (pthread_mutex_trylock(&lock[i]));
+
 			reg = &queue[i];
 			sus = &reg->suscription;
-		
-			while (pthread_mutex_trylock(&reg->lock));
 
 			if (!reg->suscribed) {
+				pthread_mutex_unlock(&lock[i]);
 				continue;
 			}
 
@@ -169,30 +169,58 @@ static void *monitor(void *p)
 				sus->call_main(sus->memm_main);
 				reg->ok_main = 0;
 			}
-		}
 
-		pthread_mutex_unlock(&reg->lock);
+			pthread_mutex_unlock(&lock[i]);
+		}
 
 		monitor_sleep(wait_units, &pass_units, &alignment);
 	}
 	return EAR_SUCCESS;
 }
 
+static state_t monitor_lock_alloc()
+{
+	int error = 0;
+	int i;
+
+	for (i = 0; i < N_QUEUE && !error; ++i) {
+		if (pthread_mutex_init(&lock[i], NULL) != 0) {
+			error = 1;
+		}
+	}
+	for (i = 0; i < N_QUEUE && error; ++i) {
+		pthread_mutex_destroy(&lock[i], NULL);
+	}
+	if (error) {
+		return_msg(EAR_ERROR, Generr.lock);
+	}
+	locked = 1;
+	return EAR_SUCCESS;
+}
+
 state_t monitor_init()
 {
 	int _errno;
+	state_t s;
 
+	while (pthread_mutex_trylock(&lock_gen));
 	if (enabled != 0) {
+		pthread_mutex_unlock(&lock_gen);
 		return_msg(EAR_ERROR, "monitor already enabled");
 	}
-
-	//
+	if (!locked) {
+		if (xtate_fail(s, monitor_lock_alloc())) {
+			pthread_mutex_unlock(&lock_gen);
+			return s;
+		}
+	}
 	_errno = pthread_create(&thread, NULL, monitor, NULL);
 	enabled = (errno == 0);
-
 	if (!enabled) {
+		pthread_mutex_unlock(&lock_gen);
 		return_msg(EAR_ERROR, strerror(_errno));
 	}
+	pthread_mutex_unlock(&lock_gen);
 
 	return EAR_SUCCESS;
 }
@@ -203,10 +231,10 @@ state_t monitor_dispose()
 		return_msg(EAR_BAD_ARGUMENT, "not initialized");
 	}
 
-	while (pthread_mutex_trylock(&lock));
-	memset(queue, 0, sizeof(suscription_t) * N_QUEUE);
+	while (pthread_mutex_trylock(&lock_gen));
 	enabled = 0;
-	pthread_mutex_unlock(&lock);
+	pthread_join(thread, NULL);
+	pthread_mutex_unlock(&lock_gen);
 
 	return EAR_SUCCESS;
 }
@@ -224,7 +252,7 @@ state_t monitor_register(suscription_t *s)
 	if (s->call_main  == NULL) return_msg(EAR_BAD_ARGUMENT, "reading call is NULL");
 	if (s->id          < 0   ) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 
-	while (pthread_mutex_trylock(&lock));
+	while (pthread_mutex_trylock(&lock[s->id]));
 
 	queue[s->id].suscribed      = 1;
 	queue[s->id].aligned		= 0;
@@ -236,7 +264,7 @@ state_t monitor_register(suscription_t *s)
 	debug("times relax/burst: %d/%d", queue[s->id].wait_saves.relax, queue[s->id].wait_saves.burst);
 	debug("calls init/main: %p/%p (%d)", s->call_init, s->call_main, queue[s->id].ok_init);
 
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock[s->id]);
 
 	return EAR_SUCCESS;
 }
@@ -247,9 +275,9 @@ state_t monitor_unregister(suscription_t *s)
 	if (s->id  > queue_last) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 	if (s->id  < 0         ) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 
-	while (pthread_mutex_trylock(&lock));
+	while (pthread_mutex_trylock(&lock[i]));
 	memset(&queue[s->id], 0, sizeof(register_t));
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock[i]);
 
 	return EAR_SUCCESS;
 }
@@ -271,9 +299,9 @@ state_t monitor_burst(suscription_t *s)
 		return_msg(EAR_BAD_ARGUMENT, "burst time cant be less than relax time");
 	}
 
-	while (pthread_mutex_trylock(&lock));
+	while (pthread_mutex_trylock(&lock[i]));
 	queue[s->id].bursted = 1;
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock[i]);
 
 	return EAR_SUCCESS;
 }
@@ -284,9 +312,9 @@ state_t monitor_relax(suscription_t *s)
 		return_msg(EAR_BAD_ARGUMENT, "the suscription can't be NULL");
 	}
 
-	while (pthread_mutex_trylock(&lock));
+	while (pthread_mutex_trylock(&lock[i]));
 	queue[s->id].bursted = 0;
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock[i]);
 
 	return EAR_SUCCESS;
 }
@@ -295,30 +323,27 @@ suscription_t *suscription()
 {
 	int i = 0;
 
-	while (pthread_mutex_trylock(&lock));
-
+	while (pthread_mutex_trylock(&lock[i]));
 	for (; i < N_QUEUE; ++i)
 	{
 		if (queue[i].delivered == 0) {
 			break;
 		}
 	}
-
 	if (queue_last == N_QUEUE) {
-		pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&lock[i]);
 		return NULL;
 	}
 
 	queue[i].suscription.id			= i;
 	queue[i].delivered				= 1;
 	queue[i].suscription.suscribe	= monitor_register_void;
-	queue[i].lock = 
-	
+
 	if (queue[i].suscription.id >= queue_last) {
 		queue_last = queue[i].suscription.id + 1;
 	}
 
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock[i]);
 
 	return &queue[i].suscription;
 }
