@@ -46,6 +46,7 @@ typedef struct suscription_s
 	void		*memm_main;
 	int			time_relax; // In miliseconds.
 	int			time_burst; // In miliseconds.
+	int 		*bursting;
     int			id;
 } suscription_t;
 

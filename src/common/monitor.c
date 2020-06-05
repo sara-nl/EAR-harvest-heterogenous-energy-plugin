@@ -36,9 +36,10 @@
 
 #define N_QUEUE 128
 
-static pthread_mutex_t	lock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_t	thread;
-static uint		enabled;
+static pthread_mutex_t	lock_gen = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t	lock[N_QUEUE];
+static pthread_t		thread;
+static uint				enabled;
 
 typedef struct wait_s {
 	int relax;
@@ -47,19 +48,19 @@ typedef struct wait_s {
 
 typedef struct register_s
 {
-	suscription_t	suscription;
-	wait_t		wait_units;
-	wait_t		wait_saves;
-	int		suscribed;
-	int		delivered;
-	int		bursted;
-	int		aligned;
-	int		ok_init;
-	int		ok_main;
+	suscription_t suscription;
+	wait_t wait_units;
+	wait_t wait_saves;
+	int	suscribed;
+	int	delivered;
+	int	bursted;
+	int	aligned;
+	int	ok_init;
+	int	ok_main;
 } register_t;
 
-static register_t	queue[N_QUEUE];
-static uint		queue_last;
+static register_t		queue[N_QUEUE];
+static uint				queue_last;
 
 static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 {
@@ -145,12 +146,12 @@ static void *monitor(void *p)
 
 	while (enabled)
 	{
-		while (pthread_mutex_trylock(&lock));
-
 		for (i = 0, wait_units = 10; i < queue_last; ++i)
 		{
 			reg = &queue[i];
 			sus = &reg->suscription;
+		
+			while (pthread_mutex_trylock(&reg->lock));
 
 			if (!reg->suscribed) {
 				continue;
@@ -170,7 +171,7 @@ static void *monitor(void *p)
 			}
 		}
 
-		pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&reg->lock);
 
 		monitor_sleep(wait_units, &pass_units, &alignment);
 	}
@@ -235,10 +236,6 @@ state_t monitor_register(suscription_t *s)
 	debug("times relax/burst: %d/%d", queue[s->id].wait_saves.relax, queue[s->id].wait_saves.burst);
 	debug("calls init/main: %p/%p (%d)", s->call_init, s->call_main, queue[s->id].ok_init);
 
-	if (s->id >= queue_last) {
-		queue_last = s->id + 1;
-	}
-
 	pthread_mutex_unlock(&lock);
 
 	return EAR_SUCCESS;
@@ -255,6 +252,11 @@ state_t monitor_unregister(suscription_t *s)
 	pthread_mutex_unlock(&lock);
 
 	return EAR_SUCCESS;
+}
+
+int monitor_is_bursting(suscription_t *s)
+{
+	return sus[s->id].bursted;
 }
 
 state_t monitor_burst(suscription_t *s)
@@ -310,6 +312,12 @@ suscription_t *suscription()
 	queue[i].suscription.id			= i;
 	queue[i].delivered				= 1;
 	queue[i].suscription.suscribe	= monitor_register_void;
+	queue[i].lock = 
+	
+	if (queue[i].suscription.id >= queue_last) {
+		queue_last = queue[i].suscription.id + 1;
+	}
+
 	pthread_mutex_unlock(&lock);
 
 	return &queue[i].suscription;
