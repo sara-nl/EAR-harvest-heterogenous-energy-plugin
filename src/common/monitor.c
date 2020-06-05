@@ -217,7 +217,7 @@ state_t monitor_init()
 		}
 	}
 	_errno = pthread_create(&thread, NULL, monitor, NULL);
-	enabled = (errno == 0);
+	enabled = (_errno == 0);
 	if (!enabled) {
 		pthread_mutex_unlock(&lock_gen);
 		return_msg(EAR_ERROR, strerror(_errno));

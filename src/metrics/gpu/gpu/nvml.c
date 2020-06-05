@@ -98,6 +98,7 @@ static state_t nvml_init_prime()
 		pthread_mutex_unlock(&lock);
 		return s;
 	}
+	debug("INITIALIZED");
 	initialized = 1;
 	pthread_mutex_unlock(&lock);
 	
@@ -153,10 +154,7 @@ state_t nvml_pool(void *p)
 	int i;
 
 	// Lock
-	
-	debug("taking lock");
 	while (pthread_mutex_trylock(&lock));
-	debug("got the lock");
 	timestamp_getfast(&time);
 
 	//
@@ -255,6 +253,8 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	ullong time_i;
 	double time_f;
 
+	debug("INITIALIZED");
+
 	// Cleaning
 	nvml_data_null(d3);
 
@@ -279,7 +279,7 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	d3->temp_gpu     = (d2->temp_gpu     - d1->temp_gpu)     / d3->samples;
 	d3->temp_mem     = 0;
 	d3->power_w      = (d2->power_w      - d1->power_w )     / (d3->samples * 1000);
-	d3->energy_j     = (d2->power_w)     * time_f;
+	d3->energy_j     = (d3->power_w)     * time_f;
 	d3->working      = (d2->working);
 	//
 	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu_mhz, d2->freq_gpu_mhz, d1->freq_gpu_mhz);
@@ -331,6 +331,7 @@ state_t nvml_data_null(gpu_t *data)
 
 state_t nvml_data_copy(gpu_t *data_dst, gpu_t *data_src)
 {
+	debug("DATACOPY");
 	if (data_dst == NULL || data_src == NULL) {
 		return_msg(EAR_ERROR, Error.null_data);
 	}
