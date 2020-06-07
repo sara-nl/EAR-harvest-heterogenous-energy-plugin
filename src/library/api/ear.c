@@ -491,6 +491,20 @@ static void get_app_name(char *my_name)
 		strcpy(my_name, app_name);
 	}
 }
+#if POWERCAP
+/************** This function  checks if application is a "large" job *******************/
+void check_large_job_use_case()
+{
+	if (LIMIT_LARGE_JOBS == 0) return; /* Disabled */
+	if (LIMIT_LARGE_JOBS < 1 ){ /* It is a percentage of the system size */
+		debug("Pending to compute the system size");
+		return;
+	}
+	if (app_mgt_info->nodes > LIMIT_LARGE_JOBS){
+		debug("We ar a large job and we will start at a lower freq: Size %u limit %u",app_mgt_info->nodes,LIMIT_LARGE_JOBS);
+	}
+}
+#endif
 
 
 /*** We update EARL configuration based on shared memory information **/
@@ -710,6 +724,8 @@ void ear_init()
     	error("Application shared area not found");
   	}
 		fill_application_mgt_data(app_mgt_info);
+		/* At this point we have notified the EARD the number of nodes in the application */
+		check_large_job_use_case();
 		/* This area is RW */
 		get_pc_app_info_path(get_ear_tmp(),pc_app_info_path);
 		debug("pc_app_info path %s",pc_app_info_path);
@@ -1250,3 +1266,5 @@ void ear_destructor()
 	ear_finalize();
 }
 #endif
+
+
