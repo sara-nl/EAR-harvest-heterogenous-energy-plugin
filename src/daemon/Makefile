@@ -15,6 +15,7 @@ eard_OBJS = \
     eard_rapi.o \
     eard_server_api.o \
     dynamic_configuration.o \
+		dyn_conf_theading.o \
     power_monitor.o \
 		powercap_status.o \
 		power_mgt.o \
@@ -51,6 +52,9 @@ node_metrics.o:node_metrics.c node_metrics.h
 	$(CC) $(CFLAGS) -c $<
 
 dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
+	$(CC) $(CFLAGS) -c $<
+
+dyn_conf_theading.o: dyn_conf_theading.c dyn_conf_theading.h
 	$(CC) $(CFLAGS) -c $<
 
 shared_configuration.o: shared_configuration.c shared_configuration.h

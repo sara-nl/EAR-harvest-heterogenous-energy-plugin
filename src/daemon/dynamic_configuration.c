@@ -60,6 +60,10 @@
 #include <daemon/eard_conf_rapi.h>
 #include <common/hardware/frequency.h>
 #include <daemon/powercap.h>
+#if DYN_PAR
+#include <daemon/dyn_conf_theading.h>
+#endif
+
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;
@@ -81,6 +85,9 @@ int last_command_time = -1;
 int node_found = EAR_ERROR;
 #if POWERCAP
 extern app_mgt_t *app_mgt_info;
+#endif
+#if DYN_PAR
+pthread_t act_conn_th;
 #endif
 
 
@@ -647,6 +654,7 @@ void policy_load()
 	}
 }
 
+
 /*
 *	THREAD to process remote queries
 */
@@ -654,6 +662,7 @@ void policy_load()
 void *eard_dynamic_configuration(void *tmp)
 {
 	my_tmp = (char *) tmp;
+	int ret;
 
 	verbose(VRAPI, "RemoteAPI thread UP");
 
@@ -667,6 +676,14 @@ void *eard_dynamic_configuration(void *tmp)
     error("Error initializing energy in %s thread", TH_NAME);
   }
 
+	#if DYN_PAR
+	if (init_active_connections_list()!=EAR_SUCCESS){
+		error("Error initializing remote connections data, remore requests, remote connections won't be accepted");
+	}	
+  if ((ret=pthread_create(&act_conn_th, NULL, process_remote_req_th, NULL))){
+    error("error creating thread to process remore requests, remote connections won't be accepted");
+  }
+	#endif
 
 	num_f = frequency_get_num_pstates();
 	f_list = frequency_get_freq_rank_list();
@@ -703,8 +720,14 @@ void *eard_dynamic_configuration(void *tmp)
 				error("Panic, we cannot create socket for connection again,exiting");
 			}
 		} else {
+			#if !DYN_PAR
 			process_remote_requests(eards_client);
 			close(eards_client);
+			#else
+			if (notify_new_connection(eards_client)!=EAR_SUCCESS){
+				error("Notifying new remote connection for processing");
+			}
+			#endif
 		}
 	} while (eard_must_exit == 0);
 	warning("eard_dynamic_configuration exiting\n");
