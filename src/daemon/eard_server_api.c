@@ -155,8 +155,14 @@ int read_command(int s,request_t *command)
 	if (ret<0){
 		error("read_command error errno %s",strerror(errno));
 		command->req=NO_COMMAND;
+		#if DYN_PAR
+		if (errno == EPIPE) return EAR_SOCK_DISCONNECTED;
+		#endif
 		return command->req;
 	}
+	#if DYN_PAR
+	if (ret == 0) return EAR_SOCK_DISCONNECTED;
+	#endif
 	pending-=ret;
 	done=ret;
 	while((ret>0) && (pending>0)){

@@ -67,5 +67,5 @@
 
 #define POWERCAP 1
 #define POWERCAP_EXT 0
-#define DYN_PAR 0
+#define DYN_PAR 1
 #endif //EAR_CONFIG_DEV_H

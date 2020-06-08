@@ -380,6 +380,7 @@ void dyncon_get_status(int fd, request_t *command) {
 		write(fd, &return_status, sizeof(return_status));
 		return;
 	}
+	sleep(5);
 	powermon_get_status(&status[num_status - 1]);
 #ifdef NEW_STATUS
     send_data(fd, sizeof(status_t) * num_status, (char *)status, EAR_TYPE_STATUS);
@@ -525,12 +526,17 @@ void dyncon_set_risk(int fd, request_t *command)
 	verbose(1,"New max frequency is %lu pstate=%lu rescheduling %u",new_max_freq,my_node_conf->max_pstate,resched_conf->force_rescheduling);
 }
 
-void process_remote_requests(int clientfd) {
+state_t process_remote_requests(int clientfd) {
 	request_t command;
 	uint req;
 	long ack = EAR_SUCCESS;
 	verbose(VRAPI, "connection received");
-	req = read_command(clientfd, &command);
+	memset(&command,0,sizeof(request_t));
+	command.req=NO_COMMAND;
+	req = (int) read_command(clientfd, &command);
+	#if DYN_PAR
+	if (req == EAR_SOCK_DISCONNECTED) return req;
+	#endif
 	/* New job and end job are different */
 	/* Is it necesary */
 	if (req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB) {
@@ -542,7 +548,7 @@ void process_remote_requests(int clientfd) {
 				last_dist = command.node_dist;
 				propagate_req(&command, my_cluster_conf.eard.port);
 			}
-			return;
+			return EAR_SUCCESS;
 		}
 	}
 	/**/
@@ -607,7 +613,7 @@ void process_remote_requests(int clientfd) {
 		case EAR_RC_STATUS:
 			verbose(VRAPI + 1, "Status received");
 			dyncon_get_status(clientfd, &command);
-			return;
+			return EAR_SUCCESS;
 			break;
 		case EAR_RC_RED_POWER:
 		case EAR_RC_GET_POWER:
@@ -619,14 +625,14 @@ void process_remote_requests(int clientfd) {
 		case EAR_RC_SET_RISK:
 			verbose(1,"set risk command received");
 			dyncon_set_risk(clientfd, &command);
-			return;
+			return EAR_SUCCESS;
 			break;
         case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd, &command);
-            return;
+            return EAR_SUCCESS;
 		case EAR_RC_RELEASE_IDLE:
             dyncon_release_idle_power(clientfd, &command);
-            return;
+            return EAR_SUCCESS;
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;
@@ -637,6 +643,7 @@ void process_remote_requests(int clientfd) {
 		verbose(VRAPI + 1, "command=%d propagated distance=%d", req, command.node_dist);
 		propagate_req(&command, my_cluster_conf.eard.port);
 	}
+	return EAR_SUCCESS;
 }
 
 void policy_load()

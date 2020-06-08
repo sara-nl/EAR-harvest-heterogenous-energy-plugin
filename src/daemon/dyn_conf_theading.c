@@ -134,6 +134,7 @@ void check_sockets(fd_set *fdlist)
 	struct stat fdstat;
 	for (i=0;i<max_fd;i++){
 		if (FD_ISSET(i,fdlist)){
+			debug("Validating socket %d",i);
 			if (fstat(i,&fdstat)<0){
 				remove_remote_connection(i);
 			}
@@ -142,11 +143,12 @@ void check_sockets(fd_set *fdlist)
 }
 
 /************* This thread will process the remote requests */
-extern void process_remote_requests(int clientfd);
+extern state_t process_remote_requests(int clientfd);
 void * process_remote_req_th(void * arg)
 {
 	int i;
 	int numfds_ready;
+	state_t ret;
 	debug("Thread to process remote requests created ");
 	rfds_sys=rfds;
   while ((numfds_ready = select(max_fd, &rfds_sys, NULL, NULL, NULL)) && (eard_must_exit == 0))
@@ -154,11 +156,13 @@ void * process_remote_req_th(void * arg)
 		if (numfds_ready > 0) {
 			/* This is the normal use case */
       for (i = 0; i < max_fd; i++) {
-          if (FD_ISSET(i, &rfds)){
+          if (FD_ISSET(i, &rfds_sys)){
+						debug("Channel %d ready for reading",i);
 						if (i == pipe_for_new_conn[0]){ 
 							add_new_connection();
 						}else{ 
-							process_remote_requests(i);
+							ret=process_remote_requests(i);
+							if (ret != EAR_SUCCESS) remove_remote_connection(i);
 						}
           }   
       } 
@@ -170,7 +174,8 @@ void * process_remote_req_th(void * arg)
 				if (errno == EINTR){
 					debug("Signal received in remote commads");
 				}else if (errno == EBADF){
-					check_sockets(&rfds_sys);
+					debug("EBADF error detected, validating fds");
+					check_sockets(&rfds);
 				}else{
 					error("Unexpected error in processing remote connections %s ",strerror(errno));
 				}

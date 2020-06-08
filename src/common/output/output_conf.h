@@ -46,7 +46,7 @@
 #define VNODEPMON   1
 #define VJOBPMON    1
 /* Used in dynamic_configuration */
-#define VRAPI 2
+#define VRAPI 0
 /* Used in eard_api.c */
 #define VAPI    2
 /* Used in checkpoint */
