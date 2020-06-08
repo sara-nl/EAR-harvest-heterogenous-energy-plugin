@@ -37,11 +37,42 @@
 #include <common/output/debug.h>
 #include <metrics/gpu/gpu/nvml.h>
 
+const char *nvml_names[] =
+{
+	"nvmlInit_v2",
+	"nvmlDeviceGetCount_v2",
+	"nvmlDeviceGetHandleByIndex_v2",
+	"nvmlDeviceGetPowerManagementMode",
+	"nvmlDeviceGetPowerUsage",
+	"nvmlDeviceGetClockInfo",
+	"nvmlDeviceGetTemperature",
+	"nvmlDeviceGetUtilizationRates",
+	"nvmlDeviceGetComputeRunningProcesses",
+	"nvmlErrorString",
+};
+
+typedef struct nvml_s
+{
+	nvmlReturn_t (*Init)		(void);
+	nvmlReturn_t (*DevCount)	(uint *deviceCount);
+	nvmlReturn_t (*DevHandle)	(uint index, nvmlDevice_t *device);
+	nvmlReturn_t (*DevMode)		(nvmlDevice_t device, nvmlEnableState_t *mode);
+	nvmlReturn_t (*DevPower)	(nvmlDevice_t device, uint *power);
+	nvmlReturn_t (*DevClocks)	(nvmlDevice_t device, nvmlClockType_t type, uint *clock);
+	nvmlReturn_t (*DevTemp)		(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, uint *temp);
+	nvmlReturn_t (*DevUtil)		(nvmlDevice_t device, nvmlUtilization_t *utilization);
+	nvmlReturn_t (*DevProcs)	(nvmlDevice_t device, uint *infoCount, nvmlProcessInfo_t *infos);
+	char* (*ErrorString)		(nvmlReturn_t result);
+} nvml_t;
+
+#define NVML_N 10
+
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static suscription_t *sus;
 static uint initialized;
 static uint dev_count;
 static uint bursting;
+static nvml_t nvml;
 static gpu_t *pool;
 
 static struct error_s {
@@ -58,8 +89,37 @@ static struct error_s {
 	.gpus_not     = "no GPUs detected"
 };
 
-// status -> dlopen -> count -> init_prime
-// init -> count -> init_prime
+static int load_test(char *path)
+{
+	void *libnvml;
+	int error;
+	int i;
+
+	//
+	debug("trying to acces to %s", path);
+	if (access(path, X_OK) != 0) {
+		return 0;
+	}
+	if ((libnvml = dlopen(path, RTLD_NOW | RTLD_LOCAL)) == NULL) {
+		return 0;
+	}
+	debug("dlopen ok");
+
+	//
+	symplug_join(libnvml, (void **) &nvml, nvml_names, NVML_N);
+
+	for(i = 0, error = 0; i < MPIC_N; ++i) {
+		debug("symbol %s: %d", nvml_names[i], (nvml[i] == NULL));
+		error += (nvml[i] == NULL);
+	}
+	if (error > 0) {
+		memset(nvml, 0, sizeof(nvml_t));
+		dlclose(libnvml);
+		return 0;
+	}
+
+	return 1;
+}
 
 static state_t nvml_init_prime()
 {
@@ -70,14 +130,22 @@ static state_t nvml_init_prime()
 		pthread_mutex_unlock(&lock);
 		return EAR_SUCCESS;
 	}
-	dev_count = 0;
-	if ((r = nvmlInit()) != NVML_SUCCESS) {
-		pthread_mutex_unlock(&lock);
-		return_msg(EAR_ERROR, (char *) nvmlErrorString(r));
+#ifdef LOADER
+	int load = 0;
+	if      (load_test(CUDA_BASE)) load = 1;
+	else if (load_test("/usr/libnvidia-ml") load = 1;
+	if (!load) {
+		return EAR_ERROR;
 	}
-	if ((r = nvmlDeviceGetCount_v2(&dev_count)) != NVML_SUCCESS) {
+#endif
+	dev_count = 0;
+	if ((r = nvml.Init()) != NVML_SUCCESS) {
 		pthread_mutex_unlock(&lock);
-		return_msg(EAR_ERROR, (char *) nvmlErrorString(r));
+		return_msg(EAR_ERROR, (char *) nvml.ErrorString(r));
+	}
+	if ((r = nvml.DevCount(&dev_count)) != NVML_SUCCESS) {
+		pthread_mutex_unlock(&lock);
+		return_msg(EAR_ERROR, (char *) nvml.ErrorString(r));
 	}
 	if (((int) dev_count) <= 0) {
 		pthread_mutex_unlock(&lock);
@@ -98,7 +166,6 @@ static state_t nvml_init_prime()
 		pthread_mutex_unlock(&lock);
 		return s;
 	}
-	debug("INITIALIZED");
 	initialized = 1;
 	pthread_mutex_unlock(&lock);
 	
@@ -165,10 +232,10 @@ state_t nvml_pool(void *p)
 		int s;
 
 		// Testing if all is right
-		if ((s = nvmlDeviceGetHandleByIndex(i, &device)) != NVML_SUCCESS) {
+		if ((s = nvml.DevHandle(i, &device)) != NVML_SUCCESS) {
 			continue;
 		}
-		if ((s = nvmlDeviceGetPowerManagementMode(device, &mode)) != NVML_SUCCESS) {
+		if ((s = nvml.DevMode(device, &mode)) != NVML_SUCCESS) {
 			continue;
 		}
 		if (mode != NVML_FEATURE_ENABLED) {
@@ -184,12 +251,12 @@ state_t nvml_pool(void *p)
 		uint power_mw;
 
 		// Getting the metrics by calling NVML (no MEM temp)
-		s = nvmlDeviceGetPowerUsage(device, &power_mw);
-		s = nvmlDeviceGetClockInfo(device, NVML_CLOCK_MEM, &freq_mem_mhz);
-		s = nvmlDeviceGetClockInfo(device, NVML_CLOCK_SM , &freq_gpu_mhz);
-		s = nvmlDeviceGetTemperature(device, NVML_TEMPERATURE_GPU, &temp_gpu);
-		s = nvmlDeviceGetUtilizationRates(device, &util);
-		s = nvmlDeviceGetComputeRunningProcesses(device, &proc_count, procs);
+		s = nvml.DevPower(device, &power_mw);
+		s = nvml.DevClocks(device, NVML_CLOCK_MEM, &freq_mem_mhz);
+		s = nvml.DevClocks(device, NVML_CLOCK_SM , &freq_gpu_mhz);
+		s = nvml.DevTemp(device, NVML_TEMPERATURE_GPU, &temp_gpu);
+		s = nvml.DevUtil(device, &util);
+		s = nvml.DevProcs(device, &proc_count, procs);
 
 		// Pooling the data
 		pool[i].samples      += 1;
@@ -215,7 +282,6 @@ state_t nvml_pool(void *p)
 	if (working  > 0 && !monitor_is_bursting(sus)) {
 		debug("bursting");
 		monitor_burst(sus);
-		debug("bursting return");
 	}
 	if (working == 0 &&  monitor_is_bursting(sus)) {
 		debug("relaxing");

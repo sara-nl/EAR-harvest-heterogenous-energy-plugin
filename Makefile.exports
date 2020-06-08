@@ -17,6 +17,7 @@ export SLURM_CFLAGS
 export DB_BASE
 export DB_CFLAGS
 export DB_LDFLAGS
+export CUDA_BASE
 
 export ROOTDIR
 export SRCDIR
