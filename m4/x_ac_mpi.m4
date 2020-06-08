@@ -73,7 +73,7 @@ AC_DEFUN([X_AC_MPI],
 		echo checking for MPI CPPFLAGS... no
 	else
 		MPI_DIR=$_cv_mpi_dir_root
-        	MPI_CPPFLAGS="-I\$MPI_BASE$_cv_mpi_dir_incl"
+		MPI_CPPFLAGS="-I\$MPI_BASE$_cv_mpi_dir_incl"
 		echo checking for MPI CPPFLAGS... $MPI_CPPFLAGS
 	fi
 

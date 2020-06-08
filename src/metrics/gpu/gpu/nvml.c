@@ -27,14 +27,18 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 
 #include <nvml.h>
+#include <dlfcn.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <pthread.h>
 #include <common/types.h>
 #include <common/monitor.h>
 #include <common/output/debug.h>
+#include <common/system/symplug.h>
+#include <common/config/config_env.h>
 #include <metrics/gpu/gpu/nvml.h>
 
 const char *nvml_names[] =
@@ -81,26 +85,30 @@ static struct error_s {
 	char *null_context;
 	char *null_data;
 	char *gpus_not;
+	char *dlopen;
 } Error = {
 	.init         = "context already initialized or not empty",
 	.init_not     = "context not initialized",
 	.null_context = "context pointer is NULL",
 	.null_data    = "data pointer is NULL",
-	.gpus_not     = "no GPUs detected"
+	.gpus_not     = "no GPUs detected",
+	.dlopen       = "error during dlopen",
 };
 
 static int load_test(char *path)
 {
+	void **p = (void **) &nvml;
 	void *libnvml;
 	int error;
 	int i;
 
 	//
-	debug("trying to acces to %s", path);
+	debug("trying to access to '%s'", path);
 	if (access(path, X_OK) != 0) {
 		return 0;
 	}
 	if ((libnvml = dlopen(path, RTLD_NOW | RTLD_LOCAL)) == NULL) {
+		debug("dlopen fail");
 		return 0;
 	}
 	debug("dlopen ok");
@@ -108,17 +116,29 @@ static int load_test(char *path)
 	//
 	symplug_join(libnvml, (void **) &nvml, nvml_names, NVML_N);
 
-	for(i = 0, error = 0; i < MPIC_N; ++i) {
-		debug("symbol %s: %d", nvml_names[i], (nvml[i] == NULL));
-		error += (nvml[i] == NULL);
+	for(i = 0, error = 0; i < NVML_N; ++i) {
+		debug("symbol %s: %d", nvml_names[i], (p[i] != NULL));
+		error += (p[i] == NULL);
 	}
 	if (error > 0) {
-		memset(nvml, 0, sizeof(nvml_t));
+		memset((void *) &nvml, 0, sizeof(nvml_t));
 		dlclose(libnvml);
 		return 0;
 	}
 
 	return 1;
+}
+
+static state_t nvml_load_library()
+{
+	int load = 0;
+	if (load_test(getenv(HACK_FILE_NVML))) return 1;
+	if (load_test(CUDA_BASE "/targets/x86_64-linux/lib/libnvidia-ml.so")) return 1;
+	if (load_test(CUDA_BASE "/lib64/libnvidia-ml.so")) return 1;
+	if (load_test(CUDA_BASE "/lib/libnvidia-ml.so")) return 1;
+	if (load_test("/usr/lib64/libnvidia-ml.so")) return 1;
+	if (load_test("/usr/lib/libnvidia-ml.so")) return 1;
+	return 0;	
 }
 
 static state_t nvml_init_prime()
@@ -130,14 +150,9 @@ static state_t nvml_init_prime()
 		pthread_mutex_unlock(&lock);
 		return EAR_SUCCESS;
 	}
-#ifdef LOADER
-	int load = 0;
-	if      (load_test(CUDA_BASE)) load = 1;
-	else if (load_test("/usr/libnvidia-ml") load = 1;
-	if (!load) {
-		return EAR_ERROR;
+	if (!nvml_load_library()) {
+		return_msg(EAR_ERROR, Error.dlopen);
 	}
-#endif
 	dev_count = 0;
 	if ((r = nvml.Init()) != NVML_SUCCESS) {
 		pthread_mutex_unlock(&lock);
@@ -319,8 +334,6 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	ullong time_i;
 	double time_f;
 
-	debug("INITIALIZED");
-
 	// Cleaning
 	nvml_data_null(d3);
 
@@ -348,10 +361,12 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	d3->energy_j     = (d3->power_w)     * time_f;
 	d3->working      = (d2->working);
 	//
+#if 0
 	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu_mhz, d2->freq_gpu_mhz, d1->freq_gpu_mhz);
 	debug("%d freq mem (MHz), %lu = %lu - %lu", i, d3->freq_mem_mhz, d2->freq_mem_mhz, d1->freq_mem_mhz);
 	debug("%d power    (W)  , %0.2lf = %0.2lf - %0.2lf", i, d3->power_w, d2->power_w, d1->power_w);
 	debug("%d energy   (J)  , %0.2lf = %0.2lf - %0.2lf", i, d3->energy_j, d2->energy_j, d1->energy_j);
+#endif
 }
 
 state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
@@ -363,6 +378,9 @@ state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 	for (i = 0; i < dev_count; i++) {
 		nvml_read_diff(data2, data1, data_diff, i);
 	}
+	#ifdef SHOW_DEBUGS
+	nvml_data_print(data_diff, debug_channel);
+	#endif
 	return EAR_SUCCESS;
 }
 
@@ -397,7 +415,6 @@ state_t nvml_data_null(gpu_t *data)
 
 state_t nvml_data_copy(gpu_t *data_dst, gpu_t *data_src)
 {
-	debug("DATACOPY");
 	if (data_dst == NULL || data_src == NULL) {
 		return_msg(EAR_ERROR, Error.null_data);
 	}
@@ -413,13 +430,13 @@ state_t nvml_data_print(gpu_t *data, int fd)
 
 	for (i = 0; i < dev_count; ++i)
 	{
-		dprintf(fd, "gpu%u: %lu;%0.2lf;%0.2lf;%lu;%lu;%lu;%lu;%lu;%lu;%u;%lu\n",
-		i                 , data->time,
-		data->energy_j    , data->power_w,
-		data->freq_gpu_mhz, data->freq_mem_mhz,
-		data->util_gpu    , data->util_mem,
-		data->temp_gpu    , data->temp_mem,
-		data->working     , data->samples);
+		dprintf(fd, "gpu%u: %0.2lfJ;%0.2lfW;%luMHz;%luMHz;%lu%;%lu%;%luº;%luº;%u;%lu\n",
+		i                   ,
+		data[i].energy_j    , data[i].power_w,
+		data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+		data[i].util_gpu    , data[i].util_mem,
+		data[i].temp_gpu    , data[i].temp_mem,
+		data[i].working     , data[i].samples);
 	}
 	
 	return EAR_SUCCESS;

@@ -7,6 +7,7 @@ m4_include([m4/x_ac_pgsql.m4])
 m4_include([m4/x_ac_mysql.m4])
 m4_include([m4/x_ac_slurm.m4])
 m4_include([m4/x_ac_papi.m4])
+m4_include([m4/x_ac_cuda.m4])
 m4_include([m4/x_ac_gsl.m4])
 # m4_include([m4/x_ac_mpi.m4])
 
@@ -110,6 +111,14 @@ X_AC_PGSQL
 #
 
 X_AC_MYSQL
+
+
+#########
+# CUDA  #
+#########
+#
+
+X_AC_CUDA
 
 #########
 # MPI   #

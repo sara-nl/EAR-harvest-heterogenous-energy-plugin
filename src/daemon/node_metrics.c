@@ -145,8 +145,6 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
 	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
 
-	printf("temps %llu %llu\n", nm->temp[0], nm->temp[1]);
-
 	// CPU/IMC Frequency
 	state_assert(s, freq_cpu_read(&nm->freq_cpu),);
 	state_assert(s, freq_imc_read(&nm->freq_imc),);

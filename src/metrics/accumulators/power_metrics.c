@@ -37,7 +37,7 @@
 #include <sys/types.h>
 #include <common/config.h>
 #include <common/monitor.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
@@ -412,7 +412,7 @@ void print_power(power_data_t *my_power)
 	current_t = localtime(&(my_power->end));
 	strftime(s, sizeof(s), "%c", current_t);
 
-	printf("%s: avg. power (W) for node %.2lf, for DRAM %.2lf, for CPU %.2lf, for GPU %.2lf\n",
+	verbose(0, "%s: avg. power (W) for node %.2lf, for DRAM %.2lf, for CPU %.2lf, for GPU %.2lf",
 		   s, my_power->avg_dc, dram_power, pack_power, gpu_power);
 }
 

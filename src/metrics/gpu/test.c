@@ -60,10 +60,6 @@ int main(int argc, char *argv[])
 			printf("gpu_read_copy returned %d (%s)\n", s, state_msg);
 			return 0;
 		}
-
-		for (d = 0; d < dev_count; ++d) {
-			printf("dev%d, data %lf\n", d, data3[d].power_w);
-		}
 	}
 
 	return 0;

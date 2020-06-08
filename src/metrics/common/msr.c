@@ -93,7 +93,7 @@ state_t msr_open(uint cpu)
 	if (counters[cpu] == 0) {
 		sprintf(msr_file_name, "/dev/cpu/%d/msr", cpu);
 		fds[cpu] = open(msr_file_name, O_RDWR);
-		verbose(0, "msr open %d", fds[cpu]);
+		debug("msr open %d", fds[cpu]);
 	}
 		
 	if (fds[cpu] < 0) {
