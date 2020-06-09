@@ -102,31 +102,31 @@ typedef struct eard_conf
 #define DECON_LIMITS	3
 
 typedef struct eargm_conf
-{
-	uint 	verbose;		/* default 1 */
-	uint	use_aggregation; /* Use aggregated metrics.Default 1 */
-	ulong	t1;				/* default 60 seconds */
-	ulong	t2;				/* default 600 seconds */
-	ulong 	energy;			/* mandatory */
-	/* PowerCap */
-	#if POWERCAP
-	ulong power;
-	ulong t1_power;
-	ulong powercap_mode;	/* 1=auto by default, 0=monitoring_only */
-	ulong defcon_power_limit;		/* Percentages from the maximum to execute the action (0..100)*/
-	char powercap_action[GENERIC_NAME];	/* Script file for powercap actions */
-	#endif
-	/****/
-	uint	units;			/* 0=J, 1=KJ=default, 2=MJ, or Watts when using Power */	
-	uint 	policy;			/* 0=MaxEnergy (default), 1=MaxPower ( not yet implemented) */
-	uint 	port;			/* mandatory */
-	uint 	mode;			/* refers to energy budget mode */
-	uint	defcon_limits[3];
-	uint	grace_periods;
-	char 	mail[GENERIC_NAME];
+{ 
+  uint  verbose;    /* default 1 */
+  uint  use_aggregation; /* Use aggregated metrics.Default 1 */
+  ulong t1;       /* default 60 seconds */
+  ulong t2;       /* default 600 seconds */
+  ulong   energy;     /* mandatory */
+  /* PowerCap */
+  #if POWERCAP
+  ulong power;
+  ulong t1_power;
+  ulong powercap_mode;  /* 1=auto by default, 0=monitoring_only */
+  ulong defcon_power_limit;   /* Percentages from the maximum to execute the action (0..100)*/
+  char powercap_action[GENERIC_NAME]; /* Script file for powercap actions */
+  #endif
+  /****/
+  uint  units;      /* 0=J, 1=KJ=default, 2=MJ, or Watts when using Power */  
+  uint  policy;     /* 0=MaxEnergy (default), 1=MaxPower ( not yet implemented) */
+  uint  port;     /* mandatory */
+  uint  mode;     /* refers to energy budget mode */
+  uint  defcon_limits[3];
+  uint  grace_periods;
+  char  mail[GENERIC_NAME];
   char  host[GENERIC_NAME];
-	char  energycap_action[GENERIC_NAME]; /* This action is execute in any WARNING level */
-	uint  use_log;
+  char  energycap_action[GENERIC_NAME]; /* This action is execute in any WARNING level */
+  uint  use_log;
 } eargm_conf_t;
 
 typedef struct eardb_conf 

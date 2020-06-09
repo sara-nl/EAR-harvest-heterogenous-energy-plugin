@@ -33,6 +33,7 @@
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/configuration/cluster_conf_eargm.h>
 
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
 {
@@ -647,6 +648,11 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		token = strtok(line, "=");
 		strtoup(token);
 
+
+		if (EARGM_token(token) == EAR_SUCCESS){
+			EARGM_parse_token(conf,token);
+			continue;
+		}
 		if (!strcmp(token, "DEFAULTPOWERPOLICY"))
 		{
 			token = strtok(NULL, "=");
@@ -1072,6 +1078,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->db_manager.use_log = atoi(token);
 		}
+		#if 0
 
 		//GLOBAL MANAGER
 		else if (!strcmp(token, "GLOBALMANAGERVERBOSE") || !strcmp(token, "EARGMVERBOSE"))
@@ -1206,6 +1213,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->eargm.use_log = atoi(token);
         }
+			#endif
         //COMMON CONFIG
         else if (!strcmp(token, "NETWORKEXTENSION"))
         {

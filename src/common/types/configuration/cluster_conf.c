@@ -39,6 +39,7 @@
 #include <common/output/verbose.h>
 #include <common/sizes.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/environment.h>
 
 
@@ -548,10 +549,6 @@ void copy_eard_conf(eard_conf_t *dest,eard_conf_t *src)
 {
 	memcpy(dest,src,sizeof(eard_conf_t));
 }
-void copy_eargmd_conf(eargm_conf_t *dest,eargm_conf_t *src)
-{
-	memcpy(dest,src,sizeof(eargm_conf_t));
-}
 void copy_eardb_conf(db_conf_t *dest,db_conf_t *src)
 {
 	memcpy(dest,src,sizeof(db_conf_t));
@@ -620,34 +617,6 @@ void set_default_earlib_conf(earlib_conf_t *earlibc)
 	earlibc->check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 }
 
-void set_default_eargm_conf(eargm_conf_t *eargmc)
-{
-	eargmc->verbose=1;
-	eargmc->use_aggregation=1;
-	eargmc->t1=DEFAULT_T1;
-	eargmc->t2=DEFAULT_T2;
-	eargmc->energy=DEFAULT_T2*DEFAULT_POWER;
-	eargmc->units=1;
-	eargmc->policy=MAXPOWER;
-	eargmc->port=EARGM_PORT_NUMBER;
-	eargmc->mode=0;
-	eargmc->defcon_limits[0]=85;
-	eargmc->defcon_limits[1]=90;
-	eargmc->defcon_limits[2]=95;
-	eargmc->grace_periods=GRACE_T1;
-	strcpy(eargmc->mail,"nomail");
-	eargmc->use_log=EARGMD_FILE_LOG;
-	/* Values for POWERCAP */
-	#if POWERCAP
-	eargmc->power=EARGM_DEF_POWERCAP_LIMIT;
-	eargmc->t1_power=EARGM_DEF_T1_POWER;
-	eargmc->powercap_mode=EARGM_POWERCAP_DEF_MODE;	/* 1=auto by default, 0=monitoring_only */
-	sprintf(eargmc->powercap_action,EARGM_POWERCAP_DEF_ACTION);	
-	sprintf(eargmc->energycap_action,EARGM_ENERGYCAP_DEF_ACTION);	
-	eargmc->defcon_power_limit=EARGM_POWERCAP_DEF_ACTION_LIMIT;
-	#endif
-
-}
 
 void set_default_db_conf(db_conf_t *db_conf)
 {
