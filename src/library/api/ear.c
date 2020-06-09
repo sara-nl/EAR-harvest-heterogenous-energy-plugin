@@ -28,9 +28,6 @@
  */
 #define _GNU_SOURCE
 
-#if MPI
-#include <mpi.h>
-#endif
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -57,7 +54,6 @@
 #include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
 #include <common/hardware/hardware_info.h>
-// #include <library/api/mpi.h>
 
 #include <library/common/externs_alloc.h>
 #include <library/common/global_comm.h>
@@ -76,6 +72,10 @@
 #include <daemon/shared_configuration.h>
 
 #include <metrics/common/papi.h>
+#if MPI
+#include <mpi.h>
+#include <library/api/mpi.h>
+#endif
 
 // Statics
 #define BUFFSIZE 			128
@@ -897,6 +897,8 @@ void ear_finalize()
 	}
 }
 
+#if MPI
+
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest);
 void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
 
@@ -1140,6 +1142,8 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
       }
     } //ear_whole_app
 }
+
+#endif
 
 /************************** MANUAL API *******************/
 
