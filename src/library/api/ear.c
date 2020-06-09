@@ -47,6 +47,7 @@
 
 //#define SHOW_DEBUGS 0
 #include <common/config.h>
+#include <common/config/config_env.h>
 #include <common/colors.h>
 #include <common/environment.h>
 #include <common/output/verbose.h>
@@ -75,7 +76,6 @@
 #include <daemon/shared_configuration.h>
 
 #include <metrics/common/papi.h>
-//#include <schedulers/sched_definitions.h>
 
 // Statics
 #define BUFFSIZE 			128

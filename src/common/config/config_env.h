@@ -58,4 +58,10 @@
 #define HACK_FILE_LOAD "SLURM_HACK_LOADER"
 #define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION"
 
+
+#define NULL_JOB_ID getpid()
+#define NULL_STEPID (0xfffffffe)
+#define NULL_ACCOUNT "NO_SLURM_ACCOUNT"
+
+
 #endif //CONFIG_ENVIRONMENT_H
