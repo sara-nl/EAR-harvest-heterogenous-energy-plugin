@@ -75,7 +75,7 @@
 #include <daemon/shared_configuration.h>
 
 #include <metrics/common/papi.h>
-#include <schedulers/sched_definitions.h>
+//#include <schedulers/sched_definitions.h>
 
 // Statics
 #define BUFFSIZE 			128
