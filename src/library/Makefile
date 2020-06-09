@@ -1,5 +1,12 @@
-CFLAGS  = -I$(SRCDIR) $(PAPI_CFLAGS) 
-LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl
+MPI_API = 1
+ifdef MPI_API 
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread -DMPI=1
+else
+CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) $(PAPI_CFLAGS) -pthread -DMPI=0
+MPI_VERSION = seq
+endif
+export CFLAGS
+LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl -lm
 
 ########
 
@@ -21,31 +28,41 @@ endif
 comm_OBJS = \
     $(SRCDIR)/daemon/eard_api.o \
     $(SRCDIR)/daemon/shared_configuration.o \
+    $(SRCDIR)/daemon/powercap_status.o \
     $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a
 
+api_OBJS=api/ear.o
+
 mpix_OBJS = \
-    api/ear.o \
     api/ear_mpi.o \
     api/ear_default.o \
     api/mpic.o \
     api/mpif.o \
+		common/global_comm.o
 
 core_OBJS = \
     metrics/metrics.o \
     models/models.o \
     policies/policy.o \
+    policies/pc_suport.o \
     states/states.o \
     states/states_periodic.o \
     tracer/tracer.o \
-    dynais/dynais.a
+    dynais/dynais.a \
+		common/library_shared_data.o 
 
 ######## RULES
 
 all: all.components $(libs_OBJS)
 
-%.so: $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
-	$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $(mpix_OBJS) $(core_OBJS) $(comm_OBJS) $(LDFLAGS)
+ifdef MPI_API
+%.so: $(api_OBJS)  $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
+	$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $(api_OBJS) $(mpix_OBJS) $(core_OBJS) $(comm_OBJS) $(LDFLAGS)
+else
+%.so:  $(api_OBJS)  $(core_OBJS) $(comm_OBJS)
+	$(CC) $(CC_FLAGS) -o $*.$(ext) $(api_OBJS) $(core_OBJS) $(comm_OBJS) $(LDFLAGS)
+endif
 
 ######## OPTIONS
 
@@ -66,6 +83,7 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'policies'   $* || exit
 	@ $(MAKE) -C 'states'     $* || exit
 	@ $(MAKE) -C 'tracer'     $* || exit
+	@ $(MAKE) -C 'common'     $* || exit
 
 ######## DEPENDENCIES
 

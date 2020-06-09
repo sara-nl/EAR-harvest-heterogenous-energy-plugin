@@ -58,6 +58,7 @@ state_t energy_accumulated(ehandler_t *eh,unsigned long *e,edata_t init,edata_t 
 
 state_t energy_to_str(ehandler_t *eh,char *str,edata_t e);
 
+state_t energy_set_power_limit(ehandler_t *eh,ulong limit,ulong target);
 
 #endif //EAR_ENERGY_H
 

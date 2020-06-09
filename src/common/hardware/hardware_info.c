@@ -26,15 +26,44 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
-
+#define _GNU_SOURCE
 #include <time.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sched.h>
 #include <common/hardware/topology.h>
 #include <common/hardware/hardware_info.h>
+
+void print_affinity_mask(topology_t *topo) 
+{
+    cpu_set_t mask;
+		int i;
+    if (sched_getaffinity(0, sizeof(cpu_set_t), &mask) == -1) return;
+    fprintf(stdout,"sched_getaffinity = ");
+    for (i = 0; i < topo->cpu_count; i++) {
+        fprintf(stdout,"%d=%d ", i,CPU_ISSET(i, &mask));
+    }
+    printf("\n");
+}
+
+state_t is_affinity_set(topology_t *topo,int pid,int *is_set)
+{
+	cpu_set_t mask;
+	*is_set=0;
+	if (sched_getaffinity(pid,sizeof(cpu_set_t), &mask) == -1) return EAR_ERROR;
+	int i;
+	for (i = 0; i < topo->cpu_count; i++) {
+		if (!CPU_ISSET(i, &mask)) {
+			*is_set=1;
+			return EAR_SUCCESS;	
+		}
+	}
+	return EAR_SUCCESS;
+}
+
 
 static int file_is_accessible(const char *path)
 {

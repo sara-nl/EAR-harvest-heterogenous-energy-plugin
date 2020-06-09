@@ -38,6 +38,7 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/types/log_eard.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 
 #if USE_DB

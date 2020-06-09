@@ -37,6 +37,9 @@
 #include <signal.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#define _GNU_SOURCE             
+#include <sched.h>
+
 #include <common/config.h>
 #include <common/states.h>
 //#define SHOW_DEBUGS 1
@@ -613,6 +616,36 @@ ulong eards_change_freq(ulong newfreq)
 
 	return real_freq;
 }
+unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t mask)
+{
+  ulong real_freq = EAR_ERROR;
+  struct daemon_req req;
+  if (!app_connected) return newfreq;
+  req.req_service = SET_FREQ_WITH_MASK;
+  req.sec=create_sec_tag();
+  req.req_data.f_mask.f = newfreq;
+  req.req_data.f_mask.mask= mask;
+
+  debug( "NewFreq %lu requested maskk %lu",  newfreq,(unsigned long)mask);
+
+  if (ear_fd_req[freq_req] >= 0)
+  {
+    if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)) , sizeof(req),
+       "ERROR writing request for changing frequency")) return EAR_ERROR;
+
+    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)&real_freq, sizeof(ulong)) , sizeof(ulong),
+      "ERROR reading ack for changing frequency ")) return EAR_ERROR;
+
+    debug("Frequency_changed to %lu",  real_freq);
+  } else {
+    real_freq = 0;
+    debug( "change_freq service not provided");
+  }
+
+  return real_freq;
+
+}
+
 
 // END FREQUENCY SERVICES
 //////////////// UNCORE REQUESTS

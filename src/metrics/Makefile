@@ -34,9 +34,8 @@ mets_OBJS = \
     $(SRCDIR)/metrics/frequency/imc/intel63.o \
     $(SRCDIR)/metrics/stalls/stalls.o \
     $(SRCDIR)/metrics/stalls/cpu/papi.o \
-    $(SRCDIR)/metrics/temperature/temperature.o
+    $(SRCDIR)/metrics/temperature/temperature.o 
 
-# $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
 
 ######## RULES
 

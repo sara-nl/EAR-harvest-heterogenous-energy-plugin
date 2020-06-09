@@ -180,6 +180,7 @@ void stop_flops_metrics(long long *flops, long long *f_operations)
 	int sets,ev,retval;
 
 	*flops = 0;
+	memset(f_operations,0,sizeof(long long)*FLOPS_SETS*FLOPS_EVS);
 	if (!flops_supported) return;
 
 	for (sets=0;sets<FLOPS_SETS;sets++)

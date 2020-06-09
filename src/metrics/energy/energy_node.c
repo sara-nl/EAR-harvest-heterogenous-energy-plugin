@@ -28,12 +28,13 @@
 */
 
 #include <common/config.h>
-// #define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>
 #include <common/hardware/hardware_info.h>
 #include <metrics/energy/energy_node.h>
+#include <common/types/configuration/cluster_conf.h>
 
 struct energy_op
 {
@@ -47,10 +48,11 @@ struct energy_op
 	state_t (*units)							(uint *uints);
 	state_t (*accumulated)				(ulong *e,edata_t init, edata_t end);
 	state_t (*energy_to_str)			(char *str,edata_t end);
+	state_t (*power_limit)				(void *c, ulong limit,ulong target);
 } energy_ops;
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
-const int   energy_nops    = 10;
+const int   energy_nops    = 11;
 const char *energy_names[] = {
 	"energy_init",
 	"energy_dispose",
@@ -61,7 +63,8 @@ const char *energy_names[] = {
 	"energy_ac_read",
 	"energy_units",
 	"energy_accumulated",
-	"energy_to_str"
+	"energy_to_str",
+	"energy_power_limit"
 };
 
 state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
@@ -206,4 +209,9 @@ state_t energy_accumulated(ehandler_t *eh,unsigned long *e,edata_t init,edata_t 
 state_t energy_to_str(ehandler_t *eh,char *str,edata_t e)
 {
   preturn (energy_ops.energy_to_str,str,e );
+}
+
+state_t energy_set_power_limit(ehandler_t *eh,ulong limit,ulong target)
+{
+  preturn (energy_ops.power_limit, eh->context, limit ,target);
 }

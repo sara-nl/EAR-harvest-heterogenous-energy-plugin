@@ -36,8 +36,13 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/output/verbose.h>
+#include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
+#include <daemon/powercap_status.h>
+
+static uint last_pc=0;
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
@@ -54,13 +59,20 @@ state_t policy_init(polctx_t *c)
 }
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
+	ulong eff_f,f;
+	
 	*ready=1;
-	*new_freq=DEF_FREQ(c->app->def_freq);
+	f=DEF_FREQ(c->app->def_freq);
+	*new_freq=f;
+	
 	return EAR_SUCCESS;
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
 {
+	ulong eff_f;
+	uint power_status,next_status;
 	*ok=1;
+
 	return EAR_SUCCESS;
 }
 

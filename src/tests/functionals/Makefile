@@ -1,4 +1,5 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) $(DB_FLAGS)
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) $(DB_FLAGS) -lm
+LDFLAGS = -lm
 
 ######## FILES
 
@@ -12,16 +13,16 @@ BINS = ear_conf ips_check postgres_test temperature_check
 all: $(BINS)
 
 postgres_test: postgres_test.c $(SRCDIR)/common/libcommon.a
-	$(CC) $(CFLAGS) -o postgres_test $(DB_LDFLAGS) $^
+	$(CC) $(CFLAGS) -o postgres_test $(DB_LDFLAGS) $^ $(LDFLAGS)
 
 temperature_check: temperature_check.c $(SRCDIR)/metrics/libmetrics.a $(SRCDIR)/common/libcommon.a 
-	$(CC) $(CFLAGS) -o temperature_check $^
+	$(CC) $(CFLAGS) -o temperature_check $^ $(LDFLAGS)
 
 ear_conf: ear_conf.c $(SRCDIR)/common/libcommon.a
-	$(CC) $(CFLAGS) -o ear_conf $^
+	$(CC) $(CFLAGS) -o ear_conf $^ $(LDFLAGS)
 
 ips_check: ips_check.c $(ips_check_OBJS)
-	$(CC) $(CFLAGS) -o ips_check $^
+	$(CC) $(CFLAGS) -o ips_check $^ $(LDFLAGS)
 ######## OPTIONS
 
 clean:

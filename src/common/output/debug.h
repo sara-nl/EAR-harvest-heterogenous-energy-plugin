@@ -35,7 +35,7 @@
 
 int debug_channel	__attribute__((weak)) = 2;
 
-#ifdef SHOW_DEBUGS
+#if SHOW_DEBUGS
 #define debug(...) \
 { \
         dprintf(debug_channel, "%s: ", __FUNCTION__); \

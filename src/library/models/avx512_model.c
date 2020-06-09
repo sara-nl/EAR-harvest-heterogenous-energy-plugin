@@ -30,6 +30,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 #include <common/hardware/frequency.h>
@@ -46,11 +48,6 @@ static uint basic_model_init=0;
 static architecture_t arch;
 static int avx512_pstate=1,avx2_pstate=1;
 
-#ifdef SHOW_DEBUGS
-#define debug(...) fprintf(stderr, __VA_ARGS__); 
-#else
-#define debug(...) 
-#endif
 
 static int valid_range(ulong from,ulong to)
 {
@@ -71,8 +68,10 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 	num_pstates=myarch->pstates;
 	copy_arch_desc(&arch,myarch);
 	print_arch_desc(&arch);
+	VERB_SET_EN(0);
 	avx512_pstate=frequency_closest_pstate(arch.max_freq_avx512);
 	avx2_pstate=frequency_closest_pstate(arch.max_freq_avx2);
+	VERB_SET_EN(1);
 	debug("Pstate for maximum freq avx512 %d Pstate for maximum freq avx2 %d",avx512_pstate,avx2_pstate);
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
@@ -185,6 +184,7 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 	coefficient_t *coeff,*avx512_coeffs;
 	double power_nosimd,power_avx2=0,power_avx512=0,cpower;
 	double perc_avx512=0,perc_avx2=0;
+  debug("projct power init %d valid %d",basic_model_init,valid_range(from,to));
 	if ((basic_model_init) && (valid_range(from,to))){
 		coeff=&coefficients[from][to];
 		if (coeff->available){
@@ -197,7 +197,10 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 				}
 				cpower=power_nosimd*(1-perc_avx512)+power_avx512*perc_avx512;
 				*ppower=cpower;
+				debug("power projection from %lu to %lu power_nosimd %lf power avx512 %lf perc_avx512 %lf",from,to,
+				power_nosimd,power_avx512,perc_avx512);
 		}else{
+			debug("Coeffs from %lu to %lu not available",from,to);
 			*ppower=0;
 			st=EAR_ERROR;
 		}

@@ -6,8 +6,10 @@ gen_FOLDERS = $(DESTDIR)/bin \
               $(DESTDIR)/lib \
               $(DESTDIR)/lib/plugins \
               $(DESTDIR)/lib/plugins/energy \
+              $(DESTDIR)/lib/plugins/powercap \
               $(DESTDIR)/lib/plugins/models \
               $(DESTDIR)/lib/plugins/policies \
+              $(DESTDIR)/lib/plugins/eard_policies \
               $(DESTDIR)/lib/plugins/tracer \
               $(DESTDIR)/sbin
 

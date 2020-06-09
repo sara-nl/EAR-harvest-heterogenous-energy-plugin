@@ -44,6 +44,17 @@
 // 7: 512 double
 #define FLOPS_EVENTS 8
 
+typedef struct mini_sig
+{
+	float DC_power;
+	float GBS;
+	float CPI;
+	float Gflops;
+  float time;
+  ulong avg_f;
+  ulong def_f;
+}ssig_t;
+
 typedef struct signature
 {
     double DC_power;
@@ -82,5 +93,13 @@ void compute_vpi(double *vpi,signature_t *sig);
 
 void print_signature_fd_binary(int fd, signature_t *sig);
 void read_signature_fd_binary(int fd, signature_t *sig);
+
+void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN);
+void signature_print_simple_fd(int fd, signature_t *sig);
+
+void from_sig_to_mini(ssig_t *minis,signature_t *s);
+void copy_mini_sig(ssig_t *dst,ssig_t *src);
+void minis_to_str(ssig_t *s,char *b);
+
 
 #endif

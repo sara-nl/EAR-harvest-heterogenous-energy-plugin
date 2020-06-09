@@ -228,14 +228,14 @@ node_conf_t *get_node_conf(cluster_conf_t *my_conf,char *nodename)
 	return n;
 }
 
-char tag_id_exists(cluster_conf_t *conf, char *tag)
+int tag_id_exists(cluster_conf_t *conf, char *tag)
 {
     int i;
     if (tag == NULL) return 0;
     for (i = 0; i < conf->num_tags; i++)
-        if (!strcmp(tag, conf->tags[i].id)) return 1;
+        if (!strcmp(tag, conf->tags[i].id)) return i;
 
-    return 0;
+    return -1;
 
 }
 
@@ -298,8 +298,11 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
             {
                 for (j = 0; j < my_conf->islands[i].ranges[range_id].num_tags; j++)
                 {
-                    if (tag_id_exists(my_conf, my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]])) {
-                        tag_id = j;
+                    // tags for each island are stored in specific_tags
+                    // each range of an island stores the ids in the array of specific_tags that they have assigned
+                    tag_id = tag_id_exists(my_conf, my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]]);
+                    if (tag_id >= 0) {
+                        debug("found tag: %s\n", my_conf->islands[i].specific_tags[my_conf->islands[i].ranges[range_id].specific_tags[j]]);
                         break;
                     }
                 }
@@ -317,7 +320,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     if (tag_id < 0) tag_id = get_default_tag_id(my_conf);
     if (tag_id >= 0)
     {
-        printf("Found my_node_conf with tag: %s\n", my_conf->tags[tag_id].id);
+        debug("Found my_node_conf with tag: %s\n", my_conf->tags[tag_id].id);
         n->max_sig_power = (double)my_conf->tags[tag_id].max_power;
         n->min_sig_power = (double)my_conf->tags[tag_id].min_power;
         n->max_error_power = (double)my_conf->tags[tag_id].error_power;
@@ -333,7 +336,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         n->powercap_plugin = my_conf->tags[tag_id].powercap_plugin;
 
         n->coef_file = strlen(my_conf->tags[tag_id].coeffs) > 0 ? my_conf->tags[tag_id].coeffs : "coeffs.default";
-
+				strcpy(my_conf->install.obj_ener,n->energy_plugin);
+				strcpy(my_conf->install.obj_power_model,n->energy_model);
         
     }
     else warning("No tag found for current node in ear.conf\n");
@@ -583,7 +587,7 @@ void set_default_tag_values(tag_t *tag)
 
     tag->max_power      = MAX_SIG_POWER;
 	tag->error_power    = MAX_ERROR_POWER;
-	tag->powercap       = MAX_POWER_CAP;
+	tag->powercap       = DEF_POWER_CAP;
 	tag->min_power      = MIN_SIG_POWER;
 	tag->max_temp       = MAX_TEMP;
     
@@ -633,6 +637,16 @@ void set_default_eargm_conf(eargm_conf_t *eargmc)
 	eargmc->grace_periods=GRACE_T1;
 	strcpy(eargmc->mail,"nomail");
 	eargmc->use_log=EARGMD_FILE_LOG;
+	/* Values for POWERCAP */
+	#if POWERCAP
+	eargmc->power=EARGM_DEF_POWERCAP_LIMIT;
+	eargmc->t1_power=EARGM_DEF_T1_POWER;
+	eargmc->powercap_mode=EARGM_POWERCAP_DEF_MODE;	/* 1=auto by default, 0=monitoring_only */
+	sprintf(eargmc->powercap_action,EARGM_POWERCAP_DEF_ACTION);	
+	sprintf(eargmc->energycap_action,EARGM_ENERGYCAP_DEF_ACTION);	
+	eargmc->defcon_power_limit=EARGM_POWERCAP_DEF_ACTION_LIMIT;
+	#endif
+
 }
 
 void set_default_db_conf(db_conf_t *db_conf)
@@ -661,7 +675,7 @@ void set_default_island_conf(node_island_t *isl_conf, uint id)
 	isl_conf->max_sig_power=MAX_SIG_POWER;
 	isl_conf->max_error_power=MAX_ERROR_POWER;
 	isl_conf->max_temp=MAX_TEMP;
-	isl_conf->max_power_cap=MAX_POWER_CAP;
+	isl_conf->max_power_cap=DEF_POWER_CAP;
 	strcpy(isl_conf->power_cap_type,POWER_CAP_TYPE);
 }
 

@@ -914,7 +914,7 @@ int stmt_error(MYSQL *connection, MYSQL_STMT *statement)
             mysql_stmt_errno(statement), mysql_stmt_error(statement));
     mysql_stmt_close(statement);
     mysql_close(connection);
-    return -1;
+    return EAR_ERROR;
 }
 #endif
 
@@ -1173,7 +1173,6 @@ int mysql_select_acum_energy_idx(MYSQL *connection, ulong divisor, char is_aggre
         if (mysql_stmt_prepare(statement, query, strlen(query)))
             return stmt_error(connection, statement);
     }
-
     //Query parameters binding
     MYSQL_BIND bind[1];
     memset(bind, 0, sizeof(bind));

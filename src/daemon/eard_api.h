@@ -47,6 +47,7 @@ void eards_disconnect();
 *   value. Returns -1 if there's an error, 0 if the change_freq service has not
 *   been provided, and the final frequency value otherwise. */
 unsigned long eards_change_freq(unsigned long newfreq);
+unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t mask);
 /** Tries to set the frequency to the turbo value */
 void eards_set_turbo();
 

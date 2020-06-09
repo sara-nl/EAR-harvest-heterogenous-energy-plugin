@@ -30,6 +30,7 @@
 #ifndef COMMON_HARDWARE_TOPOLOGY_H_
 #define COMMON_HARDWARE_TOPOLOGY_H_
 
+#include <common/types/generic.h>
 // List1: https://en.wikichip.org/wiki/intel/cpuid
 
 #define MODEL_UNIDENTIFIED			-1

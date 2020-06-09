@@ -46,11 +46,14 @@
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
 #include <library/common/externs.h>
+#include <library/common/global_comm.h>
 #include <library/metrics/metrics.h>
 #include <common/hardware/frequency.h>
 #include <daemon/eard_api.h>
 
 extern uint mpi_calls_in_period;
+extern masters_info_t masters_info;
+extern float ratio_PPN;
 
 // static defines
 #define FIRST_ITERATION			1
@@ -77,7 +80,11 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	if (my_id) return;
 	policy_freq = EAR_default_frequency;
     perf_accuracy_min_time = get_ear_performance_accuracy();
-    architecture_min_perf_accuracy_time=eards_node_energy_frequency();
+    if (masters_info.my_master_rank>=0) {
+			architecture_min_perf_accuracy_time=eards_node_energy_frequency();
+		}else{	
+			architecture_min_perf_accuracy_time=1000000;
+		}
     if (architecture_min_perf_accuracy_time>perf_accuracy_min_time) perf_accuracy_min_time=architecture_min_perf_accuracy_time;
 	periodic_loop.event=1;
 	periodic_loop.size=1;
@@ -88,7 +95,7 @@ void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, 
 {
 
 	policy_loop_init(&periodic_loop);
-	traces_new_period(ear_my_rank, my_id, event);
+	if (masters_info.my_master_rank>=0) traces_new_period(ear_my_rank, my_id, event);
 	loop_with_signature = 0;
 	EAR_STATE=FIRST_ITERATION;
 	
@@ -103,7 +110,7 @@ void states_periodic_end_period(uint iterations)
 		append_loop_text_file(loop_summary_path, &loop,&loop_signature.job);
 		#endif
 		#if USE_DB
-		eards_write_loop_signature(&loop);
+		if (masters_info.my_master_rank>=0) eards_write_loop_signature(&loop);
 		#endif
 	}
 
@@ -128,7 +135,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
    append_loop_text_file(loop_summary_path, loop,&loop_signature.job);
 	#endif
 	#if USE_DB
-    eards_write_loop_signature(loop);
+    if (masters_info.my_master_rank>=0) eards_write_loop_signature(loop);
     #endif
 	
 	
@@ -141,6 +148,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
 void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP,VPI;
+	ulong AVGF;
 	unsigned long long VI;
 	unsigned long prev_f;
 	int result;
@@ -152,7 +160,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	st=policy_new_iteration(&periodic_loop);
 	if (resched_conf->force_rescheduling)
 	{
-		traces_reconfiguration(ear_my_rank, my_id);
+		if (masters_info.my_master_rank>=0) traces_reconfiguration(ear_my_rank, my_id);
 		debug("EAR: rescheduling forced by eard: max freq %lu new min_time_th %lf\n",
 					system_conf->max_freq, system_conf->th);
 
@@ -164,7 +172,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	{
 		case FIRST_ITERATION:
 				EAR_STATE = EVALUATING_SIGNATURE;
-				traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
+				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 				metrics_compute_signature_begin();
 				// Loop printing algorithm
 				loop.id.event = event;
@@ -188,29 +196,34 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					POWER = loop_signature.signature.DC_power;
 					TPI = loop_signature.signature.TPI;
 					TIME = loop_signature.signature.time;
+					AVGF = loop_signature.signature.avg_f;
 
-		            VI=metrics_vec_inst(&loop_signature.signature);
-		            VPI=(double)VI/(double)loop_signature.signature.instructions;
+		      VI=metrics_vec_inst(&loop_signature.signature);
+		      VPI=(double)VI/(double)loop_signature.signature.instructions;
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
-					st=policy_apply(&loop_signature.signature,&policy_freq,&ready);
-					PP = projection_get(frequency_closest_pstate(policy_freq));
+		      signature_t app_signature;
+      		adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
+					st=policy_apply(&app_signature,&policy_freq,&ready);
+					signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
-						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+						if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					}
-
+					/* For no masters, ready will be 0, pending */
+					if (masters_info.my_master_rank>=0){
 					traces_new_signature(ear_my_rank, my_id,&loop_signature.signature);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
-					traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
+					}
 
-					verbose(1,
-									"\n\nEAR(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tAppplication Signature (CPI=%.5lf GBS=%.3lf Power=%.3lf Time=%.5lf Energy=%.3lfJ EDP=%.5lf)--> New frequency selected %lu\n",
-									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, EDP,
+					if (masters_info.my_master_rank>=0){
+						verbose(1,
+									"\n\nEAR+P(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%lu)--> New frequency selected %lu\n",
+									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGF,
 									policy_freq);
-					
+					}	
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);

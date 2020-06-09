@@ -28,6 +28,8 @@
 */
 
 #define _XOPEN_SOURCE 700 //to get rid of the warning
+#define _GNU_SOURCE 
+
 
 #include <time.h>
 #include <errno.h>
@@ -93,6 +95,8 @@ void *eargm_server_api(void *p)
 	int eargm_fd,eargm_client;
 	struct sockaddr_in eargm_con_client;
 
+	  if (pthread_setname_np(pthread_self(), "eargm_server")) error("Setting name for eargm_server thread %s", strerror(errno));
+
     debug("Creating scoket for remote commands,using port %u",my_port);
     eargm_fd=create_server_socket(my_port);
     if (eargm_fd<0){
@@ -111,8 +115,7 @@ void *eargm_server_api(void *p)
     }while(1);
     verbose(VGM,"exiting");
     close_server_socket(eargm_fd);
-	return NULL;
-
+		pthread_exit(0);
 }
 
 

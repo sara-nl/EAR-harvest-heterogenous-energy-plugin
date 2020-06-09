@@ -33,7 +33,7 @@
 #include <common/types/configuration/cluster_conf.h>
 
 
-static void print_eard_conf(eard_conf_t *conf)
+void print_eard_conf(eard_conf_t *conf)
 {
 	verbosen(VCCONF,"\t eard: verbosen %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
 	verbosen(VCCONF,"\t eard: turbo %u port %u use_db %u use_eardbd %u \n",conf->turbo,conf->port,conf->use_mysql,conf->use_eardbd);
@@ -42,18 +42,25 @@ static void print_eard_conf(eard_conf_t *conf)
 
 }
 
-static void print_eargm_conf(eargm_conf_t *conf)
+void print_eargm_conf(eargm_conf_t *conf)
 {
 	verbosen(VCCONF,"--> EARGM configuration\n");
 	verbosen(VCCONF,"\t eargm: verbosen %u \tuse_aggregation %u \tt1 %lu \tt2 %lu \tenergy limit: %lu \tport: %u \tmode: %u\tmail: %s\thost: %s\n",
 			conf->verbose,conf->use_aggregation,conf->t1,conf->t2,conf->energy,conf->port, conf->mode, conf->mail, conf->host);
 	verbosen(VCCONF,"\t eargm: defcon levels [%u,%u,%u] grace period %u\n",conf->defcon_limits[0],conf->defcon_limits[1],conf->defcon_limits[2],
 	conf->grace_periods);
-	verbosen(VCCONF,"\t policy %u (0=MaxEnergy,1=MaxPower) units=%u (-,K,M)\n",conf->policy,conf->units); 
+	verbosen(VCCONF,"\t policy %u (0=MaxEnergy,other=error) units=%u (-,K,M)\n",conf->policy,conf->units); 
 	verbosen(VCCONF,"\t use_log %u\n",conf->use_log);
+	#if POWERCAP
+	verbosen(VCCONF,"\t cluster_power_limit %lu powercap_check_period %lu\n",conf->power,conf->t1_power);
+	verbosen(VCCONF,"\t powercap_mode %lu (0=monitoring, 1=auto [def])\n",conf->powercap_mode);
+	verbosen(VCCONF,"\t power limit for action %lu\n",conf->defcon_power_limit);
+	verbosen(VCCONF,"\t powercap_action %s\n",conf->powercap_action);
+	verbosen(VCCONF,"\t energycap_action %s\n",conf->energycap_action);
+	#endif
 }
 
-static void print_db_manager(eardb_conf_t *conf)
+void print_db_manager(eardb_conf_t *conf)
 {
 	verbosen(VCCONF,"--> EARDBD configuration\n");
 	verbosen(VCCONF, "---> Insertion time %u\tAggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tSync Port: %u\tCacheSize: %u\n",
@@ -70,7 +77,7 @@ void print_database_conf(db_conf_t *conf)
 	verbosen(VCCONF,"-->max_connections %u report_node_details %u report_sig_details %u report_loops %u\n",conf->max_connections,conf->report_node_detail,conf->report_sig_detail,conf->report_loops);
 }
 
-static void print_islands_conf(node_island_t *conf)
+void print_islands_conf(node_island_t *conf)
 {
 	int i, j;
 	verbosen(VCCONF, "Islands configuration\n");
@@ -135,7 +142,7 @@ void print_energy_tag(energy_tag_t *etag)
 
 }
 
-static void print_earlib_conf(earlib_conf_t *conf)
+void print_earlib_conf(earlib_conf_t *conf)
 {
     verbosen(VCCONF, "-->Coefficients path: %s\n-->DynAIS levels: %u\n-->DynAIS window size: %u\n",
             conf->coefficients_pathname, conf->dynais_levels, conf->dynais_window);

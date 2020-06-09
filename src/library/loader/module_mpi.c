@@ -147,7 +147,11 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 
 	//
 	libear = dlopen(path_so, RTLD_NOW | RTLD_GLOBAL);
-	verbose(3, "LOADER: dlopen returned %p", libear);
+	if (libear == NULL){
+		error("LOADER: dlopen error %s",dlerror());
+	}else{
+		verbose(3, "LOADER: dlopen returned %p", libear);
+	}
 
 	if (libear != NULL)
 	{

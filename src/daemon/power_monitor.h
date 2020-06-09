@@ -139,4 +139,8 @@ void powermon_get_status(status_t *my_status);
 uint node_energy_lock(uint *tries);
 void node_energy_unlock();
 
+uint powermon_is_idle();
+uint powermon_current_power();
+uint powermon_get_powercap_def();
+
 #endif

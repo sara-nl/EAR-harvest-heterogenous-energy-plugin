@@ -35,11 +35,20 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <daemon/eard_api.h>
 #include <library/policies/policy_api.h>
 #include <common/math_operations.h>
+#include <library/common/externs.h>
+#include <common/system/time.h>
+#include <daemon/powercap_status.h>
+
+
+static timestamp pol_time_init;
+static ulong req_f;
 
 typedef unsigned long ulong;
 
@@ -52,8 +61,14 @@ extern unsigned long ext_def_freq;
 
 state_t policy_init(polctx_t *c)
 {
-	if (c!=NULL) return EAR_SUCCESS;
-	else return EAR_ERROR;
+	if (c!=NULL){ 
+	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
+  	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
+		sig_shared_region[my_node_id].mpi_info.exec_time=0;
+		sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
+
+		return EAR_SUCCESS;
+	}else return EAR_ERROR;
 }
 
 
@@ -78,6 +93,7 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 }
 
 
+
 // This is the main function in this file, it implements power policy
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
@@ -99,6 +115,15 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		if (c==NULL) return EAR_ERROR;
 		if (c->app==NULL) return EAR_ERROR;
 
+#if POWERCAP
+  	if (is_powercap_set(&c->app->pc_opt)){ 
+			verbose(1,"Powercap is set to %uWatts",get_powercapopt_value(&c->app->pc_opt));
+		}else{ 
+			verbose(1,"Powercap is not set");
+		}
+#endif
+
+
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_closest_pstate(c->app->max_freq);
 
@@ -109,7 +134,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		def_pstate=frequency_closest_pstate(def_freq);
 
     // This is the frequency at which we were running
+    #ifdef POWERCAP
+		curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+		#else
     curr_freq=*(c->ear_frequency);
+		#endif
     curr_pstate = frequency_closest_pstate(curr_freq);
 		
 
@@ -147,12 +176,14 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		try_next=1;
 		i=best_pstate-1;
 		time_current=time_ref;
-
+		debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
+		debug("Starting at pstate %d, curr_freq %lu def_freq %lu min_pstate %d",i,curr_freq,def_freq,min_pstate);
 
 		while(try_next && (i >= min_pstate))
 		{
 			if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 			{
+				debug("Looking for pstate %d",i);
 				st=project_power(my_app,curr_pstate,i,&power_proj);
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
@@ -164,6 +195,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				if (perf_gain>=freq_gain)
 				{
 					best_freq=freq_ref;
+					best_pstate=i;
 					time_current = time_proj;
 					i--;
 				}
@@ -176,6 +208,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				try_next=0;
 			}
 		}	
+		/* Controlar la freq por power cap , si capado poner GREEDY, gestionar req-f */	
+		if (best_freq<def_freq) best_freq=def_freq;
 		*new_freq=best_freq;
 		return EAR_SUCCESS;
 }
@@ -183,10 +217,15 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *ok)
 {
-
 	state_t st=EAR_SUCCESS;
+	ulong eff_f;
+	uint power_status;
+	uint next_status;
 
 	if ((c==NULL) || (curr_sig==NULL) || (last_sig==NULL)) return EAR_ERROR;
+
+
+
 	
 	if (curr_sig->def_f==last_sig->def_f) *ok=1;
 
@@ -218,4 +257,5 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   *intents=2;
   return EAR_SUCCESS;
 }
+
 

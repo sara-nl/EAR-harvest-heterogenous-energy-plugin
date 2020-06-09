@@ -18,13 +18,10 @@ tracer_PERM = 0775
 all: $(tracer_OBJS) $(tracer_BINS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) -c $<
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
-
-%.so: %.o
-	$(CC) -shared -o $@ $< $(LDFLAGS)
+%.so:%.o
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) $(LDFLAGS)  -shared $< -o $@
 
 ######## OPTIONS
 

@@ -35,6 +35,7 @@
 #include <common/system/file.h>
 #include <common/types/generic.h>
 #include <common/hardware/cpuid.h>
+#include <common/hardware/topology.h>
 
 // Intel models, Based on arch/x86/include/asm/intel-family.h
 // Tip: X means E, EP, ED and Server.
@@ -83,5 +84,10 @@ int is_cpu_boost_enabled();
 
 /** Returns the number of packages detected*/
 int detect_packages(int **package_map);
+
+/** Prints the affinity mask of the current process */
+void print_affinity_mask(topology_t *topo);
+/** Checks if process with pid=pid has some cpu forbiden to run , then is_set is set to 1 */
+state_t is_affinity_set(topology_t *topo,int pid,int *is_set);
 
 #endif

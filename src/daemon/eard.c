@@ -32,11 +32,20 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <linux/limits.h>
-// #define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 0
 #include <common/includes.h>
 #include <common/environment.h>
 #include <common/types/log_eard.h>
+#include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
+#if 0
+#include <common/hardware/hardware_info.h>
+
+#include <metrics/energy/energy_cpu.h>
+#include <metrics/energy/energy_node.h>
+#include <metrics/bandwidth/bandwidth.h>
+#include <metrics/frequency/frequency_cpu.h>
+#endif
 #include <metrics/frequency/cpu.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/energy/energy_node.h>
@@ -44,6 +53,7 @@
 #include <common/hardware/hardware_info.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
+#include <daemon/powercap.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/dynamic_configuration.h>
@@ -56,6 +66,7 @@
 
 
 #define MIN_INTERVAL_RT_ERROR 3600
+
 
 #if APP_API_THREAD
 pthread_t app_eard_api_th;
@@ -81,6 +92,10 @@ resched_t *resched_conf;
 services_conf_t *my_services_conf;
 ulong *shared_frequencies;
 ulong *frequencies;
+#ifdef POWERCAP
+app_mgt_t *app_mgt_info;
+pc_app_info_t *pc_app_info_data;
+#endif
 /* END Shared memory regions */
 
 coefficient_t *my_coefficients;
@@ -93,6 +108,8 @@ char eardbd_user[GENERIC_NAME];
 char eardbd_pass[GENERIC_NAME];
 char dyn_conf_path[GENERIC_NAME];
 char resched_path[GENERIC_NAME];
+char app_mgt_path[GENERIC_NAME];
+char pc_app_info_path[GENERIC_NAME];
 char coeffs_path[GENERIC_NAME];
 char coeffs_default_path[GENERIC_NAME];
 char services_conf_path[GENERIC_NAME];
@@ -102,6 +119,7 @@ int coeffs_default_size;
 uint signal_sighup = 0;
 uint f_monitoring;
 
+loop_t current_loop_data;
 
 #define max(a, b) (a>b?a:b)
 #define min(a, b) (a<b?a:b)
@@ -255,7 +273,8 @@ void connect_service(int req, application_t *new_app) {
 	job_t *new_job = &new_app->job;
 	int pid = create_ID(new_job->id, new_job->step_id);
 	// Let's check if there is another application
-	verbose(VEARD + 1, "request for connection at service %d", req);
+	verbose(1, "request for connection at service %d (%lu,%lu)", req,new_job->id,new_job->step_id);
+	
 	if (is_new_application() || is_new_service(req, pid)) {
 		connect = 1;
 	} else {
@@ -320,6 +339,7 @@ void connect_service(int req, application_t *new_app) {
 		verbose(VEARD + 1, "Process pid %d selected as master", pid);
 		verbose(VEARD + 1, "service %d connected", req);
 	}
+	verbose(1,"Application connected with local API");
 }
 
 // Checks application connections
@@ -403,6 +423,11 @@ void eard_exit(uint restart)
 	verbose(VCONF, "frequency_dispose");
 	frequency_dispose();
 
+#if POWERCAP
+  powercap_end();
+#endif
+
+
 	verbose(VCONF, "Releasing node resources");
 
 	// More disposes
@@ -436,6 +461,7 @@ void eard_exit(uint restart)
 	coeffs_shared_area_dispose(coeffs_path);
 	coeffs_default_shared_area_dispose(coeffs_default_path);
 	services_conf_shared_area_dispose(services_conf_path);
+	app_mgt_shared_area_dispose(app_mgt_path);
 	/* end releasing shared memory */
 	if (restart) {
 		verbose(VCONF, "Restarting EARD\n");
@@ -577,6 +603,7 @@ int eard_system(int must_read) {
 		case WRITE_LOOP_SIGNATURE:
 			ack = EAR_COM_OK;
 			ret1 = EAR_SUCCESS;
+			copy_loop(&current_loop_data,&req.req_data.loop);
 			// print_loop_fd(1,&req.req_data.loop);
 			if (my_cluster_conf.database.report_loops) {
 #if USE_DB
@@ -1264,9 +1291,26 @@ int main(int argc, char *argv[]) {
 	verbose(VCONF + 1, "Using %s as resched path (shared memory region)", resched_path);
 	resched_conf = create_resched_shared_area(resched_path);
 	if (resched_conf == NULL) {
-		error("Error creating shared memory between EARD & EARL\n");
+		error("Error creating shared memory between EARD & EARL");
 		_exit(0);
 	}
+	/* This area is for application data */
+	#if POWERCAP
+	get_app_mgt_path(my_cluster_conf.install.dir_temp,app_mgt_path);
+	verbose(VCONF + 1, "Using %s as app_mgt data path (shared memory region)", app_mgt_path);
+	app_mgt_info=create_app_mgt_shared_area(app_mgt_path);
+	if (app_mgt_info==NULL){
+		error("Error creating shared memory between EARD & EARL for app_mgt");
+		_exit(0);
+	}
+	get_pc_app_info_path(my_cluster_conf.install.dir_temp,pc_app_info_path);
+	verbose(VCONF + 1, "Using %s as pc_app_info dat apath (shared memory region)",pc_app_info_path);
+	pc_app_info_data=create_pc_app_info_shared_area(pc_app_info_path);
+	if (pc_app_info_data==NULL){
+		error("Error creating shared memory between EARD & EARL for pc_app_info");
+		_exit(0);
+	}
+	#endif
 	verbose(0, "Basic shared memory regions created");
 	/* Coefficients */
 	verbose(0,"Loading coefficients");

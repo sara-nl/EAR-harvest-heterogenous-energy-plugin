@@ -41,11 +41,12 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <common/colors.h>
 
 #include <common/config.h>
 #include <common/system/sockets.h>
 
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -57,6 +58,7 @@
 #include <common/hardware/hardware_info.h>
 #include <common/hardware/frequency.h>
 #include <daemon/power_monitor.h>
+#include <daemon/powercap.h>
 #include <daemon/node_metrics.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
@@ -64,6 +66,7 @@
 #if SYSLOG_MSG
 #include <syslog.h>
 #endif
+
 
 #if USE_DB
 #include <database_cache/eardbd_api.h>
@@ -90,6 +93,7 @@ extern policy_conf_t default_policy_context, energy_tag_context, authorized_cont
 extern int ear_ping_fd;
 extern int ear_fd_ack[1];
 extern int application_id;
+extern  loop_t current_loop_data;
 
 /* This variable controls the frequency for periodic power monitoring */
 extern uint f_monitoring;
@@ -102,12 +106,19 @@ static int fd_powermon = -1;
 static int fd_periodic = -1;
 extern settings_conf_t *dyn_conf;
 extern resched_t *resched_conf;
+#if POWERCAP
+extern app_mgt_t *app_mgt_info;
+extern pc_app_info_t *pc_app_info_data;
+dom_power_t pdomain;
+#endif
 static int sig_reported = 0;
 
 periodic_metric_t current_sample;
 double last_power_reported = 0;
 static energy_data_t c_energy;
 
+static ulong * powermon_freq_list;
+static int powermon_num_pstates;
 
 
 /****************** CONTEXT MANAGEMENT ********************/
@@ -165,9 +176,6 @@ void end_context(int cc) {
 	debug("end_context %d", cc);
 	check_context("end_context: invalid job context");
 	if (current_ear_app[cc] != NULL) {
-		#ifndef EAR_CPUPOWER
-		if (current_ear_app[cc]->governor.governor != NULL) free(current_ear_app[cc]->governor.governor);
-		#endif
 	  free_energy_data(&current_ear_app[cc]->energy_init);
 		free(current_ear_app[cc]);
 		current_ear_app[cc] = NULL;
@@ -261,6 +269,10 @@ powermon_app_t *get_powermon_app() {
 
 static void PM_my_sigusr1(int signun) {
 	verbose(VNODEPMON, " thread %u receives sigusr1", (uint) pthread_self());
+#if POWERCAP
+  powercap_end();
+#endif
+
 	pthread_exit(0);
 }
 
@@ -330,16 +342,9 @@ void copy_powermon_app(powermon_app_t *dest, powermon_app_t *src) {
 	dest->job_created = src->job_created;
 	copy_energy_data(&dest->energy_init,&src->energy_init);
 	copy_application(&(dest->app), &(src->app));
-	#ifndef EAR_CPUPOWER
-	dest->governor.min = src->governor.min;
-	dest->governor.max = src->governor.max;
-	dest->governor.governor = (char *) malloc(strlen(src->governor.governor) + 1);
-	strcpy(dest->governor.governor, src->governor.governor);
-	#else
 	dest->governor.min_f = src->governor.min_f;
 	dest->governor.max_f = src->governor.max_f;
 	strcpy(dest->governor.name, src->governor.name);
-	#endif
 	dest->current_freq = src->current_freq;
 
 }
@@ -392,9 +397,9 @@ void form_database_paths()
 *
 */
 
-void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi)
-{
+void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
 	state_t s;
+	verbose(1,"job_init_powermon_app init");
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
 	copy_application(&current_ear_app[ccontext]->app, new_app);
@@ -414,6 +419,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 	copy_energy_data(&current_ear_app[ccontext]->energy_init, &c_energy);
 	// CPU Frequency
 	state_assert(s, freq_cpu_read(&freq_job1), );
+	verbose(1,"job_init_powermon_app end");
 }
 
 
@@ -639,6 +645,9 @@ void powermon_mpi_init(ehandler_t *eh, application_t *appID) {
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
 	start_mpi(&current_ear_app[ccontext]->app.job);
 	current_ear_app[ccontext]->app.is_mpi = 1;
+#ifdef POWERCAP
+	//set_powercapstatus_mode(EARL_CONFIG);
+#endif
 	save_eard_conf(&eard_dyn_conf);
 }
 
@@ -647,6 +656,9 @@ void powermon_mpi_finalize(ehandler_t *eh) {
 	verbose(VJOBPMON + 1, "powermon_mpi_finalize (%lu,%lu)", current_ear_app[ccontext]->app.job.id,
 			current_ear_app[ccontext]->app.job.step_id);
 	end_mpi(&current_ear_app[ccontext]->app.job);
+	#ifdef POWERCAP
+	set_powercapstatus_mode(AUTO_CONFIG);
+	#endif
 	if (!current_ear_app[ccontext]->job_created) {  // If the job is not submitted through slurm, end_job would not be submitted
 		powermon_end_job(eh, current_ear_app[ccontext]->app.job.id, current_ear_app[ccontext]->app.job.step_id);
 	}
@@ -673,7 +685,11 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	policy_conf_t *my_policy;
 	ulong f;
 	uint user_type;
-	verbose(VJOBPMON, "powermon_new_job (%lu,%lu)", appID->job.id, appID->job.step_id);
+	verbose(VJOBPMON, "%spowermon_new_job (%lu,%lu)%s", COL_BLU,appID->job.id, appID->job.step_id,COL_CLR);
+#if POWERCAP
+	if (powermon_is_idle()) powercap_idle_to_run();
+  set_powercapstatus_mode(AUTO_CONFIG);
+#endif
 	if (new_context(appID->job.id, appID->job.step_id) != EAR_SUCCESS) {
 		error("Maximum number of contexts reached, no more concurrent jobs supported");
 		return;
@@ -682,11 +698,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	check_context("powermon_new_job: after new_context!");
 	current_ear_app[ccontext]->current_freq = frequency_get_cpu_freq(0);
 	get_governor(&current_ear_app[ccontext]->governor);
-	#ifndef EAR_CPUPOWER
-	verbose(VJOBPMON, "Saving governor %s", current_ear_app[ccontext]->governor.governor);
-	#else
 	debug("Saving governor %s", current_ear_app[ccontext]->governor.name);
-	#endif
 	/* Setting userspace */
 	user_type = get_user_type(&my_cluster_conf, appID->job.energy_tag, appID->job.user_id, appID->job.group_id,
 							  appID->job.user_acc, &my_tag);
@@ -697,16 +709,26 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	debug("Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->settings[0]);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);
+	/* Info shared with the job */
+	#if POWERCAP
+	app_mgt_new_job(app_mgt_info);
+	pcapp_info_new_job(pc_app_info_data);
+	powercap_set_app_req_freq(f);
+	#endif
 	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
 	if (user_type==AUTHORIZED) dyn_conf->learning=appID->is_learning;
 	else dyn_conf->learning=0;
 	dyn_conf->lib_enabled=(user_type!=ENERGY_TAG);
 	dyn_conf->policy=my_policy->policy;
-    strcpy(dyn_conf->policy_name,  my_policy->name);
+  strcpy(dyn_conf->policy_name,  my_policy->name);
 	dyn_conf->def_freq=f;
 	dyn_conf->def_p_state=my_policy->p_state;
-    memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
+	resched_conf->force_rescheduling=0;
+  memcpy(dyn_conf->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
+	verbose(1,"Cleaning loop info (new)");
+	set_null_loop(&current_loop_data);
+	verbose(1,"End loop info");
 	/* End app configuration */
 	current_node_freq = f;
 	appID->job.def_f = dyn_conf->def_freq;
@@ -717,9 +739,9 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	new_job_for_period(&current_sample, appID->job.id, appID->job.step_id);
 	pthread_mutex_unlock(&app_lock);
 	save_eard_conf(&eard_dyn_conf);
-	verbose(VJOBPMON + 1, "Job created (%lu,%lu) is_mpi %d", current_ear_app[ccontext]->app.job.id,
-			current_ear_app[ccontext]->app.job.step_id, current_ear_app[ccontext]->app.is_mpi);
-	verbose(VJOBPMON + 1, "*******************");
+	verbose(VJOBPMON , "%sJob created (%lu,%lu) is_mpi %d%s", COL_BLU,current_ear_app[ccontext]->app.job.id,
+			current_ear_app[ccontext]->app.job.step_id, current_ear_app[ccontext]->app.is_mpi,COL_CLR);
+	verbose(VJOBPMON , "*******************");
 	sig_reported = 0;
 
 }
@@ -746,8 +768,8 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	}
 	/* We set ccontex to the specific one */
 	ccontext = cc;
-	verbose(VJOBPMON, "powermon_end_job (%lu,%lu)", current_ear_app[ccontext]->app.job.id,
-			current_ear_app[ccontext]->app.job.step_id);
+	verbose(VJOBPMON, "%spowermon_end_job (%lu,%lu)%s",COL_BLU, current_ear_app[ccontext]->app.job.id,
+			current_ear_app[ccontext]->app.job.step_id,COL_CLR);
 	while (pthread_mutex_trylock(&app_lock));
 	idleNode = 1;
 	job_end_powermon_app(eh);
@@ -757,19 +779,12 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	end_job_for_period(&current_sample);
 	pthread_mutex_unlock(&app_lock);
 	report_powermon_app(&summary);
+	set_null_loop(&current_loop_data);
 	save_eard_conf(&eard_dyn_conf);
 	/* RESTORE FREQUENCY */
-	#ifndef EAR_CPUPOWER
-	verbose(VJOBPMON, "restoring governor %s", current_ear_app[ccontext]->governor.governor);
-	#else
 	verbose(VJOBPMON, "restoring governor %s", current_ear_app[ccontext]->governor.name);
-	#endif
 	set_governor(&current_ear_app[ccontext]->governor);
-	#ifndef EAR_CPUPOWER
-	if (strcmp(current_ear_app[ccontext]->governor.governor, "userspace") == 0) {
-	#else
 	if (strcmp(current_ear_app[ccontext]->governor.name, "userspace") == 0) {
-	#endif
 		frequency_set_all_cpus(current_ear_app[ccontext]->current_freq);
 	}
 	current_node_freq = frequency_get_cpu_freq(0);
@@ -790,6 +805,18 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 		}
 		ccontext = select_last_context();
 	}
+	
+#if POWERCAP
+	app_mgt_end_job(app_mgt_info);
+	pcapp_info_end_job(pc_app_info_data);
+  if (powermon_is_idle()){ 
+		powercap_set_app_req_freq(powermon_freq_list[powermon_num_pstates-1]);
+		powercap_run_to_idle();
+	}else{ 
+		powercap_set_app_req_freq(current_ear_app[ccontext]->current_freq);
+	}
+#endif
+
 }
 
 /*
@@ -901,7 +928,7 @@ void powermon_set_freq(ulong freq) {
 	if (ccontext >= 0) {
 		if (freq != current_node_freq) {
 			if ((my_cluster_conf.eard.force_frequencies) || (current_ear_app[ccontext]->app.is_mpi)) {
-				verbose(VJOBPMON, "SetFreq:  changing freq from %lu to %lu", current_node_freq, freq);
+				verbose(VJOBPMON, "%sSetFreq:  changing freq from %lu to %lu%s",COL_RED, current_node_freq, freq,COL_CLR);
 				frequency_set_all_cpus(freq);
 				current_node_freq = freq;
 			}
@@ -922,6 +949,10 @@ void powermon_reload_conf() {
 
 
 // Each sample is processed by this function
+//
+// MAIN PERIODIC_METRIC FUNCTION
+//
+//
 void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	ulong jid, mpi,sid;
 	ulong time_consumed;
@@ -941,9 +972,19 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		mpi = 0;
 		maxpower = minpower = 0;
 	}
-	verbosen(VNODEPMON, "ID %lu MPI=%lu  Current power %.1lf max %.1lf min %.1lf ",
+  #if POWERCAP
+  print_app_mgt_data(app_mgt_info);
+  #endif
+	verbose(VNODEPMON,"%s",COL_BLU);
+	verbose(VNODEPMON, "ID %lu EARL=%lu  Current power %.1lf max %.1lf min %.1lf ",
 			jid, mpi, my_current_power->avg_dc, maxpower, minpower);
 	verbose_node_metrics(&my_nm_id, nm);
+	verbose(VNODEPMON,"%s",COL_CLR);
+
+	
+	if (!(is_null(&current_loop_data)==1)){
+		signature_print_simple_fd(verb_channel,&current_loop_data.signature);
+	}
 
 
 	while (pthread_mutex_trylock(&app_lock));
@@ -952,7 +993,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		if ((my_current_power->avg_dc > maxpower) && (my_current_power->avg_dc<my_node_conf->max_error_power)){
 			current_ear_app[ccontext]->app.power_sig.max_DC_power = my_current_power->avg_dc;
 		}
-		if (my_current_power->avg_dc < minpower){
+		if ((my_current_power->avg_dc < minpower) && (minpower>0)){
 			current_ear_app[ccontext]->app.power_sig.min_DC_power = my_current_power->avg_dc;
 		}
 	}
@@ -968,22 +1009,28 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	if (my_current_power->avg_dc < RAPL) {
 		corrected_power = RAPL;
 	}
-  time_consumed=(ulong) difftime(my_current_power->end, my_current_power->begin);
+	time_consumed=(ulong) difftime(my_current_power->end, my_current_power->begin);
 #if USE_GPUS
-  current_sample.DRAM_energy=accum_dram_power(my_current_power)*time_consumed;
-  current_sample.PCK_energy=accum_cpu_power(my_current_power)*time_consumed;
+	current_sample.DRAM_energy=accum_dram_power(my_current_power)*time_consumed;
+	current_sample.PCK_energy=accum_cpu_power(my_current_power)*time_consumed;
   current_sample.GPU_energy=accum_gpu_power(my_current_power)*time_consumed;
 #endif
 
 
-  current_sample.DC_energy = corrected_power * time_consumed;
+	current_sample.DC_energy = corrected_power * time_consumed;
 
 	/* To be usd by status */
 	last_power_reported = my_current_power->avg_dc;
 	copy_node_metrics(&my_nm_id, &last_nm, nm);
-
 	current_sample.avg_f = (ulong) get_nm_cpufreq(&my_nm_id, nm);;
 	current_sample.temp = (ulong) get_nm_temp(&my_nm_id, nm);
+#if POWERCAP
+	pdomain.platform=last_power_reported;
+	pdomain.cpu=accum_cpu_power(my_current_power);
+	pdomain.dram=accum_dram_power(my_current_power);
+	pdomain.gpu=accum_gpu_power(my_current_power);
+	periodic_metric_info(&pdomain,mpi,current_sample.avg_f);
+#endif
 
 #if SYSLOG_MSG
 	if ((my_current_power->avg_dc==0) || (my_current_power->avg_dc< my_node_conf->min_sig_power) || (my_current_power->avg_dc>my_node_conf->max_sig_power)){
@@ -1175,6 +1222,11 @@ void *eard_power_monitoring(void *noinfo)
 	// current_sample is the current powermonitoring period
 	debug("init_periodic_metric");
 	init_periodic_metric(&current_sample);
+#if POWERCAP
+	powercap_init();
+	set_powercapstatus_mode(AUTO_CONFIG);
+	pc_app_info_data->mode=powercap_get_strategy();
+#endif
 	create_powermon_out();
 
 	// We will collect and report avg power until eard finishes
@@ -1193,18 +1245,21 @@ void *eard_power_monitoring(void *noinfo)
 	openlog("eard",LOG_PID|LOG_PERROR,LOG_DAEMON);
 #endif
 
+	powermon_freq_list=frequency_get_freq_rank_list();
+	powermon_num_pstates=frequency_get_num_pstates();
+
 	/*
 	*	MAIN LOOP
 	*/
 	debug("Starting power monitoring loop, reporting metrics every %d seconds",f_monitoring);
 
 	while (!eard_must_exit) {
-		debug("------------------- NEW PERIOD -------------------");
+		verbose(1,"\n%s------------------- NEW PERIOD -------------------%s",COL_BLU,COL_CLR);
 		// Wait for N usecs
 		sleep(f_monitoring);
 
 		// Get time and Energy
-		debug("Reading energy");
+		//debug("Reading energy");
 		read_enegy_data(&my_eh_pm, &e_end);
 
 		if (e_end.DC_node_energy == 0) {
@@ -1212,7 +1267,7 @@ void *eard_power_monitoring(void *noinfo)
 		} else {
 
 			// Get node metrics
-			debug("Reading node metrics");
+			//debug("Reading node metrics");
 			end_compute_node_metrics(&my_nm_id, &nm_end);
 			diff_node_metrics(&my_nm_id, &nm_init, &nm_end, &nm_diff);
 			start_compute_node_metrics(&my_nm_id, &nm_init);
@@ -1221,7 +1276,7 @@ void *eard_power_monitoring(void *noinfo)
 			// Compute the power
 			compute_power(&e_begin, &e_end, &my_current_power);
 
-			print_power(&my_current_power);
+			print_power(&my_current_power,1,-1);
 
 			// Save current power
 			update_historic_info(&my_current_power, &nm_diff);
@@ -1235,8 +1290,9 @@ void *eard_power_monitoring(void *noinfo)
 	if (dispose_node_metrics(&my_nm_id) != EAR_SUCCESS) {
 		error("dispose_node_metrics ");
 	}
-
-
+#if POWERCAP
+  powercap_end();
+#endif
 	pthread_exit(0);
 	//exit(0);
 }
@@ -1272,4 +1328,19 @@ void print_powermon_app(powermon_app_t *app) {
 	print_application(&app->app);
 	print_energy_data(&app->energy_init);
 }
+
+uint powermon_is_idle()
+{
+	debug("powermon_is_idle ccontext %d",ccontext);
+	return (ccontext<0);
+}
+uint powermon_current_power()
+{
+	return (uint)last_power_reported;
+}
+uint powermon_get_powercap_def()
+{
+	return (uint) my_node_conf->max_power_cap;
+}
+
 

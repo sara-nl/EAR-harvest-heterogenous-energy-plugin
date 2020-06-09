@@ -35,6 +35,7 @@
 // #define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
@@ -43,13 +44,16 @@
 #endif
 #include <common/hardware/hardware_info.h>
 #include <library/common/externs.h>
+//#include <library/common/global_comm.h>
 #include <library/metrics/metrics.h>
 #include <metrics/cpi/cpi.h>
 #include <metrics/flops/flops.h>
 #include <metrics/energy/energy_node_lib.h>
 #include <metrics/bandwidth/cpu/utils.h>
 #include <daemon/eard_api.h>
-
+#include <common/system/time.h>
+extern masters_info_t masters_info;
+extern int dispose;
 //#define TEST_MB 0
 
 /*
@@ -147,10 +151,24 @@ static long long metrics_l1[2];
 static long long metrics_l2[2];
 static long long metrics_l3[2];
 #endif
+static timestamp init_mpi_time;
+static int first_timestamp=1;
 
 static int NI=0;
 
 
+void set_null_dc_energy(edata_t e)
+{
+	memset((void *)e,0,node_energy_datasize);
+}
+void set_null_rapl(ull *erapl)
+{
+	memset((void*)erapl,0,rapl_elements*sizeof(ull));
+}
+void set_null_uncores(ull *band)
+{
+	memset(band,0,bandwith_elements*sizeof(ull));
+}
 long long metrics_time()
 {
 	return PAPI_get_real_usec();
@@ -159,22 +177,39 @@ long long metrics_time()
 static void metrics_global_start()
 {
 	//
-	eards_begin_app_compute_turbo_freq();
-	// New
-  eards_node_dc_energy(aux_energy,node_energy_datasize);
   aux_time = metrics_time();
-  eards_read_rapl(aux_rapl);
-	eards_start_uncore();
-	eards_read_uncore(metrics_bandwith_init[APP]);
+	if (masters_info.my_master_rank>=0){
+		eards_begin_app_compute_turbo_freq();
+	// New
+  	eards_node_dc_energy(aux_energy,node_energy_datasize);
+  	eards_read_rapl(aux_rapl);
+		eards_start_uncore();
+		eards_read_uncore(metrics_bandwith_init[APP]);
+	}else{
+		set_null_dc_energy(aux_energy);
+		set_null_rapl(aux_rapl);
+		set_null_uncores(metrics_bandwith_init[APP]);
+	}
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
 	//eards_start_uncore();
+	
+  /* We start computing mpi statistics at this point */
+	timestamp_getfast(&init_mpi_time);
+	sig_shared_region[my_node_id].mpi_info.mpi_time=0;
+  sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
+  sig_shared_region[my_node_id].mpi_info.exec_time=0;
 
 }
 
 static void metrics_global_stop()
 {
+	timestamp end_mpi_time;
 	//
-	metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
+	if (masters_info.my_master_rank>=0){ 
+		metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
+	}else{
+		metrics_avg_frequency[APP]=0;
+	}
 
 	// Accum calls
 	#if CACHE_METRICS
@@ -182,9 +217,19 @@ static void metrics_global_stop()
 	#endif
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
 	get_total_fops(metrics_flops[APP]);
-	eards_read_uncore(metrics_bandwith_end[APP]);
+	if (masters_info.my_master_rank>=0){
+		eards_read_uncore(metrics_bandwith_end[APP]);
+	}else{
+		set_null_uncores(metrics_bandwith_end[APP]);
+	}
 	//eards_start_uncore();
 	diff_uncores(metrics_bandwith[APP],metrics_bandwith_end[APP],metrics_bandwith_init[APP],bandwith_elements);
+	timestamp_getfast(&end_mpi_time);
+  unsigned long long extime;
+  extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);
+  sig_shared_region[my_node_id].mpi_info.exec_time=extime;
+	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
+
 	
 }
 
@@ -199,13 +244,16 @@ static void metrics_global_stop()
 * Avg. Freq. | v    | v    || v     | v    | x    | x         | x     | x
 */
 
+
 static void metrics_partial_start()
 {
 	int i;
 	memcpy(metrics_ipmi[LOO],aux_energy,node_energy_datasize);
 	metrics_usecs[LOO]=aux_time;
 	
-	eards_begin_compute_turbo_freq();
+	if (masters_info.my_master_rank>=0){ 
+		eards_begin_compute_turbo_freq();
+	}
 	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
 	copy_uncores(metrics_bandwith_init[LOO],metrics_bandwith_end[LOO],bandwith_elements);
 	for (i = 0; i < rapl_elements; i++) {
@@ -217,6 +265,8 @@ static void metrics_partial_start()
 	start_cache_metrics();
 	#endif
 	start_flops_metrics();
+
+	
 }
 
 static int metrics_partial_stop(uint where)
@@ -229,86 +279,108 @@ static int metrics_partial_stop(uint where)
 	long long aux_time_stop;
 	char stop_energy_str[256],start_energy_str[256];
 
+  if ((masters_info.my_master_rank<0) && (!sig_shared_region[0].ready)){
+			//debug("Master signature not ready at time %lld",metrics_time());
+      return EAR_NOT_READY;
+  }
+
 	// Manual IPMI accumulation
-	eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
-	energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
-	energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
-	energy_lib_to_str(stop_energy_str,aux_energy_stop);	
-	if ((where==SIG_END) && (c_energy==0)){ 
-		debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
-		return EAR_NOT_READY;
+	if (masters_info.my_master_rank>=0){
+		eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
+		energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
+		energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
+		energy_lib_to_str(stop_energy_str,aux_energy_stop);	
+		if ((where==SIG_END) && (c_energy==0) && (masters_info.my_master_rank>=0)){ 
+			debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
+			if (dispose) fprintf(stderr,"partial stop and EAR_NOT_READY\n");
+			return EAR_NOT_READY;
+		}
 	}
 	aux_time_stop = metrics_time();
 	/* Sometimes energy is not zero but power is not correct */
 	c_time=metrics_usecs_diff(aux_time_stop, metrics_usecs[LOO]);
 	/* energy is computed in node_energy_units and time in usecs */
-	debug("Energy computed %lu, time %lld",c_energy,c_time);
+	//debug("Energy computed %lu, time %lld",c_energy,c_time);
 	c_power=(float)(c_energy*(1000000.0/(double)node_energy_units))/(float)c_time;
 
-	if ((where==SIG_END) && (c_power<system_conf->min_sig_power)){ 
+	if (masters_info.my_master_rank>=0){
+	if (dispose && ((c_power<0) || (c_power>system_conf->max_sig_power))){
+		fprintf(stderr,"dispose and c_power %lf\n",c_power);	
+		fprintf(stderr,"power %f energy %lu time %llu\n",c_power,c_energy,c_time);
+	}
+	}
+
+	/* If we are not the node master, we will continue */
+	if ((where==SIG_END) && (c_power<system_conf->min_sig_power) && (masters_info.my_master_rank>=0)){ 
 		debug("EAR_NOT_READY because of power %f\n",c_power);
 		return EAR_NOT_READY;
 	}
 
 
 	/* This is new to avoid cases where uncore gets frozen */
-	eards_read_uncore(metrics_bandwith_end[LOO]);
-	diff_uncores(diff_uncore_value,metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
-	if ((where==SIG_END) && uncore_are_frozen(diff_uncore_value,bandwith_elements)){
-		verbose(1,"Doing reset of uncore counters becuase they were frozen");
-		eards_reset_uncore();
-		return EAR_NOT_READY;
-	}else{
-		copy_uncores(metrics_bandwith[LOO],diff_uncore_value,bandwith_elements);	
+	if (masters_info.my_master_rank>=0){
+		eards_read_uncore(metrics_bandwith_end[LOO]);
+		diff_uncores(diff_uncore_value,metrics_bandwith_end[LOO],metrics_bandwith_init[LOO],bandwith_elements);
+		if ((where==SIG_END) && uncore_are_frozen(diff_uncore_value,bandwith_elements)){
+			verbose(1,"Doing reset of uncore counters becuase they were frozen");
+			eards_reset_uncore();
+			return EAR_NOT_READY;
+		}else{
+			copy_uncores(metrics_bandwith[LOO],diff_uncore_value,bandwith_elements);	
+		}
 	}
 	/* End new section to check frozen uncore counters */
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
 	aux_time=aux_time_stop;
 
-	if (c_power<(system_conf->max_sig_power*1.5)){
-		acum_ipmi[LOO] = c_energy;
-	}else{
-		verbose(1,"Computed power was not correct (%lf) reducing it to %lf\n",c_power,system_conf->min_sig_power);
-		acum_ipmi[LOO] = system_conf->min_sig_power*c_time;
+	if (masters_info.my_master_rank>=0){
+		if (c_power<(system_conf->max_sig_power*1.5)){
+			acum_ipmi[LOO] = c_energy;
+		}else{
+			verbose(1,"Computed power was not correct (%lf) reducing it to %lf\n",c_power,system_conf->min_sig_power);
+			acum_ipmi[LOO] = system_conf->min_sig_power*c_time;
+		}
+		acum_ipmi[APP] += acum_ipmi[LOO];
 	}
-	acum_ipmi[APP] += acum_ipmi[LOO];
 	ulong *ei,*ee;
 	ei=(ulong *)metrics_ipmi[LOO];
 	ee=(ulong *)aux_energy_stop;
-	debug("loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
+	//debug("loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
 	// Manual time accumulation
 	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
 	
 	// Daemon metrics
-	metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
+	if (masters_info.my_master_rank>=0){ 
+		metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
 	/* This code needs to be adapted to read , compute the difference, and copy begin=end 
  	* diff_uncores(values,values_end,values_begin,num_counters);
  	* copy_uncores(values_begin,values_end,num_counters);
  	*/
+		eards_read_rapl(aux_rapl);
 	//eards_start_uncore();
 
-	eards_read_rapl(aux_rapl);
 
-	// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
-	for (i = 0; i < bandwith_elements; i++) {
-			metrics_bandwith[ACUM][i] += metrics_bandwith[LOO][i];
-	}
-	// We read acuumulated energy
-	for (i = 0; i < rapl_elements; i++) {
-		if (aux_rapl[i] < last_rapl[i])
-		{
-			metrics_rapl[LOO][i] = ullong_diff_overflow(last_rapl[i], aux_rapl[i]);
+		// Manual bandwith accumulation: We are also computing it at the end. Should we maintain it? For very long apps maybe this approach is better
+		for (i = 0; i < bandwith_elements; i++) {
+				metrics_bandwith[ACUM][i] += metrics_bandwith[LOO][i];
 		}
-		else {
-			metrics_rapl[LOO][i]=aux_rapl[i]-last_rapl[i];		
+		// We read acuumulated energy
+		for (i = 0; i < rapl_elements; i++) {
+			if (aux_rapl[i] < last_rapl[i])
+			{
+				metrics_rapl[LOO][i] = ullong_diff_overflow(last_rapl[i], aux_rapl[i]);
+			}
+			else {
+				metrics_rapl[LOO][i]=aux_rapl[i]-last_rapl[i];		
+			}
 		}
-	}
-
-	// Manual RAPL accumulation
-	for (i = 0; i < rapl_elements; i++) {
-			metrics_rapl[APP][i] += metrics_rapl[LOO][i];
-	}
+	
+		// Manual RAPL accumulation
+		for (i = 0; i < rapl_elements; i++) {
+				metrics_rapl[APP][i] += metrics_rapl[LOO][i];
+		}
+	} /* Metrics collected by node_master*/
 
 
 	// Local metrics
@@ -317,6 +389,7 @@ static int metrics_partial_stop(uint where)
 	#endif
 	stop_basic_metrics(&metrics_cycles[LOO], &metrics_instructions[LOO]);
 	stop_flops_metrics(&aux_flops, metrics_flops[LOO]);
+
 
 	return EAR_SUCCESS;
 }
@@ -343,21 +416,32 @@ ull metrics_vec_inst(signature_t *metrics)
 	return VI;
 }
 
+void copy_node_data(signature_t *dest,signature_t *src)
+{
+	dest->DC_power=src->DC_power;
+	dest->DRAM_power=src->DRAM_power;
+	dest->PCK_power=src->PCK_power;
+	dest->avg_f=src->avg_f;
+}
+
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
 {
 	double time_s, cas_counter, aux;
+	timestamp end_mpi_time;
 	int i, s;
 
 	// If global is 1, it means that the global application metrics are required
 	// instead the small time metrics for loops. 's' is just a signature index.
 	s = global;
 
+	/* PER NODE METRICS */
+	metrics->avg_f = metrics_avg_frequency[s];
+
 	// Time
 	time_s = (double) metrics_usecs[s] / 1000000.0;
 
 	// Basics
 	metrics->time = time_s / (double) iterations;
-	metrics->avg_f = metrics_avg_frequency[s];
 
 	#if CACHE_METRICS
 	metrics->L1_misses = metrics_l1[s];
@@ -378,55 +462,51 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		metrics->Gflops = metrics->Gflops / time_s; // Floating ops to FLOPS
 		metrics->Gflops = metrics->Gflops / 1000000000.0; // FLOPS to GFLOPS
 		metrics->Gflops = metrics->Gflops * (double) procs; // Core GFLOPS to node GFLOPS
-		/* if (s==APP) { verbose(0,"Total resources per node detected %d, GFlops per MPI process %lf \n",procs,metrics->Gflops); } */
 	}
-
 	// Transactions and cycles
 	aux = time_s * (double) (1024 * 1024 * 1024);
-	cas_counter = 0.0;
+  cas_counter = 0.0;
+  for (i = 0; i < bandwith_elements; ++i) {
+    cas_counter += (double) metrics_bandwith[s][i];
+  }
+	if(masters_info.my_master_rank>=0) lib_shared_region->cas_counters=cas_counter;
+	else cas_counter=lib_shared_region->cas_counters;
 
-	for (i = 0; i < bandwith_elements; ++i) {
-		cas_counter += (double) metrics_bandwith[s][i];
-	}
-	#ifdef TEST_MB
-	if (s==APP){
-		/* We compare the global cas_counters computed accumulating loops vs globally computed */
-		for (i = 0; i < bandwith_elements; ++i) {
-    	    cas_counter_acum += (double) metrics_bandwith[ACUM][i];
-    	}
-	}
-	#endif
 
 	// Cycles, instructions and transactions
 	metrics->cycles = metrics_cycles[s];
 	metrics->instructions = metrics_instructions[s];
 
 	metrics->GBS = cas_counter * hw_cache_line_size / aux;
-	#ifdef TEST_MB
-	if (s==APP){
-		double GBS_acum;
-		GBS_acum=cas_counter_acum * hw_cache_line_size / aux;
-		verbose(2,"GBS global %.3lf . GBS accumulated %.3lf\n",metrics->GBS,GBS_acum);
-	}
-	#endif
 	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
 	metrics->TPI = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];
 
+	if (masters_info.my_master_rank>=0){
 	// Energy node
-	metrics->DC_power = (double) acum_ipmi[s] / (time_s * node_energy_units);
-	debug("DC power computed in signature %.2lf (%lu energy))",metrics->DC_power,acum_ipmi[s]);
-	metrics->EDP = time_s * time_s * metrics->DC_power;
-	if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
-		debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
-	}
+		metrics->DC_power = (double) acum_ipmi[s] / (time_s * node_energy_units);
+		if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
+			debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
+		}
 
-	int p;
-	metrics->PCK_power=0;
-	metrics->DRAM_power=0;
-	for (p=0;p<num_packs;p++) metrics->DRAM_power=metrics->DRAM_power+(double) metrics_rapl[s][p];
-	for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
-	metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
-	metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
+		int p;
+		metrics->PCK_power=0;
+		metrics->DRAM_power=0;
+		for (p=0;p<num_packs;p++) metrics->DRAM_power=metrics->DRAM_power+(double) metrics_rapl[s][p];
+		for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
+		metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
+		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
+	}else{
+		copy_node_data(metrics,&sig_shared_region[0].sig);
+	}
+	metrics->EDP = time_s * time_s * metrics->DC_power;
+	/* This part is new to share with other processes */
+	timestamp_getfast(&end_mpi_time);
+	unsigned long long extime;
+	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);	
+	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
+  sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
+	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
+	//signature_ready(&sig_shared_region[my_node_id]);
 }
 
 int metrics_init()
@@ -438,7 +518,7 @@ int metrics_init()
 
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
-	debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	//debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
 	num_packs=detect_packages(NULL);
 	if (num_packs==0){
 		verbose(0,"Error detecting number of packges");
@@ -450,7 +530,7 @@ int metrics_init()
 		verbose(1,"Error loading energy plugin");
 		return EAR_ERROR;
 	}
-	debug("energy_init loaded");
+
 
 	// Local metrics initialization
 	if (init_basic_metrics()!=EAR_SUCCESS) return EAR_ERROR;
@@ -478,19 +558,24 @@ int metrics_init()
 
 		get_weigth_fops_instructions(metrics_flops_weights);
 
-		debug( "detected %d FLOP counter", flops_elements);
+		//debug( "detected %d FLOP counter", flops_elements);
 	}
 
 	// Daemon metrics allocation (TODO: standarize data size)
-	rapl_size = eards_get_data_size_rapl();
+	if (masters_info.my_master_rank>=0){
+		rapl_size = eards_get_data_size_rapl();
+		bandwith_size = eards_get_data_size_uncore();
+	}else{
+		rapl_size=sizeof(unsigned long long);
+		bandwith_size=sizeof(long long);
+	}
 	rapl_elements = rapl_size / sizeof(unsigned long long);
+	bandwith_elements = bandwith_size / sizeof(long long);
 
 	// Allocating data for energy node metrics
 	// node_energy_datasize=eards_node_energy_data_size();
 	energy_lib_datasize(&node_energy_datasize);
-	debug("Node energy data size %lu",node_energy_datasize);
 	energy_lib_units(&node_energy_units);
-	debug("Node energy units %u",node_energy_units);
 	aux_energy=(edata_t)malloc(node_energy_datasize);
 	aux_energy_stop=(edata_t)malloc(node_energy_datasize);
 	metrics_ipmi[0]=(edata_t)malloc(node_energy_datasize);
@@ -500,8 +585,6 @@ int metrics_init()
 	acum_ipmi[0]=0;acum_ipmi[1]=0;
 	
 
-	bandwith_size = eards_get_data_size_uncore();
-	bandwith_elements = bandwith_size / sizeof(long long);
 
 	metrics_bandwith[LOO] = malloc(bandwith_size);
 	metrics_bandwith[APP] = malloc(bandwith_size);
@@ -537,8 +620,8 @@ int metrics_init()
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
-	debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);
-	debug( "detected %d bandwith counter", bandwith_elements);
+	//debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);
+	//debug( "detected %d bandwith counter", bandwith_elements);
 
 	metrics_reset();
 	metrics_global_start();
@@ -578,6 +661,7 @@ int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulon
     long long aux_time;
 
 	NI=iterations;
+
 
 	// Time requirements
 	aux_time = metrics_usecs_diff(metrics_time(), metrics_usecs[LOO]);

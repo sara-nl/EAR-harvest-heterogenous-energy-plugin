@@ -26,8 +26,6 @@ TMPDIR       = @localstatedir@
 DOCDIR       = @docdir@
 
 FEAT_AVX512  = @FEAT_AVX512@
-VER_MAJOR    = 3
-VER_MINOR    = 1
 CHOWN_USR    = @USER@
 CHOWN_GRP    = @GROUP@
 CONSTANTS    = -DSEC_KEY=10001

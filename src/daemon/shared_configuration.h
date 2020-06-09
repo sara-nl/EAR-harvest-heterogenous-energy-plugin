@@ -38,9 +38,16 @@
 #define _SHARED_CONF_H
 
 #include <common/config.h>
+#include <common/system/shared_areas.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/coefficient.h>
+
+#ifdef POWERCAP
+#include <daemon/powercap.h>
+#include <daemon/app_mgt.h>
+#include <common/types/pc_app_info.h>
+#endif
 
 typedef struct services_conf{
 		eard_conf_t     eard;
@@ -66,7 +73,12 @@ typedef struct settings_conf{
 	double max_power_cap;
 	uint report_loops;
 	conf_install_t 	installation;
+#if POWERCAP
+	node_powercap_opt_t pc_opt;
+#endif
 } settings_conf_t;
+
+
 
 typedef struct resched{
 	int 	force_rescheduling;
@@ -127,6 +139,35 @@ void dettach_resched_shared_area();
  * */
 void resched_shared_area_dispose(char * path);
 
+#if POWERCAP
+/****************** APP AREA ***************/
+
+/** Sets in path the filename for the shared memory area app_area between EARD and EARL
+* @param path (output)
+*/
+int get_app_mgt_path(char *tmp,char *path);
+
+/** Creates the shared mmemory. It is used by EARD and APP. App puts information here
+ *  * *   @param ear_conf_path specifies the path (folder) to create the file used by mmap
+ *   * */
+
+app_mgt_t * create_app_mgt_shared_area(char *path);
+
+/** Connects with a previously created shared memory region. It is used by EARLib (client)
+ *  * *   @param ear_conf_path specifies the path (folder) where the mapped file were created
+ *   * */
+app_mgt_t * attach_app_mgt_shared_area(char * path);
+
+/** Disconnect from a previously connected shared memory region. It is used by EARLib (client)
+ *  * */
+void dettach_app_mgt_shared_area();
+
+/** Releases a shared memory area previously created. It is used by EARD (server)
+ *  * */
+void app_mgt_shared_area_dispose(char * path);
+#endif
+
+
 /***************** COEFFICIENTS **********/
 int get_coeffs_path(char *tmp,char *path);
 
@@ -184,6 +225,14 @@ void frequencies_shared_area_dispose(char * path);
 /** Unmmaps the shared memory for the list of frequencies */
 void dettach_frequencies_shared_area();
 
+#if POWERCAP
+/************** PC_APP_INFO_T ****************/
+int get_pc_app_info_path(char *tmp,char *path);
+pc_app_info_t  * create_pc_app_info_shared_area(char *path);
+pc_app_info_t * attach_pc_app_info_shared_area(char * path);
+void dettach_pc_app_info_shared_area();
+void pc_app_info_shared_area_dispose(char * path);
+#endif
 
 
 

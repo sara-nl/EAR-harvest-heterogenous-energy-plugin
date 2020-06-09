@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
+API_CFLAGS = $(CFLAGS) $(MPI_CFLAGS) 
 
 ######## FILES
 
@@ -8,16 +8,20 @@ OBJS = \
     ear_default.o \
     mpic.o \
     mpif.o \
+		ear_seq.o
 
 ######## RULES
 
-all: $(OBJS)
+all: $(OBJS) libear_seq.so
 
 ear.o: ear.c ear.h
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $<	
+	$(CC) $(API_CFLAGS)  $(PAPI_CFLAGS) -c $<	
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(API_CFLAGS) -c $<
+
+libear_seq.so:ear_seq.o
+	$(CC) -shared $(PAPI_LDFLAGS) -ldl -o libear_seq.so ear_seq.o	
 
 ######## OPTIONS 
 

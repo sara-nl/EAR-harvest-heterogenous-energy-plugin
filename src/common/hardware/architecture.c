@@ -32,7 +32,6 @@
 #include <common/output/verbose.h>
 #include <common/sizes.h>
 #include <common/states.h>
-#include <common/hardware/hardware_info.h>
 #include <common/hardware/cpupower.h>
 #include <common/hardware/architecture.h>
 
@@ -44,6 +43,7 @@ state_t get_arch_desc(architecture_t *arch)
 	arch->max_freq_avx512=MAX_FREQ_AVX512;
 	arch->max_freq_avx2=MAX_FREQ_AVX2;
 	arch->pstates=CPUfreq_get_num_pstates(0);
+	topology_init(&arch->top);
 	return EAR_SUCCESS;	
 }
 

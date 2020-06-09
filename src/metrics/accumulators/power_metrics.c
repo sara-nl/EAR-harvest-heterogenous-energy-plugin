@@ -396,12 +396,16 @@ void print_energy_data(energy_data_t *e)
 	printf("\n");
 }
 
-void print_power(power_data_t *my_power)
+void print_power(power_data_t *my_power,uint show_date,int out)
 {
 	double dram_power = 0, pack_power = 0, gpu_power = 0;
 	struct tm *current_t;
 	char s[64];
 	int p;
+	int fd;
+
+	if (out>=0) fd=out;
+	else fd=STDERR_FILENO;
 
 	// CPU/DRAM
 	dram_power = accum_dram_power(my_power);
@@ -409,11 +413,16 @@ void print_power(power_data_t *my_power)
 	gpu_power  = accum_gpu_power(my_power);
 
 	// We format the end time into localtime and string
-	current_t = localtime(&(my_power->end));
-	strftime(s, sizeof(s), "%c", current_t);
+	if (show_date){
+		current_t = localtime(&(my_power->end));
+		strftime(s, sizeof(s), "%c", current_t);
 
-	verbose(0, "%s: avg. power (W) for node %.2lf, for DRAM %.2lf, for CPU %.2lf, for GPU %.2lf",
+		dprintf(fd,"%s: avg. power (W) for node %.2lf, for DRAM %.2lf, for CPU %.2lf, for GPU %.2lf\n",
 		   s, my_power->avg_dc, dram_power, pack_power, gpu_power);
+	}else{
+		dprintf(fd,"avg. power (W) for node %.2lf, for DRAM %.2lf, for CPU %.2lf, for GPU %.2lf\n",
+		   my_power->avg_dc, dram_power, pack_power, gpu_power);
+	}
 }
 
 void report_periodic_power(int fd, power_data_t *my_power)

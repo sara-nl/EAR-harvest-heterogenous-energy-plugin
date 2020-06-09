@@ -53,7 +53,9 @@ ulong frequency_get_nominal_pstate();
 ulong *frequency_get_freq_rank_list();
 ulong frequency_set_all_cpus(ulong freq);
 ulong frequency_pstate_to_freq(uint pstate);
+ulong frequency_pstate_to_freq_list(uint pstate,ulong *flist,uint np);
 uint frequency_freq_to_pstate(ulong freq);
+uint frequency_freq_to_pstate_list(ulong freq,ulong *flist,uint np);
 void frequency_set_performance_governor_all_cpus();
 void frequency_set_ondemand_governor_all_cpus();
 void frequency_set_userspace_governor_all_cpus();
@@ -67,6 +69,8 @@ int frequency_is_valid_frequency(ulong freq);
 int frequency_is_valid_pstate(uint pstate);
 uint frequency_closest_pstate(ulong freq);
 ulong frequency_closest_frequency(ulong freq);
+ulong frequency_closest_high_freq(ulong freq,int minps);
+
 
 #ifndef EAR_CPUPOWER
 void get_governor(struct cpufreq_policy *governor);

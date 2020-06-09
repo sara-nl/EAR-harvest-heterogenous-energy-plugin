@@ -26,16 +26,41 @@
  *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *	The GNU LEsser General Public License is contained in the file COPYING	
  */
+#define _GNU_SOURCE
 
-//#define SHOW_DEBUGS 1
+#if MPI
+#include <mpi.h>
+#endif
+#include <time.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <pthread.h>
 #include <papi.h>
-#include <common/includes.h>
+
+//#define SHOW_DEBUGS 0
+#include <common/config.h>
+#include <common/colors.h>
 #include <common/environment.h>
+#include <common/output/verbose.h>
+#include <common/types/application.h>
 #include <common/types/version.h>
 #include <common/types/application.h>
+#include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
+#include <common/hardware/hardware_info.h>
 #include <library/api/mpi.h>
+
 #include <library/common/externs_alloc.h>
+#include <library/common/global_comm.h>
+#include <library/common/library_shared_data.h>
+
 #include <library/dynais/dynais.h>
 #include <library/tracer/tracer.h>
 #include <library/states/states.h>
@@ -43,16 +68,20 @@
 #include <library/models/models.h>
 #include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
+
 #include <daemon/eard_api.h>
+#include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
+
 #include <metrics/common/papi.h>
 
 // Statics
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
 #define USE_LOCK_FILES 		1
-
+pthread_t earl_periodic_th;
 unsigned long ext_def_freq=0;
+int dispose=0;
 
 #if USE_LOCK_FILES
 #include <common/system/file.h>
@@ -83,22 +112,31 @@ static uint dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
 static uint lib_period=PERIOD;
 static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #endif
-#if EAR_LIB_SYNC
 #define MASTERS_SYNC_VERBOSE 1
+masters_info_t masters_info;
 MPI_Comm new_world_comm,masters_comm;
 int num_masters;
 int my_master_size;
 int masters_connected=0;
 unsigned masters_comm_created=0;
+mpi_information_t *per_node_mpi_info, *global_mpi_info;
+char lib_shared_region_path[GENERIC_NAME];
+char shsignature_region_path[GENERIC_NAME];
+char block_file[GENERIC_NAME];
+float ratio_PPN;
+#if POWERCAP
+app_mgt_t *app_mgt_info;
+char app_mgt_path[GENERIC_NAME];
+pc_app_info_t *pc_app_info_data;
+char pc_app_info_path[GENERIC_NAME];
 #endif
 
+void *earl_periodic_actions(void *no_arg);
 //
 static void print_local_data()
 {
 	char ver[64];
-	#if EAR_LIB_SYNC 
-	if (my_master_rank==0) {
-	#endif
+	if (masters_info.my_master_rank==0) {
 	version_to_str(ver);
 	verbose(1, "------------EAR%s--------------------",ver);
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
@@ -110,23 +148,21 @@ static void print_local_data()
 	verbose(1, "Policy threshold/Perf accuracy: %0.2lf/%0.2lf", application.job.th, get_ear_performance_accuracy());
 	verbose(1, "DynAIS levels/window/AVX512: %d/%d/%d", get_ear_dynais_levels(), get_ear_dynais_window_size(), dynais_build_type());
 	verbose(1, "VAR path: %s", get_ear_tmp());
+	verbose(1, "EAR privileged user %u",system_conf->user_type==AUTHORIZED);
 	verbose(1, "--------------------------------");
-	#if EAR_LIB_SYNC
 	}
-	#endif
 }
 
 
 /* notifies mpi process has succesfully connected with EARD */
 void notify_eard_connection(int status)
 {
-	#if EAR_LIB_SYNC
 	char *buffer_send;
 	char *buffer_recv;
 	int i;
 	if (masters_comm_created){
 	buffer_send = calloc(    1, sizeof(char));
-	buffer_recv = calloc(my_master_size, sizeof(char));
+	buffer_recv = calloc(masters_info.my_master_size, sizeof(char));
 	if ((buffer_send==NULL) || (buffer_recv==NULL)){
 			error("Error, memory not available for synchronization\n");
 			my_id=1;
@@ -136,23 +172,27 @@ void notify_eard_connection(int status)
 	buffer_send[0] = (char)status; 
 
 	/* Not clear the error values */
-	if (my_master_rank==0) {
-		debug("Number of nodes expected %d\n",my_master_size);
+	if (masters_info.my_master_rank==0) {
+		debug("Number of nodes expected %d\n",masters_info.my_master_size);
 	}
-	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_comm);
-
-
-	for (i = 0; i < my_master_size; ++i)
+	#if MPI
+	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_info.masters_comm);
+	for (i = 0; i < masters_info.my_master_size; ++i)
 	{       
 		masters_connected+=(int)buffer_recv[i];
 	}
-	if (my_master_rank==0) {
+	#else
+	masters_connected=1;
+	#endif	
+
+
+	if (masters_info.my_master_rank==0) {
 		debug("Total number of masters connected %d",masters_connected);
 	}
-  if (masters_connected!=my_master_size){
+  if (masters_connected!=masters_info.my_master_size){
   /* Some of the nodes is not ok , setting off EARL */
-    if (my_master_rank==0) {
-      verbose(1,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",my_master_size,masters_connected);
+    if (masters_info.my_master_rank==0) {
+      verbose(1,"Number of nodes expected %d , number of nodes connected %d, setting EAR to off \n",masters_info.my_master_size,masters_connected);
     }
     my_id=1;
     return;
@@ -165,25 +205,197 @@ void notify_eard_connection(int status)
 	}
 	return;
 	}
+}
+
+
+void create_shared_regions()
+{
+	char *tmp=get_ear_tmp();
+	int bfd=-1;
+
+	/* This section allocates shared memory for processes in same node */
+	debug("Master creating shared regions for node synchro");
+  sprintf(block_file,"%s/.my_local_lock_2.%s",tmp,application.job.user_id);
+  if ((bfd=file_lock_create(block_file))<0){
+    error("Creating lock file for shared memory %s",block_file);
+  }
+
+	
+	if (get_lib_shared_data_path(tmp,lib_shared_region_path)!=EAR_SUCCESS){
+		error("Getting the lib_shared_region_path");
+	}else{
+		lib_shared_region=create_lib_shared_data_area(lib_shared_region_path);
+		if (lib_shared_region==NULL){
+			error("Creating the lib_shared_data region");
+		}
+		my_node_id=0;
+		lib_shared_region->num_processes=1;
+		lib_shared_region->num_signatures=0;
+	}
+	debug("Node connected %u",my_node_id);
+	#if MPI
+	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+		error("MPI_Barrier");
+		return;
+	}
+	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+		error("MPI_Barrier");
+		return;
+	}
 	#endif
+	//print_lib_shared_data(lib_shared_region);
+	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
+    error("Getting the shsignature_region_path	");
+	}else{
+		debug("Master node creating the signatures with %d processes",lib_shared_region->num_processes);
+		sig_shared_region=create_shared_signatures_area(shsignature_region_path,lib_shared_region->num_processes);
+		if (sig_shared_region==NULL){
+			error("NULL pointer returned in create_shared_signatures_area");
+		}
+	}
+	sig_shared_region[my_node_id].master=1;
+	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
+	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
+
+	#if MPI
+	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+		error("MPI_Barrier");
+		return;
+	}
+	#endif
+	/* This part allocates memory for sharing data between nodes */
+	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
+	#if MPI
+	if (share_global_info(masters_info.masters_comm,(char *)&lib_shared_region->num_processes,sizeof(int),(char*)masters_info.ppn,sizeof(int))!=EAR_SUCCESS){
+		error("Sharing the number of processes per node");
+	}
+	#else
+	masters_info.ppn[0]=1;
+	#endif
+	int i;
+	masters_info.max_ppn=masters_info.ppn[0];
+	for (i=1;i<masters_info.my_master_size;i++){ 
+		if (masters_info.ppn[i]>masters_info.max_ppn) masters_info.max_ppn=masters_info.ppn[i];
+		if (masters_info.my_master_rank==0) verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
+	}
+	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
+	#if SHARE_INFO_PER_PROCESS
+	debug("Sharing info at process level, reporting N per node");
+	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
+	int total_elements=masters_info.max_ppn*masters_info.my_master_size;
+	int per_node_elements=masters_info.max_ppn;
+	ratio_PPN=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
+	#endif
+	#if SHARE_INFO_PER_NODE
+	debug("Sharing info at node level, reporting 1 per node");
+	int total_size=masters_info.my_master_size*sizeof(shsignature_t);
+	int total_elements=masters_info.my_master_size;
+	int per_node_elements=1;
+	#endif
+	masters_info.nodes_info=(shsignature_t *)calloc(total_elements,sizeof(shsignature_t));
+	if (masters_info.nodes_info==NULL){ 
+		error("Allocating memory for node_info");
+	}else{ 
+		debug("%d Bytes (%d x %lu)  allocated for masters_info node_info",total_size,total_elements,sizeof(shsignature_t));
+	}
+	masters_info.my_mpi_info=(shsignature_t *)calloc(per_node_elements,sizeof(shsignature_t));
+  if (masters_info.my_mpi_info==NULL){
+    error("Allocating memory for my_mpi_info");
+  }else{
+    debug("%lu Bytes allocated for masters_info my_mpi_info",per_node_elements*sizeof(shsignature_t));
+  }
+
+}
+
+void attach_shared_regions()
+{
+	int bfd=-1,i;
+	char *tmp=get_ear_tmp();
+	/* This function is executed by processes different than masters */
+	/* they first join the Node shared memory */
+	sprintf(block_file,"%s/.my_local_lock.%s",tmp,application.job.user_id);
+	if ((bfd=file_lock_create(block_file))<0){
+		error("Creating lock file for shared memory");
+	}
+	if (get_lib_shared_data_path(tmp,lib_shared_region_path)!=EAR_SUCCESS){
+    error("Getting the lib_shared_region_path");
+  }else{
+		#if MPI
+		if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
+			error("MPI_Barrier");
+			return;
+		}
+		#endif
+		do{
+			lib_shared_region=attach_lib_shared_data_area(lib_shared_region_path);
+		}while(lib_shared_region==NULL);
+		while(file_lock(bfd)<0);
+		my_node_id=lib_shared_region->num_processes;
+    lib_shared_region->num_processes=lib_shared_region->num_processes+1;
+		file_unlock(bfd);
+  }
+	#if MPI
+  if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){	
+		error("In MPI_BARRIER");
+	}
+  if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){	
+		error("In MPI_BARRIER");
+	}
+	#endif
+	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
+    error("Getting the shsignature_region_path  ");
+  }else{
+			sig_shared_region=attach_shared_signatures_area(shsignature_region_path,lib_shared_region->num_processes);
+			if (sig_shared_region==NULL){
+				error("NULL pointer returned in attach_shared_signatures_area");
+			}
+	}
+	sig_shared_region[my_node_id].master=0;
+	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
+	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
+	/* No masters processes don't allocate memory for data sharing between nodes */	
+}
+
+void fill_application_mgt_data(app_mgt_t *a)
+{
+	uint total=0,i;
+	a->master_rank=masters_info.my_master_rank;
+  for (i=0;i<masters_info.my_master_size;i++){
+    total+=masters_info.ppn[i];
+  }
+	a->ppn=lib_shared_region->num_processes;
+	a->nodes=masters_info.my_master_size;
+	a->total_processes=total;
+	a->max_ppn=masters_info.max_ppn;
 }
 /* Connects the mpi process to a new communicator composed by masters */
 void attach_to_master_set(int master)
 {
-	#if EAR_LIB_SYNC
 	int color;
-	my_master_rank=0;
+	//my_master_rank=0;
 	if (master) color=0;
 	else color=MPI_UNDEFINED;
-	PMPI_Comm_dup(MPI_COMM_WORLD,&new_world_comm);
-	PMPI_Comm_split(new_world_comm, color, my_master_rank, &masters_comm);
+	if (master) masters_info.my_master_rank=0;
+	else masters_info.my_master_rank=-1;
+	#if MPI
+	if (PMPI_Comm_dup(MPI_COMM_WORLD,&masters_info.new_world_comm)!=MPI_SUCCESS){
+		error("Duplicating MPI_COMM_WORLD");
+	}
+	if (PMPI_Comm_split(masters_info.new_world_comm, color, masters_info.my_master_rank, &masters_info.masters_comm)!=MPI_SUCCESS){
+    error("Splitting MPI_COMM_WORLD");
+  }
+	#endif
 	masters_comm_created=1;
 	if ((masters_comm_created) && (!color)){
-		PMPI_Comm_rank(masters_comm,&my_master_rank);
-		PMPI_Comm_size(masters_comm,&my_master_size);
-		debug("New master communicator created with %d masters. My master rank %d\n",my_master_size,my_master_rank);
+		#if MPI
+		PMPI_Comm_rank(masters_info.masters_comm,&masters_info.my_master_rank);
+		PMPI_Comm_size(masters_info.masters_comm,&masters_info.my_master_size);
+		#else
+		masters_info.my_master_rank=0;
+		masters_info.my_master_size=1;
+		#endif
+		debug("New master communicator created with %d masters. My master rank %d\n",masters_info.my_master_size,masters_info.my_master_rank);
 	}
-	#endif
 }
 /* returns the local id in the node */
 static int get_local_id(char *node_name)
@@ -191,6 +403,8 @@ static int get_local_id(char *node_name)
 	int master = 1;
 
 #if USE_LOCK_FILES
+	#if MPI
+	debug("MPI activated");
 	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
 
 	if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
@@ -198,14 +412,24 @@ static int get_local_id(char *node_name)
 	} else {
 		master = 0;
 	}
+	#else
+	debug("MPI not activated");
+	master=0;
+	#endif
 
 	if (master) {
 		debug("Rank %d is not the master in node %s", ear_my_rank, node_name);
 	}else{
+		debug("Rank %d is the master in node %s", ear_my_rank, node_name);
 		verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
 	}
 #else
+	#if MPI
 	master = get_ear_local_id();
+	#else 
+	master=0;
+	#endif
+	
 
 	if (master < 0) {
 		master = (ear_my_rank % ppnode);
@@ -223,6 +447,7 @@ static void get_job_identification()
 	char *account_id=getenv("SLURM_JOB_ACCOUNT");
 
 	// It is missing to use SLURM_JOB_ACCOUNT
+	
 
 	if (job_id != NULL) {
 		my_job_id=atoi(job_id);
@@ -233,7 +458,8 @@ static void get_job_identification()
 			if (step_id != NULL) {
 				my_step_id=atoi(step_id);
 			} else {
-				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using SLURM_JOB_ID");
+				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using stepid=0\n");
+				my_step_id=NULL_STEPID;
 			}
 		}
 	} else {
@@ -242,6 +468,7 @@ static void get_job_identification()
 	}
 	if (account_id==NULL) strcpy(my_account,"NO_SLURM_ACCOUNT");	
 	else strcpy(my_account,account_id);
+	debug("JOB ID %d STEP ID %d ",my_job_id,my_step_id);
 }
 
 static void get_app_name(char *my_name)
@@ -267,6 +494,8 @@ static void get_app_name(char *my_name)
 /*** We update EARL configuration based on shared memory information **/
 void update_configuration()
 {
+	char *cdynais_window;
+	int dynais_window=system_conf->lib_info.dynais_window;
 	/* print_settings_conf(system_conf);*/
 	set_ear_power_policy(system_conf->policy);
 	set_ear_power_policy_th(system_conf->settings[0]);
@@ -274,33 +503,51 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	/* Included for dynais tunning */
-	set_ear_dynais_window_size(system_conf->lib_info.dynais_window);
+	cdynais_window=getenv("SLURM_EAR_DYNAIS_WINDOW_SIZE");
+  if ((cdynais_window!=NULL) && (system_conf->user_type==AUTHORIZED)){
+		dynais_window=atoi(cdynais_window);
+	}
+	set_ear_dynais_window_size(dynais_window);
 	set_ear_learning(system_conf->learning);
 	dynais_timeout=system_conf->lib_info.dynais_timeout;
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
 }
+/**************************************** ear_init ************************/
 
 void ear_init()
 {
 	char *summary_pathname;
+	char *tmp;
 	state_t st;
 	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
 	architecture_t arch_desc;
 
 	// MPI
+	#if MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
 	PMPI_Comm_size(MPI_COMM_WORLD, &my_size);
+	#else
+	ear_my_rank=0;
+	my_size=1;
+	#endif
 
-	debug("Reading the environment");
+
+	//debug("Reading the environment");
 
 	// Environment initialization
 	ear_lib_environment();
 
+	tmp=get_ear_tmp();
+	if (get_lib_shared_data_path(tmp,lib_shared_region_path)==EAR_SUCCESS){
+		unlink(lib_shared_region_path);
+	}
+	
+
 	if (ext_def_freq_str!=NULL){
 		ext_def_freq=(unsigned long)atol(ext_def_freq_str);
-		debug("Using externally defined default freq %lu",ext_def_freq);
+		verbose(1,"Using externally defined default freq %lu",ext_def_freq);
 	}
 
 	// Fundamental data
@@ -308,20 +555,29 @@ void ear_init()
 	strtok(node_name, ".");
 
 	debug("Running in %s",node_name);
-
+	#if MPI
 	verb_level = get_ear_verbose();
+	#else
+	verb_level=1;
+	#endif
 	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
+	#if MPI
 	num_nodes = get_ear_num_nodes();
 	ppnode = my_size / num_nodes;
+	#else
+	num_nodes=1;
+	ppnode=1;
+	#endif
 
 	get_job_identification();
 	// Getting if the local process is the master or not
 	my_id = get_local_id(node_name);
 
-	debug("attach to master %d",my_id);
+	//debug("attach to master %d",my_id);
 
+	/* All masters connect in a new MPI communicator */
 	attach_to_master_set(my_id==0);
 
 	// if we are not the master, we return
@@ -330,25 +586,33 @@ void ear_init()
 		return;
 	}
 #endif
+	//debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
-	debug("system_conf_path %s",system_conf_path);
+	//debug("system_conf_path %s",system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
-	debug("resched_conf_path %s",resched_conf_path);
+	//debug("resched_conf_path %s",resched_conf_path);
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
 	/* Updating configuration */
 	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
+		debug("Updating the configuration sent by the EARD");
 		update_configuration();	
 	}else{
-		debug("Shared memory not present");
+		eard_ok=0;
+		//debug("Shared memory not present");
 #if USE_LOCK_FILES
-    debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-    if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
+    if (!my_id){ 
+    	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+			file_unlock_master(fd_master_lock,fd_lock_filename);
+		}
 #endif
-		notify_eard_connection(0);
+		/* Only the node master will notify the problem to the other masters */
+		if (!my_id) notify_eard_connection(0);
 		my_id=1;
 	}	
+
+	if (!eard_ok) return;
 
 #if ONLY_MASTER
 	if (my_id != 0) {
@@ -382,22 +646,37 @@ void ear_init()
 	start_job(&application.job);
 
 	if (!my_id){ //only the master will connect with eard
-	verbose(2, "Connecting with EAR Daemon (EARD) %d", ear_my_rank);
-	if (eards_connect(&application) == EAR_SUCCESS) {
-		debug("Rank %d connected with EARD", ear_my_rank);
-		notify_eard_connection(1);
-	}else{   
-		notify_eard_connection(0);
+		verbose(1, "%sConnecting with EAR Daemon (EARD) %d%s", COL_BLU,ear_my_rank,COL_CLR);
+		if (eards_connect(&application) == EAR_SUCCESS) {
+			debug("%sRank %d connected with EARD%s", COL_BLU,ear_my_rank,COL_CLR);
+			notify_eard_connection(1);
+		}else{   
+			eard_ok=0;
+			notify_eard_connection(0);
+		}
 	}
+
+	if (!eard_ok) return;
+
+
+	if (!my_id){
+		debug("%sI'm the master, creating shared regions%s",COL_BLU,COL_CLR);
+		create_shared_regions();
+	}else{
+		attach_shared_regions();
 	}
+
+	/* Processes in same node connectes each other*/
+
+	debug("Dynais init");	
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
-	
 	if (metrics_init()!=EAR_SUCCESS){
 		    my_id=1;
 				verbose(0,"Error in EAR metrics initialization, setting EARL off");
 				return;
 	}
+	debug("frequency_init");
 	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
 
 	if (ear_my_rank == 0)
@@ -420,12 +699,42 @@ void ear_init()
 		return;
   }
 
+	if (masters_info.my_master_rank>=0){
+	  #if POWERCAP
+  	get_app_mgt_path(get_ear_tmp(),app_mgt_path);
+  	debug("app_mgt_path %s",app_mgt_path);
+  	app_mgt_info=attach_app_mgt_shared_area(app_mgt_path);
+  	if (app_mgt_info==NULL){
+    	error("Application shared area not found");
+  	}
+		fill_application_mgt_data(app_mgt_info);
+		/* This area is RW */
+		get_pc_app_info_path(get_ear_tmp(),pc_app_info_path);
+		debug("pc_app_info path %s",pc_app_info_path);
+		pc_app_info_data=attach_pc_app_info_shared_area(pc_app_info_path);
+		if (pc_app_info_data==NULL){
+			error("pc_application_info area not found");
+		}
+  	#endif
+
+		//print_affinity_mask(&arch_desc.top);
+		int is_set;
+		if (is_affinity_set(&arch_desc.top,getpid(),&is_set)!=EAR_SUCCESS){
+			error("Checking the affinity mask");
+		}else{
+			if (is_set)	verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
+		}
+	}
+
 	#if SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
 
+	debug("init_power_policy");
 	init_power_policy(system_conf,resched_conf);
+	debug("init_power_models");
 	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
+	if (masters_info.my_master_rank>=0) verbose(1,"Policies and models initialized");	
 
 	if (ext_def_freq==0){
 		EAR_default_frequency=system_conf->def_freq;
@@ -471,29 +780,29 @@ void ear_init()
 	fflush(stderr);
 
 	// Tracing init
-	#if EAR_LIB_SYNC	
-	traces_init(system_conf,application.job.app_id,my_master_rank, my_id, num_nodes, my_size, ppnode);
-	#else
-	traces_init(system_conf,application.job.app_id,ear_my_rank, my_id, num_nodes, my_size, ppnode);
-	#endif
+	if (!my_id){
+	traces_init(system_conf,application.job.app_id,masters_info.my_master_rank, my_id, num_nodes, my_size, ppnode);
 
 	traces_start();
 	traces_frequency(ear_my_rank, my_id, EAR_default_frequency);
 	traces_stop();
 
 	traces_mpi_init();
+	}
 	
 	// All is OK :D
-	#if EAR_LIB_SYNC
-	if (my_master_rank==0) {
+	if (masters_info.my_master_rank==0) {
 		verbose(1, "EAR initialized successfully ");
 	}
-	#else
-	if (ear_my_rank==0) {
-		verbose(1, "EAR initialized successfully ");
+	#if !MPI
+	if (pthread_create(&earl_periodic_th,NULL,earl_periodic_actions,NULL)){
+		error("error creating server thread for non-earl api\n");
 	}
 	#endif
 }
+
+
+/**************************************** ear_finalize ************************/
 
 void ear_finalize()
 {
@@ -503,26 +812,34 @@ void ear_finalize()
 		return;
 	}	
 #endif
-
+	if (!eard_ok) return;
 #if USE_LOCK_FILES
-	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
-	if (!my_id) file_unlock_master(fd_master_lock,fd_lock_filename);
+	if (!my_id){
+		debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
+		file_unlock_master(fd_master_lock,fd_lock_filename);
+	}
 #endif
 
 	// Tracing
+	if (!my_id){
 	traces_stop();
 	traces_end(ear_my_rank, my_id, 0);
 
 	traces_mpi_end();
+	}
 
 	// Closing and obtaining global metrics
+	debug("metrics dispose");
+	dispose=1;
+	if (masters_info.my_master_rank>=0) verbose(1,"Total resources computed %lu",get_total_resources());
 	metrics_dispose(&application.signature, get_total_resources());
 	dynais_dispose();
-	frequency_dispose();
+	if (!my_id) frequency_dispose();
 
 	// Writing application data
 	if (!my_id) 
 	{
+		debug("Reporting application data");
 		eards_write_app_signature(&application);
 		append_application_text_file(app_summary_path, &application, 1);
 		report_mpi_application_data(&application);
@@ -555,8 +872,11 @@ void ear_finalize()
 	dettach_settings_conf_shared_area();
 	dettach_resched_shared_area();
 
-	// Cest fini
-	if (!my_id) eards_disconnect();
+	// C'est fini
+	if (!my_id){ 
+		debug("Disconnecting");
+		eards_disconnect();
+	}
 }
 
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest);
@@ -567,7 +887,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 #if EAR_OVERHEAD_CONTROL
 	time_t curr_time;
 	double time_from_mpi_init;
-
+	if (!eard_ok) return;
 #if ONLY_MASTER
 	if (my_id) return;
 #endif
@@ -576,14 +896,13 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	{
 		unsigned long  ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		//unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
-	
-#if 1
+	if (!my_id){
 	    traces_mpi_call(ear_my_rank, my_id,
                         (ulong) ear_event_l,
                         (ulong) buf,
                         (ulong) dest,
                         (ulong) call_type);
-#endif
+		}
 
 		total_mpi_calls++;
 		/* EAR can be driven by Dynais or periodically in those cases where dynais can not detect any period. 
@@ -608,7 +927,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
-								traces_start();
+								if (!my_id) traces_start();
 								debug("Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
@@ -652,10 +971,11 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 {
 	short ear_status;
-
+#if ONLY_MASTER
 	if (my_id) {
 		return;
 	}
+#endif
 	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
 	if (!ear_whole_app)
 	{
@@ -702,7 +1022,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				}
 
 				loop_with_signature=0;
-				traces_end_period(ear_my_rank, my_id);
+				if (!my_id) traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
@@ -716,10 +1036,10 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				if (loop_with_signature)
 				{
 					//debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
-							  //ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
+					//		  ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
-				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
+				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_loop_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -729,8 +1049,8 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
+				if (!my_id)  traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
-				traces_end_period(ear_my_rank, my_id);
 				ear_iterations=0;
 				in_loop=0;
 				mpi_calls_per_loop=0;
@@ -744,10 +1064,11 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 {
 	short ear_status;
-
+#if ONLY_MASTER
 	if (my_id) {
 		return;
 	}
+#endif
 
 	// If ear_whole_app we are in the learning phase, DyNAIS is disabled then
 	if (!ear_whole_app)
@@ -763,7 +1084,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
-		traces_mpi_call(ear_my_rank, my_id,
+		if (!my_id) traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) buf,
 						(unsigned long) dest,
 						(unsigned long) call_type,
@@ -788,11 +1109,11 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 				if (loop_with_signature)
 				{
-					debug("new iteration detected for level %hu, event %lu, size %u and iterations %u",
-							  ear_level, ear_event_l, ear_loop_size, ear_iterations);
+					//debug("new iteration detected for level %hu, event %lu, size %u and iterations %u",
+							  //ear_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
-				traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
+				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, (uint)ear_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -829,7 +1150,7 @@ unsigned long ear_new_loop()
 					debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
-				traces_end_period(ear_my_rank, my_id);
+				if (!my_id) traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
@@ -856,7 +1177,7 @@ void ear_end_loop(unsigned long loop_id)
 					}
 					loop_with_signature=0;
 					states_end_period(ear_iterations);
-					traces_end_period(ear_my_rank, my_id);
+					if (!my_id) traces_end_period(ear_my_rank, my_id);
 					ear_iterations=0;
 					in_loop=0;
 					mpi_calls_per_loop=0;
@@ -883,10 +1204,10 @@ void ear_new_iteration(unsigned long loop_id)
 				ear_iterations++;
 				if (loop_with_signature)
 				{
-				debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
-  				1, loop_id,1, ear_iterations);
+				//debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
+  				//1, loop_id,1, ear_iterations);
 				}
-				traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
+				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
 				states_new_iteration(my_id, 1, ear_iterations, 1, loop_id, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -897,3 +1218,33 @@ void ear_new_iteration(unsigned long loop_id)
   }
 }
 
+
+/**************** New for iterative code ********************/
+void *earl_periodic_actions(void *no_arg)
+{
+		verbose(1,"EARL periodic thread ON");
+		if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
+		if (!my_id) traces_start();
+    states_periodic_begin_period(my_id, NULL, 1, 1);
+    ear_iterations=0;
+		mpi_calls_in_period=1;
+    states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
+		do{
+			sleep(lib_period);
+      ear_iterations++;
+      states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
+		}while(1);
+}
+
+
+/************** Constructor & Destructor for NOt MPI versions **************/
+#if !MPI 
+void ear_constructor()
+{
+	ear_init();
+}
+void ear_destructor()
+{
+	ear_finalize();
+}
+#endif

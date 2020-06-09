@@ -39,10 +39,12 @@
 #ifndef _REMOTE_CLIENT_API_H
 #define _REMOTE_CLIENT_API_H
 
+#define NEW_STATUS 1
 #include <common/config.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/eard_conf_rapi.h>
+#include <common/types/risk.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
@@ -122,18 +124,27 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
 void restore_conf_all_nodes(cluster_conf_t my_cluster_conf);
 
 /** Executes a simple ping to all nodes */
-void ping_all_nodes(cluster_conf_t my_cluster_conf);
+void ping_all_nodes_propagated(cluster_conf_t my_cluster_conf);
 
 /** Executes a simple ping to all nodes in a sequential manner */
-void old_ping_all_nodes(cluster_conf_t my_cluster_conf);
+void ping_all_nodes(cluster_conf_t my_cluster_conf);
 
-/** Executes a simple ping to all nodes with the next nodes calculated at runtime */
-void new_ping_all_nodes(cluster_conf_t my_cluster_conf);
-
+/** Asks all the nodes for their current status */
 int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status);
+
+/** Asks for powercap_status for all nodes */
+int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status);
+
+int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status);
+
+/** Send powercap_options to all nodes */
+int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_opt);
 
 /** Sends the command to the currently connected fd */
 int send_command(request_t *command);
+
+/** Sends data of size size through the open fd*/
+int send_data(int fd, size_t size, char *data, int type);
 
 /** Sets frequency for all nodes. */
 void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
@@ -151,23 +162,28 @@ void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf);
 void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
 
 /** Corrects a propagation error, sending to the child nodes when the parent isn't responding. */
-#if USE_NEW_PROP
 void correct_error(int target_idx, int total_ips, int *ips, request_t *command, uint port);
-#else
-void correct_error(uint target_ip, request_t *command, uint port);
-#endif
-
-/** Corrects a status propagation error, sending to the child nodes when the parent isn't responding. 
-*   The corresponding status are placed in status, while the return value is the amount of status obtained. */
-#if USE_NEW_PROP
-int correct_status(int target_idx, int total_ips, int *ips, request_t *command, uint port, status_t **status);
-#else
-int correct_status(uint target_ip, request_t *command, uint port, status_t **status);
-#endif
 
 /** Sends the status command through the currently open fd, reads the returning value and places it
 *   in **status. Returns the amount of status_t placed in **status. */
 int send_status(request_t *command, status_t **status);
 
 void correct_error_starter(char *host_name, request_t *command, uint port);
+
+request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, request_t *command, uint port, void **data);
+
+/** Recieves data from a previously send command */
+request_header_t recieve_data(int fd, void **data);
+
+request_header_t process_data(request_header_t data_head, char **temp_data_ptr, char **final_data_ptr, int final_size);
+
+/* Power management extensions */
+int eards_set_powerlimit(unsigned long limit);
+int eards_red_powerlimit(unsigned int type, unsigned long limit);
+int eards_inc_powerlimit(unsigned int type, unsigned long limit);
+int eards_set_risk(risk_t risk,unsigned long target);
+void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t my_cluster_conf);
+
+int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_t *released);
+
 #endif

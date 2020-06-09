@@ -62,6 +62,11 @@ void signature_print_fd(int fd, signature_t *sig, char is_extended)
     }
 }
 
+void signature_print_simple_fd(int fd, signature_t *sig)
+{
+	dprintf(fd, "[AVGF=%lu DEFF=%lu TIME=%.3lf CPI=%.3lf GBS=%.2lf POWER=%.2lf]",sig->avg_f, sig->def_f,sig->time, sig->CPI,sig->GBS,sig->DC_power);
+}
+
 
 void compute_vpi(double *vpi,signature_t *sig)
 {
@@ -85,5 +90,37 @@ void print_signature_fd_binary(int fd, signature_t *sig)
 void read_signature_fd_binary(int fd, signature_t *sig)
 {
     read(fd,sig,sizeof(signature_t));
+}
+
+void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN)
+{
+	double new_TPI,new_DC_power;
+	signature_copy(dest,src);
+	new_TPI=src->TPI/(double)ratio_PPN;
+	new_DC_power=src->DC_power/(double)ratio_PPN;
+	dest->TPI=new_TPI;
+	dest->DC_power=new_DC_power;
+}
+
+
+void from_sig_to_mini(ssig_t *minis,signature_t *s)
+{
+	minis->DC_power=(float)s->DC_power;
+	minis->GBS=(float)s->GBS;
+	minis->CPI=(float)s->CPI;
+	minis->Gflops=(float)s->Gflops;
+	minis->time=(float)s->time;
+	minis->avg_f=s->avg_f;
+	minis->def_f=s->def_f;
+}
+void copy_mini_sig(ssig_t *dst,ssig_t *src)
+{
+	memcpy(dst,src,sizeof(ssig_t));
+}
+
+void minis_to_str(ssig_t *s,char *b)
+{
+	sprintf(b,"[power %.2f GBs %.2f CPI %.3f GFlops %.2f time %.3f avgf %lu deff %lu]",s->DC_power,s->GBS,s->CPI,s->Gflops,s->time,
+	s->avg_f,s->def_f);
 }
 

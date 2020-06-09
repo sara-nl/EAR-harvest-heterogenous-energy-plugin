@@ -1,5 +1,5 @@
-CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) $(CONSTANTS)
-LDFLAGS = $(DB_LDFLAGS) -lm -pthread -ldl
+CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) $(CONSTANTS) 
+LDFLAGS = $(DB_LDFLAGS) -lm -pthread -ldl -lm
 
 ######## INSTALLATION
 
@@ -16,6 +16,10 @@ eard_OBJS = \
     eard_server_api.o \
     dynamic_configuration.o \
     power_monitor.o \
+		powercap_status.o \
+		power_mgt.o \
+	  app_mgt.o \
+	  powercap.o \
     shared_configuration.o \
     app_api/app_server_api.o \
     node_metrics.o
@@ -34,6 +38,14 @@ eard: eard.c $(eard_OBJS)
 
 power_monitor.o: power_monitor.c power_monitor.h 
 	$(CC) $(CFLAGS) -c $<
+
+powercap.o: powercap.c powercap.h 
+	$(CC) $(CFLAGS) -c $<
+
+powercap_status.o:powercap_status.c powercap_status.h powercap.h
+	$(CC) $(CFLAGS) -fPIC -c $<	
+power_mgt.o:power_mgt.c power_mgt.h
+	$(CC) $(CFLAGS) -c $< 
 
 node_metrics.o:node_metrics.c node_metrics.h
 	$(CC) $(CFLAGS) -c $<

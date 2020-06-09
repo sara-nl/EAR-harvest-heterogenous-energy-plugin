@@ -51,7 +51,6 @@
 #define EARDBD_TYPES						7
 /** Specifies if the new version of the commands propagation is used and the number
  * of jumps per node. */
-#define USE_NEW_PROP                        1
 #define NUM_PROPS                           3
 // #define EAR_TRACER_MPI 1
 
@@ -60,7 +59,12 @@
 
 #define EAR_CPUPOWER	1
 #define EARL_RESEARCH 1
-#define ONLY_MASTER 1
+#define ONLY_MASTER 0
 #define USE_GPUS 1
+//
+#define SHARE_INFO_PER_PROCESS 1
+#define SHARE_INFO_PER_NODE 0
 
+#define POWERCAP 1
+#define POWERCAP_EXT 0
 #endif //EAR_CONFIG_DEV_H

@@ -29,6 +29,7 @@
 
 #define _GNU_SOURCE
 
+#define NEW_STATUS 1
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,15 +48,18 @@
 #include <common/types/job.h>
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/system/symplug.h>
 
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>
+#include <daemon/eard_rapi.h>
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
 #include <daemon/eard_conf_rapi.h>
 #include <common/hardware/frequency.h>
+#include <daemon/powercap.h>
 
 extern int eard_must_exit;
 extern unsigned long eard_max_freq;
@@ -74,9 +78,22 @@ static uint num_f;
 int last_command = -1;
 int last_dist = -1;
 int last_command_time = -1;
-#if USE_NEW_PROP
 int node_found = EAR_ERROR;
+#if POWERCAP
+extern app_mgt_t *app_mgt_info;
 #endif
+
+
+/* New to manage risk */
+typedef struct eard_policy_symbols {
+	state_t (*set_risk) (policy_conf_t *ref_pol,policy_conf_t *node_pol,ulong risk,ulong opt_target,ulong cfreq,ulong *nfreq,ulong *f_list,uint nump);
+} eard_polsym_t;
+
+static eard_polsym_t *polsyms_fun;
+static void    *polsyms_obj = NULL;
+const int       polsyms_n = 1;
+const char     *polsyms_nam[] = {"policy_set_risk"};
+/* End new section */
 
 static char *TH_NAME = "RemoteAPI";
 static ehandler_t my_eh_rapi;
@@ -343,6 +360,10 @@ int dyncon_set_policy(new_policy_cont_t *p)
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
+#ifdef NEW_STATUS
+    long int ack;
+	send_answer(fd, &ack); //send ack before propagating
+#endif
 	int num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
 	unsigned long return_status = num_status;
 	debug("return_status %lu status=%p",return_status,status);
@@ -353,13 +374,149 @@ void dyncon_get_status(int fd, request_t *command) {
 		return;
 	}
 	powermon_get_status(&status[num_status - 1]);
+#ifdef NEW_STATUS
+    send_data(fd, sizeof(status_t) * num_status, (char *)status, EAR_TYPE_STATUS);
+#else
 	write(fd, &return_status, sizeof(return_status));
 	write(fd, status, sizeof(status_t) * num_status);
+#endif
 	debug("Returning from dyncon_get_status");
 	free(status);
 	debug("status released");
 }
 
+void dyncon_power_management(int fd, request_t *command)
+{
+	unsigned long limit;
+	status_t status;
+	unsigned long cpower;
+    long int ack;
+	switch (command->req){
+    case EAR_RC_RED_POWER:
+			if (command->my_req.pc.type==ABSOLUTE){
+				verbose(1,"We must reduce the power in %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap-command->my_req.pc.limit;
+			}
+			if (command->my_req.pc.type==RELATIVE){
+				verbose(1,"We must reduce the power by %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap-(my_node_conf->max_power_cap*command->my_req.pc.limit);
+			}
+			break;	
+    case EAR_RC_GET_POWER:
+			verbose(1,"get power command");
+			powermon_get_status(&status);
+			cpower=(unsigned long)status.node.power;
+			write(fd,&cpower,sizeof(unsigned long));
+			break;
+    case EAR_RC_SET_POWER:
+			verbose(1,"We must set the power to %lu watts",command->my_req.pc.limit);
+			limit=command->my_req.pc.limit;
+			break;
+    case EAR_RC_INC_POWER:
+			if (command->my_req.pc.type==ABSOLUTE){
+				verbose(1,"We can increase the power in %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap+command->my_req.pc.limit;
+			}
+			if (command->my_req.pc.type==RELATIVE){
+				verbose(1,"We can increase the power by %lu watts",command->my_req.pc.limit);
+				limit=my_node_conf->max_power_cap+(my_node_conf->max_power_cap*command->my_req.pc.limit);
+			}
+			break;	
+    case EAR_RC_SET_POWERCAP_OPT:
+			verbose(1,"Set powercap options received");
+			set_powercap_opt(&command->my_req.pc_opt);
+			return;
+			break;
+    default:
+			verbose(1,"power command received not supported");
+	}
+	verbose(1,"New power limit %lu",limit);
+	energy_set_power_limit(&my_eh_rapi,limit,command->my_req.pc.type);
+}
+
+void update_current_settings(policy_conf_t *cpolicy_settings)
+{
+	verbose(1,"current policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
+	dyn_conf->def_freq=frequency_pstate_to_freq(cpolicy_settings->p_state);
+	memcpy(dyn_conf->settings,cpolicy_settings->settings,sizeof(double)*MAX_POLICY_SETTINGS);
+	dyn_conf->def_p_state=cpolicy_settings->p_state;
+	resched_conf->force_rescheduling=1;	
+	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
+}
+
+void dyncon_release_idle_power(int fd, request_t *command)
+{
+    pc_release_data_t rel_data;
+    int return_status;
+    long int ack;
+
+    send_answer(fd, &ack);
+ 
+    debug("propagating release_idle_power");
+    return_status = propagate_release_idle(command, my_cluster_conf.eard.port, (pc_release_data_t *)&rel_data);
+    
+    if (return_status < 1) error("dyncon_get_powerstatus and return status < 1");
+
+    debug("releasing idle power");
+    powercap_release_idle_power(&rel_data);
+
+    send_data(fd, sizeof(pc_release_data_t), (char *)&rel_data, EAR_TYPE_RELEASED);
+    debug("returning from release_idle_power");
+
+}
+
+void dyncon_get_powerstatus(int fd, request_t *command)
+{
+	powercap_status_t *status;
+    int return_status;
+    long int ack;
+	send_answer(fd, &ack);
+    char *status_data;
+	return_status = propagate_powercap_status(command, my_cluster_conf.eard.port, (powercap_status_t **)&status_data);
+    status = mem_alloc_powercap_status(status_data);
+    free(status_data);
+
+    if (return_status < 1) 
+    {
+        //error
+        error("dyncon_get_powerstatus and return status < 1 ");
+    }
+	debug("return_status %d status=%p", return_status, status);
+
+	get_powercap_status(&status[return_status - 1]);
+    status_data = mem_alloc_char_powercap_status(status);
+    send_data(fd, sizeof(powercap_status_t) * return_status + ((sizeof(uint)*2 + sizeof(int)) * (status->num_greedy)), status_data, EAR_TYPE_POWER_STATUS);
+
+    free(status_data);
+	debug("Returning from dyncon_get_powerstatus");
+	free(status);
+	debug("powerstatus released");
+}
+
+void dyncon_set_risk(int fd, request_t *command)
+{
+	int i;
+	unsigned long new_max_freq,c_max,mfreq;
+	c_max=frequency_pstate_to_freq(my_node_conf->max_pstate);
+	mfreq=c_max;
+	for (i=0;i<my_node_conf->num_policies;i++){
+		if (polsyms_fun[i].set_risk!=NULL){
+			verbose(1,"Setting risk level for %s to %lu",my_node_conf->policies[i].name,(unsigned long)command->my_req.risk.level);	
+			polsyms_fun[i].set_risk(&my_original_node_conf.policies[i],&my_node_conf->policies[i],command->my_req.risk.level,command->my_req.risk.target,mfreq,&new_max_freq,f_list,num_f);
+		}
+		if (dyn_conf->policy==i){
+			verbose(1,"Current policy is %d", i);
+			update_current_settings(&my_node_conf->policies[i]);	
+			if (new_max_freq!=dyn_conf->max_freq){
+				dyn_conf->max_freq=new_max_freq;
+				resched_conf->force_rescheduling=1;
+			}
+		}
+	}
+	my_node_conf->max_pstate=frequency_freq_to_pstate(dyn_conf->max_freq);
+	powermon_new_max_freq(dyn_conf->max_freq);
+	verbose(1,"New max frequency is %lu pstate=%lu rescheduling %u",new_max_freq,my_node_conf->max_pstate,resched_conf->force_rescheduling);
+}
 
 void process_remote_requests(int clientfd) {
 	request_t command;
@@ -368,6 +525,7 @@ void process_remote_requests(int clientfd) {
 	verbose(VRAPI, "connection received");
 	req = read_command(clientfd, &command);
 	/* New job and end job are different */
+	/* Is it necesary */
 	if (req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB) {
 		if (req != EAR_RC_STATUS && req == last_command && command.time_code == last_command_time) {
 			verbose(VRAPI + 1, "Recieved repeating command: %u", req);
@@ -380,6 +538,7 @@ void process_remote_requests(int clientfd) {
 			return;
 		}
 	}
+	/**/
 	last_dist = command.node_dist;
 	last_command = req;
 	last_command_time = command.time_code;
@@ -443,19 +602,48 @@ void process_remote_requests(int clientfd) {
 			dyncon_get_status(clientfd, &command);
 			return;
 			break;
+		case EAR_RC_RED_POWER:
+		case EAR_RC_GET_POWER:
+		case EAR_RC_SET_POWER:
+		case EAR_RC_INC_POWER:
+		case EAR_RC_SET_POWERCAP_OPT:
+			dyncon_power_management(clientfd, &command);
+			break;
+		case EAR_RC_SET_RISK:
+			verbose(1,"set risk command received");
+			dyncon_set_risk(clientfd, &command);
+			return;
+			break;
+        case EAR_RC_GET_POWERCAP_STATUS:
+            dyncon_get_powerstatus(clientfd, &command);
+            return;
+		case EAR_RC_RELEASE_IDLE:
+            dyncon_release_idle_power(clientfd, &command);
+            return;
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;
 	}
 	send_answer(clientfd, &ack);
-#if USE_NEW_PROP
 	if (req != EAR_RC_PING && req != NO_COMMAND && req != EAR_RC_NEW_JOB && req != EAR_RC_END_JOB && node_found != EAR_ERROR)
-#else
-	if (command.node_dist > 0 && req != EAR_RC_PING && req != NO_COMMAND)
-#endif
 	{
 		verbose(VRAPI + 1, "command=%d propagated distance=%d", req, command.node_dist);
 		propagate_req(&command, my_cluster_conf.eard.port);
+	}
+}
+
+void policy_load()
+{
+  char basic_path[SZ_PATH_INCOMPLETE];
+	int i;
+	polsyms_fun=(eard_polsym_t *)calloc(my_node_conf->num_policies,sizeof(eard_polsym_t));
+	if (polsyms_fun==NULL){
+		error("Allocating memory for policy functions in eard");
+	}
+	for (i=0;i<my_node_conf->num_policies;i++){
+		sprintf(basic_path,"%s/eard_policies/%s_eard.so",my_cluster_conf.install.dir_plug,my_node_conf->policies[i].name);
+		verbose(1,"Loading functions for policy %s",basic_path);
+		symplug_open(basic_path, (void **)&polsyms_fun[i], polsyms_nam, polsyms_n);
 	}
 }
 
@@ -484,11 +672,10 @@ void *eard_dynamic_configuration(void *tmp)
 	f_list = frequency_get_freq_rank_list();
 	print_f_list(num_f, f_list);
 	verbose(VRAPI + 2, "We have %u valid p_states", num_f);
-#if USE_NEW_PROP
 	verbose(0, "Init for ips");
 	node_found = init_ips(&my_cluster_conf);
-    if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file");
-#endif
+  if (node_found == EAR_ERROR) verbose(0, "Node not found in configuration file");
+	verbose(0,"Init ips ready");
 
 
 	verbose(VRAPI, "Creating socket for remote commands");
@@ -498,6 +685,9 @@ void *eard_dynamic_configuration(void *tmp)
 		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,RCONNECTOR_INIT_ERROR,eards_remote_socket);
 		pthread_exit(0);
 	}
+
+	policy_load();
+
 	/*
 	*	MAIN LOOP
 	*/
@@ -518,9 +708,7 @@ void *eard_dynamic_configuration(void *tmp)
 		}
 	} while (eard_must_exit == 0);
 	warning("eard_dynamic_configuration exiting\n");
-#if USE_NEW_PROP
 	close_ips();
-#endif
 	//ear_conf_shared_area_dispose(my_tmp);
 	close_server_socket(eards_remote_socket);
 	pthread_exit(0);

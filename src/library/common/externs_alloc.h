@@ -33,6 +33,7 @@
 #include <common/types/loop.h>
 #include <common/states.h>
 #include <daemon/shared_configuration.h>
+#include <library/common/library_shared_data.h>
 
 loop_t loop;
 application_t loop_signature;
@@ -59,6 +60,7 @@ int my_master_rank=-1;
 int my_job_id;
 int my_step_id;
 char my_account[GENERIC_NAME];
+int eard_ok=1;
 
 // DynAIS
 uint loop_with_signature;
@@ -68,3 +70,8 @@ ulong last_loop_size;
 ulong last_loop_level;
 uint dynais_enabled = DYNAIS_ENABLED;
 uint check_periodic_mode=1;
+
+lib_shared_data_t *lib_shared_region=NULL;
+shsignature_t *sig_shared_region=NULL;
+int my_node_id;
+

@@ -61,6 +61,7 @@ touch %{buildroot}/etc/ear/ear.conf.full.template
 cp  -p  ${EAR_SOURCE_PATH}/etc/slurm/ear.plugstack.conf.in %{buildroot}/etc/slurm/
 touch %{buildroot}/etc/slurm/ear.plugstack.conf
 cp	-rp ${EAR_INSTALL_PATH}/lib/libear.* %{buildroot}/usr/lib/
+cp	-rp ${EAR_INSTALL_PATH}/lib/libearld.* %{buildroot}/usr/lib/
 cp    -rp ${EAR_INSTALL_PATH}/lib/libear_api.a %{buildroot}/usr/lib/libear_api.a
 cp    -rp ${EAR_INSTALL_PATH}/lib/plugins/* %{buildroot}/usr/lib/plugins/
 cp	-rp ${EAR_INSTALL_PATH}/lib/earplug.so %{buildroot}/usr/lib/

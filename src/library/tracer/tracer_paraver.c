@@ -363,9 +363,11 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 	file_row = -1;
 
 	if (pathname == NULL) {
+		debug("trace path not defined SLURM_EAR_TRACE_PATH, trace disabled");
 		enabled = 0;
 		return;
 	}
+	debug("Using trace path %s",pathname);
 	my_trace_rank = global_rank+1;
 	strcpy(my_app,app);
 
