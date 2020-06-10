@@ -43,7 +43,7 @@
 #include <common/system/time.h>
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
-#include <library/metrics/metrics.h>
+//#include <library/metrics/metrics.h>
 #include <library/tracer/tracer_paraver.h>
 
 #ifdef EAR_GUI
@@ -102,6 +102,20 @@ static int num_events=0;
 
 
 #define TRA_VER	2
+
+static long long metrics_usecs_diff(long long end, long long init)
+{
+	long long to_max;
+
+	if (end < init)
+	{
+		debug( "Timer overflow (end: %lld - init: %lld)\n", end, init);
+		to_max = LLONG_MAX - init;
+		return (to_max + end);
+	}
+
+	return (end - init);
+}
 
 static void row_file_create(char *pathname, char *hostname)
 {
@@ -355,7 +369,7 @@ void traces_stop()
 
 void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis, int ppn)
 {
-	pathname = getenv("SLURM_EAR_TRACE_PATH");
+	pathname = getenv(VAR_OPT_TRAC);
 
 	//
 	file_prv = -1;
@@ -363,7 +377,7 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 	file_row = -1;
 
 	if (pathname == NULL) {
-		debug("trace path not defined SLURM_EAR_TRACE_PATH, trace disabled");
+		debug("trace path not defined %s, trace disabled", VAR_OPT_TRAC);
 		enabled = 0;
 		return;
 	}

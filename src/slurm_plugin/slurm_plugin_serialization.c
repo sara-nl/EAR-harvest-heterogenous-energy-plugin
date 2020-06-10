@@ -264,7 +264,7 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.learning.loc);
 	printenv_agnostic(sp, Var.tag.loc);
 	printenv_agnostic(sp, Var.path_usdb.loc);
-	printenv_agnostic(sp, Var.path_trac.loc);
+	//printenv_agnostic(sp, Var.path_trac.loc);
 	printenv_agnostic(sp, Var.version.loc);
 	printenv_agnostic(sp, Var.gm_host.loc);
 	printenv_agnostic(sp, Var.gm_port.loc);
@@ -354,7 +354,7 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	unsetenv_agnostic(sp, Var.learning.ear);
 	unsetenv_agnostic(sp, Var.tag.ear);
 	unsetenv_agnostic(sp, Var.path_usdb.ear);
-	unsetenv_agnostic(sp, Var.path_trac.ear);
+	//unsetenv_agnostic(sp, Var.path_trac.ear);
 	unsetenv_agnostic(sp, Var.name_app.ear);
 
 	// Exception (in testing)
@@ -446,7 +446,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	repenv_agnostic(sp, Var.learning.loc, Var.learning.ear);
 	repenv_agnostic(sp, Var.tag.loc, Var.tag.ear);
 	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
-	repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
+	//repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
 
 	/*
 	 * User
