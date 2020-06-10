@@ -650,8 +650,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 
 		if (EARGM_token(token) == EAR_SUCCESS){
-			EARGM_parse_token(conf,token);
-			continue;
+			if (EARGM_parse_token(conf,token) == EAR_SUCCESS) continue;
 		}
 		if (!strcmp(token, "DEFAULTPOWERPOLICY"))
 		{
@@ -1078,142 +1077,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->db_manager.use_log = atoi(token);
 		}
-		#if 0
-
-		//GLOBAL MANAGER
-		else if (!strcmp(token, "GLOBALMANAGERVERBOSE") || !strcmp(token, "EARGMVERBOSE"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.verbose = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERUSEAGGREGATED") || !strcmp(token, "EARGMUSEAGGREGATED"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.use_aggregation = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERPERIODT1") || !strcmp(token, "EARGMPERIODT1"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.t1 = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERPERIODT2") || !strcmp(token, "EARGMPERIODT2") )
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.t2 = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERUNITS") || !strcmp(token, "EARGMUNITS"))
-		{
-			token = strtok(NULL, "=");
-		
-			//
-			strclean(token, '\n');
-			remove_chars(token, ' ');
-			strtoup(token);
-
-			if (!strcmp(token,"-"))	conf->eargm.units=BASIC;
-			else if (!strcmp(token,"K")) conf->eargm.units=KILO;
-			else if (!strcmp(token,"M")) conf->eargm.units=MEGA;
-			else conf->eargm.units=KILO;
-		}
-		else if (!strcmp(token, "GLOBALMANAGERPOLICY") || !strcmp(token, "EARGMPOLICY"))
-		{
-			token = strtok(NULL, "=");
-	               
-			// 
-			strclean(token, '\n');
-                        remove_chars(token, ' ');
-                        strtoup(token);
-
-			if (strcmp(token,"MAXENERGY") == 0) {
-				conf->eargm.policy=MAXENERGY;
-			} else {
-				conf->eargm.policy=MAXPOWER;
-			}
-		}
-		else if (!strcmp(token, "GLOBALMANAGERENERGYLIMIT") || !strcmp(token, "EARGMENERGYLIMIT"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.energy = atoi(token);
-		}
-		#if POWERCAP
-		else if (!strcmp(token, "GLOBALMANAGERPOWERLIMIT") || !strcmp(token, "EARGMPOWERLIMIT"))
-		{
-			token = strtok(NULL, "=");
-			/* It mas be included in power */
-			conf->eargm.power = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERPOWERPERIOD") || !strcmp(token, "EARGMPOWERPERIOD"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.t1_power = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERPOWERCAPMODE") || !strcmp(token, "EARGMPOWERCAPMODE"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.powercap_mode = atoi(token);
-		}else if (!strcmp(token, "GLOBALMANAGERPOWERCAPACTIONLIMIT") || !strcmp(token, "EARGMPOWERCAPACTIONLIMIT"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.defcon_power_limit = atoi(token);
-		}else if (!strcmp(token, "GLOBALMANAGERPOWERCAPACTION") || !strcmp(token,"EARGMPOWERCAPACTION"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-			strcpy(conf->eargm.powercap_action,token);
-		}else if (!strcmp(token, "GLOBALMANAGERENERGYACTION") || !strcmp(token, "EARGMENERGYACTION"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-			strcpy(conf->eargm.energycap_action,token);
-		}
-		#endif
-		else if (!strcmp(token, "GLOBALMANAGERWARNINGSPERC") || !strcmp(token, "EARGMWARNINGSPERC"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-			int perc=0;
-
-			while (token != NULL)
-			{
-				conf->eargm.defcon_limits[perc++] = atoi(token);
-				token = strtok(NULL, ",");
-			}
-		}
-		else if (!strcmp(token, "GLOBALMANAGERGRACEPERIODS") || !strcmp(token, "EARGMGRACEPERIODS"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.grace_periods = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERPORT") || !strcmp(token, "EARGMPORT"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.port = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERMODE") || !strcmp(token, "EARGMMODE"))
-		{
-			token = strtok(NULL, "=");
-			conf->eargm.mode = atoi(token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERMAIL") || !strcmp(token, "EARGMMAIL"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-			remove_chars(token, ' ');
-			strcpy(conf->eargm.mail, token);
-		}
-		else if (!strcmp(token, "GLOBALMANAGERHOST") || !strcmp(token, "EARGMHOST"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-			remove_chars(token, ' ');
-			strcpy(conf->eargm.host, token);
-		}
-        else if (!strcmp(token, "GLOBALMANAGERUSELOG") || !strcmp(token, "EARGMUSELOG"))
-        {
-			token = strtok(NULL, "=");
-			conf->eargm.use_log = atoi(token);
-        }
-			#endif
         //COMMON CONFIG
         else if (!strcmp(token, "NETWORKEXTENSION"))
         {
@@ -1302,7 +1165,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		{
 			//fully restore the line
 			line[strlen(line)] = '=';
-            parse_island(conf, line);
+      parse_island(conf, line);
 		}
 		// INSTALLATION AREA
 		else if (!strcmp(token, "TMPDIR"))
