@@ -660,12 +660,16 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		if (EARDBD_token(token) == EAR_SUCCESS){
 			if (EARDBD_parse_token(&conf->db_manager,token) == EAR_SUCCESS) continue;
 		}
+		if (!strcmp(token, "POLICY"))
+    {
+        if (POLICY_token(&conf->num_policies,&conf->power_policies,line) == EAR_SUCCESS) continue;
+    }
 		if (!strcmp(token, "DEFAULTPOWERPOLICY"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
-            remove_chars(token, ' ');
-            strcpy(def_policy, token);
+      remove_chars(token, ' ');
+      strcpy(def_policy, token);
 		}
 		else if (!strcmp(token, "DATABASEPATHNAME"))
 		{
@@ -713,65 +717,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			token = strtok(NULL, "=");
 			conf->verbose = atoi(token);
 		}
-        else if (!strcmp(token, "POLICY"))
-        {
-			char *primary_ptr;
-			char *secondary_ptr;
-            char *key, *value;
-            policy_conf_t *curr_policy;
-			line[strlen(line)] = '=';
-			token = strtok_r(line, " ", &primary_ptr);
-			if (conf->num_policies>=TOTAL_POLICIES){
-      	    conf->power_policies = realloc(conf->power_policies, sizeof(policy_conf_t)*(conf->num_policies + 1));
-				if (conf->power_policies==NULL){
-					error("NULL pointer in get_cluster_config");
-					return ;
-				}
-			}
-            curr_policy = &conf->power_policies[conf->num_policies];
-            init_policy_conf(curr_policy);
-      /* POLICY DEFINITION */
-			while (token != NULL)
-			{
-				key = strtok_r(token, "=", &secondary_ptr);
-				strtoup(key);
-				value = strtok_r(NULL, "=", &secondary_ptr);
-                if (!strcmp(key, "POLICY"))
-                {
-                    strcpy(curr_policy->name, value);
-                }
-                else if (!strcmp(key, "SETTINGS"))
-                {
-                    value = strtok(value, ",");
-                    int i;
-                    for (i = 0; (i < MAX_POLICY_SETTINGS) && (value != NULL); i++)
-                    {
-                        curr_policy->settings[i] = atof(value);
-                        value = strtok(NULL, ",");
-                    }
-                }
-                else if (!strcmp(key, "DEFAULTFREQ"))
-                {
-                    curr_policy->def_freq= atof(value);
-                }
-								else if (!strcmp(key, "DEFAULTPSTATE"))
-								{
-									curr_policy->p_state=atoi(value);
-								}
-                else if (!strcmp(key, "PRIVILEGED"))
-                {
-                    curr_policy->is_available=(atoi(value)==0);
-                }
-                else if (!strcmp(key, "TAG"))
-                {
-                    strcpy(curr_policy->tag, value);
-                }
-                                
-			    token = strtok_r(NULL, " ", &primary_ptr);
-            }
-            curr_policy->policy = conf->num_policies;
-            conf->num_policies++;
-        }
 		else if (!strcmp(token, "MINTIMEPERFORMANCEACCURACY"))
 		{
 			token = strtok(NULL, "=");

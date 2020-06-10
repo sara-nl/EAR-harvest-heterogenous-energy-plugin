@@ -109,3 +109,68 @@ void compute_policy_def_freq(policy_conf_t *p)
 	}
 
 }
+
+state_t POLICY_token(unsigned int *num_policiesp, policy_conf_t **power_policiesl,char *line)
+{
+	    char *primary_ptr;
+      char *secondary_ptr;
+      char *key, *value,*token;
+			int num_policies=*num_policiesp;
+			policy_conf_t *power_policies=(policy_conf_t *)*power_policiesl;
+      policy_conf_t *curr_policy;
+      line[strlen(line)] = '=';
+      token = strtok_r(line, " ", &primary_ptr);
+      if (num_policies>=TOTAL_POLICIES){
+        power_policies = realloc(power_policies, sizeof(policy_conf_t)*(num_policies + 1));
+        if (power_policies==NULL){
+          error("NULL pointer in get_cluster_config");
+          return EAR_ERROR;
+        }
+				*power_policiesl=power_policies;
+      }
+      curr_policy = &power_policies[num_policies];
+      init_policy_conf(curr_policy);
+      /* POLICY DEFINITION */
+      while (token != NULL)
+			{
+        key = strtok_r(token, "=", &secondary_ptr);
+        strtoup(key);
+        value = strtok_r(NULL, "=", &secondary_ptr);
+        if (!strcmp(key, "POLICY"))
+        {
+            strcpy(curr_policy->name, value);
+        }
+        else if (!strcmp(key, "SETTINGS"))
+        {
+            value = strtok(value, ",");
+            int i;
+            for (i = 0; (i < MAX_POLICY_SETTINGS) && (value != NULL); i++)
+            {
+                curr_policy->settings[i] = atof(value);
+                value = strtok(NULL, ",");
+            }
+        }
+        else if (!strcmp(key, "DEFAULTFREQ"))
+        {
+            curr_policy->def_freq= atof(value);
+        }
+        else if (!strcmp(key, "DEFAULTPSTATE"))
+        {
+            curr_policy->p_state=atoi(value);
+        }
+        else if (!strcmp(key, "PRIVILEGED"))
+        {
+            curr_policy->is_available=(atoi(value)==0);
+        }
+        else if (!strcmp(key, "TAG"))
+        {
+            strcpy(curr_policy->tag, value);
+        }
+
+        token = strtok_r(NULL, " ", &primary_ptr);
+    }
+    curr_policy->policy = num_policies;
+    num_policies++;
+		*num_policiesp = num_policies;
+		return EAR_SUCCESS;
+}
