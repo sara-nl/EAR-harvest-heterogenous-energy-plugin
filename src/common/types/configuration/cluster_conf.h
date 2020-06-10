@@ -48,6 +48,7 @@
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_earlib.h>
 #include <common/types/configuration/cluster_conf_db.h>
 
 
@@ -107,15 +108,6 @@ typedef struct tags
 } tag_t;
 
 
-typedef struct earlib_conf
-{
-	char coefficients_pathname[GENERIC_NAME];
-    uint dynais_levels;
-    uint dynais_window;
-	uint dynais_timeout;
-	uint lib_period;
-	uint check_every;
-} earlib_conf_t;
 
 typedef struct conf_install {
 	char dir_temp[SZ_PATH_INCOMPLETE];

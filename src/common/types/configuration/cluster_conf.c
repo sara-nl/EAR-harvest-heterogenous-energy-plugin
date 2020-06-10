@@ -524,29 +524,6 @@ uint get_user_type(cluster_conf_t *my_conf, char *energy_tag, char *user,char *g
 	} else return NORMAL;
 }
 
-/* Copy src in dest */
-void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src)
-{
-	if ((dest!=NULL) && (src!=NULL)){
-		strcpy(dest->coefficients_pathname,src->coefficients_pathname);
-		dest->dynais_levels=src->dynais_levels;
-		dest->dynais_window=src->dynais_window;
-		dest->dynais_timeout=src->dynais_timeout;
-		dest->lib_period=src->lib_period;
-		dest->check_every=src->check_every;
-	}
-}
-
-/* Prints the given library conf */
-void print_ear_lib_conf(earlib_conf_t *libc)
-{
-	if (libc!=NULL){
-		verbose(VCCONF,"coeffs %s dynais level %u dynais window_size %u\n",
-		libc->coefficients_pathname,libc->dynais_levels,libc->dynais_window);
-		verbose(VCCONF,"dynais timeout %u lib_period %u check_every %u\n",
-		libc->dynais_timeout,libc->lib_period,libc->check_every);
-	}
-}
 
 
 /*** DEFAULT VALUES ****/
@@ -566,17 +543,6 @@ void set_default_tag_values(tag_t *tag)
     strcpy(tag->energy_model, "");
     strcpy(tag->energy_plugin, "");
     strcpy(tag->powercap_plugin, "");
-}
-
-
-void set_default_earlib_conf(earlib_conf_t *earlibc)
-{
-	strcpy(earlibc->coefficients_pathname,DEFAULT_COEFF_PATHNAME);
-	earlibc->dynais_levels=DEFAULT_DYNAIS_LEVELS;
-	earlibc->dynais_window=DEFAULT_DYNAIS_WINDOW_SIZE;
-	earlibc->dynais_timeout=MAX_TIME_DYNAIS_WITHOUT_SIGNATURE;
-	earlibc->lib_period=PERIOD;
-	earlibc->check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 }
 
 
@@ -659,10 +625,6 @@ int get_node_server_mirror(cluster_conf_t *conf, const char *hostname, char *mir
 		{
 			p = is->db_ips[is->ranges[k].db_ip];
 
-if (p == NULL) printf("p is NULL\n");
-printf("alias %s\n", a);
-printf("name %s\n", n);
-printf("p %s\n", p);
 			if (!found_server && p != NULL &&
 				((strncmp(p, n, strlen(n)) == 0) || (strncmp(p, a, strlen(a)) == 0)))
 			{

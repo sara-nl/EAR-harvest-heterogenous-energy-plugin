@@ -669,6 +669,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		if (DB_token(token) == EAR_SUCCESS){
       if (DB_parse_token(&conf->database,token) == EAR_SUCCESS) continue;
     }
+		if (EARLIB_token(token) == EAR_SUCCESS){
+			if (EARLIB_parse_token(&conf->earlib,token) == EAR_SUCCESS) continue;
+		}
 
             //EARLIB CONF
 		if (!strcmp(token, "COEFFICIENTSDIR"))

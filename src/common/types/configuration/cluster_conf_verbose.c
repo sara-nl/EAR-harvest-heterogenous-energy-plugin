@@ -104,13 +104,6 @@ void print_energy_tag(energy_tag_t *etag)
 
 }
 
-void print_earlib_conf(earlib_conf_t *conf)
-{
-    verbosen(VCCONF, "-->Coefficients path: %s\n-->DynAIS levels: %u\n-->DynAIS window size: %u\n",
-            conf->coefficients_pathname, conf->dynais_levels, conf->dynais_window);
-	verbosen(VCCONF, "-->dynais timeout %u ear period %u check every %u\n",
-		conf->dynais_timeout,conf->lib_period,conf->check_every);
-}
 
 
 
