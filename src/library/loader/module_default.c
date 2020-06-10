@@ -73,17 +73,22 @@ static int module_constructor_dlsym(char *path_so)
 	func_con = dlsym(libear, "ear_constructor");
 	func_des = dlsym(libear, "ear_destructor");
 
+	if (func_con == NULL && func_des == NULL) {
+		dlclose(libear);
+		return 0;
+	}
+
 	return 1;
 }
 
-void module_constructor()
+int module_constructor()
 {
 	static char path_so[4096];
 
 	verbose(3, "LOADER: function module_constructor");
 
 	if (!module_constructor_dlsym(path_so)) {
-		return;
+		return 0;
 	}
 
 	if (atexit(module_destructor) != 0) {
@@ -93,6 +98,8 @@ void module_constructor()
 	if (func_con != NULL) {
 		func_con();
 	}
+
+	return 1;
 }
 
 void module_destructor()

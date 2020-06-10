@@ -430,7 +430,7 @@ state_t nvml_data_print(gpu_t *data, int fd)
 
 	for (i = 0; i < dev_count; ++i)
 	{
-		dprintf(fd, "gpu%u: %0.2lfJ;%0.2lfW;%luMHz;%luMHz;%lu%;%lu%;%luº;%luº;%u;%lu\n",
+		dprintf(fd, "gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%, %lu%, %luº, %luº, %u, %lu\n",
 		i                   ,
 		data[i].energy_j    , data[i].power_w,
 		data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
@@ -444,5 +444,22 @@ state_t nvml_data_print(gpu_t *data, int fd)
 
 state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 {
+	int accuml = 0;
+	size_t s;
+	int i;
+
+	for (i = 0; i < dev_count && length > 0; ++i)
+	{
+		s = snprintf(&buffer[accuml], length,
+			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%, %lu%, %luº, %luº, %u, %lu\n",
+			i                   ,
+			data[i].energy_j    , data[i].power_w,
+			data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+			data[i].util_gpu    , data[i].util_mem,
+			data[i].temp_gpu    , data[i].temp_mem,
+			data[i].working     , data[i].samples);
+		length = length - s;
+		accuml = accuml + s;
+	}
 	return EAR_SUCCESS;
 }

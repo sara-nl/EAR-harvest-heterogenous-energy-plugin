@@ -27,101 +27,87 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#include <metrics/gpu/gpu.h>
-#include <metrics/gpu/gpu/nvml.h>
+#include <library/metrics/gpu.h>
 
-static gpu_ops_t ops;
-static uint loaded;
-static uint model;
+static gpu_ops_t *ops;
+static uint dev_count;
 
-state_t gpu_load(gpu_ops_t **ops, uint force_model)
+state_t lib_gpu_load(settings_conf_t *settings)
 {
-	if (loaded != 0) {
-		return EAR_SUCCESS;
-	}
+	// HERE: Get the GPU model identificator, look
+	// 'metrics/gpu/gpu.c' for the model list.
 
-	if (force_model == MODEL_NVML || state_ok(nvml_status()))
-	{
-		ops.init		= nvml_init;
-		ops.dispose		= nvml_dispose;
-		ops.read		= nvml_read;
-		ops.read_copy	= nvml_read_copy;
-		ops.count		= nvml_count;
-		ops.data_diff	= nvml_data_diff;
-		ops.data_alloc	= nvml_data_alloc;
-		ops.data_free	= nvml_data_free;
-		ops.data_null	= nvml_data_null;
-		ops.data_diff	= nvml_data_diff;
-		ops.data_copy	= nvml_data_copy;
-		ops.data_print	= nvml_data_print;
-		ops.data_tostr	= nvml_data_tostr;
-		model			= MODEL_NVML;
-		loaded			= 1;
-	} else {
-		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
-	}
+	return gpu_load(&ops, settings.gpu_model);
+}
 
-	*ops = &ops;
+state_t lib_gpu_init(ctx_t *c)
+{
+	// HERE: Ask Daemon for dev_count
 
+	preturn (ops.init_data, dev_count);
+}
+
+state_t lib_gpu_dispose(ctx_t *c)
+{
 	return EAR_SUCCESS;
 }
 
-state_t gpu_init(ctx_t *c)
+state_t lib_gpu_read(ctx_t *c, gpu_t *data)
 {
-	preturn (ops.init, c);
-}
+	// HERE: Ask daemon for GPU metrics
 
-state_t gpu_dispose(ctx_t *c)
-{
-	preturn (ops.dispose, c);
-}
-
-state_t gpu_read(ctx_t *c, gpu_t *data)
-{
 	preturn (ops.read, c, data);
 }
 
-state_t gpu_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
+state_t lib_gpu_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
-	preturn (ops.read_copy, c, data2, data1, data_diff);
+	state_t s;
+	if (xtate_fail(s, lib_gpu_read(c, data2))) {
+		return s;
+	}
+	if (xtate_fail(s, ops.gpu_data_diff(data2, data1, data_diff))) {
+		return s;
+	}
+	return ops.data_copy(data1, data2);
 }
 
-state_t gpu_count(ctx_t *c, uint *dev_count)
+state_t lib_gpu_count(ctx_t *c, uint *dev_count)
 {
-	preturn (ops.count, c, dev_count);
+	*dev_count = dev_count;
+	return EAR_SUCCESS;
 }
 
-state_t gpu_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
+state_t lib_gpu_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
 	preturn (ops.data_diff, data2, data1, data_diff);
 }
 
-state_t gpu_data_alloc(gpu_t **data)
+state_t lib_gpu_data_alloc(gpu_t **data)
 {
 	preturn (ops.data_alloc, data);
 }
 
-state_t gpu_data_free(gpu_t **data)
+state_t lib_gpu_data_free(gpu_t **data)
 {
 	preturn (ops.data_free, data);
 }
 
-state_t gpu_data_null(gpu_t *data)
+state_t lib_gpu_data_null(gpu_t *data)
 {
 	preturn (ops.data_null, data);
 }
 
-state_t gpu_data_copy(gpu_t *data_dst, gpu_t *data_src)
+state_t lib_gpu_data_copy(gpu_t *data_dst, gpu_t *data_src)
 {
 	preturn (ops.data_copy, data_dst, data_src);
 }
 
-state_t gpu_data_print(gpu_t *data, int fd)
+state_t lib_gpu_data_print(gpu_t *data, int fd)
 {
 	preturn (ops.data_print, data, fd);
 }
 
-state_t gpu_data_tostr(gpu_t *data, char *buffer, int length)
+state_t lib_gpu_data_tostr(gpu_t *data, char *buffer, int length)
 {
 	preturn (ops.data_tostr, data, buffer, length);
 }
