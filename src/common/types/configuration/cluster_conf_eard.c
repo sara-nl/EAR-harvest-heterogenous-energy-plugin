@@ -35,7 +35,8 @@
 #include <common/config.h>
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/types/configuration/cluster_conf.h>
+#include <common/string_enhanced.h>
+#include <common/types/configuration/cluster_conf_eard.h>
 
 state_t EARD_token(char *token)
 {
@@ -44,61 +45,61 @@ state_t EARD_token(char *token)
 	return EAR_ERROR;
 }
 
-state_t EARD_parse_token(cluster_conf_t *conf,char *token)
+state_t EARD_parse_token(eard_conf_t *conf,char *token)
 {
 		state_t found=EAR_ERROR;
     if (!strcmp(token, "NODEDAEMONVERBOSE"))
     {
       token = strtok(NULL, "=");
-      conf->eard.verbose = atoi(token);
+      conf->verbose = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEDAEMONPOWERMONFREQ"))
     {
       token = strtok(NULL, "=");
-      conf->eard.period_powermon = atoi(token);
+      conf->period_powermon = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEDAEMONMAXPSTATE"))
     {
       token = strtok(NULL, "=");
-      conf->eard.max_pstate = atoi(token);
+      conf->max_pstate = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEDAEMONTURBO"))
     {
       token = strtok(NULL, "=");
-      conf->eard.turbo = atoi(token);
+      conf->turbo = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEDAEMONPORT"))
     {
       token = strtok(NULL, "=");
-      conf->eard.port = atoi(token);
+      conf->port = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEUSEDB"))
     {
       token = strtok(NULL, "=");
-      conf->eard.use_mysql = atoi(token);
+      conf->use_mysql = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEUSEEARDBD"))
     {
       token = strtok(NULL, "=");
-      conf->eard.use_eardbd = atoi(token);
+      conf->use_eardbd = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEDAEMONFORCEFREQUENCIES"))
     {
       token = strtok(NULL, "=");
-      conf->eard.force_frequencies = atoi(token);
+      conf->force_frequencies = atoi(token);
 			found = EAR_SUCCESS;
     }
     else if (!strcmp(token, "NODEUSELOG"))
     {
       token = strtok(NULL, "=");
-      conf->eard.use_log = atoi(token);
+      conf->use_log = atoi(token);
 			found = EAR_SUCCESS;
     }
 	

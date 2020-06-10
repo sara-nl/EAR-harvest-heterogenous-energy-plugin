@@ -35,6 +35,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eardbd.h>
 
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
 {
@@ -651,10 +652,13 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 
 
 		if (EARGM_token(token) == EAR_SUCCESS){
-			if (EARGM_parse_token(conf,token) == EAR_SUCCESS) continue;
+			if (EARGM_parse_token(&conf->eargm,token) == EAR_SUCCESS) continue;
 		}
 		if (EARD_token(token) == EAR_SUCCESS){
-			if (EARD_parse_token(conf,token) == EAR_SUCCESS) continue;
+			if (EARD_parse_token(&conf->eard,token) == EAR_SUCCESS) continue;
+		}
+		if (EARDBD_token(token) == EAR_SUCCESS){
+			if (EARDBD_parse_token(&conf->db_manager,token) == EAR_SUCCESS) continue;
 		}
 		if (!strcmp(token, "DEFAULTPOWERPOLICY"))
 		{
@@ -984,56 +988,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		} // NODENAME END
 
 
-		//DB MANAGER
-		else if (!strcmp(token, "DBDAEMONAGGREGATIONTIME"))
-		{
-			token = strtok(NULL, "=");
-			conf->db_manager.aggr_time = atoi(token);
-		}
-		else if (!strcmp(token, "DBDAEMONINSERTIONTIME"))
-		{
-			token = strtok(NULL, "=");
-			conf->db_manager.insr_time = atoi(token);
-		}
-		else if (!strcmp(token, "DBDAEMONPORTTCP"))
-		{
-			token = strtok(NULL, "=");
-			conf->db_manager.tcp_port = atoi(token);
-		}
-		else if (!strcmp(token, "DBDAEMONPORTSECTCP"))
-		{
-			token = strtok(NULL, "=");
-			conf->db_manager.sec_tcp_port = atoi(token);
-		}
-	    else if (!strcmp(token, "DBDAEMONSYNCPORT"))
-        {
-            token = strtok(NULL, "=");
-            conf->db_manager.sync_tcp_port = atoi(token);
-        }
-        else if (!strcmp(token, "DBDAEMONMEMORYSIZE"))
-        {
-            token = strtok(NULL, "=");
-            conf->db_manager.mem_size = atoi(token);
-        }
-		else if (!strcmp(token, "DBDAEMONMEMORYSIZEPERTYPE"))
-		{
-			int i = 0;
-
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-
-			while (token != NULL && i < EARDBD_TYPES)
-			{
-				conf->db_manager.mem_size_types[i] = atoi(token);
-				token = strtok(NULL, ",");
-				i++;
-			}
-		}
-		else if (!strcmp(token, "DBDAEMONUSELOG"))
-		{
-            token = strtok(NULL, "=");
-            conf->db_manager.use_log = atoi(token);
-		}
         //COMMON CONFIG
         else if (!strcmp(token, "NETWORKEXTENSION"))
         {

@@ -35,7 +35,9 @@
 #include <common/config.h>
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/types/configuration/cluster_conf.h>
+#include <common/states.h>
+#include <common/string_enhanced.h>
+#include <common/types/configuration/cluster_conf_eargm.h>
 
 state_t EARGM_token(char *token)
 {
@@ -44,7 +46,7 @@ state_t EARGM_token(char *token)
 	return EAR_ERROR;
 }
 
-state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
+state_t EARGM_parse_token(eargm_conf_t *conf,char *token)
 {
 		state_t found=EAR_ERROR;
 	
@@ -53,25 +55,25 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
 		if (!strcmp(token, "GLOBALMANAGERVERBOSE") || !strcmp(token, "EARGMVERBOSE"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.verbose = atoi(token);
+			conf->verbose = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERUSEAGGREGATED") || !strcmp(token, "EARGMUSEAGGREGATED"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.use_aggregation = atoi(token);
+			conf->use_aggregation = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERPERIODT1") || !strcmp(token, "EARGMPERIODT1"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.t1 = atoi(token);
+			conf->t1 = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERPERIODT2") || !strcmp(token, "EARGMPERIODT2") )
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.t2 = atoi(token);
+			conf->t2 = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERUNITS") || !strcmp(token, "EARGMUNITS"))
@@ -83,10 +85,10 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
 			remove_chars(token, ' ');
 			strtoup(token);
 
-			if (!strcmp(token,"-"))	conf->eargm.units=BASIC;
-			else if (!strcmp(token,"K")) conf->eargm.units=KILO;
-			else if (!strcmp(token,"M")) conf->eargm.units=MEGA;
-			else conf->eargm.units=KILO;
+			if (!strcmp(token,"-"))	conf->units=BASIC;
+			else if (!strcmp(token,"K")) conf->units=KILO;
+			else if (!strcmp(token,"M")) conf->units=MEGA;
+			else conf->units=KILO;
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERPOLICY") || !strcmp(token, "EARGMPOLICY"))
@@ -99,16 +101,16 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
       strtoup(token);
 
 			if (strcmp(token,"MAXENERGY") == 0) {
-				conf->eargm.policy=MAXENERGY;
+				conf->policy=MAXENERGY;
 			} else {
-				conf->eargm.policy=MAXPOWER;
+				conf->policy=MAXPOWER;
 			}
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERENERGYLIMIT") || !strcmp(token, "EARGMENERGYLIMIT"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.energy = atoi(token);
+			conf->energy = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		#if POWERCAP
@@ -116,36 +118,36 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
 		{
 			token = strtok(NULL, "=");
 			/* It mas be included in power */
-			conf->eargm.power = atoi(token);
+			conf->power = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERPOWERPERIOD") || !strcmp(token, "EARGMPOWERPERIOD"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.t1_power = atoi(token);
+			conf->t1_power = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERPOWERCAPMODE") || !strcmp(token, "EARGMPOWERCAPMODE"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.powercap_mode = atoi(token);
+			conf->powercap_mode = atoi(token);
 			found=EAR_SUCCESS;
 		}else if (!strcmp(token, "GLOBALMANAGERPOWERCAPACTIONLIMIT") || !strcmp(token, "EARGMPOWERCAPACTIONLIMIT"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.defcon_power_limit = atoi(token);
+			conf->defcon_power_limit = atoi(token);
 			found=EAR_SUCCESS;
 		}else if (!strcmp(token, "GLOBALMANAGERPOWERCAPACTION") || !strcmp(token,"EARGMPOWERCAPACTION"))
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
-			strcpy(conf->eargm.powercap_action,token);
+			strcpy(conf->powercap_action,token);
 			found=EAR_SUCCESS;
 		}else if (!strcmp(token, "GLOBALMANAGERENERGYACTION") || !strcmp(token, "EARGMENERGYACTION"))
 		{
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
-			strcpy(conf->eargm.energycap_action,token);
+			strcpy(conf->energycap_action,token);
 			found=EAR_SUCCESS;
 		}
 		#endif
@@ -157,7 +159,7 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
 
 			while (token != NULL)
 			{
-				conf->eargm.defcon_limits[perc++] = atoi(token);
+				conf->defcon_limits[perc++] = atoi(token);
 				token = strtok(NULL, ",");
 			}
 			found=EAR_SUCCESS;
@@ -165,19 +167,19 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
 		else if (!strcmp(token, "GLOBALMANAGERGRACEPERIODS") || !strcmp(token, "EARGMGRACEPERIODS"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.grace_periods = atoi(token);
+			conf->grace_periods = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERPORT") || !strcmp(token, "EARGMPORT"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.port = atoi(token);
+			conf->port = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERMODE") || !strcmp(token, "EARGMMODE"))
 		{
 			token = strtok(NULL, "=");
-			conf->eargm.mode = atoi(token);
+			conf->mode = atoi(token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERMAIL") || !strcmp(token, "EARGMMAIL"))
@@ -185,7 +187,7 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
 			remove_chars(token, ' ');
-			strcpy(conf->eargm.mail, token);
+			strcpy(conf->mail, token);
 			found=EAR_SUCCESS;
 		}
 		else if (!strcmp(token, "GLOBALMANAGERHOST") || !strcmp(token, "EARGMHOST"))
@@ -193,15 +195,15 @@ state_t EARGM_parse_token(cluster_conf_t *conf,char *token)
 			token = strtok(NULL, "=");
 			strclean(token, '\n');
 			remove_chars(token, ' ');
-			strcpy(conf->eargm.host, token);
+			strcpy(conf->host, token);
 			found=EAR_SUCCESS;
 		}
-        else if (!strcmp(token, "GLOBALMANAGERUSELOG") || !strcmp(token, "EARGMUSELOG"))
-        {
+    else if (!strcmp(token, "GLOBALMANAGERUSELOG") || !strcmp(token, "EARGMUSELOG"))
+    {
 			token = strtok(NULL, "=");
-			conf->eargm.use_log = atoi(token);
+			conf->use_log = atoi(token);
 			found=EAR_SUCCESS;
-        }
+    }
 		return found;
 }
 

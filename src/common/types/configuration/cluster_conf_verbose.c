@@ -33,17 +33,9 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eardbd.h>
 
 
-
-void print_db_manager(eardb_conf_t *conf)
-{
-	verbosen(VCCONF,"--> EARDBD configuration\n");
-	verbosen(VCCONF, "---> Insertion time %u\tAggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tSync Port: %u\tCacheSize: %u\n",
-			conf->insr_time,conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->sync_tcp_port,conf->mem_size);
-	verbosen(VCCONF,"--> use_log %u\n",conf->use_log);
-	
-}
 
 void print_database_conf(db_conf_t *conf)
 {

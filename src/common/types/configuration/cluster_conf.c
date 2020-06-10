@@ -41,6 +41,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eardbd.h>
 #include <common/environment.h>
 
 
@@ -550,29 +551,8 @@ void copy_eardb_conf(db_conf_t *dest,db_conf_t *src)
 {
 	memcpy(dest,src,sizeof(db_conf_t));
 }
-void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src)
-{
-	memcpy(dest,src,sizeof(eardb_conf_t));
-}
 
 /*** DEFAULT VALUES ****/
-void set_default_eardbd_conf(eardb_conf_t *eardbdc)
-{
-	eardbdc->aggr_time		= DEF_DBD_AGGREGATION_TIME;
-	eardbdc->insr_time		= DEF_DBD_INSERTION_TIME;
-	eardbdc->tcp_port		= DEF_DBD_SERVER_PORT;
-	eardbdc->sec_tcp_port	= DEF_DBD_MIRROR_PORT;
-	eardbdc->sync_tcp_port	= DEF_DBD_SYNCHR_PORT;
-	eardbdc->mem_size		= DEF_DBD_ALLOC_MBS;
-	eardbdc->use_log		= DEF_DBD_FILE_LOG;
-	eardbdc->mem_size_types[0] = 60;
-	eardbdc->mem_size_types[1] = 22;
-	eardbdc->mem_size_types[2] = 5;
-	eardbdc->mem_size_types[3] = 0;
-	eardbdc->mem_size_types[4] = 7;
-	eardbdc->mem_size_types[5] = 5;
-	eardbdc->mem_size_types[6] = 1;
-}
 
 void set_default_tag_values(tag_t *tag)
 {
