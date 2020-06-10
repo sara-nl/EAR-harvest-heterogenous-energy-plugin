@@ -32,82 +32,83 @@
 static gpu_ops_t *ops;
 static uint dev_count;
 
-state_t lib_gpu_load(settings_conf_t *settings)
+state_t gpu_lib_load(settings_conf_t *settings)
 {
 	// HERE: Get the GPU model identificator, look
 	// 'metrics/gpu/gpu.c' for the model list.
 
-	return gpu_load(&ops, settings.gpu_model);
+	// Replace 0 by GPU model
+	return gpu_load(&ops, 0);
 }
 
-state_t lib_gpu_init(ctx_t *c)
+state_t gpu_lib_init(ctx_t *c)
 {
 	// HERE: Ask Daemon for dev_count
 
-	preturn (ops.init_data, dev_count);
+	preturn (ops->init_data, dev_count);
 }
 
-state_t lib_gpu_dispose(ctx_t *c)
+state_t gpu_lib_dispose(ctx_t *c)
 {
 	return EAR_SUCCESS;
 }
 
-state_t lib_gpu_read(ctx_t *c, gpu_t *data)
+state_t gpu_lib_read(ctx_t *c, gpu_t *data)
 {
 	// HERE: Ask daemon for GPU metrics
-
-	preturn (ops.read, c, data);
+	
+	return EAR_SUCCESS;
 }
 
-state_t lib_gpu_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
+state_t gpu_lib_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
 	state_t s;
-	if (xtate_fail(s, lib_gpu_read(c, data2))) {
+	if (xtate_fail(s, gpu_lib_read(c, data2))) {
 		return s;
 	}
-	if (xtate_fail(s, ops.gpu_data_diff(data2, data1, data_diff))) {
+	if (xtate_fail(s, ops->gpu_data_diff(data2, data1, data_diff))) {
 		return s;
 	}
-	return ops.data_copy(data1, data2);
+	return ops->data_copy(data1, data2);
 }
 
-state_t lib_gpu_count(ctx_t *c, uint *dev_count)
+state_t gpu_lib_count(ctx_t *c, uint *dev_count)
 {
 	*dev_count = dev_count;
 	return EAR_SUCCESS;
 }
 
-state_t lib_gpu_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
+state_t gpu_lib_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
-	preturn (ops.data_diff, data2, data1, data_diff);
+	preturn (ops->data_diff, data2, data1, data_diff);
 }
 
-state_t lib_gpu_data_alloc(gpu_t **data)
+state_t gpu_lib_data_alloc(gpu_t **data)
 {
-	preturn (ops.data_alloc, data);
+	preturn (ops->data_alloc, data);
 }
 
-state_t lib_gpu_data_free(gpu_t **data)
+state_t gpu_lib_data_free(gpu_t **data)
 {
-	preturn (ops.data_free, data);
+	preturn (ops->data_free, data);
 }
 
-state_t lib_gpu_data_null(gpu_t *data)
+state_t gpu_lib_data_null(gpu_t *data)
 {
-	preturn (ops.data_null, data);
+	preturn (ops->data_null, data);
 }
 
-state_t lib_gpu_data_copy(gpu_t *data_dst, gpu_t *data_src)
+state_t gpu_lib_data_copy(gpu_t *data_dst, gpu_t *data_src)
 {
-	preturn (ops.data_copy, data_dst, data_src);
+	preturn (ops->data_copy, data_dst, data_src);
 }
 
-state_t lib_gpu_data_print(gpu_t *data, int fd)
+state_t gpu_lib_data_print(gpu_t *data, int fd)
 {
-	preturn (ops.data_print, data, fd);
+	preturn (ops->data_print, data, fd);
 }
 
-state_t lib_gpu_data_tostr(gpu_t *data, char *buffer, int length)
+state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length)
 {
-	preturn (ops.data_tostr, data, buffer, length);
+	preturn (ops->data_tostr, data, buffer, length);
 }

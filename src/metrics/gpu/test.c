@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 	ctx_t c;
 	int d;
 
-	if (xtate_fail(s, gpu_load())) {
+	if (xtate_fail(s, gpu_load(empty, none))) {
 		printf("gpu_load returned %d (%s)\n", s, state_msg);
 		return 0;
 	}
@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
 			printf("gpu_read_copy returned %d (%s)\n", s, state_msg);
 			return 0;
 		}
+		gpu_data_print(data3, 0);
 	}
 
 	return 0;

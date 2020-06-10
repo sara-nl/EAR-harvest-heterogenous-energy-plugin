@@ -32,6 +32,9 @@
 
 #include <common/states.h>
 
+#define empty	NULL
+#define none	0
+
 typedef struct ctx_s {
 	int initialized;
 	void *context;

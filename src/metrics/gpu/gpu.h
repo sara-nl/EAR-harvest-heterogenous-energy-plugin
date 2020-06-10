@@ -27,8 +27,8 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef METRICS_ENERGY_GPU_H
-#define METRICS_ENERGY_GPU_H
+#ifndef METRICS_GPU_H
+#define METRICS_GPU_H
 
 #include <common/types.h>
 #include <common/states.h>
@@ -37,6 +37,22 @@
 
 #define MODEL_NVML		 1
 #define MODEL_UNDEFINED	 0
+
+typedef struct gpu_s
+{
+	timestamp_t time;
+	ulong samples;
+	ulong freq_gpu_mhz;
+	ulong freq_mem_mhz;
+	ulong util_gpu; // percent
+	ulong util_mem; // percent
+	ulong temp_gpu; // celsius
+	ulong temp_mem; // celsius
+	double energy_j;
+	double power_w;
+	uint working;
+	uint correct;
+} gpu_t;
 
 typedef struct gpu_ops_s
 {
@@ -54,22 +70,6 @@ typedef struct gpu_ops_s
 	state_t (*data_print)	(gpu_t *data, int fd);
 	state_t (*data_tostr)	(gpu_t *data, char *buffer, int length);
 } gpu_ops_t;
-
-typedef struct gpu_s
-{
-	timestamp_t time;
-	ulong samples;
-	ulong freq_gpu_mhz;
-	ulong freq_mem_mhz;
-	ulong util_gpu; // percent
-	ulong util_mem; // percent
-	ulong temp_gpu; // celsius
-	ulong temp_mem; // celsius
-	double energy_j;
-	double power_w;
-	uint working;
-	uint correct;
-} gpu_t;
 
 state_t gpu_load(gpu_ops_t **ops, uint force_model);
 

@@ -34,7 +34,7 @@ static gpu_ops_t ops;
 static uint loaded;
 static uint model;
 
-state_t gpu_load(gpu_ops_t **ops, uint force_model)
+state_t gpu_load(gpu_ops_t **_ops, uint force_model)
 {
 	if (loaded != 0) {
 		return EAR_SUCCESS;
@@ -61,7 +61,9 @@ state_t gpu_load(gpu_ops_t **ops, uint force_model)
 		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
 	}
 
-	*ops = &ops;
+	if (_ops != NULL) {
+		*_ops = &ops;
+	}
 
 	return EAR_SUCCESS;
 }
