@@ -45,7 +45,7 @@ state_t gpu_lib_init(ctx_t *c)
 {
 	// HERE: Ask Daemon for dev_count
 
-	preturn (ops->init_data, dev_count);
+	preturn (ops->data_init, dev_count);
 }
 
 state_t gpu_lib_dispose(ctx_t *c)
@@ -66,15 +66,15 @@ state_t gpu_lib_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff
 	if (xtate_fail(s, gpu_lib_read(c, data2))) {
 		return s;
 	}
-	if (xtate_fail(s, ops->gpu_data_diff(data2, data1, data_diff))) {
+	if (xtate_fail(s, ops->data_diff(data2, data1, data_diff))) {
 		return s;
 	}
 	return ops->data_copy(data1, data2);
 }
 
-state_t gpu_lib_count(ctx_t *c, uint *dev_count)
+state_t gpu_lib_count(ctx_t *c, uint *_dev_count)
 {
-	*dev_count = dev_count;
+	*_dev_count = dev_count;
 	return EAR_SUCCESS;
 }
 

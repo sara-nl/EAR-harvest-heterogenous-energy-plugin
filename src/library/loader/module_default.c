@@ -52,7 +52,7 @@ static int module_constructor_dlsym(char *path_so)
 	if ((hack = getenv(HACK_FILE_LIBR)) == NULL) {
 		return 0;
         }
-
+	
 	sprintf(path_so, "%s", hack);
 	verbose(2, "LOADER: module_constructor_dlsym loading library %s", path_so);
 
@@ -81,20 +81,30 @@ static int module_constructor_dlsym(char *path_so)
 	return 1;
 }
 
+static void module_constructor_init()
+{
+        char *verb;
+
+        if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
+        {
+                VERB_SET_EN(1);
+                VERB_SET_LV(atoi(verb));
+        }
+}
+
 int module_constructor()
 {
 	static char path_so[4096];
 
+	module_constructor_init();
 	verbose(3, "LOADER: function module_constructor");
 
 	if (!module_constructor_dlsym(path_so)) {
 		return 0;
 	}
-
 	if (atexit(module_destructor) != 0) {
 		verbose(0, "LOADER: cannot set exit function");
 	}
-		
 	if (func_con != NULL) {
 		func_con();
 	}

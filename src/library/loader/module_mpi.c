@@ -38,6 +38,7 @@
 #include <common/config/config_env.h>
 #include <library/loader/module_mpi.h>
 
+extern int _loaded_default;
 static mpic_t next_mpic;
 static mpif_t next_mpif;
 mpic_t ear_mpic;
@@ -128,6 +129,14 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	return;
 }
 
+static void module_mpi_dlsym_next()
+{
+	symplug_join(RTLD_NEXT, (void **) &ear_mpic, mpic_names, MPIC_N);
+	symplug_join(RTLD_NEXT, (void **) &ear_mpif, mpif_names, MPIF_N);
+	verbose(3, "LOADER: dlsym for C init returned %p", next_mpic.Init);
+	verbose(3, "LOADER: dlsym for F init returned %p", next_mpif.init);
+}
+
 static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 {
 	void **next_mpic_v = (void **) &next_mpic;
@@ -198,7 +207,6 @@ static void module_mpi_init()
 {
 	char *verb;
 	
-	verbose(3, "LOADER: function module_mpi");
 	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
 	{
 		VERB_SET_EN(1);
@@ -220,7 +228,11 @@ void module_mpi()
 		verbose(3, "LOADER: no MPI detected");
 		return;
 	}
-	
-	module_mpi_get_libear(path_so, &lang_c, &lang_f);
-	module_mpi_dlsym(path_so, lang_c, lang_f);
+
+	if (!_loaded_default) {
+		module_mpi_get_libear(path_so, &lang_c, &lang_f);
+		module_mpi_dlsym(path_so, lang_c, lang_f);
+	} else {
+		module_mpi_dlsym_next();
+	}
 }

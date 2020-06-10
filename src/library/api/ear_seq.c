@@ -26,12 +26,15 @@
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
+
 #include <stdio.h>
+
 void ear_init()
 {
-	printf("NO_FUNCIONA\n");
+	printf("ear_init()\n");
 }
+
 void ear_finalize()
 {
-	printf("NO_FUNCIONA\n");
+	printf("ear_finalize()\n");
 }

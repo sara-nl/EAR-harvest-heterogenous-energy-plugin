@@ -2,7 +2,9 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) -O2 -fPIC
 
 ########
 
-all: metrics.o
+all: \
+        gpu.o \
+        metrics.o \
 
 %.o: %.c %.h
 	$(MPICC) $(CFLAGS) -c $<

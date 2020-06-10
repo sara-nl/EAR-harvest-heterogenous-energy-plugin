@@ -31,6 +31,7 @@
 #define LIBRARY_METRICS_GPU_H
 
 #include <metrics/gpu/gpu.h>
+#include <daemon/shared_configuration.h>
 
 state_t gpu_lib_load(settings_conf_t *settings);
 
@@ -43,8 +44,6 @@ state_t gpu_lib_count(ctx_t *c, uint *dev_count);
 state_t gpu_lib_read(ctx_t *c, gpu_t *data);
 
 state_t gpu_lib_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
-
-state_t gpu_lib_data_init(uint dev_count);
 
 state_t gpu_lib_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 

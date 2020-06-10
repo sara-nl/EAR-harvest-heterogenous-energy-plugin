@@ -5,14 +5,15 @@ API_CFLAGS = $(CFLAGS) $(MPI_CFLAGS)
 OBJS = \
     ear.o \
     ear_mpi.o \
-    ear_default.o \
+    ear_seq.o \
     mpic.o \
     mpif.o \
-		ear_seq.o
+
+BINS = libear_seq.so
 
 ######## RULES
 
-all: $(OBJS) libear_seq.so
+all: $(OBJS) $(BINS)
 
 ear.o: ear.c ear.h
 	$(CC) $(API_CFLAGS)  $(PAPI_CFLAGS) -c $<	
@@ -20,8 +21,8 @@ ear.o: ear.c ear.h
 %.o: %.c %.h
 	$(CC) $(API_CFLAGS) -c $<
 
-libear_seq.so:ear_seq.o
-	$(CC) -shared $(PAPI_LDFLAGS) -ldl -o libear_seq.so ear_seq.o	
+libear_seq.so: ear_seq.o
+	$(CC) -shared -o libear_seq.so ear_seq.o -ldl
 
 ######## OPTIONS 
 

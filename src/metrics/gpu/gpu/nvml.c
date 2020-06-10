@@ -28,6 +28,7 @@
 */
 
 //#define SHOW_DEBUGS 1
+#ifdef CUDA_BASE
 
 #include <nvml.h>
 #include <dlfcn.h>
@@ -384,6 +385,12 @@ state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 	return EAR_SUCCESS;
 }
 
+state_t nvml_data_init(uint _dev_count)
+{
+	dev_count = _dev_count;
+	return EAR_SUCCESS;
+}
+
 state_t nvml_data_alloc(gpu_t **data)
 {
 	if (data == NULL) {
@@ -463,3 +470,5 @@ state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 	}
 	return EAR_SUCCESS;
 }
+
+#endif
