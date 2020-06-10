@@ -36,6 +36,8 @@
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_generic.h>
+#include <common/types/configuration/cluster_conf_db.h>
 
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
 {
@@ -664,23 +666,12 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
     {
         if (POLICY_token(&conf->num_policies,&conf->power_policies,line) == EAR_SUCCESS) continue;
     }
-		if (!strcmp(token, "DEFAULTPOWERPOLICY"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-      remove_chars(token, ' ');
-      strcpy(def_policy, token);
-		}
-		else if (!strcmp(token, "DATABASEPATHNAME"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-            remove_chars(token, ' ');
-			strcpy(conf->DB_pathname, token);
-		}
+		if (DB_token(token) == EAR_SUCCESS){
+      if (DB_parse_token(&conf->database,token) == EAR_SUCCESS) continue;
+    }
 
             //EARLIB CONF
-		else if (!strcmp(token, "COEFFICIENTSDIR"))
+		if (!strcmp(token, "COEFFICIENTSDIR"))
 		{
 			token = strtok(NULL, "=");
 			token = strtok(token, "\n");
@@ -712,16 +703,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
             token = strtok(NULL, "=");
             conf->earlib.check_every = atoi(token);
         }
-		else if (!strcmp(token, "VERBOSE"))
-		{
-			token = strtok(NULL, "=");
-			conf->verbose = atoi(token);
-		}
-		else if (!strcmp(token, "MINTIMEPERFORMANCEACCURACY"))
-		{
-			token = strtok(NULL, "=");
-			conf->min_time_perf_acc = atoi(token);
-		}
 		else if (!strcmp(token, "AUTHORIZEDUSERS"))
 		{
 			token = strtok(NULL, "=");
@@ -933,81 +914,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		} // NODENAME END
 
 
-        //COMMON CONFIG
-        else if (!strcmp(token, "NETWORKEXTENSION"))
-        {
-            token = strtok(NULL, "=");
-            strcpy(conf->net_ext, token);
-        }
-
-		//MARIADB/MYSQL config
-		else if (!strcmp(token, "MARIADBIP"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-            remove_chars(token, ' ');
-			strcpy(conf->database.ip, token);
-		}
-		else if (!strcmp(token, "MARIADBUSER"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-            remove_chars(token, ' ');
-			strcpy(conf->database.user, token);
-		}
-		else if (!strcmp(token, "MARIADBPASSW"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-            remove_chars(token, ' ');
-			strcpy(conf->database.pass, token);
-		}
-        else if (!strcmp(token, "MARIADBCOMMANDSUSER"))
-        {
-            token = strtok(NULL, "=");
-            strclean(token, '\n');
-            remove_chars(token, ' ');
-            strcpy(conf->database.user_commands, token);
-        }
-        else if (!strcmp(token, "MARIADBCOMMANDSPASSW"))
-        {
-            token = strtok(NULL, "=");
-            strclean(token, '\n');
-            remove_chars(token, ' ');
-            strcpy(conf->database.pass_commands, token);
-        }
-		else if (!strcmp(token, "MARIADBDATABASE"))
-		{
-			token = strtok(NULL, "=");
-			strclean(token, '\n');
-            remove_chars(token, ' ');
-			strcpy(conf->database.database, token);
-		}
-		else if (!strcmp(token, "MARIADBPORT"))
-		{
-			token = strtok(NULL, "=");
-			conf->database.port = atoi(token);
-		}
-		else if (!strcmp(token, "MAXCONNECTIONS"))
-        {
-            token = strtok(NULL, "=");
-            conf->database.max_connections = atoi(token);
-        }
-		else if (!strcmp(token, "REPORTNODEDETAIL"))
-        {
-            token = strtok(NULL, "=");
-            conf->database.report_node_detail = atoi(token);
-		}
-		else if (!strcmp(token, "REPORTSIGDETAIL"))
-        {
-            token = strtok(NULL, "=");
-            conf->database.report_sig_detail = atoi(token);
-        }
-		else if (!strcmp(token, "REPORTLOOPS"))
-        {
-            token = strtok(NULL, "=");
-            conf->database.report_loops = atoi(token);
-        }
 
         //TAGS definition
         else if (!strcmp(token, "TAG"))
@@ -1023,45 +929,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			line[strlen(line)] = '=';
       parse_island(conf, line);
 		}
-		// INSTALLATION AREA
-		else if (!strcmp(token, "TMPDIR"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-			remove_chars(token, ' ');
-			strcpy(conf->install.dir_temp, token);
-		}
-		else if (!strcmp(token, "ETCDIR"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-			remove_chars(token, ' ');
-			strcpy(conf->install.dir_conf, token);
-		}
-		else if (!strcmp(token, "INSTDIR"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-			remove_chars(token, ' ');
-			strcpy(conf->install.dir_inst, token);
-
-			// Plugin path
-			sprintf(conf->install.dir_plug, "%s/lib/plugins", token);
-		}
-		else if (!strcmp(token, "PLUGINENERGY"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-			remove_chars(token, ' ');
-			strcpy(conf->install.obj_ener, token);
-		}
-		else if (!strcmp(token, "PLUGINPOWERMODEL"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-			remove_chars(token, ' ');
-			strcpy(conf->install.obj_power_model, token);
-		}
+		if (token != NULL) GENERIC_parse_token(conf,token,def_policy);
 	}
 
     int i;

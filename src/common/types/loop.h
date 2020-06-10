@@ -30,7 +30,6 @@
 #ifndef _EAR_TYPES_LOOP
 #define _EAR_TYPES_LOOP
 
-#define GENERIC_NAME 256
 #include <common/types/generic.h>
 #include <common/types/signature.h>
 #include <common/types/job.h>

@@ -34,16 +34,10 @@
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_generic.h>
+#include <common/types/configuration/cluster_conf_db.h>
 
 
-
-void print_database_conf(db_conf_t *conf)
-{
-	verbosen(VCCONF,"\n--> MARIADB configuration\n");
-	verbosen(VCCONF, "---> IP: %s\tUser: %s\tUser commands %s\tPort:%u\tDB:%s\n",
-			conf->ip, conf->user, conf->user_commands,conf->port, conf->database);
-	verbosen(VCCONF,"-->max_connections %u report_node_details %u report_sig_details %u report_loops %u\n",conf->max_connections,conf->report_node_detail,conf->report_sig_detail,conf->report_loops);
-}
 
 void print_islands_conf(node_island_t *conf)
 {

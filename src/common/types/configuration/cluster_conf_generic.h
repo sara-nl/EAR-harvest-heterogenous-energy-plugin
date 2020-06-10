@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
+*       Copyright (C) 2017
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,47 +15,28 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*	
+*
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*	
+*
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+*	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef _EAR_TYPES_GENERIC
-#define _EAR_TYPES_GENERIC
+#ifndef _EAR_GENERIC_CONF_H
+#define _EAR_GENERIC_CONF_H
 
-#include <stddef.h>
-#include <stdint.h>
-#include <limits.h>
+#include <common/config.h>
+#include <common/states.h>
+#include <common/types/generic.h>
+#include <common/types/configuration/cluster_conf.h>
 
-typedef unsigned char		uchar;
-typedef unsigned long long	ull;
-typedef unsigned long long	ullong;
-typedef   signed long long	llong;
-typedef unsigned long		ulong;
-typedef unsigned short		ushort;
-typedef unsigned int		uint;
-typedef long double			ldouble;
 
-// Not generic
-typedef uint8_t			job_type;
-typedef ulong			job_id;
 
-// Obsolete
-#define GENERIC_NAME 		256
-#define	UID_NAME			8
-#define POLICY_NAME 		32
-#define ENERGY_TAG_SIZE		32
-#define MAX_PATH_SIZE		256
-#define NODE_SIZE			256
-#define NAME_SIZE			128
-#define ID_SIZE				64
-#define USER			64
+state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy);
 
 #endif

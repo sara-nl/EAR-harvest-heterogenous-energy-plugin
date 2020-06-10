@@ -7,6 +7,8 @@ conf_OBJS = policy_conf.o \
 		cluster_conf_eargm.o \
 		cluster_conf_eard.o \
 		cluster_conf_eardbd.o \
+		cluster_conf_generic.o \
+		cluster_conf_db.o \
     cluster_conf.o \
     cluster_conf_read.o \
     cluster_conf_verbose.o

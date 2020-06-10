@@ -42,6 +42,7 @@
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_db.h>
 #include <common/environment.h>
 
 
@@ -547,10 +548,6 @@ void print_ear_lib_conf(earlib_conf_t *libc)
 	}
 }
 
-void copy_eardb_conf(db_conf_t *dest,db_conf_t *src)
-{
-	memcpy(dest,src,sizeof(db_conf_t));
-}
 
 /*** DEFAULT VALUES ****/
 
@@ -582,18 +579,6 @@ void set_default_earlib_conf(earlib_conf_t *earlibc)
 	earlibc->check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 }
 
-
-void set_default_db_conf(db_conf_t *db_conf)
-{
-    strcpy(db_conf->user, "ear_daemon");
-    strcpy(db_conf->user_commands, "ear_daemon");
-    strcpy(db_conf->ip, "127.0.0.1");
-    db_conf->port = 0;
-	db_conf->max_connections=MAX_DB_CONNECTIONS;
-	db_conf->report_node_detail=DEMO;
-	db_conf->report_sig_detail=!DB_SIMPLE;
-	db_conf->report_loops=!LARGE_CLUSTER;
-}
 
 void set_default_island_conf(node_island_t *isl_conf, uint id)
 {

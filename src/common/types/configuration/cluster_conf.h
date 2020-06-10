@@ -48,11 +48,8 @@
 #include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eard.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_db.h>
 
-#define GENERIC_NAME	256
-#define USER			64
-#define ACC				64
-#define SMALL           16
 
 #define NORMAL 		0
 #define AUTHORIZED	1
@@ -109,20 +106,6 @@ typedef struct tags
     char coeffs[GENERIC_NAME];
 } tag_t;
 
-typedef struct db_conf
-{
-    char ip[USER];
-    char user[USER];
-    char pass[USER];
-    char user_commands[USER];
-    char pass_commands[USER];
-    char database[USER];
-    uint port;
-	uint max_connections;
-	uint report_node_detail;
-	uint report_sig_detail;
-	uint report_loops;
-} db_conf_t;
 
 typedef struct earlib_conf
 {
@@ -147,7 +130,7 @@ typedef struct cluster_conf
 {
 	// Library & common conf
 	char DB_pathname[GENERIC_NAME];
-    char net_ext[SMALL];
+  char net_ext[ID_SIZE];
 	uint verbose;
 	eard_conf_t		eard;
 	eargm_conf_t 	eargm;
@@ -212,8 +195,6 @@ void free_cluster_conf(cluster_conf_t *conf);
 
 // Cluster configuration verbose
 
-/** Prints the DB configuration */
-void print_database_conf(db_conf_t *conf);
 
 
 /** Prints in the stdout the whole cluster configuration */
@@ -249,16 +230,9 @@ void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src);
 
 
 
-
-/** */
-void copy_eardb_conf(db_conf_t *dest,db_conf_t *src);
-
-
 // Default functions
 
 
-/** Initializes the default values for DB */
-void set_default_db_conf(db_conf_t *db_conf);
 
 
 /** Initializes the default values for earlib conf */
