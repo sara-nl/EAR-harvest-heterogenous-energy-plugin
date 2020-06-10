@@ -40,6 +40,7 @@
 #include <common/sizes.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_eard.h>
 #include <common/environment.h>
 
 
@@ -545,10 +546,6 @@ void print_ear_lib_conf(earlib_conf_t *libc)
 	}
 }
 
-void copy_eard_conf(eard_conf_t *dest,eard_conf_t *src)
-{
-	memcpy(dest,src,sizeof(eard_conf_t));
-}
 void copy_eardb_conf(db_conf_t *dest,db_conf_t *src)
 {
 	memcpy(dest,src,sizeof(db_conf_t));
@@ -594,18 +591,6 @@ void set_default_tag_values(tag_t *tag)
     strcpy(tag->powercap_plugin, "");
 }
 
-void set_default_eard_conf(eard_conf_t *eardc)
-{
-	eardc->verbose=1;           /* default 1 */
-    eardc->period_powermon=POWERMON_FREQ;  /* default 30000000 (30secs) */
-    eardc->max_pstate=1;       /* default 1 */
-    eardc->turbo=USE_TURBO;             /* Fixed to 0 by the moment */
-    eardc->port=DAEMON_PORT_NUMBER;              /* mandatory */
-    eardc->use_mysql=1;         /* Must EARD report to DB */
-    eardc->use_eardbd=1;        /* Must EARD report to DB using EARDBD */
-	eardc->force_frequencies=1; /* EARD will force frequencies */
-	eardc->use_log=EARD_FILE_LOG;
-}
 
 void set_default_earlib_conf(earlib_conf_t *earlibc)
 {

@@ -34,6 +34,7 @@
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_eard.h>
 
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
 {
@@ -652,6 +653,9 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		if (EARGM_token(token) == EAR_SUCCESS){
 			if (EARGM_parse_token(conf,token) == EAR_SUCCESS) continue;
 		}
+		if (EARD_token(token) == EAR_SUCCESS){
+			if (EARD_parse_token(conf,token) == EAR_SUCCESS) continue;
+		}
 		if (!strcmp(token, "DEFAULTPOWERPOLICY"))
 		{
 			token = strtok(NULL, "=");
@@ -978,53 +982,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 					conf->nodes[conf->num_nodes+i].coef_file = coef_file;
 				conf->num_nodes += num_nodes;
 		} // NODENAME END
-
-			//EARD conf
-		else if (!strcmp(token, "NODEDAEMONVERBOSE"))
-		{
-			token = strtok(NULL, "=");
-			conf->eard.verbose = atoi(token);
-		}
-		else if (!strcmp(token, "NODEDAEMONPOWERMONFREQ"))
-		{
-			token = strtok(NULL, "=");
-			conf->eard.period_powermon = atoi(token);
-		}
-		else if (!strcmp(token, "NODEDAEMONMAXPSTATE"))
-		{
-			token = strtok(NULL, "=");
-			conf->eard.max_pstate = atoi(token);
-		}
-		else if (!strcmp(token, "NODEDAEMONTURBO"))
-		{
-			token = strtok(NULL, "=");
-			conf->eard.turbo = atoi(token);
-		}
-		else if (!strcmp(token, "NODEDAEMONPORT"))
-		{
-			token = strtok(NULL, "=");
-			conf->eard.port = atoi(token);
-		}
-		else if (!strcmp(token, "NODEUSEDB"))
-        {
-            token = strtok(NULL, "=");
-            conf->eard.use_mysql = atoi(token);
-        }
-        else if (!strcmp(token, "NODEUSEEARDBD"))
-        {
-            token = strtok(NULL, "=");
-            conf->eard.use_eardbd = atoi(token);
-        }
-        else if (!strcmp(token, "NODEDAEMONFORCEFREQUENCIES"))
-        {
-            token = strtok(NULL, "=");
-            conf->eard.force_frequencies = atoi(token);
-        }
-		else if (!strcmp(token, "NODEUSELOG"))
-        {
-            token = strtok(NULL, "=");
-            conf->eard.use_log = atoi(token);
-        }
 
 
 		//DB MANAGER

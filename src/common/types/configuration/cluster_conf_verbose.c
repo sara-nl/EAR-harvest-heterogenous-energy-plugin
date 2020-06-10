@@ -32,16 +32,8 @@
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_eard.h>
 
-
-void print_eard_conf(eard_conf_t *conf)
-{
-	verbosen(VCCONF,"\t eard: verbosen %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
-	verbosen(VCCONF,"\t eard: turbo %u port %u use_db %u use_eardbd %u \n",conf->turbo,conf->port,conf->use_mysql,conf->use_eardbd);
-	verbosen(VCCONF,"\t eard: force_frequencies %u\n",conf->force_frequencies);
-	verbosen(VCCONF,"\t eard: use_log %u\n",conf->use_log);
-
-}
 
 
 void print_db_manager(eardb_conf_t *conf)
