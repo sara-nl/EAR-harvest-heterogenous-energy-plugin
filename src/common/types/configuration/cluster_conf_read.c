@@ -672,98 +672,19 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		if (EARLIB_token(token) == EAR_SUCCESS){
 			if (EARLIB_parse_token(&conf->earlib,token) == EAR_SUCCESS) continue;
 		}
-
-            //EARLIB CONF
-		if (!strcmp(token, "COEFFICIENTSDIR"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, "\n");
-            remove_chars(token, ' ');
-			strcpy(conf->earlib.coefficients_pathname, token);
-		}
-        else if (!strcmp(token, "DYNAISLEVELS"))
-        {
-            token = strtok(NULL, "=");
-            conf->earlib.dynais_levels = atoi(token);
-        }
-        else if (!strcmp(token, "DYNAISWINDOWSIZE"))
-        {
-            token = strtok(NULL, "=");
-            conf->earlib.dynais_window = atoi(token);
-        }
-        else if (!strcmp(token, "DYNAISTIMEOUT"))
-        {
-            token = strtok(NULL, "=");
-            conf->earlib.dynais_timeout = atoi(token);
-        }
-        else if (!strcmp(token, "LIBRARYPERIOD"))
-        {
-            token = strtok(NULL, "=");
-            conf->earlib.lib_period = atoi(token);
-        }
-        else if (!strcmp(token, "CHECKEARMODEEVERY"))
-        {
-            token = strtok(NULL, "=");
-            conf->earlib.check_every = atoi(token);
-        }
-		else if (!strcmp(token, "AUTHORIZEDUSERS"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-			while (token != NULL)
-			{
-				conf->num_priv_users++;
-				conf->priv_users = realloc(conf->priv_users, sizeof(char *)*conf->num_priv_users);
-				if (conf->priv_users==NULL){
-					error("NULL pointer reading authorized users");
-					return;
-				}
-				strclean(token, '\n');
-				conf->priv_users[conf->num_priv_users-1] = malloc(strlen(token)+1);
-                remove_chars(token, ' ');
-				strcpy(conf->priv_users[conf->num_priv_users-1], token);
-				token = strtok(NULL, ",");
+		if (AUTH_token(token) == EAR_SUCCESS){
+			if (!strcmp(token, "AUTHORIZEDUSERS")){
+				AUTH_parse_token(token,&conf->num_priv_users,&conf->priv_users);
+				continue;
+			}else if (!strcmp(token, "AUTHORIZEDGROUPS")){
+				AUTH_parse_token(token,&conf->num_priv_groups,&conf->priv_groups);
+				continue;
+			}else if (!strcmp(token, "AUTHORIZEDACCOUNTS")){	
+				AUTH_parse_token(token,&conf->num_acc,&conf->priv_acc);
+				continue;
 			}
 		}
-        else if (!strcmp(token, "AUTHORIZEDGROUPS"))
-        {
-            token = strtok(NULL, "=");
-            token = strtok(token, ",");
-            while (token != NULL)
-            {
-                conf->num_priv_groups++;
-                conf->priv_groups = realloc(conf->priv_groups, sizeof(char *)*conf->num_priv_groups);
-								if (conf->priv_groups==NULL){
-									error("NULL pointer reading authorized groups");
-									return;
-								}
-                strclean(token, '\n');
-                conf->priv_groups[conf->num_priv_groups-1] = malloc(strlen(token)+1);
-                remove_chars(token, ' ');
-                strcpy(conf->priv_groups[conf->num_priv_groups-1], token);
-                token = strtok(NULL, ",");
-            }
-        }
-		else if (!strcmp(token, "AUTHORIZEDACCOUNTS"))
-		{
-			token = strtok(NULL, "=");
-			token = strtok(token, ",");
-			while (token != NULL)
-			{
-				conf->num_acc++;
-				conf->priv_acc = realloc(conf->priv_acc, sizeof(char *)*conf->num_acc);
-				if (conf->priv_acc==NULL){
-					error("NULLL pointer when reading privileges accounts");
-					return;
-				}
-				strclean(token, '\n');
-				conf->priv_acc[conf->num_acc-1] = malloc(strlen(token)+1);
-                remove_chars(token, ' ');
-				strcpy(conf->priv_acc[conf->num_acc-1], token);
-				token = strtok(NULL, ",");
-			}
-		}
-		else if (!strcmp(token, "ENERGYTAG"))
+		if (!strcmp(token, "ENERGYTAG"))
 		{
 			line[strlen(line)] = '=';
 			char *primary_ptr;

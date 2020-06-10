@@ -27,10 +27,11 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-
+#define _GNU_SOURCE
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
+#include <common/string_enhanced.h>
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -109,4 +110,34 @@ state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy)
     }
 		debug("End GENERIC_token");
 		return EAR_SUCCESS;
+}
+
+state_t AUTH_token(char *token)
+{
+  if (strcasestr(token,"AUTHORIZED")!=NULL) return EAR_SUCCESS;
+	return EAR_ERROR;
+}
+state_t AUTH_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp)
+{
+	int num_elems=*num_elemsp;
+	char **list_elems=*list_elemsp;
+  token = strtok(NULL, "=");
+  token = strtok(token, ",");
+  while (token != NULL)
+  {
+  	num_elems++;
+  	list_elems = (char **)realloc(list_elems, sizeof(char *)*num_elems);
+  	if (list_elems == NULL){
+  		error("NULL pointer reading authorized users list");
+  		return EAR_ERROR;
+  	}
+  	strclean(token, '\n');
+  	list_elems[num_elems-1] = (char *)malloc(strlen(token)+1);
+  	remove_chars(token, ' ');
+  	strcpy(list_elems[num_elems-1], token);
+  	token = strtok(NULL, ",");
+  }
+	*num_elemsp=num_elems;
+	*list_elemsp=list_elems;
+	return EAR_SUCCESS;
 }

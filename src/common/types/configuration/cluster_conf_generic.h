@@ -39,4 +39,9 @@
 
 state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy);
 
+state_t AUTH_token(char *token);
+state_t AUTH_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp);
+
+
+
 #endif
