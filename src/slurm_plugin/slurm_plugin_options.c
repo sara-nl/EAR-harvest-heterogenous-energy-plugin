@@ -179,7 +179,8 @@ int _opt_register(spank_t sp, int ac, char **av)
 	_opt_register_pol(sp, ac, av);
 	
 	//
-	length = SRUN_OPTIONS - !exenv_agnostic(sp, "EAR_GUI");
+	//length = SRUN_OPTIONS - !exenv_agnostic(sp, "EAR_GUI");
+	length = SRUN_OPTIONS;
 
 	for (i = 0; i < length; ++i)
 	{
@@ -363,23 +364,6 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 	return ESPANK_SUCCESS;
 }
 
-int _opt_ear_traces (int val, const char *optarg, int remote)
-{
-	plug_verbose(NULL_C, 2, "function _opt_ear_traces");
-
-	if (!remote)
-	{
-		if (optarg == NULL) {
-			return ESPANK_BAD_ARG;
-		}
-
-		setenv_agnostic(NULL_C, Var.path_trac.loc, optarg, 1);
-		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
-	}
-
-	return ESPANK_SUCCESS;
-}
-
 int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
 	plug_verbose(NULL_C, 2, "function _opt_mpi_dist");
@@ -412,5 +396,22 @@ int _opt_ear_tag(int val, const char *optarg, int remote)
 		setenv_agnostic(NULL_C, Var.tag.loc, optarg, 1);
 		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
 	}
+	return ESPANK_SUCCESS;
+}
+
+int _opt_ear_traces (int val, const char *optarg, int remote)
+{
+	plug_verbose(NULL_C, 2, "function _opt_ear_traces");
+
+	if (!remote)
+	{
+		if (optarg == NULL) {
+			return ESPANK_BAD_ARG;
+		}
+
+		setenv_agnostic(NULL_C, Var.path_trac.loc, optarg, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
+	}
+
 	return ESPANK_SUCCESS;
 }

@@ -45,13 +45,13 @@ void traces_init(char *app,int global_rank, int local_rank, int nodes, int mpis,
 {
 	char myhost[128];
 	
-	char *pathname = getenv("SLURM_EAR_TRACE_PATH");
+	char *pathname = getenv(VAR_OPT_TRAC);
 
 	if (pathname!=NULL){ 
 		debug("Dynais traces ON. Traces %s",pathname);
 	}
 	else {
-		debug("SLURM_EAR_TRACE_PATH is not defined");
+		debug("%s is not defined", VAR_OPT_TRAC);
 	}
 
 	if (enabled || pathname == NULL) {
