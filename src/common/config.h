@@ -32,6 +32,7 @@
 
 #include <common/config/config_def.h>
 #include <common/config/config_dev.h>
+#include <common/config/config_env.h>
 #include <common/config/config_install.h>
 
 /* These two options go together. USE_EXT defines if a automatic network

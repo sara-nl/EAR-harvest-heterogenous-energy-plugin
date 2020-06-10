@@ -43,7 +43,7 @@
 #include <common/system/time.h>
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
-#include <library/metrics/metrics.h>
+//#include <library/metrics/metrics.h>
 #include <library/tracer/tracer_paraver.h>
 
 #ifdef EAR_GUI
