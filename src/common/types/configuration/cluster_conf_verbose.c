@@ -31,11 +31,12 @@
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_db.h>
+#include <common/types/configuration/cluster_conf_tag.h>
 #include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
 #include <common/types/configuration/cluster_conf_generic.h>
-#include <common/types/configuration/cluster_conf_db.h>
 
 
 
@@ -54,6 +55,13 @@ void print_islands_conf(node_island_t *conf)
         }
         verbosen(VCCONF, "\n");
     }
+    printf("num_ranges: %d\n", conf->num_ranges);
+    printf("is_null: %d\n", conf->ranges==NULL);
+    printf("first ip:%d\n", conf->ranges[0].db_ip);
+    printf("second ip:%d\n", conf->ranges[0].sec_ip);
+    printf("range prefix: %s\n", conf->ranges[0].prefix);
+    printf("range start: %u\n", conf->ranges[0].start);
+    printf("range end %i\n", conf->ranges[0].end);
 	for (i = 0; i < conf->num_ranges; i++)
 	{
        
@@ -79,14 +87,6 @@ void print_islands_conf(node_island_t *conf)
         }
 
 	}
-}
-
-void print_tags_conf(tag_t *tag)
-{
-    verbosen(VCCONF, "--> Tag: %s\ttype: %d\tdefault: %d\tpowercap_type: %d\n", tag->id, tag->type, tag->is_default, tag->powercap_type);
-    verbosen(VCCONF, "\t\tavx512_freq: %lu\tavx2_freq: %lu\tmax_power: %lu\tmin_power: %lu\terror_power: %lu\tpowercap: %lu\n", 
-                     tag->max_avx512_freq, tag->max_avx2_freq, tag->max_power, tag->min_power, tag->error_power, tag->powercap);
-    verbosen(VCCONF, "\t\tenergy_model: %s\tenergy_plugin: %s\tpowercap_plugin: %s\n", tag->energy_model, tag->energy_plugin, tag->powercap_plugin);
 }
 
 

@@ -236,137 +236,6 @@ static void generate_node_ranges(node_island_t *island, char *nodelist)
 	island->num_ranges += range_count;
 }
 
-void parse_tag(cluster_conf_t *conf, char *line)
-{
-    char *buffer_ptr, *second_ptr; //auxiliary pointers
-    char *token; //group token
-    char *key, *value; //main tokens
-
-    int i;
-    int idx = -1;
-
-    if (conf->num_tags == 0)
-        conf->tags = NULL;
-
-    token = strtok_r(line, " ", &buffer_ptr);
-
-    while (token != NULL)
-    {
-        key = strtok_r(token, "=", &second_ptr); 
-        value = strtok_r(NULL, "=", &second_ptr);
-
-        if (key == NULL || value == NULL || !strlen(key) || !strlen(value))
-        {
-            token = strtok_r(NULL, " ", &buffer_ptr);
-            warning("Error while parsing tags, continuing to next line\n");
-            continue;
-        }
-
-        //printf("token: %s\t key: %s\tvalue:%s\tstrlen of tok: %u\n", token, key, value, strlen(token));
-        strclean(value, '\n');
-        strtoup(key);
-
-        if (!strcmp(key, "TAG"))
-        {
-            for (i = 0; i < conf->num_tags; i++)
-                if (!strcmp(conf->tags[i].id, value)) idx = i;
-
-            if (idx < 0)
-            {
-                conf->tags = realloc(conf->tags, sizeof(tag_t) * (conf->num_tags + 1));
-                idx = conf->num_tags;
-                conf->num_tags++;
-                memset(&conf->tags[idx], 0, sizeof(tag_t));
-                set_default_tag_values(&conf->tags[idx]);
-                strcpy(conf->tags[idx].energy_model, "");
-                strcpy(conf->tags[idx].energy_plugin, "");
-                strcpy(conf->tags[idx].powercap_plugin, "");
-                strcpy(conf->tags[idx].id, value);
-             //   printf("Allocated new tag: %s\n", conf->tags[idx].id);
-            }
-            //else printf("Found previously allocated tag: %s\n", conf->tags[idx].id);
-        }
-        //SIMPLE VALUES
-        else if (!strcmp(key, "MAX_AVX512"))
-        {
-            //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
-            if (strchr(value, '.') != NULL || atol(value) < 10)
-                conf->tags[idx].max_avx512_freq = (ulong)(atof(value) * 1000000);
-            else
-                conf->tags[idx].max_avx512_freq = (atol(value));
-        }
-        else if (!strcmp(key, "MAX_AVX2"))
-        {
-            //If there is a comma or the value is less than 10, we assume the freq is specified in GHz
-            if (strchr(value, '.') != NULL || atol(value) < 10)
-                conf->tags[idx].max_avx2_freq = (ulong)(atof(value) * 1000000);
-            else
-                conf->tags[idx].max_avx2_freq = (atol(value));
-        }
-        else if (!strcmp(key, "MAX_POWER"))
-        {
-            conf->tags[idx].max_power = atol(value);
-        }
-        else if (!strcmp(key, "MIN_POWER"))
-        {
-            conf->tags[idx].min_power = atol(value);
-        }
-        else if (!strcmp(key, "ERROR_POWER"))
-        {
-            conf->tags[idx].error_power = atol(value);
-        }
-        else if (!strcmp(key, "POWERCAP"))
-        {
-            conf->tags[idx].powercap = atol(value);
-        }
-
-        //MODELS
-        else if (!strcmp(key, "ENERGY_MODEL"))
-        {
-            strcpy(conf->tags[idx].energy_model, value);
-        }
-        else if (!strcmp(key, "ENERGY_PLUGIN"))
-        {
-            strcpy(conf->tags[idx].energy_plugin, value);
-        }
-        else if (!strcmp(key, "POWERCAP_PLUGIN"))
-        {
-            strcpy(conf->tags[idx].powercap_plugin, value);
-        }
-        else if (!strcmp(key, "COEFFS"))
-        {
-            strcpy(conf->tags[idx].coeffs, value);
-        }
-
-        //TYPE OF POWERCAP AND TAGS -> pending
-        else if (!strcmp(key, "DEFAULT"))
-        {
-            strtoup(value);
-            if (!strcmp(value, "YES") || !strcmp(value, "Y"))
-                conf->tags[idx].is_default = 1;
-            else
-                conf->tags[idx].is_default = 0;
-        }
-        else if (!strcmp(key, "TYPE"))
-        {
-            strtoup(value);
-            if (!strcmp(value, "ARCH"))
-                conf->tags[idx].type = TAG_TYPE_ARCH;
-        }
-        else if (!strcmp(key, "POWERCAP_TYPE"))
-        {
-            strtoup(value);
-            if (!strcmp(value, "APP") || !strcmp(value, "APPLICATION"))
-                conf->tags[idx].powercap_type = POWERCAP_TYPE_APP;
-            if (!strcmp(value, "NODE"))
-                conf->tags[idx].powercap_type = POWERCAP_TYPE_NODE;
-        }
-
-
-        token = strtok_r(NULL, " ", &buffer_ptr);
-    }            
-}
-
 void parse_island(cluster_conf_t *conf, char *line)
 {
     int idx = -1, i = 0;
@@ -750,7 +619,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
         else if (!strcmp(token, "TAG"))
         {
             line[strlen(line)] = '=';
-            parse_tag(conf, line);
+            TAG_parse_token(&conf->tags, &conf->num_tags, line);
         }
 
 		    //ISLES config
@@ -876,7 +745,8 @@ void free_cluster_conf(cluster_conf_t *conf)
         
         for (j = 0; j < conf->islands[i].num_tags; j++)
             free(conf->islands[i].tags[j]);
-        free(conf->islands[i].tags);
+        
+        if (conf->islands[i].num_tags > 0) free(conf->islands[i].tags);
         conf->islands[i].num_tags = 0;
 
         for (j = 0; j < conf->islands[i].num_specific_tags; j++)

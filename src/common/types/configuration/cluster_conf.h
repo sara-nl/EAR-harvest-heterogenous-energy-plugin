@@ -41,16 +41,17 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/types/configuration/policy_conf.h>
-#include <common/types/configuration/node_conf.h>
 #include <common/string_enhanced.h>
+#include <common/types/configuration/node_conf.h>
+#include <common/types/configuration/policy_conf.h>
 
-#include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_db.h>
+#include <common/types/configuration/cluster_conf_tag.h>
+#include <common/types/configuration/cluster_conf_etag.h>
 #include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eargm.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
 #include <common/types/configuration/cluster_conf_earlib.h>
-#include <common/types/configuration/cluster_conf_db.h>
-#include <common/types/configuration/cluster_conf_etag.h>
 
 
 #define NORMAL 		0
@@ -77,25 +78,6 @@ typedef struct communication_node
     int  distance;
 } communication_node_t;
 
-
-typedef struct tags
-{
-    char id[GENERIC_NAME];
-    char type;
-    char is_default;
-    char powercap_type;
-    ulong max_avx512_freq;
-    ulong max_avx2_freq;
-    ulong max_power;
-    ulong min_power;
-    ulong max_temp;
-    ulong error_power;
-    long powercap;
-    char energy_model[GENERIC_NAME];
-    char energy_plugin[GENERIC_NAME];
-    char powercap_plugin[GENERIC_NAME];
-    char coeffs[GENERIC_NAME];
-} tag_t;
 
 
 
