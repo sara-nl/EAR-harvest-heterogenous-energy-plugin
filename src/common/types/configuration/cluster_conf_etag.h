@@ -49,7 +49,7 @@ typedef struct energy_tag
 
 
 state_t ETAG_token(char *token);
-state_t ETAG_parse_token(eargm_conf_t *conf,char *token);
+state_t ETAG_parse_token(unsigned int *num_etagsp, energy_tag_t **e_tagsl,char *line);
 void print_energy_tag(energy_tag_t *etag);
 
 

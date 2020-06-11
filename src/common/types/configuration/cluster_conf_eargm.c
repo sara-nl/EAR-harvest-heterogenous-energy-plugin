@@ -50,7 +50,7 @@ state_t EARGM_parse_token(eargm_conf_t *conf,char *token)
 {
 		state_t found=EAR_ERROR;
 	
-
+		debug("EARGM_parse_token %s",token);
 		//GLOBAL MANAGER
 		if (!strcmp(token, "GLOBALMANAGERVERBOSE") || !strcmp(token, "EARGMVERBOSE"))
 		{

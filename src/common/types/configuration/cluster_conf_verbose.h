@@ -33,10 +33,10 @@
 #include <common/types/configuration/cluster_conf_eard.h>
 #include <common/types/configuration/cluster_conf_eardbd.h>
 #include <common/types/configuration/cluster_conf_earlib.h>
+#include <common/types/configuration/cluster_conf_etag.h>
 
 void print_database_conf(db_conf_t *conf);
 void print_islands_conf(node_island_t *conf);
 void print_tags_conf(tag_t *tag);
-void print_energy_tag(energy_tag_t *etag);
 #endif
 

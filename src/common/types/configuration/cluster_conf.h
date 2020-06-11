@@ -50,6 +50,7 @@
 #include <common/types/configuration/cluster_conf_eardbd.h>
 #include <common/types/configuration/cluster_conf_earlib.h>
 #include <common/types/configuration/cluster_conf_db.h>
+#include <common/types/configuration/cluster_conf_etag.h>
 
 
 #define NORMAL 		0
@@ -76,17 +77,6 @@ typedef struct communication_node
     int  distance;
 } communication_node_t;
 
-typedef struct energy_tag
-{
-	char tag[USER];
-	uint p_state;
-	char **users;
-	uint num_users;
-	char **groups;
-	uint num_groups;
-	char **accounts;
-	uint num_accounts;
-} energy_tag_t;
 
 typedef struct tags
 {

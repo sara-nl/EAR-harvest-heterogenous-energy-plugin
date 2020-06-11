@@ -255,6 +255,9 @@ int get_default_tag_id(cluster_conf_t *conf)
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 {
 	int i=0, j=0, range_found=0;
+
+	if (my_conf->num_islands == 0) return NULL;
+
 	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
     n->num_policies = my_conf->num_policies;
     n->policies=malloc(sizeof(policy_conf_t)*n->num_policies);

@@ -48,6 +48,8 @@ state_t EARD_token(char *token)
 state_t EARD_parse_token(eard_conf_t *conf,char *token)
 {
 		state_t found=EAR_ERROR;
+
+		debug("EARD_parse_token %s",token);
     if (!strcmp(token, "NODEDAEMONVERBOSE"))
     {
       token = strtok(NULL, "=");

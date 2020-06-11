@@ -32,7 +32,7 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 #include <common/string_enhanced.h>
-//#define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_generic.h>
@@ -109,7 +109,6 @@ state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy)
       remove_chars(token, ' ');
       strcpy(conf->install.obj_power_model, token);
     }
-		debug("End GENERIC_token");
 		return EAR_SUCCESS;
 }
 
@@ -121,13 +120,15 @@ state_t AUTH_token(char *token)
 }
 state_t AUTH_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp)
 {
+  token = strtok(NULL, "=");
 	return LIST_parse_token(token,num_elemsp,list_elemsp);
 }
 state_t LIST_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp)
 {
 	int num_elems=*num_elemsp;
 	char **list_elems=*list_elemsp;
-  token = strtok(NULL, "=");
+
+	debug("LIST_parse_token %s",token);
   token = strtok(token, ",");
   while (token != NULL)
   {

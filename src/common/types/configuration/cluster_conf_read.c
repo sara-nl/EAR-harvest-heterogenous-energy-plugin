@@ -38,6 +38,7 @@
 #include <common/types/configuration/cluster_conf_eardbd.h>
 #include <common/types/configuration/cluster_conf_generic.h>
 #include <common/types/configuration/cluster_conf_db.h>
+#include <common/types/configuration/cluster_conf_etag.h>
 
 static void insert_th_policy(cluster_conf_t *conf, char *token, int policy, int main)
 {
@@ -684,102 +685,8 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 				continue;
 			}
 		}
-		if (!strcmp(token, "ENERGYTAG"))
-		{
-			line[strlen(line)] = '=';
-			char *primary_ptr;
-			char *secondary_ptr;
-			token = strtok_r(line, " ", &primary_ptr);
-			while (token != NULL)
-			{
-				token = strtok_r(token, "=", &secondary_ptr);
-				strtoup(token);
-
-				//this must always be the first one
-				if (!strcmp(token, "ENERGYTAG"))
-				{
-					conf->num_etags++;
-					if (conf->num_etags==1) conf->e_tags=NULL;
-					conf->e_tags = realloc(conf->e_tags, sizeof(energy_tag_t) * (conf->num_etags));
-					if (conf->e_tags==NULL){
-						error("NULL pointer reading energy tags");
-						return;
-					}
-					token = strtok_r(NULL, "=", &secondary_ptr);
-					memset(&conf->e_tags[conf->num_etags-1], 0, sizeof(energy_tag_t));
-                    remove_chars(token, ' ');
-					strcpy(conf->e_tags[conf->num_etags-1].tag, token);
-					conf->e_tags[conf->num_etags-1].users = NULL;
-					conf->e_tags[conf->num_etags-1].groups = NULL;
-					conf->e_tags[conf->num_etags-1].accounts = NULL;
-				}
-				else if (!strcmp(token, "PSTATE"))
-				{
-					token = strtok_r(NULL, "=", &secondary_ptr);
-					conf->e_tags[conf->num_etags-1].p_state = atoi(token);
-				}
-				else if (!strcmp(token, "USERS"))
-				{
-					token = strtok_r(NULL, "=", &secondary_ptr);
-					token = strtok_r(token, ",", &secondary_ptr);
-					while (token != NULL)
-					{
-						conf->e_tags[conf->num_etags-1].users = realloc(conf->e_tags[conf->num_etags-1].users,
-																	   sizeof(char *)*(conf->e_tags[conf->num_etags-1].num_users+1));
-						if (conf->e_tags[conf->num_etags-1].users==NULL){
-							error("NULL pointer in allocating etags");
-							return;
-						}
-						conf->e_tags[conf->num_etags-1].users[conf->e_tags[conf->num_etags-1].num_users] = malloc(strlen(token)+1);
-                        remove_chars(token, ' ');
-						remove_chars(token, '\n');
-						strcpy(conf->e_tags[conf->num_etags-1].users[conf->e_tags[conf->num_etags-1].num_users], token);
-						conf->e_tags[conf->num_etags-1].num_users++;
-                        token = strtok_r(NULL, ",", &secondary_ptr);
-					}
-				}
-				else if (!strcmp(token, "GROUPS"))
-				{
-					token = strtok_r(NULL, "=", &secondary_ptr);
-					token = strtok_r(token, ",", &secondary_ptr);
-					while (token != NULL)
-					{
-						conf->e_tags[conf->num_etags-1].groups = realloc(conf->e_tags[conf->num_etags-1].groups,
-																		sizeof(char *)*(conf->e_tags[conf->num_etags-1].num_groups+1));
-						if (conf->e_tags[conf->num_etags-1].groups==NULL){
-							error("NULL pointer in allocating etags");
-							return;
-						}
-						conf->e_tags[conf->num_etags-1].groups[conf->e_tags[conf->num_etags-1].num_groups] = malloc(strlen(token)+1);
-                        remove_chars(token, ' ');
-						remove_chars(token, '\n');
-						strcpy(conf->e_tags[conf->num_etags-1].groups[conf->e_tags[conf->num_etags-1].num_groups], token);
-						conf->e_tags[conf->num_etags-1].num_groups++;
-                        token = strtok_r(NULL, ",", &secondary_ptr);
-					}
-				}
-				else if (!strcmp(token, "ACCOUNTS"))
-				{
-					token = strtok_r(NULL, "=", &secondary_ptr);
-					token = strtok_r(token, ",", &secondary_ptr);
-					while (token != NULL)
-					{
-						conf->e_tags[conf->num_etags-1].accounts = realloc(conf->e_tags[conf->num_etags-1].accounts,
-																		  sizeof(char *)*(conf->e_tags[conf->num_etags-1].num_accounts+1));
-						if (conf->e_tags[conf->num_etags-1].accounts==NULL){
-							error("NULL pointer in allocating etags");
-							return;
-						}
-						conf->e_tags[conf->num_etags-1].accounts[conf->e_tags[conf->num_etags-1].num_accounts] = malloc(strlen(token)+1);
-                        remove_chars(token, ' ');
-						remove_chars(token, '\n');
-						strcpy(conf->e_tags[conf->num_etags-1].accounts[conf->e_tags[conf->num_etags-1].num_accounts], token);
-						conf->e_tags[conf->num_etags-1].num_accounts++;
-                        token = strtok_r(NULL, ",", &secondary_ptr);
-					}
-				}
-				token = strtok_r(NULL, " ", &primary_ptr);
-			}
+		if (ETAG_token(token) == EAR_SUCCESS){
+			if (ETAG_parse_token(&conf->num_etags,&conf->e_tags,line) == EAR_SUCCESS) continue;
 		}
 
 			//HARDWARE NODE CONFIG

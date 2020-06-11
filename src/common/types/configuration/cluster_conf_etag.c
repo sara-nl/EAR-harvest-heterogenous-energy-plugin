@@ -53,11 +53,13 @@ state_t ETAG_parse_token(unsigned int *num_etagsp, energy_tag_t **e_tagsl,char *
       char *primary_ptr;
       char *secondary_ptr;
 			char *token;
-	state_t found=EAR_SUCCESS;
-			int num_etags=*num_etags;
+			state_t found=EAR_SUCCESS;
+			int num_etags=*num_etagsp;
 			energy_tag_t *e_tags=*e_tagsl;
+			debug("EnergyTag %s",line);
       line[strlen(line)] = '=';
       token = strtok_r(line, " ", &primary_ptr);
+      if (num_etags==0) e_tags=NULL;
 			while (token != NULL)
       {
         token = strtok_r(token, "=", &secondary_ptr);
@@ -66,7 +68,6 @@ state_t ETAG_parse_token(unsigned int *num_etagsp, energy_tag_t **e_tagsl,char *
         if (!strcmp(token, "ENERGYTAG"))
         {
           num_etags++;
-          if (num_etags==1) e_tags=NULL;
           e_tags = realloc(e_tags, sizeof(energy_tag_t) * (num_etags));
           if (e_tags==NULL){
 						*e_tagsl=e_tags;
@@ -89,19 +90,23 @@ state_t ETAG_parse_token(unsigned int *num_etagsp, energy_tag_t **e_tagsl,char *
         }
         else if (!strcmp(token, "USERS"))
         {
+          token = strtok_r(NULL, "=", &secondary_ptr);
 					if (LIST_parse_token(token,&e_tags[num_etags-1].num_users,&e_tags[num_etags-1].users) != EAR_SUCCESS) return EAR_ERROR;
         }
         else if (!strcmp(token, "GROUPS"))
         {
-					
+          token = strtok_r(NULL, "=", &secondary_ptr);
 					if (LIST_parse_token(token,&e_tags[num_etags-1].num_groups,&e_tags[num_etags-1].groups) != EAR_SUCCESS) return EAR_ERROR;
         }
         else if (!strcmp(token, "ACCOUNTS"))
         {
+          token = strtok_r(NULL, "=", &secondary_ptr);
 					if (LIST_parse_token(token,&e_tags[num_etags-1].num_accounts,&e_tags[num_etags-1].accounts) != EAR_SUCCESS) return EAR_ERROR;
         }
         token = strtok_r(NULL, " ", &primary_ptr);
       } /* END WHILE */
+			*num_etagsp=num_etags;
+			*e_tagsl=e_tags;
 
 		return found;
 

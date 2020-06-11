@@ -89,21 +89,6 @@ void print_tags_conf(tag_t *tag)
     verbosen(VCCONF, "\t\tenergy_model: %s\tenergy_plugin: %s\tpowercap_plugin: %s\n", tag->energy_model, tag->energy_plugin, tag->powercap_plugin);
 }
 
-void print_energy_tag(energy_tag_t *etag)
-{
-	verbosen(VCCONF, "--> Tag: %s\t pstate: %u\n", etag->tag, etag->p_state);
-	int i;
-	for (i = 0; i < etag->num_users; i++)
-		verbosen(VCCONF, "---> user: %s\n", etag->users[i]);
-
-	for (i = 0; i < etag->num_accounts; i++)
-		verbosen(VCCONF, "---> accounts: %s\n", etag->accounts[i]);
-	
-	for (i = 0; i < etag->num_groups; i++)
-		verbosen(VCCONF, "---> group: %s\n", etag->groups[i]);
-
-}
-
 
 
 
