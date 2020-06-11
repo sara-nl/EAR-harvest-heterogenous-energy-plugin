@@ -35,6 +35,7 @@
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/configuration/cluster_conf_generic.h>
 
 
 
@@ -112,12 +113,17 @@ state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy)
 		return EAR_SUCCESS;
 }
 
+
 state_t AUTH_token(char *token)
 {
   if (strcasestr(token,"AUTHORIZED")!=NULL) return EAR_SUCCESS;
 	return EAR_ERROR;
 }
 state_t AUTH_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp)
+{
+	return LIST_parse_token(token,num_elemsp,list_elemsp);
+}
+state_t LIST_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp)
 {
 	int num_elems=*num_elemsp;
 	char **list_elems=*list_elemsp;
@@ -128,6 +134,9 @@ state_t AUTH_parse_token(char *token,unsigned int *num_elemsp,char ***list_elems
   	num_elems++;
   	list_elems = (char **)realloc(list_elems, sizeof(char *)*num_elems);
   	if (list_elems == NULL){
+			num_elems=0;
+			*num_elemsp=num_elems;
+			*list_elemsp=list_elems;
   		error("NULL pointer reading authorized users list");
   		return EAR_ERROR;
   	}

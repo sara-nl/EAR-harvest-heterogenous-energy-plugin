@@ -27,23 +27,30 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef _EAR_GENERIC_CONF_H
-#define _EAR_GENERIC_CONF_H
+#ifndef _ETAG_CONF_H
+#define _ETAG_CONF_H
 
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/types/configuration/cluster_conf.h>
 
 
+typedef struct energy_tag
+{
+	char tag[USER];
+	uint p_state;
+	char **users;
+	uint num_users;
+	char **groups;
+	uint num_groups;
+	char **accounts;
+	uint num_accounts;
+} energy_tag_t;
 
-state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy);
-state_t LIST_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp);
 
-
-state_t AUTH_token(char *token);
-state_t AUTH_parse_token(char *token,unsigned int *num_elemsp,char ***list_elemsp);
-
+state_t ETAG_token(char *token);
+state_t ETAG_parse_token(eargm_conf_t *conf,char *token);
+void print_energy_tag(energy_tag_t *etag);
 
 
 #endif
