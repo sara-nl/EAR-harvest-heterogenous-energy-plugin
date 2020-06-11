@@ -131,10 +131,11 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 
 static void module_mpi_dlsym_next()
 {
+	verbose(2, "LOADER: module_mpi_dlsym_next loading library");
 	symplug_join(RTLD_NEXT, (void **) &ear_mpic, mpic_names, MPIC_N);
 	symplug_join(RTLD_NEXT, (void **) &ear_mpif, mpif_names, MPIF_N);
-	verbose(3, "LOADER: dlsym for C init returned %p", next_mpic.Init);
-	verbose(3, "LOADER: dlsym for F init returned %p", next_mpif.init);
+	verbose(3, "LOADER: dlsym for C init returned %p", ear_mpic.Init);
+	verbose(3, "LOADER: dlsym for F init returned %p", ear_mpif.init);
 }
 
 static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
@@ -193,8 +194,8 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 	{
 		void (*ear_mpic_setnext) (mpic_t *) = dlsym(libear, "ear_mpic_setnext");
 		void (*ear_mpif_setnext) (mpif_t *) = dlsym(libear, "ear_mpif_setnext");
-		ear_mpic_setnext(&next_mpic);
-		ear_mpif_setnext(&next_mpif);
+		if (ear_mpic_setnext != NULL) ear_mpic_setnext(&next_mpic);
+		if (ear_mpif_setnext != NULL) ear_mpif_setnext(&next_mpif);
 	}
 }
 
@@ -229,10 +230,11 @@ void module_mpi()
 		return;
 	}
 
-	if (!_loaded_default) {
-		module_mpi_get_libear(path_so, &lang_c, &lang_f);
-		module_mpi_dlsym(path_so, lang_c, lang_f);
-	} else {
+	if (_loaded_default) {
 		module_mpi_dlsym_next();
+		return;
 	}
+	
+	module_mpi_get_libear(path_so, &lang_c, &lang_f);
+	module_mpi_dlsym(path_so, lang_c, lang_f);
 }
