@@ -30,8 +30,6 @@
 #ifndef METRICS_GPU_NVML
 #define METRICS_GPU_NVML
 
-#ifdef CUDA_BASE
-
 #include <metrics/gpu/gpu.h>
 
 state_t nvml_status();
@@ -64,25 +62,5 @@ state_t nvml_data_copy(gpu_t *data_dst, gpu_t *data_src);
 state_t nvml_data_print(gpu_t *data, int fd);
 
 state_t nvml_data_tostr(gpu_t *data, char *buffer, int length);
-
-#else
-
-#define nvml_status()	0
-#define nvml_init	NULL;
-#define nvml_dispose	NULL;
-#define nvml_read	NULL;
-#define nvml_read_copy	NULL;
-#define nvml_count	NULL;
-#define nvml_data_init	NULL;
-#define nvml_data_diff	NULL;
-#define nvml_data_alloc	NULL;
-#define nvml_data_free	NULL;
-#define nvml_data_null	NULL;
-#define nvml_data_diff	NULL;
-#define nvml_data_copy	NULL;
-#define nvml_data_print	NULL;
-#define nvml_data_tostr	NULL;
-
-#endif
 
 #endif //METRICS_GPU_NVML

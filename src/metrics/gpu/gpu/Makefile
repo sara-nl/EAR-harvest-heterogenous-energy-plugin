@@ -2,11 +2,9 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-gpu_OBJS =
+gpu_OBJS = nvml.o
 
 ifdef CUDA_BASE
-gpu_OBJS += nvml.o
-
 gpu_DEFS = -DCUDA_BASE=\"$(CUDA_BASE)\"
 endif
 
