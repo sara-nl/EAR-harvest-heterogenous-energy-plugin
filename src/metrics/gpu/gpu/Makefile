@@ -2,12 +2,18 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-ener_OBJS = \
-    nvsmi.o
+gpu_OBJS = nvml.o
+
+ifdef CUDA_BASE
+gpu_DEFS = -DCUDA_BASE=\"$(CUDA_BASE)\"
+endif
 
 ######## RULES
 
-all: $(ener_OBJS)
+all: $(gpu_OBJS)
+
+nvml.o: nvml.c nvml.h
+	$(CC) $(CFLAGS) -I$(CUDA_BASE)/include $(gpu_DEFS) -c $<
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

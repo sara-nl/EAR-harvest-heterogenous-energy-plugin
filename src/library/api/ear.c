@@ -41,7 +41,6 @@
 #include <pthread.h>
 #include <papi.h>
 
-
 //#define SHOW_DEBUGS 0
 #include <common/config.h>
 #include <common/config/config_env.h>

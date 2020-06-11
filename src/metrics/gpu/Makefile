@@ -2,16 +2,12 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-ener_BINS = \
-    energy_cpu.o \
-    energy_node.o \
-    energy_node_lib.o
-ener_DEPS = \
-    $(SRCDIR)/common/libcommon.a
+gpu_BINS = \
+    gpu.o
 
 ######## RULES
 
-all:  $(ener_BINS) all.components
+all: $(gpu_BINS) all.components
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
@@ -19,8 +15,7 @@ all:  $(ener_BINS) all.components
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'cpu' $* || exit
-	@ $(MAKE) -C 'node' $* || exit
+	@ $(MAKE) -C 'gpu' $* || exit
 
 ######## OPTIONS
 

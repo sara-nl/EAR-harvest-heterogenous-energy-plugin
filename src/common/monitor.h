@@ -35,15 +35,18 @@
 #include <common/system/time.h>
 
 typedef state_t (*suscall_f) (void *);
+typedef state_t (*suscribe_f) (void *);
 
 typedef struct suscription_s
 {
+	suscribe_f 	suscribe;
 	suscall_f	call_init;
 	suscall_f	call_main;
 	void		*memm_init;
 	void		*memm_main;
-	int		time_relax; // In miliseconds.
-	int		time_burst; // In miliseconds.
+	int			time_relax; // In miliseconds.
+	int			time_burst; // In miliseconds.
+	int 		*bursting;
     int			id;
 } suscription_t;
 
@@ -74,6 +77,8 @@ state_t monitor_unregister(suscription_t *suscription);
 state_t monitor_burst(suscription_t *suscription);
 
 state_t monitor_relax(suscription_t *suscription);
+
+int monitor_is_bursting(suscription_t *s);
 
 suscription_t *suscription();
 

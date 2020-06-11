@@ -27,6 +27,7 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+//#define SHOW_DEBUGS 1
 #include <error.h>
 #include <string.h>
 #include <pthread.h>
@@ -35,9 +36,11 @@
 
 #define N_QUEUE 128
 
-static pthread_mutex_t	lock = PTHREAD_MUTEX_INITIALIZER;
-static pthread_t	thread;
-static uint		enabled;
+static pthread_t		thread;
+static pthread_mutex_t	lock_gen = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t	lock[N_QUEUE];
+static uint				enabled;
+static uint				locked;
 
 typedef struct wait_s {
 	int relax;
@@ -46,19 +49,19 @@ typedef struct wait_s {
 
 typedef struct register_s
 {
-	suscription_t	suscription;
-	wait_t		wait_units;
-	wait_t		wait_saves;
-	int		suscribed;
-	int		delivered;
-	int		bursted;
-	int		aligned;
-	int		ok_init;
-	int		ok_main;
+	suscription_t suscription;
+	wait_t wait_units;
+	wait_t wait_saves;
+	int	suscribed;
+	int	delivered;
+	int	bursted;
+	int	aligned;
+	int	ok_init;
+	int	ok_main;
 } register_t;
 
-static register_t	queue[N_QUEUE];
-static uint		queue_last;
+static register_t		queue[N_QUEUE];
+static uint				queue_last;
 
 static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 {
@@ -73,7 +76,7 @@ static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 	timestamp_t t2;
 	timestamp_t t1;
 
-	debug("MONITOR: waiting %d units", units);
+	debug("waiting %lld units", units);
 
 	timestamp_getfast(&t1);
 	nanosleep(&time, NULL);
@@ -87,20 +90,21 @@ static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 	*alignment += *pass_units;
 	*alignment %= 10;
 
-	debug("MONITOR: waited %d units (alignment %d)",
+	debug("waited %d units (alignment %d)",
 		*pass_units, *alignment);
 }
 
 static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, int alignment)
 {
+	int _bursted = reg->bursted;
 	int wait_required;
 
 	// Alignment processing
 	if (!reg->aligned)
 	{
 		reg->aligned = (alignment == 0);
+		reg->ok_init = reg->aligned && (reg->suscription.call_init != NULL);
 		reg->ok_main = reg->aligned;
-		reg->ok_init = reg->aligned;
 
 		if (!reg->ok_main) {
 			wait_required = 10 - alignment;
@@ -112,23 +116,22 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 			return;
 		}
 
-		
-		debug("MONITOR: aligned %d", reg->suscription.id);
+		debug("sus %d, aligned suscription", reg->suscription.id);
 	}
 
 	// Normal processing
 	reg->wait_units.burst -= pass_units;
 	reg->wait_units.relax -= pass_units;
 
-	if (reg->wait_units.burst <= 0 &&  reg->bursted) reg->ok_main = 1;
-	if (reg->wait_units.relax <= 0 && !reg->bursted) reg->ok_main = 1;
+	if (reg->wait_units.burst <= 0 &&  _bursted) reg->ok_main = 1;
+	if (reg->wait_units.relax <= 0 && !_bursted) reg->ok_main = 1;
 
 	if (reg->wait_units.burst <= 0) reg->wait_units.burst = reg->wait_saves.burst;
 	if (reg->wait_units.relax <= 0) reg->wait_units.relax = reg->wait_saves.relax;
 
-	if (reg->bursted && reg->wait_units.burst < *wait_units) {
+	if (_bursted && reg->wait_units.burst < *wait_units) {
 		*wait_units = reg->wait_units.burst;
-	} else 	if (!reg->bursted && reg->wait_units.relax < *wait_units) {
+	} else 	if (!_bursted && reg->wait_units.relax < *wait_units) {
 		*wait_units = reg->wait_units.relax;
 	}
 }
@@ -144,51 +147,82 @@ static void *monitor(void *p)
 
 	while (enabled)
 	{
-		while (pthread_mutex_trylock(&lock));
-
-		for (i = 0, wait_units = 10; i < queue_last; ++i)
+		for (i = 0, wait_units = 10; i < queue_last && enabled; ++i)
 		{
+			while (pthread_mutex_trylock(&lock[i]));
+
 			reg = &queue[i];
 			sus = &reg->suscription;
 
 			if (!reg->suscribed) {
+				pthread_mutex_unlock(&lock[i]);
 				continue;
 			}
 
 			monitor_time_calc(reg, &wait_units, pass_units, alignment);
 
 			if (reg->ok_init) {
+				debug("sus %d, called init", i);
 				sus->call_init(sus->memm_init);
 				reg->ok_init = 0;
 			}
 			if (reg->ok_main) {
+				debug("sus %d, called main", i);
 				sus->call_main(sus->memm_main);
 				reg->ok_main = 0;
 			}
-		}
 
-		pthread_mutex_unlock(&lock);
+			pthread_mutex_unlock(&lock[i]);
+		}
 
 		monitor_sleep(wait_units, &pass_units, &alignment);
 	}
 	return EAR_SUCCESS;
 }
 
+static state_t monitor_lock_alloc()
+{
+	int error = 0;
+	int i;
+
+	for (i = 0; i < N_QUEUE && !error; ++i) {
+		if (pthread_mutex_init(&lock[i], NULL) != 0) {
+			error = 1;
+		}
+	}
+	for (i = 0; i < N_QUEUE && error; ++i) {
+		pthread_mutex_destroy(&lock[i]);
+	}
+	if (error) {
+		return_msg(EAR_ERROR, Generr.lock);
+	}
+	locked = 1;
+	return EAR_SUCCESS;
+}
+
 state_t monitor_init()
 {
 	int _errno;
+	state_t s;
 
+	while (pthread_mutex_trylock(&lock_gen));
 	if (enabled != 0) {
+		pthread_mutex_unlock(&lock_gen);
 		return_msg(EAR_ERROR, "monitor already enabled");
 	}
-
-	//
+	if (!locked) {
+		if (xtate_fail(s, monitor_lock_alloc())) {
+			pthread_mutex_unlock(&lock_gen);
+			return s;
+		}
+	}
 	_errno = pthread_create(&thread, NULL, monitor, NULL);
-	enabled = (errno == 0);
-
+	enabled = (_errno == 0);
 	if (!enabled) {
+		pthread_mutex_unlock(&lock_gen);
 		return_msg(EAR_ERROR, strerror(_errno));
 	}
+	pthread_mutex_unlock(&lock_gen);
 
 	return EAR_SUCCESS;
 }
@@ -199,12 +233,18 @@ state_t monitor_dispose()
 		return_msg(EAR_BAD_ARGUMENT, "not initialized");
 	}
 
-	while (pthread_mutex_trylock(&lock));
-	memset(queue, 0, sizeof(suscription_t) * N_QUEUE);
+	while (pthread_mutex_trylock(&lock_gen));
 	enabled = 0;
-	pthread_mutex_unlock(&lock);
+	pthread_join(thread, NULL);
+	pthread_mutex_unlock(&lock_gen);
 
 	return EAR_SUCCESS;
+}
+
+static state_t monitor_register_void(void *p)
+{
+	suscription_t *s = (suscription_t *) p;
+	return monitor_register(s);
 }
 
 state_t monitor_register(suscription_t *s)
@@ -214,21 +254,19 @@ state_t monitor_register(suscription_t *s)
 	if (s->call_main  == NULL) return_msg(EAR_BAD_ARGUMENT, "reading call is NULL");
 	if (s->id          < 0   ) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 
-	while (pthread_mutex_trylock(&lock));
+	while (pthread_mutex_trylock(&lock[s->id]));
 
-	queue[s->id].ok_init		= (s->call_init == NULL);
 	queue[s->id].suscribed      = 1;
 	queue[s->id].aligned		= 0;
 	queue[s->id].bursted        = 0;
-
 	queue[s->id].wait_saves.relax = (s->time_relax / 100);
 	queue[s->id].wait_saves.burst = (s->time_burst / 100);
 
-	if (s->id >= queue_last) {
-		queue_last = s->id + 1;
-	}
+	debug("registered suscription %d", s->id);
+	debug("times relax/burst: %d/%d", queue[s->id].wait_saves.relax, queue[s->id].wait_saves.burst);
+	debug("calls init/main: %p/%p (%d)", s->call_init, s->call_main, queue[s->id].ok_init);
 
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock[s->id]);
 
 	return EAR_SUCCESS;
 }
@@ -239,11 +277,16 @@ state_t monitor_unregister(suscription_t *s)
 	if (s->id  > queue_last) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 	if (s->id  < 0         ) return_msg(EAR_BAD_ARGUMENT, "incorrect suscription index");
 
-	while (pthread_mutex_trylock(&lock));
+	while (pthread_mutex_trylock(&lock[s->id]));
 	memset(&queue[s->id], 0, sizeof(register_t));
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&lock[s->id]);
 
 	return EAR_SUCCESS;
+}
+
+int monitor_is_bursting(suscription_t *s)
+{
+	return queue[s->id].bursted;
 }
 
 state_t monitor_burst(suscription_t *s)
@@ -257,11 +300,7 @@ state_t monitor_burst(suscription_t *s)
 	if (s->time_burst  < 0) {
 		return_msg(EAR_BAD_ARGUMENT, "burst time cant be less than relax time");
 	}
-
-	while (pthread_mutex_trylock(&lock));
 	queue[s->id].bursted = 1;
-	pthread_mutex_unlock(&lock);
-
 	return EAR_SUCCESS;
 }
 
@@ -270,11 +309,7 @@ state_t monitor_relax(suscription_t *s)
 	if (s == NULL) {
 		return_msg(EAR_BAD_ARGUMENT, "the suscription can't be NULL");
 	}
-
-	while (pthread_mutex_trylock(&lock));
 	queue[s->id].bursted = 0;
-	pthread_mutex_unlock(&lock);
-
 	return EAR_SUCCESS;
 }
 
@@ -282,7 +317,7 @@ suscription_t *suscription()
 {
 	int i = 0;
 
-	while (pthread_mutex_trylock(&lock));
+	while (pthread_mutex_trylock(&lock_gen));
 
 	for (; i < N_QUEUE; ++i)
 	{
@@ -290,15 +325,21 @@ suscription_t *suscription()
 			break;
 		}
 	}
-
 	if (queue_last == N_QUEUE) {
-		pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&lock_gen);
 		return NULL;
 	}
 
-	queue[i].suscription.id = i;
-	queue[i].delivered      = 1;
-	pthread_mutex_unlock(&lock);
+	queue[i].suscription.id			= i;
+	queue[i].delivered				= 1;
+	queue[i].suscription.suscribe	= monitor_register_void;
+	queue[i].bursted				= 0;
+
+	if (queue[i].suscription.id >= queue_last) {
+		queue_last = queue[i].suscription.id + 1;
+	}
+
+	pthread_mutex_unlock(&lock_gen);
 
 	return &queue[i].suscription;
 }

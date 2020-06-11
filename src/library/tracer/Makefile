@@ -12,6 +12,8 @@ tracer_BINS = \
 
 tracer_PATH = $(DESTDIR)/lib/plugins/tracer
 tracer_PERM = 0775
+tracer_DEPS = $(SRCDIR)/common/libcommon.a
+
 
 ########
 
@@ -20,8 +22,8 @@ all: $(tracer_OBJS) $(tracer_BINS)
 %.o: %.c %.h
 	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) -c $<
 
-%.so:%.o
-	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) $(LDFLAGS)  -shared $< -o $@
+%.so: %.o $(tracer_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFINES) $(LDFLAGS) -shared $< -o $@ $(tracer_DEPS)
 
 ######## OPTIONS
 

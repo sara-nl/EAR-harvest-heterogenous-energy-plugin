@@ -1,5 +1,6 @@
 cluster_conf_verbose.o: cluster_conf_verbose.c ../../../common/config.h \
  ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_env.h \
  ../../../common/config/config_install.h ../../../common/output/verbose.h \
  ../../../common/output/error.h ../../../common/colors.h \
  ../../../common/output/timestamp.h ../../../common/output/output_conf.h \
@@ -12,6 +13,7 @@ cluster_conf_verbose.o: cluster_conf_verbose.c ../../../common/config.h \
  ../../../common/string_enhanced.h
 cluster_conf_read.o: cluster_conf_read.c ../../../common/config.h \
  ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_env.h \
  ../../../common/config/config_install.h ../../../common/output/verbose.h \
  ../../../common/output/error.h ../../../common/colors.h \
  ../../../common/output/timestamp.h ../../../common/output/output_conf.h \
@@ -24,6 +26,7 @@ cluster_conf_read.o: cluster_conf_read.c ../../../common/config.h \
  ../../../common/string_enhanced.h
 node_conf.o: node_conf.c ../../../common/config.h \
  ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_env.h \
  ../../../common/config/config_install.h ../../../common/environment.h \
  ../../../common/output/verbose.h ../../../common/output/error.h \
  ../../../common/colors.h ../../../common/output/timestamp.h \
@@ -36,6 +39,7 @@ node_conf.o: node_conf.c ../../../common/config.h \
  ../../../common/string_enhanced.h
 cluster_conf.o: cluster_conf.c ../../../common/config.h \
  ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_env.h \
  ../../../common/config/config_install.h ../../../common/output/verbose.h \
  ../../../common/output/error.h ../../../common/colors.h \
  ../../../common/output/timestamp.h ../../../common/output/output_conf.h \
@@ -47,6 +51,7 @@ cluster_conf.o: cluster_conf.c ../../../common/config.h \
  ../../../common/string_enhanced.h ../../../common/environment.h
 policy_conf.o: policy_conf.c ../../../common/config.h \
  ../../../common/config/config_def.h ../../../common/config/config_dev.h \
+ ../../../common/config/config_env.h \
  ../../../common/config/config_install.h ../../../common/output/verbose.h \
  ../../../common/output/error.h ../../../common/colors.h \
  ../../../common/output/timestamp.h ../../../common/output/output_conf.h \

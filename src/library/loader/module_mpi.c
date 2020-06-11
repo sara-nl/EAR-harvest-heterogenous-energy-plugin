@@ -38,6 +38,7 @@
 #include <common/config/config_env.h>
 #include <library/loader/module_mpi.h>
 
+extern int _loaded_default;
 static mpic_t next_mpic;
 static mpif_t next_mpif;
 mpic_t ear_mpic;
@@ -113,7 +114,7 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	// Last chance to force a concrete library file.
 	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
 		sprintf(path_so, "%s", hack);
-        }
+	}
 	
 	//if (!file_is_regular(path_so)) {
 	if (!module_file_exists(path_so)) {
@@ -126,6 +127,15 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	*lang_c = 1;
 
 	return;
+}
+
+static void module_mpi_dlsym_next()
+{
+	verbose(2, "LOADER: module_mpi_dlsym_next loading library");
+	symplug_join(RTLD_NEXT, (void **) &ear_mpic, mpic_names, MPIC_N);
+	symplug_join(RTLD_NEXT, (void **) &ear_mpif, mpif_names, MPIF_N);
+	verbose(3, "LOADER: dlsym for C init returned %p", ear_mpic.Init);
+	verbose(3, "LOADER: dlsym for F init returned %p", ear_mpif.init);
 }
 
 static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
@@ -184,8 +194,8 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 	{
 		void (*ear_mpic_setnext) (mpic_t *) = dlsym(libear, "ear_mpic_setnext");
 		void (*ear_mpif_setnext) (mpif_t *) = dlsym(libear, "ear_mpif_setnext");
-		ear_mpic_setnext(&next_mpic);
-		ear_mpif_setnext(&next_mpif);
+		if (ear_mpic_setnext != NULL) ear_mpic_setnext(&next_mpic);
+		if (ear_mpif_setnext != NULL) ear_mpif_setnext(&next_mpif);
 	}
 }
 
@@ -198,7 +208,6 @@ static void module_mpi_init()
 {
 	char *verb;
 	
-	verbose(3, "LOADER: function module_mpi");
 	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
 	{
 		VERB_SET_EN(1);
@@ -218,6 +227,11 @@ void module_mpi()
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");
+		return;
+	}
+
+	if (_loaded_default) {
+		module_mpi_dlsym_next();
 		return;
 	}
 	
