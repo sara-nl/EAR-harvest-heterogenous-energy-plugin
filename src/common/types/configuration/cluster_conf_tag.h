@@ -55,7 +55,7 @@ typedef struct tags
 
 
 state_t TAG_token(char *token);
-state_t TAG_parse_token(tag_t **tags_i, int *num_tags_i, char *line);
+state_t TAG_parse_token(tag_t **tags_i, unsigned int *num_tags_i, char *line);
 void print_tags_conf(tag_t *tag);
 
 

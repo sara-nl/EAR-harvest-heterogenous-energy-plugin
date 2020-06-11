@@ -49,7 +49,7 @@ state_t TAG_token(char *token)
 	return EAR_ERROR;
 }
 
-state_t TAG_parse_token(tag_t **tags_i, int *num_tags_i, char *line)
+state_t TAG_parse_token(tag_t **tags_i, unsigned int *num_tags_i, char *line)
 {
     char *buffer_ptr, *second_ptr; //auxiliary pointers
     char *token; //group token
