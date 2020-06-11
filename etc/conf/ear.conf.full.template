@@ -83,32 +83,32 @@ Policy=min_energy Settings=0.1 DefaultFreq=2.3 Privileged=1
 #---------------------------------------------------------------------------------------------------
 # EAR Global Manager (EARGMD)
 #---------------------------------------------------------------------------------------------------
-GlobalManagerHost=node1001
+EARGMHost=node1001
 # Use aggregated periodic metrics or periodic power metrics. Aggregated metrics are only available
 # when EARDBD is running
-GlobalManagerUseAggregated=1
+EARGMUseAggregated=1
 # Period T1 and T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
-GlobalManagerPeriodT1=90
-GlobalManagerPeriodT2=259200
+EARGMPeriodT1=90
+EARGMPeriodT2=259200
 # '-' are Joules, 'K' KiloJoules and 'M' MegaJoules.
-GlobalManagerUnits=K
-GlobalManagerEnergyLimit=550000
-GlobalManagerPowerLimit=0
-GlobalManagerPowerPeriod=60
-GlobalManagerPolicy=MaxEnergy
-GlobalManagerPort=50000
+EARGMUnits=K
+EARGMEnergyLimit=550000
+EARGMPowerLimit=0
+EARGMPowerPeriod=60
+EARGMPolicy=MaxEnergy
+EARGMPort=50000
 # Two modes are supported '0=manual' and '1=automatic'.
-GlobalManagerMode=0
+EARGMMode=0
 # Email address to report the warning level (and the action taken in automatic mode)
-GlobalManagerMail=nomail
+EARGMMail=nomail
 # Percentage of accumulated energy to start the warning DEFCON level L4, L3 and L2.
-GlobalManagerWarningsPerc=85,90,95
+EARGMWarningsPerc=85,90,95
 # T1 "grace" periods between DEFCON before re-evaluate.
-GlobalManagerGracePeriods=3
+EARGMGracePeriods=3
 # Verbosity
-GlobalManagerVerbose=1
+EARGMVerbose=1
 # When set to 1, the output is saved in 'TmpDir'/eargmd.log (common configuration) as a log file.
-GlobalManagerUseLog=1
+EARGMUseLog=1
 #---------------------------------------------------------------------------------------------------
 # Common configuration
 #---------------------------------------------------------------------------------------------------

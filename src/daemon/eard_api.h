@@ -35,6 +35,7 @@
 #include <common/types/generic.h>
 #include <common/types/log.h>
 #include <daemon/eard_conf_api.h>
+#include <metrics/gpu/gpu.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
 int eards_connect(application_t *my_app);
@@ -123,6 +124,11 @@ ulong eards_write_loop_signature(loop_t *loop_signature);
 
 /** Returns the frequency at which the node energy frequency is refreshed */
 ulong eards_node_energy_frequency();
+
+
+int eards_gpu_model(uint *gpu_model);
+int eards_gpu_dev_count(uint *gpu_dev_count);
+int eards_gpu_data_read(gpu_t *gpu_info);
 
 #else
 #endif
