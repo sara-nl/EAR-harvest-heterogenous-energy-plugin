@@ -143,41 +143,21 @@ void close_server_socket(int sock)
 	close(sock);
 }
 
-int read_command(int s,request_t *command)
+int read_command(int s, request_t *command)
 {
-	int ret,pending,done;
-	pending=sizeof(request_t);
-	done=0;
+    request_header_t head;
 
-	verbose(VCONNECT,"read_command request size %d",pending);
-	ret=read(s,command,sizeof(request_t));
-	//ret=recv(s,command,sizeof(request_t), MSG_DONTWAIT);
-	if (ret<0){
-		error("read_command error errno %s",strerror(errno));
-		command->req=NO_COMMAND;
-		#if DYN_PAR
-		if (errno == EPIPE) return EAR_SOCK_DISCONNECTED;
-		#endif
-		return command->req;
-	}
-	#if DYN_PAR
-	if (ret == 0) return EAR_SOCK_DISCONNECTED;
-	#endif
-	pending-=ret;
-	done=ret;
-	while((ret>0) && (pending>0)){
-		verbose(VCONNECT,"Read command continue , pending %d",pending);
-		ret=read(s,(char*)command+done,pending);
-		//ret=recv(s,(char*)command+done,pending, MSG_DONTWAIT);
-		if (ret<0) 
-        {
-            command->req=NO_COMMAND;
-            error("read_command error errno %s",strerror(errno));
-        }
-		pending-=ret;
-		done+=ret;
-	}
-	return command->req;
+    request_t *tmp_command;
+    head = recieve_data(s, (void **)&tmp_command);
+    if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(request_t))
+    {
+        command->req = NO_COMMAND;
+        if (head.size > 0) free(tmp_command);
+        return command->req;
+    }
+    memcpy(command, tmp_command, sizeof(request_t));
+    free(tmp_command);
+    return command->req;
 }
 
 void send_answer(int s,long *ack)

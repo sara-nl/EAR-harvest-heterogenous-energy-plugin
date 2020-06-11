@@ -56,15 +56,11 @@ int send_command(request_t *command)
 	ulong ack;
 	int ret;
 	debug("Sending command %u",command->req);
-	if ((ret=write(eards_sfd,command,sizeof(request_t)))!=sizeof(request_t)){
-		if (ret<0){ 
-			error("Error sending command %s",strerror(errno));
-		}else{ 
-			debug("Warning sending command:sent %lu ret %d ",sizeof(request_t),ret);
-		}
-	}
+    
+    if (send_data(eards_sfd, sizeof(request_t), (char *)command, EAR_TYPE_COMMAND) != EAR_SUCCESS)
+        error("Error sending command");
+
 	ret=read(eards_sfd,&ack,sizeof(ulong));
-	//ret=recv(eards_sfd,&ack,sizeof(ulong), MSG_DONTWAIT);
 	if (ret<0){
 		printf("ERRO: %d", errno);
 		error("Error receiving ack %s",strerror(errno));
@@ -90,6 +86,15 @@ int send_non_block_command(request_t *command)
 	uint to_send,sended=0;
 	uint to_recv,received=0;
 	uint must_abort=0;
+    request_header_t head;
+    head.type = EAR_TYPE_COMMAND;
+    head.size = sizeof(request_t);
+    ret = write(eards_sfd, &head, sizeof(request_header_t));
+    if (ret < sizeof(request_header_t))
+    {
+        warning("error sending request_header in non_block command");
+        return 0;
+    }
     debug("Sending command %u",command->req);
 	to_send=sizeof(request_t);
 	do
