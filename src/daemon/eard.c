@@ -816,7 +816,8 @@ int eard_gpu(int must_read)
   switch (req.req_service) {
     case GPU_MODEL:
 			//if (eard_gpu_initialized) ret=gpu_model(&eard_main_gpu_ctx,&model);
-			model=MODEL_NVML;
+			if (eard_gpu_initialized) model=MODEL_NVML;
+			else model=MODEL_UNDEFINED;
 			write(ear_fd_ack[comm_req],&model,sizeof(model));	
       break;
     case GPU_DEV_COUNT:

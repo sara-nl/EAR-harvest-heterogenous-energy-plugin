@@ -146,6 +146,11 @@ static ulong metrics_avg_frequency[2]; // MHz
 static long long metrics_instructions[2];
 static long long metrics_cycles[2];
 static long long metrics_usecs[2]; // uS
+#if USE_GPU_LIB
+static gpu_t *gpu_metrics_init[2],*gpu_metrics_diff[2];
+static ctx_t gpu_lib_ctx;
+static uint gpu_lib_initialized;
+#endif
 #if CACHE_METRICS
 static long long metrics_l1[2];
 static long long metrics_l2[2];
@@ -185,10 +190,22 @@ static void metrics_global_start()
   	eards_read_rapl(aux_rapl);
 		eards_start_uncore();
 		eards_read_uncore(metrics_bandwith_init[APP]);
+		#if USE_GPU_LIB
+		if (gpu_lib_initialized){
+			if (gpu_lib_read(gpu_metrics_init[APP]) != EAR_SUCCESS){
+				debug("Error in gpu_read in application start");
+			}
+		}else{
+			gpu_lib_data_null(gpu_metrics_init[APP]);
+		}
+		#endif
 	}else{
 		set_null_dc_energy(aux_energy);
 		set_null_rapl(aux_rapl);
 		set_null_uncores(metrics_bandwith_init[APP]);
+		#if USE_GPU_LIB
+		gpu_lib_data_null(gpu_metrics_init[APP]);
+		#endif
 	}
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
 	//eards_start_uncore();
@@ -269,6 +286,10 @@ static void metrics_partial_start()
 	
 }
 
+/****************************************************************************************************************************************************************/
+/*************************** This function is executed every N seconds to check if signature can be compute *****************************************************/
+/****************************************************************************************************************************************************************/
+
 static int metrics_partial_stop(uint where)
 {
 	long long aux_flops;
@@ -279,6 +300,7 @@ static int metrics_partial_stop(uint where)
 	long long aux_time_stop;
 	char stop_energy_str[256],start_energy_str[256];
 
+	/* If the signature of the master is not ready, we cannot compute our signature */
   if ((masters_info.my_master_rank<0) && (!sig_shared_region[0].ready)){
 			//debug("Master signature not ready at time %lld",metrics_time());
       return EAR_NOT_READY;
@@ -424,6 +446,8 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->avg_f=src->avg_f;
 }
 
+/******************* This function computes the signature : per loop (global = LOO) or application ( global = APP)  **************/
+/******************* The node master has computed the per-node metrics and the rest of processes uses this information ***********/
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
 {
 	double time_s, cas_counter, aux;
@@ -506,9 +530,9 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
   sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
-	//signature_ready(&sig_shared_region[my_node_id]);
 }
 
+/**************************** Init function used in ear_init ******************/
 int metrics_init()
 {
 	ulong flops_size;
@@ -620,6 +644,26 @@ int metrics_init()
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
+	#if USE_GPU_LIB
+	if (masters_info.my_master_rank>=0){
+		if (gpu_lib_load(system_conf) !=EAR_SUCCESS){
+			gpu_lib_initialized=0;
+		}else{ 
+			if (gpu_lib_init(&gpu_lib_ctx) != EAR_SUCCESS){
+				error("Error in GPU initiaization");
+				gpu_lib_initialized=0;
+			}else{
+				gpu_lib_initialized=1;
+				debug("GPU initialization successfully");
+			}
+		}
+	}
+	/* Que hago si no soy el master */	
+	gpu_lib_data_alloc(&gpu_metrics_init[LOO]);gpu_lib_data_alloc(&gpu_metrics_init[APP]);
+	gpu_lib_data_alloc(&gpu_metrics_diff[LOO]);gpu_lib_data_alloc(&gpu_metrics_diff[APP]);
+	debug("GPU library data initialized");
+	#endif
+
 	//debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);
 	//debug( "detected %d bandwith counter", bandwith_elements);
 
@@ -655,6 +699,11 @@ int time_ready_signature(ulong min_time_us)
 	if (aux_time<min_time_us) return 0;
 	else return 1;
 }
+
+/****************************************************************************************************************************************************************/
+/******************* This function checks if data is ready to be shared **************************************/
+/****************************************************************************************************************************************************************/
+
 
 int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulong min_time_us, ulong procs)
 {

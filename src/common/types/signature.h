@@ -33,6 +33,9 @@
 
 #include <common/types/generic.h>
 #include <common/config.h>
+#if USE_GPUS_LIB
+#include <metrics/gpu.h>
+#endif
 
 // 0: float
 // 1: 128 float
@@ -62,6 +65,9 @@ typedef struct signature
     double PCK_power;
 #if USE_GPUS
     double GPU_power;
+#if USE_GPUS_LIB
+		gpu_t gpu_metrics;
+#endif
 #endif
     double EDP;
     double GBS;

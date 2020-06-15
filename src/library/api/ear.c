@@ -156,6 +156,7 @@ static void print_local_data()
 
 
 /* notifies mpi process has succesfully connected with EARD */
+/*********************** This function synchronizes all the node masters to guarantee all the nodes have connected with EARD, otherwise, EARL is set to OFF **************/
 void notify_eard_connection(int status)
 {
 	char *buffer_send;
@@ -208,7 +209,10 @@ void notify_eard_connection(int status)
 	}
 }
 
-
+/****************************************************************************************************************************************************************/
+/****************** This function creates the shared memory region to coordinate processes in same node and with other nodes  ***********************************/
+/****************** It is executed by the node master ***********************************************************************************************************/
+/****************************************************************************************************************************************************************/
 void create_shared_regions()
 {
 	char *tmp=get_ear_tmp();
@@ -221,7 +225,8 @@ void create_shared_regions()
     error("Creating lock file for shared memory %s",block_file);
   }
 
-	
+	/********************* We have two shared regions, one for the node and other for all the processes in the app *****************/
+	/******************************* Depending on how EAR is compiled, only one signature per node is sent *************************/
 	if (get_lib_shared_data_path(tmp,lib_shared_region_path)!=EAR_SUCCESS){
 		error("Getting the lib_shared_region_path");
 	}else{
@@ -245,6 +250,7 @@ void create_shared_regions()
 	}
 	#endif
 	//print_lib_shared_data(lib_shared_region);
+	/* This region is for processes in the same node */
 	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
     error("Getting the shsignature_region_path	");
 	}else{
@@ -266,6 +272,7 @@ void create_shared_regions()
 	#endif
 	/* This part allocates memory for sharing data between nodes */
 	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
+	/* The node master, shares with other masters the number of processes in the node */
 	#if MPI
 	if (share_global_info(masters_info.masters_comm,(char *)&lib_shared_region->num_processes,sizeof(int),(char*)masters_info.ppn,sizeof(int))!=EAR_SUCCESS){
 		error("Sharing the number of processes per node");
@@ -280,6 +287,7 @@ void create_shared_regions()
 		if (masters_info.my_master_rank==0) verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
 	}
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
+	/* For scalability concerns, we can compile the system sharing all the processes information (SHARE_INFO_PER_PROCESS) or only 1 per node (SHARE_INFO_PER_NODE)*/
 	#if SHARE_INFO_PER_PROCESS
 	debug("Sharing info at process level, reporting N per node");
 	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
@@ -307,6 +315,12 @@ void create_shared_regions()
   }
 
 }
+
+/****************************************************************************************************************************************************************/
+/****************** This function attaches the process to the shared regions to coordinate processes in same node ***********************************************/
+/****************** It is executed by the NOT master processses  ************************************************************************************************/
+/****************************************************************************************************************************************************************/
+
 
 void attach_shared_regions()
 {
@@ -357,6 +371,10 @@ void attach_shared_regions()
 	/* No masters processes don't allocate memory for data sharing between nodes */	
 }
 
+/****************************************************************************************************************************************************************/
+/******************  This data is shared with EARD, it's per-application info************************************************************************************/
+/****************************************************************************************************************************************************************/
+
 void fill_application_mgt_data(app_mgt_t *a)
 {
 	uint total=0,i;
@@ -369,7 +387,9 @@ void fill_application_mgt_data(app_mgt_t *a)
 	a->total_processes=total;
 	a->max_ppn=masters_info.max_ppn;
 }
-/* Connects the mpi process to a new communicator composed by masters */
+/****************************************************************************************************************************************************************/
+/* Connects the mpi process to a new communicator composed by masters, only processes with master=1 belongs to the new communicator */
+/****************************************************************************************************************************************************************/
 void attach_to_master_set(int master)
 {
 	int color;
@@ -398,7 +418,9 @@ void attach_to_master_set(int master)
 		debug("New master communicator created with %d masters. My master rank %d\n",masters_info.my_master_size,masters_info.my_master_rank);
 	}
 }
-/* returns the local id in the node */
+/****************************************************************************************************************************************************************/
+/* returns the local id in the node, local id is 0 for the  master processes and 1 for the others  */
+/****************************************************************************************************************************************************************/
 static int get_local_id(char *node_name)
 {
 	int master = 1;
@@ -440,7 +462,10 @@ static int get_local_id(char *node_name)
 	return master;
 }
 
-// Getting the job identification (job_id * 100 + job_step_id)
+/****************************************************************************************************************************************************************/
+/**** Getting the job identification (job_id * 100 + job_step_id) */
+/****************************************************************************************************************************************************************/
+
 static void get_job_identification()
 {
 	char *job_id  = getenv(SCHED_JOB_ID);
@@ -505,8 +530,10 @@ void check_large_job_use_case()
 }
 #endif
 
+/****************************************************************************************************************************************************************/
+/*** We update EARL configuration based on shared memory information, ignoring potential malicious definition **/
+/****************************************************************************************************************************************************************/
 
-/*** We update EARL configuration based on shared memory information **/
 void update_configuration()
 {
 	char *cdynais_window;
@@ -529,7 +556,16 @@ void update_configuration()
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
 }
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
 /**************************************** ear_init ************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+
 
 void ear_init()
 {
@@ -588,6 +624,7 @@ void ear_init()
 
 	get_job_identification();
 	// Getting if the local process is the master or not
+	/* my_id reflects whether we are the master or no my_id == 0 means we are the master *****/
 	my_id = get_local_id(node_name);
 
 	//debug("attach to master %d",my_id);
