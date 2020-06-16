@@ -34,7 +34,7 @@
 #include <common/types/generic.h>
 #include <common/config.h>
 #if USE_GPUS_LIB
-#include <metrics/gpu.h>
+#include <metrics/gpu/gpu.h>
 #endif
 
 // 0: float
@@ -76,11 +76,9 @@ typedef struct signature
     double Gflops;
     double time;
     ull FLOPS[FLOPS_EVENTS];
-		#if CACHE_METRICS
     ull L1_misses;
     ull L2_misses;
     ull L3_misses;
-		#endif
     ull instructions;
     ull cycles;
     ulong avg_f;

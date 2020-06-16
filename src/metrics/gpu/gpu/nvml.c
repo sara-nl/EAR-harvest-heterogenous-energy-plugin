@@ -76,7 +76,6 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static suscription_t *sus;
 static uint initialized;
 static uint dev_count;
-static uint bursting;
 static nvml_t nvml;
 static gpu_t *pool;
 
@@ -132,7 +131,6 @@ static int load_test(char *path)
 
 static state_t nvml_load_library()
 {
-	int load = 0;
 	if (load_test(getenv(HACK_FILE_NVML))) return 1;
 	if (load_test(CUDA_BASE "/targets/x86_64-linux/lib/libnvidia-ml.so")) return 1;
 	if (load_test(CUDA_BASE "/lib64/libnvidia-ml.so")) return 1;
@@ -437,7 +435,7 @@ state_t nvml_data_print(gpu_t *data, int fd)
 
 	for (i = 0; i < dev_count; ++i)
 	{
-		dprintf(fd, "gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu, %lu, %lu, %lu, %u, %lu\n",
+		dprintf(fd, "gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 		i                   ,
 		data[i].energy_j    , data[i].power_w,
 		data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
@@ -458,7 +456,7 @@ state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 	for (i = 0; i < dev_count && length > 0; ++i)
 	{
 		s = snprintf(&buffer[accuml], length,
-			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu, %lu, %lu, %lu, %u, %lu\n",
+			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 			i                   ,
 			data[i].energy_j    , data[i].power_w,
 			data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
