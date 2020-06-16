@@ -76,9 +76,11 @@ typedef struct signature
     double Gflops;
     double time;
     ull FLOPS[FLOPS_EVENTS];
+		#if CACHE_METRICS
     ull L1_misses;
     ull L2_misses;
     ull L3_misses;
+		#endif
     ull instructions;
     ull cycles;
     ulong avg_f;
