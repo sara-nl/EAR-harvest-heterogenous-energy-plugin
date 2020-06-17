@@ -185,7 +185,7 @@ void stop_flops_metrics(long long *flops, long long *f_operations)
 
 	for (sets=0;sets<FLOPS_SETS;sets++)
 	{
-		if ((retval=PAPI_stop(event_sets[sets],(long long *)&values[sets]))!=PAPI_OK)
+		if ((retval=PAPI_read(event_sets[sets],(long long *)&values[sets]))!=PAPI_OK)
 		{
 			error("FP_METRICS: StopFlopsMetrics.%s",PAPI_strerror(retval));
 		} else

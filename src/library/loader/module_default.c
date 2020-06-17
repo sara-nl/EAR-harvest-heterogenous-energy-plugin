@@ -83,13 +83,13 @@ static int module_constructor_dlsym(char *path_so)
 
 static void module_constructor_init()
 {
-        char *verb;
+	char *verb;
 
-        if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
-        {
-                VERB_SET_EN(1);
-                VERB_SET_LV(atoi(verb));
-        }
+	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
+	{
+		VERB_SET_EN(1);
+		VERB_SET_LV(atoi(verb));
+	}
 }
 
 int module_constructor()

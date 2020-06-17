@@ -42,7 +42,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <pthread.h>
-#include <papi.h>
 
 //#define SHOW_DEBUGS 0
 #include <common/config.h>
@@ -73,8 +72,6 @@
 #include <daemon/eard_api.h>
 #include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
-
-#include <metrics/common/papi.h>
 
 // Statics
 #define BUFFSIZE 			128

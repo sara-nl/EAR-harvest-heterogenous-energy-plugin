@@ -7,7 +7,7 @@
 *
 *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
 *
-*       Copyright (C) 2017
+*       Copyright (C) 2017  
 *	BSC Contact 	mailto:ear-support@bsc.es
 *	Lenovo contact 	mailto:hpchelp@lenovo.com
 *
@@ -15,29 +15,42 @@
 *	modify it under the terms of the GNU Lesser General Public
 *	License as published by the Free Software Foundation; either
 *	version 2.1 of the License, or (at your option) any later version.
-*
+*	
 *	EAR is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
 *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 *	Lesser General Public License for more details.
-*
+*	
 *	You should have received a copy of the GNU Lesser General Public
 *	License along with EAR; if not, write to the Free Software
 *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING
+*	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-#ifndef METRICS_STALLS_H
-#define METRICS_STALLS_H
+#ifndef METRICS_FLOPS_INTEL63
+#define METRICS_FLOPS_INTEL63
 
-int init_stall_metrics();
+#include <metrics/common/perf.h>
+#include <metrics/flops/flops.h>
 
-void reset_stall_metrics();
+int init_flops_metrics();
 
-void start_stall_metrics();
+void reset_flops_metrics();
 
-void stop_stall_metrics(long long *stall_cycles);
+void start_flops_metrics();
 
-void get_stall_metrics(long long *total_stall_cycles);
+void read_flops_metrics(long long *total_flops, long long *f_operations);
 
-#endif //METRICS_STALLS_H
+void stop_flops_metrics(long long *total_flops, long long *f_operations);
+
+int get_number_fops_events();
+
+void get_total_fops(long long *metrics);
+
+double gflops(ulong total_timei, uint total_cores);
+
+void get_weigth_fops_instructions(int *weigth_vector);
+
+void print_gflops(long long total_inst, ulong total_time, uint total_cores);
+
+#endif

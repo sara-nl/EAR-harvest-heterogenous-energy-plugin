@@ -2,20 +2,24 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(SLURM_CFLAGS)
 
 ######## INSTALLATION
 
-chck_BINS = cpu_examinable \
+chck_BINS = \
+    ear_types           \
+    cpu_examinable      \
     cpu_aperf           \
     cpu_uncores         \
     cpu_uncores_all     \
     gsl_version         \
     module_acpi_cpufreq \
-    module_ipmi_devintf \
+    module_ipmi_devintf
+ifdef PAPI_BASE
+chck_BINS += \
     papi_init           \
     papi_version        \
     papi_comp_available \
-    papi_comp_enabled   \
-    ear_types
+    papi_comp_enabled
+endif
 ifdef SLURM_BASE
-#	chck_BINS += slurm_version
+#   chck_BINS += slurm_version
 endif
 
 ######## FILES

@@ -27,9 +27,17 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef EAR_PRIVATE_CACHE_H
-#define EAR_PRIVATE_CACHE_H
+#ifndef METRICS_CACHE_H
+#define METRICS_CACHE_H
 
-#include <metrics/cache/cpu/papi.h>
+int init_cache_metrics();
 
-#endif //EAR_PRIVATE_CACHE_H
+void reset_cache_metrics();
+
+void start_cache_metrics();
+
+void stop_cache_metrics(long long *l1);
+
+void print_cache_metrics(long long *L);
+
+#endif //METRICS_CACHE_H

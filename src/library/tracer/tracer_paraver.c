@@ -36,7 +36,6 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <papi.h>
 #include <common/sizes.h>
 #include <common/config.h>
 //#define SHOW_DEBUGS 1

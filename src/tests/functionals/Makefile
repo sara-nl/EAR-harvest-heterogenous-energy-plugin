@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) $(DB_FLAGS) -lm
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(DB_FLAGS) -lm
 LDFLAGS = -lm
 
 ######## FILES
@@ -23,6 +23,7 @@ ear_conf: ear_conf.c $(SRCDIR)/common/libcommon.a
 
 ips_check: ips_check.c $(ips_check_OBJS)
 	$(CC) $(CFLAGS) -o ips_check $^ $(LDFLAGS)
+
 ######## OPTIONS
 
 clean:

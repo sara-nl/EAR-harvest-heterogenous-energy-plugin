@@ -27,17 +27,54 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef METRICS_STALLS_H
-#define METRICS_STALLS_H
+//#define SHOW_DEBUGS 1
+#include <common/output/debug.h>
+#include <metrics/cpi/cpu/intel63.h>
 
-int init_stall_metrics();
+static llong values[2];
+static perf_t perf_cyc;
+static perf_t perf_ins;
 
-void reset_stall_metrics();
+int init_basic_metrics()
+{
+	state_t s;
+	s = perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
+	s = perf_open(&perf_cyc, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+}
 
-void start_stall_metrics();
+void reset_basic_metrics()
+{
+	state_t s;
+	s = perf_reset(&perf_ins);
+}
 
-void stop_stall_metrics(long long *stall_cycles);
+void start_basic_metrics()
+{
+	state_t s;
+	s = perf_start(&perf_ins);
+}
 
-void get_stall_metrics(long long *total_stall_cycles);
+void stop_basic_metrics(long long *cycles, long long *instructions)
+{
+	state_t s;
 
-#endif //METRICS_STALLS_H
+	s = perf_stop(&perf_ins);
+
+	get_basic_metrics(cycles, instructions);
+}
+
+void get_basic_metrics(long long *cycles, long long *instructions)
+{
+	state_t s;
+
+	*instructions = 0;
+	*cycles       = 0;
+	
+	s = perf_read(&perf_ins, values);
+
+	*instructions = values[0];
+	*cycles       = values[1];
+
+	debug("total ins %lld", *instructions);
+	debug("total cyc %lld", *cycles);
+}

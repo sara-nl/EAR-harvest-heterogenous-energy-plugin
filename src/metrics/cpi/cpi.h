@@ -30,6 +30,6 @@
 #ifndef EAR_CPI_H
 #define EAR_CPI_H
 
-#include <metrics/cpi/cpu/papi.h>
+#include <metrics/cpi/cpu/intel63.h>
 
 #endif //EAR_PRIVATE_CACHE_H

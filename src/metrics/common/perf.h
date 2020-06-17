@@ -27,17 +27,29 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef METRICS_STALLS_H
-#define METRICS_STALLS_H
+#ifndef METRICS_COMMON_PERF_H
+#define METRICS_COMMON_PERF_H
 
-int init_stall_metrics();
+#include <common/types.h>
+#include <common/states.h>
+#include <linux/perf_event.h>
 
-void reset_stall_metrics();
+typedef struct perf_s {
+	struct perf_event_attr attr;
+	void *group;
+	int fd;
+} perf_t;
 
-void start_stall_metrics();
+state_t perf_open(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event);
 
-void stop_stall_metrics(long long *stall_cycles);
+state_t perf_reset(perf_t *perf);
 
-void get_stall_metrics(long long *total_stall_cycles);
+state_t perf_start(perf_t *perf);
 
-#endif //METRICS_STALLS_H
+state_t perf_stop(perf_t *perf);
+
+state_t perf_close(perf_t *perf);
+
+state_t perf_read(perf_t *perf, llong *value);
+
+#endif //METRICS_COMMON_PERF_H

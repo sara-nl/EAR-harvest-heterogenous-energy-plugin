@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <papi.h>
 // #define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>

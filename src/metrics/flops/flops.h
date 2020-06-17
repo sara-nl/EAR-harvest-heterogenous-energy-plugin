@@ -30,6 +30,6 @@
 #ifndef EAR_COMMON_FLOPS_H
 #define EAR_COMMON_FLOPS_H
 
-#include <metrics/flops/cpu/papi.h>
+#include <metrics/flops/cpu/intel63.h>
 
 #endif 

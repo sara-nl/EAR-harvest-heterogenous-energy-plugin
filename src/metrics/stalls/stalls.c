@@ -27,3 +27,28 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
+
+int init_stall_metrics()
+{
+	return 0;
+}
+
+void reset_stall_metrics()
+{
+
+}
+
+void start_stall_metrics()
+{
+
+}
+
+void stop_stall_metrics(long long *stall_cycles)
+{
+	*stall_cycles = 0;
+}
+
+void get_stall_metrics(long long *total_stall_cycles)
+{
+	*total_stall_cycles = 0;
+}

@@ -27,8 +27,6 @@
 *	The GNU LEsser General Public License is contained in the file COPYING	
 */
 
-
-
 #ifndef _STALL_METRICS_H_
 #define _STALL_METRICS_H_
 
@@ -51,5 +49,4 @@ void stop_stall_metrics(long long *stall_cycles);
 /** Puts the current stall cycles metrics in the variable recieved by parameter. */
 void get_stall_metrics(long long *total_stall_cycles);
 
-#else
 #endif

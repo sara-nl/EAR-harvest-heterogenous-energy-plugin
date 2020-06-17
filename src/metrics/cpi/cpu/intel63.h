@@ -27,36 +27,20 @@
 *	The GNU LEsser General Public License is contained in the file COPYING
 */
 
-#ifndef METRICS_ENERGY_NVML_GPU_H
-#define METRICS_ENERGY_NVML_GPU_H
+#ifndef METRICS_CPI_INTEL63
+#define METRICS_CPI_INTEL63
 
-#include <metrics/energy/energy_gpu.h>
+#include <metrics/common/perf.h>
+#include <metrics/cpi/cpi.h>
 
-/** **/
-state_t nvml_status();
+int init_basic_metrics();
 
-/** **/
-state_t nvml_init(pcontext_t *c);
+void reset_basic_metrics();
 
-/** **/
-state_t nvsmi_dispose(pcontext_t *c);
+void start_basic_metrics();
 
-/** Counts the number of GPUs. **/
-state_t nvml_count(pcontext_t *c, uint *count);
+void stop_basic_metrics(long long *cycles, long long *instructions);
 
-/** **/
-state_t nvml_read(pcontext_t *c, gpu_energy_t *data_read);
+void get_basic_metrics(long long *total_cycles, long long *instructions);
 
-/** **/
-state_t nvml_data_alloc(pcontext_t *c, gpu_energy_t **data_read);
-
-/** **/
-state_t nvml_data_free(pcontext_t *c, gpu_energy_t **data_read);
-
-/** **/
-state_t nvml_data_null(pcontext_t *c, gpu_energy_t *data_read);
-
-/** **/
-state_t nvml_data_diff(pcontext_t *c, gpu_energy_t *data_read1, gpu_energy_t *data_read2, gpu_energy_t *data_avrg);
-
-#endif // METRICS_ENERGY_NVML_GPU_H
+#endif //METRICS_CPI_INTEL63
