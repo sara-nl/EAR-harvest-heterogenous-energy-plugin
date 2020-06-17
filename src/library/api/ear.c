@@ -477,17 +477,12 @@ static void get_app_name(char *my_name)
 
 	if (app_name == NULL)
 	{
-		if (PAPI_is_initialized() == PAPI_NOT_INITED) {
-			strcpy(my_name, "unknown");
-		} else {
-			metrics_get_app_name(my_name);
-		}
+		strcpy(my_name, __progname);
 		set_ear_app_name(my_name);
 	} else {
 		strcpy(my_name, app_name);
 	}
 }
-
 
 /*** We update EARL configuration based on shared memory information **/
 void update_configuration()
@@ -665,8 +660,8 @@ void ear_init()
 	}
 
 	/* Processes in same node connectes each other*/
+	debug("Dynais init");
 
-	debug("Dynais init");	
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	if (metrics_init()!=EAR_SUCCESS){
@@ -674,8 +669,18 @@ void ear_init()
 				verbose(0,"Error in EAR metrics initialization, setting EARL off");
 				return;
 	}
+
+	// Policies && models
+	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+		error("Retrieving architecture description");
+		/* How to proceeed here ? */
+		my_id=1;
+		verbose(0,"Error in EAR metrics initialization, setting EARL off");
+		return;
+	}
+
 	debug("frequency_init");
-	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
+	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
 
 	if (ear_my_rank == 0)
 	{
@@ -686,16 +691,6 @@ void ear_init()
 			verbose(2, "learning phase %d, turbo %d", ear_whole_app, ear_use_turbo);
 		}
 	}
-
-
-	// Policies && models
-	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
-    error("Retrieving architecture description");
-		/* How to proceeed here ? */
-		my_id=1;
-		verbose(0,"Error in EAR metrics initialization, setting EARL off");
-		return;
-  }
 
 	if (masters_info.my_master_rank>=0){
 	  #if POWERCAP
