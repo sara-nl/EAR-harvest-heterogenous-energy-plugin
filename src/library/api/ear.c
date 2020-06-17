@@ -73,6 +73,8 @@
 #include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
 
+extern const char *__progname;
+
 // Statics
 #define BUFFSIZE 			128
 #define JOB_ID_OFFSET		100
