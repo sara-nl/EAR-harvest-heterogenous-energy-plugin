@@ -170,7 +170,7 @@ void set_null_uncores(ull *band)
 }
 long long metrics_time()
 {
-	return PAPI_get_real_usec();
+	return (llong) timestamp_getconvert(TIME_USECS);
 }
 
 static void metrics_global_start()
