@@ -140,9 +140,6 @@ state_t freq_intel63_read_copy(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, u
 state_t freq_intel63_data_alloc(freq_cpu_t *ef, ulong *freqs[], ulong *freqs_count)
 {
 	size_t size = sizeof(aperf_intel63_t);
-	aperf_intel63_t *a;
-	state_t s;
-	int cpu;
 
 	if (freqs_count != NULL) {
 		*freqs_count = 0;
@@ -164,9 +161,6 @@ state_t freq_intel63_data_alloc(freq_cpu_t *ef, ulong *freqs[], ulong *freqs_cou
 			*freqs_count = cpu_count;
 		}
 	}
-
-	// Initialization
-	a = (aperf_intel63_t *) ef->data;
 
 	return EAR_SUCCESS;
 }
@@ -273,21 +267,20 @@ state_t freq_intel63_data_diff(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, u
 
 state_t freq_intel63_data_print(ulong *freqs, ulong *average)
 {
-    double freq_ghz;
-	double freq_div;
+	double freq_ghz;
 	int cpu_half;
-    int s, i, j;
+	int s, i, j;
 
 	//
 	cpu_half = cpu_count / 2;
-    printf("CPU:");
+	printf("CPU:");
 
 	for (s = 0, j = 0; freqs != NULL && s < tp.socket_count; ++s)
 	{
-    	for (i = 0; i < cpu_half; ++i, ++j) {
-        	freq_ghz = ((double) freqs[j]) / 1000000.0;
-        	printf(" %0.1lf", freq_ghz);
-    	}
+		for (i = 0; i < cpu_half; ++i, ++j) {
+        		freq_ghz = ((double) freqs[j]) / 1000000.0;
+        		printf(" %0.1lf", freq_ghz);
+    		}
 		if ((s+1) < tp.socket_count) printf("\nCPU:");
 	}
 

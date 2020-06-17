@@ -71,6 +71,9 @@ int init_flops_metrics()
 	s = perf_open(&perf_256d, &perf_256f, 0, PERF_TYPE_RAW, 0x10c7);
 	s = perf_open(&perf_512f, &perf_256f, 0, PERF_TYPE_RAW, 0x80c7);
 	s = perf_open(&perf_512d, &perf_256f, 0, PERF_TYPE_RAW, 0x40c7);
+	
+	// Remove warning
+	(void) (s);
 
 	return 1;
 }
@@ -81,6 +84,9 @@ void reset_flops_metrics()
 
 	s = perf_reset(&perf_064f);
 	s = perf_reset(&perf_256f);
+	
+	// Remove warning
+	(void) (s);
 }
 
 void start_flops_metrics()
@@ -89,6 +95,9 @@ void start_flops_metrics()
 
 	s = perf_start(&perf_064f);
 	s = perf_start(&perf_256f);
+	
+	// Remove warning
+	(void) (s);
 }
 
 void read_flops_metrics(long long *total_flops, long long *f_operations)
@@ -97,6 +106,9 @@ void read_flops_metrics(long long *total_flops, long long *f_operations)
 
 	s = perf_read(&perf_064f, &values_064f);
 	s = perf_read(&perf_256f, &values_256f);
+	
+	// Remove warning
+	(void) (s);
 
 	debug("read 064 f/d %lld/%lld", values_064f, values_064d);
 	debug("read 128 f/d %lld/%lld", values_128f, values_128d);
@@ -140,6 +152,9 @@ void stop_flops_metrics(long long *total_flops, long long *f_operations)
 
 	s = perf_stop(&perf_064f);
 	s = perf_stop(&perf_256f);
+	
+	// Remove warning
+	(void) (s);
 
 	read_flops_metrics(total_flops, f_operations);
 }

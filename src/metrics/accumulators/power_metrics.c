@@ -251,9 +251,6 @@ void end_power_monitoring(ehandler_t *my_eh)
 
 int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 {
-	int p;
-	char buffer[512];
-
 	debug("read_enegy_data");
 	time(&acc_energy->sample_time);
 
@@ -282,6 +279,7 @@ int read_enegy_data(ehandler_t *my_eh, energy_data_t *acc_energy)
 
 	// Debugging data
 	#ifdef SHOW_DEBUGS
+	int p;
 	energy_to_str(my_eh,buffer,acc_energy->DC_node_energy);
 	debug("Node %s",buffer);
 	for (p = 0; p < num_packs; p++) {
@@ -350,7 +348,7 @@ void print_energy_data(energy_data_t *e)
 	struct tm *current_t;
 	char nodee[256];
 	char s[64];
-	int i, j;
+	int j;
 
 	// We format the end time into localtime and string
 	current_t = localtime(&(e->sample_time));
@@ -401,7 +399,6 @@ void print_power(power_data_t *my_power,uint show_date,int out)
 	double dram_power = 0, pack_power = 0, gpu_power = 0;
 	struct tm *current_t;
 	char s[64];
-	int p;
 	int fd;
 
 	if (out>=0) fd=out;
@@ -430,7 +427,7 @@ void report_periodic_power(int fd, power_data_t *my_power)
 	char s[64], spdram[256], spcpu[256], s1dram[64], s1cpu[64], spgpu[256], s1gpu[64];
 	double dram_power = 0, pack_power = 0, gpu_power = 0;
 	struct tm *current_t;
-	int p, pp;
+	int p;
 
 	dram_power = accum_dram_power(my_power);
 	pack_power = accum_cpu_power(my_power);

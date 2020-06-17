@@ -1,5 +1,8 @@
 CFLAGS = $(CC_FLAGS) -fPIC -shared -O2 -Wextra
 
+CC = /opt/rh/devtoolset-7/root/bin/gcc -Wall
+export CC
+
 ######## INSTALLATION
 
 stat_BINS = libmetrics.a

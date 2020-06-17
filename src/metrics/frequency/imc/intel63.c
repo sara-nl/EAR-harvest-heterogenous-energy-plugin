@@ -192,7 +192,6 @@ state_t ifreq_intel63_data_alloc(freq_imc_t *ef, ulong *freqs[], ulong *freqs_co
 {
 	size_t size = sizeof(imc_intel63_t);
 	imc_intel63_t *a;
-	state_t s;
 	int cpu;
 
 	if (freqs_count != NULL) {

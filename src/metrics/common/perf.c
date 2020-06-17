@@ -95,6 +95,8 @@ state_t perf_reset(perf_t *perf)
 	} else {
 		debug("ok fd %d and group %p", perf->fd, perf->group);
 	}
+	#else
+	(void) (ret);
 	#endif
 	if (perf->fd == -1) {
 		return_msg(EAR_ERROR, strerror(errno));
@@ -116,6 +118,8 @@ state_t perf_start(perf_t *perf)
 	} else {
 		debug("ok fd %d and group %p", perf->fd, perf->group);
 	}
+	#else
+	(void) (ret);
 	#endif
 	if (perf->fd == -1) {
 		return_msg(EAR_ERROR, strerror(errno));
@@ -137,6 +141,8 @@ state_t perf_stop(perf_t *perf)
 	} else {
 		debug("ok fd %d and group %p", perf->fd, perf->group);
 	}
+	#else
+	(void) (ret);
 	#endif
 	if (perf->fd == -1) {
 		return_msg(EAR_ERROR, strerror(errno));

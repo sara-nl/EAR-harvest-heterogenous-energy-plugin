@@ -43,7 +43,7 @@
 #include <common/output/verbose.h>
 
 /* */
-static int total_cores=0,total_packages=0;
+static int total_packages=0;
 static int *package_map;
 static int msr_initialised = 0;
 static int fd_map[MAX_PACKAGES];
@@ -81,7 +81,6 @@ int init_msr(int *dest_fd_map)
 		return EAR_ERROR;
 	}
 
-	unsigned long long result;
 	int j;
 	
 	for(j=0;j<total_packages;j++) 

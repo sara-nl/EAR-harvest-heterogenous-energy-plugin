@@ -40,18 +40,29 @@ int init_basic_metrics()
 	state_t s;
 	s = perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
 	s = perf_open(&perf_cyc, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+
+	// Remove warning
+	(void) (s);
+
+	return EAR_SUCCESS;
 }
 
 void reset_basic_metrics()
 {
 	state_t s;
 	s = perf_reset(&perf_ins);
+
+	// Remove warning
+	(void) (s);
 }
 
 void start_basic_metrics()
 {
 	state_t s;
 	s = perf_start(&perf_ins);
+
+	// Remove warning
+	(void) (s);
 }
 
 void stop_basic_metrics(long long *cycles, long long *instructions)
@@ -61,6 +72,9 @@ void stop_basic_metrics(long long *cycles, long long *instructions)
 	s = perf_stop(&perf_ins);
 
 	get_basic_metrics(cycles, instructions);
+
+	// Remove warning
+	(void) (s);
 }
 
 void get_basic_metrics(long long *cycles, long long *instructions)
@@ -77,4 +91,7 @@ void get_basic_metrics(long long *cycles, long long *instructions)
 
 	debug("total ins %lld", *instructions);
 	debug("total cyc %lld", *cycles);
+
+	// Remove warning
+	(void) (s);
 }
