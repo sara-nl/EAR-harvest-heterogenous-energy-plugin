@@ -100,9 +100,11 @@ static void option_build(spank_t sp, test_t *test)
 	if (test->path_usdb != NULL) {
 		_opt_ear_user_db (0, test->path_usdb, 0);
 	}
+	#if 0
 	if (test->path_trac != NULL) {
  		_opt_ear_traces (0, test->path_trac, 0);
 	}
+	#endif
 	if (test->learning != NULL) {
 		_opt_ear_learning (0, test->learning, 0);
 	}

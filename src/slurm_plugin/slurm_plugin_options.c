@@ -51,12 +51,14 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  1, 0, (spank_opt_cb_f) _opt_ear_tag
 	},
 	// Hidden options
+#if 0
 	{ "ear-mpi-dist", "dist", opt_mpi,
 	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
 	},
 	{ "ear-traces", "path", "Saves application traces with metrics and internal details",
 	  1, 0, (spank_opt_cb_f) _opt_ear_traces
 	}
+#endif
 };
 
 static int _opt_register_mpi(spank_t sp, int ac, char **av)
