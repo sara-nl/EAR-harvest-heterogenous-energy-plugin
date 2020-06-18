@@ -1,12 +1,13 @@
 [Unit]
 Description=EARGMD - EAR Global Manager
 ConditionPathExists=@localstatedir@
+#Wants=req1.service req2.service
+#After=req1.service req2.service
+
 
 [Service]
 Type=simple
 Environment="EAR_ETC=@sysconfdir@"
-Environment="EAR_MAX_CLUSTER_POWER=950"
-Environment="EAR_POWERCAP_FREQ=60"
 
 ExecStart=@prefix@/sbin/eargmd
 ExecReload=/bin/kill -HUP $MAINPID

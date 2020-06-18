@@ -44,7 +44,7 @@
 #define MAX_SIG_POWER                       600.0
 #define MAX_ERROR_POWER                     1000.0
 #define MAX_TEMP							150
-#define MAX_POWER_CAP					MAX_ERROR_POWER
+#define MAX_POWER_CAP					0
 #define DEF_POWER_CAP					0
 #define POWER_CAP_TYPE				"node"
 
