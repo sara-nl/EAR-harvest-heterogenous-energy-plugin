@@ -1,5 +1,5 @@
-CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) -O2 -fPIC
-LDFLAGS = $(PAPI_LDFLAGS) -ldl
+CFLAGS = -I$(SRCDIR) -O2 -fPIC $(CC_FLAGS) $(MPI_CFLAGS)
+LDFLAGS = -ldl
 
 ######## RULES
 
@@ -13,7 +13,6 @@ tracer_BINS = \
 tracer_PATH = $(DESTDIR)/lib/plugins/tracer
 tracer_PERM = 0775
 tracer_DEPS = $(SRCDIR)/common/libcommon.a
-
 
 ########
 

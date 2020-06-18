@@ -16,7 +16,7 @@ BINS = libear_seq.so
 all: $(OBJS) $(BINS)
 
 ear.o: ear.c ear.h
-	$(CC) $(API_CFLAGS)  $(PAPI_CFLAGS) -c $<	
+	$(CC) $(API_CFLAGS) -c $<	
 
 %.o: %.c %.h
 	$(CC) $(API_CFLAGS) -c $<

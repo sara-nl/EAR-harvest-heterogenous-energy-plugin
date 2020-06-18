@@ -9,7 +9,7 @@ flop_OBJS = papi.o
 all: $(flop_OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $< $(PAPI_LDFLAGS)
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $<
 
 ######## OPTIONS
 

@@ -12,7 +12,7 @@ all: $(cycl_OBJS)
 	$(CC) $(CFLAGS) -c $<
 
 papi.o: papi.c papi.h
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $< $(PAPI_LDFLAGS)
+	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $<
 
 ######## OPTIONS
 

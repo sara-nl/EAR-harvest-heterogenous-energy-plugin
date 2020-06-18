@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) $(PAPI_CFLAGS) -O2 -fPIC
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -O2 -fPIC
 
 ########
 
