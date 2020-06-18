@@ -148,8 +148,8 @@ void print_database_conf(db_conf_t *conf)
 void set_default_db_conf(db_conf_t *db_conf)
 {
   strcpy(db_conf->user, "ear_daemon");
-  strcpy(db_conf->database, "EARDB");
-  strcpy(db_conf->user_commands, "ear_daemon");
+  strcpy(db_conf->database, "EAR");
+  strcpy(db_conf->user_commands, "ear_commands");
   strcpy(db_conf->ip, "127.0.0.1");
   db_conf->port = 3306;
   db_conf->max_connections=MAX_DB_CONNECTIONS;
