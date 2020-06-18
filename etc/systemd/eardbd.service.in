@@ -1,10 +1,11 @@
 [Unit]
 Description=EARDBD - Energy Aware Runtime database cache daemon
 ConditionPathExists=@localstatedir@
+#Wants=req1.service req2.service
+#After=req1.service req2.service
+
 
 [Service]
-#User=ear
-#Groupt=ear
 Type=simple
 Environment="EAR_ETC=@sysconfdir@"
 ExecStart=@prefix@/sbin/eardbd

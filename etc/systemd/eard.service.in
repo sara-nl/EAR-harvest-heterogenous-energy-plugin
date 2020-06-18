@@ -1,6 +1,9 @@
 [Unit]
 Description=EARD - Energy Aware Runtime node daemon
 ConditionPathExists=@localstatedir@
+#Wants=req1.service req2.service
+#After=req1.service req2.service
+
 
 [Service]
 Type=simple
