@@ -32,7 +32,7 @@
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_options.h>
 
-#define SRUN_OPTIONS	10
+#define SRUN_OPTIONS 8
 
 static char buffer[SZ_PATH];
 static char opt_mpi[SZ_PATH];
@@ -60,9 +60,6 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  "'file.nodename.csv' file will be created per node. If not defined, these files won't be generated.",
 	  1, 0, (spank_opt_cb_f) _opt_ear_user_db
 	},
-	{ "ear-mpi-dist", "dist", opt_mpi,
-	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
-	},
 	{ "ear-verbose", "value", "Specifies the level of the verbosity" \
 	  "{value=[0..5]}; default is 0",
 	  1, 0, (spank_opt_cb_f) _opt_ear_verbose
@@ -73,6 +70,10 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	},
 	{ "ear-tag", "tag", "Sets an energy tag (max 32 chars)",
 	  1, 0, (spank_opt_cb_f) _opt_ear_tag
+	},
+	// Hidden options
+	{ "ear-mpi-dist", "dist", opt_mpi,
+	  1, 0, (spank_opt_cb_f) _opt_ear_mpi_dist
 	},
 	{ "ear-traces", "path", "Saves application traces with metrics and internal details",
 	  1, 0, (spank_opt_cb_f) _opt_ear_traces
@@ -179,7 +180,6 @@ int _opt_register(spank_t sp, int ac, char **av)
 	_opt_register_pol(sp, ac, av);
 	
 	//
-	//length = SRUN_OPTIONS - !exenv_agnostic(sp, "EAR_GUI");
 	length = SRUN_OPTIONS;
 
 	for (i = 0; i < length; ++i)
@@ -364,6 +364,29 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 	return ESPANK_SUCCESS;
 }
 
+int _opt_ear_tag(int val, const char *optarg, int remote)
+{
+	plug_verbose(NULL_C, 2, "function _opt_tag");
+
+	if (!remote)
+	{
+		if (optarg == NULL) {
+			return ESPANK_BAD_ARG;
+		}
+
+		setenv_agnostic(NULL_C, Var.tag.loc, optarg, 1);
+		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
+	}
+	return ESPANK_SUCCESS;
+}
+
+/*
+ *
+ * Hidden options
+ *
+ */
+
+#if 0
 int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 {
 	plug_verbose(NULL_C, 2, "function _opt_mpi_dist");
@@ -383,22 +406,6 @@ int _opt_ear_mpi_dist(int val, const char *optarg, int remote)
 	return (ESPANK_SUCCESS);
 }
 
-int _opt_ear_tag(int val, const char *optarg, int remote)
-{
-	plug_verbose(NULL_C, 2, "function _opt_tag");
-
-	if (!remote)
-	{
-		if (optarg == NULL) {
-			return ESPANK_BAD_ARG;
-		}
-
-		setenv_agnostic(NULL_C, Var.tag.loc, optarg, 1);
-		setenv_agnostic(NULL_C, Var.comp_libr.cmp, "1", 1);
-	}
-	return ESPANK_SUCCESS;
-}
-
 int _opt_ear_traces (int val, const char *optarg, int remote)
 {
 	plug_verbose(NULL_C, 2, "function _opt_ear_traces");
@@ -415,3 +422,4 @@ int _opt_ear_traces (int val, const char *optarg, int remote)
 
 	return ESPANK_SUCCESS;
 }
+#endif
