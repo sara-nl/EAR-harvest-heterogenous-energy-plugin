@@ -249,7 +249,9 @@ static void metrics_global_stop()
 		gpu_lib_data_diff(gpu_metrics_end[APP], gpu_metrics_init[APP], gpu_metrics_diff[APP]);
 		#endif
 	}else{
+		#if USE_GPU_LIB
 		gpu_lib_data_null(gpu_metrics_diff[APP]);
+		#endif
 		set_null_uncores(metrics_bandwith_end[APP]);
 	}
 	//eards_start_uncore();
@@ -474,7 +476,14 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->PCK_power=src->PCK_power;
 	dest->avg_f=src->avg_f;
 	#if USE_GPU_LIB
-	gpu_lib_data_copy(&dest->gpu_metrics,&src->gpu_metrics);
+	dest-> GPU_freq = src->GPU_freq;
+	dest->GPU_mem_freq = src->GPU_mem_freq;
+	dest->GPU_util = src->GPU_util;
+	dest->GPU_mem_util = src->GPU_mem_util;
+	dest->GPU_energy = src->GPU_energy;
+	#endif
+	#if USE_GPUS
+	dest->GPU_power = src->GPU_power;
 	#endif
 }
 
@@ -551,9 +560,16 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
 		metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
 		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
+		#if USE_GPU_LIB
 		if (gpu_initialized){
-			gpu_lib_data_copy(&metrics->gpu_metrics,gpu_metrics_diff[LOO]);
+			metrics->GPU_freq=(gpu_metrics_diff[s][0].freq_gpu_mhz+gpu_metrics_diff[s][1].freq_gpu_mhz)/2;
+			metrics->GPU_mem_freq=(gpu_metrics_diff[s][0].freq_mem_mhz+gpu_metrics_diff[s][1].freq_mem_mhz)/2;
+			metrics->GPU_util=(gpu_metrics_diff[s][0].util_gpu+gpu_metrics_diff[s][1].util_gpu)/2;
+			metrics->GPU_mem_util=(gpu_metrics_diff[s][0].util_mem+gpu_metrics_diff[s][1].util_mem)/2;
+			metrics->GPU_energy=gpu_metrics_diff[s][0].energy_j+gpu_metrics_diff[s][1].energy_j;
+			metrics->GPU_power=gpu_metrics_diff[s][0].power_w+gpu_metrics_diff[s][1].power_w;
 		}
+		#endif
 	}else{
 		copy_node_data(metrics,&sig_shared_region[0].sig);
 	}

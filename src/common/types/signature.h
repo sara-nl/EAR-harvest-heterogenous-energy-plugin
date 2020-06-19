@@ -64,10 +64,14 @@ typedef struct signature
     double DRAM_power;
     double PCK_power;
 #if USE_GPUS
-    double GPU_power;
-#if USE_GPU_LIB
-		gpu_t gpu_metrics;
+		double  GPU_power;
 #endif
+#if USE_GPU_LIB
+		ulong  GPU_freq;
+		ulong  GPU_mem_freq;
+		ulong  GPU_util;
+		ulong  GPU_mem_util;
+		ulong  GPU_energy;
 #endif
     double EDP;
     double GBS;

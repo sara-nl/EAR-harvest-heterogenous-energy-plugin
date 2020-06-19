@@ -61,7 +61,7 @@
 #define EARL_RESEARCH 1
 #define ONLY_MASTER 0
 #define USE_GPUS 1
-#define USE_GPU_LIB 0
+#define USE_GPU_LIB 1
 //
 #define SHARE_INFO_PER_PROCESS 1
 #define SHARE_INFO_PER_NODE 0
