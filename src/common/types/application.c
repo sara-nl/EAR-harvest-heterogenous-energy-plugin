@@ -34,6 +34,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <common/config.h>
 #include <common/system/file.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
@@ -318,5 +319,6 @@ void report_mpi_application_data(application_t *app)
 		verbose(VTYPE,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W) GFlops/Watts %.3lf\n", app->signature.DC_power, app->signature.DRAM_power,
 				app->signature.PCK_power,app->signature.Gflops/app->signature.DC_power);
 	}
+
 	verbose(VTYPE,"-----------------------------------------------------------------------------------------------\n");
 }

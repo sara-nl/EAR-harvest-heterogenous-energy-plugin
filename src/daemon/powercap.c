@@ -314,6 +314,13 @@ int powercap_run_to_idle()
   pthread_mutex_unlock(&my_pc_opt.lock);
   return EAR_SUCCESS;
 }
+
+/***************************************************************************************/
+/********** Executed each time a new periodic metric is ready **************************/
+/***************************************************************************************/
+
+/* To consider, should we differentiate the monitoring frequency vs the DB monitoring */
+
 int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 {
 	uint current=(uint)cp->platform;
@@ -439,6 +446,9 @@ void print_power_status(powercap_status_t *my_status)
 		if (my_status->num_greedy) debug("greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes[i],my_status->greedy_req[i],my_status->extra_power[i]);
 	}
 }
+/***************************************************************************************/
+/**********  This function is executed under EARGM request    **************************/
+/***************************************************************************************/
 
 void get_powercap_status(powercap_status_t *my_status)
 {
@@ -526,6 +536,11 @@ void print_powercap_opt(powercap_opt_t *opt)
 	}
 	debug("Max extra power for new jobs %u",opt->max_inc_new_jobs);
 }
+
+/***************************************************************************************/
+/**********  This function is executed when EARGM sends a message **********************/
+/***************************************************************************************/
+
 
 void set_powercap_opt(powercap_opt_t *opt)
 {
