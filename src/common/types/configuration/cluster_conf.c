@@ -324,8 +324,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         return NULL;
     }
 
-    strcpy(n->energy_plugin, my_conf->install.obj_ener);
-    strcpy(n->energy_model, my_conf->install.obj_power_model);
+        n->energy_plugin = my_conf->install.obj_ener;
+        n->energy_model = my_conf->install.obj_power_model;
 
     if (tag_id < 0) tag_id = get_default_tag_id(my_conf);
     if (tag_id >= 0)
