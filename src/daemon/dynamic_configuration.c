@@ -29,7 +29,6 @@
 
 #define _GNU_SOURCE
 
-#define NEW_STATUS 1
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,7 +49,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/system/symplug.h>
 
-#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/eard_server_api.h>
@@ -367,10 +366,8 @@ int dyncon_set_policy(new_policy_cont_t *p)
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
-#ifdef NEW_STATUS
     long int ack;
 	send_answer(fd, &ack); //send ack before propagating
-#endif
 	int num_status = propagate_status(command, my_cluster_conf.eard.port, &status);
 	unsigned long return_status = num_status;
 	debug("return_status %lu status=%p",return_status,status);
@@ -380,14 +377,8 @@ void dyncon_get_status(int fd, request_t *command) {
 		write(fd, &return_status, sizeof(return_status));
 		return;
 	}
-	sleep(5);
 	powermon_get_status(&status[num_status - 1]);
-#ifdef NEW_STATUS
     send_data(fd, sizeof(status_t) * num_status, (char *)status, EAR_TYPE_STATUS);
-#else
-	write(fd, &return_status, sizeof(return_status));
-	write(fd, status, sizeof(status_t) * num_status);
-#endif
 	debug("Returning from dyncon_get_status");
 	free(status);
 	debug("status released");
@@ -433,6 +424,8 @@ void dyncon_power_management(int fd, request_t *command)
     case EAR_RC_SET_POWERCAP_OPT:
 			verbose(1,"Set powercap options received");
 			set_powercap_opt(&command->my_req.pc_opt);
+            free(command->my_req.pc_opt.greedy_nodes);
+            free(command->my_req.pc_opt.extra_power);
 			return;
 			break;
     default:

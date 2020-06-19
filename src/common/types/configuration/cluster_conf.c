@@ -324,6 +324,9 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         return NULL;
     }
 
+        n->energy_plugin = my_conf->install.obj_ener;
+        n->energy_model = my_conf->install.obj_power_model;
+
     if (tag_id < 0) tag_id = get_default_tag_id(my_conf);
     if (tag_id >= 0)
     {
@@ -338,13 +341,14 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 
         n->powercap_type = my_conf->tags[tag_id].powercap_type;
 
-        n->energy_plugin = my_conf->tags[tag_id].energy_plugin;
-        n->energy_model = my_conf->tags[tag_id].energy_model;
+        if (my_conf->tags[tag_id].energy_plugin != NULL && strlen(my_conf->tags[tag_id].energy_plugin) > 0)
+            n->energy_plugin = my_conf->tags[tag_id].energy_plugin;
+        if (my_conf->tags[tag_id].energy_model != NULL && strlen(my_conf->tags[tag_id].energy_model) > 0)
+            n->energy_model = my_conf->tags[tag_id].energy_model;
+
         n->powercap_plugin = my_conf->tags[tag_id].powercap_plugin;
 
         n->coef_file = strlen(my_conf->tags[tag_id].coeffs) > 0 ? my_conf->tags[tag_id].coeffs : "coeffs.default";
-				strcpy(my_conf->install.obj_ener,n->energy_plugin);
-				strcpy(my_conf->install.obj_power_model,n->energy_model);
         
     }
     else warning("No tag found for current node in ear.conf\n");

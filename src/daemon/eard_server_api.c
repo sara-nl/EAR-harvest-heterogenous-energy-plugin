@@ -52,7 +52,6 @@
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
-#define NEW_STATUS 1
 
 int *ips = NULL;
 int total_ips = -1;
@@ -146,16 +145,32 @@ void close_server_socket(int sock)
 int read_command(int s, request_t *command)
 {
     request_header_t head;
+    char *tmp_command;
+    head = receive_data(s, (void **)&tmp_command);
+    debug("received command type %d\t size: %u \t sizeof req: %u", head.type, head.size, sizeof(request_t));
 
-    request_t *tmp_command;
-    head = recieve_data(s, (void **)&tmp_command);
     if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(request_t))
     {
         command->req = NO_COMMAND;
         if (head.size > 0) free(tmp_command);
+#if DYN_PAR
+        return EAR_SOCK_DISCONNECTED;
+#endif
         return command->req;
     }
     memcpy(command, tmp_command, sizeof(request_t));
+    if (head.size > sizeof(request_t))
+    {
+        if (command->req == EAR_RC_SET_POWERCAP_OPT)
+        {
+            debug("received powercap_opt");
+            size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[sizeof(request_t)], offset);
+            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
+        }
+    }
     free(tmp_command);
     return command->req;
 }
@@ -340,7 +355,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
         else
         {
             send_command(command);
-            head = recieve_data(rc, (void **)&temp_data);
+            head = receive_data(rc, (void **)&temp_data);
             if (head.size < 1 || head.type == EAR_ERROR) 
             {
                 error("propagate_req: Error propagating command to node %s\n", next_ip);
@@ -450,7 +465,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
         return 1;
     }
 
-    // propagate request and recieve the data
+    // propagate request and receive the data
     request_header_t head = propagate_data(command, port, (void **)&temp_status);
     num_status = head.size / sizeof(status_t);
     

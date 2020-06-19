@@ -39,9 +39,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+
+#include <daemon/eard_rapi.h>
+#include <daemon/eard_rapi_internals.h>
+
 #include <common/config.h>
 #include <common/states.h>
-#include <daemon/eard_rapi.h>
 #include <common/system/user.h>
 #include <common/output/verbose.h>
 #include <common/types/version.h>
@@ -580,14 +584,16 @@ int main(int argc, char *argv[])
                     powercap_opt_t msg;
                     memset(&msg, 0, sizeof(powercap_opt_t));
                     msg.num_greedy = 1;
+                    msg.greedy_nodes = calloc(1, sizeof(int));
+                    msg.extra_power = calloc(1, sizeof(int));
                     msg.greedy_nodes[0] = 772087468;
                     msg.extra_power[0] = 25;
                     request_t command;
                     command.req = EAR_RC_SET_POWERCAP_OPT;
                     command.time_code = time(NULL);
                     command.my_req.pc_opt = msg;
+                    command.node_dist = INT_MAX;
                     int rc = eards_remote_connect(optarg, my_cluster_conf.eard.port);
-                    
                     if (rc < 0) {
                         printf("Error connecting with node %s\n", optarg);
                     }else{
@@ -595,6 +601,8 @@ int main(int argc, char *argv[])
                         send_command(&command);
                         eards_remote_disconnect();
                     }
+                    free(msg.greedy_nodes);
+                    free(msg.extra_power);
                    
                 }
                 break;
