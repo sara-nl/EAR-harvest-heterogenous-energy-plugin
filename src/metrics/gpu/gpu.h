@@ -14,7 +14,7 @@
 #include <common/plugins.h>
 #include <common/system/time.h>
 
-#define MODEL_NVML		1
+#define MODEL_NVML			1
 #define MODEL_UNDEFINED		0
 
 typedef struct gpu_s
