@@ -924,13 +924,11 @@ int postgresql_batch_insert_periodic_metrics(PGconn *connection, periodic_metric
         {
             param_values[6  + offset] = (char *) &per_mets[i].avg_f;
             param_values[7  + offset] = (char *) &per_mets[i].temp;
-#if USE_GPUS
             param_values[8  + offset] = (char *) &per_mets[i].DRAM_energy;
             param_values[9  + offset] = (char *) &per_mets[i].PCK_energy;
+#if USE_GPUS
             param_values[10 + offset] = (char *) &per_mets[i].GPU_energy;
 #else
-            param_values[8  + offset] = (char *) NULL;
-            param_values[9  + offset] = (char *) NULL;
             param_values[10 + offset] = (char *) NULL;
 #endif
         }

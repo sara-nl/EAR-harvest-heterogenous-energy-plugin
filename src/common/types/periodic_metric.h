@@ -25,9 +25,9 @@ typedef struct periodic_metric
 		/* Full */
     ulong avg_f;
     ulong temp;
-#if USE_GPUS
     ulong DRAM_energy;
     ulong PCK_energy;
+#if USE_GPUS
     ulong GPU_energy;
 #endif
 } periodic_metric_t;
