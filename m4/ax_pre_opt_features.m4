@@ -103,6 +103,18 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	if test "x$enable_avx512" = "xno"; then
 		FEAT_AVX512=0
 	fi
+
+	# GPUs
+	
+	AC_ARG_ENABLE([gpus],
+		AS_HELP_STRING([--disable-gpus], [Does not allocate GPU types nor report any information])
+        )
+	
+	FEAT_GPUS=1
+
+	if test "x$enable_gpus" = "xno"; then
+		FEAT_GPUS=0
+	fi
 	
  	#
 	# Installation user/group

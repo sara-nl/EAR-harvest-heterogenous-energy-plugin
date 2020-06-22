@@ -6,21 +6,24 @@
  * found in COPYING.BSD and COPYING.EPL files.
  */
 
+#include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/gpu/gpu/nvml.h>
+#include <metrics/gpu/gpu/dummy.h>
 
 static gpu_ops_t ops;
 static uint loaded;
 static uint model;
 
-state_t gpu_load(gpu_ops_t **_ops, uint force_model)
+state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 {
 	if (loaded != 0) {
 		return EAR_SUCCESS;
 	}
 
-	if (force_model == MODEL_NVML || state_ok(nvml_status()))
+	if (model_force == MODEL_NVML || state_ok(nvml_status()))
 	{
+		debug("loaded NVML");
 		ops.init		= nvml_init;
 		ops.dispose		= nvml_dispose;
 		ops.read		= nvml_read;
@@ -38,6 +41,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint force_model)
 		model			= MODEL_NVML;
 		loaded			= 1;
 	} else {
+		debug("loaded DUMMY");
 		ops.init		= gpu_dummy_init;
 		ops.dispose		= gpu_dummy_dispose;
 		ops.read		= gpu_dummy_read;
@@ -56,6 +60,9 @@ state_t gpu_load(gpu_ops_t **_ops, uint force_model)
 		loaded			= 1;
 	}
 
+	if (model_used != NULL) {
+		*model_used = model;
+	}
 	if (_ops != NULL) {
 		*_ops = &ops;
 	}

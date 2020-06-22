@@ -50,7 +50,7 @@ typedef struct gpu_ops_s
 	state_t (*data_tostr)	(gpu_t *data, char *buffer, int length);
 } gpu_ops_t;
 
-state_t gpu_load(gpu_ops_t **ops, uint force_model);
+state_t gpu_load(gpu_ops_t **ops, uint model_force, uint *model_used);
 
 state_t gpu_init(ctx_t *c);
 

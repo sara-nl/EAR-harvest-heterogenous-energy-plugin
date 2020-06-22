@@ -40,6 +40,7 @@ ctx_t		 gpu_context;
 uint		 gpu_loop_ms;
 uint		 gpu_initialized;
 uint		 gpu_num;
+uint		 gpu_model;
 
 // Things to do
 //	1: replace time calls by our common/system/time.
@@ -181,7 +182,7 @@ static int pm_connect(ehandler_t *my_eh)
 	if (xtate_fail(s, monitor_init())) {
 		error("monitor_init returned %d (%s)", s, state_msg);
 	}
-	if (xtate_fail(s, gpu_load(empty, none))) {
+	if (xtate_fail(s, gpu_load(empty, none, &gpu_model))) {
 		error("gpu_load returned %d (%s)", s, state_msg);
 	}
 	if (xtate_fail(s, gpu_init(&gpu_context))) {

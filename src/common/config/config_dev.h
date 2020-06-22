@@ -39,11 +39,11 @@
 #define EAR_CPUPOWER	1
 #define EARL_RESEARCH 1
 #define ONLY_MASTER 0
-#define USE_GPUS 1
 //
 #define SHARE_INFO_PER_PROCESS 1
 #define SHARE_INFO_PER_NODE 0
 
 #define POWERCAP 1
 #define POWERCAP_EXT 0
+
 #endif //EAR_CONFIG_DEV_H

@@ -6,7 +6,14 @@
  * found in COPYING.BSD and COPYING.EPL files.
  */
 
-#include <metrics/gpu/gpu/nvml.h>
+#include <stdlib.h>
+#include <metrics/gpu/gpu/dummy.h>
+
+static struct error_s {
+	char *null_data;
+} Error = {
+	.null_data    = "data pointer is NULL",
+};
 
 state_t gpu_dummy_status()
 {
@@ -33,7 +40,7 @@ state_t gpu_dummy_count(ctx_t *c, uint *_dev_count)
 
 state_t gpu_dummy_read(ctx_t *c, gpu_t *data)
 {
-	return gpu_dummy_data_null(c, data);
+	return gpu_dummy_data_null(data);
 }
 
 state_t gpu_dummy_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)

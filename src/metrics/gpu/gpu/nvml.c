@@ -167,7 +167,7 @@ static state_t nvml_init_prime()
 
 state_t nvml_status()
 {
-	return EAR_SUCCESS;
+	return nvml_init(NULL);
 }
 
 state_t nvml_init(ctx_t *c)
