@@ -236,9 +236,11 @@ PRIMARY KEY(id, step_id))");
 id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
-PCK_power FLOAT,\
-GPU_power FLOAT,\
-EDP FLOAT,\
+PCK_power FLOAT,"
+#if USE_GPUS
+"GPU_power FLOAT,"
+#endif
+"EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
@@ -263,7 +265,6 @@ id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,\
-GPU_power FLOAT,\
 EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
@@ -479,8 +480,11 @@ PRIMARY KEY(id, step_id))");
 id SERIAL NOT NULL,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
-PCK_power FLOAT,\
-EDP FLOAT,\
+PCK_power FLOAT,"
+#if USE_GPUS
+"GPU_power FLOAT,"
+#endif
+"EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
