@@ -32,22 +32,23 @@ const char *nvml_names[] =
 	"nvmlDeviceGetTemperature",
 	"nvmlDeviceGetUtilizationRates",
 	"nvmlDeviceGetComputeRunningProcesses",
+	"nvmlDeviceSetPowerManagementLimit"
 	"nvmlErrorString",
 };
 
-typedef struct nvml_s
+static struct nvml_s
 {
 	nvmlReturn_t (*Init)		(void);
-	nvmlReturn_t (*DevCount)	(uint *deviceCount);
+	nvmlReturn_t (*DevCount)	(uint *devCount);
 	nvmlReturn_t (*DevHandle)	(uint index, nvmlDevice_t *device);
-	nvmlReturn_t (*DevMode)		(nvmlDevice_t device, nvmlEnableState_t *mode);
-	nvmlReturn_t (*DevPower)	(nvmlDevice_t device, uint *power);
-	nvmlReturn_t (*DevClocks)	(nvmlDevice_t device, nvmlClockType_t type, uint *clock);
-	nvmlReturn_t (*DevTemp)		(nvmlDevice_t device, nvmlTemperatureSensors_t sensorType, uint *temp);
-	nvmlReturn_t (*DevUtil)		(nvmlDevice_t device, nvmlUtilization_t *utilization);
-	nvmlReturn_t (*DevProcs)	(nvmlDevice_t device, uint *infoCount, nvmlProcessInfo_t *infos);
+	nvmlReturn_t (*DevMode)		(nvmlDevice_t dev, nvmlEnableState_t *mode);
+	nvmlReturn_t (*DevPower)	(nvmlDevice_t dev, uint *power);
+	nvmlReturn_t (*DevClocks)	(nvmlDevice_t dev, nvmlClockType_t type, uint *clock);
+	nvmlReturn_t (*DevTemp)		(nvmlDevice_t dev, nvmlTemperatureSensors_t type, uint *temp);
+	nvmlReturn_t (*DevUtil)		(nvmlDevice_t dev, nvmlUtilization_t *utilization);
+	nvmlReturn_t (*DevProcs)	(nvmlDevice_t dev, uint *infoCount, nvmlProcessInfo_t *infos);
 	char* (*ErrorString)		(nvmlReturn_t result);
-} nvml_t;
+} nvml;
 
 #define NVML_N 10
 
@@ -55,6 +56,7 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static suscription_t *sus;
 static uint initialized;
 static uint dev_count;
+static void *libnvml;
 static nvml_t nvml;
 static gpu_t *pool;
 
@@ -77,7 +79,6 @@ static struct error_s {
 static int load_test(char *path)
 {
 	void **p = (void **) &nvml;
-	void *libnvml;
 	int error;
 	int i;
 
@@ -100,7 +101,7 @@ static int load_test(char *path)
 		error += (p[i] == NULL);
 	}
 	if (error > 0) {
-		memset((void *) &nvml, 0, sizeof(nvml_t));
+		memset((void *) &nvml, 0, sizeof(nvml));
 		dlclose(libnvml);
 		return 0;
 	}
@@ -108,7 +109,7 @@ static int load_test(char *path)
 	return 1;
 }
 
-static state_t nvml_load_library()
+static int nvml_load_library()
 {
 	if (load_test(getenv(HACK_FILE_NVML))) return 1;
 	if (load_test(CUDA_BASE "/targets/x86_64-linux/lib/libnvidia-ml.so")) return 1;
@@ -167,12 +168,16 @@ static state_t nvml_init_prime()
 
 state_t nvml_status()
 {
-	return EAR_SUCCESS;
+	return nvml_init(NULL, NULL);
 }
 
 state_t nvml_init(ctx_t *c)
 {
-	return nvml_count(NULL, NULL);
+	state_t s = nvml_count(NULL, NULL);
+	if (state_ok(s) && c != NULL) {
+		c->context = libnvml;
+	}
+	return s;
 }
 
 state_t nvml_dispose(ctx_t *c)
@@ -191,7 +196,7 @@ state_t nvml_count(ctx_t *c, uint *_dev_count)
 		*_dev_count = 0;
 	}
 	if (!initialized) {
-		if (xtate_fail(s, nvml_init_prime())) {
+		if (xtate_fail(s, nvml_init_prime(c))) {
 			return s;
 		}
 	}
