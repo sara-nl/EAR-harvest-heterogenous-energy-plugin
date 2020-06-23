@@ -437,7 +437,6 @@ void report_periodic_power(int fd, power_data_t *my_power)
 
 	dram_power = accum_dram_power(my_power);
 	pack_power = accum_cpu_power(my_power);
-	gpu_power  = accum_gpu_power(my_power);
 
 	// We format the end time into localtime and string
 	current_t = localtime(&(my_power->end));
@@ -459,6 +458,8 @@ void report_periodic_power(int fd, power_data_t *my_power)
 	}
 
 	#if USE_GPUS
+	gpu_power  = accum_gpu_power(my_power);
+
 	spgpu[0] = '\0';
 
 	for (p = 0; p < gpu_num; p++) {
@@ -505,7 +506,6 @@ void alloc_energy_data(energy_data_t *e)
 	// CPU/DRAM
 	e->DRAM_energy = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
 	e->CPU_energy  = (rapl_data_t *) calloc(num_packs, sizeof(rapl_data_t));
-	// GPU
 	#if USE_GPUS
 	state_t s;
 	if (xtate_fail(s, gpu_data_alloc(&e->gpu_data))) {
@@ -521,7 +521,6 @@ void free_energy_data(energy_data_t *e)
 	// CPU/DRAM
 	free(e->DRAM_energy);
 	free(e->CPU_energy);
-	// GPU
 	#if USE_GPUS
 	state_t s;
 	if (xtate_fail(s, gpu_data_free(&e->gpu_data))) {
@@ -539,11 +538,12 @@ void copy_energy_data(energy_data_t *dest, energy_data_t *src)
 	// CPU/DRAM
 	memcpy(dest->DRAM_energy, src->DRAM_energy, num_packs * sizeof(rapl_data_t));
 	memcpy(dest->CPU_energy , src->CPU_energy , num_packs * sizeof(rapl_data_t));
-	// GPU
+	#if USE_GPUS
 	state_t s;
 	if (xtate_fail(s, gpu_data_copy(dest->gpu_data, src->gpu_data))) {
 		error("gpu_data_copy returned %d (%s)", s, state_msg);
 	}
+	#endif
 }
 
 void null_energy_data(energy_data_t *acc_energy)
