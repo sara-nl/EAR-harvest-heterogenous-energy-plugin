@@ -83,6 +83,8 @@ ear_types: ear_types.c
 check:
 	@./check.sh
 
+install: ;
+
 clean: chck.gclean rclean;
 
 ######## DEPENDENCIES
