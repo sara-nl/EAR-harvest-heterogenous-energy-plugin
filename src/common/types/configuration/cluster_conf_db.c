@@ -54,7 +54,7 @@ state_t DB_parse_token(db_conf_t *conf,char *token)
 {
 		state_t found=EAR_ERROR;
 		debug("DB_parse_token %s",token);
-    if (!strcmp(token, "MARIADBIP"))
+    if (!strcmp(token, "MARIADBIP") || !strcmp(token, "DBIP"))
     {
       token = strtok(NULL, "=");
       strclean(token, '\n');
@@ -62,7 +62,7 @@ state_t DB_parse_token(db_conf_t *conf,char *token)
       strcpy(conf->ip, token);
 			found = EAR_SUCCESS;
     }
-    else if (!strcmp(token, "MARIADBUSER"))
+    else if (!strcmp(token, "MARIADBUSER") || !strcmp(token, "DBUSER"))
     {
       token = strtok(NULL, "=");
       strclean(token, '\n');
@@ -70,7 +70,7 @@ state_t DB_parse_token(db_conf_t *conf,char *token)
       strcpy(conf->user, token);
 			found = EAR_SUCCESS;
     }
-    else if (!strcmp(token, "MARIADBPASSW"))
+    else if (!strcmp(token, "MARIADBPASSW") || !strcmp(token, "DBPASSW"))
     {
       token = strtok(NULL, "=");
       strclean(token, '\n');
@@ -78,7 +78,7 @@ state_t DB_parse_token(db_conf_t *conf,char *token)
       strcpy(conf->pass, token);
 			found = EAR_SUCCESS;
     }
-    else if (!strcmp(token, "MARIADBCOMMANDSUSER"))
+    else if (!strcmp(token, "MARIADBCOMMANDSUSER") || !strcmp(token, "DBCOMMANDSUSER"))
     {
 			found = EAR_SUCCESS;
       token = strtok(NULL, "=");
@@ -86,7 +86,7 @@ state_t DB_parse_token(db_conf_t *conf,char *token)
       remove_chars(token, ' ');
       strcpy(conf->user_commands, token);
     }
-    else if (!strcmp(token, "MARIADBCOMMANDSPASSW"))
+    else if (!strcmp(token, "MARIADBCOMMANDSPASSW") || !strcmp(token, "DBCOMMANDSPASSW"))
     {
 			found = EAR_SUCCESS;
       token = strtok(NULL, "=");
@@ -94,7 +94,7 @@ state_t DB_parse_token(db_conf_t *conf,char *token)
       remove_chars(token, ' ');
       strcpy(conf->pass_commands, token);
     }
-    else if (!strcmp(token, "MARIADBDATABASE"))
+    else if (!strcmp(token, "MARIADBDATABASE") || !strcmp(token, "DBDATABASE"))
     {
 			found = EAR_SUCCESS;
       token = strtok(NULL, "=");
@@ -102,7 +102,7 @@ state_t DB_parse_token(db_conf_t *conf,char *token)
       remove_chars(token, ' ');
       strcpy(conf->database, token);
     }
-    else if (!strcmp(token, "MARIADBPORT"))
+    else if (!strcmp(token, "MARIADBPORT") || !strcmp(token, "DBPORT"))
     {
 			found = EAR_SUCCESS;
       token = strtok(NULL, "=");

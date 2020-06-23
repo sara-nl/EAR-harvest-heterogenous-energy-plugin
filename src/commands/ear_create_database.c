@@ -760,7 +760,7 @@ int main(int argc,char *argv[])
 	print_database_conf(&my_cluster.database);
 
     signature_detail = my_cluster.database.report_sig_detail;
-		db_node_detail= my_cluster.database.report_node_detail;
+    db_node_detail= my_cluster.database.report_node_detail;
 
 #if DB_PSQL
     char **keys, **values, temp[32];
