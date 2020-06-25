@@ -50,6 +50,7 @@ void usage(char *app)
 "\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
 "\t\t-x\tshows the last EAR events. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
+"\t\t-r\tshows the EAR loop signatures. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
 "\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" \
 "", app);
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
@@ -809,14 +810,14 @@ void print_loops(loop_t *loops, int num_loops)
     char line[256];
 
     strcpy(line, "%6s-%-7s\t %-10s %-12s %-10s %-10s %-10s %-10s %-10s %-10s \n");
-    printf(line, "JOB", "STEP", "NODE ID", "ITERATIONS", "POWER", "GBS", "CPI", "GFLOPS", "TIME", "AVG_F");
+    printf(line, "JOB", "STEP", "NODE ID", "ITERATIONS", "POWER", "GBS", "CPI", "GFLOPS/W", "TIME", "AVG_F");
 
-    strcpy(line, "%6u-%-7u\t %-10s %-12u %-10.3lf %-10.3lf %-10.3lf %-10.3lf %-10.3lf %-10lu \n");
+    strcpy(line, "%6u-%-7u\t %-10s %-12u %-10.1lf %-10.1lf %-10.3lf %-10.3lf %-10.3lf %-10.2lf \n");
     for (i = 0; i < num_loops; i++)
     {
         signature_t sig = loops[i].signature;
         printf(line, loops[i].jid, loops[i].step_id, loops[i].node_id, loops[i].total_iterations,
-                     sig.DC_power, sig.GBS, sig.CPI, sig.Gflops, sig.time, sig.avg_f);
+                     sig.DC_power, sig.GBS, sig.CPI, sig.Gflops/sig.DC_power, sig.time, (double)(sig.avg_f)/1000000);
     }
 }
 
