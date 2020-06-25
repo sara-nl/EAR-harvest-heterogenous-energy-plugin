@@ -419,6 +419,7 @@ int postgresql_retrieve_power_signatures(PGconn *connection, char *query, power_
 int postgresql_retrieve_signatures(PGconn *connection, char *query, signature_t **sigs)
 {
     int i, num_rows;
+    double dummy_var;
     signature_t *sig_aux;
 
     PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
@@ -447,28 +448,33 @@ int postgresql_retrieve_signatures(PGconn *connection, char *query, signature_t 
         sig_aux[i].DC_power = double_swap( *((double *)PQgetvalue(res, i, 1)));
         sig_aux[i].DRAM_power = double_swap( *((double *)PQgetvalue(res, i, 2)));
         sig_aux[i].PCK_power = double_swap( *((double *)PQgetvalue(res, i, 3)));
-        sig_aux[i].EDP = double_swap( *((double *)PQgetvalue(res, i, 4)));
-        sig_aux[i].GBS = double_swap( *((double *)PQgetvalue(res, i, 5)));
-        sig_aux[i].TPI = double_swap( *((double *)PQgetvalue(res, i, 6)));
-        sig_aux[i].CPI = double_swap( *((double *)PQgetvalue(res, i, 7)));
-        sig_aux[i].Gflops = double_swap( *((double *)PQgetvalue(res, i, 8)));
-        sig_aux[i].time = double_swap( *((double *)PQgetvalue(res, i, 9)));
+#if USE_GPUS
+        sig_aux[i].GPU_power = double_swap( *((double *)PQgetvalue(res, i, 4)));
+#else
+        dummy_var = double_swap( *((double *)PQgetvalue(res, i, 4)));
+#endif
+        sig_aux[i].EDP = double_swap( *((double *)PQgetvalue(res, i, 5)));
+        sig_aux[i].GBS = double_swap( *((double *)PQgetvalue(res, i, 6)));
+        sig_aux[i].TPI = double_swap( *((double *)PQgetvalue(res, i, 7)));
+        sig_aux[i].CPI = double_swap( *((double *)PQgetvalue(res, i, 8)));
+        sig_aux[i].Gflops = double_swap( *((double *)PQgetvalue(res, i, 9)));
+        sig_aux[i].time = double_swap( *((double *)PQgetvalue(res, i, 10)));
         if (full_signature)
         {
-            sig_aux[i].FLOPS[0] = htonl( *((ulong *)PQgetvalue(res, i, 10)));
-            sig_aux[i].FLOPS[1] = htonl( *((ulong *)PQgetvalue(res, i, 11)));
-            sig_aux[i].FLOPS[2] = htonl( *((ulong *)PQgetvalue(res, i, 12)));
-            sig_aux[i].FLOPS[3] = htonl( *((ulong *)PQgetvalue(res, i, 13)));
-            sig_aux[i].FLOPS[4] = htonl( *((ulong *)PQgetvalue(res, i, 14)));
-            sig_aux[i].FLOPS[5] = htonl( *((ulong *)PQgetvalue(res, i, 15)));
-            sig_aux[i].FLOPS[6] = htonl( *((ulong *)PQgetvalue(res, i, 16)));
-            sig_aux[i].FLOPS[7] = htonl( *((ulong *)PQgetvalue(res, i, 17)));
-            sig_aux[i].instructions = htonl( *((ulong *)PQgetvalue(res, i, 18)));
-            sig_aux[i].avg_f = htonl( *((ulong *)PQgetvalue(res, i, 19)));
-            sig_aux[i].def_f = htonl( *((ulong *)PQgetvalue(res, i, 20)));
+            sig_aux[i].FLOPS[0] = htonl( *((ulong *)PQgetvalue(res, i, 11)));
+            sig_aux[i].FLOPS[1] = htonl( *((ulong *)PQgetvalue(res, i, 12)));
+            sig_aux[i].FLOPS[2] = htonl( *((ulong *)PQgetvalue(res, i, 13)));
+            sig_aux[i].FLOPS[3] = htonl( *((ulong *)PQgetvalue(res, i, 14)));
+            sig_aux[i].FLOPS[4] = htonl( *((ulong *)PQgetvalue(res, i, 15)));
+            sig_aux[i].FLOPS[5] = htonl( *((ulong *)PQgetvalue(res, i, 16)));
+            sig_aux[i].FLOPS[6] = htonl( *((ulong *)PQgetvalue(res, i, 17)));
+            sig_aux[i].FLOPS[7] = htonl( *((ulong *)PQgetvalue(res, i, 18)));
+            sig_aux[i].instructions = htonl( *((ulong *)PQgetvalue(res, i, 19)));
+            sig_aux[i].avg_f = htonl( *((ulong *)PQgetvalue(res, i, 20)));
+            sig_aux[i].def_f = htonl( *((ulong *)PQgetvalue(res, i, 21)));
         }
-        sig_aux[i].avg_f = htonl( *((ulong *)PQgetvalue(res, i, 10)));
-        sig_aux[i].def_f = htonl( *((ulong *)PQgetvalue(res, i, 11)));
+        sig_aux[i].avg_f = htonl( *((ulong *)PQgetvalue(res, i, 11)));
+        sig_aux[i].def_f = htonl( *((ulong *)PQgetvalue(res, i, 12)));
 
     }
    
@@ -924,13 +930,11 @@ int postgresql_batch_insert_periodic_metrics(PGconn *connection, periodic_metric
         {
             param_values[6  + offset] = (char *) &per_mets[i].avg_f;
             param_values[7  + offset] = (char *) &per_mets[i].temp;
-#if USE_GPUS
             param_values[8  + offset] = (char *) &per_mets[i].DRAM_energy;
             param_values[9  + offset] = (char *) &per_mets[i].PCK_energy;
+#if USE_GPUS
             param_values[10 + offset] = (char *) &per_mets[i].GPU_energy;
 #else
-            param_values[8  + offset] = (char *) NULL;
-            param_values[9  + offset] = (char *) NULL;
             param_values[10 + offset] = (char *) NULL;
 #endif
         }

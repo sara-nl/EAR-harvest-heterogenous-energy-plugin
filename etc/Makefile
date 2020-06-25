@@ -1,6 +1,7 @@
 ######## FILES
                   
 gen_FOLDERS = $(DESTDIR)/bin \
+              $(DESTDIR)/bin/tests \
               $(DESTDIR)/bin/tools \
               $(DESTDIR)/include \
               $(DESTDIR)/lib \

@@ -783,6 +783,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 
     if (verbose) printf("QUERY: %s\n", query);
   
+  
 #if DB_MYSQL
     MYSQL_RES *result = db_run_query_result(query);
 #elif DB_PSQL
@@ -800,6 +801,76 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 #elif DB_PSQL
     postgresql_print_events(result);
 #endif
+}
+
+void print_loops(loop_t *loops, int num_loops)
+{
+    int i;
+    char line[256];
+
+    strcpy(line, "%6s-%-7s\t %-10s %-12s %-10s %-10s %-10s %-10s %-10s %-10s \n");
+    printf(line, "JOB", "STEP", "NODE ID", "ITERATIONS", "POWER", "GBS", "CPI", "GFLOPS", "TIME", "AVG_F");
+
+    strcpy(line, "%6u-%-7u\t %-10s %-12u %-10.3lf %-10.3lf %-10.3lf %-10.3lf %-10.3lf %-10lu \n");
+    for (i = 0; i < num_loops; i++)
+    {
+        signature_t sig = loops[i].signature;
+        printf(line, loops[i].jid, loops[i].step_id, loops[i].node_id, loops[i].total_iterations,
+                     sig.DC_power, sig.GBS, sig.CPI, sig.Gflops, sig.time, sig.avg_f);
+    }
+}
+
+#define LOOPS_QUERY "SELECT * FROM Loops "
+
+void read_loops(char *user, int job_id, int limit, int step_id, char *job_ids) 
+{
+    char query[512];
+    char subquery[128];
+
+    if (strlen(my_conf.database.user_commands) < 1) 
+    {
+        verbose(0, "Warning: commands' user is not defined in ear.conf");
+    }
+    else
+    {
+        strcpy(my_conf.database.user, my_conf.database.user_commands);
+        strcpy(my_conf.database.pass, my_conf.database.pass_commands);
+    }
+    init_db_helper(&my_conf.database);
+
+    strcpy(query, LOOPS_QUERY);
+
+    if (job_id >= 0)
+        add_int_filter(query, "job_id", job_id);
+    else if (strlen(job_ids) > 0)
+        add_int_list_filter(query, "job_id", job_ids);
+    if (step_id >= 0)
+        add_int_filter(query, "step_id", step_id);
+    if (user != NULL)
+        add_string_filter(query, "user", user);
+
+    if (limit > 0)
+    {
+        sprintf(subquery, " ORDER BY job_id desc LIMIT %d", limit);
+        strcat(query, subquery);
+    }
+    else strcat(query, " ORDER BY job_id desc");
+
+    if (verbose) printf("QUERY: %s\n", query);
+
+    loop_t *loops;
+    int num_loops;
+
+    num_loops = db_read_loops_query(&loops, query);
+
+    if (num_loops < 1)
+    {
+        printf("No loops retrieved\n");
+        return;
+    }
+
+    print_loops(loops, num_loops);
+
 }
 
 
@@ -927,15 +998,19 @@ void read_from_files(char *path, char *user, int job_id, int limit, int step_id)
 
 int main(int argc, char *argv[])
 {
+    int opt;
+    int limit = 20;
     int job_id = -1;
     int step_id = -1;
-    int limit = 20;
+
+    char is_loops = 0;
     char is_events = 0;
-    int opt;
-    char path_name[256];
-    char *file_name = NULL;
+
     char e_tag[64] = "";
     char job_ids[256] = "";
+
+    char path_name[256];
+    char *file_name = NULL;
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         printf("Error getting ear.conf path\n");
@@ -960,13 +1035,16 @@ int main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmablc:hx::")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmablrc:hx::")) != -1) 
     {
         switch (opt)
         {
             case 'n':
                 if (!strcmp(optarg, "all")) limit = -1;
                 else limit = atoi(optarg);
+                break;
+            case 'r':
+                is_loops = 1;
                 break;
             case 'u':
                 if (user != NULL) break;
@@ -1038,6 +1116,7 @@ int main(int argc, char *argv[])
 
     if (file_name != NULL) read_from_files(file_name, user, job_id, limit, step_id);
     else if (is_events) read_events(user, job_id, limit, step_id, job_ids);
+    else if (is_loops) read_loops(user, job_id, limit, step_id, job_ids);
     else read_from_database(user, job_id, limit, step_id, e_tag, job_ids); 
 
     free_cluster_conf(&my_conf);

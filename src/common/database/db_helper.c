@@ -1246,6 +1246,44 @@ int db_select_acum_energy_idx(ulong divisor, char is_aggregated, uint *last_inde
 
 }
 
+int db_read_loops_query(loop_t **loops, char *query)
+{
+    int num_loops = 0;
+#if DB_MYSQL
+	MYSQL *connection = mysql_create_connection();
+#elif DB_PSQL
+    PGconn *connection = postgresql_create_connection();
+#endif
+
+    if (connection == NULL) {
+        return EAR_ERROR;
+    }
+
+#if DB_MYSQL
+   	num_loops = mysql_retrieve_loops(connection, query, loops);
+#elif DB_PSQL
+    num_loops = postgresql_retrieve_loops(connection, query, loops);
+#endif
+    
+   
+  	if (num_loops == EAR_MYSQL_ERROR){
+#if DB_MYSQL
+        verbose(VDBH, "Error retrieving information from database (%d): %s\n", mysql_errno(connection), mysql_error(connection));
+        mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
+		return num_loops;
+    }
+
+#if DB_MYSQL
+    mysql_close(connection);
+#elif DB_PSQL
+    PQfinish(connection);
+#endif
+
+    return num_loops;
+}
 
 int db_read_applications_query(application_t **apps, char *query)
 {

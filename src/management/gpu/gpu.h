@@ -9,24 +9,9 @@
 #ifndef MANAGEMENT_GPU
 #define MANAGEMENT_GPU
 
-state_t management_gpu_load(ctx_t *c);
-
-state_t management_gpu_init(ctx_t *c);
-
-state_t gpu_clock_set_max(ctx_t *c, int *khz);
-
-state_t gpu_clock_get_max(ctx_t *c, int *khz);
-
-state_t gpu_clock_get_max_default(ctx_t *c, int *khz);
-
-state_t gpu_clock_reset(ctx_t *c);
-
-state_t gpu_power_set_max(ctx_t *c, int *watts);
-
-state_t gpu_power_get_max(ctx_t *c, int *watts);
-
-state_t gpu_power_get_max_default(ctx_t *c, int *watts);
-
-state_t gpu_power_reset(ctx_t *c);
+#include <common/types.h>
+#include <common/states.h>
+#include <common/plugins.h>
+#include <common/system/time.h>
 
 #endif

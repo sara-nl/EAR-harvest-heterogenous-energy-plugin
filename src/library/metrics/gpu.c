@@ -17,7 +17,7 @@ state_t gpu_lib_load(settings_conf_t *settings)
 	// 'metrics/gpu/gpu.c' for the model list.
 
 	// Replace 0 by GPU model
-	return gpu_load(&ops, 0);
+	return gpu_load(&ops, 0, NULL);
 }
 
 state_t gpu_lib_init(ctx_t *c)

@@ -40,7 +40,7 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	  1, 0, (spank_opt_cb_f) _opt_ear_user_db
 	},
 	{ "ear-verbose", "value", "Specifies the level of the verbosity" \
-	  "{value=[0..5]}; default is 0",
+	  "{value=[0..1]}; default is 0",
 	  1, 0, (spank_opt_cb_f) _opt_ear_verbose
 	},
 	{ "ear-learning", "value",
@@ -335,7 +335,7 @@ int _opt_ear_verbose (int val, const char *optarg, int remote)
 
 		ioptarg = atoi(optarg);
 		if (ioptarg < 0) ioptarg = 0;
-		if (ioptarg > 4) ioptarg = 4;
+		if (ioptarg > 1) ioptarg = 1;
 		snprintf(buffer, 4, "%d", ioptarg);
 
 		setenv_agnostic(NULL_C, Var.verbose.loc, buffer, 1);

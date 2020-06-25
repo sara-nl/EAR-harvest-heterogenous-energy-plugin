@@ -1,28 +1,28 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
+GS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-gpu_OBJS = nvml.o
-
-ifdef CUDA_BASE
-gpu_DEFS = -DCUDA_BASE=\"$(CUDA_BASE)\"
-endif
+gpu_BINS =
 
 ######## RULES
 
-all: $(gpu_OBJS)
-
-nvml.o: nvml.c nvml.h
-	$(CC) $(CFLAGS) -I$(CUDA_BASE)/include $(gpu_DEFS) -c $<
+all: $(gpu_BINS) all.components
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
+######## SUBFOLDERS
+
+%.components:
+	@ $(MAKE) -C 'archs' $* || exit
+
 ######## OPTIONS
 
-install: ;
+install: install.components;
 
-clean: rclean;
+%.install: ;
+
+clean: rclean clean.components;
 
 ######## DEPENDENCIES
 

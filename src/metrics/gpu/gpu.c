@@ -6,21 +6,24 @@
  * found in COPYING.BSD and COPYING.EPL files.
  */
 
+#include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/gpu/gpu/nvml.h>
+#include <metrics/gpu/gpu/dummy.h>
 
 static gpu_ops_t ops;
 static uint loaded;
 static uint model;
 
-state_t gpu_load(gpu_ops_t **_ops, uint force_model)
+state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 {
 	if (loaded != 0) {
 		return EAR_SUCCESS;
 	}
 
-	if (force_model == MODEL_NVML || state_ok(nvml_status()))
+	if (model_force == MODEL_NVML || state_ok(nvml_status()))
 	{
+		debug("loaded NVML");
 		ops.init		= nvml_init;
 		ops.dispose		= nvml_dispose;
 		ops.read		= nvml_read;
@@ -38,9 +41,28 @@ state_t gpu_load(gpu_ops_t **_ops, uint force_model)
 		model			= MODEL_NVML;
 		loaded			= 1;
 	} else {
-		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
+		debug("loaded DUMMY");
+		ops.init		= gpu_dummy_init;
+		ops.dispose		= gpu_dummy_dispose;
+		ops.read		= gpu_dummy_read;
+		ops.read_copy	= gpu_dummy_read_copy;
+		ops.count		= gpu_dummy_count;
+		ops.data_init   = gpu_dummy_data_init;
+		ops.data_diff	= gpu_dummy_data_diff;
+		ops.data_alloc	= gpu_dummy_data_alloc;
+		ops.data_free	= gpu_dummy_data_free;
+		ops.data_null	= gpu_dummy_data_null;
+		ops.data_diff	= gpu_dummy_data_diff;
+		ops.data_copy	= gpu_dummy_data_copy;
+		ops.data_print	= gpu_dummy_data_print;
+		ops.data_tostr	= gpu_dummy_data_tostr;
+		model			= MODEL_UNDEFINED;
+		loaded			= 1;
 	}
 
+	if (model_used != NULL) {
+		*model_used = model;
+	}
 	if (_ops != NULL) {
 		*_ops = &ops;
 	}

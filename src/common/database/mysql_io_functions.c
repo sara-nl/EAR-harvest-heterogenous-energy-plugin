@@ -1801,16 +1801,12 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
         bind[7].buffer = (char *)&per_met->temp;
         bind[8].buffer_type = bind[9].buffer_type = bind[10].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[8].is_unsigned = bind[9].is_unsigned = bind[10].is_unsigned = 1;
-#if USE_GPUS
         bind[8].buffer = (char *)&per_met->DRAM_energy;
         bind[9].buffer = (char *)&per_met->PCK_energy;
+#if USE_GPUS
         bind[10].buffer = (char *)&per_met->GPU_energy;
 #else
-        bind[8].buffer_type = MYSQL_TYPE_NULL;
-        bind[9].buffer_type = MYSQL_TYPE_NULL;
         bind[10].buffer_type = MYSQL_TYPE_NULL;
-        bind[8].is_null = (my_bool*) 1;
-        bind[9].is_null = (my_bool*) 1;
         bind[10].is_null = (my_bool*) 1;
 #endif
     }
@@ -1918,15 +1914,11 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
 
             bind[6+offset].buffer = (char *)&per_mets[i].avg_f;
             bind[7+offset].buffer = (char *)&per_mets[i].temp;   
-#if USE_GPUS
             bind[8+offset].buffer = (char *)&per_mets[i].DRAM_energy;
             bind[9+offset].buffer = (char *)&per_mets[i].PCK_energy;
+#if USE_GPUS
             bind[10+offset].buffer = (char *)&per_mets[i].GPU_energy;
 #else
-            bind[8+offset].buffer_type = MYSQL_TYPE_NULL;
-            bind[8+offset].is_null = (my_bool*) 1;
-            bind[9+offset].buffer_type = MYSQL_TYPE_NULL;
-            bind[9+offset].is_null = (my_bool*) 1;
             bind[10+offset].buffer_type = MYSQL_TYPE_NULL;
             bind[10+offset].is_null = (my_bool*) 1;
 

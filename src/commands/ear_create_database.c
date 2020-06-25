@@ -236,9 +236,11 @@ PRIMARY KEY(id, step_id))");
 id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
-PCK_power FLOAT,\
-GPU_power FLOAT,\
-EDP FLOAT,\
+PCK_power FLOAT,"
+#if USE_GPUS
+"GPU_power FLOAT,"
+#endif
+"EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
@@ -263,7 +265,6 @@ id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,\
-GPU_power FLOAT,\
 EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
@@ -287,9 +288,11 @@ step_id INT unsigned NOT NULL, \
 avg_f INT, \
 temp INT, \
 DRAM_energy INT, \
-PCK_energy INT, \
-GPU_energy INT, \
-PRIMARY KEY (id))");
+PCK_energy INT, "
+#if USE_GPUS
+"GPU_energy INT, "
+#endif
+"PRIMARY KEY (id))");
 }else{
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
 id INT unsigned NOT NULL AUTO_INCREMENT, \
@@ -477,8 +480,11 @@ PRIMARY KEY(id, step_id))");
 id SERIAL NOT NULL,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
-PCK_power FLOAT,\
-EDP FLOAT,\
+PCK_power FLOAT,"
+#if USE_GPUS
+"GPU_power FLOAT,"
+#endif
+"EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
@@ -525,7 +531,12 @@ job_id INT  NOT NULL, \
 step_id INT  NOT NULL, \
 avg_f INT, \
 temp INT, \
-PRIMARY KEY (id))");
+DRAM_energy INT, \
+PCK_energy INT, "
+#if USE_GPUS
+"GPU_energy INT, "
+#endif
+"PRIMARY KEY (id))");
 }else{
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
 id SERIAL NOT NULL, \

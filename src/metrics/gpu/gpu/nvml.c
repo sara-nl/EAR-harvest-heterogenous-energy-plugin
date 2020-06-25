@@ -57,7 +57,7 @@ static suscription_t *sus;
 static uint initialized;
 static uint dev_count;
 static void *libnvml;
-static nvml_t nvml;
+//static nvml_t nvml;
 static gpu_t *pool;
 
 static struct error_s {
@@ -168,7 +168,7 @@ static state_t nvml_init_prime()
 
 state_t nvml_status()
 {
-	return nvml_init(NULL, NULL);
+	return nvml_init(NULL);
 }
 
 state_t nvml_init(ctx_t *c)
