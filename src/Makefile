@@ -6,6 +6,7 @@ ifdef DB_BASE
 endif
 	COMPONENTS += \
                   metrics \
+                  management \
                   daemon \
                   powercap \
                   commands \

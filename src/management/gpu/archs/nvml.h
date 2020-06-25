@@ -13,20 +13,24 @@ state_t management_nvml_status();
 
 state_t management_nvml_init(ctx_t *c);
 
-state_t nvml_clock_set_max(ctx_t *c, int *khz);
+state_t nvml_clock_limit_get_current(ctx_t *c, uint *khz);
 
-state_t nvml_clock_get_max(ctx_t *c, int *khz);
+state_t nvml_clock_limit_get_default(ctx_t *c, uint *khz);
 
-state_t nvml_clock_get_max_default(ctx_t *c, int *khz);
+state_t nvml_clock_limit_get_max(ctx_t *c, uint *khz);
 
-state_t nvml_clock_reset(ctx_t *c);
+state_t nvml_clock_limit_reset(ctx_t *c);
 
-state_t nvml_power_set_max(ctx_t *c, int *watts);
+state_t nvml_clock_limit_set(ctx_t *c, uint *khz);
 
-state_t nvml_power_get_max(ctx_t *c, int *watts);
+state_t nvml_power_limit_get_current(ctx_t *c, uint *watts);
 
-state_t nvml_power_get_max_default(ctx_t *c, int *watts);
+state_t nvml_power_limit_get_default(ctx_t *c, uint *watts);
 
-state_t nvml_power_reset(ctx_t *c);
+state_t nvml_power_limit_get_max(ctx_t *c, uint *watts);
+
+state_t nvml_power_limit_reset(ctx_t *c);
+
+state_t nvml_power_limit_set(ctx_t *c, uint *watts);
 
 #endif
