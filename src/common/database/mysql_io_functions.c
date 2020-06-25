@@ -531,6 +531,18 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
     for (i = 1; i < num_apps; i++)
         strcat(query, params);
 
+    if (autoincrement_offset < 1)
+    {
+        verbose(VMYSQL, "autoincrement_offset not set, reading from database...");
+        if (get_autoincrement(connection, &autoincrement_offset) != EAR_SUCCESS)
+        {
+            verbose(VMYSQL, "error reading offset, setting to default (1)");
+            autoincrement_offset = 1;
+        }
+        verbose(VMYSQL, "autoincrement_offset set to %ld\n", autoincrement_offset);
+    }
+
+
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
     MYSQL_BIND *bind = calloc(num_apps*APPLICATION_ARGS, sizeof(MYSQL_BIND));
@@ -774,6 +786,17 @@ int mysql_batch_insert_loops(MYSQL *connection, loop_t *loop, int num_loops)
 
     for (i = 1; i < num_loops; i++)
         strcat(query, params);
+
+    if (autoincrement_offset < 1)
+    {
+        verbose(VMYSQL, "autoincrement_offset not set, reading from database...");
+        if (get_autoincrement(connection, &autoincrement_offset) != EAR_SUCCESS)
+        {
+            verbose(VMYSQL, "error reading offset, setting to default (1)");
+            autoincrement_offset = 1;
+        }
+        verbose(VMYSQL, "autoincrement_offset set to %ld\n", autoincrement_offset);
+    }
 
     if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
 
