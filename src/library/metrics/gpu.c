@@ -26,7 +26,7 @@ state_t gpu_lib_load(settings_conf_t *settings)
 	uint gpu_model;
 	state_t ret;
 	if ((ret=eards_gpu_model(&gpu_model))!=EAR_SUCCESS) return ret;
-	return gpu_load(&ops, gpu_model);
+	return EAR_SUCCESS;
 }
 
 state_t gpu_lib_init(ctx_t *c)

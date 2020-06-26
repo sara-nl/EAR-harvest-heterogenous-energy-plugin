@@ -32,20 +32,6 @@ DBDaemonMemorySize=120
 #---------------------------------------------------------------------------------------------------
 CoefficientsDir=/home/xjcorbalan/ear/etc/ear/coeffs
 
-#---------------------------------------------------------------------------------------------------
-# Power policies
-# ---------------------------------------------------------------------------------------------------
-# policy names must be exactly file names for policies installed in the system
-#
-DefaultPowerPolicy=min_time
-
-Policy=monitoring Settings=0 DefaultFreq=2.3 Privileged=0
-Policy=min_time Settings=0.7 DefaultFreq=2.0 Privileged=0
-Policy=min_energy Settings=0.1 DefaultFreq=2.3 Privileged=1
-#Policy=monitoring Settings=0 DefaultPstate=1 Privileged=0
-#Policy=min_time Settings=0.7 DefaultPstate=4 Privileged=0
-#Policy=min_energy Settings=0.1 DefaultPstate=1 Privileged=1
-
 
 #---------------------------------------------------------------------------------------------------
 # EAR Global Manager (EARGMD)
@@ -60,13 +46,25 @@ EARGMEnergyLimit=550000
 EARGMPort=50000
 # Two modes are supported '0=manual' and '1=automatic'.
 EARGMMode=0
+# T1 "grace" periods between DEFCON before re-evaluate.
+EARGMGracePeriods=3
+# Defines
+EARGMEnergyAction=no_action
+
+#### POWERCAP definition for EARGM
+# 0 means no powercap
+EARGMPowerLimit=0
+# Period  at which the powercap thread is activated
+EARGMPowerPeriod=60
+# 1 means automatic, 0 is only monitoring
+EARGMPowerCapMode=1
+
 #---------------------------------------------------------------------------------------------------
 # Common configuration
 #---------------------------------------------------------------------------------------------------
 TmpDir=/var/ear
 EtcDir=/home/xjcorbalan/ear/etc
 InstDir=/home/xjcorbalan/ear
-DataBasePathName=/home/xjcorbalan/ear/etc/ear/dbs/dbs.
 # Network extension (using another network instead of the local one). If compute nodes must be accessed from login nodes with a network different than default, and can be accesed using a expension, uncommmet next line and define 'netext' accordingly. 
 # NetworkExtension=netext
 
@@ -76,6 +74,7 @@ DataBasePathName=/home/xjcorbalan/ear/etc/ear/dbs/dbs.
 #---------------------------------------------------------------------------------------------------
 energy_plugin=energy_nm.so
 energy_model=avx512_model.so
+powercap_plugin=inm.so
 
 #---------------------------------------------------------------------------------------------------
 # Authorized Users
@@ -93,8 +92,8 @@ AuthorizedGroups=grp1,grp2
 # and are SKU-specific. Max. and min. power are used for warning and error tracking. 
 # At least a default tag is mandatory
 # to be included in this file for a cluster to work properly.
-Tag=6148 default=yes max_avx512=2.2 max_avx2=2.6 max_power=500 min_power=50 error_power=600 coeffs=coeffs.default
-Tag=6126 max_avx512=2.3 max_avx2=2.9 ceffs=coeffs.6126.default max_power=600 error_power=700
+Tag=6148 default=yes max_avx512=2.2 max_avx2=2.6 max_power=500 min_power=50 error_power=600 coeffs=coeffs.default powercap=0
+Tag=6126 max_avx512=2.3 max_avx2=2.9 ceffs=coeffs.6126.default max_power=600 error_power=700 powercap=0
 
 #---------------------------------------------------------------------------------------------------
 ## Power policies

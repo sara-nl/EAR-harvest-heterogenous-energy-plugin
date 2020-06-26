@@ -17,6 +17,7 @@
 
 #ifndef EAR_CONFIG_DEV_H
 #define EAR_CONFIG_DEV_H
+#include <common/config/config_install.h>
 
 /** PONERLO A 1 EN TOS LAOS Y QUIAR COMENT */
 /* When set to 1, master processes synchronize at application start to identify
@@ -48,7 +49,8 @@
 #define EAR_CPUPOWER	1
 #define EARL_RESEARCH 1
 #define ONLY_MASTER 0
-#define USE_GPU_LIB 1
+#define USE_GPUS_IN_EARL 1
+#define USE_GPU_LIB (USE_GPUS && USE_GPUS_IN_EARL)
 //
 #define SHARE_INFO_PER_PROCESS 1
 #define SHARE_INFO_PER_NODE 0
