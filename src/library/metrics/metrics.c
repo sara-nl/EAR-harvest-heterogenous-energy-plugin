@@ -567,7 +567,9 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 			metrics->GPU_util=(gpu_metrics_diff[s][0].util_gpu+gpu_metrics_diff[s][1].util_gpu)/2;
 			metrics->GPU_mem_util=(gpu_metrics_diff[s][0].util_mem+gpu_metrics_diff[s][1].util_mem)/2;
 			metrics->GPU_energy=gpu_metrics_diff[s][0].energy_j+gpu_metrics_diff[s][1].energy_j;
+#if USE_GPUS
 			metrics->GPU_power=gpu_metrics_diff[s][0].power_w+gpu_metrics_diff[s][1].power_w;
+#endif
 		}
 		#endif
 	}else{
