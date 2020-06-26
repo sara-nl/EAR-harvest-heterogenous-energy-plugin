@@ -1,26 +1,21 @@
 # EAR Configuration File
 #---------------------------------------------------------------------------------------------------
-# MariaDB (MySQL)
+# DB confguration
 #---------------------------------------------------------------------------------------------------
-MariaDBIp=192.168.1.1
-MariaDBUser=root
-MariaDBPassw=password
+DBIp=127.0.0.1
+DBUser=ear_daemon
+DBPassw=password
 # User and password for usermode querys.
-MariaDBCommandsUser=root
-MariaDBCommandsPassw=password
-MariaDBDatabase=EAR
-MariaDBPort=3306
-# Extended node information saves also the average frequency and temperature.
-ReportNodeDetail=1
-# Extended signature information saves also the hardware counters.
-reportSIGDetail=1
+DBCommandsUser=ear_commands
+DBCommandsPassw=password
+DBDatabase=EAR
+DBPort=3306
 #---------------------------------------------------------------------------------------------------
 # EAR Daemon (EARD)
 #---------------------------------------------------------------------------------------------------
+NodeDaemonPort=50001
 # In seconds
 NodeDaemonPowermonFreq=60
-NodeDaemonPort=50001
-NodeDaemonForceFrequencies=1
 #---------------------------------------------------------------------------------------------------
 # EAR Database Manager (EARDBD)
 #---------------------------------------------------------------------------------------------------
@@ -35,66 +30,88 @@ DBDaemonMemorySize=120
 #---------------------------------------------------------------------------------------------------
 # EAR Library (EARL)
 #---------------------------------------------------------------------------------------------------
-CoefficientsDir=/hpc/opt/ear/etc/ear/coeffs
-
-#---------------------------------------------------------------------------------------------------
-# Power policies
-# ---------------------------------------------------------------------------------------------------
-# policy names must be exactly file names for policies installed in the system
-#
-DefaultPowerPolicy=min_time
-
-Policy=monitoring Settings=0 DefaultFreq=2.3 Privileged=0
-Policy=min_time Settings=0.7 DefaultFreq=2.0 Privileged=0
-Policy=min_energy Settings=0.1 DefaultFreq=2.3 Privileged=1
-#Policy=monitoring Settings=0 DefaultPstate=1 Privileged=0
-#Policy=min_time Settings=0.7 DefaultPstate=4 Privileged=0
-#Policy=min_energy Settings=0.1 DefaultPstate=1 Privileged=1
+CoefficientsDir=/home/xjcorbalan/ear/etc/ear/coeffs
 
 
 #---------------------------------------------------------------------------------------------------
 # EAR Global Manager (EARGMD)
 #---------------------------------------------------------------------------------------------------
-GlobalManagerHost=node1001
+EARGMHost=node1001
 # Period T1 and T2 are specified in seconds T1 (ex. must be less than T2, ex. 10min and 1 month)
-GlobalManagerPeriodT1=90
-GlobalManagerPeriodT2=259200
+EARGMPeriodT1=90
+EARGMPeriodT2=259200
 # '-' are Joules, 'K' KiloJoules and 'M' MegaJoules.
-GlobalManagerUnits=K
-GlobalManagerEnergyLimit=550000
-GlobalManagerPolicy=MaxEnergy
-GlobalManagerPort=50000
+EARGMUnits=K
+EARGMEnergyLimit=550000
+EARGMPort=50000
 # Two modes are supported '0=manual' and '1=automatic'.
-GlobalManagerMode=0
+EARGMMode=0
+# T1 "grace" periods between DEFCON before re-evaluate.
+EARGMGracePeriods=3
+# Defines
+EARGMEnergyAction=no_action
+
 #---------------------------------------------------------------------------------------------------
 # Common configuration
 #---------------------------------------------------------------------------------------------------
-TmpDir=/var/run/ear
-EtcDir=/hpc/opt/ear/etc
+TmpDir=/var/ear
+EtcDir=/home/xjcorbalan/ear/etc
 InstDir=/home/xjcorbalan/ear
-DataBasePathName=/hpc/opt/ear/etc/ear/dbs/dbs.
+# Network extension (using another network instead of the local one). If compute nodes must be accessed from login nodes with a network different than default, and can be accesed using a expension, uncommmet next line and define 'netext' accordingly. 
+# NetworkExtension=netext
+
 #---------------------------------------------------------------------------------------------------
-# Plugin configuration
+# Plugin configuration. These values are used for the whole cluster except a specific configuration is
+# explicitly applied to one tag. They are mandatory since they are used by default 
 #---------------------------------------------------------------------------------------------------
-PluginEnergy=energy_nm.so
+energy_plugin=energy_nm.so
+energy_model=avx512_model.so
+
 #---------------------------------------------------------------------------------------------------
 # Authorized Users
 #---------------------------------------------------------------------------------------------------
 # Authorized users,accounts and groups are allowed to change policies, thresholds, frequencies etc,
-# they are supposed to be admins
+# they are supposed to be admins, all special name is supported
 AuthorizedUsers=usr1,usr2
 AuthorizedAccounts=acc1,acc2,acc3
 AuthorizedGroups=grp1,grp2
+
 #---------------------------------------------------------------------------------------------------
 # Tags
 #---------------------------------------------------------------------------------------------------
 # Tags are used for architectural descriptions. Max. AVX frequencies are used in predictor models
-# and are SKU-specific. Max. and min. power are used for warning and error tracking. Powercap options
-# describe the baseline power that a node has at a new job start. At least a default tag is mandatory
+# and are SKU-specific. Max. and min. power are used for warning and error tracking. 
+# At least a default tag is mandatory
 # to be included in this file for a cluster to work properly.
-Tag=tag1 default=yes max_avx512=2.2 max_avx2=2.9 energy_model=avx512_model.so energy_plugin=energy_nm.so
-Tag=tag1 max_power=500 min_power=50 error_power=600 powercap=0 powercap_type=node powercap_plugin=inm.so
-Tag=tag1 coeffs=coeffs.default
+Tag=6148 default=yes max_avx512=2.2 max_avx2=2.6 max_power=500 min_power=50 error_power=600 coeffs=coeffs.default
+Tag=6126 max_avx512=2.3 max_avx2=2.9 ceffs=coeffs.6126.default max_power=600 error_power=700
+
+#---------------------------------------------------------------------------------------------------
+## Power policies
+## ---------------------------------------------------------------------------------------------------
+#
+## policy names must be exactly file names for policies installeled in the system
+DefaultPowerPolicy=min_time
+Policy=monitoring Settings=0 DefaultFreq=2.4 Privileged=0
+Policy=min_time Settings=0.7 DefaultFreq=2.0 Privileged=0
+Policy=min_energy Settings=0.1 DefaultFreq=2.4 Privileged=1
+
+# For homogeneous systems, default frequencies can be easily specified using freqs, for heterogeneous systems it is preferred to use pstates or use tags 
+
+# Example with pstates (lower pstates corresponds with higher frequencies). Pstate=1 is nominal and 0 is turbo
+#Policy=monitoring Settings=0 DefaultPstate=1 Privileged=0
+#Policy=min_time Settings=0.7 DefaultPstate=4 Privileged=0
+#Policy=min_energy Settings=0.1 DefaultPstate=1 Privileged=1
+
+
+#Example with tags
+#Policy=monitoring Settings=0 DefaultFreq=2.6 Privileged=0 tag=6126
+#Policy=min_time Settings=0.7 DefaultFreq=2.1 Privileged=0 tag=6126
+#Policy=min_energy Settings=0.1 DefaultFreq=2.6 Privileged=1 tag=6126
+#Policy=monitoring Settings=0 DefaultFreq=2.4 Privileged=0 tag=6148
+#Policy=min_time Settings=0.7 DefaultFreq=2.0 Privileged=0 tag=6148
+#Policy=min_energy Settings=0.1 DefaultFreq=2.4 Privileged=1 tag=6148
+
 #---------------------------------------------------------------------------------------------------
 # Energy Tags
 #---------------------------------------------------------------------------------------------------
@@ -102,17 +119,25 @@ Tag=tag1 coeffs=coeffs.default
 # by row together with the priviledged user/group/account.
 EnergyTag=cpu-intensive pstate=1
 EnergyTag=memory-intensive pstate=4 users=usr1,usr2 groups=grp1,grp2 accounts=acc1,acc2
+
+
 #---------------------------------------------------------------------------------------------------
 # Node Isles
 #---------------------------------------------------------------------------------------------------
 # It is mandatory to specify all the nodes in the cluster, grouped by islands. More than one line
 # per island must be supported to hold nodes with different names or for pointing to different
 # EARDBDs through its IPs or hostnames.
+#
 # In the following example the nodes are clustered in two different islands, but the Island 1 have
-# two types of EARDBDs configurations. min_power and max_power are used to identify potential
-# invalid power computations. They must reflect valid values error_power reflects invalid values not
-# reported to the DB node temperature > max_temp and node power> max_power generates warning
-# messages in syslog.
-Island=0 Nodes=node10[01-80] DBIP=node1081 DBSECIP=node1082 min_power=50 max_power=800 error_power=1000 max_temp=120 tags=tag1
+# two types of EARDBDs configurations. 
+Island=0 Nodes=node10[01-80] DBIP=node1081 DBSECIP=node1082 
+
+# These nodes are in island0 using different DB connections and with a different architecture
+Island=0 Nodes=node11[01-80] DBIP=node1084 DBSECIP=node1085 tag=6126 
+# These nodes are is island0 and will use default values for DB connection (line 0 for island0) and default tag
+Island=0 Nodes=node12[01-80]  
+
+
+# Will use default tag 
 Island=1 Nodes=node11[01-40] DBIP=node1181 DBSECIP=node1182
 Island=1 Nodes=node11[41-80] DBIP=node1183 DBSECIP=node1184

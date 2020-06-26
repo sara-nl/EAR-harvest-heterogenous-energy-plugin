@@ -936,7 +936,7 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 	ulong jid, mpi,sid;
 	ulong time_consumed;
 	uint usedb,useeardbd;
-	double maxpower, minpower, RAPL, corrected_power;
+	double maxpower, minpower, RAPL, corrected_power,pckp,dramp,gpup;;
 	usedb=my_cluster_conf.eard.use_mysql;
 	useeardbd=my_cluster_conf.eard.use_eardbd;
 	if (ccontext >= 0) {
@@ -955,8 +955,16 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
   print_app_mgt_data(app_mgt_info);
   #endif
 	verbose(VNODEPMON,"%s",COL_BLU);
-	verbose(VNODEPMON, "ID %lu EARL=%lu  Current power %.1lf max %.1lf min %.1lf ",
-			jid, mpi, my_current_power->avg_dc, maxpower, minpower);
+  dramp=accum_dram_power(my_current_power);
+  pckp=accum_cpu_power(my_current_power);
+  #if USE_GPUS
+  gpup=accum_gpu_power(my_current_power);
+  verbose(VNODEPMON, "ID %lu EARL=%lu  Power [Node=%.1lf PCK=%.1lf DRAM=%.1lf GPU=%.1lf] max %.1lf min %.1lf ",
+      jid, mpi, my_current_power->avg_dc,pckp,dramp,gpup, maxpower, minpower);
+  #else
+  verbose(VNODEPMON, "ID %lu EARL=%lu  Power [Node=%.1lf PCK=%.1lf DRAM=%.1lf] max %.1lf min %.1lf ",
+      jid, mpi, my_current_power->avg_dc, pckp,dramp,maxpower, minpower);
+  #endif
 	verbose_node_metrics(&my_nm_id, nm);
 	verbose(VNODEPMON,"%s",COL_CLR);
 
@@ -989,9 +997,9 @@ void update_historic_info(power_data_t *my_current_power, nm_data_t *nm) {
 		corrected_power = RAPL;
 	}
 	time_consumed=(ulong) difftime(my_current_power->end, my_current_power->begin);
-#if USE_GPUS
 	current_sample.DRAM_energy=accum_dram_power(my_current_power)*time_consumed;
 	current_sample.PCK_energy=accum_cpu_power(my_current_power)*time_consumed;
+#if USE_GPUS
   current_sample.GPU_energy=accum_gpu_power(my_current_power)*time_consumed;
 #endif
 

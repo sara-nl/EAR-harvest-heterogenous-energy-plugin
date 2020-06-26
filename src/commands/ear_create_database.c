@@ -237,9 +237,6 @@ id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,"
-#if USE_GPUS
-"GPU_power FLOAT,"
-#endif
 "EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
@@ -481,9 +478,6 @@ id SERIAL NOT NULL,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,"
-#if USE_GPUS
-"GPU_power FLOAT,"
-#endif
 "EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
