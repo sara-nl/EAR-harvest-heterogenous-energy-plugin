@@ -335,6 +335,9 @@ void set_default_conf_install(conf_install_t *inst);
 
 /** Initializes the default values for TAGS */
 void set_default_tag_values(tag_t *tag);
+
+/** Returns the default tag id or -1 if no default tag is found */
+int get_default_tag_id(cluster_conf_t *conf);
 // Concrete data functions
 int get_node_island(cluster_conf_t *conf, char *hostname);
 
