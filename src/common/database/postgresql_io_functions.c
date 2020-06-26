@@ -419,7 +419,9 @@ int postgresql_retrieve_power_signatures(PGconn *connection, char *query, power_
 int postgresql_retrieve_signatures(PGconn *connection, char *query, signature_t **sigs)
 {
     int i, num_rows;
+#if !USE_GPUS
     double dummy_var;
+#endif
     signature_t *sig_aux;
 
     PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
@@ -576,6 +578,71 @@ int postgresql_retrieve_applications(PGconn *connection, char *query, applicatio
     }
    
     *apps = apps_aux;
+    PQclear(res);
+    return num_rows;
+
+}
+
+int postgresql_retrieve_loops(PGconn *connection, char *query, loop_t **loops)
+{
+
+    int i, num_rows, sig_id;
+    char sig_query[256];
+    loop_t *loops_aux;
+    signature_t *sig_aux;
+
+
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    {
+       verbose(VMYSQL, "ERROR while reading signature id: %s\n", PQresultErrorMessage(res));
+        PQclear(res);
+        return EAR_ERROR;
+    }
+
+    //for every row, we read the data and query the job, power_signature and signature, the latter only if the job has one
+
+    num_rows = PQntuples(res);
+    if (num_rows < 1)
+    {
+       verbose(VMYSQL, "Query returned 0 rows\n");
+        PQclear(res);
+        return EAR_ERROR;
+    }
+
+    loops_aux = calloc(num_rows, sizeof(loop_t));
+
+    for (i = 0; i < PQntuples(res); i++)
+    {
+        loops_aux[i].id.event   = htonl( *((int *)PQgetvalue(res, i, 0)));
+        loops_aux[i].id.size    = htonl( *((int *)PQgetvalue(res, i, 1)));
+        loops_aux[i].id.level   = htonl( *((int *)PQgetvalue(res, i, 2)));
+        loops_aux[i].jid        = htonl( *((int *)PQgetvalue(res, i, 3)));
+        loops_aux[i].step_id    = htonl( *((int *)PQgetvalue(res, i, 4)));
+        loops_aux[i].total_iterations = htonl( *((int *)PQgetvalue(res, i, 5)));
+        strcpy(loops_aux[i].node_id, PQgetvalue(res, i, 6));
+        sig_id                  = htonl( *((int *)PQgetvalue(res, i, 7)));
+
+        /* SIGNATURE RETRIEVAL */
+        if (sig_id > 0)
+        {
+            sprintf(sig_query, "SELECT * FROM Signatures WHERE id = %d", sig_id);
+
+            if (postgresql_retrieve_signatures(connection, sig_query, &sig_aux) < 1)
+            {
+               verbose(VMYSQL, "ERROR retrieving signatures\n");
+            }
+            else
+            {
+                memcpy(&loops_aux[i].signature, sig_aux, sizeof(signature_t));
+                free(sig_aux);
+            }
+        }
+        
+    }
+   
+    *loops = loops_aux;
     PQclear(res);
     return num_rows;
 

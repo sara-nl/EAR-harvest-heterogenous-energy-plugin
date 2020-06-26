@@ -118,6 +118,12 @@ int postgresql_retrieve_jobs(PGconn *connection, char *query, job_t **jobs);
 *   EAR_MYSQL_STMT_ERROR on error. */
 int postgresql_retrieve_applications(PGconn *connection, char *query, application_t **apps, char is_learning);
 
+/** Given a PGconn connection and a valid MYSQL query, stores in loops the 
+*   loops found in the database corresponding to the query. Returns the 
+*   number of loops found on success, and either EAR_MYSQL_ERROR or
+*   EAR_MYSQL_STMT_ERROR on error. */
+int postgresql_retrieve_loops(PGconn *connection, char *query, loop_t **loops);
+
 /** Given a PGconn connection and a signature, inserts said signature into
 *   the database. Returns the signature's database id on success, and either 
 *   EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
