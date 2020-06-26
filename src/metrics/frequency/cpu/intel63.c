@@ -1,30 +1,18 @@
-/**************************************************************
-*	Energy Aware Runtime (EAR)
-*	This program is part of the Energy Aware Runtime (EAR).
+/*
 *
-*	EAR provides a dynamic, transparent and ligth-weigth solution for
-*	Energy management.
+* This program is part of the EAR software.
 *
-*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
 *
-*       Copyright (C) 2017
-*	BSC Contact 	mailto:ear-support@bsc.es
-*	Lenovo contact 	mailto:hpchelp@lenovo.com
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
 *
-*	EAR is free software; you can redistribute it and/or
-*	modify it under the terms of the GNU Lesser General Public
-*	License as published by the Free Software Foundation; either
-*	version 2.1 of the License, or (at your option) any later version.
-*
-*	EAR is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*	Lesser General Public License for more details.
-*
-*	You should have received a copy of the GNU Lesser General Public
-*	License along with EAR; if not, write to the Free Software
-*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
 */
 
 #include <errno.h>
@@ -140,9 +128,6 @@ state_t freq_intel63_read_copy(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, u
 state_t freq_intel63_data_alloc(freq_cpu_t *ef, ulong *freqs[], ulong *freqs_count)
 {
 	size_t size = sizeof(aperf_intel63_t);
-	aperf_intel63_t *a;
-	state_t s;
-	int cpu;
 
 	if (freqs_count != NULL) {
 		*freqs_count = 0;
@@ -164,9 +149,6 @@ state_t freq_intel63_data_alloc(freq_cpu_t *ef, ulong *freqs[], ulong *freqs_cou
 			*freqs_count = cpu_count;
 		}
 	}
-
-	// Initialization
-	a = (aperf_intel63_t *) ef->data;
 
 	return EAR_SUCCESS;
 }
@@ -273,21 +255,20 @@ state_t freq_intel63_data_diff(freq_cpu_t *ef2, freq_cpu_t *ef1, ulong *freqs, u
 
 state_t freq_intel63_data_print(ulong *freqs, ulong *average)
 {
-    double freq_ghz;
-	double freq_div;
+	double freq_ghz;
 	int cpu_half;
-    int s, i, j;
+	int s, i, j;
 
 	//
 	cpu_half = cpu_count / 2;
-    printf("CPU:");
+	printf("CPU:");
 
 	for (s = 0, j = 0; freqs != NULL && s < tp.socket_count; ++s)
 	{
-    	for (i = 0; i < cpu_half; ++i, ++j) {
-        	freq_ghz = ((double) freqs[j]) / 1000000.0;
-        	printf(" %0.1lf", freq_ghz);
-    	}
+		for (i = 0; i < cpu_half; ++i, ++j) {
+        		freq_ghz = ((double) freqs[j]) / 1000000.0;
+        		printf(" %0.1lf", freq_ghz);
+    		}
 		if ((s+1) < tp.socket_count) printf("\nCPU:");
 	}
 

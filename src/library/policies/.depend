@@ -180,6 +180,56 @@ min_time_mpi_info.o: min_time_mpi_info.c ../../common/config.h \
  ../../library/common/externs.h \
  ../../library/common/library_shared_data.h \
  ../../library/common/global_comm.h
+monitoring_ext_notime.o: monitoring_ext_notime.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_env.h ../../common/config/config_install.h \
+ ../../common/states.h ../../common/output/error.h ../../common/colors.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
+ ../../common/output/verbose.h ../../common/output/debug.h \
+ ../../common/types/projection.h ../../common/types/signature.h \
+ ../../common/types/generic.h \
+ ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h ../../common/types/coefficient.h \
+ ../../common/hardware/architecture.h ../../common/hardware/topology.h \
+ ../../library/policies/policy_api.h ../../library/policies/policy_ctx.h \
+ ../../common/types/loop.h ../../common/types/job.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
+ ../../daemon/shared_configuration.h ../../common/system/shared_areas.h \
+ ../../daemon/powercap.h ../../daemon/powercap_status_conf.h \
+ ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
+ ../../common/types/types.h ../../common/types/log.h \
+ ../../common/types/event_type.h ../../common/types/daemon_log.h \
+ ../../common/types/periodic_metric.h \
+ ../../common/types/periodic_aggregation.h ../../common/types/services.h \
+ ../../common/system/time.h ../../library/common/library_shared_data.h \
+ ../../library/common/externs.h ../../library/common/global_comm.h
+monitoring.o: monitoring.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_env.h ../../common/config/config_install.h \
+ ../../common/states.h ../../common/output/error.h ../../common/colors.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
+ ../../common/output/verbose.h ../../common/output/debug.h \
+ ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
+ ../../common/types/projection.h ../../common/types/signature.h \
+ ../../common/types/generic.h \
+ ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/node_conf.h \
+ ../../common/string_enhanced.h ../../common/types/coefficient.h \
+ ../../common/hardware/architecture.h ../../common/hardware/topology.h \
+ ../../library/policies/policy_api.h ../../library/policies/policy_ctx.h \
+ ../../common/types/loop.h ../../common/types/job.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
+ ../../daemon/shared_configuration.h ../../common/system/shared_areas.h \
+ ../../daemon/powercap.h ../../daemon/powercap_status_conf.h \
+ ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
+ ../../common/types/types.h ../../common/types/log.h \
+ ../../common/types/event_type.h ../../common/types/daemon_log.h \
+ ../../common/types/periodic_metric.h \
+ ../../common/types/periodic_aggregation.h ../../common/types/services.h \
+ ../../daemon/powercap_status.h
 min_time_mpi_info_low_mpi.o: min_time_mpi_info_low_mpi.c \
  ../../common/config.h ../../common/config/config_def.h \
  ../../common/config/config_dev.h ../../common/config/config_env.h \
@@ -208,13 +258,12 @@ min_time_mpi_info_low_mpi.o: min_time_mpi_info_low_mpi.c \
  ../../common/math_operations.h ../../library/common/externs.h \
  ../../library/common/library_shared_data.h \
  ../../library/common/global_comm.h ../../common/system/time.h
-monitoring.o: monitoring.c ../../common/config.h \
- ../../common/config/config_def.h ../../common/config/config_dev.h \
- ../../common/config/config_env.h ../../common/config/config_install.h \
- ../../common/states.h ../../common/output/error.h ../../common/colors.h \
+min_time_no_models.o: min_time_no_models.c ../../common/states.h \
+ ../../common/output/error.h ../../common/colors.h \
  ../../common/output/timestamp.h ../../common/output/output_conf.h \
- ../../common/output/verbose.h ../../common/output/debug.h \
- ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
+ ../../common/config.h ../../common/config/config_def.h \
+ ../../common/config/config_dev.h ../../common/config/config_env.h \
+ ../../common/config/config_install.h ../../common/math_operations.h \
  ../../common/types/projection.h ../../common/types/signature.h \
  ../../common/types/generic.h \
  ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
@@ -232,33 +281,8 @@ monitoring.o: monitoring.c ../../common/config.h \
  ../../common/types/event_type.h ../../common/types/daemon_log.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
- ../../daemon/powercap_status.h
-min_time_avx512.o: min_time_avx512.c ../../common/config.h \
- ../../common/config/config_def.h ../../common/config/config_dev.h \
- ../../common/config/config_env.h ../../common/config/config_install.h \
- ../../common/states.h ../../common/output/error.h ../../common/colors.h \
- ../../common/output/timestamp.h ../../common/output/output_conf.h \
- ../../common/output/verbose.h ../../common/output/debug.h \
  ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
- ../../common/types/projection.h ../../common/types/signature.h \
- ../../common/types/generic.h \
- ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
- ../../common/types/configuration/policy_conf.h \
- ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/types/coefficient.h \
- ../../common/hardware/architecture.h ../../common/hardware/topology.h \
- ../../daemon/eard_api.h ../../common/types/log.h \
- ../../common/types/job.h ../../common/types/event_type.h \
- ../../daemon/eard_conf_api.h ../../common/types/application.h \
- ../../common/types/power_signature.h ../../common/types/loop.h \
- ../../library/policies/policy_api.h ../../library/policies/policy_ctx.h \
- ../../daemon/shared_configuration.h ../../common/system/shared_areas.h \
- ../../daemon/powercap.h ../../daemon/powercap_status_conf.h \
- ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
- ../../common/types/types.h ../../common/types/daemon_log.h \
- ../../common/types/periodic_metric.h \
- ../../common/types/periodic_aggregation.h ../../common/types/services.h \
- ../../common/math_operations.h
+ ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
 min_energy_auto.o: min_energy_auto.c ../../common/config.h \
  ../../common/config/config_def.h ../../common/config/config_dev.h \
  ../../common/config/config_env.h ../../common/config/config_install.h \
@@ -284,12 +308,13 @@ min_energy_auto.o: min_energy_auto.c ../../common/config.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
  ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
-min_time_no_models.o: min_time_no_models.c ../../common/states.h \
- ../../common/output/error.h ../../common/colors.h \
+min_energy_avx512.o: min_energy_avx512.c ../../common/config.h \
+ ../../common/config/config_def.h ../../common/config/config_dev.h \
+ ../../common/config/config_env.h ../../common/config/config_install.h \
+ ../../common/states.h ../../common/output/error.h ../../common/colors.h \
  ../../common/output/timestamp.h ../../common/output/output_conf.h \
- ../../common/config.h ../../common/config/config_def.h \
- ../../common/config/config_dev.h ../../common/config/config_env.h \
- ../../common/config/config_install.h ../../common/math_operations.h \
+ ../../common/output/verbose.h ../../common/output/debug.h \
+ ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
  ../../common/types/projection.h ../../common/types/signature.h \
  ../../common/types/generic.h \
  ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
@@ -307,7 +332,6 @@ min_time_no_models.o: min_time_no_models.c ../../common/states.h \
  ../../common/types/event_type.h ../../common/types/daemon_log.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
- ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
  ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
 min_time_eard.o: min_time_eard.c ../../common/output/verbose.h \
  ../../common/output/error.h ../../common/colors.h \
@@ -352,12 +376,13 @@ policy.o: policy.c ../../common/includes.h ../../common/sizes.h \
  ../../library/common/global_comm.h ../../common/environment.h \
  ../../daemon/eard_api.h ../../daemon/eard_conf_api.h \
  ../../library/policies/pc_suport.h
-monitoring_ext_notime.o: monitoring_ext_notime.c ../../common/config.h \
+min_time_avx512.o: min_time_avx512.c ../../common/config.h \
  ../../common/config/config_def.h ../../common/config/config_dev.h \
  ../../common/config/config_env.h ../../common/config/config_install.h \
  ../../common/states.h ../../common/output/error.h ../../common/colors.h \
  ../../common/output/timestamp.h ../../common/output/output_conf.h \
  ../../common/output/verbose.h ../../common/output/debug.h \
+ ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
  ../../common/types/projection.h ../../common/types/signature.h \
  ../../common/types/generic.h \
  ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
@@ -365,18 +390,18 @@ monitoring_ext_notime.o: monitoring_ext_notime.c ../../common/config.h \
  ../../common/types/configuration/node_conf.h \
  ../../common/string_enhanced.h ../../common/types/coefficient.h \
  ../../common/hardware/architecture.h ../../common/hardware/topology.h \
+ ../../daemon/eard_api.h ../../common/types/log.h \
+ ../../common/types/job.h ../../common/types/event_type.h \
+ ../../daemon/eard_conf_api.h ../../common/types/application.h \
+ ../../common/types/power_signature.h ../../common/types/loop.h \
  ../../library/policies/policy_api.h ../../library/policies/policy_ctx.h \
- ../../common/types/loop.h ../../common/types/job.h \
- ../../common/types/application.h ../../common/types/power_signature.h \
  ../../daemon/shared_configuration.h ../../common/system/shared_areas.h \
  ../../daemon/powercap.h ../../daemon/powercap_status_conf.h \
  ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
- ../../common/types/types.h ../../common/types/log.h \
- ../../common/types/event_type.h ../../common/types/daemon_log.h \
+ ../../common/types/types.h ../../common/types/daemon_log.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
- ../../common/system/time.h ../../library/common/library_shared_data.h \
- ../../library/common/externs.h ../../library/common/global_comm.h
+ ../../common/math_operations.h
 min_energy.o: min_energy.c ../../common/config.h \
  ../../common/config/config_def.h ../../common/config/config_dev.h \
  ../../common/config/config_env.h ../../common/config/config_install.h \
@@ -403,28 +428,3 @@ min_energy.o: min_energy.c ../../common/config.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
  ../../daemon/eard_api.h ../../daemon/eard_conf_api.h \
  ../../daemon/powercap_status.h
-min_energy_avx512.o: min_energy_avx512.c ../../common/config.h \
- ../../common/config/config_def.h ../../common/config/config_dev.h \
- ../../common/config/config_env.h ../../common/config/config_install.h \
- ../../common/states.h ../../common/output/error.h ../../common/colors.h \
- ../../common/output/timestamp.h ../../common/output/output_conf.h \
- ../../common/output/verbose.h ../../common/output/debug.h \
- ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
- ../../common/types/projection.h ../../common/types/signature.h \
- ../../common/types/generic.h \
- ../../common/types/configuration/cluster_conf.h ../../common/sizes.h \
- ../../common/types/configuration/policy_conf.h \
- ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h ../../common/types/coefficient.h \
- ../../common/hardware/architecture.h ../../common/hardware/topology.h \
- ../../library/policies/policy_api.h ../../library/policies/policy_ctx.h \
- ../../common/types/loop.h ../../common/types/job.h \
- ../../common/types/application.h ../../common/types/power_signature.h \
- ../../daemon/shared_configuration.h ../../common/system/shared_areas.h \
- ../../daemon/powercap.h ../../daemon/powercap_status_conf.h \
- ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
- ../../common/types/types.h ../../common/types/log.h \
- ../../common/types/event_type.h ../../common/types/daemon_log.h \
- ../../common/types/periodic_metric.h \
- ../../common/types/periodic_aggregation.h ../../common/types/services.h \
- ../../daemon/eard_api.h ../../daemon/eard_conf_api.h

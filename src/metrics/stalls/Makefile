@@ -13,8 +13,8 @@ all: all.components $(stal_OBJS)
 
 ######## SUBFOLDERS
 
-%.components:
-	@ $(MAKE) -C 'cpu' $* || exit
+%.components: ;
+#	@ $(MAKE) -C 'cpu' $* || exit
 
 ######## OPTIONS
 

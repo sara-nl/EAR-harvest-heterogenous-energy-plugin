@@ -19,8 +19,7 @@ tracer_cache.o: tracer_cache.c ../../common/config.h \
  ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
- ../../metrics/cache/cache.h ../../metrics/cache/cpu/papi.h \
- ../../metrics/common/papi.h
+ ../../metrics/cache/cache.h
 tracer_debug.o: tracer_debug.c ../../common/config.h \
  ../../common/config/config_def.h ../../common/config/config_dev.h \
  ../../common/config/config_env.h ../../common/config/config_install.h \

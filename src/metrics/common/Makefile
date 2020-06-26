@@ -6,7 +6,7 @@ comm_OBJS = \
     msr.o \
     omsr.o \
     pci.o \
-    papi.o
+    perf.o \
 
 ######## RULES
 
@@ -14,9 +14,6 @@ all: $(comm_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
-
-papi.o: papi.c papi.h
-	$(CC) $(CFLAGS) $(PAPI_CFLAGS) -c $< 
 
 ######## SUBFOLDERS
 

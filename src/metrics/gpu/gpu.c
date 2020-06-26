@@ -1,52 +1,43 @@
-/**************************************************************
-*	Energy Aware Runtime (EAR)
-*	This program is part of the Energy Aware Runtime (EAR).
+/*
 *
-*	EAR provides a dynamic, transparent and ligth-weigth solution for
-*	Energy management.
+* This program is part of the EAR software.
 *
-*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
 *
-*       Copyright (C) 2017
-*	BSC Contact 	mailto:ear-support@bsc.es
-*	Lenovo contact 	mailto:hpchelp@lenovo.com
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
 *
-*	EAR is free software; you can redistribute it and/or
-*	modify it under the terms of the GNU Lesser General Public
-*	License as published by the Free Software Foundation; either
-*	version 2.1 of the License, or (at your option) any later version.
-*
-*	EAR is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*	Lesser General Public License for more details.
-*
-*	You should have received a copy of the GNU Lesser General Public
-*	License along with EAR; if not, write to the Free Software
-*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/gpu/gpu/nvml.h>
+#include <metrics/gpu/gpu/dummy.h>
 
 static gpu_ops_t ops;
 static uint loaded;
 static uint model;
 
-state_t gpu_load(gpu_ops_t **_ops, uint force_model)
+state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 {
 	if (loaded != 0) {
 		return EAR_SUCCESS;
 	}
 
-	if (force_model == MODEL_NVML || state_ok(nvml_status()))
+	if (model_force == MODEL_NVML || state_ok(nvml_status()))
 	{
-		ops.init	= nvml_init;
-		ops.dispose	= nvml_dispose;
-		ops.read	= nvml_read;
+		debug("loaded NVML");
+		ops.init		= nvml_init;
+		ops.dispose		= nvml_dispose;
+		ops.read		= nvml_read;
 		ops.read_copy	= nvml_read_copy;
-		ops.count	= nvml_count;
+		ops.count		= nvml_count;
 		ops.data_init   = nvml_data_init;
 		ops.data_diff	= nvml_data_diff;
 		ops.data_alloc	= nvml_data_alloc;
@@ -56,12 +47,31 @@ state_t gpu_load(gpu_ops_t **_ops, uint force_model)
 		ops.data_copy	= nvml_data_copy;
 		ops.data_print	= nvml_data_print;
 		ops.data_tostr	= nvml_data_tostr;
-		model		= MODEL_NVML;
-		loaded		= 1;
+		model			= MODEL_NVML;
+		loaded			= 1;
 	} else {
-		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
+		debug("loaded DUMMY");
+		ops.init		= gpu_dummy_init;
+		ops.dispose		= gpu_dummy_dispose;
+		ops.read		= gpu_dummy_read;
+		ops.read_copy	= gpu_dummy_read_copy;
+		ops.count		= gpu_dummy_count;
+		ops.data_init   = gpu_dummy_data_init;
+		ops.data_diff	= gpu_dummy_data_diff;
+		ops.data_alloc	= gpu_dummy_data_alloc;
+		ops.data_free	= gpu_dummy_data_free;
+		ops.data_null	= gpu_dummy_data_null;
+		ops.data_diff	= gpu_dummy_data_diff;
+		ops.data_copy	= gpu_dummy_data_copy;
+		ops.data_print	= gpu_dummy_data_print;
+		ops.data_tostr	= gpu_dummy_data_tostr;
+		model			= MODEL_UNDEFINED;
+		loaded			= 1;
 	}
 
+	if (model_used != NULL) {
+		*model_used = model;
+	}
 	if (_ops != NULL) {
 		*_ops = &ops;
 	}

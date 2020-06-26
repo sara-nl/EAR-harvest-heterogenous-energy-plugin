@@ -31,8 +31,7 @@ ear.o: ear.c ../../common/config.h ../../common/config/config_def.h \
  ../../library/states/states_periodic.h ../../library/models/models.h \
  ../../common/hardware/architecture.h ../../library/policies/policy.h \
  ../../common/types/projection.h ../../library/metrics/metrics.h \
- ../../daemon/eard_api.h ../../daemon/eard_conf_api.h \
- ../../metrics/common/papi.h
+ ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
 ear_mpi.o: ear_mpi.c ../../library/api/ear.h ../../library/api/mpi.h \
  ../../library/api/ear_mpi.h ../../library/policies/policy.h \
  ../../common/states.h ../../common/output/error.h ../../common/colors.h \

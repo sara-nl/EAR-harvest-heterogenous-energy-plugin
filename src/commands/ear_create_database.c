@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /**
  * Copyright © 2017-present BSC-Lenovo
  *
@@ -5,6 +6,24 @@
  * use and EPL-1.0 license for commercial use. Full text of both licenses can be
  * found in COPYING.BSD and COPYING.EPL files.
  */
+=======
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
+>>>>>>> development
 
 #include <stdio.h>
 #include <string.h>
@@ -237,9 +256,12 @@ id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,"
+<<<<<<< HEAD
 #if USE_GPUS
 "GPU_power FLOAT,"
 #endif
+=======
+>>>>>>> development
 "EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
@@ -481,7 +503,7 @@ id SERIAL NOT NULL,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
 PCK_power FLOAT,"
-#if USE_GPUS
+#if USE_GPU_LIB
 "GPU_power FLOAT,"
 #endif
 "EDP FLOAT,\

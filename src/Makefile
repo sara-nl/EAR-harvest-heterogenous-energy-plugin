@@ -4,15 +4,13 @@ COMPONENTS = common
 ifdef DB_BASE
 	COMPONENTS += database_cache
 endif
-ifdef PAPI_BASE
 	COMPONENTS += \
                   metrics \
                   daemon \
-									powercap \
+                  powercap \
                   commands \
                   tests \
                   library
-endif
 ifdef GSL_BASE
 	COMPONENTS += tools
 endif

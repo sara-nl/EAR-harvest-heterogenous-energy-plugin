@@ -24,11 +24,12 @@ metrics.o: metrics.c ../../common/config.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
  ../../library/common/library_shared_data.h \
  ../../library/common/global_comm.h ../../library/metrics/metrics.h \
- ../../metrics/cpi/cpi.h ../../metrics/cpi/cpu/papi.h \
- ../../metrics/common/papi.h ../../metrics/flops/flops.h \
- ../../metrics/flops/cpu/papi.h ../../metrics/energy/energy_node_lib.h \
- ../../common/includes.h ../../common/attributes.h \
- ../../metrics/accumulators/types.h ../../metrics/energy/energy_cpu.h \
+ ../../metrics/cpi/cpi.h ../../metrics/cpi/cpu/intel63.h \
+ ../../metrics/common/perf.h ../../common/types.h \
+ ../../metrics/flops/flops.h ../../metrics/flops/cpu/intel63.h \
+ ../../metrics/energy/energy_node_lib.h ../../common/includes.h \
+ ../../common/attributes.h ../../metrics/accumulators/types.h \
+ ../../metrics/energy/energy_cpu.h \
  ../../metrics/energy/cpu/intel_haswell.h ../../metrics/common/omsr.h \
  ../../metrics/bandwidth/cpu/utils.h ../../daemon/eard_api.h \
  ../../daemon/eard_conf_api.h ../../common/system/time.h

@@ -1,31 +1,20 @@
-/**************************************************************
- *	Energy Aware Runtime (EAR)
- *	This program is part of the Energy Aware Runtime (EAR).
- *
- *	EAR provides a dynamic, transparent and ligth-weigth solution for
- *	Energy management.
- *
- *    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
- *
- *       Copyright (C) 2017  
- *	BSC Contact 	mailto:ear-support@bsc.es
- *	Lenovo contact 	mailto:hpchelp@lenovo.com
- *
- *	EAR is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU Lesser General Public
- *	License as published by the Free Software Foundation; either
- *	version 2.1 of the License, or (at your option) any later version.
- *	
- *	EAR is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *	Lesser General Public License for more details.
- *	
- *	You should have received a copy of the GNU Lesser General Public
- *	License along with EAR; if not, write to the Free Software
- *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
- *	The GNU LEsser General Public License is contained in the file COPYING	
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
+
 #define _GNU_SOURCE
 
 #include <time.h>
@@ -39,7 +28,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <pthread.h>
-#include <papi.h>
 
 //#define SHOW_DEBUGS 0
 #include <common/config.h>
@@ -70,11 +58,11 @@
 #include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
 
-#include <metrics/common/papi.h>
 #if MPI
 #include <mpi.h>
 #include <library/api/mpi.h>
 #endif
+extern const char *__progname;
 
 // Statics
 #define BUFFSIZE 			128
@@ -505,11 +493,7 @@ static void get_app_name(char *my_name)
 
 	if (app_name == NULL)
 	{
-		if (PAPI_is_initialized() == PAPI_NOT_INITED) {
-			strcpy(my_name, "unknown");
-		} else {
-			metrics_get_app_name(my_name);
-		}
+		strcpy(my_name, __progname);
 		set_ear_app_name(my_name);
 	} else {
 		strcpy(my_name, app_name);
@@ -719,8 +703,8 @@ void ear_init()
 	}
 
 	/* Processes in same node connectes each other*/
+	debug("Dynais init");
 
-	debug("Dynais init");	
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	if (metrics_init()!=EAR_SUCCESS){
@@ -728,8 +712,18 @@ void ear_init()
 				verbose(0,"Error in EAR metrics initialization, setting EARL off");
 				return;
 	}
+
+	// Policies && models
+	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+		error("Retrieving architecture description");
+		/* How to proceeed here ? */
+		my_id=1;
+		verbose(0,"Error in EAR metrics initialization, setting EARL off");
+		return;
+	}
+
 	debug("frequency_init");
-	frequency_init(metrics_get_node_size()); //Initialize cpufreq info
+	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
 
 	if (ear_my_rank == 0)
 	{
@@ -740,16 +734,6 @@ void ear_init()
 			verbose(2, "learning phase %d, turbo %d", ear_whole_app, ear_use_turbo);
 		}
 	}
-
-
-	// Policies && models
-	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
-    error("Retrieving architecture description");
-		/* How to proceeed here ? */
-		my_id=1;
-		verbose(0,"Error in EAR metrics initialization, setting EARL off");
-		return;
-  }
 
 	if (masters_info.my_master_rank>=0){
 	  #if POWERCAP

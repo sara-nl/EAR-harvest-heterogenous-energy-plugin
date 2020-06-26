@@ -1,30 +1,18 @@
-/**************************************************************
-*	Energy Aware Runtime (EAR)
-*	This program is part of the Energy Aware Runtime (EAR).
+/*
 *
-*	EAR provides a dynamic, transparent and ligth-weigth solution for
-*	Energy management.
+* This program is part of the EAR software.
 *
-*    	It has been developed in the context of the Barcelona Supercomputing Center (BSC)-Lenovo Collaboration project.
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
 *
-*       Copyright (C) 2017  
-*	BSC Contact 	mailto:ear-support@bsc.es
-*	Lenovo contact 	mailto:hpchelp@lenovo.com
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
 *
-*	EAR is free software; you can redistribute it and/or
-*	modify it under the terms of the GNU Lesser General Public
-*	License as published by the Free Software Foundation; either
-*	version 2.1 of the License, or (at your option) any later version.
-*	
-*	EAR is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-*	Lesser General Public License for more details.
-*	
-*	You should have received a copy of the GNU Lesser General Public
-*	License along with EAR; if not, write to the Free Software
-*	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
-*	The GNU LEsser General Public License is contained in the file COPYING	
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
 */
 
 #include <fcntl.h>
@@ -155,6 +143,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	uint N_iter;
 	int ready;
 	state_t st;
+	float AVGFF,prev_ff,policy_freqf;
 
 	prev_f = ear_frequency;
 	st=policy_new_iteration(&periodic_loop);
@@ -219,10 +208,14 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					}
 
 					if (masters_info.my_master_rank>=0){
-						verbose(1,
-									"\n\nEAR+P(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%lu)--> New frequency selected %lu\n",
-									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGF,
-									policy_freq);
+            AVGFF=(float)AVGF/1000000.0;
+            prev_ff=(float)prev_f/1000000.0;
+            policy_freqf=(float)policy_freq/1000000.0;
+            verbose(1,
+                  "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%.2f)--> New frequency selected %.2f\n",
+                  ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGFF,
+                  policy_freqf);
+
 					}	
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
