@@ -143,6 +143,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	uint N_iter;
 	int ready;
 	state_t st;
+	float AVGFF,prev_ff,policy_freqf;
 
 	prev_f = ear_frequency;
 	st=policy_new_iteration(&periodic_loop);
@@ -207,10 +208,14 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					}
 
 					if (masters_info.my_master_rank>=0){
-						verbose(1,
-									"\n\nEAR+P(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%lu)--> New frequency selected %lu\n",
-									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGF,
-									policy_freq);
+            AVGFF=(float)AVGF/1000000.0;
+            prev_ff=(float)prev_f/1000000.0;
+            policy_freqf=(float)policy_freq/1000000.0;
+            verbose(1,
+                  "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%.2f)--> New frequency selected %.2f\n",
+                  ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGFF,
+                  policy_freqf);
+
 					}	
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
