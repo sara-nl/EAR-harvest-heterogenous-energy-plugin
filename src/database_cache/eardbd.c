@@ -610,7 +610,8 @@ static void init_output_redirection(int argc, char **argv, cluster_conf_t *conf_
 	}
 
 	if (conf_clus->db_manager.use_log) {
-		fd_output = create_log(conf_clus->install.dir_temp, "eardbd");
+		if (server_iam) fd_output = create_log(conf_clus->install.dir_temp, "eardbd.server");
+		else fd_output = create_log(conf_clus->install.dir_temp, "eardbd.mirror");
 	}
 	if (fd_output < 0) {
 		fd_output = verb_channel;

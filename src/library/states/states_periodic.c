@@ -81,6 +81,9 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
 
 void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
+  if (loop_init(&loop,&loop_signature.job,event,size,1)!=EAR_SUCCESS){
+    error("Error creating loop");
+  }
 
 	policy_loop_init(&periodic_loop);
 	if (masters_info.my_master_rank>=0) traces_new_period(ear_my_rank, my_id, event);
