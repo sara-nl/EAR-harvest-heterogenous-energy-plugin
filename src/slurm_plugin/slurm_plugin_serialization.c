@@ -247,7 +247,6 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.version.loc);
 	printenv_agnostic(sp, Var.gm_host.loc);
 	printenv_agnostic(sp, Var.gm_port.loc);
-	printenv_agnostic(sp, Var.gm_min.loc);
 	printenv_agnostic(sp, Var.gm_secure.loc);
 	
 	printenv_agnostic(sp, Var.user.rem);
@@ -400,7 +399,6 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 		
 		setenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, 1);
 		setenv_agnostic(sp, Var.gm_port.loc, buffer1             , 1);
-		setenv_agnostic(sp, Var.gm_min.loc , buffer2             , 1);
 	}
 
 	return ESPANK_SUCCESS;
@@ -507,7 +505,6 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 
 	s1 = getenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, SZ_NAME_MEDIUM);
 	s2 = getenv_agnostic(sp, Var.gm_port.loc, buffer1             , SZ_NAME_MEDIUM);
-	     getenv_agnostic(sp, Var.gm_min.loc , buffer2             , SZ_NAME_MEDIUM);
 
 	if (s1 && s2) {
 		sd->pack.eargmd.port = atoi(buffer1);

@@ -173,11 +173,7 @@ state_t nvml_status()
 
 state_t nvml_init(ctx_t *c)
 {
-	state_t s = nvml_count(NULL, NULL);
-	if (state_ok(s) && c != NULL) {
-		c->context = libnvml;
-	}
-	return s;
+	return nvml_count(NULL, NULL);
 }
 
 state_t nvml_dispose(ctx_t *c)

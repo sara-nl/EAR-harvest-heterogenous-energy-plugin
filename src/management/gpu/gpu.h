@@ -14,4 +14,32 @@
 #include <common/plugins.h>
 #include <common/system/time.h>
 
+state_t mgt_gpu_load();
+
+state_t mgt_gpu_init(ctx_t *c);
+
+state_t mgt_gpu_dispose(ctx_t *c);
+
+state_t mgt_gpu_count(ctx_t *c, uint *_dev_count);
+
+state_t mgt_gpu_clock_limit_get_current(ctx_t *c, uint *khz);
+
+state_t mgt_gpu_clock_limit_get_default(ctx_t *c, uint *khz);
+
+state_t mgt_gpu_clock_limit_get_max(ctx_t *c, uint *khz);
+
+state_t mgt_gpu_clock_limit_reset(ctx_t *c);
+
+state_t mgt_gpu_clock_limit_set(ctx_t *c, uint *khz);
+
+state_t mgt_gpu_power_limit_get_current(ctx_t *c, uint *watts);
+
+state_t mgt_gpu_power_limit_get_default(ctx_t *c, uint *watts);
+
+state_t mgt_gpu_power_limit_get_max(ctx_t *c, uint *watts);
+
+state_t mgt_gpu_power_limit_reset(ctx_t *c);
+
+state_t mgt_gpu_power_limit_set(ctx_t *c, uint *watts);
+
 #endif

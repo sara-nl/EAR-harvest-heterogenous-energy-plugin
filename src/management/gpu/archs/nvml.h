@@ -11,9 +11,13 @@
 
 #include <management/gpu/gpu.h>
 
-state_t management_nvml_status();
+state_t mgt_nvml_status();
 
-state_t management_nvml_init(ctx_t *c);
+state_t mgt_nvml_init(ctx_t *c);
+
+state_t mgt_nvml_dispose(ctx_t *c);
+
+state_t mgt_nvml_count(ctx_t *c, uint *_dev_count);
 
 state_t nvml_clock_limit_get_current(ctx_t *c, uint *khz);
 

@@ -107,7 +107,6 @@ struct variables_s {
 	varnames_t path_trac;
 	varnames_t gm_host;
 	varnames_t gm_port;
-	varnames_t gm_min;
 	varnames_t gm_secure;
 	varnames_t perf_pen;
 	varnames_t eff_gain;
