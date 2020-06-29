@@ -37,6 +37,7 @@ state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy)
       remove_chars(token, ' ');
       strcpy(def_policy, token);
     }
+		#if 0
     else if (!strcmp(token, "DATABASEPATHNAME"))
     {
       token = strtok(NULL, "=");
@@ -44,6 +45,7 @@ state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy)
       remove_chars(token, ' ');
       strcpy(conf->DB_pathname, token);
     }
+		#endif
     else if (!strcmp(token, "VERBOSE"))
     {
       token = strtok(NULL, "=");
@@ -83,14 +85,14 @@ state_t GENERIC_parse_token(cluster_conf_t *conf,char *token,char *def_policy)
 
       sprintf(conf->install.dir_plug, "%s/lib/plugins", token);
     }
-    else if (!strcmp(token, "PLUGINENERGY"))
+    else if (!strcmp(token, "ENERGY_PLUGIN"))
     {
       token = strtok(NULL, "=");
       token = strtok(token, "\n");
       remove_chars(token, ' ');
       strcpy(conf->install.obj_ener, token);
     }
-    else if (!strcmp(token, "PLUGINPOWERMODEL"))
+    else if (!strcmp(token, "ENERGY_MODEL"))
     {
       token = strtok(NULL, "=");
       token = strtok(token, "\n");
