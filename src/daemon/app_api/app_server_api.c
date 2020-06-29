@@ -24,6 +24,7 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sched.h>
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
@@ -32,6 +33,7 @@
 #include <daemon/power_monitor.h>
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/energy/energy_node.h>
+#include <common/hardware/frequency.h>
 
 #define close_app_connection()
 
@@ -362,6 +364,18 @@ void ear_energy_debug(int fd_out)
 
 }
 
+void  ear_set_cpufreq(int fd_out, cpu_set_t *mask,unsigned long cpuf)
+{
+	app_recv_t data;
+  /* Execute specific request */
+  data.ret=EAR_SUCCESS;
+	
+	frequency_set_with_mask(mask,cpuf);	
+
+	send_app_answer(fd_out,&data);
+}
+
+
 
 
 
@@ -410,9 +424,12 @@ void process_request(int fd_in)
 	case ENERGY_TIME:
 		ear_energy(fd_out);
 		break;
-     case ENERGY_TIME_DEBUG:
+  case ENERGY_TIME_DEBUG:
      	ear_energy_debug(fd_out);
      	break;
+	case SELECT_CPU_FREQ:
+			ear_set_cpufreq(fd_out,&app_req.send_data.cpu_freq.mask,app_req.send_data.cpu_freq.cpuf);
+			break;
 	case INVALID_COMMAND:
 		verbose(0,"PANIC, invalid command received and not recognized\n");
 		break;

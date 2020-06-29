@@ -17,10 +17,14 @@
 
 #ifndef _APP_CONF_API_H
 #define _APP_CONF_API_H
+#define _GNU_SOURCE
+#include <sched.h>
+
 #include <common/config.h>
 
 #define ENERGY_TIME		1000
 #define ENERGY_TIME_DEBUG               1001
+#define SELECT_CPU_FREQ									1002
 #define CONNECT		2000
 #define DISCONNECT 	2001
 #define INVALID_COMMAND 1
@@ -34,19 +38,29 @@ typedef struct energy{
         ulong os_time_ms;
 }energy_t;
 
-union app_recv_opt {
+typedef union app_recv_opt {
 	energy_t my_energy;
-};
+}app_recv_opt_t;
+
+typedef struct cpu_freq_req{
+	cpu_set_t mask;
+	unsigned long cpuf;
+}cpu_freq_req_t;
+
+typedef union app_send_data{
+	cpu_freq_req_t cpu_freq;
+}app_send_data_t;
 
 typedef struct app_send{
 	uint req;
 	int pid;
+	app_send_data_t	send_data;
 }app_send_t;
 
 
 typedef struct app_recv{
 	int 				ret;
-	union app_recv_opt 	my_data;
+	app_recv_opt_t 	my_data;
 }app_recv_t;
 
 #else

@@ -185,7 +185,7 @@ static void close_connection()
 	fd_eard_to_app=-1;
 	remove_pipes();
 }
-
+/************** ear_energy ***************/
 int ear_energy(ulong *energy_mj,ulong *time_ms)
 {
 	int ret=EAR_ERROR;
@@ -218,6 +218,8 @@ int ear_energy(ulong *energy_mj,ulong *time_ms)
 
 	return my_data.ret;
 }
+
+/********* ear_debug_energy *********/
 
 int ear_debug_energy(ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms,ulong *os_time_sec,ulong *os_time_ms)
 {
@@ -259,6 +261,28 @@ int ear_debug_energy(ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *tim
 		#endif
 
         return my_data.ret;
+}
+/************* ear_set_cpufreq *************/
+int ear_set_cpufreq(cpu_set_t *mask,unsigned long cpufreq)
+{
+  int ret=EAR_ERROR;
+  app_send_t my_req;
+  app_recv_t my_data;
+  
+  /* Preparing the request */
+  my_req.req=SELECT_CPU_FREQ;
+	my_req.send_data.cpu_freq.mask=*mask;
+	my_req.send_data.cpu_freq.cpuf=cpufreq;
+  
+  /* Sending the request */
+  if ((ret=send_request(&my_req))!=EAR_SUCCESS) return ret;
+  
+  /* Waiting for an answer */
+  if ((ret=wait_answer(&my_data))!=EAR_SUCCESS) return ret;
+  
+  
+  return my_data.ret;
+
 }
 
 

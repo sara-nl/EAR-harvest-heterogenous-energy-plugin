@@ -14,6 +14,8 @@
 * use and EPL-1.0 license for commercial use. Full text of both licenses can be
 * found in COPYING.BSD and COPYING.EPL files.
 */
+#define _GNU_SOURCE
+#include <sched.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -209,6 +211,30 @@ ulong frequency_set_all_cpus(ulong freq)
 	return freq_list_cpu[0];
 }
 
+ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq)
+{
+  int result, i = 0;
+  
+  debug("setting all cpus to %lu KHz", freq);
+  if (is_valid_frequency(freq))
+  { 
+    
+    for (i = 0; i < num_cpus; i++)
+    { 
+			if (CPU_ISSET(i,mask)){
+      	freq_list_cpu[i] = freq;
+      	// This is a privileged function
+      	result=CPUfreq_set_frequency(i,freq);
+     		if (result < 0) {
+     		 	error( "ERROR while switching cpu %d frequency to %lu ", i, freq);
+     		}
+			}
+    }
+  	return freq;
+  }
+  return freq_list_cpu[0];
+     
+}
 //
 uint frequency_get_num_freqs()
 {

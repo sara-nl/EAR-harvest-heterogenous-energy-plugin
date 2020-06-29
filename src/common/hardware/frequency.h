@@ -19,6 +19,9 @@
 #define EAR_CONTROL_FREQUENCY_H
 #include <linux/version.h>
 
+#define _GNU_SOURCE             /* See feature_test_macros(7) */
+#include <sched.h>
+
 #ifndef EAR_CPUPOWER
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
@@ -40,6 +43,7 @@ ulong frequency_get_nominal_freq();
 ulong frequency_get_nominal_pstate();
 ulong *frequency_get_freq_rank_list();
 ulong frequency_set_all_cpus(ulong freq);
+ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq);
 ulong frequency_pstate_to_freq(uint pstate);
 ulong frequency_pstate_to_freq_list(uint pstate,ulong *flist,uint np);
 uint frequency_freq_to_pstate(ulong freq);
