@@ -27,6 +27,7 @@
 #include <sched.h>
 #include <common/config.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -246,7 +247,7 @@ uint read_app_command(int fd_in,app_send_t *app_req)
 	if ((ret=read(fd_in,app_req,sizeof(app_send_t)))!=sizeof(app_send_t)){
 		if (ret<0){		
 			error("Error reading NON-EARL application request\n");
-			return INVALID_COMMAND;
+			return DISCONNECT;
 		}else{    
 			/* If we have read something different, we read in non blocking mode */
 			orig_flags = fcntl(fd_in, F_GETFD);

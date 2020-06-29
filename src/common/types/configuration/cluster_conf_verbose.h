@@ -17,13 +17,14 @@
 
 #ifndef _CLUSTER_CONF_VERBOSE
 #define _CLUSTER_CONF_VERBOSE
-void print_eard_conf(eard_conf_t *conf);
-void print_eargm_conf(eargm_conf_t *conf);
-void print_db_manager(eardb_conf_t *conf);
+#include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_earlib.h>
+#include <common/types/configuration/cluster_conf_etag.h>
+
 void print_database_conf(db_conf_t *conf);
 void print_islands_conf(node_island_t *conf);
 void print_tags_conf(tag_t *tag);
-void print_energy_tag(energy_tag_t *etag);
-void print_earlib_conf(earlib_conf_t *conf);
 #endif
 

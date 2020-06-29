@@ -28,8 +28,8 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/output/verbose.h>
 //#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <daemon/app_api/app_conf_api.h>
 
 static int fd_app_to_eard=-1;
@@ -125,7 +125,7 @@ static int create_connection()
 			return EAR_ERROR;
 		}
 	}
-
+	debug("Connection created");
 	return EAR_SUCCESS;
 }
 static int send_request(app_send_t *req)
@@ -167,7 +167,7 @@ static int wait_answer(app_recv_t *rec)
 		return EAR_ERROR;
 	}
 	debug("Data received\n");
-        return EAR_SUCCESS;
+  return EAR_SUCCESS;
 }
 
 static void close_connection()
@@ -184,6 +184,7 @@ static void close_connection()
 	fd_app_to_eard=-1;
 	fd_eard_to_app=-1;
 	remove_pipes();
+	debug("disconnected");
 }
 /************** ear_energy ***************/
 int ear_energy(ulong *energy_mj,ulong *time_ms)
@@ -191,6 +192,8 @@ int ear_energy(ulong *energy_mj,ulong *time_ms)
 	int ret=EAR_ERROR;
 	app_send_t my_req;
 	app_recv_t my_data;	
+
+	debug("ear_energy");
 
 	#if 0
 	/* Creating the connection */
@@ -216,6 +219,7 @@ int ear_energy(ulong *energy_mj,ulong *time_ms)
 	close_connection();
 	#endif
 
+	debug("end ear_energy");
 	return my_data.ret;
 }
 

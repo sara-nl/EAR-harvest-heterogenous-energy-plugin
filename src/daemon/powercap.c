@@ -302,6 +302,13 @@ int powercap_run_to_idle()
   pthread_mutex_unlock(&my_pc_opt.lock);
   return EAR_SUCCESS;
 }
+
+/***************************************************************************************/
+/********** Executed each time a new periodic metric is ready **************************/
+/***************************************************************************************/
+
+/* To consider, should we differentiate the monitoring frequency vs the DB monitoring */
+
 int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 {
 	uint current=(uint)cp->platform;
@@ -420,13 +427,16 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 void print_power_status(powercap_status_t *my_status)
 {
 	int i;
-	debug("Power_status:Ilde %u released %u requested %u total greedy %u  current power %u total power cap %u",
+	debug("Power_status:Ilde %u released %u requested %u total greedy %u  current power %u total power cap %u total_idle_power %u",
 	my_status->idle_nodes,my_status->released,my_status->requested,my_status->num_greedy,my_status->current_power,
-	my_status->total_powercap);
+	my_status->total_powercap,my_status->total_idle_power);
 	for (i=0;i<my_status->num_greedy;i++){
 		if (my_status->num_greedy) debug("greedy=(ip=%u,req=%u,extra=%u) ",my_status->greedy_nodes[i],my_status->greedy_req[i],my_status->extra_power[i]);
 	}
 }
+/***************************************************************************************/
+/**********  This function is executed under EARGM request    **************************/
+/***************************************************************************************/
 
 void get_powercap_status(powercap_status_t *my_status)
 {
@@ -438,6 +448,7 @@ void get_powercap_status(powercap_status_t *my_status)
 						debug("%sIdle%s node!, potential release %u allocated power %u",COL_BLU,COL_CLR,my_pc_opt.released,my_pc_opt.current_pc);
             my_status->idle_nodes++;
 						my_status->released+=my_pc_opt.released;
+						my_status->total_idle_power+=my_pc_opt.last_t1_allocated;
 						#if 0
             my_pc_opt.released=0;
             my_pc_opt.last_t1_allocated=my_pc_opt.current_pc;
@@ -513,6 +524,11 @@ void print_powercap_opt(powercap_opt_t *opt)
 	}
 	debug("Max extra power for new jobs %u",opt->max_inc_new_jobs);
 }
+
+/***************************************************************************************/
+/**********  This function is executed when EARGM sends a message **********************/
+/***************************************************************************************/
+
 
 void set_powercap_opt(powercap_opt_t *opt)
 {

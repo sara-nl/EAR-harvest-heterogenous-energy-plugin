@@ -20,6 +20,9 @@
 
 #include <common/types/generic.h>
 #include <common/config.h>
+#if USE_GPU_LIB
+#include <metrics/gpu/gpu.h>
+#endif
 
 // 0: float
 // 1: 128 float
@@ -47,6 +50,14 @@ typedef struct signature
     double DC_power;
     double DRAM_power;
     double PCK_power;
+#if USE_GPU_LIB
+		double GPU_power;
+		ulong  GPU_freq;
+		ulong  GPU_mem_freq;
+		ulong  GPU_util;
+		ulong  GPU_mem_util;
+		ulong  GPU_energy;
+#endif
     double EDP;
     double GBS;
     double TPI;

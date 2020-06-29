@@ -44,5 +44,6 @@ typedef ulong			job_id;
 #define NODE_SIZE			256
 #define NAME_SIZE			128
 #define ID_SIZE				64
+#define USER			64
 
 #endif

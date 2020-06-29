@@ -26,18 +26,11 @@
 #include <common/types/log_eard.h>
 #include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
-#if 0
-#include <common/hardware/hardware_info.h>
-
-#include <metrics/energy/energy_cpu.h>
-#include <metrics/energy/energy_node.h>
-#include <metrics/bandwidth/bandwidth.h>
-#include <metrics/frequency/frequency_cpu.h>
-#endif
 #include <metrics/frequency/cpu.h>
 #include <metrics/energy/energy_cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
+#include <metrics/gpu/gpu.h>
 #include <common/hardware/hardware_info.h>
 #include <daemon/eard_conf_api.h>
 #include <daemon/power_monitor.h>
@@ -61,6 +54,8 @@ pthread_t app_eard_api_th;
 #endif
 
 static ehandler_t eard_handler_energy,handler_energy;
+static ctx_t eard_main_gpu_ctx;
+static uint eard_gpu_initialized=0;
 static ulong node_energy_datasize;
 static edata_t node_energy_data;
 unsigned int power_mon_freq = POWERMON_FREQ;
@@ -510,7 +505,7 @@ void eard_close_comm() {
 	verbose(VEARD + 1, "application %d disconnected", dis_pid);
 }
 
-// Node_energy services
+/************************* Node_energy services ******************/
 int eard_node_energy(int must_read) {
 	unsigned long ack;
 	if (must_read) {
@@ -623,7 +618,7 @@ int eard_system(int must_read) {
 	return 1;
 }
 
-// FREQUENCY FUNCTIONALLITY: max_freq is the limit
+/************************ FREQUENCY FUNCTIONALLITY: max_freq is the limit *******************/
 void eard_set_freq(unsigned long new_freq, unsigned long max_freq) {
 	unsigned long ear_ok, freq;
 	verbose(VCONF, "setting node frequency . requested %lu, max %lu\n", new_freq, max_freq);
@@ -755,7 +750,7 @@ int eard_uncore(int must_read) {
 }
 
 
-////// RAPL SERVICES
+/*******************+ RAPL SERVICES *******************/
 int eard_rapl(int must_read) {
 	unsigned long comm_req = rapl_req;
 	unsigned long ack = 0;
@@ -791,7 +786,46 @@ int eard_rapl(int must_read) {
 	}
 	return 1;
 }
-/// END RAPL SERVICES
+
+/***************** END RAPL SERVICES ***********/
+/***************** GPU SERVICES ****************/
+int eard_gpu(int must_read) 
+{
+  unsigned long comm_req = gpu_req;
+  unsigned long ack = 0;
+	unsigned int model=0;
+	unsigned int dev_count=0;
+	gpu_t my_gpu;
+	state_t ret;
+  if (must_read) {
+    if (read(ear_fd_req[comm_req], &req, sizeof(req)) != sizeof(req))
+      error("error when reading info at eard_gpu\n");
+  }
+  switch (req.req_service) {
+    case GPU_MODEL:
+			//if (eard_gpu_initialized) ret=gpu_model(&eard_main_gpu_ctx,&model);
+			if (eard_gpu_initialized) model=MODEL_NVML;
+			else model=MODEL_UNDEFINED;
+			write(ear_fd_ack[comm_req],&model,sizeof(model));	
+      break;
+    case GPU_DEV_COUNT:
+			if (eard_gpu_initialized) gpu_count(&eard_main_gpu_ctx,&dev_count);
+			write(ear_fd_ack[comm_req],&dev_count,sizeof(dev_count));	
+			break;
+		case GPU_DATA_READ:
+			if (eard_gpu_initialized){
+				gpu_read(&eard_main_gpu_ctx,&my_gpu);
+			}else{
+				memset(&my_gpu,0,sizeof(gpu_t));
+			}
+			write(ear_fd_ack[comm_req],&my_gpu,sizeof(my_gpu));
+			break;
+	  default:
+			error("Invalid GPU command");
+      return 0;
+  }
+  return 1;
+}
 
 void select_service(int fd) {
 	if (read(ear_fd_req[freq_req], &req, sizeof(req)) != sizeof(req))
@@ -813,6 +847,9 @@ void select_service(int fd) {
 		return;
 	}
 	if (eard_node_energy(0)) {
+		return;
+	}
+	if (eard_gpu(0)){
 		return;
 	}
 	error(" Error, request received not supported\n");
@@ -1511,6 +1548,15 @@ int main(int argc, char *argv[]) {
 		log_report_eard_init_error(my_cluster_conf.eard.use_mysql,my_cluster_conf.eard.use_eardbd,APP_API_CREATION_ERROR,ret);
 	}
 #endif
+
+	/* GPU Initialization for app requests */
+	ret=gpu_init(&eard_main_gpu_ctx);
+	if (ret!=EAR_SUCCESS){
+		error("EARD error when initializing GPU context for EARD API queries");
+		eard_gpu_initialized=0;	
+	}else{
+		eard_gpu_initialized=1;
+	}
 
 	verbose(VCONF + 1, "Communicator for %s ON", nodename);
 	// we wait until EAR daemon receives a request

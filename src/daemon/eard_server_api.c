@@ -40,7 +40,6 @@
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
-#define NEW_STATUS 1
 
 int *ips = NULL;
 int total_ips = -1;
@@ -131,35 +130,37 @@ void close_server_socket(int sock)
 	close(sock);
 }
 
-int read_command(int s,request_t *command)
+int read_command(int s, request_t *command)
 {
-	int ret,pending,done;
-	pending=sizeof(request_t);
-	done=0;
+    request_header_t head;
+    char *tmp_command;
+    head = receive_data(s, (void **)&tmp_command);
+    debug("received command type %d\t size: %u \t sizeof req: %u", head.type, head.size, sizeof(request_t));
 
-	verbose(VCONNECT,"read_command request size %d",pending);
-	ret=read(s,command,sizeof(request_t));
-	//ret=recv(s,command,sizeof(request_t), MSG_DONTWAIT);
-	if (ret<0){
-		error("read_command error errno %s",strerror(errno));
-		command->req=NO_COMMAND;
-		return command->req;
-	}
-	pending-=ret;
-	done=ret;
-	while((ret>0) && (pending>0)){
-		verbose(VCONNECT,"Read command continue , pending %d",pending);
-		ret=read(s,(char*)command+done,pending);
-		//ret=recv(s,(char*)command+done,pending, MSG_DONTWAIT);
-		if (ret<0) 
+    if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(request_t))
+    {
+        command->req = NO_COMMAND;
+        if (head.size > 0) free(tmp_command);
+#if DYN_PAR
+        return EAR_SOCK_DISCONNECTED;
+#endif
+        return command->req;
+    }
+    memcpy(command, tmp_command, sizeof(request_t));
+    if (head.size > sizeof(request_t))
+    {
+        if (command->req == EAR_RC_SET_POWERCAP_OPT)
         {
-            command->req=NO_COMMAND;
-            error("read_command error errno %s",strerror(errno));
+            debug("received powercap_opt");
+            size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[sizeof(request_t)], offset);
+            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
         }
-		pending-=ret;
-		done+=ret;
-	}
-	return command->req;
+    }
+    free(tmp_command);
+    return command->req;
 }
 
 void send_answer(int s,long *ack)
@@ -342,7 +343,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
         else
         {
             send_command(command);
-            head = recieve_data(rc, (void **)&temp_data);
+            head = receive_data(rc, (void **)&temp_data);
             if (head.size < 1 || head.type == EAR_ERROR) 
             {
                 error("propagate_req: Error propagating command to node %s\n", next_ip);
@@ -452,7 +453,7 @@ int propagate_status(request_t *command, uint port, status_t **status)
         return 1;
     }
 
-    // propagate request and recieve the data
+    // propagate request and receive the data
     request_header_t head = propagate_data(command, port, (void **)&temp_status);
     num_status = head.size / sizeof(status_t);
     

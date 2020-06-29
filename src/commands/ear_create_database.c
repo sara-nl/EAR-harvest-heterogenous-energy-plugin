@@ -1,6 +1,4 @@
-/*
-*
-* This program is part of the EAR software.
+/* This program is part of the EAR software.
 *
 * EAR provides a dynamic, transparent and ligth-weigth solution for
 * Energy management. It has been developed in the context of the
@@ -245,8 +243,8 @@ PRIMARY KEY(id, step_id))");
 id INT unsigned NOT NULL AUTO_INCREMENT,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
-PCK_power FLOAT,"
-"EDP FLOAT,\
+PCK_power FLOAT,\
+EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
@@ -486,8 +484,8 @@ PRIMARY KEY(id, step_id))");
 id SERIAL NOT NULL,\
 DC_power FLOAT,\
 DRAM_power FLOAT,\
-PCK_power FLOAT,"
-"EDP FLOAT,\
+PCK_power FLOAT,\
+EDP FLOAT,\
 GBS FLOAT,\
 TPI FLOAT,\
 CPI FLOAT,\
@@ -763,7 +761,7 @@ int main(int argc,char *argv[])
 	print_database_conf(&my_cluster.database);
 
     signature_detail = my_cluster.database.report_sig_detail;
-		db_node_detail= my_cluster.database.report_node_detail;
+    db_node_detail= my_cluster.database.report_node_detail;
 
 #if DB_PSQL
     char **keys, **values, temp[32];

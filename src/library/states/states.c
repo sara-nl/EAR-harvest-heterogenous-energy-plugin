@@ -290,12 +290,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	signature_t *l_sig;
 	ulong policy_def_freq;
 
-	#if 0
-	if (masters_info.my_master_rank>=0){ 
-		verbose(1,"states_new_iteration");
-	}
-	#endif
-
+	/***************************************************************************************************/
+	/**** This function can potentially include data sharing between masters, depends on the policy ****/
+	/***************************************************************************************************/
 	pst=policy_new_iteration(&loop.id);
 
 	prev_f = ear_frequency;
@@ -478,6 +475,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			signature_t app_signature;	
 			adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
 			pst=policy_apply(&app_signature,&policy_freq,&ready);
+			/****** We mark our local signature as ready ************/
 			signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 			/* For no masters, ready will be 0, pending */
 

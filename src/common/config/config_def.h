@@ -32,7 +32,7 @@
 #define MAX_SIG_POWER                       600.0
 #define MAX_ERROR_POWER                     1000.0
 #define MAX_TEMP							150
-#define MAX_POWER_CAP					MAX_ERROR_POWER
+#define MAX_POWER_CAP					0
 #define DEF_POWER_CAP					0
 #define POWER_CAP_TYPE				"node"
 
@@ -107,6 +107,9 @@
 #define EARGM_POWERCAP_DEF_ACTION "no_action"
 #define EARGM_ENERGYCAP_DEF_ACTION "no_action"
 #define EARGM_POWERCAP_DEF_ACTION_LIMIT 90
+
+#define LIMIT_LARGE_JOBS				2
+#define RED_PSTATES_LARGE_JOBS 	1
 
 #endif //EAR_CONFIG_DEF_H
 

@@ -53,6 +53,7 @@ struct daemon_req {
 #define rapl_req 					0
 #define system_req 					0
 #define node_energy_req 			0
+#define gpu_req 			0
 
 // Services related with frequency
 #define SET_FREQ 				0
@@ -96,6 +97,11 @@ struct daemon_req {
 #define DATA_SIZE_ENERGY_NODE 	401
 #define CONNECT_ENERGY 			402
 #define ENERGY_FREQ				403
+
+
+#define GPU_MODEL			500
+#define GPU_DEV_COUNT	501
+#define GPU_DATA_READ	502
 
 #else
 #endif

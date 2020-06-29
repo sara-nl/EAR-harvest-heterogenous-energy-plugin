@@ -16,23 +16,23 @@
 */
 
 #include <library/metrics/gpu.h>
+#include <daemon/eard_api.h>
 
 static gpu_ops_t *ops;
 static uint dev_count;
 
 state_t gpu_lib_load(settings_conf_t *settings)
 {
-	// HERE: Get the GPU model identificator, look
-	// 'metrics/gpu/gpu.c' for the model list.
-
-	// Replace 0 by GPU model
-	return gpu_load(&ops, 0, NULL);
+	uint gpu_model;
+	state_t ret;
+	if ((ret=eards_gpu_model(&gpu_model))!=EAR_SUCCESS) return ret;
+	return EAR_SUCCESS;
 }
 
 state_t gpu_lib_init(ctx_t *c)
 {
-	// HERE: Ask Daemon for dev_count
-
+	state_t ret;
+	if ((ret=eards_gpu_dev_count(&dev_count))!=EAR_SUCCESS) return ret;
 	preturn (ops->data_init, dev_count);
 }
 
@@ -43,8 +43,8 @@ state_t gpu_lib_dispose(ctx_t *c)
 
 state_t gpu_lib_read(ctx_t *c, gpu_t *data)
 {
-	// HERE: Ask daemon for GPU metrics
-	
+	state_t ret;
+	if ((ret=eards_gpu_data_read(data))!=EAR_SUCCESS) return ret;	
 	return EAR_SUCCESS;
 }
 
