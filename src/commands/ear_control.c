@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
                     if (rc<0){
                         printf("Error connecting with node %s\n", node_name);
                     }else{
-                        verbose(1,"Node %s ping!\n", node_name);
+                        printf("Node %s ping!\n", node_name);
                         if (!eards_ping()) printf("Error doing ping for node %s\n", node_name);
                         eards_remote_disconnect();
                     }

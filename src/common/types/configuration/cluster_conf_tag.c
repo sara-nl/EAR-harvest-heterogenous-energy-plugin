@@ -65,7 +65,7 @@ state_t TAG_parse_token(tag_t **tags_i, unsigned int *num_tags_i, char *line)
         if (key == NULL || value == NULL || !strlen(key) || !strlen(value))
         {
             token = strtok_r(NULL, " ", &buffer_ptr);
-            warning("Error while parsing tags, continuing to next line\n");
+            verbose(0, "Error while parsing tags, continuing to next line\n");
             continue;
         }
 
