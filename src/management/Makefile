@@ -4,13 +4,13 @@ all: all.components
 
 ######## OPTIONS
 
-install: ;
+install: install.components;
 
 devel.install: ;
 
 %.install: ;
 
-clean: rclean;
+clean: clean.components;
 
 ######## SUBFOLDERS
 

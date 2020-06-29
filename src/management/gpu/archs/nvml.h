@@ -9,6 +9,8 @@
 #ifndef MANAGEMENT_GPU_NVML
 #define MANAGEMENT_GPU_NVML
 
+#include <management/gpu/gpu.h>
+
 state_t management_nvml_status();
 
 state_t management_nvml_init(ctx_t *c);
