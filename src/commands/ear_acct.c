@@ -99,7 +99,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
     
     if (num_nodes == 0)
     {
-        verbose(0, "No nodes found."); //error
+        fprintf(stderr, "No nodes found.\n"); //error
         return;
     }
     
@@ -159,7 +159,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
 
     if (i == 1)
     {
-        verbose(0, "No jobs were found with id: %u", job_id); //error
+        fprintf(stderr, "No jobs were found with id: %u\n", job_id); //error
 
         free(nodelog_file_path);
         for (i = 0; i < num_nodes; i++)
@@ -763,7 +763,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 
     if (strlen(my_conf.database.user_commands) < 1) 
     {
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
+        fprintf(stderr, "Warning: commands' user is not defined in ear.conf\n");
     }
     else
     {
@@ -839,7 +839,7 @@ void read_loops(char *user, int job_id, int limit, int step_id, char *job_ids)
 
     if (strlen(my_conf.database.user_commands) < 1) 
     {
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
+        fprintf(stderr, "Warning: commands' user is not defined in ear.conf\n");
     }
     else
     {
@@ -892,7 +892,7 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
     int num_apps = 0;
     if (strlen(my_conf.database.user_commands) < 1) 
     {
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
+        fprintf(stderr, "Warning: commands' user is not defined in ear.conf\n");
     }
     else
     {
@@ -907,7 +907,7 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
     char query[512];
     
     if (verbose) {
-        verbose(0, "Preparing query statement");
+        printf("Preparing query statement\n");
     }
     
     sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id and Applications.step_id = Jobs.step_id where Jobs.id in (select id from (select id, end_time from Jobs" );
@@ -943,17 +943,17 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
     strcat(query, ") order by Jobs.id desc, Jobs.step_id desc, Jobs.end_time desc");
 
     if (verbose) {
-        verbose(0, "Retrieving applications");
+        printf("Retrieving applications\n");
     }
 
     if (verbose) {
-        verbose(0, "QUERY: %s", query);
+        printf("QUERY: %s\n", query);
     }
 
     num_apps = db_read_applications_query(&apps, query);
 
     if (verbose) {
-        verbose(0, "Finalized retrieving applications");
+        printf("Finalized retrieving applications\n");
     }
 
     if (num_apps == EAR_MYSQL_ERROR)
@@ -1022,19 +1022,22 @@ int main(int argc, char *argv[])
     char path_name[256];
     char *file_name = NULL;
 
+    verb_level = -1;
+    verb_enabled = 0;
+
     if (get_ear_conf_path(path_name)==EAR_ERROR){
-        printf("Error getting ear.conf path\n");
+        fprintf(stderr, "Error getting ear.conf path\n");
         exit(1);
     }
 
     if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) {
-        verbose(0, "ERROR reading cluster configuration");
+        fprintf(stderr, "ERROR reading cluster configuration\n");
     }
     
     user_t user_info;
     if (user_all_ids_get(&user_info) != EAR_SUCCESS)
     {
-        warning("Failed to retrieve user data\n");
+        fprintf(stderr, "Failed to retrieve user data\n");
         exit(1);
     }
 

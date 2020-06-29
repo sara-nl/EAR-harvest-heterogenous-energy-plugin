@@ -20,6 +20,7 @@
 #include <string.h>
 #include <dlfcn.h>
 #include <common/config.h>
+#include <common/config/config_env.h>
 #include <common/types/projection.h>
 #include <common/system/symplug.h>
 //#define SHOW_DEBUGS 1
@@ -64,7 +65,7 @@ static state_t models_load(char *obj_path)
 state_t projections_init(uint user_type, conf_install_t *data, architecture_t * arch_desc)
 {
 	char basic_path[SZ_PATH_INCOMPLETE];
-	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
+	char *obj_path = getenv(SCHED_EAR_POWER_MODEL);
 	state_t st;
 
 	if (data->obj_power_model!=NULL) debug("obj_power_model defined with %s\n",data->obj_power_model);

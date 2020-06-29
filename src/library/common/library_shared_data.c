@@ -108,7 +108,7 @@ void shared_signatures_area_dispose(char * path)
 	dispose_shared_area(path,fd_signatures);
 }
 
-
+/************** Marks the signature is computed *****************/
 void signature_ready(shsignature_t *sig,int cur_state)
 {
 	sig->ready=1;

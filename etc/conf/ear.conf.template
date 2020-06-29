@@ -51,6 +51,14 @@ EARGMGracePeriods=3
 # Defines
 EARGMEnergyAction=no_action
 
+#### POWERCAP definition for EARGM
+# 0 means no powercap
+EARGMPowerLimit=0
+# Period  at which the powercap thread is activated
+EARGMPowerPeriod=60
+# 1 means automatic, 0 is only monitoring
+EARGMPowerCapMode=1
+
 #---------------------------------------------------------------------------------------------------
 # Common configuration
 #---------------------------------------------------------------------------------------------------
@@ -66,6 +74,7 @@ InstDir=/hpc/opt/ear3.1
 #---------------------------------------------------------------------------------------------------
 energy_plugin=energy_nm.so
 energy_model=avx512_model.so
+powercap_plugin=inm.so
 
 #---------------------------------------------------------------------------------------------------
 # Authorized Users
@@ -83,8 +92,8 @@ AuthorizedGroups=grp1,grp2
 # and are SKU-specific. Max. and min. power are used for warning and error tracking. 
 # At least a default tag is mandatory
 # to be included in this file for a cluster to work properly.
-Tag=6148 default=yes max_avx512=2.2 max_avx2=2.6 max_power=500 min_power=50 error_power=600 coeffs=coeffs.default
-Tag=6126 max_avx512=2.3 max_avx2=2.9 ceffs=coeffs.6126.default max_power=600 error_power=700
+Tag=6148 default=yes max_avx512=2.2 max_avx2=2.6 max_power=500 min_power=50 error_power=600 coeffs=coeffs.default powercap=0
+Tag=6126 max_avx512=2.3 max_avx2=2.9 ceffs=coeffs.6126.default max_power=600 error_power=700 powercap=0
 
 #---------------------------------------------------------------------------------------------------
 ## Power policies

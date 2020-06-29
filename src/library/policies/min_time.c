@@ -171,7 +171,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		{
 			if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 			{
-				debug("Looking for pstate %d",i);
+				//debug("Looking for pstate %d",i);
 				st=project_power(my_app,curr_pstate,i,&power_proj);
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);

@@ -18,8 +18,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <common/config.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
+
+
 
 void signature_copy(signature_t *destiny, signature_t *source)
 {

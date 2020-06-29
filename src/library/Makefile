@@ -1,4 +1,5 @@
 MPI_API = 1
+export MPI_API
 ifdef MPI_API 
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=1
 else
@@ -43,6 +44,7 @@ mpix_OBJS = \
 
 core_OBJS = \
     metrics/metrics.o \
+    metrics/gpu.o \
     models/models.o \
     policies/policy.o \
     policies/pc_suport.o \

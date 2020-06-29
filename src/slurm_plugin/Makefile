@@ -19,6 +19,7 @@ erun_SRCS = \
 
 plug_OBJS = \
         $(SRCDIR)/daemon/eard_rapi.o \
+        $(SRCDIR)/daemon/eard_rapi_internals.o \
         $(SRCDIR)/daemon/shared_configuration.o \
         $(SRCDIR)/global_manager/eargm_rapi.o \
         $(SRCDIR)/common/libcommon.a 

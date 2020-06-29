@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <common/config.h>
 #include <common/system/file.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
@@ -244,6 +245,22 @@ int print_application(application_t *app)
 {
 	return print_application_fd(STDOUT_FILENO, app, 1, 1);
 }
+
+void verbose_gpu_app(uint vl,application_t *myapp)
+{
+	signature_t *app=&myapp->signature;
+#if USE_GPU_LIB
+#if USE_GPUS
+	if (app->GPU_util>0){
+  	verbose(vl,"GPU [Power %.2lf Energy %lu freq %lu mem_freq %lu util %lu mem_util %lu]\n",app->GPU_power,app->GPU_energy,app->GPU_freq,app->GPU_mem_freq,
+  	app->GPU_util,app->GPU_mem_util);
+	}else{
+		verbose(vl,"NO GPU application\n");
+	}
+#endif
+#endif
+}
+
 void verbose_application_data(uint vl,application_t *app)
 {
 	float avg_f = ((double) app->signature.avg_f) / 1000000.0;
@@ -280,6 +297,7 @@ void verbose_application_data(uint vl,application_t *app)
 		verbose(vl,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power,
 				app->signature.PCK_power);
 	}
+	verbose_gpu_app(vl,app);
 	verbose(vl,"-----------------------------------------------------------------------------------------------\n");
 }
 void report_application_data(application_t *app)
@@ -306,5 +324,7 @@ void report_mpi_application_data(application_t *app)
 		verbose(VTYPE,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W) GFlops/Watts %.3lf\n", app->signature.DC_power, app->signature.DRAM_power,
 				app->signature.PCK_power,app->signature.Gflops/app->signature.DC_power);
 	}
+	verbose_gpu_app(VTYPE,app);
+
 	verbose(VTYPE,"-----------------------------------------------------------------------------------------------\n");
 }

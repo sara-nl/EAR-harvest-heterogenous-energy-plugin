@@ -27,6 +27,7 @@ int main(int argc,char *argv[])
 	my_node_conf_t *my_node_conf;
 	char nodename[256];
 	char ear_path[256];
+	strcpy(nodename,"");
 	if (argc>1){
 		strcpy(ear_path,argv[1]);
         if (argc > 2)
@@ -53,7 +54,7 @@ int main(int argc,char *argv[])
             free(my_node_conf);
         }
     }
-
+		printf("Releasing cluste_cnf\n");
     free_cluster_conf(&my_cluster);
     printf("freed cluster_conf\n");
     printf("reading cluster_conf again\n");

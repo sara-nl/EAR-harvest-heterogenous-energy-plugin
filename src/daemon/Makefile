@@ -12,14 +12,16 @@ oths_BINS = eard_api.o
 
 eard_OBJS = \
     eard_checkpoint.o \
+	eard_rapi_internals.o \
     eard_rapi.o \
     eard_server_api.o \
     dynamic_configuration.o \
+	dyn_conf_theading.o \
     power_monitor.o \
-		powercap_status.o \
-		power_mgt.o \
-	  app_mgt.o \
-	  powercap.o \
+	powercap_status.o \
+	power_mgt.o \
+	app_mgt.o \
+	powercap.o \
     shared_configuration.o \
     app_api/app_server_api.o \
     node_metrics.o
@@ -53,13 +55,19 @@ node_metrics.o:node_metrics.c node_metrics.h
 dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
 	$(CC) $(CFLAGS) -c $<
 
+dyn_conf_theading.o: dyn_conf_theading.c dyn_conf_theading.h
+	$(CC) $(CFLAGS) -c $<
+
 shared_configuration.o: shared_configuration.c shared_configuration.h
 	$(CC) $(CFLAGS) -fPIC -c $<
 
-eard_api.o: eard_api.c eard_api.h
+eard_api.o: eard_api.c eard_api.h 
 	$(CC) $(CFLAGS) -fPIC -c $<
 
-eard_rapi.o: eard_rapi.c eard_rapi.h
+eard_rapi_internals.o: eard_rapi_internals.c eard_rapi_internals.h 
+	$(CC) $(CFLAGS) -fPIC -c $<
+
+eard_rapi.o: eard_rapi.c eard_rapi.h 
 	$(CC) $(CFLAGS) -fPIC -c $<
 
 eard_server_api.o: eard_server_api.c eard_server_api.h
