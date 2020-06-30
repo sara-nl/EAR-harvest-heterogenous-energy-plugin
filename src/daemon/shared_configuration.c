@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <fcntl.h>
 #include <errno.h>
@@ -21,6 +30,7 @@
 #include <common/output/verbose.h>
 #include <common/types/coefficient.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/configuration/cluster_conf_earlib.h>
 #include <daemon/shared_configuration.h>
 
 static int fd_settings,fd_resched,fd_coeffs,fd_services,fd_freq;
@@ -93,7 +103,7 @@ void print_settings_conf(settings_conf_t *setting)
 	verbose(VCONF,"settings: user_type(0=NORMAL,1=AUTH,2=ENERGY) %u learning %u lib_enabled %d policy(0=min_energy, 1=min_time,2=monitoring) %u \n",
 	setting->user_type,setting->learning,setting->lib_enabled,setting->policy);
 	verbose(VCONF,"\tmax_freq %lu def_freq %lu def_p_state %u th %.2lf\n",setting->max_freq,setting->def_freq,setting->def_p_state,setting->settings[0]);
-	print_ear_lib_conf(&setting->lib_info);	
+	print_earlib_conf(&setting->lib_info);	
 	verbose(VCONF,"\tmin_sig_power %.0lf",setting->min_sig_power);
 
 }

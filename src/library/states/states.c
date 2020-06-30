@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #if MPI
 #include <mpi.h>
@@ -99,8 +108,12 @@ extern uint check_periodic_mode;
 
 #define VERBOSE_SIG() \
 			if (masters_info.my_master_rank>=0){\
-      	verbose(1,"EAR+D(%s) at %lu in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_f,application.node_id,event, period, level,iterations); \
-      	verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lf Time=%.3lf Energy=%.1lfJ AVGF=%lu):Next freq %lu", CPI, GBS, POWER, TIME, ENERGY, AVGF,policy_freq);\
+        float AVGFF,prev_ff,policy_freqf; \
+        AVGFF=(float)AVGF/1000000.0; \
+        prev_ff=(float)prev_f/1000000.0; \
+        policy_freqf=(float)policy_freq/1000000.0; \
+        verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
+        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lf Time=%.3lf Energy=%.1lfJ AVGF=%.2f:Next freq %.1f", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
 			}
 
 
@@ -277,12 +290,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	signature_t *l_sig;
 	ulong policy_def_freq;
 
-	#if 0
-	if (masters_info.my_master_rank>=0){ 
-		verbose(1,"states_new_iteration");
-	}
-	#endif
-
+	/***************************************************************************************************/
+	/**** This function can potentially include data sharing between masters, depends on the policy ****/
+	/***************************************************************************************************/
 	pst=policy_new_iteration(&loop.id);
 
 	prev_f = ear_frequency;
@@ -465,6 +475,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			signature_t app_signature;	
 			adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
 			pst=policy_apply(&app_signature,&policy_freq,&ready);
+			/****** We mark our local signature as ready ************/
 			signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 			/* For no masters, ready will be 0, pending */
 

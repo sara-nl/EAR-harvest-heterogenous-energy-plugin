@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <errno.h>
 #include <netdb.h>
@@ -18,9 +27,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+
+#include <daemon/eard_rapi.h>
+#include <daemon/eard_rapi_internals.h>
+
 #include <common/config.h>
 #include <common/states.h>
-#include <daemon/eard_rapi.h>
 #include <common/system/user.h>
 #include <common/output/verbose.h>
 #include <common/types/version.h>
@@ -452,7 +465,7 @@ int main(int argc, char *argv[])
                     if (rc<0){
                         printf("Error connecting with node %s\n", node_name);
                     }else{
-                        verbose(1,"Node %s ping!\n", node_name);
+                        printf("Node %s ping!\n", node_name);
                         if (!eards_ping()) printf("Error doing ping for node %s\n", node_name);
                         eards_remote_disconnect();
                     }
@@ -559,14 +572,16 @@ int main(int argc, char *argv[])
                     powercap_opt_t msg;
                     memset(&msg, 0, sizeof(powercap_opt_t));
                     msg.num_greedy = 1;
+                    msg.greedy_nodes = calloc(1, sizeof(int));
+                    msg.extra_power = calloc(1, sizeof(int));
                     msg.greedy_nodes[0] = 772087468;
                     msg.extra_power[0] = 25;
                     request_t command;
                     command.req = EAR_RC_SET_POWERCAP_OPT;
                     command.time_code = time(NULL);
                     command.my_req.pc_opt = msg;
+                    command.node_dist = INT_MAX;
                     int rc = eards_remote_connect(optarg, my_cluster_conf.eard.port);
-                    
                     if (rc < 0) {
                         printf("Error connecting with node %s\n", optarg);
                     }else{
@@ -574,6 +589,8 @@ int main(int argc, char *argv[])
                         send_command(&command);
                         eards_remote_disconnect();
                     }
+                    free(msg.greedy_nodes);
+                    free(msg.extra_power);
                    
                 }
                 break;

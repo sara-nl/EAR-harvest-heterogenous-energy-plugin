@@ -1,10 +1,19 @@
 /*
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <fcntl.h>
 #include <errno.h>
@@ -13,6 +22,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <common/config.h>
 #include <common/system/file.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
@@ -235,6 +245,22 @@ int print_application(application_t *app)
 {
 	return print_application_fd(STDOUT_FILENO, app, 1, 1);
 }
+
+void verbose_gpu_app(uint vl,application_t *myapp)
+{
+	signature_t *app=&myapp->signature;
+#if USE_GPU_LIB
+#if USE_GPUS
+	if (app->GPU_util>0){
+  	verbose(vl,"GPU [Power %.2lf Energy %lu freq %lu mem_freq %lu util %lu mem_util %lu]\n",app->GPU_power,app->GPU_energy,app->GPU_freq,app->GPU_mem_freq,
+  	app->GPU_util,app->GPU_mem_util);
+	}else{
+		verbose(vl,"NO GPU application\n");
+	}
+#endif
+#endif
+}
+
 void verbose_application_data(uint vl,application_t *app)
 {
 	float avg_f = ((double) app->signature.avg_f) / 1000000.0;
@@ -271,6 +297,7 @@ void verbose_application_data(uint vl,application_t *app)
 		verbose(vl,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W)\n", app->signature.DC_power, app->signature.DRAM_power,
 				app->signature.PCK_power);
 	}
+	verbose_gpu_app(vl,app);
 	verbose(vl,"-----------------------------------------------------------------------------------------------\n");
 }
 void report_application_data(application_t *app)
@@ -297,5 +324,7 @@ void report_mpi_application_data(application_t *app)
 		verbose(VTYPE,"  DC/DRAM/PCK power: %0.3lf/%0.3lf/%0.3lf (W) GFlops/Watts %.3lf\n", app->signature.DC_power, app->signature.DRAM_power,
 				app->signature.PCK_power,app->signature.Gflops/app->signature.DC_power);
 	}
+	verbose_gpu_app(VTYPE,app);
+
 	verbose(VTYPE,"-----------------------------------------------------------------------------------------------\n");
 }

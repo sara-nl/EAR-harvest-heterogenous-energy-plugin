@@ -4,7 +4,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -O2 -fPIC
 
 all: \
         gpu.o \
-        metrics.o \
+        metrics.o 
 
 %.o: %.c %.h
 	$(MPICC) $(CFLAGS) -c $<

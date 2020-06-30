@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <time.h>
 #include <errno.h>
@@ -17,6 +26,7 @@
 #include <sys/types.h>
 #include <common/sizes.h>
 #include <common/config.h>
+#include <common/config/config_env.h>
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/tracer/tracer.h>
@@ -90,7 +100,7 @@ void traces_init(settings_conf_t *conf,char *app,int global_rank, int local_rank
 {
   int found=0,ret;
 	char *traces_plugin;
-	traces_plugin=getenv("SLURM_EAR_TRACE_PLUGIN");
+	traces_plugin=getenv(SCHED_EAR_TRACE_PLUGIN);
 	if (traces_plugin==NULL) trace_plugin=0;
 	else trace_plugin=1;
 

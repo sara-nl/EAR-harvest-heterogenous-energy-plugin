@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <errno.h>
 #include <stdio.h>
@@ -22,7 +31,6 @@
 #endif
 #include <common/hardware/hardware_info.h>
 #include <library/common/externs.h>
-//#include <library/common/global_comm.h>
 #include <library/metrics/metrics.h>
 #include <metrics/cpi/cpi.h>
 #include <metrics/flops/flops.h>
@@ -30,6 +38,9 @@
 #include <metrics/bandwidth/cpu/utils.h>
 #include <daemon/eard_api.h>
 #include <common/system/time.h>
+#if USE_GPU_LIB
+#include <library/metrics/gpu.h>
+#endif
 extern masters_info_t masters_info;
 extern int dispose;
 //#define TEST_MB 0
@@ -124,6 +135,12 @@ static ulong metrics_avg_frequency[2]; // MHz
 static long long metrics_instructions[2];
 static long long metrics_cycles[2];
 static long long metrics_usecs[2]; // uS
+#if USE_GPU_LIB
+static gpu_t *gpu_metrics_init[2],*gpu_metrics_end[2],*gpu_metrics_diff[2];
+static ctx_t gpu_lib_ctx;
+static uint gpu_initialized;
+static uint gpu_loop_stopped=0;
+#endif
 #if CACHE_METRICS
 static long long metrics_l1[2];
 static long long metrics_l2[2];
@@ -163,10 +180,23 @@ static void metrics_global_start()
   	eards_read_rapl(aux_rapl);
 		eards_start_uncore();
 		eards_read_uncore(metrics_bandwith_init[APP]);
+		#if USE_GPU_LIB
+		gpu_lib_data_null(gpu_metrics_init[APP]);
+		if (gpu_initialized){
+			if (gpu_lib_read(&gpu_lib_ctx,gpu_metrics_init[APP]) != EAR_SUCCESS){
+				debug("Error in gpu_read in application start");
+			}
+		}	
+		gpu_lib_data_copy(gpu_metrics_end[LOO],gpu_metrics_init[APP]);
+	
+		#endif
 	}else{
 		set_null_dc_energy(aux_energy);
 		set_null_rapl(aux_rapl);
 		set_null_uncores(metrics_bandwith_init[APP]);
+		#if USE_GPU_LIB
+		gpu_lib_data_null(gpu_metrics_init[APP]);
+		#endif
 	}
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
 	//eards_start_uncore();
@@ -197,7 +227,18 @@ static void metrics_global_stop()
 	get_total_fops(metrics_flops[APP]);
 	if (masters_info.my_master_rank>=0){
 		eards_read_uncore(metrics_bandwith_end[APP]);
+		#if USE_GPU_LIB
+		if (gpu_initialized){
+		if (gpu_lib_read(&gpu_lib_ctx,gpu_metrics_end[APP])!= EAR_SUCCESS){
+			debug("gpu_lib_read error");
+		}
+		}
+		gpu_lib_data_diff(gpu_metrics_end[APP], gpu_metrics_init[APP], gpu_metrics_diff[APP]);
+		#endif
 	}else{
+		#if USE_GPU_LIB
+		gpu_lib_data_null(gpu_metrics_diff[APP]);
+		#endif
 		set_null_uncores(metrics_bandwith_end[APP]);
 	}
 	//eards_start_uncore();
@@ -231,6 +272,13 @@ static void metrics_partial_start()
 	
 	if (masters_info.my_master_rank>=0){ 
 		eards_begin_compute_turbo_freq();
+		#if USE_GPU_LIST
+		if (gpu_loop_stopped) {
+			gpu_lib_data_copy(gpu_metrics_init[LOO],gpu_metrics_end[LOO]);
+		} else{
+			gpu_lib_data_copy(gpu_metrics_init[LOO],gpu_metrics_init[APP]);
+		}
+		#endif
 	}
 	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
 	copy_uncores(metrics_bandwith_init[LOO],metrics_bandwith_end[LOO],bandwith_elements);
@@ -247,6 +295,10 @@ static void metrics_partial_start()
 	
 }
 
+/****************************************************************************************************************************************************************/
+/*************************** This function is executed every N seconds to check if signature can be compute *****************************************************/
+/****************************************************************************************************************************************************************/
+
 static int metrics_partial_stop(uint where)
 {
 	long long aux_flops;
@@ -257,6 +309,7 @@ static int metrics_partial_stop(uint where)
 	long long aux_time_stop;
 	char stop_energy_str[256],start_energy_str[256];
 
+	/* If the signature of the master is not ready, we cannot compute our signature */
   if ((masters_info.my_master_rank<0) && (!sig_shared_region[0].ready)){
 			//debug("Master signature not ready at time %lld",metrics_time());
       return EAR_NOT_READY;
@@ -306,6 +359,15 @@ static int metrics_partial_stop(uint where)
 		}else{
 			copy_uncores(metrics_bandwith[LOO],diff_uncore_value,bandwith_elements);	
 		}
+		#if USE_GPU_LIB
+    if (gpu_initialized){
+    if (gpu_lib_read(&gpu_lib_ctx,gpu_metrics_end[LOO])!= EAR_SUCCESS){
+      debug("gpu_lib_read error");
+    }
+		gpu_loop_stopped=1;
+    }
+    gpu_lib_data_diff(gpu_metrics_end[LOO], gpu_metrics_init[LOO], gpu_metrics_diff[LOO]);
+		#endif
 	}
 	/* End new section to check frozen uncore counters */
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
@@ -400,8 +462,20 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->DRAM_power=src->DRAM_power;
 	dest->PCK_power=src->PCK_power;
 	dest->avg_f=src->avg_f;
+	#if USE_GPU_LIB
+	dest-> GPU_freq = src->GPU_freq;
+	dest->GPU_mem_freq = src->GPU_mem_freq;
+	dest->GPU_util = src->GPU_util;
+	dest->GPU_mem_util = src->GPU_mem_util;
+	dest->GPU_energy = src->GPU_energy;
+	#endif
+	#if USE_GPUS
+	dest->GPU_power = src->GPU_power;
+	#endif
 }
 
+/******************* This function computes the signature : per loop (global = LOO) or application ( global = APP)  **************/
+/******************* The node master has computed the per-node metrics and the rest of processes uses this information ***********/
 static void metrics_compute_signature_data(uint global, signature_t *metrics, uint iterations, ulong procs)
 {
 	double time_s, cas_counter, aux;
@@ -462,7 +536,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	if (masters_info.my_master_rank>=0){
 	// Energy node
 		metrics->DC_power = (double) acum_ipmi[s] / (time_s * node_energy_units);
-		if ((metrics->DC_power > MAX_SIG_POWER) || (metrics->DC_power < MIN_SIG_POWER)){
+		if ((metrics->DC_power > system_conf->max_sig_power) || (metrics->DC_power < system_conf->min_sig_power)){
 			debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
 		}
 
@@ -473,6 +547,18 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		for (p=0;p<num_packs;p++) metrics->PCK_power=metrics->PCK_power+(double) metrics_rapl[s][num_packs+p];
 		metrics->PCK_power   = (metrics->PCK_power / 1000000000.0) / time_s;
 		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
+		#if USE_GPU_LIB
+		if (gpu_initialized){
+			metrics->GPU_freq=(gpu_metrics_diff[s][0].freq_gpu_mhz+gpu_metrics_diff[s][1].freq_gpu_mhz)/2;
+			metrics->GPU_mem_freq=(gpu_metrics_diff[s][0].freq_mem_mhz+gpu_metrics_diff[s][1].freq_mem_mhz)/2;
+			metrics->GPU_util=(gpu_metrics_diff[s][0].util_gpu+gpu_metrics_diff[s][1].util_gpu)/2;
+			metrics->GPU_mem_util=(gpu_metrics_diff[s][0].util_mem+gpu_metrics_diff[s][1].util_mem)/2;
+			metrics->GPU_energy=gpu_metrics_diff[s][0].energy_j+gpu_metrics_diff[s][1].energy_j;
+#if USE_GPUS
+			metrics->GPU_power=gpu_metrics_diff[s][0].power_w+gpu_metrics_diff[s][1].power_w;
+#endif
+		}
+		#endif
 	}else{
 		copy_node_data(metrics,&sig_shared_region[0].sig);
 	}
@@ -484,9 +570,9 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
   sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
-	//signature_ready(&sig_shared_region[my_node_id]);
 }
 
+/**************************** Init function used in ear_init ******************/
 int metrics_init()
 {
 	ulong flops_size;
@@ -598,6 +684,23 @@ int metrics_init()
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
 
+	#if USE_GPU_LIB
+	if (gpu_lib_load(system_conf) !=EAR_SUCCESS){
+      gpu_initialized=0;
+	}
+	if (gpu_initialized){
+		if (gpu_lib_init(&gpu_lib_ctx) != EAR_SUCCESS){
+				error("Error in GPU initiaization");
+				gpu_initialized=0;
+		}else{
+			debug("GPU initialization successfully");
+			gpu_lib_data_alloc(&gpu_metrics_init[LOO]);gpu_lib_data_alloc(&gpu_metrics_init[APP]);
+			gpu_lib_data_alloc(&gpu_metrics_diff[LOO]);gpu_lib_data_alloc(&gpu_metrics_diff[APP]);
+			debug("GPU library data initialized");
+		}
+	}
+	#endif
+
 	//debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);
 	//debug( "detected %d bandwith counter", bandwith_elements);
 
@@ -633,6 +736,11 @@ int time_ready_signature(ulong min_time_us)
 	if (aux_time<min_time_us) return 0;
 	else return 1;
 }
+
+/****************************************************************************************************************************************************************/
+/******************* This function checks if data is ready to be shared **************************************/
+/****************************************************************************************************************************************************************/
+
 
 int metrics_compute_signature_finish(signature_t *metrics, uint iterations, ulong min_time_us, ulong procs)
 {

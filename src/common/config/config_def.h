@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #ifndef EAR_CONFIG_DEF_H
 #define EAR_CONFIG_DEF_H
@@ -23,7 +32,7 @@
 #define MAX_SIG_POWER                       600.0
 #define MAX_ERROR_POWER                     1000.0
 #define MAX_TEMP							150
-#define MAX_POWER_CAP					MAX_ERROR_POWER
+#define MAX_POWER_CAP					0
 #define DEF_POWER_CAP					0
 #define POWER_CAP_TYPE				"node"
 
@@ -98,6 +107,9 @@
 #define EARGM_POWERCAP_DEF_ACTION "no_action"
 #define EARGM_ENERGYCAP_DEF_ACTION "no_action"
 #define EARGM_POWERCAP_DEF_ACTION_LIMIT 90
+
+#define LIMIT_LARGE_JOBS				2
+#define RED_PSTATES_LARGE_JOBS 	1
 
 #endif //EAR_CONFIG_DEF_H
 

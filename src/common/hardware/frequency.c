@@ -1,10 +1,21 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
+#define _GNU_SOURCE
+#include <sched.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -200,6 +211,30 @@ ulong frequency_set_all_cpus(ulong freq)
 	return freq_list_cpu[0];
 }
 
+ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq)
+{
+  int result, i = 0;
+  
+  debug("setting all cpus to %lu KHz", freq);
+  if (is_valid_frequency(freq))
+  { 
+    
+    for (i = 0; i < num_cpus; i++)
+    { 
+			if (CPU_ISSET(i,mask)){
+      	freq_list_cpu[i] = freq;
+      	// This is a privileged function
+      	result=CPUfreq_set_frequency(i,freq);
+     		if (result < 0) {
+     		 	error( "ERROR while switching cpu %d frequency to %lu ", i, freq);
+     		}
+			}
+    }
+  	return freq;
+  }
+  return freq_list_cpu[0];
+     
+}
 //
 uint frequency_get_num_freqs()
 {

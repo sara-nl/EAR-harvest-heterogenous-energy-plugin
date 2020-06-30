@@ -1,61 +1,33 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/types/configuration/cluster_conf_db.h>
+#include <common/types/configuration/cluster_conf_tag.h>
+#include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_generic.h>
 
 
-void print_eard_conf(eard_conf_t *conf)
-{
-	verbosen(VCCONF,"\t eard: verbosen %u period %lu max_pstate %lu	\n",conf->verbose,conf->period_powermon,conf->max_pstate);
-	verbosen(VCCONF,"\t eard: turbo %u port %u use_db %u use_eardbd %u \n",conf->turbo,conf->port,conf->use_mysql,conf->use_eardbd);
-	verbosen(VCCONF,"\t eard: force_frequencies %u\n",conf->force_frequencies);
-	verbosen(VCCONF,"\t eard: use_log %u\n",conf->use_log);
-
-}
-
-void print_eargm_conf(eargm_conf_t *conf)
-{
-	verbosen(VCCONF,"--> EARGM configuration\n");
-	verbosen(VCCONF,"\t eargm: verbosen %u \tuse_aggregation %u \tt1 %lu \tt2 %lu \tenergy limit: %lu \tport: %u \tmode: %u\tmail: %s\thost: %s\n",
-			conf->verbose,conf->use_aggregation,conf->t1,conf->t2,conf->energy,conf->port, conf->mode, conf->mail, conf->host);
-	verbosen(VCCONF,"\t eargm: defcon levels [%u,%u,%u] grace period %u\n",conf->defcon_limits[0],conf->defcon_limits[1],conf->defcon_limits[2],
-	conf->grace_periods);
-	verbosen(VCCONF,"\t policy %u (0=MaxEnergy,other=error) units=%u (-,K,M)\n",conf->policy,conf->units); 
-	verbosen(VCCONF,"\t use_log %u\n",conf->use_log);
-	#if POWERCAP
-	verbosen(VCCONF,"\t cluster_power_limit %lu powercap_check_period %lu\n",conf->power,conf->t1_power);
-	verbosen(VCCONF,"\t powercap_mode %lu (0=monitoring, 1=auto [def])\n",conf->powercap_mode);
-	verbosen(VCCONF,"\t power limit for action %lu\n",conf->defcon_power_limit);
-	verbosen(VCCONF,"\t powercap_action %s\n",conf->powercap_action);
-	verbosen(VCCONF,"\t energycap_action %s\n",conf->energycap_action);
-	#endif
-}
-
-void print_db_manager(eardb_conf_t *conf)
-{
-	verbosen(VCCONF,"--> EARDBD configuration\n");
-	verbosen(VCCONF, "---> Insertion time %u\tAggregation time: %u\tTCP port: %u\tSec. TCP port: %u\tSync Port: %u\tCacheSize: %u\n",
-			conf->insr_time,conf->aggr_time, conf->tcp_port, conf->sec_tcp_port, conf->sync_tcp_port,conf->mem_size);
-	verbosen(VCCONF,"--> use_log %u\n",conf->use_log);
-	
-}
-
-void print_database_conf(db_conf_t *conf)
-{
-	verbosen(VCCONF,"\n--> MARIADB configuration\n");
-	verbosen(VCCONF, "---> IP: %s\tUser: %s\tUser commands %s\tPort:%u\tDB:%s\n",
-			conf->ip, conf->user, conf->user_commands,conf->port, conf->database);
-	verbosen(VCCONF,"-->max_connections %u report_node_details %u report_sig_details %u report_loops %u\n",conf->max_connections,conf->report_node_detail,conf->report_sig_detail,conf->report_loops);
-}
 
 void print_islands_conf(node_island_t *conf)
 {
@@ -72,6 +44,13 @@ void print_islands_conf(node_island_t *conf)
         }
         verbosen(VCCONF, "\n");
     }
+    printf("num_ranges: %d\n", conf->num_ranges);
+    printf("is_null: %d\n", conf->ranges==NULL);
+    printf("first ip:%d\n", conf->ranges[0].db_ip);
+    printf("second ip:%d\n", conf->ranges[0].sec_ip);
+    printf("range prefix: %s\n", conf->ranges[0].prefix);
+    printf("range start: %u\n", conf->ranges[0].start);
+    printf("range end %i\n", conf->ranges[0].end);
 	for (i = 0; i < conf->num_ranges; i++)
 	{
        
@@ -99,36 +78,6 @@ void print_islands_conf(node_island_t *conf)
 	}
 }
 
-void print_tags_conf(tag_t *tag)
-{
-    verbosen(VCCONF, "--> Tag: %s\ttype: %d\tdefault: %d\tpowercap_type: %d\n", tag->id, tag->type, tag->is_default, tag->powercap_type);
-    verbosen(VCCONF, "\t\tavx512_freq: %lu\tavx2_freq: %lu\tmax_power: %lu\tmin_power: %lu\terror_power: %lu\tpowercap: %lu\n", 
-                     tag->max_avx512_freq, tag->max_avx2_freq, tag->max_power, tag->min_power, tag->error_power, tag->powercap);
-    verbosen(VCCONF, "\t\tenergy_model: %s\tenergy_plugin: %s\tpowercap_plugin: %s\n", tag->energy_model, tag->energy_plugin, tag->powercap_plugin);
-}
-
-void print_energy_tag(energy_tag_t *etag)
-{
-	verbosen(VCCONF, "--> Tag: %s\t pstate: %u\n", etag->tag, etag->p_state);
-	int i;
-	for (i = 0; i < etag->num_users; i++)
-		verbosen(VCCONF, "---> user: %s\n", etag->users[i]);
-
-	for (i = 0; i < etag->num_accounts; i++)
-		verbosen(VCCONF, "---> accounts: %s\n", etag->accounts[i]);
-	
-	for (i = 0; i < etag->num_groups; i++)
-		verbosen(VCCONF, "---> group: %s\n", etag->groups[i]);
-
-}
-
-void print_earlib_conf(earlib_conf_t *conf)
-{
-    verbosen(VCCONF, "-->Coefficients path: %s\n-->DynAIS levels: %u\n-->DynAIS window size: %u\n",
-            conf->coefficients_pathname, conf->dynais_levels, conf->dynais_window);
-	verbosen(VCCONF, "-->dynais timeout %u ear period %u check every %u\n",
-		conf->dynais_timeout,conf->lib_period,conf->check_every);
-}
 
 
 

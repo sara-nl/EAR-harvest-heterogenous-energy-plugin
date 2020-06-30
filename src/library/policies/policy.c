@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #if MPI
 #include <mpi.h>
@@ -12,6 +21,7 @@
 #include <dlfcn.h>
 #define SHOW_DEBUGS 1
 #include <common/includes.h>
+#include <common/config/config_env.h>
 #include <common/system/symplug.h>
 #include <common/hardware/frequency.h>
 #include <library/policies/policy_ctx.h>
@@ -83,7 +93,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
   char basic_path[SZ_PATH_INCOMPLETE];
 	conf_install_t *data=&app_settings->installation;
 
-  char *obj_path = getenv("SLURM_EAR_POWER_POLICY");
+  char *obj_path = getenv(SCHED_EAR_POWER_POLICY);
   if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
     	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
     	obj_path=basic_path;

@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -72,6 +81,9 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
 
 void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
 {
+  if (loop_init(&loop,&loop_signature.job,event,size,1)!=EAR_SUCCESS){
+    error("Error creating loop");
+  }
 
 	policy_loop_init(&periodic_loop);
 	if (masters_info.my_master_rank>=0) traces_new_period(ear_my_rank, my_id, event);
@@ -134,6 +146,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	uint N_iter;
 	int ready;
 	state_t st;
+	float AVGFF,prev_ff,policy_freqf;
 
 	prev_f = ear_frequency;
 	st=policy_new_iteration(&periodic_loop);
@@ -198,10 +211,14 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					}
 
 					if (masters_info.my_master_rank>=0){
-						verbose(1,
-									"\n\nEAR+P(%s) at %lu: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%lu)--> New frequency selected %lu\n",
-									ear_app_name, prev_f, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGF,
-									policy_freq);
+            AVGFF=(float)AVGF/1000000.0;
+            prev_ff=(float)prev_f/1000000.0;
+            policy_freqf=(float)policy_freq/1000000.0;
+            verbose(1,
+                  "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%.2f)--> New frequency selected %.2f\n",
+                  ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGFF,
+                  policy_freqf);
+
 					}	
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);

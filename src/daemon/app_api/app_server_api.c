@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -15,14 +24,17 @@
 #include <pthread.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sched.h>
 #include <common/config.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/power_monitor.h>
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/energy/energy_node.h>
+#include <common/hardware/frequency.h>
 
 #define close_app_connection()
 
@@ -235,7 +247,7 @@ uint read_app_command(int fd_in,app_send_t *app_req)
 	if ((ret=read(fd_in,app_req,sizeof(app_send_t)))!=sizeof(app_send_t)){
 		if (ret<0){		
 			error("Error reading NON-EARL application request\n");
-			return INVALID_COMMAND;
+			return DISCONNECT;
 		}else{    
 			/* If we have read something different, we read in non blocking mode */
 			orig_flags = fcntl(fd_in, F_GETFD);
@@ -353,6 +365,18 @@ void ear_energy_debug(int fd_out)
 
 }
 
+void  ear_set_cpufreq(int fd_out, cpu_set_t *mask,unsigned long cpuf)
+{
+	app_recv_t data;
+  /* Execute specific request */
+  data.ret=EAR_SUCCESS;
+	
+	frequency_set_with_mask(mask,cpuf);	
+
+	send_app_answer(fd_out,&data);
+}
+
+
 
 
 
@@ -401,9 +425,12 @@ void process_request(int fd_in)
 	case ENERGY_TIME:
 		ear_energy(fd_out);
 		break;
-     case ENERGY_TIME_DEBUG:
+  case ENERGY_TIME_DEBUG:
      	ear_energy_debug(fd_out);
      	break;
+	case SELECT_CPU_FREQ:
+			ear_set_cpufreq(fd_out,&app_req.send_data.cpu_freq.mask,app_req.send_data.cpu_freq.cpuf);
+			break;
 	case INVALID_COMMAND:
 		verbose(0,"PANIC, invalid command received and not recognized\n");
 		break;

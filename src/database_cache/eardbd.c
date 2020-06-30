@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
@@ -601,7 +610,8 @@ static void init_output_redirection(int argc, char **argv, cluster_conf_t *conf_
 	}
 
 	if (conf_clus->db_manager.use_log) {
-		fd_output = create_log(conf_clus->install.dir_temp, "eardbd");
+		if (server_iam) fd_output = create_log(conf_clus->install.dir_temp, "eardbd.server");
+		else fd_output = create_log(conf_clus->install.dir_temp, "eardbd.mirror");
 	}
 	if (fd_output < 0) {
 		fd_output = verb_channel;

@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #ifndef _EAR_DAEMON_COMMON_H
 #define _EAR_DAEMON_COMMON_H
@@ -44,6 +53,7 @@ struct daemon_req {
 #define rapl_req 					0
 #define system_req 					0
 #define node_energy_req 			0
+#define gpu_req 			0
 
 // Services related with frequency
 #define SET_FREQ 				0
@@ -87,6 +97,11 @@ struct daemon_req {
 #define DATA_SIZE_ENERGY_NODE 	401
 #define CONNECT_ENERGY 			402
 #define ENERGY_FREQ				403
+
+
+#define GPU_MODEL			500
+#define GPU_DEV_COUNT	501
+#define GPU_DATA_READ	502
 
 #else
 #endif

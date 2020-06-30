@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #ifndef _CLUSTER_CONF_H
 #define _CLUSTER_CONF_H
@@ -20,14 +29,18 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-#include <common/types/configuration/policy_conf.h>
-#include <common/types/configuration/node_conf.h>
 #include <common/string_enhanced.h>
+#include <common/types/configuration/node_conf.h>
+#include <common/types/configuration/policy_conf.h>
 
-#define GENERIC_NAME	256
-#define USER			64
-#define ACC				64
-#define SMALL           16
+#include <common/types/configuration/cluster_conf_db.h>
+#include <common/types/configuration/cluster_conf_tag.h>
+#include <common/types/configuration/cluster_conf_etag.h>
+#include <common/types/configuration/cluster_conf_eard.h>
+#include <common/types/configuration/cluster_conf_eargm.h>
+#include <common/types/configuration/cluster_conf_eardbd.h>
+#include <common/types/configuration/cluster_conf_earlib.h>
+
 
 #define NORMAL 		0
 #define AUTHORIZED	1
@@ -39,87 +52,12 @@
  *
  */
 
-/*
-* EARDVerbose=
-* EARDPerdiocPowermon=
-* EARDMaxPstate=
-* EARDTurbo=
-* EARDPort=
-*/
 
-typedef struct eard_conf
-{
-	uint verbose;			/* default 1 */
-	ulong period_powermon;	/* default 30000000 (30secs) */
-	ulong max_pstate; 		/* default 1 */
-	uint turbo;				/* Fixed to 0 by the moment */
-	uint port;				/* mandatory */
-	uint use_mysql;			/* Must EARD report to DB */
-	uint use_eardbd;		/* Must EARD report to DB using EARDBD */
-	uint force_frequencies; /* 1=EARD will force pstates specified in policies , 0=will not */
-  uint    use_log;
-} eard_conf_t;
-
-/*
-* EARGMVerbose=
-* EARGMT1=
-* EARGMT2=
-* EARGMEnergy=
-* EARGMPort=
-*/
-
-#define POWERCAP_TYPE_NODE  0 //default type
+#define POWERCAP_TYPE_NODE  0 
 #define POWERCAP_TYPE_APP   1
-#define TAG_TYPE_ARCH       0 //default type
+#define TAG_TYPE_ARCH       0 
 
-#define MAXENERGY   0
-#define MAXPOWER    1
-#define BASIC 	0
-#define KILO 	1
-#define MEGA	2
 
-#define DECON_LIMITS	3
-
-typedef struct eargm_conf
-{
-	uint 	verbose;		/* default 1 */
-	uint	use_aggregation; /* Use aggregated metrics.Default 1 */
-	ulong	t1;				/* default 60 seconds */
-	ulong	t2;				/* default 600 seconds */
-	ulong 	energy;			/* mandatory */
-	/* PowerCap */
-	#if POWERCAP
-	ulong power;
-	ulong t1_power;
-	ulong powercap_mode;	/* 1=auto by default, 0=monitoring_only */
-	ulong defcon_power_limit;		/* Percentages from the maximum to execute the action (0..100)*/
-	char powercap_action[GENERIC_NAME];	/* Script file for powercap actions */
-	#endif
-	/****/
-	uint	units;			/* 0=J, 1=KJ=default, 2=MJ, or Watts when using Power */	
-	uint 	policy;			/* 0=MaxEnergy (default), 1=MaxPower ( not yet implemented) */
-	uint 	port;			/* mandatory */
-	uint 	mode;			/* refers to energy budget mode */
-	uint	defcon_limits[3];
-	uint	grace_periods;
-	char 	mail[GENERIC_NAME];
-  char  host[GENERIC_NAME];
-	char  energycap_action[GENERIC_NAME]; /* This action is execute in any WARNING level */
-	uint  use_log;
-} eargm_conf_t;
-
-typedef struct eardb_conf 
-{
-	uint aggr_time;
-	uint insr_time;
-	uint tcp_port;
-	uint sec_tcp_port;
-	uint sync_tcp_port;
-    uint mem_size;
-    uchar mem_size_types[EARDBD_TYPES];
-    uint    use_log;
-
-} eardb_conf_t;
 
 
 typedef struct communication_node
@@ -128,61 +66,8 @@ typedef struct communication_node
     int  distance;
 } communication_node_t;
 
-typedef struct energy_tag
-{
-	char tag[USER];
-	uint p_state;
-	char **users;
-	uint num_users;
-	char **groups;
-	uint num_groups;
-	char **accounts;
-	uint num_accounts;
-} energy_tag_t;
 
-typedef struct tags
-{
-    char id[GENERIC_NAME];
-    char type;
-    char is_default;
-    char powercap_type;
-    ulong max_avx512_freq;
-    ulong max_avx2_freq;
-    ulong max_power;
-    ulong min_power;
-    ulong max_temp;
-    ulong error_power;
-    long powercap;
-    char energy_model[GENERIC_NAME];
-    char energy_plugin[GENERIC_NAME];
-    char powercap_plugin[GENERIC_NAME];
-    char coeffs[GENERIC_NAME];
-} tag_t;
 
-typedef struct db_conf
-{
-    char ip[USER];
-    char user[USER];
-    char pass[USER];
-    char user_commands[USER];
-    char pass_commands[USER];
-    char database[USER];
-    uint port;
-	uint max_connections;
-	uint report_node_detail;
-	uint report_sig_detail;
-	uint report_loops;
-} db_conf_t;
-
-typedef struct earlib_conf
-{
-	char coefficients_pathname[GENERIC_NAME];
-    uint dynais_levels;
-    uint dynais_window;
-	uint dynais_timeout;
-	uint lib_period;
-	uint check_every;
-} earlib_conf_t;
 
 typedef struct conf_install {
 	char dir_temp[SZ_PATH_INCOMPLETE];
@@ -197,7 +82,7 @@ typedef struct cluster_conf
 {
 	// Library & common conf
 	char DB_pathname[GENERIC_NAME];
-    char net_ext[SMALL];
+  char net_ext[ID_SIZE];
 	uint verbose;
 	eard_conf_t		eard;
 	eargm_conf_t 	eargm;
@@ -262,8 +147,6 @@ void free_cluster_conf(cluster_conf_t *conf);
 
 // Cluster configuration verbose
 
-/** Prints the DB configuration */
-void print_database_conf(db_conf_t *conf);
 
 
 /** Prints in the stdout the whole cluster configuration */
@@ -298,31 +181,11 @@ int is_valid_policy(unsigned int p_id, cluster_conf_t *conf);
 void copy_ear_lib_conf(earlib_conf_t *dest,earlib_conf_t *src);
 
 
-/** */
-void copy_eard_conf(eard_conf_t *dest,eard_conf_t *src);
-
-/** */
-void copy_eargmd_conf(eargm_conf_t *dest,eargm_conf_t *src);
-
-/** */
-void copy_eardb_conf(db_conf_t *dest,db_conf_t *src);
-
-/** */
-void copy_eardbd_conf(eardb_conf_t *dest,eardb_conf_t *src);
 
 // Default functions
 
-/** Initializes the default values for EARD */
-void set_default_eard_conf(eard_conf_t *eardc);
 
-/** Initializes the default values for EAR Global Mamager*/
-void set_default_eargm_conf(eargm_conf_t *eardc);
 
-/** Initializes the default values for DB */
-void set_default_db_conf(db_conf_t *db_conf);
-
-/** Initializes the default values for EARDBD */
-void set_default_eardbd_conf(eardb_conf_t *eardbd_conf);
 
 /** Initializes the default values for earlib conf */
 void set_default_earlib_conf(earlib_conf_t *earlibc);
@@ -335,6 +198,9 @@ void set_default_conf_install(conf_install_t *inst);
 
 /** Initializes the default values for TAGS */
 void set_default_tag_values(tag_t *tag);
+
+/** Returns the default tag id or -1 if no default tag is found */
+int get_default_tag_id(cluster_conf_t *conf);
 // Concrete data functions
 int get_node_island(cluster_conf_t *conf, char *hostname);
 

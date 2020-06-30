@@ -1,3 +1,7 @@
+### EAR3.4
+- Node powercap and cluster power cap supported
+- papi dependency removed
+
 ### EAR3.3 vs EAR3.2
 - EAR loader included
 - GPU support migrated to nvml API

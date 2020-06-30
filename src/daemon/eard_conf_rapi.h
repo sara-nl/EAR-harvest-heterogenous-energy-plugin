@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 /**
 *    \file remote_conf.h
@@ -146,12 +155,13 @@ typedef struct performance{
 #define EAR_TYPE_STATUS         2001
 #define EAR_TYPE_POWER_STATUS   2002
 #define EAR_TYPE_RELEASED       2003
+#define EAR_TYPE_COMMAND        2004
 ///  |||||
 ///  vvvvv
 /******************* IMPORTANT ***********************/
 // UPDATE MAX_TYPE_VALUE FOR EACH NEW TYPE OR THE NEW TYPE WON'T BE ACCEPTED
-#define MAX_TYPE_VALUE  EAR_TYPE_RELEASED
 #define MIN_TYPE_VALUE  EAR_TYPE_STATUS
+#define MAX_TYPE_VALUE  EAR_TYPE_COMMAND
 /*****************************************************/
 
 #define NO_COMMAND 100000

@@ -1,16 +1,22 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #define _GNU_SOURCE
 
-#if MPI
-#include <mpi.h>
-#endif
 #include <time.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -35,7 +41,6 @@
 #include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
 #include <common/hardware/hardware_info.h>
-#include <library/api/mpi.h>
 
 #include <library/common/externs_alloc.h>
 #include <library/common/global_comm.h>
@@ -53,6 +58,10 @@
 #include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
 
+#if MPI
+#include <mpi.h>
+#include <library/api/mpi.h>
+#endif
 extern const char *__progname;
 
 // Statics
@@ -135,6 +144,7 @@ static void print_local_data()
 
 
 /* notifies mpi process has succesfully connected with EARD */
+/*********************** This function synchronizes all the node masters to guarantee all the nodes have connected with EARD, otherwise, EARL is set to OFF **************/
 void notify_eard_connection(int status)
 {
 	char *buffer_send;
@@ -187,7 +197,10 @@ void notify_eard_connection(int status)
 	}
 }
 
-
+/****************************************************************************************************************************************************************/
+/****************** This function creates the shared memory region to coordinate processes in same node and with other nodes  ***********************************/
+/****************** It is executed by the node master ***********************************************************************************************************/
+/****************************************************************************************************************************************************************/
 void create_shared_regions()
 {
 	char *tmp=get_ear_tmp();
@@ -200,7 +213,8 @@ void create_shared_regions()
     error("Creating lock file for shared memory %s",block_file);
   }
 
-	
+	/********************* We have two shared regions, one for the node and other for all the processes in the app *****************/
+	/******************************* Depending on how EAR is compiled, only one signature per node is sent *************************/
 	if (get_lib_shared_data_path(tmp,lib_shared_region_path)!=EAR_SUCCESS){
 		error("Getting the lib_shared_region_path");
 	}else{
@@ -224,6 +238,7 @@ void create_shared_regions()
 	}
 	#endif
 	//print_lib_shared_data(lib_shared_region);
+	/* This region is for processes in the same node */
 	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
     error("Getting the shsignature_region_path	");
 	}else{
@@ -245,6 +260,7 @@ void create_shared_regions()
 	#endif
 	/* This part allocates memory for sharing data between nodes */
 	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
+	/* The node master, shares with other masters the number of processes in the node */
 	#if MPI
 	if (share_global_info(masters_info.masters_comm,(char *)&lib_shared_region->num_processes,sizeof(int),(char*)masters_info.ppn,sizeof(int))!=EAR_SUCCESS){
 		error("Sharing the number of processes per node");
@@ -259,6 +275,7 @@ void create_shared_regions()
 		if (masters_info.my_master_rank==0) verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
 	}
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
+	/* For scalability concerns, we can compile the system sharing all the processes information (SHARE_INFO_PER_PROCESS) or only 1 per node (SHARE_INFO_PER_NODE)*/
 	#if SHARE_INFO_PER_PROCESS
 	debug("Sharing info at process level, reporting N per node");
 	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
@@ -286,6 +303,12 @@ void create_shared_regions()
   }
 
 }
+
+/****************************************************************************************************************************************************************/
+/****************** This function attaches the process to the shared regions to coordinate processes in same node ***********************************************/
+/****************** It is executed by the NOT master processses  ************************************************************************************************/
+/****************************************************************************************************************************************************************/
+
 
 void attach_shared_regions()
 {
@@ -336,6 +359,10 @@ void attach_shared_regions()
 	/* No masters processes don't allocate memory for data sharing between nodes */	
 }
 
+/****************************************************************************************************************************************************************/
+/******************  This data is shared with EARD, it's per-application info************************************************************************************/
+/****************************************************************************************************************************************************************/
+
 void fill_application_mgt_data(app_mgt_t *a)
 {
 	uint total=0,i;
@@ -348,7 +375,9 @@ void fill_application_mgt_data(app_mgt_t *a)
 	a->total_processes=total;
 	a->max_ppn=masters_info.max_ppn;
 }
-/* Connects the mpi process to a new communicator composed by masters */
+/****************************************************************************************************************************************************************/
+/* Connects the mpi process to a new communicator composed by masters, only processes with master=1 belongs to the new communicator */
+/****************************************************************************************************************************************************************/
 void attach_to_master_set(int master)
 {
 	int color;
@@ -377,7 +406,9 @@ void attach_to_master_set(int master)
 		debug("New master communicator created with %d masters. My master rank %d\n",masters_info.my_master_size,masters_info.my_master_rank);
 	}
 }
-/* returns the local id in the node */
+/****************************************************************************************************************************************************************/
+/* returns the local id in the node, local id is 0 for the  master processes and 1 for the others  */
+/****************************************************************************************************************************************************************/
 static int get_local_id(char *node_name)
 {
 	int master = 1;
@@ -419,14 +450,17 @@ static int get_local_id(char *node_name)
 	return master;
 }
 
-// Getting the job identification (job_id * 100 + job_step_id)
+/****************************************************************************************************************************************************************/
+/**** Getting the job identification (job_id * 100 + job_step_id) */
+/****************************************************************************************************************************************************************/
+
 static void get_job_identification()
 {
-	char *job_id  = getenv("SLURM_JOB_ID");
-	char *step_id = getenv("SLURM_STEP_ID");
-	char *account_id=getenv("SLURM_JOB_ACCOUNT");
+	char *job_id  = getenv(SCHED_JOB_ID);
+	char *step_id = getenv(SCHED_STEP_ID);
+	char *account_id=getenv(SCHED_JOB_ACCOUNT);
 
-	// It is missing to use SLURM_JOB_ACCOUNT
+	// It is missing to use JOB_ACCOUNT
 	
 
 	if (job_id != NULL) {
@@ -434,11 +468,11 @@ static void get_job_identification()
 		if (step_id != NULL) {
 			my_step_id=atoi(step_id);
 		} else {
-			step_id = getenv("SLURM_STEPID");
+			step_id = getenv(SCHED_STEPID);
 			if (step_id != NULL) {
 				my_step_id=atoi(step_id);
 			} else {
-				warning("Neither SLURM_STEP_ID nor SLURM_STEPID are defined, using stepid=0\n");
+				warning("Neither %s nor %s are defined, using stepid=0\n",SCHED_STEP_ID,SCHED_STEPID);
 				my_step_id=NULL_STEPID;
 			}
 		}
@@ -446,7 +480,7 @@ static void get_job_identification()
 		my_job_id = getppid();
 		my_step_id=0;
 	}
-	if (account_id==NULL) strcpy(my_account,"NO_SLURM_ACCOUNT");	
+	if (account_id==NULL) strcpy(my_account,NULL_ACCOUNT);	
 	else strcpy(my_account,account_id);
 	debug("JOB ID %d STEP ID %d ",my_job_id,my_step_id);
 }
@@ -465,8 +499,25 @@ static void get_app_name(char *my_name)
 		strcpy(my_name, app_name);
 	}
 }
+#if POWERCAP
+/************** This function  checks if application is a "large" job *******************/
+void check_large_job_use_case()
+{
+	if (LIMIT_LARGE_JOBS == 0) return; /* Disabled */
+	if (LIMIT_LARGE_JOBS < 1 ){ /* It is a percentage of the system size */
+		debug("Pending to compute the system size");
+		return;
+	}
+	if (app_mgt_info->nodes > LIMIT_LARGE_JOBS){
+		debug("We ar a large job and we will start at a lower freq: Size %u limit %u",app_mgt_info->nodes,LIMIT_LARGE_JOBS);
+	}
+}
+#endif
 
-/*** We update EARL configuration based on shared memory information **/
+/****************************************************************************************************************************************************************/
+/*** We update EARL configuration based on shared memory information, ignoring potential malicious definition **/
+/****************************************************************************************************************************************************************/
+
 void update_configuration()
 {
 	char *cdynais_window;
@@ -478,7 +529,7 @@ void update_configuration()
 	set_ear_coeff_db_pathname(system_conf->lib_info.coefficients_pathname);
 	set_ear_dynais_levels(system_conf->lib_info.dynais_levels);
 	/* Included for dynais tunning */
-	cdynais_window=getenv("SLURM_EAR_DYNAIS_WINDOW_SIZE");
+	cdynais_window=getenv(SCHED_EAR_DYNAIS_WINDOW_SIZE);
   if ((cdynais_window!=NULL) && (system_conf->user_type==AUTHORIZED)){
 		dynais_window=atoi(cdynais_window);
 	}
@@ -489,14 +540,23 @@ void update_configuration()
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
 }
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
 /**************************************** ear_init ************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+/****************************************************************************************************************************************************************/
+
 
 void ear_init()
 {
 	char *summary_pathname;
 	char *tmp;
 	state_t st;
-	char *ext_def_freq_str=getenv("SLURM_EAR_DEF_FREQ");
+	char *ext_def_freq_str=getenv(SCHED_EAR_DEF_FREQ);
 	architecture_t arch_desc;
 
 	// MPI
@@ -548,6 +608,7 @@ void ear_init()
 
 	get_job_identification();
 	// Getting if the local process is the master or not
+	/* my_id reflects whether we are the master or no my_id == 0 means we are the master *****/
 	my_id = get_local_id(node_name);
 
 	//debug("attach to master %d",my_id);
@@ -683,6 +744,8 @@ void ear_init()
     	error("Application shared area not found");
   	}
 		fill_application_mgt_data(app_mgt_info);
+		/* At this point we have notified the EARD the number of nodes in the application */
+		check_large_job_use_case();
 		/* This area is RW */
 		get_pc_app_info_path(get_ear_tmp(),pc_app_info_path);
 		debug("pc_app_info path %s",pc_app_info_path);
@@ -853,6 +916,8 @@ void ear_finalize()
 		eards_disconnect();
 	}
 }
+
+#if MPI
 
 void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest);
 void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest);
@@ -1098,6 +1163,8 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
     } //ear_whole_app
 }
 
+#endif
+
 /************************** MANUAL API *******************/
 
 static short ear_status=NO_LOOP;
@@ -1223,3 +1290,5 @@ void ear_destructor()
 	ear_finalize();
 }
 #endif
+
+

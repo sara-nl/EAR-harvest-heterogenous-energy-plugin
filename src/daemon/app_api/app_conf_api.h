@@ -1,17 +1,30 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #ifndef _APP_CONF_API_H
 #define _APP_CONF_API_H
+#define _GNU_SOURCE
+#include <sched.h>
+
 #include <common/config.h>
 
 #define ENERGY_TIME		1000
 #define ENERGY_TIME_DEBUG               1001
+#define SELECT_CPU_FREQ									1002
 #define CONNECT		2000
 #define DISCONNECT 	2001
 #define INVALID_COMMAND 1
@@ -25,19 +38,29 @@ typedef struct energy{
         ulong os_time_ms;
 }energy_t;
 
-union app_recv_opt {
+typedef union app_recv_opt {
 	energy_t my_energy;
-};
+}app_recv_opt_t;
+
+typedef struct cpu_freq_req{
+	cpu_set_t mask;
+	unsigned long cpuf;
+}cpu_freq_req_t;
+
+typedef union app_send_data{
+	cpu_freq_req_t cpu_freq;
+}app_send_data_t;
 
 typedef struct app_send{
 	uint req;
 	int pid;
+	app_send_data_t	send_data;
 }app_send_t;
 
 
 typedef struct app_recv{
 	int 				ret;
-	union app_recv_opt 	my_data;
+	app_recv_opt_t 	my_data;
 }app_recv_t;
 
 #else

@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <mpi.h>
 #include <stdio.h>
@@ -13,8 +22,9 @@
 #include <common/config.h>
 #include <common/output/verbose.h>
 #include <library/common/global_comm.h>
-
-
+/**************************************************************************************************/
+/******************************* ASYNC comunication between masters *******************************/
+/**************************************************************************************************/
 state_t ishare_global_info(MPI_Comm comm,char * data_send, int size_send,char * data_recv, int size_recv,MPI_Request *req)
 {
 	if ((data_send == NULL) || (data_recv==NULL))	return EAR_ERROR;
@@ -24,6 +34,9 @@ state_t ishare_global_info(MPI_Comm comm,char * data_send, int size_send,char * 
 	return EAR_SUCCESS;
 }
 
+/**************************************************************************************************/
+/******************************* SYNC comunication between masters *******************************/
+/**************************************************************************************************/
 state_t share_global_info(MPI_Comm comm,char * data_send, int size_send,char * data_recv, int size_recv)
 {
 	PMPI_Allgather(data_send, size_send, MPI_SIGNED_CHAR, 	
@@ -31,6 +44,9 @@ state_t share_global_info(MPI_Comm comm,char * data_send, int size_send,char * d
 	return EAR_SUCCESS;
 }
 
+/**************************************************************************************************/
+/******************************* Is masters info ready              *******************************/
+/**************************************************************************************************/
 
 state_t is_info_ready(MPI_Request *req)
 {
@@ -39,6 +55,9 @@ state_t is_info_ready(MPI_Request *req)
 	if (flag) return EAR_SUCCESS;
 	else return EAR_NOT_READY;
 }
+/**************************************************************************************************/
+/******************************* WAIT for master data  *******************************/
+/**************************************************************************************************/
 
 state_t wait_for_data(MPI_Request *req)
 {
@@ -47,6 +66,11 @@ state_t wait_for_data(MPI_Request *req)
 	return EAR_SUCCESS;
 }
 
+
+/**************************************************************************************************/
+/************************* Checks if node signatures are readyor not yet **************************/
+/************************* If they are ready, they are sent to other masters **********************/
+/**************************************************************************************************/
 void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig)
 {
     #if SHARE_INFO_PER_PROCESS
@@ -104,7 +128,9 @@ void print_global_signatures(masters_info_t *mi)
   }
 }
 
-
+/**************************************************************************************************/
+/******************* This function checks if info from other nodes is ready ***********************/
+/**************************************************************************************************/
 
 void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
 {

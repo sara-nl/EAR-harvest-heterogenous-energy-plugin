@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #define STANDARD_NODENAME_LENGTH    25
 #define APP_TEXT_FILE_FIELDS        22
@@ -50,6 +59,7 @@ void usage(char *app)
 "\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
 "\t\t-x\tshows the last EAR events. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
+"\t\t-r\tshows the EAR loop signatures. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
 "\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" \
 "", app);
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
@@ -89,7 +99,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
     
     if (num_nodes == 0)
     {
-        verbose(0, "No nodes found."); //error
+        fprintf(stderr, "No nodes found.\n"); //error
         return;
     }
     
@@ -149,7 +159,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
 
     if (i == 1)
     {
-        verbose(0, "No jobs were found with id: %u", job_id); //error
+        fprintf(stderr, "No jobs were found with id: %u\n", job_id); //error
 
         free(nodelog_file_path);
         for (i = 0; i < num_nodes; i++)
@@ -753,7 +763,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 
     if (strlen(my_conf.database.user_commands) < 1) 
     {
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
+        fprintf(stderr, "Warning: commands' user is not defined in ear.conf\n");
     }
     else
     {
@@ -809,14 +819,14 @@ void print_loops(loop_t *loops, int num_loops)
     char line[256];
 
     strcpy(line, "%6s-%-7s\t %-10s %-12s %-10s %-10s %-10s %-10s %-10s %-10s \n");
-    printf(line, "JOB", "STEP", "NODE ID", "ITERATIONS", "POWER", "GBS", "CPI", "GFLOPS", "TIME", "AVG_F");
+    printf(line, "JOB", "STEP", "NODE ID", "ITERATIONS", "POWER", "GBS", "CPI", "GFLOPS/W", "TIME", "AVG_F");
 
-    strcpy(line, "%6u-%-7u\t %-10s %-12u %-10.3lf %-10.3lf %-10.3lf %-10.3lf %-10.3lf %-10lu \n");
+    strcpy(line, "%6u-%-7u\t %-10s %-12u %-10.1lf %-10.1lf %-10.3lf %-10.3lf %-10.3lf %-10.2lf \n");
     for (i = 0; i < num_loops; i++)
     {
         signature_t sig = loops[i].signature;
         printf(line, loops[i].jid, loops[i].step_id, loops[i].node_id, loops[i].total_iterations,
-                     sig.DC_power, sig.GBS, sig.CPI, sig.Gflops, sig.time, sig.avg_f);
+                     sig.DC_power, sig.GBS, sig.CPI, sig.Gflops/sig.DC_power, sig.time, (double)(sig.avg_f)/1000000);
     }
 }
 
@@ -829,7 +839,7 @@ void read_loops(char *user, int job_id, int limit, int step_id, char *job_ids)
 
     if (strlen(my_conf.database.user_commands) < 1) 
     {
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
+        fprintf(stderr, "Warning: commands' user is not defined in ear.conf\n");
     }
     else
     {
@@ -882,7 +892,7 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
     int num_apps = 0;
     if (strlen(my_conf.database.user_commands) < 1) 
     {
-        verbose(0, "Warning: commands' user is not defined in ear.conf");
+        fprintf(stderr, "Warning: commands' user is not defined in ear.conf\n");
     }
     else
     {
@@ -897,7 +907,7 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
     char query[512];
     
     if (verbose) {
-        verbose(0, "Preparing query statement");
+        printf("Preparing query statement\n");
     }
     
     sprintf(query, "SELECT Applications.* FROM Applications join Jobs on job_id=id and Applications.step_id = Jobs.step_id where Jobs.id in (select id from (select id, end_time from Jobs" );
@@ -933,17 +943,17 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
     strcat(query, ") order by Jobs.id desc, Jobs.step_id desc, Jobs.end_time desc");
 
     if (verbose) {
-        verbose(0, "Retrieving applications");
+        printf("Retrieving applications\n");
     }
 
     if (verbose) {
-        verbose(0, "QUERY: %s", query);
+        printf("QUERY: %s\n", query);
     }
 
     num_apps = db_read_applications_query(&apps, query);
 
     if (verbose) {
-        verbose(0, "Finalized retrieving applications");
+        printf("Finalized retrieving applications\n");
     }
 
     if (num_apps == EAR_MYSQL_ERROR)
@@ -1012,19 +1022,22 @@ int main(int argc, char *argv[])
     char path_name[256];
     char *file_name = NULL;
 
+    verb_level = -1;
+    verb_enabled = 0;
+
     if (get_ear_conf_path(path_name)==EAR_ERROR){
-        printf("Error getting ear.conf path\n");
+        fprintf(stderr, "Error getting ear.conf path\n");
         exit(1);
     }
 
     if (read_cluster_conf(path_name, &my_conf) != EAR_SUCCESS) {
-        verbose(0, "ERROR reading cluster configuration");
+        fprintf(stderr, "ERROR reading cluster configuration\n");
     }
     
     user_t user_info;
     if (user_all_ids_get(&user_info) != EAR_SUCCESS)
     {
-        warning("Failed to retrieve user data\n");
+        fprintf(stderr, "Failed to retrieve user data\n");
         exit(1);
     }
 

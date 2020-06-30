@@ -1,16 +1,26 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
 #include <common/config.h>
+#include <common/config/config_env.h>
 #include <common/types/projection.h>
 #include <common/system/symplug.h>
 //#define SHOW_DEBUGS 1
@@ -55,7 +65,7 @@ static state_t models_load(char *obj_path)
 state_t projections_init(uint user_type, conf_install_t *data, architecture_t * arch_desc)
 {
 	char basic_path[SZ_PATH_INCOMPLETE];
-	char *obj_path = getenv("SLURM_EAR_POWER_MODEL");
+	char *obj_path = getenv(SCHED_EAR_POWER_MODEL);
 	state_t st;
 
 	if (data->obj_power_model!=NULL) debug("obj_power_model defined with %s\n",data->obj_power_model);

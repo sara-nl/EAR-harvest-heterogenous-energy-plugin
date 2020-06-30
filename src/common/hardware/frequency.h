@@ -1,14 +1,26 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #ifndef EAR_CONTROL_FREQUENCY_H
 #define EAR_CONTROL_FREQUENCY_H
 #include <linux/version.h>
+
+#define _GNU_SOURCE             /* See feature_test_macros(7) */
+#include <sched.h>
 
 #ifndef EAR_CPUPOWER
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
@@ -31,6 +43,7 @@ ulong frequency_get_nominal_freq();
 ulong frequency_get_nominal_pstate();
 ulong *frequency_get_freq_rank_list();
 ulong frequency_set_all_cpus(ulong freq);
+ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq);
 ulong frequency_pstate_to_freq(uint pstate);
 ulong frequency_pstate_to_freq_list(uint pstate,ulong *flist,uint np);
 uint frequency_freq_to_pstate(ulong freq);

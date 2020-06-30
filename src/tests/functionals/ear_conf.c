@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +27,7 @@ int main(int argc,char *argv[])
 	my_node_conf_t *my_node_conf;
 	char nodename[256];
 	char ear_path[256];
+	strcpy(nodename,"");
 	if (argc>1){
 		strcpy(ear_path,argv[1]);
         if (argc > 2)
@@ -44,7 +54,7 @@ int main(int argc,char *argv[])
             free(my_node_conf);
         }
     }
-
+		printf("Releasing cluste_cnf\n");
     free_cluster_conf(&my_cluster);
     printf("freed cluster_conf\n");
     printf("reading cluster_conf again\n");

@@ -1,10 +1,19 @@
-/**
- * Copyright © 2017-present BSC-Lenovo
- *
- * This file is licensed under both the BSD-3 license for individual/non-commercial
- * use and EPL-1.0 license for commercial use. Full text of both licenses can be
- * found in COPYING.BSD and COPYING.EPL files.
- */
+/*
+*
+* This program is part of the EAR software.
+*
+* EAR provides a dynamic, transparent and ligth-weigth solution for
+* Energy management. It has been developed in the context of the
+* Barcelona Supercomputing Center (BSC)&Lenovo Collaboration project.
+*
+* Copyright © 2017-present BSC-Lenovo
+* BSC Contact   mailto:ear-support@bsc.es
+* Lenovo contact  mailto:hpchelp@lenovo.com
+*
+* This file is licensed under both the BSD-3 license for individual/non-commercial
+* use and EPL-1.0 license for commercial use. Full text of both licenses can be
+* found in COPYING.BSD and COPYING.EPL files.
+*/
 
 #ifndef _EAR_DAEMON_CLIENT_H
 #define _EAR_DAEMON_CLIENT_H
@@ -12,6 +21,7 @@
 #include <common/types/generic.h>
 #include <common/types/log.h>
 #include <daemon/eard_conf_api.h>
+#include <metrics/gpu/gpu.h>
 
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
 int eards_connect(application_t *my_app);
@@ -100,6 +110,11 @@ ulong eards_write_loop_signature(loop_t *loop_signature);
 
 /** Returns the frequency at which the node energy frequency is refreshed */
 ulong eards_node_energy_frequency();
+
+
+int eards_gpu_model(uint *gpu_model);
+int eards_gpu_dev_count(uint *gpu_dev_count);
+int eards_gpu_data_read(gpu_t *gpu_info);
 
 #else
 #endif
