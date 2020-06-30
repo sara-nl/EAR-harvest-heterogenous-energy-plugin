@@ -17,6 +17,7 @@
 
 #include <management/gpu/gpu.h>
 #include <management/gpu/archs/nvml.h>
+#include <management/gpu/archs/dummy.h>
 
 static mgt_gpu_ops_t ops;
 static uint loaded;

@@ -3,7 +3,8 @@
 stat_BINS = libmgt.a
 
 mana_OBJS = \
-    $(SRCDIR)/management/gpu/gpu.o
+    $(SRCDIR)/management/gpu/gpu.o \
+    $(SRCDIR)/management/gpu/archs/dummy.o
 
 ifdef CUDA_BASE
 mana_OBJS += \

@@ -18,12 +18,6 @@
 #include <stdlib.h>
 #include <management/gpu/archs/dummy.h>
 
-static struct error_s {
-	char *null_data;
-} Error = {
-	.null_data = "data pointer is NULL",
-};
-
 state_t mgt_dummy_status()
 {
 	return 1;
