@@ -680,7 +680,7 @@ int main(int argc,char *argv[])
 				verbose(VGM,"****************************************************************");
 				if ((my_cluster_conf.eargm.mode) && (last_level==EARGM_NO_PROBLEM) && (!default_state)){ 
 					verbose(VGM,"Restoring default configuration");
-					restore_conf_all_nodes(my_cluster_conf);
+					restore_conf_all_nodes(&my_cluster_conf);
 					last_risk_sent=EARGM_NO_PROBLEM;
 					default_state=1;
 				}
@@ -694,7 +694,7 @@ int main(int argc,char *argv[])
 	
 				if (my_cluster_conf.eargm.mode && last_risk_sent!=EARGM_WARNING1){ // my_cluster_conf.eargm.mode==1 is AUTOMATIC mode
 					create_risk(&current_risk,EARGM_WARNING1);
-					set_risk_all_nodes(current_risk,MAXENERGY,my_cluster_conf);
+					set_risk_all_nodes(current_risk,MAXENERGY,&my_cluster_conf);
 				}
 				new_actions=send_mail(EARGM_WARNING1,perc_energy);
 				new_actions+=execute_action(energy_t1,total_energy_t2,energy_budget,period_t2,period_t1,unit_energy);
