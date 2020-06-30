@@ -6,12 +6,15 @@
  * found in COPYING.BSD and COPYING.EPL files.
  */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <nvml.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
 #include <common/output/debug.h>
+#include <common/system/symplug.h>
+#include <common/config/config_env.h>
 #include <management/gpu/archs/nvml.h>
-#include <metrics/gpu/gpu/nvml.h>
 
 #define NVML_N 14
 
@@ -40,14 +43,14 @@ static struct nvml_s
 	nvmlReturn_t (*Handle)				(uint index, nvmlDevice_t *device);
 	nvmlReturn_t (*GetDefaultAppsClock)	(nvmlDevice_t dev, nvmlClockType_t clockType, uint* mhz);
 	nvmlReturn_t (*GetMemoryClocks)		(nvmlDevice_t dev, uint *count, uint *mhz);
-	nvmlReturn_t (*GetGraphicsClocks)	(nvmlDevice_t dev, uint *mem_mhz, uint *count, uint *mhz);
+	nvmlReturn_t (*GetGraphicsClocks)	(nvmlDevice_t dev, uint mem_mhz, uint *count, uint *mhz);
 	nvmlReturn_t (*SetLockedClocks)		(nvmlDevice_t dev, uint min_mhz, uint max_mhz);
 	nvmlReturn_t (*ResetAppsClocks)		(nvmlDevice_t dev);
 	nvmlReturn_t (*ResetLockedClocks)	(nvmlDevice_t dev);
 	nvmlReturn_t (*GetPowerLimit)		(nvmlDevice_t dev, uint *watts);
 	nvmlReturn_t (*GetPowerDefaultLimit)(nvmlDevice_t dev, uint *watts);
 	nvmlReturn_t (*GetPowerLimitConstraints)(nvmlDevice_t dev, uint *min_watts, uint *max_watts);
-	nvmlReturn_t (*SetPowerLimit)		(nvmlDevice_t dev, uint *watts);
+	nvmlReturn_t (*SetPowerLimit)		(nvmlDevice_t dev, uint watts);
 	char*        (*ErrorString)			(nvmlReturn_t result);
 } nvml;
 
@@ -65,6 +68,7 @@ static struct error_s {
 	.dlopen       = "error during dlopen",
 };
 
+static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static uint			 initialized;
 static uint			 dev_count;
 static nvmlDevice_t *devices;
@@ -77,11 +81,6 @@ static uint			*power_max; // W
 #define myErrorString(r) \
 	((char *) nvml.ErrorString(r))
 
-state_t mgt_nvml_status()
-{
-	return EAR_SUCCESS;
-}
-
 static state_t static_init()
 {
 	nvmlReturn_t r;
@@ -92,7 +91,7 @@ static state_t static_init()
 	if ((r = nvml.Init()) != NVML_SUCCESS) {
 		return_msg(EAR_ERROR, (char *) nvml.ErrorString(r));
 	}
-	if ((r = nvml.DevCount(&dev_count)) != NVML_SUCCESS) {
+	if ((r = nvml.Count(&dev_count)) != NVML_SUCCESS) {
 		return_msg(EAR_ERROR, (char *) nvml.ErrorString(r));
 	}
 	if (((int) dev_count) <= 0) {
@@ -142,7 +141,6 @@ static state_t static_init()
 	/*
 	 * Fill
 	 */
-	nvmlReturn_t r;
 	uint clock_list1[1000];
 	uint clock_list2[1000];
 	uint c1, c2, aux;
@@ -231,7 +229,7 @@ static state_t static_init()
 					debug("D%d new max: %d MHz", i0, clock_list2[i2]);
 					clock_max[i0] = clock_list2[i2];
 				} else {
-					debug("D%d: %d", i0, clock_list2[i2]);
+					//debug("D%d: %d", i0, clock_list2[i2]);
 				}
 			}
 		}
@@ -309,7 +307,6 @@ static int static_load()
 
 static state_t nvml_init_prime()
 {
-	nvmlReturn_t r;
 	state_t s;
 	while (pthread_mutex_trylock(&lock));
 	if (initialized) {

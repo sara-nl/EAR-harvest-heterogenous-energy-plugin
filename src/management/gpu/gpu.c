@@ -18,7 +18,7 @@
 #include <management/gpu/gpu.h>
 #include <management/gpu/archs/nvml.h>
 
-static struct gpu_ops_s
+static struct mgt_gpu_ops_s
 {
 	state_t (*init)						(ctx_t *c);
 	state_t (*dispose)					(ctx_t *c);
@@ -34,7 +34,6 @@ static struct gpu_ops_s
 	state_t (*power_limit_reset)		(ctx_t *c);
 	state_t (*power_limit_set)			(ctx_t *c, uint *watts);
 } ops;
-
 
 state_t mgt_gpu_load()
 {
@@ -117,7 +116,7 @@ state_t mgt_gpu_power_limit_get_max(ctx_t *c, uint *watts)
 
 state_t mgt_gpu_power_limit_reset(ctx_t *c)
 {
-	preturn (ops.power_limit_reset, c, watts);
+	preturn (ops.power_limit_reset, c);
 }
 
 state_t mgt_gpu_power_limit_set(ctx_t *c, uint *watts)

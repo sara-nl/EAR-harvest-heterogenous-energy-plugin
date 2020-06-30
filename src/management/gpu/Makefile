@@ -1,15 +1,19 @@
-GS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -Wall
 
 ######## FILES
 
-gpu_BINS =
+gpu_BINS = gpu.o
+
+ifdef CUDA_BASE
+gpu_DEFS = -DCUDA_BASE=\"$(CUDA_BASE)\"
+endif
 
 ######## RULES
 
 all: $(gpu_BINS) all.components
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) $(gpu_DEFS) -c $<
 
 ######## SUBFOLDERS
 

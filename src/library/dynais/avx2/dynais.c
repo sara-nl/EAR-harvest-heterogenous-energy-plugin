@@ -136,8 +136,7 @@ void dynais_dispose()
 
 int dynais_build_type()
 {
-	// AVX 512
-	return 1;
+	return 0;
 }
 
 // Returns the highest level.

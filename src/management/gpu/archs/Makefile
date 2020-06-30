@@ -4,6 +4,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -Wall
 
 ifdef CUDA_BASE
 gpu_OBJS = nvml.o
+gpu_DEFS = -DCUDA_BASE=\"$(CUDA_BASE)\"
 endif
 
 ######## RULES
@@ -14,8 +15,8 @@ all: $(gpu_OBJS)
 nvml.o: nvml.c nvml.h
 	$(CC) $(CFLAGS) -I$(CUDA_BASE)/include $(gpu_DEFS) -c $< -I /hpc/base/cuda/cuda-10.1/include/
 	
-#tclock: nvml.o test.c
-#	$(CC) $(CFLAGS) -o tclock test.c nvml.o ../../../common/libcommon.a -L /hpc/base/cuda/cuda-10.1/lib64/stubs -lnvidia-ml -lpthread -ldl 
+tclock: nvml.o test.c
+	$(CC) $(CFLAGS) -o tclock test.c nvml.o ../gpu.o  ../../../common/libcommon.a -L /hpc/base/cuda/cuda-10.1/lib64/stubs -lnvidia-ml -lpthread -ldl 
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
