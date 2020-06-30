@@ -35,8 +35,8 @@
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
-#include <daemon/eard_rapi.h>
-#include <daemon/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1

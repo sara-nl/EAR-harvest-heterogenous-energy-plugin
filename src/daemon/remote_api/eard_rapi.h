@@ -30,8 +30,8 @@
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#include <daemon/eard_conf_rapi.h>
-#include <daemon/eard_rapi_internals.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_rapi_internals.h>
 
 /**  Sets freq as the maximim frequency to be used in the node where the API is connected with
 */

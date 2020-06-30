@@ -23,7 +23,7 @@
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netdb.h>
-#include <daemon/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
 
 
 int create_server_socket(uint port);

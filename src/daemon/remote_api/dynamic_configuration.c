@@ -40,16 +40,16 @@
 #define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
 #include <common/states.h>
-#include <daemon/eard_server_api.h>
-#include <daemon/eard_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_server_api.h>
+#include <daemon/remote_api/eard_rapi.h>
+#if DYN_PAR
+#include <daemon/remote_api/dyn_conf_theading.h>
+#endif
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
-#include <daemon/eard_conf_rapi.h>
 #include <common/hardware/frequency.h>
 #include <daemon/powercap.h>
-#if DYN_PAR
-#include <daemon/dyn_conf_theading.h>
-#endif
 
 
 extern int eard_must_exit;

@@ -30,9 +30,9 @@
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
-#include <daemon/eard_rapi.h>
-#include <daemon/eard_conf_rapi.h>
-#include <daemon/eard_server_api.h>
+#include <daemon/remote_api/eard_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_server_api.h>
 
 int eards_remote_connected=0;
 int eards_sfd=-1;

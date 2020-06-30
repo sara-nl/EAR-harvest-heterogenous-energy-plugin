@@ -30,7 +30,7 @@
 #include <common/config.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <daemon/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
 #include <common/types/risk.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
