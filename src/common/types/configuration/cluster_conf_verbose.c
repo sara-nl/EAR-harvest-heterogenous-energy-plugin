@@ -44,13 +44,6 @@ void print_islands_conf(node_island_t *conf)
         }
         verbosen(VCCONF, "\n");
     }
-    printf("num_ranges: %d\n", conf->num_ranges);
-    printf("is_null: %d\n", conf->ranges==NULL);
-    printf("first ip:%d\n", conf->ranges[0].db_ip);
-    printf("second ip:%d\n", conf->ranges[0].sec_ip);
-    printf("range prefix: %s\n", conf->ranges[0].prefix);
-    printf("range start: %u\n", conf->ranges[0].start);
-    printf("range end %i\n", conf->ranges[0].end);
 	for (i = 0; i < conf->num_ranges; i++)
 	{
        

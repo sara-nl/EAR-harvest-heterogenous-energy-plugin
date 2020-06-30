@@ -35,6 +35,7 @@ typedef struct tags
     ulong max_temp;
     ulong error_power;
     long powercap;
+    long max_powercap;
     char energy_model[GENERIC_NAME];
     char energy_plugin[GENERIC_NAME];
     char powercap_plugin[GENERIC_NAME];
