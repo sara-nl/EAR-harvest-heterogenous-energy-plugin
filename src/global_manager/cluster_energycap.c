@@ -70,7 +70,7 @@ state_t get_nodes_status(cluster_conf_t my_cluster_conf,uint *nnodes,node_info_t
 	node_info_t *cinfo;
 	int num_n;
 	status_t *my_status;
-	num_n=status_all_nodes(my_cluster_conf,&my_status);
+	num_n=status_all_nodes(&my_cluster_conf,&my_status);
 	if (num_n<=0){
 		*nnodes=0;
 		return EAR_ERROR;
@@ -125,7 +125,7 @@ void manage_warning(risk_t * risk,uint level,cluster_conf_t my_cluster_conf,floa
 	}
 	if (mode){
 		create_risk(risk,level);
-		set_risk_all_nodes(*risk,0,my_cluster_conf);
+		set_risk_all_nodes(*risk,0,&my_cluster_conf);
 	}
 }
 

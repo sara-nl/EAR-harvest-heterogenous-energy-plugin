@@ -233,7 +233,7 @@ uint powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
 
 void send_powercap_options_to_cluster(powercap_opt_t *cluster_options)
 {
-  cluster_set_powercap_opt(my_cluster_conf,cluster_options);
+  cluster_set_powercap_opt(&my_cluster_conf,cluster_options);
 }
 
 

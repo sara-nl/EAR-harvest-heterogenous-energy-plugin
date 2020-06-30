@@ -123,30 +123,31 @@ typedef struct performance{
 
 
 
-#define EAR_RC_NEW_JOB     0
-#define EAR_RC_END_JOB     1
-#define EAR_RC_MAX_FREQ    100
-#define EAR_RC_NEW_TH	   101
-#define EAR_RC_INC_TH	   102
-#define EAR_RC_RED_PSTATE   103
-#define EAR_RC_SET_FREQ 	104
-#define EAR_RC_DEF_FREQ		105
-#define EAR_RC_REST_CONF	106
-#define EAR_RC_SET_POLICY 108
-#define EAR_RC_SET_DEF_PSTATE 109
-#define EAR_RC_SET_MAX_PSTATE 110
-#define EAR_RC_PING		    500
-#define EAR_RC_STATUS		600
+#define EAR_RC_NEW_JOB          0
+#define EAR_RC_END_JOB          1
+#define EAR_RC_MAX_FREQ         100
+#define EAR_RC_NEW_TH           101
+#define EAR_RC_INC_TH           102
+#define EAR_RC_RED_PSTATE       103
+#define EAR_RC_SET_FREQ         104
+#define EAR_RC_DEF_FREQ         105
+#define EAR_RC_REST_CONF        106
+#define EAR_RC_SET_POLICY       108
+#define EAR_RC_SET_DEF_PSTATE   109
+#define EAR_RC_SET_MAX_PSTATE   110
+#define EAR_RC_PING	            500
+#define EAR_RC_STATUS           600
 
 /* New functions for power limits */
-#define EAR_RC_RED_POWER 700
-#define EAR_RC_SET_POWER 701 
-#define EAR_RC_INC_POWER 702
-#define EAR_RC_GET_POWER 703
-#define EAR_RC_GET_POWERCAP_STATUS 	704
-#define EAR_RC_SET_POWERCAP_OPT			705
-#define EAR_RC_SET_RISK 800
-#define EAR_RC_RELEASE_IDLE		801
+#define EAR_RC_RED_POWER            700
+#define EAR_RC_SET_POWER            701 
+#define EAR_RC_INC_POWER            702
+#define EAR_RC_GET_POWER            703
+#define EAR_RC_GET_POWERCAP_STATUS  704
+#define EAR_RC_SET_POWERCAP_OPT     705
+#define EAR_RC_SET_RISK             706
+#define EAR_RC_RELEASE_IDLE	        707	
+#define EAR_RC_DEF_POWERCAP         708 
 
 
 

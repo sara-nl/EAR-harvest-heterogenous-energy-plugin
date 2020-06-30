@@ -509,7 +509,7 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
     }
 }
 
-void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
+void send_command_all(request_t command, cluster_conf_t *my_cluster_conf)
 {
     int i, j,  rc, total_ranges;
     int **ips, *ip_counts;
@@ -517,7 +517,7 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
     char next_ip[256];
     time_t ctime = time(NULL);
     command.time_code = ctime;
-    total_ranges = get_ip_ranges(&my_cluster_conf, &ip_counts, &ips);
+    total_ranges = get_ip_ranges(my_cluster_conf, &ip_counts, &ips);
     for (i = 0; i < total_ranges; i++)
     {
         for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
@@ -526,17 +526,17 @@ void send_command_all(request_t command, cluster_conf_t my_cluster_conf)
             temp.sin_addr.s_addr = ips[i][j];
             strcpy(next_ip, inet_ntoa(temp.sin_addr));
             
-            rc=eards_remote_connect(next_ip, my_cluster_conf.eard.port);
+            rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
             if (rc<0){
                 debug("Error connecting with node %s, trying to correct it", next_ip);
-                correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
+                correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf->eard.port);
             }
             else{
                 debug("Node %s with distance %d contacted!", next_ip, command.node_dist);
                 if (!send_command(&command)) {
                     debug("Error sending command to node %s, trying to correct it", next_ip);
                     eards_remote_disconnect();
-                    correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf.eard.port);
+                    correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf->eard.port);
                 }
                 else eards_remote_disconnect();
             }
