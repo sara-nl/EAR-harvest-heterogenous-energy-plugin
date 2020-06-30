@@ -1,27 +1,27 @@
 inm.o: inm.c ../common/config.h ../common/config/config_def.h \
- ../common/config/config_dev.h ../common/config/config_env.h \
- ../common/config/config_install.h ../common/colors.h ../common/states.h \
+ ../common/config/config_dev.h ../common/config/config_install.h \
+ ../common/config/config_env.h ../common/colors.h ../common/states.h \
  ../common/output/error.h ../common/output/timestamp.h \
  ../common/output/output_conf.h ../common/output/verbose.h \
  ../common/output/debug.h ../common/system/execute.h \
  ../daemon/powercap_status_conf.h
 gpu.o: gpu.c ../common/config.h ../common/config/config_def.h \
- ../common/config/config_dev.h ../common/config/config_env.h \
- ../common/config/config_install.h ../common/colors.h ../common/states.h \
+ ../common/config/config_dev.h ../common/config/config_install.h \
+ ../common/config/config_env.h ../common/colors.h ../common/states.h \
  ../common/output/error.h ../common/output/timestamp.h \
  ../common/output/output_conf.h ../common/output/verbose.h \
  ../common/output/debug.h ../common/system/execute.h \
  ../daemon/powercap_status_conf.h
 gpu_dummy.o: gpu_dummy.c ../common/config.h ../common/config/config_def.h \
- ../common/config/config_dev.h ../common/config/config_env.h \
- ../common/config/config_install.h ../common/colors.h ../common/states.h \
+ ../common/config/config_dev.h ../common/config/config_install.h \
+ ../common/config/config_env.h ../common/colors.h ../common/states.h \
  ../common/output/error.h ../common/output/timestamp.h \
  ../common/output/output_conf.h ../common/output/verbose.h \
  ../common/output/debug.h ../common/system/execute.h \
  ../daemon/powercap_status_conf.h
 dvfs.o: dvfs.c ../common/config.h ../common/config/config_def.h \
- ../common/config/config_dev.h ../common/config/config_env.h \
- ../common/config/config_install.h ../common/colors.h ../common/states.h \
+ ../common/config/config_dev.h ../common/config/config_install.h \
+ ../common/config/config_env.h ../common/colors.h ../common/states.h \
  ../common/output/error.h ../common/output/timestamp.h \
  ../common/output/output_conf.h ../common/output/verbose.h \
  ../common/output/debug.h ../common/system/execute.h \
@@ -34,10 +34,18 @@ dvfs.o: dvfs.c ../common/config.h ../common/config/config_def.h \
  ../daemon/powercap_status.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h ../common/types/job.h \
  ../common/types/event_type.h ../common/types/loop.h \
- ../common/types/signature.h ../common/types/daemon_log.h \
+ ../common/types/signature.h ../metrics/gpu/gpu.h ../common/types.h \
+ ../common/plugins.h ../common/system/time.h ../common/types/daemon_log.h \
  ../common/types/application.h ../common/types/power_signature.h \
  ../common/types/periodic_metric.h ../common/types/periodic_aggregation.h \
- ../common/types/configuration/cluster_conf.h \
+ ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
+ ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
- ../common/types/configuration/node_conf.h ../common/string_enhanced.h \
- ../common/types/services.h
+ ../common/types/configuration/cluster_conf_db.h \
+ ../common/types/configuration/cluster_conf_tag.h \
+ ../common/types/configuration/cluster_conf_etag.h \
+ ../common/types/configuration/cluster_conf_eard.h \
+ ../common/types/configuration/cluster_conf_eargm.h \
+ ../common/types/configuration/cluster_conf_eardbd.h \
+ ../common/types/configuration/cluster_conf_earlib.h \
+ ../common/types/services.h ../common/monitor.h

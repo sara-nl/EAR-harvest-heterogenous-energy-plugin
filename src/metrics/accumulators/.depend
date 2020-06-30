@@ -1,6 +1,6 @@
 power_metrics.o: power_metrics.c ../../common/config.h \
  ../../common/config/config_def.h ../../common/config/config_dev.h \
- ../../common/config/config_env.h ../../common/config/config_install.h \
+ ../../common/config/config_install.h ../../common/config/config_env.h \
  ../../common/monitor.h ../../common/types.h ../../common/types/generic.h \
  ../../common/states.h ../../common/output/error.h ../../common/colors.h \
  ../../common/output/timestamp.h ../../common/output/output_conf.h \
@@ -15,6 +15,13 @@ power_metrics.o: power_metrics.c ../../common/config.h \
  ../../metrics/energy/energy_node.h ../../common/includes.h \
  ../../common/attributes.h ../../metrics/accumulators/types.h \
  ../../common/types/configuration/cluster_conf.h \
- ../../common/types/configuration/policy_conf.h \
+ ../../common/string_enhanced.h \
  ../../common/types/configuration/node_conf.h \
- ../../common/string_enhanced.h
+ ../../common/types/configuration/policy_conf.h \
+ ../../common/types/configuration/cluster_conf_db.h \
+ ../../common/types/configuration/cluster_conf_tag.h \
+ ../../common/types/configuration/cluster_conf_etag.h \
+ ../../common/types/configuration/cluster_conf_eard.h \
+ ../../common/types/configuration/cluster_conf_eargm.h \
+ ../../common/types/configuration/cluster_conf_eardbd.h \
+ ../../common/types/configuration/cluster_conf_earlib.h

@@ -1,0 +1,8 @@
+nvml.o: nvml.c ../../../common/output/debug.h \
+ ../../../common/system/symplug.h ../../../common/types.h \
+ ../../../common/types/generic.h ../../../common/states.h \
+ ../../../common/output/error.h ../../../common/colors.h \
+ ../../../common/output/timestamp.h ../../../common/output/output_conf.h \
+ ../../../common/plugins.h ../../../common/attributes.h \
+ ../../../common/config/config_env.h ../../../management/gpu/archs/nvml.h \
+ ../../../management/gpu/gpu.h ../../../common/system/time.h

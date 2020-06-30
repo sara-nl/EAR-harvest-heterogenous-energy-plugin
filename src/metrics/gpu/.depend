@@ -1,6 +1,6 @@
-gpu.o: gpu.c ../../metrics/gpu/gpu.h ../../common/types.h \
- ../../common/types/generic.h ../../common/states.h \
+gpu.o: gpu.c ../../common/output/debug.h ../../metrics/gpu/gpu.h \
+ ../../common/types.h ../../common/types/generic.h ../../common/states.h \
  ../../common/output/error.h ../../common/colors.h \
  ../../common/output/timestamp.h ../../common/output/output_conf.h \
  ../../common/plugins.h ../../common/system/time.h \
- ../../metrics/gpu/gpu/nvml.h
+ ../../metrics/gpu/gpu/nvml.h ../../metrics/gpu/gpu/dummy.h

@@ -40,5 +40,4 @@ depend-clean: depend-clean.components
 
 ######## DEPENDENCIES
 
-include $(SRCDIR)/Makefile.depend
 include $(SRCDIR)/Makefile.extra

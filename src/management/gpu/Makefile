@@ -28,6 +28,8 @@ install: install.components;
 
 clean: rclean clean.components;
 
+depend: depend.components;
+
 ######## DEPENDENCIES
 
 include $(SRCDIR)/Makefile.depend

@@ -26,9 +26,13 @@ module_ipmi_devintf.o: module_ipmi_devintf.c ../../tests/check/check.h
 papi_version.o: papi_version.c
 ear_types.o: ear_types.c ../../common/types/application.h \
  ../../common/config.h ../../common/config/config_def.h \
- ../../common/config/config_dev.h ../../common/config/config_env.h \
- ../../common/config/config_install.h ../../common/types/job.h \
+ ../../common/config/config_dev.h ../../common/config/config_install.h \
+ ../../common/config/config_env.h ../../common/types/job.h \
  ../../common/types/generic.h ../../common/types/signature.h \
+ ../../metrics/gpu/gpu.h ../../common/types.h ../../common/states.h \
+ ../../common/output/error.h ../../common/colors.h \
+ ../../common/output/timestamp.h ../../common/output/output_conf.h \
+ ../../common/plugins.h ../../common/system/time.h \
  ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h
 gsl_version.o: gsl_version.c
