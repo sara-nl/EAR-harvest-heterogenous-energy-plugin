@@ -32,12 +32,18 @@ state_t nvml_pool(void *c);
 
 state_t nvml_read(ctx_t *c, gpu_t *data);
 
+/* Reads the data directly from the GPU API (not preprocessed data). */
+state_t nvml_read_raw(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
+
 state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 
 /* Sets the required variables to work with nvml_data_* functions. */
 state_t nvml_data_init(uint dev_count);
 
 state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
+
+/* Computes the average/accum. between all the devices (data_avg length is 1). */
+state_t nvml_data_merge(gpu_t *data2, gpu_t *data1, gpu_t *data_merge);
 
 state_t nvml_data_alloc(gpu_t **data);
 
