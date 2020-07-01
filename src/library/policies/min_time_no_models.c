@@ -30,7 +30,7 @@
 #include <library/policies/policy_api.h> //clean
 #include <library/policies/policy_ctx.h> //clean
 #include <common/hardware/frequency.h>
-#include <daemon/eard_api.h> //?
+#include <daemon/local_api/eard_api.h> //?
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;

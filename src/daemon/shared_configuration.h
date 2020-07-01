@@ -31,7 +31,7 @@
 #include <common/types/coefficient.h>
 
 #ifdef POWERCAP
-#include <daemon/powercap.h>
+#include <daemon/powercap/powercap.h>
 #include <daemon/app_mgt.h>
 #include <common/types/pc_app_info.h>
 #endif

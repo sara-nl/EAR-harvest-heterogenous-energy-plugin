@@ -36,7 +36,7 @@
 #include <metrics/flops/flops.h>
 #include <metrics/energy/energy_node_lib.h>
 #include <metrics/bandwidth/cpu/utils.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 #include <common/system/time.h>
 #if USE_GPU_LIB
 #include <library/metrics/gpu.h>

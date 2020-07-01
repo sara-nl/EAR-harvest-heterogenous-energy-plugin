@@ -44,7 +44,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/types/configuration/cluster_conf_verbose.h>
 #include <global_manager/eargm_ext_rm.h>
-#include <daemon/eard_rapi.h>
+#include <daemon/remote_api/eard_rapi.h>
 #include <global_manager/cluster_energycap.h>
 #if POWERCAP
 #include <global_manager/cluster_powercap.h>

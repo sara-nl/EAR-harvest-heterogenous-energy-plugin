@@ -3,10 +3,9 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 ######## FILES
 
 powercap_OBJS = \
-    inm.o \
-		dvfs.o \
-		gpu_dummy.o \
-	  gpu.o
+		powercap_status.o \
+		powercap_mgt.o \
+  	powercap.o 
 
 powercap_BINS = \
     inm.so \
@@ -17,13 +16,13 @@ powercap_BINS = \
 powercap_PATH = $(DESTDIR)/lib/plugins/powercap
 powercap_PERM = 0775
 dvfs_DEPS = \
-	$(SRCDIR)/daemon/powercap_status.o \
+	powercap_status.o \
 	$(SRCDIR)/metrics/libmetrics.a \
 	$(SRCDIR)/common/libcommon.a 
 
 ######## RULES
 
-all: $(powercap_BINS)
+all:$(powercap_OBJS)  $(powercap_BINS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -33,6 +32,15 @@ dvfs.so:dvfs.o $(dvfs_DEPS)
 
 %.so: %.o 
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ 
+
+powercap.o: powercap.c powercap.h
+	$(CC) $(CFLAGS) -c $<
+
+powercap_status.o:powercap_status.c powercap_status.h powercap.h
+	$(CC) $(CFLAGS) -fPIC -c $< 
+powercap_mgt.o:powercap_mgt.c powercap_mgt.h
+	$(CC) $(CFLAGS) -c $< 
+
 
 ######## OPTIONS
 

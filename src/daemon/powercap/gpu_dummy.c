@@ -31,7 +31,7 @@
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 
 
 

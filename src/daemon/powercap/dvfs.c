@@ -34,8 +34,8 @@
 #include <metrics/energy/energy_cpu.h>
 #include <common/hardware/frequency.h>
 #include <common/hardware/hardware_info.h>
-#include <daemon/powercap_status_conf.h>
-#include <daemon/powercap_status.h>
+#include <daemon/powercap/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status.h>
 
 
 #define POWERCAP_MON 0

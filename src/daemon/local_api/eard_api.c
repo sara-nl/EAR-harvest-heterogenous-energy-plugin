@@ -34,7 +34,7 @@
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 
 #define MAX_TRIES 1
 

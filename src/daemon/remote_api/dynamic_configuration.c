@@ -49,7 +49,7 @@
 #include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
 #include <common/hardware/frequency.h>
-#include <daemon/powercap.h>
+#include <daemon/powercap/powercap.h>
 
 
 extern int eard_must_exit;

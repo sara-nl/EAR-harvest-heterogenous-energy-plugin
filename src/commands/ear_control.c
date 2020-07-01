@@ -29,8 +29,8 @@
 #include <arpa/inet.h>
 
 
-#include <daemon/eard_rapi.h>
-#include <daemon/eard_rapi_internals.h>
+#include <daemon/remote_api/eard_rapi.h>
+#include <daemon/remote_api/eard_rapi_internals.h>
 
 #include <common/config.h>
 #include <common/states.h>

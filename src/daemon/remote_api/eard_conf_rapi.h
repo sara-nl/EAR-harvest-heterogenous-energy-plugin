@@ -29,7 +29,7 @@
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/risk.h>
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 
 
 typedef struct end_job_req{

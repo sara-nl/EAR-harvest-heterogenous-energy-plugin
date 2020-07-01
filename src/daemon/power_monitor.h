@@ -40,7 +40,7 @@
 #include <metrics/energy/energy_node.h>
 #include <metrics/accumulators/power_metrics.h>
 #include <daemon/node_metrics.h>
-#include <daemon/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
 
 typedef struct powermon_app{
     application_t app;

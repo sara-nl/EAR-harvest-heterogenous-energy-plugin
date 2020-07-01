@@ -17,7 +17,7 @@
 
 #ifndef _POWERCAP_STATUS_H
 #define _POWERCAP_STATUS_H
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/pc_app_info.h>
 
 /** Given a powercap settings and a given power consumption computes the power to be released */

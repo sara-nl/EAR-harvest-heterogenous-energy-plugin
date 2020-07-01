@@ -8,7 +8,6 @@ endif
                   metrics \
                   management \
                   daemon \
-                  powercap \
                   commands \
                   tests \
                   library

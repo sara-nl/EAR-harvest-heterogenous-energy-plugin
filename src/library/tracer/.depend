@@ -17,15 +17,14 @@ tracer_cache.o: tracer_cache.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf_eargm.h \
  ../../common/types/configuration/cluster_conf_eardbd.h \
  ../../common/types/configuration/cluster_conf_earlib.h \
- ../../common/types/coefficient.h ../../daemon/powercap.h \
- ../../daemon/powercap_status_conf.h ../../daemon/app_mgt.h \
- ../../common/types/pc_app_info.h ../../common/types/types.h \
- ../../common/types/log.h ../../common/types/job.h \
- ../../common/types/event_type.h ../../common/types/loop.h \
- ../../common/types/signature.h ../../metrics/gpu/gpu.h \
- ../../common/types.h ../../common/plugins.h ../../common/system/time.h \
- ../../common/types/daemon_log.h ../../common/types/application.h \
- ../../common/types/power_signature.h \
+ ../../common/types/coefficient.h ../../daemon/powercap/powercap.h \
+ ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
+ ../../common/types/types.h ../../common/types/log.h \
+ ../../common/types/job.h ../../common/types/event_type.h \
+ ../../common/types/loop.h ../../common/types/signature.h \
+ ../../metrics/gpu/gpu.h ../../common/types.h ../../common/plugins.h \
+ ../../common/system/time.h ../../common/types/daemon_log.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
  ../../metrics/cache/cache.h
@@ -48,15 +47,14 @@ tracer_debug.o: tracer_debug.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf_eargm.h \
  ../../common/types/configuration/cluster_conf_eardbd.h \
  ../../common/types/configuration/cluster_conf_earlib.h \
- ../../common/types/coefficient.h ../../daemon/powercap.h \
- ../../daemon/powercap_status_conf.h ../../daemon/app_mgt.h \
- ../../common/types/pc_app_info.h ../../common/types/types.h \
- ../../common/types/log.h ../../common/types/job.h \
- ../../common/types/event_type.h ../../common/types/loop.h \
- ../../common/types/signature.h ../../metrics/gpu/gpu.h \
- ../../common/types.h ../../common/plugins.h ../../common/system/time.h \
- ../../common/types/daemon_log.h ../../common/types/application.h \
- ../../common/types/power_signature.h \
+ ../../common/types/coefficient.h ../../daemon/powercap/powercap.h \
+ ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
+ ../../common/types/types.h ../../common/types/log.h \
+ ../../common/types/job.h ../../common/types/event_type.h \
+ ../../common/types/loop.h ../../common/types/signature.h \
+ ../../metrics/gpu/gpu.h ../../common/types.h ../../common/plugins.h \
+ ../../common/system/time.h ../../common/types/daemon_log.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h
 tracer_paraver.o: tracer_paraver.c ../../common/sizes.h \
@@ -100,13 +98,12 @@ tracer.o: tracer.c ../../common/sizes.h ../../common/config.h \
  ../../common/types/configuration/cluster_conf_eargm.h \
  ../../common/types/configuration/cluster_conf_eardbd.h \
  ../../common/types/configuration/cluster_conf_earlib.h \
- ../../common/types/coefficient.h ../../daemon/powercap.h \
- ../../daemon/powercap_status_conf.h ../../daemon/app_mgt.h \
- ../../common/types/pc_app_info.h ../../common/types/types.h \
- ../../common/types/log.h ../../common/types/job.h \
- ../../common/types/event_type.h ../../common/types/loop.h \
- ../../common/types/daemon_log.h ../../common/types/application.h \
- ../../common/types/power_signature.h \
+ ../../common/types/coefficient.h ../../daemon/powercap/powercap.h \
+ ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
+ ../../common/types/types.h ../../common/types/log.h \
+ ../../common/types/job.h ../../common/types/event_type.h \
+ ../../common/types/loop.h ../../common/types/daemon_log.h \
+ ../../common/types/application.h ../../common/types/power_signature.h \
  ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
  ../../common/system/symplug.h ../../common/attributes.h

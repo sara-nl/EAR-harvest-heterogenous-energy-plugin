@@ -27,7 +27,7 @@
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
-#include <daemon/powercap_status.h>
+#include <daemon/powercap/powercap_status.h>
 
 static uint last_pc=0;
 

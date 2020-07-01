@@ -23,7 +23,7 @@
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <common/config/config_install.h>
-#include <daemon/eard_rapi.h>
+#include <daemon/remote_api/eard_rapi.h>
 #include <daemon/shared_configuration.h>
 #include <global_manager/eargm_rapi.h>
 #include <slurm_plugin/spank_interposer.h>

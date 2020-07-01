@@ -28,7 +28,7 @@
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 
 #define MIN_EFF 0.75
 typedef unsigned long ulong;

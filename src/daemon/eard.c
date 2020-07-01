@@ -32,10 +32,10 @@
 #include <metrics/bandwidth/bandwidth.h>
 #include <metrics/gpu/gpu.h>
 #include <common/hardware/hardware_info.h>
-#include <daemon/remote_api/eard_conf_api.h>
+#include <daemon/local_api/eard_conf_api.h>
 #include <daemon/remote_api/dynamic_configuration.h>
 #include <daemon/power_monitor.h>
-#include <daemon/powercap.h>
+#include <daemon/powercap/powercap.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
 #if USE_DB

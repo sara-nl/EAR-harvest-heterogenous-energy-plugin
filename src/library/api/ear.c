@@ -54,7 +54,7 @@
 #include <library/policies/policy.h>
 #include <library/metrics/metrics.h>
 
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 #include <daemon/app_mgt.h>
 #include <daemon/shared_configuration.h>
 

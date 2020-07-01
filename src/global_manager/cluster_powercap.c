@@ -28,7 +28,7 @@
 #include <common/colors.h>
 #include <common/types/generic.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <daemon/eard_rapi.h>
+#include <daemon/remote_api/eard_rapi.h>
 #include <global_manager/cluster_powercap.h>
 
 

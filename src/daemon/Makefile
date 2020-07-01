@@ -6,27 +6,34 @@ LDFLAGS = $(DB_LDFLAGS) -lm -pthread -ldl -lm
 eard_BINS = eard
 eard_PATH = $(DESTDIR)/sbin
 eard_PERM = 0770
-oths_BINS = eard_api.o
 
 ######## FILES
 
+local_api_OBJS = \
+	local_api/eard_api.o
+
+remote_api_OBJS= \
+  remote_api/eard_rapi_internals.o \
+  remote_api/eard_server_api.o \
+  remote_api/dyn_conf_theading.o \
+  remote_api/dynamic_configuration.o 
+
+powercap_OBJS = \
+	powercap/powercap_status.o \
+	powercap/powercap_mgt.o \
+	powercap/powercap.o 
+
 eard_OBJS = \
     eard_checkpoint.o \
-	eard_rapi_internals.o \
-    eard_rapi.o \
-    eard_server_api.o \
-    dynamic_configuration.o \
-	dyn_conf_theading.o \
     power_monitor.o \
-	powercap_status.o \
-	power_mgt.o \
-	app_mgt.o \
-	powercap.o \
+		app_mgt.o \
     shared_configuration.o \
     app_api/app_server_api.o \
-    node_metrics.o
+    node_metrics.o 
 
 eard_OBJS += \
+		$(remote_api_OBJS) \
+		$(powercap_OBJS) \
     $(SRCDIR)/database_cache/eardbd_api.o \
     $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a \
@@ -41,37 +48,12 @@ eard: eard.c $(eard_OBJS)
 power_monitor.o: power_monitor.c power_monitor.h 
 	$(CC) $(CFLAGS) -c $<
 
-powercap.o: powercap.c powercap.h 
-	$(CC) $(CFLAGS) -c $<
-
-powercap_status.o:powercap_status.c powercap_status.h powercap.h
-	$(CC) $(CFLAGS) -fPIC -c $<	
-power_mgt.o:power_mgt.c power_mgt.h
-	$(CC) $(CFLAGS) -c $< 
-
 node_metrics.o:node_metrics.c node_metrics.h
-	$(CC) $(CFLAGS) -c $<
-
-dynamic_configuration.o: dynamic_configuration.c dynamic_configuration.h
-	$(CC) $(CFLAGS) -c $<
-
-dyn_conf_theading.o: dyn_conf_theading.c dyn_conf_theading.h
 	$(CC) $(CFLAGS) -c $<
 
 shared_configuration.o: shared_configuration.c shared_configuration.h
 	$(CC) $(CFLAGS) -fPIC -c $<
 
-eard_api.o: eard_api.c eard_api.h 
-	$(CC) $(CFLAGS) -fPIC -c $<
-
-eard_rapi_internals.o: eard_rapi_internals.c eard_rapi_internals.h 
-	$(CC) $(CFLAGS) -fPIC -c $<
-
-eard_rapi.o: eard_rapi.c eard_rapi.h 
-	$(CC) $(CFLAGS) -fPIC -c $<
-
-eard_server_api.o: eard_server_api.c eard_server_api.h
-	$(CC) $(CFLAGS) -c $< 
 
 eard_checkpoint.o: eard_checkpoint.c eard_checkpoint.h
 	$(CC) $(CFLAGS) -c $<
@@ -88,6 +70,9 @@ clean: clean.components clean.others eard.gclean rclean;
 
 %.components:
 	$(MAKE) -C 'app_api' $*
+	$(MAKE) -C 'remote_api' $*
+	$(MAKE) -C 'local_api' $*
+	$(MAKE) -C 'powercap' $*
 
 %.others: ;
 

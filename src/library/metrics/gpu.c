@@ -16,7 +16,7 @@
 */
 
 #include <library/metrics/gpu.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 
 static gpu_ops_t *ops;
 static uint dev_count;

@@ -21,7 +21,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <daemon/eard_server_api.h>
+#include <daemon/remote_api/eard_server_api.h>
 
 #include <common/config.h>
 #include <common/states.h>

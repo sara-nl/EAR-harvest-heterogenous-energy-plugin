@@ -29,7 +29,7 @@
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/states.h>
-#include <daemon/powercap.h>
+#include <daemon/powercap/powercap.h>
 #include <common/types/pc_app_info.h>
 
 uint compute_power_to_release(node_powercap_opt_t *pc_opt,uint current)

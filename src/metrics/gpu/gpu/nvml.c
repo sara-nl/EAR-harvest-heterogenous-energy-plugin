@@ -201,7 +201,7 @@ state_t nvml_count(ctx_t *c, uint *_dev_count)
 		*_dev_count = 0;
 	}
 	if (!initialized) {
-		if (xtate_fail(s, nvml_init_prime(c))) {
+		if (xtate_fail(s, nvml_init_prime())) {
 			return s;
 		}
 	}
