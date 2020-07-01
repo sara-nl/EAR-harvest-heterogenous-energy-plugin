@@ -17,26 +17,16 @@
 
 #include <management/gpu/gpu.h>
 #include <management/gpu/archs/nvml.h>
+#include <management/gpu/archs/dummy.h>
 
-static struct mgt_gpu_ops_s
-{
-	state_t (*init)						(ctx_t *c);
-	state_t (*dispose)					(ctx_t *c);
-	state_t (*count)					(ctx_t *c, uint *dev_count);
-	state_t (*clock_limit_get_current)	(ctx_t *c, uint *khz);
-	state_t (*clock_limit_get_default)	(ctx_t *c, uint *khz);
-	state_t (*clock_limit_get_max)		(ctx_t *c, uint *khz);
-	state_t (*clock_limit_reset)		(ctx_t *c);
-	state_t (*clock_limit_set)			(ctx_t *c, uint *khz);
-	state_t (*power_limit_get_current)	(ctx_t *c, uint *watts);
-	state_t (*power_limit_get_default)	(ctx_t *c, uint *watts);
-	state_t (*power_limit_get_max)		(ctx_t *c, uint *watts);
-	state_t (*power_limit_reset)		(ctx_t *c);
-	state_t (*power_limit_set)			(ctx_t *c, uint *watts);
-} ops;
+static mgt_gpu_ops_t ops;
+static uint loaded;
 
-state_t mgt_gpu_load()
+state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 {
+	if (loaded != 0) {
+		return EAR_SUCCESS;
+	}
 	#ifdef CUDA_BASE
 	if (state_ok(mgt_nvml_status()))
 	{
@@ -53,10 +43,30 @@ state_t mgt_gpu_load()
 		ops.power_limit_get_max     = nvml_power_limit_get_max;
 		ops.power_limit_reset       = nvml_power_limit_reset;
 		ops.power_limit_set         = nvml_power_limit_set;
-		return EAR_SUCCESS;
-	}
+	} else
 	#endif
-	return EAR_ERROR;
+	{
+		ops.init                    = mgt_dummy_init;
+		ops.dispose                 = mgt_dummy_dispose;
+		ops.count                   = mgt_dummy_count;
+		ops.clock_limit_get_current = dummy_clock_limit_get_current;
+		ops.clock_limit_get_default = dummy_clock_limit_get_default;
+		ops.clock_limit_get_max     = dummy_clock_limit_get_max;
+		ops.clock_limit_reset       = dummy_clock_limit_reset;
+		ops.clock_limit_set         = dummy_clock_limit_set;
+		ops.power_limit_get_current = dummy_power_limit_get_current;
+		ops.power_limit_get_default = dummy_power_limit_get_default;
+		ops.power_limit_get_max     = dummy_power_limit_get_max;
+		ops.power_limit_reset       = dummy_power_limit_reset;
+		ops.power_limit_set         = dummy_power_limit_set;
+	}
+	if (_ops != NULL) {
+		*_ops = &ops;
+	}
+	// Dummy loads anyway
+	loaded = 1;
+
+	return EAR_SUCCESS;
 }
 
 state_t mgt_gpu_init(ctx_t *c)
