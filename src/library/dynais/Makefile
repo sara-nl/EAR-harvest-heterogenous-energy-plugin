@@ -37,10 +37,10 @@ install: ;
 clean: rclean
 	rm -f $(OBJS)
 
-######## DEPENDENCIES
-
 depend: ;
 
 depend-clean: ;
+
+######## EXPORTS
 
 include $(SRCDIR)/Makefile.extra

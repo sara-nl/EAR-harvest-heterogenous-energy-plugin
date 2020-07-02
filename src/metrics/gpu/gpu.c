@@ -15,11 +15,10 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
-#include <metrics/gpu/gpu/nvml.h>
-#include <metrics/gpu/gpu/dummy.h>
+#include <metrics/gpu/archs/nvml.h>
+#include <metrics/gpu/archs/dummy.h>
 
 static gpu_ops_t ops;
 static uint loaded;

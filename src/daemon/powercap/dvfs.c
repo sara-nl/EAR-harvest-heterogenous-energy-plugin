@@ -52,7 +52,7 @@ static ulong c_req_f;
 
 #define USE_SUBSCRIPTIONS 1
 #if USE_SUBSCRIPTIONS
-#include <common/monitor.h>
+#include <common/system/monitor.h>
 /* This  subscription will take care automatically of the power monitoring */
 static suscription_t *sus;
 static uint dvfs_pc_secs=0,num_packs;

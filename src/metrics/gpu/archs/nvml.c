@@ -15,8 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
-#include <metrics/gpu/gpu/nvml.h>
+#include <metrics/gpu/archs/nvml.h>
 
 #ifdef CUDA_BASE
 
@@ -26,8 +25,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <common/types.h>
-#include <common/monitor.h>
 #include <common/output/debug.h>
+#include <common/system/monitor.h>
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>
 

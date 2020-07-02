@@ -16,7 +16,7 @@
 */
 
 #include <stdlib.h>
-#include <metrics/gpu/gpu/dummy.h>
+#include <metrics/gpu/archs/dummy.h>
 
 static struct error_s {
 	char *null_data;
