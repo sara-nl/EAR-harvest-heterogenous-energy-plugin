@@ -15,6 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
 #include <metrics/gpu/gpu/nvml.h>
 
 #ifdef CUDA_BASE
@@ -41,7 +42,7 @@ const char *nvml_names[] =
 	"nvmlDeviceGetTemperature",
 	"nvmlDeviceGetUtilizationRates",
 	"nvmlDeviceGetComputeRunningProcesses",
-	"nvmlDeviceSetPowerManagementLimit"
+	"nvmlDeviceSetPowerManagementLimit",
 	"nvmlErrorString",
 };
 
@@ -292,17 +293,17 @@ state_t nvml_pool(void *p)
 
 		// Pooling the data
 		pool[i].time          = time;
-		pool[i].samples      += metric->samples;
-		pool[i].freq_mem_mhz += metric->freq_mem_mhz;
-		pool[i].freq_gpu_mhz += metric->freq_gpu_mhz;
-		pool[i].util_mem     += metric->util_gpu;
-		pool[i].util_gpu     += metric->util_mem;
-		pool[i].temp_gpu     += metric->temp_gpu;
-		pool[i].temp_mem     += metric->temp_mem;
-		pool[i].energy_j      = metric->energy_j;
-		pool[i].power_w      += metric->power_w;
-		pool[i].working       = metric->working;
-		pool[i].correct       = metric->correct;
+		pool[i].samples      += metric.samples;
+		pool[i].freq_mem_mhz += metric.freq_mem_mhz;
+		pool[i].freq_gpu_mhz += metric.freq_gpu_mhz;
+		pool[i].util_mem     += metric.util_gpu;
+		pool[i].util_gpu     += metric.util_mem;
+		pool[i].temp_gpu     += metric.temp_gpu;
+		pool[i].temp_mem     += metric.temp_mem;
+		pool[i].energy_j      = metric.energy_j;
+		pool[i].power_w      += metric.power_w;
+		pool[i].working       = metric.working;
+		pool[i].correct       = metric.correct;
 
 		// Burst or not
 		working += pool[i].working;
@@ -341,7 +342,8 @@ state_t nvml_read_raw(ctx_t *c, gpu_t *data)
 	timestamp_getfast(&time);
 	for (i = 0; i < dev_count; ++i) {
 		static_read(i, &data[i]);
-		data[i].time = time;
+		data[i].time     = time;
+		data[i].power_w *= 1000;
 	}
 	return EAR_SUCCESS;
 }
@@ -502,27 +504,19 @@ state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_data_merge(gpu_t *data2, gpu_t *data1, gpu_t *data_merge)
+state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge)
 {
-	static gpu_t *data_diff = NULL;
-	state_t s;
-
+	int i;
 	if (dev_count == 0) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
-	if (data2 == NULL || data1 == NULL) {
+	if (data_diff == NULL || data_merge == NULL) {
 		return_msg(EAR_ERROR, Error.null_data);
 	}
-	if (data_diff == NULL) {
-		nvml_data_alloc(&data_diff);
-	}
-	if (xtate_fail(s, nvml_read_diff(data2, data1, data_diff))) {
-		return s;
-	}
-	//
+	// Cleaning
 	memset((void *) data_merge, 0, sizeof(gpu_t));
-	//
-	for (i = 0, i < dev_count; ++i)
+	// Accumulators: power and energy
+	for (i = 0; i < dev_count; ++i)
 	{
 		data_merge->freq_mem_mhz += data_diff[i].freq_mem_mhz;
 		data_merge->freq_gpu_mhz += data_diff[i].freq_gpu_mhz;
@@ -534,9 +528,7 @@ state_t nvml_data_merge(gpu_t *data2, gpu_t *data1, gpu_t *data_merge)
 		data_merge->power_w      += data_diff[i].power_w;
 	}
 	// Static
-	data_merge->time          = time;
-	data_merge->working       = data_diff[0].working;
-	data_merge->correct       = data_diff[0].correct;
+	data_merge->time          = data_diff[0].time;
 	data_merge->samples       = data_diff[0].samples;
 	// Averages
 	data_merge->freq_mem_mhz /= dev_count;
@@ -545,7 +537,7 @@ state_t nvml_data_merge(gpu_t *data2, gpu_t *data1, gpu_t *data_merge)
 	data_merge->util_gpu     /= dev_count;
 	data_merge->temp_gpu     /= dev_count;
 	data_merge->temp_mem     /= dev_count;
-
+	
 	return EAR_SUCCESS;
 }
 
@@ -560,7 +552,7 @@ state_t nvml_read(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
 state_t nvml_read_raw(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
 state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
 state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
-state_t nvml_data_merge(gpu_t *data2, gpu_t *data1, gpu_t *data_merge) { return EAR_ERROR; }
+state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge) { return EAR_ERROR; }
 state_t nvml_data_init(uint _dev_count) { return EAR_ERROR; }
 state_t nvml_data_alloc(gpu_t **data) { return EAR_ERROR; }
 state_t nvml_data_free(gpu_t **data) { return EAR_ERROR; }

@@ -52,6 +52,11 @@ state_t gpu_dummy_read(ctx_t *c, gpu_t *data)
 	return gpu_dummy_data_null(data);
 }
 
+state_t gpu_dummy_read_raw(ctx_t *c, gpu_t *data)
+{
+	return gpu_dummy_data_null(data);
+}
+
 state_t gpu_dummy_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
 	state_t s;
@@ -66,6 +71,14 @@ state_t gpu_dummy_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_di
 state_t gpu_dummy_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
 	if (data2 == NULL || data1 == NULL || data_diff == NULL) {
+		return_msg(EAR_ERROR, Error.null_data);
+	}
+	return EAR_SUCCESS;
+}
+
+state_t gpu_dummy_data_merge(gpu_t *data_diff, gpu_t *data_merge)
+{
+	if (data_diff == NULL || data_merge == NULL) {
 		return_msg(EAR_ERROR, Error.null_data);
 	}
 	return EAR_SUCCESS;
