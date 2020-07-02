@@ -18,7 +18,7 @@
 #ifndef _PWR_MGT_H
 #define _PWR_MGT_H
 #include <common/states.h>
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 
 typedef void * pwr_mgt_t;
 

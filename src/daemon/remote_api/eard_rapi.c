@@ -30,9 +30,9 @@
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
-#include <daemon/eard_rapi.h>
-#include <daemon/eard_conf_rapi.h>
-#include <daemon/eard_server_api.h>
+#include <daemon/remote_api/eard_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_server_api.h>
 
 extern int eards_sfd;
 
@@ -203,7 +203,7 @@ int eards_set_risk(risk_t risk,unsigned long target)
     return send_command(&command);
 }
 
-void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t my_cluster_conf)
+void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_SET_RISK;
@@ -225,6 +225,15 @@ int eards_set_policy_info(new_policy_cont_t *p)
     return send_command(&command);
 }
 
+int eards_set_default_powercap()
+{
+    request_t command;
+    command.req=EAR_RC_DEF_POWERCAP;
+    command.node_dist = INT_MAX;
+    command.time_code = time(NULL);
+    return send_command(&command);
+}
+
 /* END OF SINGLE NODE COMMUNICATION */
 
 
@@ -232,7 +241,7 @@ int eards_set_policy_info(new_policy_cont_t *p)
 *	SAME FUNCTIONALLITY BUT SENT TO ALL NODES
 */
 
-void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
+void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_INC_TH;
@@ -241,7 +250,7 @@ void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
+void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_NEW_TH;
@@ -251,14 +260,14 @@ void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf)
 }
 
 
-void ping_all_nodes_propagated(cluster_conf_t my_cluster_conf)
+void ping_all_nodes_propagated(cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req = EAR_RC_PING;
     send_command_all(command, my_cluster_conf);
 }
 
-void set_max_freq_all_nodes(ulong max_freq, cluster_conf_t my_cluster_conf)
+void set_max_freq_all_nodes(ulong max_freq, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_MAX_FREQ;
@@ -266,7 +275,7 @@ void set_max_freq_all_nodes(ulong max_freq, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+void set_freq_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_SET_FREQ;
@@ -274,7 +283,7 @@ void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void red_def_max_pstate_all_nodes(ulong pstate, cluster_conf_t my_cluster_conf)
+void red_def_max_pstate_all_nodes(ulong pstate, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_RED_PSTATE;
@@ -283,7 +292,7 @@ void red_def_max_pstate_all_nodes(ulong pstate, cluster_conf_t my_cluster_conf)
 }
 
 /** Sets the default pstate for a given policy in all nodes */
-void set_def_pstate_all_nodes(uint pstate,ulong pid,cluster_conf_t my_cluster_conf)
+void set_def_pstate_all_nodes(uint pstate,ulong pid,cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_SET_DEF_PSTATE;
@@ -293,7 +302,7 @@ void set_def_pstate_all_nodes(uint pstate,ulong pid,cluster_conf_t my_cluster_co
 }
 
 /** Sets the maximum pstate in all the nodes */
-void set_max_pstate_all_nodes(uint pstate,cluster_conf_t my_cluster_conf)
+void set_max_pstate_all_nodes(uint pstate,cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_SET_MAX_PSTATE;
@@ -302,7 +311,7 @@ void set_max_pstate_all_nodes(uint pstate,cluster_conf_t my_cluster_conf)
 }
 
 
-void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
+void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_DEF_FREQ;
@@ -310,14 +319,14 @@ void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf)
     send_command_all(command, my_cluster_conf);
 }
 
-void restore_conf_all_nodes(cluster_conf_t my_cluster_conf)
+void restore_conf_all_nodes(cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_REST_CONF;
     send_command_all(command, my_cluster_conf);
 }
 
-void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_conf)
+void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
     command.req=EAR_RC_DEF_FREQ;
@@ -326,7 +335,14 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_
     send_command_all(command, my_cluster_conf);
 }
 
-int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
+void set_default_powercap_all_nodes(cluster_conf_t *my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_DEF_POWERCAP;
+    send_command_all(command, my_cluster_conf);
+}
+
+int status_all_nodes(cluster_conf_t *my_cluster_conf, status_t **status)
 {
     request_t command;
     status_t *temp_status;
@@ -338,7 +354,7 @@ int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status)
     command.req = EAR_RC_STATUS;
     command.node_dist = 0;
 
-    head = data_all_nodes(&command, &my_cluster_conf, (void **)&temp_status);
+    head = data_all_nodes(&command, my_cluster_conf, (void **)&temp_status);
     num_status = head.size / sizeof(status_t);
 
     if (head.type != EAR_TYPE_STATUS || head.size < sizeof(status_t))
@@ -373,13 +389,13 @@ request_header_t send_powercap_status(request_t *command, powercap_status_t **st
 
 }
 
-int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status) 
+int eards_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status) 
 {
     int num_temp_status;
     powercap_status_t *temp_status;
     request_t command;
 
-    command.node_dist = 0;
+    command.node_dist = INT_MAX;
     command.req = EAR_RC_GET_POWERCAP_STATUS;
     command.time_code = time(NULL);
     request_header_t head;
@@ -449,7 +465,7 @@ int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_
 }
 
 /** Send powercap_options to all nodes */
-int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_opt)
+int cluster_set_powercap_opt(cluster_conf_t *my_cluster_conf, powercap_opt_t *pc_opt)
 {
     request_t command;
     command.req=EAR_RC_SET_POWERCAP_OPT;
@@ -460,28 +476,28 @@ int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_
 }
 
 /* pings all nodes */
-void ping_all_nodes(cluster_conf_t my_cluster_conf)
+void ping_all_nodes(cluster_conf_t *my_cluster_conf)
 {
     int i, j, k, rc; 
     char node_name[256];
     debug("Sendind ping_all_nodes");
     //it is always secuential as it is only used for debugging purposes
-    for (i=0;i< my_cluster_conf.num_islands;i++){
-        for (j = 0; j < my_cluster_conf.islands[i].num_ranges; j++)
+    for (i=0;i< my_cluster_conf->num_islands;i++){
+        for (j = 0; j < my_cluster_conf->islands[i].num_ranges; j++)
         {   
-            for (k = my_cluster_conf.islands[i].ranges[j].start; k <= my_cluster_conf.islands[i].ranges[j].end; k++)
+            for (k = my_cluster_conf->islands[i].ranges[j].start; k <= my_cluster_conf->islands[i].ranges[j].end; k++)
             {   
                 if (k == -1) 
-                    sprintf(node_name, "%s", my_cluster_conf.islands[i].ranges[j].prefix);
-                else if (my_cluster_conf.islands[i].ranges[j].end == my_cluster_conf.islands[i].ranges[j].start)
-                    sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                    sprintf(node_name, "%s", my_cluster_conf->islands[i].ranges[j].prefix);
+                else if (my_cluster_conf->islands[i].ranges[j].end == my_cluster_conf->islands[i].ranges[j].start)
+                    sprintf(node_name, "%s%u", my_cluster_conf->islands[i].ranges[j].prefix, k); 
                 else {
-                    if (k < 10 && my_cluster_conf.islands[i].ranges[j].end > 10) 
-                        sprintf(node_name, "%s0%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                    if (k < 10 && my_cluster_conf->islands[i].ranges[j].end > 10) 
+                        sprintf(node_name, "%s0%u", my_cluster_conf->islands[i].ranges[j].prefix, k); 
                     else 
-                        sprintf(node_name, "%s%u", my_cluster_conf.islands[i].ranges[j].prefix, k); 
+                        sprintf(node_name, "%s%u", my_cluster_conf->islands[i].ranges[j].prefix, k); 
                 }   
-                rc=eards_remote_connect(node_name,my_cluster_conf.eard.port);
+                rc=eards_remote_connect(node_name,my_cluster_conf->eard.port);
                 if (rc<0){
                     error("Error connecting with node %s", node_name);
                 }else{

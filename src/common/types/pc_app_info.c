@@ -23,7 +23,7 @@
 #include <common/output/verbose.h>
 #if POWERCAP
 #include <common/types/pc_app_info.h>
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 
 void pcapp_info_new_job(pc_app_info_t *t)
 {

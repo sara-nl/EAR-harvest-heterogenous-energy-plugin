@@ -23,10 +23,10 @@ states_periodic.o: states_periodic.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf_eargm.h \
  ../../common/types/configuration/cluster_conf_eardbd.h \
  ../../common/types/configuration/cluster_conf_earlib.h \
- ../../common/types/coefficient.h ../../daemon/powercap.h \
- ../../daemon/powercap_status_conf.h ../../daemon/app_mgt.h \
- ../../common/types/pc_app_info.h ../../common/types/types.h \
- ../../common/types/daemon_log.h ../../common/types/periodic_metric.h \
+ ../../common/types/coefficient.h ../../daemon/powercap/powercap.h \
+ ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
+ ../../common/types/types.h ../../common/types/daemon_log.h \
+ ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
  ../../common/hardware/architecture.h ../../common/hardware/topology.h \
  ../../library/policies/policy.h ../../common/types/projection.h \
@@ -35,7 +35,7 @@ states_periodic.o: states_periodic.c ../../common/config.h \
  ../../library/common/library_shared_data.h \
  ../../library/common/global_comm.h ../../library/metrics/metrics.h \
  ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
- ../../daemon/eard_api.h ../../daemon/eard_conf_api.h
+ ../../daemon/local_api/eard_api.h ../../daemon/local_api/eard_conf_api.h
 states.o: states.c ../../common/config.h ../../common/config/config_def.h \
  ../../common/config/config_dev.h ../../common/config/config_install.h \
  ../../common/config/config_env.h ../../common/states.h \
@@ -61,10 +61,10 @@ states.o: states.c ../../common/config.h ../../common/config/config_def.h \
  ../../common/types/configuration/cluster_conf_eargm.h \
  ../../common/types/configuration/cluster_conf_eardbd.h \
  ../../common/types/configuration/cluster_conf_earlib.h \
- ../../common/types/coefficient.h ../../daemon/powercap.h \
- ../../daemon/powercap_status_conf.h ../../daemon/app_mgt.h \
- ../../common/types/pc_app_info.h ../../common/types/types.h \
- ../../common/types/daemon_log.h ../../common/types/periodic_metric.h \
+ ../../common/types/coefficient.h ../../daemon/powercap/powercap.h \
+ ../../daemon/app_mgt.h ../../common/types/pc_app_info.h \
+ ../../common/types/types.h ../../common/types/daemon_log.h \
+ ../../common/types/periodic_metric.h \
  ../../common/types/periodic_aggregation.h ../../common/types/services.h \
  ../../library/common/library_shared_data.h \
  ../../library/common/global_comm.h ../../library/tracer/tracer.h \
@@ -72,5 +72,5 @@ states.o: states.c ../../common/config.h ../../common/config/config_def.h \
  ../../library/policies/policy.h ../../common/types/projection.h \
  ../../common/hardware/architecture.h ../../common/hardware/topology.h \
  ../../common/hardware/frequency.h ../../common/hardware/cpupower.h \
- ../../daemon/eard_api.h ../../daemon/eard_conf_api.h \
+ ../../daemon/local_api/eard_api.h ../../daemon/local_api/eard_conf_api.h \
  ../../common/environment.h

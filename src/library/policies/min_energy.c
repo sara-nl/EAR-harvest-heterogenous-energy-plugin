@@ -28,8 +28,8 @@
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
-#include <daemon/eard_api.h>
-#include <daemon/powercap_status.h>
+#include <daemon/local_api/eard_api.h>
+#include <daemon/powercap/powercap_status.h>
 
 typedef unsigned long ulong;
 #ifdef EARL_RESEARCH

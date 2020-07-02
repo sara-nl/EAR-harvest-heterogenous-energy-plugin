@@ -39,7 +39,7 @@
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <global_manager/eargm_server_api.h>
-#include <daemon/eard_rapi.h>
+#include <daemon/remote_api/eard_rapi.h>
 
 
 extern uint total_nodes;

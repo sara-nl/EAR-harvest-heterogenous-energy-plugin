@@ -30,7 +30,7 @@
 #include <library/policies/policy_api.h> //clean
 #include <library/policies/policy_ctx.h> //clean
 #include <common/hardware/frequency.h>
-#include <daemon/eard_api.h> //?
+#include <daemon/local_api/eard_api.h> //?
 
 typedef unsigned long ulong;
 static signature_t *sig_list;

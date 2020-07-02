@@ -46,7 +46,7 @@
 #include <common/hardware/hardware_info.h>
 #include <common/hardware/frequency.h>
 #include <daemon/power_monitor.h>
-#include <daemon/powercap.h>
+#include <daemon/powercap/powercap.h>
 #include <daemon/node_metrics.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>

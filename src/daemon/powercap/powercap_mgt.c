@@ -29,7 +29,7 @@
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <daemon/power_mgt.h>
+#include <daemon/powercap/powercap_mgt.h>
 
 
 typedef struct powercap_symbols {

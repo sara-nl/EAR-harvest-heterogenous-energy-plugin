@@ -28,7 +28,7 @@ eard_modl_BINS = \
 eard_modl_PATH = $(DESTDIR)/lib/plugins/eard_policies
 eard_modl_PERM = 0775
 
-deps= $(SRCDIR)/common/libcommon.a $(SRCDIR)/daemon/powercap_status.o
+deps= $(SRCDIR)/common/libcommon.a $(SRCDIR)/daemon/powercap/powercap_status.o
 
 ########
 

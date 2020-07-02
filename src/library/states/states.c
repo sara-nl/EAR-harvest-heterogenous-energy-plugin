@@ -40,7 +40,7 @@
 #include <library/metrics/metrics.h>
 #include <library/policies/policy.h>
 #include <common/hardware/frequency.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 #include <common/environment.h>
 
 extern masters_info_t masters_info;

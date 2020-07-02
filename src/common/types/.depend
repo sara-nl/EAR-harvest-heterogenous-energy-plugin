@@ -5,8 +5,8 @@ log.o: log.c ../../common/config.h ../../common/config/config_def.h \
  ../../common/types/event_type.h ../../common/output/verbose.h \
  ../../common/output/error.h ../../common/colors.h \
  ../../common/output/timestamp.h ../../common/output/output_conf.h \
- ../../common/output/debug.h ../../daemon/eard_api.h \
- ../../daemon/eard_conf_api.h ../../common/types/application.h \
+ ../../common/output/debug.h ../../daemon/local_api/eard_api.h \
+ ../../daemon/local_api/eard_conf_api.h ../../common/types/application.h \
  ../../common/types/signature.h ../../metrics/gpu/gpu.h \
  ../../common/types.h ../../common/states.h ../../common/plugins.h \
  ../../common/system/time.h ../../common/types/power_signature.h \
@@ -38,7 +38,8 @@ pc_app_info.o: pc_app_info.c ../../common/config.h \
  ../../common/types/configuration/cluster_conf_eargm.h \
  ../../common/types/configuration/cluster_conf_eardbd.h \
  ../../common/types/configuration/cluster_conf_earlib.h \
- ../../common/types/services.h ../../daemon/powercap_status_conf.h
+ ../../common/types/services.h \
+ ../../daemon/powercap/powercap_status_conf.h
 coefficient.o: coefficient.c ../../common/states.h \
  ../../common/output/error.h ../../common/colors.h \
  ../../common/output/timestamp.h ../../common/output/output_conf.h \

@@ -22,7 +22,7 @@
 #include <common/config.h>
 #define SHOW_DEBUGS 1
 #include <common/includes.h>
-#include <daemon/powercap_status.h>
+#include <daemon/powercap/powercap_status.h>
 #include <common/types/signature.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>

@@ -30,7 +30,7 @@
 #include <common/config.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <daemon/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
 #include <common/types/risk.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
@@ -53,7 +53,7 @@ int send_non_block_command(request_t *command);
 int send_data(int fd, size_t size, char *data, int type);
 
 /** Sends the command to all nodes in ear.conf */
-void send_command_all(request_t command, cluster_conf_t my_cluster_conf);
+void send_command_all(request_t command, cluster_conf_t *my_cluster_conf);
 
 /** Corrects a propagation error, sending to the child nodes when the parent isn't responding. */
 void correct_error(int target_idx, int total_ips, int *ips, request_t *command, uint port);

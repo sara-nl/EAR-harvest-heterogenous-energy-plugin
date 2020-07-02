@@ -17,7 +17,7 @@
 
 #ifndef PC_SUPPORT_H
 #define PC_SUPPORT_H
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/signature.h>
 #if POWERCAP
 

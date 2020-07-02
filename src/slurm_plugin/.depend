@@ -9,7 +9,7 @@ slurm_plugin_rcom_shared.o: slurm_plugin_rcom_shared.c \
  ../common/config/config_env.h ../common/types/job.h \
  ../common/types/signature.h ../metrics/gpu/gpu.h ../common/states.h \
  ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -20,10 +20,11 @@ slurm_plugin_rcom_shared.o: slurm_plugin_rcom_shared.c \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -42,7 +43,7 @@ slurm_plugin_options.o: slurm_plugin_options.c ../common/system/folder.h \
  ../common/config/config_env.h ../common/types/job.h \
  ../common/types/signature.h ../metrics/gpu/gpu.h ../common/plugins.h \
  ../common/system/time.h ../common/types/power_signature.h \
- ../daemon/eard_rapi.h ../common/types/risk.h \
+ ../daemon/remote_api/eard_rapi.h ../common/types/risk.h \
  ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
  ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -53,10 +54,11 @@ slurm_plugin_options.o: slurm_plugin_options.c ../common/system/folder.h \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -75,7 +77,7 @@ slurm_plugin_rcom_eard.o: slurm_plugin_rcom_eard.c \
  ../common/config/config_env.h ../common/types/job.h \
  ../common/types/signature.h ../metrics/gpu/gpu.h ../common/states.h \
  ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -86,10 +88,11 @@ slurm_plugin_rcom_eard.o: slurm_plugin_rcom_eard.c \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -107,7 +110,7 @@ slurm_plugin_test.o: slurm_plugin_test.c ../common/colors.h \
  ../common/config/config_install.h ../common/config/config_env.h \
  ../common/types/job.h ../common/types/signature.h ../metrics/gpu/gpu.h \
  ../common/states.h ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -118,10 +121,11 @@ slurm_plugin_test.o: slurm_plugin_test.c ../common/colors.h \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -141,7 +145,7 @@ slurm_plugin_serialization.o: slurm_plugin_serialization.c \
  ../common/config/config_env.h ../common/types/job.h \
  ../common/types/signature.h ../metrics/gpu/gpu.h ../common/plugins.h \
  ../common/system/time.h ../common/types/power_signature.h \
- ../daemon/eard_rapi.h ../common/types/risk.h \
+ ../daemon/remote_api/eard_rapi.h ../common/types/risk.h \
  ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
  ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -152,10 +156,11 @@ slurm_plugin_serialization.o: slurm_plugin_serialization.c \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -174,7 +179,7 @@ erun_lock.o: erun_lock.c ../common/system/file.h ../common/sizes.h \
  ../common/config/config_env.h ../common/types/job.h \
  ../common/types/signature.h ../metrics/gpu/gpu.h ../common/plugins.h \
  ../common/system/time.h ../common/types/power_signature.h \
- ../daemon/eard_rapi.h ../common/types/risk.h \
+ ../daemon/remote_api/eard_rapi.h ../common/types/risk.h \
  ../common/types/configuration/cluster_conf.h ../common/string_enhanced.h \
  ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -185,10 +190,11 @@ erun_lock.o: erun_lock.c ../common/system/file.h ../common/sizes.h \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -205,7 +211,7 @@ erun_sim.o: erun_sim.c ../slurm_plugin/slurm_plugin.h ../common/types.h \
  ../common/config/config_install.h ../common/config/config_env.h \
  ../common/types/job.h ../common/types/signature.h ../metrics/gpu/gpu.h \
  ../common/states.h ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -216,10 +222,11 @@ erun_sim.o: erun_sim.c ../slurm_plugin/slurm_plugin.h ../common/types.h \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -238,7 +245,7 @@ slurm_plugin_rcom_eargmd.o: slurm_plugin_rcom_eargmd.c \
  ../common/config/config_env.h ../common/types/job.h \
  ../common/types/signature.h ../metrics/gpu/gpu.h ../common/states.h \
  ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -249,10 +256,11 @@ slurm_plugin_rcom_eargmd.o: slurm_plugin_rcom_eargmd.c \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -269,7 +277,7 @@ erun.o: erun.c ../slurm_plugin/slurm_plugin.h ../common/types.h \
  ../common/config/config_install.h ../common/config/config_env.h \
  ../common/types/job.h ../common/types/signature.h ../metrics/gpu/gpu.h \
  ../common/states.h ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -280,10 +288,11 @@ erun.o: erun.c ../slurm_plugin/slurm_plugin.h ../common/types.h \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -301,7 +310,7 @@ slurm_plugin_environment.o: slurm_plugin_environment.c \
  ../common/config/config_install.h ../common/config/config_env.h \
  ../common/types/job.h ../common/types/signature.h ../metrics/gpu/gpu.h \
  ../common/states.h ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -312,10 +321,11 @@ slurm_plugin_environment.o: slurm_plugin_environment.c \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \
@@ -332,7 +342,7 @@ slurm_plugin.o: slurm_plugin.c ../slurm_plugin/slurm_plugin.h \
  ../common/config/config_env.h ../common/types/job.h \
  ../common/types/signature.h ../metrics/gpu/gpu.h ../common/states.h \
  ../common/plugins.h ../common/system/time.h \
- ../common/types/power_signature.h ../daemon/eard_rapi.h \
+ ../common/types/power_signature.h ../daemon/remote_api/eard_rapi.h \
  ../common/types/risk.h ../common/types/configuration/cluster_conf.h \
  ../common/string_enhanced.h ../common/types/configuration/node_conf.h \
  ../common/types/configuration/policy_conf.h \
@@ -343,10 +353,11 @@ slurm_plugin.o: slurm_plugin.c ../slurm_plugin/slurm_plugin.h \
  ../common/types/configuration/cluster_conf_eargm.h \
  ../common/types/configuration/cluster_conf_eardbd.h \
  ../common/types/configuration/cluster_conf_earlib.h \
- ../daemon/eard_conf_rapi.h ../daemon/powercap_status_conf.h \
- ../daemon/eard_rapi_internals.h ../daemon/shared_configuration.h \
- ../common/system/shared_areas.h ../common/types/coefficient.h \
- ../daemon/powercap.h ../daemon/app_mgt.h ../common/types/pc_app_info.h \
+ ../daemon/remote_api/eard_conf_rapi.h \
+ ../daemon/remote_api/eard_rapi_internals.h \
+ ../daemon/shared_configuration.h ../common/system/shared_areas.h \
+ ../common/types/coefficient.h ../daemon/powercap/powercap.h \
+ ../daemon/app_mgt.h ../common/types/pc_app_info.h \
  ../common/types/types.h ../common/types/log.h \
  ../common/types/event_type.h ../common/types/loop.h \
  ../common/types/daemon_log.h ../common/types/periodic_metric.h \

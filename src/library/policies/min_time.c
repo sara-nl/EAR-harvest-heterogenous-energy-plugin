@@ -27,12 +27,12 @@
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 #include <library/policies/policy_api.h>
 #include <common/math_operations.h>
 #include <library/common/externs.h>
 #include <common/system/time.h>
-#include <daemon/powercap_status.h>
+#include <daemon/powercap/powercap_status.h>
 
 
 static timestamp pol_time_init;

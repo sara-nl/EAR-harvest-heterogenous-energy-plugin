@@ -29,9 +29,9 @@
 #include <library/common/externs.h>
 #include <library/common/global_comm.h>
 #include <common/environment.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 #if POWERCAP
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/pc_app_info.h>
 #include <library/policies/pc_suport.h>
 #endif

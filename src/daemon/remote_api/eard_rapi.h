@@ -30,8 +30,8 @@
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
 
-#include <daemon/eard_conf_rapi.h>
-#include <daemon/eard_rapi_internals.h>
+#include <daemon/remote_api/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_rapi_internals.h>
 
 /**  Sets freq as the maximim frequency to be used in the node where the API is connected with
 */
@@ -76,51 +76,51 @@ int eards_set_policy_info(new_policy_cont_t *p);
 
 
 /** Increases the current threshold to all nodes in my_cluster_conf. */
-void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf);
+void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf);
 
 /** Sets the maximum and default freq to all nodes in my_cluster_conf. */
-void set_max_freq_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
+void set_max_freq_all_nodes(ulong ps, cluster_conf_t *my_cluster_conf);
 
 /** Reduces the default freq to all nodes in my_cluster_conf. */
-void red_def_max_pstate_all_nodes(ulong ps, cluster_conf_t my_cluster_conf);
+void red_def_max_pstate_all_nodes(ulong ps, cluster_conf_t *my_cluster_conf);
 
 /** Reduces the frequecy of all nodes, using set frequenchy. */
-void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
+void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf);
 
 /** Sets the default frequency for all nodes in my_custer_conf. */
-void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t my_cluster_conf);
+void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t *my_cluster_conf);
 
 /** Restores the default configuration for all nodes in my_cluster_conf. */
-void restore_conf_all_nodes(cluster_conf_t my_cluster_conf);
+void restore_conf_all_nodes(cluster_conf_t *my_cluster_conf);
 
 /** Executes a simple ping to all nodes */
-void ping_all_nodes_propagated(cluster_conf_t my_cluster_conf);
+void ping_all_nodes_propagated(cluster_conf_t *my_cluster_conf);
 
 /** Executes a simple ping to all nodes in a sequential manner */
-void ping_all_nodes(cluster_conf_t my_cluster_conf);
+void ping_all_nodes(cluster_conf_t *my_cluster_conf);
 
 /** Asks all the nodes for their current status */
-int status_all_nodes(cluster_conf_t my_cluster_conf, status_t **status);
+int status_all_nodes(cluster_conf_t *my_cluster_conf, status_t **status);
 
 /** Asks for powercap_status for all nodes */
 int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status);
 
-int eards_get_powercap_status(cluster_conf_t my_cluster_conf, powercap_status_t **pc_status);
+int eards_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status);
 
 /** Send powercap_options to all nodes */
-int cluster_set_powercap_opt(cluster_conf_t my_cluster_conf, powercap_opt_t *pc_opt);
+int cluster_set_powercap_opt(cluster_conf_t *my_cluster_conf, powercap_opt_t *pc_opt);
 
 /** Sets frequency for all nodes. */
-void set_freq_all_nodes(ulong freq, cluster_conf_t my_cluster_conf);
+void set_freq_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf);
 
 /** Sets the default pstate for a given policy in all nodes */
-void set_def_pstate_all_nodes(uint pstate,ulong policy,cluster_conf_t my_cluster_conf);
+void set_def_pstate_all_nodes(uint pstate,ulong policy,cluster_conf_t *my_cluster_conf);
 
 /** Sets the maximum pstate in all the nodes */
-void set_max_pstate_all_nodes(uint pstate,cluster_conf_t my_cluster_conf);
+void set_max_pstate_all_nodes(uint pstate,cluster_conf_t *my_cluster_conf);
 
 /** Sets the th to all nodes. */
-void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t my_cluster_conf);
+void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf);
 
 /** Sends the status command through the currently open fd, reads the returning value and places it
 *   in **status. Returns the amount of status_t placed in **status. */
@@ -130,8 +130,12 @@ int send_status(request_t *command, status_t **status);
 int eards_set_powerlimit(unsigned long limit);
 int eards_red_powerlimit(unsigned int type, unsigned long limit);
 int eards_inc_powerlimit(unsigned int type, unsigned long limit);
+
 int eards_set_risk(risk_t risk,unsigned long target);
-void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t my_cluster_conf);
+void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t *my_cluster_conf);
+
+int eards_set_default_powercap();
+void set_default_powercap_all_nodes(cluster_conf_t *my_cluster_conf);
 
 int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_t *released);
 

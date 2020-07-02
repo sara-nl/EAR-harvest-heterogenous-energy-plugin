@@ -18,7 +18,7 @@
 #ifndef _EAR_POWERCAP_H
 #define _EAR_POWERCAP_H
 #include <pthread.h>
-#include <daemon/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status_conf.h>
 
 
 

@@ -17,7 +17,7 @@
 
 #ifndef CLUSTER_POWERCAP_H
 #define CLUSTER_POWERCAP_H
-#include <daemon/eard_rapi.h>
+#include <daemon/remote_api/eard_rapi.h>
 
 
 #define cluster_powercap_status_t powercap_status_t

@@ -17,7 +17,7 @@ endif
 
 comm_OBJS = $(SRCDIR)/common/libcommon.a -lm
 
-rapi_OBJS = $(SRCDIR)/daemon/eard_rapi.o $(SRCDIR)/daemon/eard_rapi_internals.o
+rapi_OBJS = $(SRCDIR)/daemon/remote_api/eard_rapi.o $(SRCDIR)/daemon/remote_api/eard_rapi_internals.o
 
 ######## RULES
 

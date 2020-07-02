@@ -18,8 +18,8 @@ erun_SRCS = \
         erun_lock.c
 
 plug_OBJS = \
-        $(SRCDIR)/daemon/eard_rapi.o \
-        $(SRCDIR)/daemon/eard_rapi_internals.o \
+        $(SRCDIR)/daemon/remote_api/eard_rapi.o \
+        $(SRCDIR)/daemon/remote_api/eard_rapi_internals.o \
         $(SRCDIR)/daemon/shared_configuration.o \
         $(SRCDIR)/global_manager/eargm_rapi.o \
         $(SRCDIR)/common/libcommon.a 

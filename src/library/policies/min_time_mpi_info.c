@@ -32,7 +32,7 @@
 #include <common/environment.h>
 #include <common/math_operations.h>
 #include <common/system/time.h>
-#include <daemon/eard_api.h>
+#include <daemon/local_api/eard_api.h>
 #include <library/policies/policy_api.h>
 #include <library/common/externs.h>
 #include <library/common/library_shared_data.h>
