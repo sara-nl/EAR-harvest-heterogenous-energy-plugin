@@ -40,108 +40,110 @@
 #include <common/hardware/hardware_info.h>
 #include <metrics/bandwidth/cpu/intel_haswell.h>
 
-
-struct uncore_op
-{
-    int (*init) (int cpu_model);
-    int (*count) ();
-    int (*check) ();
-    int (*reset) ();
-    int (*start) ();
-    int (*stop) (unsigned long long *values);
-    int (*read) (unsigned long long *values);
-    int (*dispose) ();
-} pmons;
-
-#define DEF_UNC_SIZE 1
-
-
+struct uncore_op {
+	state_t (*init)		(ctx_t *c, topology_t *tp);
+	state_t (*count)	(ctx_t *c, uint *count);
+	state_t (*check)	(ctx_t *c);
+	state_t (*reset)	(ctx_t *c);
+	state_t (*start)	(ctx_t *c);
+	state_t (*stop)		(ctx_t *c, ullong *cas);
+	state_t (*read)		(ctx_t *c, ullong *cas);
+	state_t (*dispose)	(ctx_t *c);
+} ops;
 
 // Depending on the architecture delivered by cpu_model variable,
 // the pmons structure would point to its proper reading functions.
 int init_uncores(int cpu_model)
 {
-    debug("init_uncores");
+	debug("init_uncores");
 
-    switch (cpu_model) {
-        case CPU_HASWELL_X:
-        case CPU_BROADWELL_X:
-        case CPU_SKYLAKE_X:
-            pmons.init = pci_init_uncores;
-            pmons.count = pci_count_uncores;
-            pmons.check = pci_check_uncores;
-            pmons.reset = pci_reset_uncores;
-            pmons.start = pci_start_uncores;
-            pmons.stop = pci_stop_uncores;
-            pmons.read = pci_read_uncores;
-            pmons.dispose = pci_dispose_uncores;
-            return pmons.init(cpu_model);
-        default:
-            pmons.init = NULL;
-            pmons.count = NULL;
-            pmons.check = NULL;
-            pmons.reset =NULL;
-            pmons.start = NULL;
-            pmons.stop = NULL;
-            pmons.read = NULL;
-            pmons.dispose = NULL;
-            return DEF_UNC_SIZE;
-    }
+	if (vendor == VENDOR_AMD)
+	{
+		switch (cpu_model)
+		{
+			case CPU_HASWELL_X:
+			case CPU_BROADWELL_X:
+			case CPU_SKYLAKE_X:
+				ops.init  = pci_init_uncores;
+				ops.count = pci_count_uncores;
+				ops.check = NULL;
+				ops.reset = pci_reset_uncores;
+				ops.start = pci_start_uncores;
+				ops.stop  = pci_stop_uncores;
+				ops.read  = pci_read_uncores;
+				ops.dispose = pci_dispose_uncores;
+			break;
+		}
+	} else if (vendor == VENDOR_AMD)
+	{
+		if (family == FAMILY_ZEN) {
+			ops.init    = bwidth_amd23_init;
+			ops.count   = bwidth_amd23_count;
+			ops.check   = NULL;
+			ops.reset   = bwidth_amd23_reset;
+			ops.start   = bwidth_amd23_start;
+			ops.stop    = bwidth_amd23_stop;
+			ops.read    = bwidth_amd23_read;
+			ops.dispose = bwidth_amd23_dispose;
+		}
+	}
+
+#if 0
+	if (ops.init == NULL) {
+		ops.init    = bwidth_dummy_init;
+		ops.count   = bwidth_dummy_count;
+		ops.check   = NULL;
+		ops.reset   = bwidth_dummy_reset;
+		ops.start   = bwidth_dummy_start;
+		ops.stop    = bwidth_dummy_stop;
+		ops.read    = bwidth_dummy_read;
+		ops.dispose = bwidth_dummy_dispose;
+	}
+#endif
+
+	if (state_ok(ops.init(cpu_model))) {
+		return count_uncores();
+	}
+	return 0;
 }
 
 int count_uncores()
 {
-    debug("count_uncores");
-		if (pmons.count!=NULL) return pmons.count();
-		else return DEF_UNC_SIZE;
+	int count = 0;
+	if (ops.count != NULL) {
+		ops.count(c, (uint *) &count);
+	}
+	return count;
+	//preturn (ops.count, c);
 }
 
 int check_uncores()
 {
-		if (pmons.check!=NULL) return pmons.check();
-		else return EAR_ERROR;
+	return EAR_SUCCESS;
+	//preturn (ops.check, c);
 }
 
 int reset_uncores()
 {
-    debug("reset_uncores");
-		if (pmons.reset!=NULL) return pmons.reset();
-		else return EAR_ERROR;
+	preturn (ops.reset, c);
 }
 
 int start_uncores()
 {
-    debug("start_uncores");
-		if (pmons.start!=NULL) return pmons.start();
-		else return EAR_ERROR;
+	preturn (ops.start, c);
 }
 
-int stop_uncores(unsigned long long *values)
+int stop_uncores(ullong *values)
 {
-    debug("stop_uncores");
-		if (pmons.stop!=NULL) return pmons.stop(values);
-		else {
-			memset(values,0,DEF_UNC_SIZE*sizeof(unsigned long long));
-			return EAR_ERROR;
-		}
+	preturn (ops.stop, c, values);
 }
 
-int read_uncores(unsigned long long *values)
+int read_uncores(ullong *values)
 {
-    debug("read_uncore");
-		if (pmons.read!=NULL) return pmons.read(values);
-		else {
-      memset(values,0,DEF_UNC_SIZE*sizeof(unsigned long long));
-      return EAR_ERROR;
-    }
-
+	preturn (ops.read, c, values);
 }
 
 int dispose_uncores()
 {
-    debug("dispose_uncores");
-   	if (pmons.dispose!=NULL) return pmons.dispose();
-		else return EAR_ERROR;
+	preturn (ops.dispose, c);
 }
-
-

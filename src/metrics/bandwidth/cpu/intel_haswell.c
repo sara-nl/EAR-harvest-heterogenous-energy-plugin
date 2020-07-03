@@ -244,7 +244,8 @@ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
             }
         }
     }
-    return -(n_functions == EAR_ERROR);
+
+    return EAR_SUCCESS;
 }
 
 static void pci_scan_uncores()
@@ -297,6 +298,7 @@ static void pci_scan_uncores()
     debug( "pci_uncores.c: %i total uncore functions found\n", n_functions);
 }
 
+#if 0
 // Compares the supposed quantity of buses to be
 // detected with the quantity of detected ones.
 int pci_check_uncores()
@@ -308,8 +310,24 @@ int pci_check_uncores()
     if (supposed <= 0) return EAR_ERROR;
     return EAR_SUCCESS;
 }
+#endif
 
+state_t pci_init_uncores(ctx_t *c, topology_t *tp)
+{
+    _cpu_model = tp->model;
+
+    pci_scan_uncores();
+
+    if ((n_functions * n_ctrs) == 0) {
+        return EAR_ERROR;
+    }
+
+    return EAR_SUCCESS;
+}
+
+#if 0
 //Open PCI files and also allocates the memory needed
+
 int pci_init_uncores(int cpu_model)
 {
     _cpu_model = cpu_model;
@@ -317,7 +335,17 @@ int pci_init_uncores(int cpu_model)
 
     return pci_count_uncores();
 }
+#endif
 
+state_t pci_count_uncores(ctx_t *c, uint *count)
+{
+    int n_ctrs;
+    get_arch_read_counters(&n_ctrs);
+    *count = n_functions * n_ctrs;
+    return EAR_SUCCESS;
+}
+
+#if 0
 // Get the number of the performance monitor uncore
 // counters that will be needed. Needed when you
 // stop the counters and pass a buffer to be filled
@@ -328,9 +356,9 @@ int pci_count_uncores()
     get_arch_read_counters(&n_ctrs);
     return n_functions * n_ctrs;
 }
+#endif
 
-// Freezes and reset all uncore counters
-int pci_reset_uncores()
+state_t pci_reset_uncores(ctx_t *c)
 {
 	int n_cmd, n_ctl;
 	printf("pci_reset_uncores\n");
@@ -340,21 +368,19 @@ int pci_reset_uncores()
 	return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
-// Unfreezes all uncore counters
-int pci_start_uncores()
+state_t pci_start_uncores(ctx_t *c)
 {
     int n_cmd, n_ctl;
-		if (n_functions<=0) return 0;
+    if (n_functions<=0) return 0;
     int *cmd = get_arch_start_commands(&n_cmd);
     char *ctl = get_arch_start_controls(&n_ctl);
     return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
-// Stop all uncore counters and also gets it's values
-int pci_stop_uncores(ull *values)
+state_t pci_stop_uncores(ctx_t *c)
 {
     int n_cmd, n_ctl, res;
-		if (n_functions<=0) return 0;
+    if (n_functions<=0) return 0;
     int *cmd = get_arch_stop_commands(&n_cmd);
     char *ctl = get_arch_stop_controls(&n_ctl);
     res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
@@ -362,25 +388,24 @@ int pci_stop_uncores(ull *values)
     return res;
 }
 
-// Reads registers values.
-int pci_read_uncores(ull *values)
+state_t pci_read_uncores(ctx_t *c, ullong *cas)
 {
     int i, j, k, res;
     int n_ctrs;
 
-		if (n_functions<=0){ 
-			return 0;
-		}
+	if (n_functions<=0){
+		return EAR_ERROR;
+	}
     uchar *ctrs = (uchar *) get_arch_read_counters(&n_ctrs);
 
     for(i = k = 0; i < n_functions; i++)
     {
         for (j = 0; j < n_ctrs; ++j, ++k)
         {
-            values[k] = 0;
+            cas[k] = 0;
             if (fd_functions[i] != -1)
             {
-                res = pread(fd_functions[i], &values[k], sizeof(ull), ctrs[j]);
+                res = pread(fd_functions[i], &cas[k], sizeof(ull), ctrs[j]);
 
                 if (res == -1 || res != sizeof(ull))
                 {
@@ -393,12 +418,10 @@ int pci_read_uncores(ull *values)
         }
     }
 
-    return  0;
+    return EAR_SUCCESS;
 }
 
-// Just closes all file descriptors and frees it's
-// allocated memory
-int pci_dispose_uncores()
+state_t pci_dispose_uncores(ctx_t *c)
 {
     int i;
 
@@ -414,5 +437,5 @@ int pci_dispose_uncores()
 
     free(fd_functions);
 
-    return 0;
+    return EAR_SUCCESS;
 }

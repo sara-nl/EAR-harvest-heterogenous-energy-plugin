@@ -19,23 +19,29 @@
 #define COMMON_HARDWARE_TOPOLOGY_H_
 
 #include <common/types/generic.h>
-// List1: https://en.wikichip.org/wiki/intel/cpuid
 
+// https://en.wikichip.org/wiki/intel/cpuid
 #define MODEL_UNIDENTIFIED			-1
-#define MODEL_SANDY_BRIDGE_X			45  //X means Server
+#define MODEL_SANDY_BRIDGE_X		45  //X means Server
 #define MODEL_IVY_BRIDGE_X			62
 #define MODEL_HASWELL_X				63
 #define MODEL_BROADWELL_X			79
 #define MODEL_SKYLAKE_X				85
-#define MODEL_CASCADE_LAKE_X			85
+#define MODEL_CASCADE_LAKE_X		85
 #define MODEL_COOPER_LAKE_X			85
 #define MODEL_HEWITT_LAKE_X			86  //Broadwell X arch based
 #define MODEL_XEON_D_X				86  //Broadwell X arch based
-#define MODEL_KNIGHTS_LANDING_MIC		87  //MIC means Many Integrated Cores
-#define MODEL_KNIGHTS_MILL_MIC			133
-
+#define MODEL_KNIGHTS_LANDING_MIC	87  //MIC means Many Integrated Cores
+#define MODEL_KNIGHTS_MILL_MIC		133
+// https://en.wikichip.org/wiki/amd/cpuid
+#define FAMILY_BOBCAT				20
+#define FAMILY_BULLDOZER			21
+#define FAMILY_JAGUAR				22
+#define FAMILY_ZEN					23
+#define FAMILY_ZEN3					25
+// Supported vendors
 #define VENDOR_INTEL				0
-#define VENDOR_AMD				1
+#define VENDOR_AMD					1
 
 #include <common/states.h>
 

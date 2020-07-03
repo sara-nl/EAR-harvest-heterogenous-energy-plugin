@@ -61,11 +61,11 @@ int pci_start_uncores();
 *   returned by count_uncores() function. The returned values are the
 *   read and write bandwidth values in index [i] and [i+1] respectively.
 *   Returns 0 on success or EAR_ERROR. */
-int pci_stop_uncores(unsigned long long *values);
+int pci_stop_uncores(ullong *values);
 
 /** Gets uncore counters values.
 *   Returns 0. */
-int pci_read_uncores(unsigned long long *values);
+int pci_read_uncores(ullong *values);
 
 /** Closes file descriptors and frees memory.
 *   Returns 0 on success or EAR_ERROR. */
