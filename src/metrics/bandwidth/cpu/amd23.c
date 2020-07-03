@@ -20,9 +20,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <common/states.h>
+#include <common/plugins.h>
 #include <common/system/time.h>
 #include <metrics/common/msr.h>
-#include <metrics/common/topology.h>
+#include <common/hardware/topology.h>
+#include <metrics/bandwidth/cpu/amd23.h>
 
 // Vendor	AuthenticAMD
 // Family	17
@@ -128,12 +130,12 @@ state_t bwidth_amd23_count(ctx_t *c, uint *count)
 	return EAR_SUCCESS;
 }
 
-state_t bwidth_amd23_counters_start(ctx_t *c)
+state_t bwidth_amd23_start(ctx_t *c)
 {
-	return bwidth_amd23_counters_reset(c);
+	return bwidth_amd23_reset(c);
 }
 
-state_t bwidth_amd23_counters_stop(ctx_t *c)
+state_t bwidth_amd23_stop(ctx_t *c, ullong *cas)
 {
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
 	state_t s;
@@ -148,10 +150,10 @@ state_t bwidth_amd23_counters_stop(ctx_t *c)
 		s = msr_write(bw->tp.cpus[i].id, &cmd_off, sizeof(ulong), ctl_l3);
 	}
 
-	return EAR_SUCCESS;
+	return bwidth_amd23_read(c, cas);
 }
 
-state_t bwidth_amd23_counters_reset(ctx_t *c)
+state_t bwidth_amd23_reset(ctx_t *c)
 {
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
 	state_t s;
@@ -170,7 +172,7 @@ state_t bwidth_amd23_counters_reset(ctx_t *c)
 }
 
 //state_t bwidth_amd23_counters_read(ctx_t *c, double *gbs)
-state_t bwidth_amd23_counters_read(ctx_t *c, ullong *cas)
+state_t bwidth_amd23_read(ctx_t *c, ullong *cas)
 {
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
 	state_t s;

@@ -6,11 +6,13 @@ chck_BINS = \
     ear_types           \
     cpu_examinable      \
     cpu_aperf           \
-    cpu_uncores         \
-    cpu_uncores_all     \
     gsl_version         \
     module_acpi_cpufreq \
     module_ipmi_devintf
+
+#    cpu_uncores         \
+#    cpu_uncores_all     \
+
 ifdef PAPI_BASE
 chck_BINS += \
     papi_init           \

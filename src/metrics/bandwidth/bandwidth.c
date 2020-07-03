@@ -32,15 +32,20 @@
  * When an error occurs, those calls returns -1.
  */
 
+#define SHOW_DEBUGS 1
+
 #include <stdio.h>
 #include <string.h>
 #include <common/config.h>
-#include <common/output/verbose.h>
+#include <common/output/debug.h>
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
+
+#include <metrics/bandwidth/bandwidth.h>
+#include <metrics/bandwidth/cpu/amd23.h>
 #include <metrics/bandwidth/cpu/intel_haswell.h>
 
-struct uncore_op {
+static struct uncore_op {
 	state_t (*init)		(ctx_t *c, topology_t *tp);
 	state_t (*count)	(ctx_t *c, uint *count);
 	state_t (*check)	(ctx_t *c);
@@ -51,15 +56,27 @@ struct uncore_op {
 	state_t (*dispose)	(ctx_t *c);
 } ops;
 
+static ctx_t context;
+static ctx_t *c = &context;
+static topology_t topo;
+
 // Depending on the architecture delivered by cpu_model variable,
 // the pmons structure would point to its proper reading functions.
 int init_uncores(int cpu_model)
 {
-	debug("init_uncores");
+	topology_init(&topo);
+	int vendor = topo.vendor;
+	int family = topo.family;
+	int model  = topo.model;	
 
-	if (vendor == VENDOR_AMD)
+	debug("called");
+	debug("vendor: %d", vendor);
+	debug("family: %d", family);
+	debug("model: %d", model);
+
+	if (vendor == VENDOR_INTEL)
 	{
-		switch (cpu_model)
+		switch (model)
 		{
 			case CPU_HASWELL_X:
 			case CPU_BROADWELL_X:
@@ -101,7 +118,7 @@ int init_uncores(int cpu_model)
 	}
 #endif
 
-	if (state_ok(ops.init(cpu_model))) {
+	if (state_ok(ops.init(c, &topo))) {
 		return count_uncores();
 	}
 	return 0;

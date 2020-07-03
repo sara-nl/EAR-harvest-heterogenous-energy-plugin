@@ -86,6 +86,7 @@
 #include <linux/limits.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/plugins.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
 #include <common/hardware/hardware_info.h>
@@ -318,7 +319,7 @@ state_t pci_init_uncores(ctx_t *c, topology_t *tp)
 
     pci_scan_uncores();
 
-    if ((n_functions * n_ctrs) == 0) {
+    if (n_functions == 0) {
         return EAR_ERROR;
     }
 
@@ -377,14 +378,14 @@ state_t pci_start_uncores(ctx_t *c)
     return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
-state_t pci_stop_uncores(ctx_t *c)
+state_t pci_stop_uncores(ctx_t *c, ullong *cas)
 {
     int n_cmd, n_ctl, res;
     if (n_functions<=0) return 0;
     int *cmd = get_arch_stop_commands(&n_cmd);
     char *ctl = get_arch_stop_controls(&n_ctl);
     res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
-    pci_read_uncores(values);
+    pci_read_uncores(c, cas);
     return res;
 }
 

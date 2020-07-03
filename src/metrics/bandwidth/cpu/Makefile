@@ -2,7 +2,10 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-band_OBJS = intel_haswell.o utils.o
+band_OBJS = \
+    intel_haswell.o \
+    amd23.o \
+    utils.o
 
 ######## RULES
 

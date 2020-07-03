@@ -39,40 +39,18 @@ static char SKYLAKE_X_REGISTERS[] = { 0xF8, 0xF4, 0xD8, 0xA0 };
 static char SKYLAKE_X_FUNCTIONS[] = { 0x02, 0x06 };
 static int  SKYLAKE_X_N_FUNCTIONS = 6;
 
-/** Scans PCI buses and allocates file descriptors memory.
-*   Returns the number of uncores counters on success or EAR_ERROR. */
-int pci_init_uncores(int cpu_model);
+state_t pci_init_uncores(ctx_t *c, topology_t *tp);
 
-/** Get the number of performance monitor counters. 
-*   pci_init_uncores() have to be called before.
-*   Returns the number of PCI uncore counters. */
-int pci_count_uncores();
+state_t pci_count_uncores(ctx_t *c, uint *count);
 
-/** Freezes and resets all performance monitor uncore counters.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_reset_uncores();
+state_t pci_reset_uncores(ctx_t *c);
 
-/** Unfreezes all PCI uncore counters.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_start_uncores();
+state_t pci_start_uncores(ctx_t *c);
 
-/** Freezes all PMON uncore counters and gets it's values. The array
-*   has to be greater or equal than the number of PMON uncore counters
-*   returned by count_uncores() function. The returned values are the
-*   read and write bandwidth values in index [i] and [i+1] respectively.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_stop_uncores(ullong *values);
+state_t pci_stop_uncores(ctx_t *c, ullong *cas);
 
-/** Gets uncore counters values.
-*   Returns 0. */
-int pci_read_uncores(ullong *values);
+state_t pci_read_uncores(ctx_t *c, ullong *cas);
 
-/** Closes file descriptors and frees memory.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_dispose_uncores();
-
-/** Checks if the found pci uncore functions have any abnormality.
-*   Returned values are EAR_SUCCESS, EAR_WARNING or EAR_ERROR. */
-int pci_check_uncores();
+state_t pci_dispose_uncores(ctx_t *c);
 
 #endif

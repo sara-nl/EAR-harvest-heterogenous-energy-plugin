@@ -18,6 +18,8 @@
 #ifndef METRICS_BANDWIDTH_AMD63_H
 #define METRICS_BANDWIDTH_AMD63_H
 
+#include <metrics/bandwidth/bandwidth.h>
+
 state_t bwidth_amd23_init(ctx_t *c, topology_t *tp);
 
 state_t bwidth_amd23_dispose(ctx_t *c);
@@ -26,7 +28,7 @@ state_t bwidth_amd23_count(ctx_t *c, uint *count);
 
 state_t bwidth_amd23_start(ctx_t *c);
 
-state_t bwidth_amd23_stop(ctx_t *c);
+state_t bwidth_amd23_stop(ctx_t *c, ullong *cas);
 
 state_t bwidth_amd23_reset(ctx_t *c);
 

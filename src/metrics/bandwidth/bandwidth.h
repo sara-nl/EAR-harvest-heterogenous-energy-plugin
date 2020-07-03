@@ -18,6 +18,9 @@
 #ifndef METRICS_BANDWIDTH_CPU
 #define METRICS_BANDWIDTH_CPU
 
+#include <common/plugins.h>
+#include <common/hardware/topology.h>
+#include <metrics/bandwidth/cpu/amd23.h>
 #include <metrics/bandwidth/cpu/intel_haswell.h>
 
 // All these functions returns the specific funcion errror.

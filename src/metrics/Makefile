@@ -15,6 +15,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/accumulators/power_metrics.o \
     $(SRCDIR)/metrics/bandwidth/bandwidth.o \
     $(SRCDIR)/metrics/bandwidth/cpu/intel_haswell.o \
+    $(SRCDIR)/metrics/bandwidth/cpu/amd23.o \
     $(SRCDIR)/metrics/bandwidth/cpu/utils.o \
     $(SRCDIR)/metrics/cache/cache.o \
     $(SRCDIR)/metrics/cpi/cpi.o \
