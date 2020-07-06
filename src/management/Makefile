@@ -28,17 +28,15 @@ devel.install: ;
 
 clean: clean.components stat.gclean;
 
+depend: depend.components
+
+depend-clean: depend-clean.components
+
 ######## SUBFOLDERS
 
 %.components:
 	@ $(MAKE) -C 'gpu' $* || exit
 
-######## DEPENDENCIES
-
-depend: depend.components
-
-depend-clean: depend-clean.components
-
-######## DEPENDENCIES
+######## EXPORTS
 
 include $(SRCDIR)/Makefile.extra

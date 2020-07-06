@@ -22,13 +22,15 @@ all: $(gpu_BINS) all.components
 
 ######## OPTIONS
 
-install: install.components;
+install: install.components
 
 %.install: ;
 
-clean: rclean clean.components;
+clean: rclean clean.components
 
-depend: depend.components;
+depend: depend.components
+
+depend-clean: depend-clean.components
 
 ######## DEPENDENCIES
 

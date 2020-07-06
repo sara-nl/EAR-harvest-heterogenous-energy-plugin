@@ -15,7 +15,7 @@ all: $(gpu_BINS) all.components
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'gpu' $* || exit
+	@ $(MAKE) -C 'archs' $* || exit
 
 ######## OPTIONS
 
@@ -24,6 +24,12 @@ install: install.components;
 %.install: ;
 
 clean: rclean clean.components;
+
+######## DEPENDENCIES
+
+depend: depend.components
+
+depend-clean: depend-clean.components
 
 ######## DEPENDENCIES
 

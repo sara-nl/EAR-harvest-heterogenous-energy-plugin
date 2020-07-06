@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#include <metrics/gpu/gpu/nvml.h>
+#include <metrics/gpu/archs/nvml.h>
 
 #ifdef CUDA_BASE
 
@@ -25,8 +25,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <common/types.h>
-#include <common/monitor.h>
 #include <common/output/debug.h>
+#include <common/system/monitor.h>
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>
 
@@ -41,7 +41,7 @@ const char *nvml_names[] =
 	"nvmlDeviceGetTemperature",
 	"nvmlDeviceGetUtilizationRates",
 	"nvmlDeviceGetComputeRunningProcesses",
-	"nvmlDeviceSetPowerManagementLimit"
+	"nvmlDeviceSetPowerManagementLimit",
 	"nvmlErrorString",
 };
 
@@ -212,16 +212,72 @@ state_t nvml_count(ctx_t *c, uint *_dev_count)
 	return EAR_SUCCESS;
 }
 
+static int static_read(int i, gpu_t *metric)
+{
+	nvmlEnableState_t mode;
+	nvmlDevice_t device;
+	int s;
+
+	// Cleaning
+	memset(metric, 0, sizeof(gpu_t));
+
+	// Testing if all is right
+	if ((s = nvml.DevHandle(i, &device)) != NVML_SUCCESS) {
+		return 0;
+	}
+	if ((s = nvml.DevMode(device, &mode)) != NVML_SUCCESS) {
+		return 0;
+	}
+	if (mode != NVML_FEATURE_ENABLED) {
+		return 0;
+	}
+
+	nvmlProcessInfo_t procs[8];
+	nvmlUtilization_t util;
+	uint proc_count = 8;
+	uint freq_gpu_mhz;
+	uint freq_mem_mhz;
+	uint temp_gpu;
+	uint power_mw;
+
+	// Getting the metrics by calling NVML (no MEM temp)
+	s = nvml.DevPower(device, &power_mw);
+	s = nvml.DevClocks(device, NVML_CLOCK_MEM, &freq_mem_mhz);
+	s = nvml.DevClocks(device, NVML_CLOCK_SM , &freq_gpu_mhz);
+	s = nvml.DevTemp(device, NVML_TEMPERATURE_GPU, &temp_gpu);
+	s = nvml.DevUtil(device, &util);
+	s = nvml.DevProcs(device, &proc_count, procs);
+
+	// Pooling the data (time is not set here)
+	metric->samples      = 1;
+	metric->freq_mem_mhz = (ulong) freq_mem_mhz;
+	metric->freq_gpu_mhz = (ulong) freq_gpu_mhz;
+	metric->util_mem     = (ulong) util.memory;
+	metric->util_gpu     = (ulong) util.gpu;
+	metric->temp_gpu     = (ulong) temp_gpu;
+	metric->temp_mem     = 0;
+	metric->energy_j     = 0;
+	metric->power_w      = (double) power_mw;
+	metric->working      = proc_count > 0;
+	metric->correct      = 1;
+
+	return 1;
+}
+
 state_t nvml_pool(void *p)
 {
+	//
+	timestamp_t time;
+	gpu_t metric;
+	int working;
+	int i;
+
 	if (!initialized) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 
 	//
-	timestamp_t time;
-	int working = 0;
-	int i;
+	working = 0;
 
 	// Lock
 	while (pthread_mutex_trylock(&lock));
@@ -230,50 +286,23 @@ state_t nvml_pool(void *p)
 	//
 	for (i = 0; i < dev_count; ++i)
 	{
-		nvmlEnableState_t mode;
-		nvmlDevice_t device;
-		int s;
-
-		// Testing if all is right
-		if ((s = nvml.DevHandle(i, &device)) != NVML_SUCCESS) {
+		if (!static_read(i, &metric)) {
 			continue;
 		}
-		if ((s = nvml.DevMode(device, &mode)) != NVML_SUCCESS) {
-			continue;
-		}
-		if (mode != NVML_FEATURE_ENABLED) {
-			continue;
-		}
-
-		nvmlProcessInfo_t procs[8];
-		nvmlUtilization_t util;
-		uint proc_count = 8;
-		uint freq_gpu_mhz;
-		uint freq_mem_mhz;
-		uint temp_gpu;
-		uint power_mw;
-
-		// Getting the metrics by calling NVML (no MEM temp)
-		s = nvml.DevPower(device, &power_mw);
-		s = nvml.DevClocks(device, NVML_CLOCK_MEM, &freq_mem_mhz);
-		s = nvml.DevClocks(device, NVML_CLOCK_SM , &freq_gpu_mhz);
-		s = nvml.DevTemp(device, NVML_TEMPERATURE_GPU, &temp_gpu);
-		s = nvml.DevUtil(device, &util);
-		s = nvml.DevProcs(device, &proc_count, procs);
 
 		// Pooling the data
-		pool[i].samples      += 1;
 		pool[i].time          = time;
-		pool[i].freq_mem_mhz += (ulong) freq_mem_mhz;
-		pool[i].freq_gpu_mhz += (ulong) freq_gpu_mhz;
-		pool[i].util_mem     += (ulong) util.memory;
-		pool[i].util_gpu     += (ulong) util.gpu;
-		pool[i].temp_gpu     += (ulong) temp_gpu;
-		pool[i].temp_mem      = 0;
-		pool[i].energy_j      = 0;
-		pool[i].power_w      += (double) power_mw;
-		pool[i].working       = proc_count > 0;
-		pool[i].correct       = 1;
+		pool[i].samples      += metric.samples;
+		pool[i].freq_mem_mhz += metric.freq_mem_mhz;
+		pool[i].freq_gpu_mhz += metric.freq_gpu_mhz;
+		pool[i].util_mem     += metric.util_gpu;
+		pool[i].util_gpu     += metric.util_mem;
+		pool[i].temp_gpu     += metric.temp_gpu;
+		pool[i].temp_mem     += metric.temp_mem;
+		pool[i].energy_j      = metric.energy_j;
+		pool[i].power_w      += metric.power_w;
+		pool[i].working       = metric.working;
+		pool[i].correct       = metric.correct;
 
 		// Burst or not
 		working += pool[i].working;
@@ -300,6 +329,22 @@ state_t nvml_read(ctx_t *c, gpu_t *data)
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	return nvml_data_copy(data, pool);
+}
+
+state_t nvml_read_raw(ctx_t *c, gpu_t *data)
+{
+	timestamp_t time;
+	int i;
+	if (!initialized) {
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
+	}
+	timestamp_getfast(&time);
+	for (i = 0; i < dev_count; ++i) {
+		static_read(i, &data[i]);
+		data[i].time     = time;
+		data[i].power_w *= 1000;
+	}
+	return EAR_SUCCESS;
 }
 
 state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
@@ -344,7 +389,7 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	d3->util_gpu     = (d2->util_gpu     - d1->util_gpu)     / d3->samples;
 	d3->util_mem     = (d2->util_mem     - d1->util_mem)     / d3->samples;
 	d3->temp_gpu     = (d2->temp_gpu     - d1->temp_gpu)     / d3->samples;
-	d3->temp_mem     = 0;
+	d3->temp_mem     = (d2->temp_mem     - d1->temp_mem)     / d3->samples;
 	d3->power_w      = (d2->power_w      - d1->power_w )     / (d3->samples * 1000);
 	d3->energy_j     = (d3->power_w)     * time_f;
 	d3->working      = (d2->working);
@@ -458,6 +503,43 @@ state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 	return EAR_SUCCESS;
 }
 
+state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge)
+{
+	int i;
+	if (dev_count == 0) {
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
+	}
+	if (data_diff == NULL || data_merge == NULL) {
+		return_msg(EAR_ERROR, Error.null_data);
+	}
+	// Cleaning
+	memset((void *) data_merge, 0, sizeof(gpu_t));
+	// Accumulators: power and energy
+	for (i = 0; i < dev_count; ++i)
+	{
+		data_merge->freq_mem_mhz += data_diff[i].freq_mem_mhz;
+		data_merge->freq_gpu_mhz += data_diff[i].freq_gpu_mhz;
+		data_merge->util_mem     += data_diff[i].util_mem;
+		data_merge->util_gpu     += data_diff[i].util_gpu;
+		data_merge->temp_gpu     += data_diff[i].temp_gpu;
+		data_merge->temp_mem     += data_diff[i].temp_mem;
+		data_merge->energy_j     += data_diff[i].energy_j;
+		data_merge->power_w      += data_diff[i].power_w;
+	}
+	// Static
+	data_merge->time          = data_diff[0].time;
+	data_merge->samples       = data_diff[0].samples;
+	// Averages
+	data_merge->freq_mem_mhz /= dev_count;
+	data_merge->freq_gpu_mhz /= dev_count;
+	data_merge->util_mem     /= dev_count;
+	data_merge->util_gpu     /= dev_count;
+	data_merge->temp_gpu     /= dev_count;
+	data_merge->temp_mem     /= dev_count;
+	
+	return EAR_SUCCESS;
+}
+
 #else
 
 state_t nvml_status() { return EAR_ERROR; }
@@ -466,8 +548,10 @@ state_t nvml_dispose(ctx_t *c) { return EAR_ERROR; }
 state_t nvml_count(ctx_t *c, uint *_dev_count) { return EAR_ERROR; }
 state_t nvml_pool(void *p) { return EAR_ERROR; }
 state_t nvml_read(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
+state_t nvml_read_raw(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
 state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
 state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
+state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge) { return EAR_ERROR; }
 state_t nvml_data_init(uint _dev_count) { return EAR_ERROR; }
 state_t nvml_data_alloc(gpu_t **data) { return EAR_ERROR; }
 state_t nvml_data_free(gpu_t **data) { return EAR_ERROR; }

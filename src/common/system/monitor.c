@@ -19,8 +19,8 @@
 #include <error.h>
 #include <string.h>
 #include <pthread.h>
-#include <common/monitor.h>
 #include <common/output/debug.h>
+#include <common/system/monitor.h>
 
 #define N_QUEUE 128
 

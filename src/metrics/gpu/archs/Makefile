@@ -20,13 +20,21 @@ nvml.o: nvml.c nvml.h
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
+######## SUBFOLDERS
+
+%.components: ;
+
 ######## OPTIONS
 
 install: ;
 
 clean: rclean;
 
-######## DEPENDENCIES
+depend: depend.components
+
+depend-clean: depend-clean.components
+
+######## EXPORTS
 
 include $(SRCDIR)/Makefile.depend
 include $(SRCDIR)/Makefile.extra

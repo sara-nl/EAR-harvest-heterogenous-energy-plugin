@@ -24,8 +24,8 @@ mets_OBJS = \
     $(SRCDIR)/metrics/energy/energy_node_lib.o \
     $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
     $(SRCDIR)/metrics/gpu/gpu.o \
-    $(SRCDIR)/metrics/gpu/gpu/dummy.o \
-    $(SRCDIR)/metrics/gpu/gpu/nvml.o \
+    $(SRCDIR)/metrics/gpu/archs/dummy.o \
+    $(SRCDIR)/metrics/gpu/archs/nvml.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/intel63.o \
     $(SRCDIR)/metrics/frequency/imc.o \
