@@ -32,8 +32,11 @@ void close_server_socket(int sock);
 
 int read_command(int s,request_t *command);
 void send_answer(int s,long *ack);
+int propagate_and_cat_data(request_t *command, uint port, void **status, size_t size,uint type);
+
 void propagate_req(request_t *command, uint port);
 int propagate_status(request_t *command, uint port, status_t **status);
+int propagate_app_status(request_t *command, uint port, app_status_t **status);
 int propagate_release_idle(request_t *command, uint port, pc_release_data_t *release);
 int propagate_powercap_status(request_t *command, uint port, powercap_status_t **status);
 

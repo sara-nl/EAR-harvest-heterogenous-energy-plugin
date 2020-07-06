@@ -37,6 +37,7 @@
 #include <common/output/verbose.h>
 #include <daemon/remote_api/eard_rapi.h>
 #include <daemon/remote_api/eard_conf_rapi.h>
+#include <daemon/remote_api/eard_server_api.h>
 
 // 2000 and 65535
 #define DAEMON_EXTERNAL_CONNEXIONS 1
@@ -435,45 +436,55 @@ int propagate_release_idle(request_t *command, uint port, pc_release_data_t *rel
 
 int propagate_status(request_t *command, uint port, status_t **status)
 {
-    status_t *temp_status, *final_status;
+	int num_status;
+	status_t *temp_status;
+	num_status=propagate_and_cat_data(command,port,(void **)&temp_status,sizeof(status_t),EAR_TYPE_STATUS);
+	temp_status[num_status-1].ok = STATUS_OK;
+	*status=temp_status;
+	return num_status;
+}
+int propagate_and_cat_data(request_t *command, uint port, void **status, size_t size,uint type)
+{
+    char *temp_status, *final_status;
+		int *ip;
     int num_status = 0;
 
     // if the current node is a leaf node (either last node or ip_init had failed)
     // we set the status for this node and return
     if (command->node_dist > total_ips || self_id < 0 || ips == NULL || total_ips < 1)
     {
-        final_status = calloc(1, sizeof(status_t));
+        final_status = (char *)calloc(1, size);
+				ip=(int *)final_status;
         if (self_id < 0 || ips == NULL)
-            final_status[0].ip = get_self_ip();
+            *ip = get_self_ip();
         else
-            final_status[0].ip = ips[self_id];
-        final_status[0].ok = STATUS_OK;
-	    debug("status has 1 status\n");
+            *ip = ips[self_id];
+	    	debug("generic_status has 1 status\n");
         *status = final_status;
         return 1;
     }
 
     // propagate request and receive the data
     request_header_t head = propagate_data(command, port, (void **)&temp_status);
-    num_status = head.size / sizeof(status_t);
+    num_status = head.size / size;
     
-    if (head.type != EAR_TYPE_STATUS || head.size < sizeof(status_t))
+    if (head.type != type || head.size < size)
     {
-        final_status = calloc(1, sizeof(status_t));
-        final_status[0].ip = ips[self_id];
-        final_status[0].ok = STATUS_OK;
+        final_status = (char *)calloc(1, size);
+				ip=(int *)final_status;
+        *ip = ips[self_id];
         if (head.size > 0) free(temp_status);
         *status = final_status;
         return 1;
     }
 
     //memory allocation with the current node
-    final_status = calloc(num_status + 1, sizeof(status_t));
+    final_status = (char *)calloc(num_status + 1, size);
     memcpy(final_status, temp_status, head.size);
 
     //current node info
-    final_status[num_status].ip = ips[self_id];
-    final_status[num_status].ok = STATUS_OK;
+    ip=(int*)final_status[num_status*size];
+    *ip = ips[self_id];
     *status = final_status;
     num_status++;   //we add the original status
 
@@ -482,4 +493,11 @@ int propagate_status(request_t *command, uint port, status_t **status)
     return num_status;
 
 }
+
+int propagate_app_status(request_t *command, uint port, app_status_t **status)
+{
+	/** LLUIS */
+	return EAR_ERROR;
+}
+
 

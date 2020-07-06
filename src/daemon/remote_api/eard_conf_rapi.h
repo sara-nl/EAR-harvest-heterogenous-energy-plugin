@@ -114,6 +114,12 @@ typedef struct status{
     eard_policy_info_t    policy_conf[TOTAL_POLICIES];
 } status_t;
 
+typedef struct app_status{
+	ulong jid,sid;
+	char node[SHORT_GENERIC_NAME];
+	signature_t signature;
+}app_status_t;
+
 typedef struct performance{
 	float cpi;
 	float gbs;
@@ -157,7 +163,8 @@ typedef struct performance{
 #define EAR_TYPE_STATUS         2001
 #define EAR_TYPE_POWER_STATUS   2002
 #define EAR_TYPE_RELEASED       2003
-#define EAR_TYPE_COMMAND        2004
+#define EAR_TYPE_APP_STATUS     2004
+#define EAR_TYPE_COMMAND        2005
 ///  |||||
 ///  vvvvv
 /******************* IMPORTANT ***********************/

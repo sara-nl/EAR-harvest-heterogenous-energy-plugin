@@ -351,6 +351,29 @@ int dyncon_set_policy(new_policy_cont_t *p)
 	
 }
 
+/** This function returns the current application status */
+void dyncon_get_app_status(int fd, request_t *command) 
+{
+  app_status_t *status;
+  long int ack;
+  send_answer(fd, &ack); //send ack before propagating
+  int num_status = propagate_app_status(command, my_cluster_conf.eard.port, &status);
+  unsigned long return_status = num_status;
+  debug("return_app_tatus %lu status=%p",return_status,status);
+  if (num_status < 1) {
+    error("Panic propagate_app_status returns less than 1 status");
+    return_status = 0;
+    write(fd, &return_status, sizeof(return_status));
+    return;
+  }
+  powermon_get_app_status(&status[num_status - 1]);
+    send_data(fd, sizeof(app_status_t) * num_status, (char *)status, EAR_TYPE_APP_STATUS);
+  debug("Returning from dyncon_get_app_status");
+  free(status);
+  debug("app_status released");
+
+}
+
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
@@ -610,6 +633,11 @@ state_t process_remote_requests(int clientfd) {
 			dyncon_get_status(clientfd, &command);
 			return EAR_SUCCESS;
 			break;
+		case EAR_RC_APP_STATUS:
+			verbose(VRAPI + 1, "App status received");
+			dyncon_get_app_status(clientfd, &command);
+      return EAR_SUCCESS;
+      break;
 		case EAR_RC_RED_POWER:
 		case EAR_RC_GET_POWER:
 		case EAR_RC_SET_POWER:

@@ -103,6 +103,10 @@ void ping_all_nodes(cluster_conf_t *my_cluster_conf);
 int status_all_nodes(cluster_conf_t *my_cluster_conf, status_t **status);
 int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status);
 
+/** Asks application status to all nodes or single node */
+int get_app_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **status);
+int eards_get_app_status(cluster_conf_t *my_cluster_conf,app_status_t **status);
+
 /** Asks for powercap_status for all nodes */
 int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status);
 

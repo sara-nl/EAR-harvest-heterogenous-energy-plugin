@@ -1319,6 +1319,12 @@ void powermon_get_status(status_t *my_status) {
 	my_status->node.max_freq = (ulong) frequency_pstate_to_freq(my_node_conf->max_pstate);
 }
 
+void powermon_get_app_status(app_status_t *my_status)
+{
+	
+}
+
+
 
 void print_powermon_app(powermon_app_t *app) {
 	print_application(&app->app);
