@@ -250,14 +250,12 @@ void verbose_gpu_app(uint vl,application_t *myapp)
 {
 	signature_t *app=&myapp->signature;
 #if USE_GPU_LIB
-#if USE_GPUS
 	if (app->GPU_util>0){
-  	verbose(vl,"GPU [Power %.2lf Energy %lu freq %lu mem_freq %lu util %lu mem_util %lu]\n",app->GPU_power,app->GPU_energy,app->GPU_freq,app->GPU_mem_freq,
+  	verbose(vl,"GPU [Power %.2lf freq %lu mem_freq %lu util %lu mem_util %lu]\n",app->GPU_power,app->GPU_freq,app->GPU_mem_freq,
   	app->GPU_util,app->GPU_mem_util);
 	}else{
 		verbose(vl,"NO GPU application\n");
 	}
-#endif
 #endif
 }
 

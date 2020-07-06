@@ -56,7 +56,6 @@ typedef struct signature
 		ulong  GPU_mem_freq;
 		ulong  GPU_util;
 		ulong  GPU_mem_util;
-		ulong  GPU_energy;
 #endif
     double EDP;
     double GBS;

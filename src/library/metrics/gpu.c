@@ -100,3 +100,9 @@ state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length)
 {
 	preturn (ops->data_tostr, data, buffer, length);
 }
+
+state_t gpu_lib_data_merge(gpu_t *data_diff, gpu_t *data_merge)
+{
+  preturn (ops->data_merge, data_diff, data_merge);
+}
+

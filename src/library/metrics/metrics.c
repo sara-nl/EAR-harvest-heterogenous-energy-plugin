@@ -467,7 +467,6 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->GPU_mem_freq = src->GPU_mem_freq;
 	dest->GPU_util = src->GPU_util;
 	dest->GPU_mem_util = src->GPU_mem_util;
-	dest->GPU_energy = src->GPU_energy;
 	dest->GPU_power = src->GPU_power;
 	#endif
 }
@@ -547,14 +546,13 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 		#if USE_GPU_LIB
 		if (gpu_initialized){
-			metrics->GPU_freq=(gpu_metrics_diff[s][0].freq_gpu_mhz+gpu_metrics_diff[s][1].freq_gpu_mhz)/2;
-			metrics->GPU_mem_freq=(gpu_metrics_diff[s][0].freq_mem_mhz+gpu_metrics_diff[s][1].freq_mem_mhz)/2;
-			metrics->GPU_util=(gpu_metrics_diff[s][0].util_gpu+gpu_metrics_diff[s][1].util_gpu)/2;
-			metrics->GPU_mem_util=(gpu_metrics_diff[s][0].util_mem+gpu_metrics_diff[s][1].util_mem)/2;
-			metrics->GPU_energy=gpu_metrics_diff[s][0].energy_j+gpu_metrics_diff[s][1].energy_j;
-#if USE_GPUS
-			metrics->GPU_power=gpu_metrics_diff[s][0].power_w+gpu_metrics_diff[s][1].power_w;
-#endif
+			gpu_t gpu_computed;
+			gpu_lib_data_merge(gpu_metrics_diff[s],&gpu_computed);
+			metrics->GPU_freq=gpu_computed.freq_gpu_mhz;
+			metrics->GPU_mem_freq=gpu_computed.freq_mem_mhz;
+			metrics->GPU_util=gpu_computed.util_gpu;
+			metrics->GPU_mem_util=gpu_computed.util_mem;
+			metrics->GPU_power=gpu_computed.power_w;
 		}
 		#endif
 	}else{

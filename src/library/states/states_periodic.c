@@ -138,8 +138,9 @@ static void report_loop_signature(uint iterations,loop_t *loop)
 */
 void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
-	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP,VPI;
+	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP,VPI,GPU_POWER;
 	ulong AVGF;
+	float GPU_FREQ;
 	unsigned long long VI;
 	unsigned long prev_f;
 	int result;
@@ -195,6 +196,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
+
 		      signature_t app_signature;
       		adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
 					st=policy_apply(&app_signature,&policy_freq,&ready);
@@ -211,6 +213,10 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					}
 
 					if (masters_info.my_master_rank>=0){
+						#if USE_GPU_LIB
+						GPU_POWER = loop_signature.signature.GPU_power;
+						GPU_FREQ = (float) loop_signature.signature.GPU_freq/1000000.0;
+						#endif
             AVGFF=(float)AVGF/1000000.0;
             prev_ff=(float)prev_f/1000000.0;
             policy_freqf=(float)policy_freq/1000000.0;
@@ -218,6 +224,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
                   "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%.2f)--> New frequency selected %.2f\n",
                   ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGFF,
                   policy_freqf);
+						verbose(1,"\t GPU_power %.2f GPU_freq %.1f",GPU_POWER,GPU_FREQ);
 
 					}	
 					// Loop printing algorithm
