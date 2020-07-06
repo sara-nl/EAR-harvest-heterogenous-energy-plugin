@@ -74,26 +74,20 @@ int init_uncores(int cpu_model)
 	debug("family: %d", family);
 	debug("model: %d", model);
 
-	if (vendor == VENDOR_INTEL)
+	if (vendor == VENDOR_INTEL && model >= CPU_HASWELL_X)
 	{
-		switch (model)
-		{
-			case CPU_HASWELL_X:
-			case CPU_BROADWELL_X:
-			case CPU_SKYLAKE_X:
-				ops.init  = pci_init_uncores;
-				ops.count = pci_count_uncores;
-				ops.check = NULL;
-				ops.reset = pci_reset_uncores;
-				ops.start = pci_start_uncores;
-				ops.stop  = pci_stop_uncores;
-				ops.read  = pci_read_uncores;
-				ops.dispose = pci_dispose_uncores;
-			break;
-		}
-	} else if (vendor == VENDOR_AMD)
+		debug("selecting Intel vendor");
+		ops.init  = pci_init_uncores;
+		ops.count = pci_count_uncores;
+		ops.check = NULL;
+		ops.reset = pci_reset_uncores;
+		ops.start = pci_start_uncores;
+		ops.stop  = pci_stop_uncores;
+		ops.read  = pci_read_uncores;
+		ops.dispose = pci_dispose_uncores;
+	}
+	else if (vendor == VENDOR_AMD && family >= FAMILY_ZEN)
 	{
-		if (family == FAMILY_ZEN) {
 			ops.init    = bwidth_amd23_init;
 			ops.count   = bwidth_amd23_count;
 			ops.check   = NULL;
@@ -102,7 +96,6 @@ int init_uncores(int cpu_model)
 			ops.stop    = bwidth_amd23_stop;
 			ops.read    = bwidth_amd23_read;
 			ops.dispose = bwidth_amd23_dispose;
-		}
 	}
 
 #if 0
@@ -147,7 +140,12 @@ int reset_uncores()
 
 int start_uncores()
 {
-	preturn (ops.start, c);
+	if (ops.start != NULL) {
+		ops.start(c);
+	}
+	
+	return read_uncores(NULL);
+//	preturn (ops.start, c);
 }
 
 int stop_uncores(ullong *values)

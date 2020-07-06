@@ -184,27 +184,38 @@ static void topology_copy(topology_t *dst, topology_t *src)
 
 static void topology_cpuid(topology_t *topo)
 {
-	int buffer[4];
 	cpuid_regs_t r;
+	int buffer[4];
 
 	/* Vendor */
 	CPUID(r,0,0);
 	buffer[0] = r.ebx;
 	buffer[1] = r.edx;
 	buffer[2] = r.ecx;
-	topo->vendor = !(buffer[0] == 1970169159);
+	topo->vendor = !(buffer[0] == 1970169159); // Intel
 	
 	/* Family */
 	CPUID(r,1,0);
 	buffer[0] = cpuid_getbits(r.eax, 11,  8);
-	buffer[1] = cpuid_getbits(r.eax, 27, 20);
-	topo->family = (buffer[1] << 4) | buffer[0];
+	buffer[1] = cpuid_getbits(r.eax, 27, 20); // extended
+	buffer[2] = buffer[0]; // auxiliar
+	
+	if (buffer[0] == 0x0F) {
+		topo->family = buffer[1] + buffer[0];
+	} else {
+		topo->family = buffer[0];
+	}
 
 	/* Model */
 	CPUID(r,1,0);
 	buffer[0] = cpuid_getbits(r.eax,  7,  4);
-	buffer[1] = cpuid_getbits(r.eax, 19, 16);
-	topo->model = (buffer[1] << 4) | buffer[0];
+	buffer[1] = cpuid_getbits(r.eax, 19, 16); // extended
+	
+	if (buffer[2] == 0x0F || (buffer[2] == 0x06 && topo->vendor == VENDOR_INTEL)) {
+		topo->model = (buffer[1] << 4) | buffer[0];
+	} else {
+		topo->model = buffer[0];
+	}
 }
 
 state_t topology_init(topology_t *topo)

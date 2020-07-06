@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -22,8 +24,9 @@
 #include <common/states.h>
 #include <common/plugins.h>
 #include <common/system/time.h>
-#include <metrics/common/msr.h>
+#include <common/output/debug.h>
 #include <common/hardware/topology.h>
+#include <metrics/common/msr.h>
 #include <metrics/bandwidth/cpu/amd23.h>
 
 // Vendor	AuthenticAMD
@@ -70,17 +73,25 @@ typedef struct bwidth_amd23_s
 	uint filled;
 } bwidth_amd23_t;
 
+static int initialized;
+
 state_t bwidth_amd23_init(ctx_t *c, topology_t *tp)
 {
 	bwidth_amd23_t *bw;
 	state_t s;
 	int i;
 
+	if (c == NULL) {
+		debug("%s", Generr.context_null);
+		return_msg(EAR_ERROR, Generr.context_null);
+	}
+
 	// Initializing data
 	c->context = calloc(1, sizeof(bwidth_amd23_t));
 
 	if (c->context == NULL) {
-		return EAR_ERROR;
+		debug("%s", Generr.alloc_error);
+		return_msg(EAR_ERROR, Generr.alloc_error);
 	}
 
 	bw = (bwidth_amd23_t *) c->context;
@@ -96,12 +107,18 @@ state_t bwidth_amd23_init(ctx_t *c, topology_t *tp)
 
 	for (i = 0; i < bw->fd_count; ++i)
 	{
+		debug("opening CPU %d (socket %d, L3 %d)",
+			bw->tp.cpus[i].id, bw->tp.cpus[i].socket_id, bw->tp.cpus[i].l3_id);
 		s = msr_open(bw->tp.cpus[i].id);
 
 		if (state_fail(s)) {
 			return EAR_ERROR;
 		}
 	}
+
+	//
+	debug("initialized");
+	initialized = 1;
 
 	return EAR_SUCCESS;
 }
@@ -111,6 +128,10 @@ state_t bwidth_amd23_dispose(ctx_t *c)
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
 	state_t s;
 	int i;
+	
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
 
 	for (i = 0; i < bw->fd_count; ++i) {
 		s = msr_close(bw->tp.cpus[i].id);
@@ -126,7 +147,13 @@ state_t bwidth_amd23_dispose(ctx_t *c)
 state_t bwidth_amd23_count(ctx_t *c, uint *count)
 {
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
+	
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	
 	*count = bw->fd_count;
+	
 	return EAR_SUCCESS;
 }
 
@@ -140,6 +167,10 @@ state_t bwidth_amd23_stop(ctx_t *c, ullong *cas)
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
 	state_t s;
 	int i;
+	
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
 
 	// Two channels per CCD
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctl0);
@@ -158,6 +189,10 @@ state_t bwidth_amd23_reset(ctx_t *c)
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
 	state_t s;
 	int i;
+	
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
 
 	// Two channels per CCD (more or less)
 	s = msr_write(bw->tp.cpus[0].id, &df_cmd0, sizeof(ulong), df_ctl0);
@@ -177,6 +212,10 @@ state_t bwidth_amd23_read(ctx_t *c, ullong *cas)
 	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
 	state_t s;
 	int i;
+	
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
 
 	// Timestamp	
 	timestamp_t aux0;
@@ -194,6 +233,9 @@ state_t bwidth_amd23_read(ctx_t *c, ullong *cas)
 	msr_read(bw->tp.cpus[0].id, &bw->data_curr[i0], sizeof(ulong), df_ctr0);
 	msr_read(bw->tp.cpus[0].id, &bw->data_curr[i1], sizeof(ulong), df_ctr1);
 
+	debug("CH0 counted %llu CAS", bw->data_curr[i0]);
+	debug("CH1 counted %llu CAS", bw->data_curr[i1]);
+
 	// Reading the L3 counters of CCX0, CCX1, CCX2, CCX3
 	msr_read(bw->tp.cpus[0].id, &bw->data_curr[0], sizeof(ulong), ctr_l3);
 	msr_read(bw->tp.cpus[1].id, &bw->data_curr[1], sizeof(ulong), ctr_l3);
@@ -207,15 +249,19 @@ state_t bwidth_amd23_read(ctx_t *c, ullong *cas)
 	ulong aux_ccx1 = bw->data_curr[1]  - bw->data_prev[1];
 	ulong aux_ccx2 = bw->data_curr[2]  - bw->data_prev[2];
 	ulong aux_ccx3 = bw->data_curr[3]  - bw->data_prev[3];
+	
+	// Saving the memory channel ticks for the next reading
+	bw->data_prev[i0] = bw->data_curr[i0];
+	bw->data_prev[i1] = bw->data_curr[i1];
+
+	if (cas == NULL) {
+		return EAR_SUCCESS;
+	}
 
 	// Comparing the percentage of L3 ticks respect the memory channel accesses
 	double ccx_ticks = (double) (aux_ccx0 + aux_ccx1 + aux_ccx2 + aux_ccx3);
 	double mem_ticks = (double) (aux_mem0 + aux_mem1);
 	double ccx_coeff = (mem_ticks / ccx_ticks);
-
-	// Saving the memory channel ticks for the next reading
-	bw->data_prev[i0] = bw->data_curr[i0];
-	bw->data_prev[i1] = bw->data_curr[i1];
 
 	//
 	double aux1;

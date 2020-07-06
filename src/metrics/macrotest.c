@@ -14,6 +14,7 @@
 int main(int argc, char *argv[])
 {
 	ullong cas[100];
+	ullong gbs;
 	state_t s;
 	int i;
 	int j;
@@ -34,10 +35,12 @@ int main(int argc, char *argv[])
 	
 	stop_uncores(cas);
 
-	for (j = 0; j < i; ++j) {
+	for (j = 0, gbs = 0; j < i; ++j) {
 		fprintf(stderr, "%llu ", cas[j]);
+		gbs += cas[j]; 
 	}
-	fprintf(stderr, "\n");
+	gbs = (gbs*64LLU) / (1024LLU*1024LLU*1024LLU*4LLU);
+	fprintf(stderr, "\nbandwidth %0.4lf GB/s\n", (double) gbs);
 
 	return 0;
 }
