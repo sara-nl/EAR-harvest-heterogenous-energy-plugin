@@ -489,10 +489,8 @@ int main(int argc, char *argv[])
                     if (rc<0){
                         printf("Error connecting with node %s\n", node_name);
                     }else{
-                        request_t command;
-                        command.req = EAR_RC_STATUS;
-                        command.node_dist = INT_MAX;
-                        if ((num_status = send_status(&command, &status)) != 1) printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
+                        if ((num_status = eards_get_status(&my_cluster_conf, &status)) != 1) 
+                            printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
                         process_single_status(num_status, status, node_name);
                         eards_remote_disconnect();
                     }
