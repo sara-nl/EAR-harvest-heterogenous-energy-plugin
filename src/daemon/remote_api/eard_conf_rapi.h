@@ -137,6 +137,7 @@ typedef struct performance{
 #define EAR_RC_SET_MAX_PSTATE   110
 #define EAR_RC_PING	            500
 #define EAR_RC_STATUS           600
+#define EAR_RC_APP_STATUS       601
 
 /* New functions for power limits */
 #define EAR_RC_RED_POWER            700

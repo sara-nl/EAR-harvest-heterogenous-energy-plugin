@@ -101,6 +101,7 @@ void ping_all_nodes(cluster_conf_t *my_cluster_conf);
 
 /** Asks all the nodes for their current status */
 int status_all_nodes(cluster_conf_t *my_cluster_conf, status_t **status);
+int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status);
 
 /** Asks for powercap_status for all nodes */
 int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status);

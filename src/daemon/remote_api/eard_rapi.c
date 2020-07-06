@@ -51,6 +51,10 @@ int send_status(request_t *command, status_t **status)
     return (head.size/sizeof(status_t));
 
 }
+int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status)
+{
+	/*** LLUIS */
+}
 
 /** REMOTE FUNCTIONS FOR SINGLE NODE COMMUNICATION */
 int eards_new_job(application_t *new_job)
