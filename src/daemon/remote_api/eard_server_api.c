@@ -434,15 +434,6 @@ int propagate_release_idle(request_t *command, uint port, pc_release_data_t *rel
 
 }
 
-int propagate_status(request_t *command, uint port, status_t **status)
-{
-	int num_status;
-	status_t *temp_status;
-	num_status=propagate_and_cat_data(command,port,(void **)&temp_status,sizeof(status_t),EAR_TYPE_STATUS);
-	temp_status[num_status-1].ok = STATUS_OK;
-	*status=temp_status;
-	return num_status;
-}
 int propagate_and_cat_data(request_t *command, uint port, void **status, size_t size,uint type)
 {
     char *temp_status, *final_status;
@@ -494,10 +485,22 @@ int propagate_and_cat_data(request_t *command, uint port, void **status, size_t 
 
 }
 
+int propagate_status(request_t *command, uint port, status_t **status)
+{
+	int num_status;
+	status_t *temp_status;
+	num_status=propagate_and_cat_data(command,port,(void **)&temp_status,sizeof(status_t),EAR_TYPE_STATUS);
+	temp_status[num_status-1].ok = STATUS_OK;
+	*status=temp_status;
+	return num_status;
+}
 int propagate_app_status(request_t *command, uint port, app_status_t **status)
 {
-	/** LLUIS */
-	return EAR_ERROR;
+	int num_status;
+	app_status_t *temp_status;
+	num_status=propagate_and_cat_data(command,port,(void **)&temp_status,sizeof(app_status_t),EAR_TYPE_APP_STATUS);
+	*status=temp_status;
+	return num_status;
 }
 
 

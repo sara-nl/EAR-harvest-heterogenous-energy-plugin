@@ -115,8 +115,8 @@ typedef struct status{
 } status_t;
 
 typedef struct app_status{
-	ulong jid,sid;
-	char node[SHORT_GENERIC_NAME];
+	unsigned int ip;
+	ulong job_id,step_id;
 	signature_t signature;
 }app_status_t;
 

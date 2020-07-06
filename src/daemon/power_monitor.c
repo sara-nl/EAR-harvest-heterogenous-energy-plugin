@@ -1321,7 +1321,21 @@ void powermon_get_status(status_t *my_status) {
 
 void powermon_get_app_status(app_status_t *my_status)
 {
-	
+	/* Current app info */
+	if (ccontext >= 0) {
+		my_status->job_id = current_ear_app[ccontext]->app.job.id;
+		my_status->step_id = current_ear_app[ccontext]->app.job.step_id;
+	} else {
+		/* No job running */
+		my_status->job_id = 0;
+	}
+  if (!(is_null(&current_loop_data)==1)){
+		signature_copy(&my_status->signature,&current_loop_data.signature);
+  }else{
+		signature_init(&my_status->signature);	
+		my_status->signature.DC_power = (ulong) last_power_reported;
+    my_status->signature.avg_f = (ulong)(last_nm.avg_cpu_freq);
+	}
 }
 
 

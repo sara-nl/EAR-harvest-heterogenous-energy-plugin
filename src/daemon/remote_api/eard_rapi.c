@@ -59,8 +59,24 @@ int send_status(request_t *command, status_t **status)
 }
 int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status)
 {
-	/*** LLUIS */
-	return EAR_ERROR;
+	request_t command;
+    request_header_t head;
+
+    debug("eards_status");
+	command.req=EAR_RC_STATUS;
+    command.node_dist = INT_MAX;
+    command.time_code = time(NULL);
+
+    send_command(&command);
+
+    head = receive_data(eards_sfd, (void **)status);
+    if (head.size < sizeof(status_t) || head.type != EAR_TYPE_STATUS) {
+        debug("Error sending command to node");
+        if (head.size > 0 && head.type != EAR_ERROR) free(status);
+        return 0;
+    }
+
+    return head.size >= sizeof(status_t);
 }
 
 /** REMOTE FUNCTIONS FOR SINGLE NODE COMMUNICATION */

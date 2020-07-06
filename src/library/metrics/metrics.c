@@ -468,8 +468,6 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->GPU_util = src->GPU_util;
 	dest->GPU_mem_util = src->GPU_mem_util;
 	dest->GPU_energy = src->GPU_energy;
-	#endif
-	#if USE_GPUS
 	dest->GPU_power = src->GPU_power;
 	#endif
 }
