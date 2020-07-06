@@ -280,13 +280,6 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
 			}
 			n->use_log=my_conf->eard.use_log;
 
-            /* This section will be removed once island configuration for this variables gets deprecated. */
-            n->max_sig_power=my_conf->islands[i].max_sig_power;
-            n->min_sig_power=my_conf->islands[i].min_sig_power;
-            n->max_error_power=my_conf->islands[i].max_error_power;
-            n->max_temp=my_conf->islands[i].max_temp;
-            n->max_power_cap=my_conf->islands[i].max_power_cap;
-            /* End of the deletable section */
 
             j = 0;
             if (my_conf->islands[i].ranges[range_id].num_tags > 0)
@@ -323,7 +316,8 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         n->min_sig_power = (double)my_conf->tags[tag_id].min_power;
         n->max_error_power = (double)my_conf->tags[tag_id].error_power;
         n->max_temp = my_conf->tags[tag_id].max_temp;
-        n->max_power_cap = (double)my_conf->tags[tag_id].powercap;
+        n->powercap = (double)my_conf->tags[tag_id].powercap;
+        n->max_powercap = (double)my_conf->tags[tag_id].max_powercap;
         n->max_avx512_freq = my_conf->tags[tag_id].max_avx512_freq;
         n->max_avx2_freq = my_conf->tags[tag_id].max_avx2_freq;
 

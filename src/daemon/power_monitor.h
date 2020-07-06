@@ -130,5 +130,7 @@ void node_energy_unlock();
 uint powermon_is_idle();
 uint powermon_current_power();
 uint powermon_get_powercap_def();
+uint powermon_get_max_powercap_def();
+
 
 #endif

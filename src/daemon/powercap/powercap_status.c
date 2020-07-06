@@ -37,6 +37,15 @@ uint compute_power_to_release(node_powercap_opt_t *pc_opt,uint current)
 	return pc_opt->th_release;
 }
 
+uint limit_max_power(node_powercap_opt_t *pc_opt,uint extra)
+{
+	uint current=pc_opt->last_t1_allocated;
+	if ((current+extra) > pc_opt->max_node_power){
+		extra=pc_opt->max_node_power-pc_opt->last_t1_allocated;
+	}
+	return extra;
+}
+
 uint compute_power_to_release_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f)
 {
 	/* Is signature is still not computed, we will not release the power */

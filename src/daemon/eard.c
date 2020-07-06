@@ -1026,7 +1026,7 @@ void configure_new_values(settings_conf_t *dyn, resched_t *resched, cluster_conf
     memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
-	dyn->max_power_cap=node->max_power_cap;
+	dyn->max_power_cap=node->powercap;
 	dyn->report_loops=cluster->database.report_loops;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 	resched->force_rescheduling=1;
@@ -1069,7 +1069,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
     memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
-	dyn->max_power_cap=node->max_power_cap;
+	dyn->max_power_cap=node->powercap;
 	dyn->report_loops=cluster->database.report_loops;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 

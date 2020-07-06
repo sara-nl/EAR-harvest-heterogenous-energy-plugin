@@ -130,9 +130,7 @@ uint reload_eargm_configuration(cluster_conf_t *current,cluster_conf_t *new)
 	}
 	if ((cc->power!=newc->power) || (cc->t1_power!=newc->t1_power)){
 		verbose(1,"New powercap arguments: Powercap %lu Power cap period %lu",newc->power,newc->t1_power);
-		#if 0
-		if (cc->power>new->power)    set_default_powercap_all_nodes(&my_cluster_conf);  
-  	#endif
+		if (cc->power>newc->power)    set_default_powercap_all_nodes(&my_cluster_conf);  
 		if ((cc->power==0) && (newc->power>0)) powercap_th_start=1;
 
 	}
