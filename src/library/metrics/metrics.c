@@ -186,6 +186,7 @@ static void metrics_global_start()
 			if (gpu_lib_read(&gpu_lib_ctx,gpu_metrics_init[APP]) != EAR_SUCCESS){
 				debug("Error in gpu_read in application start");
 			}
+			debug("gpu_lib_read in global start");
 		}	
 		gpu_lib_data_copy(gpu_metrics_end[LOO],gpu_metrics_init[APP]);
 	
@@ -232,6 +233,7 @@ static void metrics_global_stop()
 		if (gpu_lib_read(&gpu_lib_ctx,gpu_metrics_end[APP])!= EAR_SUCCESS){
 			debug("gpu_lib_read error");
 		}
+		debug("gpu_read in global_stop");
 		}
 		gpu_lib_data_diff(gpu_metrics_end[APP], gpu_metrics_init[APP], gpu_metrics_diff[APP]);
 		#endif
@@ -278,6 +280,7 @@ static void metrics_partial_start()
 		} else{
 			gpu_lib_data_copy(gpu_metrics_init[LOO],gpu_metrics_init[APP]);
 		}
+		debug("gpu_copy in partial start");
 		#endif
 	}
 	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
@@ -307,7 +310,7 @@ static int metrics_partial_stop(uint where)
 	long long c_time;
 	float c_power;
 	long long aux_time_stop;
-	char stop_energy_str[256],start_energy_str[256];
+	char stop_energy_str[256],start_energy_str[256],gpu_buff[1024];
 
 	/* If the signature of the master is not ready, we cannot compute our signature */
   if ((masters_info.my_master_rank<0) && (!sig_shared_region[0].ready)){
@@ -364,9 +367,16 @@ static int metrics_partial_stop(uint where)
     if (gpu_lib_read(&gpu_lib_ctx,gpu_metrics_end[LOO])!= EAR_SUCCESS){
       debug("gpu_lib_read error");
     }
+		debug("gpu_read in partial stop");
 		gpu_loop_stopped=1;
     }
     gpu_lib_data_diff(gpu_metrics_end[LOO], gpu_metrics_init[LOO], gpu_metrics_diff[LOO]);
+		debug("gpu_diff in partial stop");
+		#if SHOW_DEBUGS
+		gpu_lib_data_tostr(gpu_metrics_diff[LOO],gpu_buff,sizeof(gpu_buff));
+		debug("gpu_diff in partial_stop: %s",gpu_buff);
+		gpu_lib_data_print(gpu_metrics_diff[LOO],2);
+		#endif	
 		#endif
 	}
 	/* End new section to check frozen uncore counters */
@@ -463,11 +473,12 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->PCK_power=src->PCK_power;
 	dest->avg_f=src->avg_f;
 	#if USE_GPU_LIB
-	dest-> GPU_freq = src->GPU_freq;
+	dest->GPU_power = src->GPU_power;
+	dest->GPU_freq = src->GPU_freq;
 	dest->GPU_mem_freq = src->GPU_mem_freq;
 	dest->GPU_util = src->GPU_util;
 	dest->GPU_mem_util = src->GPU_mem_util;
-	dest->GPU_power = src->GPU_power;
+	debug("GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",dest->GPU_power,dest-> GPU_freq,dest->GPU_mem_freq,dest->GPU_util,dest->GPU_mem_util);
 	#endif
 }
 
@@ -553,6 +564,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 			metrics->GPU_util=gpu_computed.util_gpu;
 			metrics->GPU_mem_util=gpu_computed.util_mem;
 			metrics->GPU_power=gpu_computed.power_w;
+			debug("GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",metrics->GPU_power,metrics-> GPU_freq,metrics->GPU_mem_freq,metrics->GPU_util,metrics->GPU_mem_util);
 		}
 		#endif
 	}else{
@@ -691,10 +703,13 @@ int metrics_init()
 		}else{
 			debug("GPU initialization successfully");
 			gpu_lib_data_alloc(&gpu_metrics_init[LOO]);gpu_lib_data_alloc(&gpu_metrics_init[APP]);
+			gpu_lib_data_alloc(&gpu_metrics_end[LOO]);gpu_lib_data_alloc(&gpu_metrics_end[APP]);
 			gpu_lib_data_alloc(&gpu_metrics_diff[LOO]);gpu_lib_data_alloc(&gpu_metrics_diff[APP]);
 			debug("GPU library data initialized");
 		}
 	}
+	debug("GPU initialization successfully");
+	fflush(stderr);	
 	#endif
 
 	//debug( "detected %d RAPL counters for %d packages: %d events por package", rapl_elements,num_packs,rapl_elements/num_packs);

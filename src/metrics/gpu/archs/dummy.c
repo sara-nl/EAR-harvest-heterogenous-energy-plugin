@@ -146,7 +146,7 @@ state_t gpu_dummy_data_tostr(gpu_t *data, char *buffer, int length)
 	int accuml = 0;
 	size_t s;
 	int i;
-
+	fprintf(stderr,"gpu_dummy_data_tostr \n");
 	for (i = 0; i < 1 && length > 0; ++i)
 	{
 		s = snprintf(&buffer[accuml], length,
