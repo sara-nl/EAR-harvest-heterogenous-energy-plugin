@@ -197,6 +197,9 @@ state_t bwidth_amd23_reset(ctx_t *c)
 	// Two channels per CCD (more or less)
 	s = msr_write(bw->tp.cpus[0].id, &df_cmd0, sizeof(ulong), df_ctl0);
 	s = msr_write(bw->tp.cpus[0].id, &df_cmd1, sizeof(ulong), df_ctl1);
+	
+	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctr0);
+	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctr1);
 
 	// One chunk of L3 per CCX	
 	for (i = 0; i < bw->fd_count; ++i) {

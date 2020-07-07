@@ -88,14 +88,15 @@ int init_uncores(int cpu_model)
 	}
 	else if (vendor == VENDOR_AMD && family >= FAMILY_ZEN)
 	{
-			ops.init    = bwidth_amd23_init;
-			ops.count   = bwidth_amd23_count;
-			ops.check   = NULL;
-			ops.reset   = bwidth_amd23_reset;
-			ops.start   = bwidth_amd23_start;
-			ops.stop    = bwidth_amd23_stop;
-			ops.read    = bwidth_amd23_read;
-			ops.dispose = bwidth_amd23_dispose;
+		debug("selecting AMD vendor");
+		ops.init    = bwidth_amd23_init;
+		ops.count   = bwidth_amd23_count;
+		ops.check   = NULL;
+		ops.reset   = bwidth_amd23_reset;
+		ops.start   = bwidth_amd23_start;
+		ops.stop    = bwidth_amd23_stop;
+		ops.read    = bwidth_amd23_read;
+		ops.dispose = bwidth_amd23_dispose;
 	}
 
 #if 0
@@ -140,12 +141,14 @@ int reset_uncores()
 
 int start_uncores()
 {
+#if 0
 	if (ops.start != NULL) {
 		ops.start(c);
 	}
 	
 	return read_uncores(NULL);
-//	preturn (ops.start, c);
+#endif
+	preturn (ops.start, c);
 }
 
 int stop_uncores(ullong *values)

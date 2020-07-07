@@ -397,6 +397,10 @@ state_t pci_read_uncores(ctx_t *c, ullong *cas)
 	if (n_functions<=0){
 		return EAR_ERROR;
 	}
+	if (cas == NULL) {
+		return EAR_SUCCESS;
+	}
+
     uchar *ctrs = (uchar *) get_arch_read_counters(&n_ctrs);
 
     for(i = k = 0; i < n_functions; i++)
