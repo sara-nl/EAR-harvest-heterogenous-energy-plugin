@@ -30,8 +30,16 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		return EAR_SUCCESS;
 	}
 
-	if (model_force == MODEL_NVML && state_ok(nvml_status()))
-	{
+	//
+	if (model_force == MODEL_UNDEFINED) {
+		if (state_ok(nvml_status())) {
+			model_force = MODEL_NVML;
+		} else {
+			model_force = MODEL_DUMMY;
+		}
+	}
+
+	if (model_force == MODEL_NVML) {
 		debug("loaded NVML");
 		ops.init		= nvml_init;
 		ops.dispose		= nvml_dispose;
@@ -49,7 +57,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		ops.data_copy	= nvml_data_copy;
 		ops.data_print	= nvml_data_print;
 		ops.data_tostr	= nvml_data_tostr;
-		model			= MODEL_NVML;
+		model           = MODEL_NVML;
 		loaded			= 1;
 	} else {
 		debug("loaded DUMMY");
@@ -69,7 +77,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		ops.data_copy	= gpu_dummy_data_copy;
 		ops.data_print	= gpu_dummy_data_print;
 		ops.data_tostr	= gpu_dummy_data_tostr;
-		model			= MODEL_UNDEFINED;
+		model           = MODEL_DUMMY;
 		loaded			= 1;
 	}
 
@@ -156,4 +164,9 @@ state_t gpu_data_print(gpu_t *data, int fd)
 state_t gpu_data_tostr(gpu_t *data, char *buffer, int length)
 {
 	preturn (ops.data_tostr, data, buffer, length);
+}
+
+uint gpu_model()
+{
+	return model;
 }

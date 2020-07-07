@@ -45,11 +45,11 @@ static int 		*pm_fds_rapl;
 
 // GPU
 #if USE_GPUS
-gpu_t		*gpu_diff;
-ctx_t		 gpu_context;
-uint		 gpu_loop_ms;
-uint		 gpu_model;
-uint		 gpu_num;
+static gpu_t	*gpu_diff;
+static ctx_t	 gpu_context;
+static uint		 gpu_loop_ms;
+static uint		 gpu_sel_model;
+static uint		 gpu_num;
 #endif
 
 // Things to do
@@ -195,7 +195,7 @@ static int pm_connect(ehandler_t *my_eh)
 		error("monitor_init returned %d (%s)", s, state_msg);
 		gpu_error = 1;
 	}
-	if (xtate_fail(s, gpu_load(empty, none, &gpu_model))) {
+	if (xtate_fail(s, gpu_load(empty, none, &gpu_sel_model))) {
 		error("gpu_load returned %d (%s)", s, state_msg);
 		gpu_error = 1;
 	}
