@@ -50,6 +50,9 @@
 #include <daemon/node_metrics.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
+#if USE_GPUS
+#include <daemon/gpu/gpu_mgt.h>
+#endif
 
 #if SYSLOG_MSG
 #include <syslog.h>
@@ -1243,6 +1246,12 @@ void *eard_power_monitoring(void *noinfo)
 
 	powermon_freq_list=frequency_get_freq_rank_list();
 	powermon_num_pstates=frequency_get_num_pstates();
+
+	#if USE_GPUS
+	if (gpu_mgr_init() != EAR_SUCCESS){
+		error("Error initializing GPU management");
+	}
+	#endif
 
 	/*
 	*	MAIN LOOP
