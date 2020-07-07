@@ -22,7 +22,7 @@
 // #define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
@@ -181,14 +181,14 @@ static void metrics_global_start()
 		eards_start_uncore();
 		eards_read_uncore(metrics_bandwith_init[APP]);
 		#if USE_GPU_LIB
-		gpu_lib_data_null(gpu_metrics_init[APP]);
 		if (gpu_initialized){
+			gpu_lib_data_null(gpu_metrics_init[APP]);
 			if (gpu_lib_read(&gpu_lib_ctx,gpu_metrics_init[APP]) != EAR_SUCCESS){
 				debug("Error in gpu_read in application start");
 			}
 			debug("gpu_lib_read in global start");
+			gpu_lib_data_copy(gpu_metrics_end[LOO],gpu_metrics_init[APP]);
 		}	
-		gpu_lib_data_copy(gpu_metrics_end[LOO],gpu_metrics_init[APP]);
 	
 		#endif
 	}else{
@@ -196,7 +196,7 @@ static void metrics_global_start()
 		set_null_rapl(aux_rapl);
 		set_null_uncores(metrics_bandwith_init[APP]);
 		#if USE_GPU_LIB
-		gpu_lib_data_null(gpu_metrics_init[APP]);
+		if (gpu_initialized) gpu_lib_data_null(gpu_metrics_init[APP]);
 		#endif
 	}
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
@@ -234,12 +234,12 @@ static void metrics_global_stop()
 			debug("gpu_lib_read error");
 		}
 		debug("gpu_read in global_stop");
-		}
 		gpu_lib_data_diff(gpu_metrics_end[APP], gpu_metrics_init[APP], gpu_metrics_diff[APP]);
+		}
 		#endif
 	}else{
 		#if USE_GPU_LIB
-		gpu_lib_data_null(gpu_metrics_diff[APP]);
+		if (gpu_initialized) gpu_lib_data_null(gpu_metrics_diff[APP]);
 		#endif
 		set_null_uncores(metrics_bandwith_end[APP]);
 	}
@@ -275,12 +275,14 @@ static void metrics_partial_start()
 	if (masters_info.my_master_rank>=0){ 
 		eards_begin_compute_turbo_freq();
 		#if USE_GPU_LIST
+		if (gpu_initialized){
 		if (gpu_loop_stopped) {
 			gpu_lib_data_copy(gpu_metrics_init[LOO],gpu_metrics_end[LOO]);
 		} else{
 			gpu_lib_data_copy(gpu_metrics_init[LOO],gpu_metrics_init[APP]);
 		}
 		debug("gpu_copy in partial start");
+		}
 		#endif
 	}
 	//There is always a partial_stop before a partial_start, we can guarantee a previous uncore_read
@@ -369,14 +371,12 @@ static int metrics_partial_stop(uint where)
     }
 		debug("gpu_read in partial stop");
 		gpu_loop_stopped=1;
-    }
     gpu_lib_data_diff(gpu_metrics_end[LOO], gpu_metrics_init[LOO], gpu_metrics_diff[LOO]);
-		debug("gpu_diff in partial stop");
 		#if SHOW_DEBUGS
 		gpu_lib_data_tostr(gpu_metrics_diff[LOO],gpu_buff,sizeof(gpu_buff));
 		debug("gpu_diff in partial_stop: %s",gpu_buff);
-		gpu_lib_data_print(gpu_metrics_diff[LOO],2);
 		#endif	
+    }
 		#endif
 	}
 	/* End new section to check frozen uncore counters */
@@ -478,7 +478,6 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->GPU_mem_freq = src->GPU_mem_freq;
 	dest->GPU_util = src->GPU_util;
 	dest->GPU_mem_util = src->GPU_mem_util;
-	debug("GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",dest->GPU_power,dest-> GPU_freq,dest->GPU_mem_freq,dest->GPU_util,dest->GPU_mem_util);
 	#endif
 }
 
@@ -695,8 +694,10 @@ int metrics_init()
 	#if USE_GPU_LIB
 	if (gpu_lib_load(system_conf) !=EAR_SUCCESS){
       gpu_initialized=0;
-	}
+			debug("Error in gpu_lib_load");
+	}else gpu_initialized=1;
 	if (gpu_initialized){
+		debug("Initializing GPU");
 		if (gpu_lib_init(&gpu_lib_ctx) != EAR_SUCCESS){
 				error("Error in GPU initiaization");
 				gpu_initialized=0;
