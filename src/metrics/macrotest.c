@@ -4,43 +4,57 @@
 
 // /hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -I ../ -g -o macrotest macrotest.c libmetrics.a ../common/libcommon.a -lpthread -ldl
 
-#define ok(fun) \
-    printf("############################# calling " #fun "\n"); \
-    if (xtate_fail(s, fun)) { \
-        printf(#fun " returned error %d (%s)\n", s, state_msg); \
-        return 0; \
-    } 
+#define ret(fun) \
+	i = fun; \
+	printf("FUN " #fun "returned %d\n", i);
 
 int main(int argc, char *argv[])
 {
+	llong   ops[100];
+	llong flops[100];
 	ullong cas[100];
+	ullong tfs;
 	ullong gbs;
+
 	state_t s;
+	int igbs;
+	int itfs;
 	int i;
-	int j;
 
-	i = init_uncores(0);
-	
-	fprintf(stderr, "number of devices 1: %u\n", i);
+	ret(init_uncores(0));
+	ret(init_flops_metrics());
 
-	i = count_uncores();
-	
-	fprintf(stderr, "number of devices 2: %u\n", i);
+	ret(count_uncores());
+	igbs = i;
+	ret(get_number_fops_events());
+	itfs = i;
 
-	reset_uncores();
+	ret(reset_uncores());
+	ret(start_uncores());
 
-	start_uncores();
+	reset_flops_metrics();
+	start_flops_metrics();
 
 	sleep(4);
 	
-	stop_uncores(cas);
+	ret(stop_uncores(cas));
+	stop_flops_metrics(flops, ops);
 
-	for (j = 0, gbs = 0; j < i; ++j) {
-		fprintf(stderr, "%llu ", cas[j]);
-		gbs += cas[j]; 
+	fprintf(stderr, "BANDWIDTH: ");
+	for (i = 0, gbs = 0; i < igbs; ++i) {
+		fprintf(stderr, "%llu ", cas[i]);
+		gbs += cas[i];
 	}
 	gbs = (gbs*64LLU) / (1024LLU*1024LLU*1024LLU*4LLU);
 	fprintf(stderr, "\nbandwidth %0.4lf GB/s\n", (double) gbs);
+
+	fprintf(stderr, "FLOPS: ");
+	for (i = 0, tfs = 0; k < itfs; ++i) {
+		fprintf(stderr, "%llu ", flops[i]);
+		tfs += flops[i];
+	}
+	tfs = (tfs) / (1024LLU*1024LLU*1024LLU*1024LLU);
+	fprintf(stderr, "\nflops %0.4lf TF/s\n", (double) tfs);
 
 	return 0;
 }

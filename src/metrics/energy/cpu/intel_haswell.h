@@ -39,7 +39,9 @@ void dispose_rapl_msr(int *fd_map);
 int read_rapl_msr(int *fd_map,unsigned long long *_values);
 
 void rapl_msr_energy_to_str(char *b,unsigned long long *values);
+
 unsigned long long acum_rapl_energy(unsigned long long *values);
+
 void diff_rapl_msr_energy(unsigned long long *diff,unsigned long long *end, unsigned long long *init);
 
 

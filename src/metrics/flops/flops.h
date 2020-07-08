@@ -28,14 +28,14 @@ void reset_flops_metrics();
 
 void start_flops_metrics();
 
-void read_flops_metrics(llong *total_flops, llong *f_operations);
+void read_flops_metrics(llong *flops, llong *ops);
 
-void stop_flops_metrics(llong *total_flops, llong *f_operations);
+void stop_flops_metrics(llong *flops, llong *ops);
 
 int get_number_fops_events();
 
 void get_total_fops(llong *metrics);
 
-void get_weigth_fops_instructions(int *weigth_vector);
+void get_weigth_fops_instructions(int *weigths);
 
 #endif
