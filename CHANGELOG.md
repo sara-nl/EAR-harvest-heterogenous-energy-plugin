@@ -1,4 +1,5 @@
 ### EAR3.4
+- GPU basic support in EAR library
 - Node powercap and cluster power cap supported
 - papi dependency removed
 

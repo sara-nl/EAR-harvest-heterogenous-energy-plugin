@@ -23,6 +23,9 @@ powercap_OBJS = \
 	powercap/powercap_mgt.o \
 	powercap/powercap.o 
 
+gpu_mgt_OBJS = \
+	gpu/gpu_mgt.o
+
 eard_OBJS = \
     eard_checkpoint.o \
     power_monitor.o \
@@ -34,9 +37,11 @@ eard_OBJS = \
 eard_OBJS += \
 		$(remote_api_OBJS) \
 		$(powercap_OBJS) \
+		$(gpu_mgt_OBJS) \
     $(SRCDIR)/database_cache/eardbd_api.o \
     $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a \
+    $(SRCDIR)/management/libmgt.a 
 
 ######## RULES
 
@@ -73,6 +78,7 @@ clean: clean.components clean.others eard.gclean rclean;
 	$(MAKE) -C 'remote_api' $*
 	$(MAKE) -C 'local_api' $*
 	$(MAKE) -C 'powercap' $*
+	$(MAKE) -C 'gpu' $*
 
 %.others: ;
 

@@ -490,7 +490,7 @@ state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 	for (i = 0; i < dev_count && length > 0; ++i)
 	{
 		s = snprintf(&buffer[accuml], length,
-			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
+			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu, %lu, %lu, %lu, %u, %lu\n",
 			i                   ,
 			data[i].energy_j    , data[i].power_w,
 			data[i].freq_gpu_mhz, data[i].freq_mem_mhz,

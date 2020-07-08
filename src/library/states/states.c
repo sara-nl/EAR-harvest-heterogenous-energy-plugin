@@ -125,7 +125,7 @@ extern uint check_periodic_mode;
 				GPU_f=(float)GPU_FREQ/1000000.0; \
         verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
         verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lf Time=%.3lf Energy=%.1lfJ AVGF=%.2f:Next freq %.1f", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
-				verbose(1,"\t (GPU_power %.2lf GPU_freq %.1f",GPU_POWER,GPU_f);\
+				verbose(1,"\t (GPU_power %.2lf GPU_freq %.1f)",GPU_POWER,GPU_f);\
 			}
 #else
 #define VERBOSE_SIG() \
