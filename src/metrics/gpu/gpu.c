@@ -165,3 +165,8 @@ state_t gpu_data_tostr(gpu_t *data, char *buffer, int length)
 {
 	preturn (ops.data_tostr, data, buffer, length);
 }
+
+uint gpu_model()
+{
+	return model;
+}

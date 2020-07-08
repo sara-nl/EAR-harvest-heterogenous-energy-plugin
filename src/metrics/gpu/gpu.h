@@ -23,7 +23,8 @@
 #include <common/plugins.h>
 #include <common/system/time.h>
 
-#define MODEL_NVML			1
+#define MODEL_NVML			2
+#define MODEL_DUMMY			1
 #define MODEL_UNDEFINED		0
 
 typedef struct gpu_s
@@ -92,5 +93,8 @@ state_t gpu_data_copy(gpu_t *data_dst, gpu_t *data_src);
 state_t gpu_data_print(gpu_t *data, int fd);
 
 state_t gpu_data_tostr(gpu_t *data, char *buffer, int length);
+
+/* Special function, returns the using model (if not initialized returns MODEL_UNDEFINED). */
+uint gpu_model();
 
 #endif
