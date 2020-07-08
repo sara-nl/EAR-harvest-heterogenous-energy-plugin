@@ -111,9 +111,9 @@ static int _cpu_model;
 static char* get_arch_devices(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_DEVICES);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_DEVICES);
-        pci_case(CPU_SKYLAKE_X, SKYLAKE_X_DEVICES);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_DEVICES);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_DEVICES);
+        pci_case(MODEL_SKYLAKE_X, SKYLAKE_X_DEVICES);
         default: *length = 0; return NULL;
     }
 }
@@ -121,9 +121,9 @@ static char* get_arch_devices(int *length)
 static char* get_arch_functions(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_FUNCTIONS);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_FUNCTIONS);
-        pci_case(CPU_SKYLAKE_X, SKYLAKE_X_FUNCTIONS);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_FUNCTIONS);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_FUNCTIONS);
+        pci_case(MODEL_SKYLAKE_X, SKYLAKE_X_FUNCTIONS);
         default: *length = 0; return NULL;
     }
 }
@@ -131,9 +131,9 @@ static char* get_arch_functions(int *length)
 static char* get_arch_reset_controls(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_RST_CTL);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_RST_CTL);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_RST_CTL);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_RST_CTL);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_RST_CTL);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_RST_CTL);
         default: *length = 0; return NULL;
     }
 }
@@ -141,9 +141,9 @@ static char* get_arch_reset_controls(int *length)
 static int* get_arch_reset_commands(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_RST_CMD);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_RST_CMD);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_RST_CMD);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_RST_CMD);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_RST_CMD);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_RST_CMD);
         default: *length = 0; return NULL;
     }
 }
@@ -151,9 +151,9 @@ static int* get_arch_reset_commands(int *length)
 static int* get_arch_start_commands(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STA_CMD);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STA_CMD);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STA_CMD);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STA_CMD);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STA_CMD);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STA_CMD);
         default: *length = 0; return NULL;
     }
 }
@@ -161,9 +161,9 @@ static int* get_arch_start_commands(int *length)
 static char* get_arch_start_controls(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STA_CTL);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STA_CTL);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STA_CTL);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STA_CTL);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STA_CTL);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STA_CTL);
         default: *length = 0; return NULL;
     }
 }
@@ -171,9 +171,9 @@ static char* get_arch_start_controls(int *length)
 static int* get_arch_stop_commands(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STO_CMD);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STO_CMD);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STO_CMD);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STO_CMD);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STO_CMD);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STO_CMD);
         default: *length = 0; return NULL;
     }
 }
@@ -181,9 +181,9 @@ static int* get_arch_stop_commands(int *length)
 static char* get_arch_stop_controls(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STO_CTL);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STO_CTL);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STO_CTL);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STO_CTL);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STO_CTL);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STO_CTL);
         default: *length = 0; return NULL;
     }
 }
@@ -191,9 +191,9 @@ static char* get_arch_stop_controls(int *length)
 static char* get_arch_read_counters(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_RED_CTR);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_RED_CTR);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_RED_CTR);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_RED_CTR);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_RED_CTR);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_RED_CTR);
         default: *length = 0; return NULL;
     }
 }
@@ -201,9 +201,9 @@ static char* get_arch_read_counters(int *length)
 static short* get_arch_ids(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_IDS);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_IDS);
-        pci_case(CPU_SKYLAKE_X, SKYLAKE_X_IDS);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_IDS);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_IDS);
+        pci_case(MODEL_SKYLAKE_X, SKYLAKE_X_IDS);
         default: *length = 0; return NULL;
     }
 }
@@ -211,9 +211,9 @@ static short* get_arch_ids(int *length)
 static int get_cpu_n_functions()
 {
     switch (_cpu_model) {
-        case CPU_HASWELL_X: return HASWELL_X_N_FUNCTIONS;
-        case CPU_BROADWELL_X: return HASWELL_X_N_FUNCTIONS;
-        case CPU_SKYLAKE_X: return SKYLAKE_X_N_FUNCTIONS;
+        case MODEL_HASWELL_X: return HASWELL_X_N_FUNCTIONS;
+        case MODEL_BROADWELL_X: return HASWELL_X_N_FUNCTIONS;
+        case MODEL_SKYLAKE_X: return SKYLAKE_X_N_FUNCTIONS;
         default: return 0;
     }
 }
@@ -311,7 +311,7 @@ int pci_check_uncores()
 
 state_t pci_status_uncores(topology_t *tp)
 {
-    if (tp->vendor == VENDOR_INTEL && tp->model >= CPU_HASWELL_X){
+    if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X){
         return EAR_SUCCESS;
     }
     return EAR_ERROR;

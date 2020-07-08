@@ -89,10 +89,10 @@ int init_flops_metrics()
 
 		cpu_model = get_model();
 		switch(cpu_model){
-			case CPU_HASWELL_X:
-			case CPU_BROADWELL_X:
+			case MODEL_HASWELL_X:
+			case MODEL_BROADWELL_X:
 				break;
-			case CPU_SKYLAKE_X:
+			case MODEL_SKYLAKE_X:
 				flops_supported=1;
 
 				switch (sets)

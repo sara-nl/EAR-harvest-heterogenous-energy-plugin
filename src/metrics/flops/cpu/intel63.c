@@ -49,7 +49,7 @@ static llong accum_512d;
 
 state_t flops_intel63_status(topology_t *tp)
 {
-	if (tp->vendor == VENDOR_INTEL && tp->model >= CPU_HASWELL_X) {
+	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
 		return EAR_SUCCESS;
 	}
 	return EAR_ERROR;

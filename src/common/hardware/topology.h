@@ -21,6 +21,7 @@
 #include <common/types/generic.h>
 
 // https://en.wikichip.org/wiki/intel/cpuid
+// arch/x86/include/asm/intel-family.h
 #define MODEL_UNIDENTIFIED			-1
 #define MODEL_SANDY_BRIDGE_X		45  //X means Server
 #define MODEL_IVY_BRIDGE_X			62
