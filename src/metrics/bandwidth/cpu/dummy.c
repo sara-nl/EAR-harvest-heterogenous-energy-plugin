@@ -15,27 +15,41 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_FLOPS_H
-#define METRICS_FLOPS_H
+state_t bwidth_dummy_init(ctx_t *c, topology_t *tp)
+{
+	return EAR_SUCCESS;
+}
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
+state_t bwidth_dummy_dispose(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
 
-int init_flops_metrics();
+state_t bwidth_dummy_count(ctx_t *c, uint *count)
+{
+	*count = 1;
+	return EAR_SUCCESS;
+}
 
-void reset_flops_metrics();
+state_t bwidth_dummy_start(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
 
-void start_flops_metrics();
+state_t bwidth_dummy_stop(ctx_t *c, ullong *cas)
+{
+	return bwidth_dummy_read(c, cas);
+}
 
-void read_flops_metrics(llong *total_flops, llong *f_operations);
+state_t bwidth_dummy_reset(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
 
-void stop_flops_metrics(llong *total_flops, llong *f_operations);
-
-int get_number_fops_events();
-
-void get_total_fops(llong *metrics);
-
-void get_weigth_fops_instructions(int *weigth_vector);
-
-#endif
+state_t bwidth_dummy_read(ctx_t *c, ullong *cas)
+{
+	if (cas != NULL) {
+		*cas = 1;
+	}
+	return EAR_SUCCESS;
+}

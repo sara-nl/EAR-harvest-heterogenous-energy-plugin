@@ -15,27 +15,24 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_FLOPS_H
-#define METRICS_FLOPS_H
+#ifndef METRICS_BANDWIDTH_AMD49_H
+#define METRICS_BANDWIDTH_AMD49_H
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
+#include <metrics/bandwidth/bandwidth.h>
 
-int init_flops_metrics();
+state_t bwidth_amd49_init(ctx_t *c, topology_t *tp);
 
-void reset_flops_metrics();
+state_t bwidth_amd49_dispose(ctx_t *c);
 
-void start_flops_metrics();
+state_t bwidth_amd49_count(ctx_t *c, uint *count);
 
-void read_flops_metrics(llong *total_flops, llong *f_operations);
+state_t bwidth_amd49_start(ctx_t *c);
 
-void stop_flops_metrics(llong *total_flops, llong *f_operations);
+state_t bwidth_amd49_stop(ctx_t *c, ullong *cas);
 
-int get_number_fops_events();
+state_t bwidth_amd49_reset(ctx_t *c);
 
-void get_total_fops(llong *metrics);
-
-void get_weigth_fops_instructions(int *weigth_vector);
+//state_t bwidth_amd49_read(ctx_t *c, double *gbs);
+state_t bwidth_amd49_read(ctx_t *c, ullong *cas);
 
 #endif

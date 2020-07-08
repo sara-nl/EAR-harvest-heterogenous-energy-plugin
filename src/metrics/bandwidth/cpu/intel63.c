@@ -84,13 +84,9 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include <common/config.h>
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/types/generic.h>
-#include <common/output/verbose.h>
-#include <common/hardware/hardware_info.h>
-#include <metrics/bandwidth/cpu/intel_haswell.h>
+#include <common/output/debug.h>
+#include <metrics/bandwidth/cpu/utils.h>
+#include <metrics/bandwidth/cpu/intel63.h>
 
 #define IJKFOR(i_len, j_len, k_len) \
     for(i = 0; i < i_len; i++)      \
@@ -313,7 +309,15 @@ int pci_check_uncores()
 }
 #endif
 
-state_t pci_init_uncores(ctx_t *c, topology_t *tp)
+state_t pci_status_uncores(topology_t *tp)
+{
+    if (tp->vendor == VENDOR_INTEL && tp->model >= CPU_HASWELL_X){
+        return EAR_SUCCESS;
+    }
+    return EAR_ERROR;
+}
+
+state_t bwidth_intel63_init(ctx_t *c, topology_t *tp)
 {
     _cpu_model = tp->model;
 
@@ -329,16 +333,16 @@ state_t pci_init_uncores(ctx_t *c, topology_t *tp)
 #if 0
 //Open PCI files and also allocates the memory needed
 
-int pci_init_uncores(int cpu_model)
+int bwidth_intel63_init(int cpu_model)
 {
     _cpu_model = cpu_model;
     pci_scan_uncores();
 
-    return pci_count_uncores();
+    return bwidth_intel63_count();
 }
 #endif
 
-state_t pci_count_uncores(ctx_t *c, uint *count)
+state_t bwidth_intel63_count(ctx_t *c, uint *count)
 {
     int n_ctrs;
     get_arch_read_counters(&n_ctrs);
@@ -351,7 +355,7 @@ state_t pci_count_uncores(ctx_t *c, uint *count)
 // counters that will be needed. Needed when you
 // stop the counters and pass a buffer to be filled
 // with those values.
-int pci_count_uncores()
+int bwidth_intel63_count()
 {
     int n_ctrs;
     get_arch_read_counters(&n_ctrs);
@@ -359,17 +363,17 @@ int pci_count_uncores()
 }
 #endif
 
-state_t pci_reset_uncores(ctx_t *c)
+state_t bwidth_intel63_reset(ctx_t *c)
 {
 	int n_cmd, n_ctl;
-	printf("pci_reset_uncores\n");
+	printf("bwidth_intel63_reset\n");
 	if (n_functions<=0) return 0;
 	int *cmd = get_arch_reset_commands(&n_cmd);
 	char *ctl = get_arch_reset_controls(&n_ctl);
 	return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
-state_t pci_start_uncores(ctx_t *c)
+state_t bwidth_intel63_start(ctx_t *c)
 {
     int n_cmd, n_ctl;
     if (n_functions<=0) return 0;
@@ -378,18 +382,18 @@ state_t pci_start_uncores(ctx_t *c)
     return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
-state_t pci_stop_uncores(ctx_t *c, ullong *cas)
+state_t bwidth_intel63_stop(ctx_t *c, ullong *cas)
 {
     int n_cmd, n_ctl, res;
     if (n_functions<=0) return 0;
     int *cmd = get_arch_stop_commands(&n_cmd);
     char *ctl = get_arch_stop_controls(&n_ctl);
     res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
-    pci_read_uncores(c, cas);
+    bwidth_intel63_read(c, cas);
     return res;
 }
 
-state_t pci_read_uncores(ctx_t *c, ullong *cas)
+state_t bwidth_intel63_read(ctx_t *c, ullong *cas)
 {
     int i, j, k, res;
     int n_ctrs;
@@ -426,7 +430,7 @@ state_t pci_read_uncores(ctx_t *c, ullong *cas)
     return EAR_SUCCESS;
 }
 
-state_t pci_dispose_uncores(ctx_t *c)
+state_t bwidth_intel63_dispose(ctx_t *c)
 {
     int i;
 

@@ -15,19 +15,14 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <common/states.h>
-#include <common/plugins.h>
 #include <common/system/time.h>
 #include <common/output/debug.h>
-#include <common/hardware/topology.h>
 #include <metrics/common/msr.h>
-#include <metrics/bandwidth/cpu/amd23.h>
+#include <metrics/bandwidth/cpu/amd49.h>
 
 // Vendor	AuthenticAMD
 // Family	17
@@ -63,7 +58,7 @@ const uint  ctr_l3  = 0x00000000c0010231;
 // To stop all the counters. 
 const ulong cmd_off  = 0x0000000000000000;
 
-typedef struct bwidth_amd23_s
+typedef struct bwidth_amd49_s
 {
 	topology_t tp;
 	timestamp_t time;
@@ -71,13 +66,21 @@ typedef struct bwidth_amd23_s
 	ulong *data_curr;
 	uint fd_count;
 	uint filled;
-} bwidth_amd23_t;
+} bwidth_amd49_t;
 
 static int initialized;
 
-state_t bwidth_amd23_init(ctx_t *c, topology_t *tp)
+state_t bwidth_amd49_status(topology_t *tp)
 {
-	bwidth_amd23_t *bw;
+	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN){
+		return EAR_SUCCESS;
+	}
+	return EAR_ERROR;
+}
+
+state_t bwidth_amd49_init(ctx_t *c, topology_t *tp)
+{
+	bwidth_amd49_t *bw;
 	state_t s;
 	int i;
 
@@ -87,14 +90,14 @@ state_t bwidth_amd23_init(ctx_t *c, topology_t *tp)
 	}
 
 	// Initializing data
-	c->context = calloc(1, sizeof(bwidth_amd23_t));
+	c->context = calloc(1, sizeof(bwidth_amd49_t));
 
 	if (c->context == NULL) {
 		debug("%s", Generr.alloc_error);
 		return_msg(EAR_ERROR, Generr.alloc_error);
 	}
 
-	bw = (bwidth_amd23_t *) c->context;
+	bw = (bwidth_amd49_t *) c->context;
 	uint ccx_count = tp->l3_count;
 	uint ccd_count = ccx_count / 2;
 
@@ -123,9 +126,9 @@ state_t bwidth_amd23_init(ctx_t *c, topology_t *tp)
 	return EAR_SUCCESS;
 }
 
-state_t bwidth_amd23_dispose(ctx_t *c)
+state_t bwidth_amd49_dispose(ctx_t *c)
 {
-	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
+	bwidth_amd49_t *bw = (bwidth_amd49_t *) c->context;
 	state_t s;
 	int i;
 	
@@ -144,9 +147,9 @@ state_t bwidth_amd23_dispose(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t bwidth_amd23_count(ctx_t *c, uint *count)
+state_t bwidth_amd49_count(ctx_t *c, uint *count)
 {
-	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
+	bwidth_amd49_t *bw = (bwidth_amd49_t *) c->context;
 	
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
@@ -157,14 +160,14 @@ state_t bwidth_amd23_count(ctx_t *c, uint *count)
 	return EAR_SUCCESS;
 }
 
-state_t bwidth_amd23_start(ctx_t *c)
+state_t bwidth_amd49_start(ctx_t *c)
 {
-	return bwidth_amd23_reset(c);
+	return bwidth_amd49_reset(c);
 }
 
-state_t bwidth_amd23_stop(ctx_t *c, ullong *cas)
+state_t bwidth_amd49_stop(ctx_t *c, ullong *cas)
 {
-	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
+	bwidth_amd49_t *bw = (bwidth_amd49_t *) c->context;
 	state_t s;
 	int i;
 	
@@ -181,12 +184,12 @@ state_t bwidth_amd23_stop(ctx_t *c, ullong *cas)
 		s = msr_write(bw->tp.cpus[i].id, &cmd_off, sizeof(ulong), ctl_l3);
 	}
 
-	return bwidth_amd23_read(c, cas);
+	return bwidth_amd49_read(c, cas);
 }
 
-state_t bwidth_amd23_reset(ctx_t *c)
+state_t bwidth_amd49_reset(ctx_t *c)
 {
-	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
+	bwidth_amd49_t *bw = (bwidth_amd49_t *) c->context;
 	state_t s;
 	int i;
 	
@@ -209,10 +212,10 @@ state_t bwidth_amd23_reset(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-//state_t bwidth_amd23_counters_read(ctx_t *c, double *gbs)
-state_t bwidth_amd23_read(ctx_t *c, ullong *cas)
+//state_t bwidth_amd49_counters_read(ctx_t *c, double *gbs)
+state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 {
-	bwidth_amd23_t *bw = (bwidth_amd23_t *) c->context;
+	bwidth_amd49_t *bw = (bwidth_amd49_t *) c->context;
 	state_t s;
 	int i;
 	
@@ -301,22 +304,3 @@ state_t bwidth_amd23_read(ctx_t *c, ullong *cas)
 
 	return EAR_SUCCESS;
 }
-
-#if 0
-int main(int argc,char *argv[])
-{
-	topology_t topo;
-	ctx_t band;
-	double gbs;
-
-	topology_init(&topo);
-	bwidth_amd23_init(&band, &topo);
-	bwidth_amd23_counters_start(&band);
-	bwidth_amd23_counters_read(&band, &gbs);
-	sleep(4);
-	bwidth_amd23_counters_read(&band, &gbs);
-	fprintf(stderr, "Detected bandwidth: %.4lf GB/s\n", gbs);
-
-	return 0;
-}
-#endif

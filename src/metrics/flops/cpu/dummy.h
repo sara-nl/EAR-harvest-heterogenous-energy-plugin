@@ -15,27 +15,27 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_FLOPS_H
-#define METRICS_FLOPS_H
+#ifndef METRICS_FLOPS_DUMMY
+#define METRICS_FLOPS_DUMMY
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
+#include <metrics/flops/flops.h>
 
-int init_flops_metrics();
+state_t flops_dummy_init(ctx_t *c);
 
-void reset_flops_metrics();
+state_t flops_dummy_dispose(ctx_t *c);
 
-void start_flops_metrics();
+state_t flops_dummy_reset(ctx_t *c);
 
-void read_flops_metrics(llong *total_flops, llong *f_operations);
+state_t flops_dummy_start(ctx_t *c);
 
-void stop_flops_metrics(llong *total_flops, llong *f_operations);
+state_t flops_dummy_read(ctx_t *c, llong *flops, llong *ops);
 
-int get_number_fops_events();
+state_t flops_dummy_stop(ctx_t *c, llong *flops, llong *ops);
 
-void get_total_fops(llong *metrics);
+state_t flops_dummy_count(ctx_t *c, uint *count);
 
-void get_weigth_fops_instructions(int *weigth_vector);
+state_t flops_dummy_read_accum(ctx_t *c, llong *flops);
+
+state_t flops_dummy_weights(uint *weigths);
 
 #endif

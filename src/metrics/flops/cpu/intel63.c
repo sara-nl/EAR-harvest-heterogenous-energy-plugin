@@ -17,6 +17,7 @@
 
 //#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
+#include <metrics/common/perf.h>
 #include <metrics/flops/cpu/intel63.h>
 
 static perf_t perf_064f;
@@ -46,7 +47,15 @@ static llong accum_256d;
 static llong accum_512f;
 static llong accum_512d;
 
-int init_flops_metrics()
+state_t flops_intel63_status(topology_t *tp)
+{
+	if (tp->vendor == VENDOR_INTEL && tp->model >= CPU_HASWELL_X) {
+		return EAR_SUCCESS;
+	}
+	return EAR_ERROR;
+}
+
+state_t flops_intel63_init()
 {
 	state_t s;
 
@@ -63,10 +72,10 @@ int init_flops_metrics()
 	// Remove warning
 	(void) (s);
 
-	return 1;
+	return EAR_SUCCESS;
 }
 
-void reset_flops_metrics()
+state_t flops_intel63_reset()
 {
 	state_t s;
 
@@ -75,9 +84,11 @@ void reset_flops_metrics()
 	
 	// Remove warning
 	(void) (s);
+
+	return EAR_SUCCESS;
 }
 
-void start_flops_metrics()
+state_t flops_intel63_start()
 {
 	state_t s;
 
@@ -86,9 +97,11 @@ void start_flops_metrics()
 	
 	// Remove warning
 	(void) (s);
+
+	return EAR_SUCCESS;
 }
 
-void read_flops_metrics(long long *total_flops, long long *f_operations)
+state_t flops_intel63_read(llong *flops, llong *ops)
 {
 	state_t s;
 
@@ -112,29 +125,31 @@ void read_flops_metrics(long long *total_flops, long long *f_operations)
 	accum_512f += values_512f;
 	accum_512d += values_512d;
 
-	f_operations[0] = values_064f;
-	f_operations[1] = values_064d;
-	f_operations[2] = values_128f;
-	f_operations[3] = values_128d;
-	f_operations[4] = values_256f;
-	f_operations[5] = values_256d;
-	f_operations[6] = values_512f;
-	f_operations[7] = values_512d;
+	ops[0] = values_064f;
+	ops[1] = values_064d;
+	ops[2] = values_128f;
+	ops[3] = values_128d;
+	ops[4] = values_256f;
+	ops[5] = values_256d;
+	ops[6] = values_512f;
+	ops[7] = values_512d;
 
-	*total_flops  = 0;
-	*total_flops += (accum_064f * 2);
-	*total_flops += (accum_064d * 1);
-	*total_flops += (accum_128f * 4);
-	*total_flops += (accum_128d * 2);
-	*total_flops += (accum_256f * 8);
-	*total_flops += (accum_256d * 4);
-	*total_flops += (accum_512f * 16);
-	*total_flops += (accum_512d * 8);
+	*flops  = 0;
+	*flops += (accum_064f * 2);
+	*flops += (accum_064d * 1);
+	*flops += (accum_128f * 4);
+	*flops += (accum_128d * 2);
+	*flops += (accum_256f * 8);
+	*flops += (accum_256d * 4);
+	*flops += (accum_512f * 16);
+	*flops += (accum_512d * 8);
 	
-	debug("total flops %lld", *total_flops);
+	debug("total flops %lld", *flops);
+
+	return EAR_SUCCESS;
 }
 
-void stop_flops_metrics(long long *total_flops, long long *f_operations)
+state_t flops_intel63_stop(llong *flops, llong *ops)
 {
 	state_t s;
 
@@ -144,26 +159,28 @@ void stop_flops_metrics(long long *total_flops, long long *f_operations)
 	// Remove warning
 	(void) (s);
 
-	read_flops_metrics(total_flops, f_operations);
+	return read_flops_metrics(flops, ops);
 }
 
-int get_number_fops_events()
+state_t flops_intel63_count(uint *count)
 {
 	return 8;
 }
 
-void get_total_fops(long long *metrics)
+state_t flops_intel63_read_accum(llong *flops)
 {
-	metrics[0] = accum_064f;
-	metrics[1] = accum_064d;
-	metrics[2] = accum_128f;
-	metrics[3] = accum_128d;
-	metrics[4] = accum_256f;
-	metrics[5] = accum_256d;
-	metrics[6] = accum_512f;
-	metrics[7] = accum_512d;
+	flops[0] = accum_064f;
+	flops[1] = accum_064d;
+	flops[2] = accum_128f;
+	flops[3] = accum_128d;
+	flops[4] = accum_256f;
+	flops[5] = accum_256d;
+	flops[6] = accum_512f;
+	flops[7] = accum_512d;
+	return EAR_SUCCESS;
 }
 
+#if 0
 double gflops(ulong total_time, uint total_cores)
 {
 	double gflops;
@@ -182,20 +199,17 @@ double gflops(ulong total_time, uint total_cores)
 	gflops = (double)(total*total_cores)/(double)(total_time*1000);
 	return gflops;
 }
+#endif
 
-void get_weigth_fops_instructions(int *weigth_vector)
+state_t flops_intel63_weights(uint *weigths)
 {
-	 weigth_vector[0] = 2;
-	 weigth_vector[1] = 1;
-	 weigth_vector[2] = 4;
-	 weigth_vector[3] = 2;
-	 weigth_vector[4] = 8;
-	 weigth_vector[5] = 4;
-	 weigth_vector[6] = 16;
-	 weigth_vector[7] = 8;
-}
-
-void print_gflops(long long total_inst, ulong total_time, uint total_cores)
-{
-	printf("print_gflops\n");
+	weigths[0] = 2;
+	weigths[1] = 1;
+	weigths[2] = 4;
+	weigths[3] = 2;
+	weigths[4] = 8;
+	weigths[5] = 4;
+	weigths[6] = 16;
+	weigths[7] = 8;
+	return EAR_SUCCESS;
 }

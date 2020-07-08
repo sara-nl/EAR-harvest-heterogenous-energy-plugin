@@ -15,10 +15,10 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_BANDWIDTH_CPU_INTEL_HASWELL_H
-#define METRICS_BANDWIDTH_CPU_INTEL_HASWELL_H
+#ifndef METRICS_BANDWIDTH_INTEL63_H
+#define METRICS_BANDWIDTH_INTEL63_H
 
-#include <metrics/bandwidth/cpu/utils.h>
+#include <metrics/bandwidth/bandwidth.h>
 
 // HASWELL_X & BROADWELL_X
 static short HASWELL_X_IDS[]      = { 0x2FB4, 0x2FB5, 0x2FB0, 0x2FB1, 0x2FD4, 0x2FD5, 0x2FD0, 0x2FD1 };
@@ -39,18 +39,20 @@ static char SKYLAKE_X_REGISTERS[] = { 0xF8, 0xF4, 0xD8, 0xA0 };
 static char SKYLAKE_X_FUNCTIONS[] = { 0x02, 0x06 };
 static int  SKYLAKE_X_N_FUNCTIONS = 6;
 
-state_t pci_init_uncores(ctx_t *c, topology_t *tp);
+state_t bwidth_intel63_status(topology_t *tp);
 
-state_t pci_count_uncores(ctx_t *c, uint *count);
+state_t bwidth_intel63_init(ctx_t *c, topology_t *tp);
 
-state_t pci_reset_uncores(ctx_t *c);
+state_t bwidth_intel63_count(ctx_t *c, uint *count);
 
-state_t pci_start_uncores(ctx_t *c);
+state_t bwidth_intel63_reset(ctx_t *c);
 
-state_t pci_stop_uncores(ctx_t *c, ullong *cas);
+state_t bwidth_intel63_start(ctx_t *c);
 
-state_t pci_read_uncores(ctx_t *c, ullong *cas);
+state_t bwidth_intel63_stop(ctx_t *c, ullong *cas);
 
-state_t pci_dispose_uncores(ctx_t *c);
+state_t bwidth_intel63_read(ctx_t *c, ullong *cas);
+
+state_t bwidth_intel63_dispose(ctx_t *c);
 
 #endif

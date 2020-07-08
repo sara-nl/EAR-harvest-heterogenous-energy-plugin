@@ -34,21 +34,15 @@
 
 #define SHOW_DEBUGS 1
 
-#include <stdio.h>
-#include <string.h>
-#include <common/config.h>
 #include <common/output/debug.h>
-#include <common/math_operations.h>
-#include <common/hardware/hardware_info.h>
-
 #include <metrics/bandwidth/bandwidth.h>
-#include <metrics/bandwidth/cpu/amd23.h>
-#include <metrics/bandwidth/cpu/intel_haswell.h>
+#include <metrics/bandwidth/cpu/dummy.h>
+#include <metrics/bandwidth/cpu/amd49.h>
+#include <metrics/bandwidth/cpu/intel63.h>
 
 static struct uncore_op {
 	state_t (*init)		(ctx_t *c, topology_t *tp);
 	state_t (*count)	(ctx_t *c, uint *count);
-	state_t (*check)	(ctx_t *c);
 	state_t (*reset)	(ctx_t *c);
 	state_t (*start)	(ctx_t *c);
 	state_t (*stop)		(ctx_t *c, ullong *cas);
@@ -74,47 +68,41 @@ int init_uncores(int cpu_model)
 	debug("family: %d", family);
 	debug("model: %d", model);
 
-	if (vendor == VENDOR_INTEL && model >= CPU_HASWELL_X)
+	if (pci_status_uncores(&topo))
 	{
-		debug("selecting Intel vendor");
-		ops.init  = pci_init_uncores;
-		ops.count = pci_count_uncores;
-		ops.check = NULL;
-		ops.reset = pci_reset_uncores;
-		ops.start = pci_start_uncores;
-		ops.stop  = pci_stop_uncores;
-		ops.read  = pci_read_uncores;
-		ops.dispose = pci_dispose_uncores;
+		ops.init  = bwidth_intel63_init;
+		ops.count = bwidth_intel63_count;
+		ops.reset = bwidth_intel63_reset;
+		ops.start = bwidth_intel63_start;
+		ops.stop  = bwidth_intel63_stop;
+		ops.read  = bwidth_intel63_read;
+		ops.dispose = bwidth_intel63_dispose;
 	}
-	else if (vendor == VENDOR_AMD && family >= FAMILY_ZEN)
+	else if (bwidth_amd49_status(&topo))
 	{
-		debug("selecting AMD vendor");
 		ops.init    = bwidth_amd23_init;
 		ops.count   = bwidth_amd23_count;
-		ops.check   = NULL;
 		ops.reset   = bwidth_amd23_reset;
 		ops.start   = bwidth_amd23_start;
 		ops.stop    = bwidth_amd23_stop;
 		ops.read    = bwidth_amd23_read;
 		ops.dispose = bwidth_amd23_dispose;
 	}
-
-#if 0
-	if (ops.init == NULL) {
+	else
+	{
 		ops.init    = bwidth_dummy_init;
 		ops.count   = bwidth_dummy_count;
-		ops.check   = NULL;
 		ops.reset   = bwidth_dummy_reset;
 		ops.start   = bwidth_dummy_start;
 		ops.stop    = bwidth_dummy_stop;
 		ops.read    = bwidth_dummy_read;
 		ops.dispose = bwidth_dummy_dispose;
 	}
-#endif
 
 	if (state_ok(ops.init(c, &topo))) {
 		return count_uncores();
 	}
+
 	return 0;
 }
 
@@ -131,7 +119,6 @@ int count_uncores()
 int check_uncores()
 {
 	return EAR_SUCCESS;
-	//preturn (ops.check, c);
 }
 
 int reset_uncores()
@@ -141,13 +128,13 @@ int reset_uncores()
 
 int start_uncores()
 {
-#if 0
+	#if 0
 	if (ops.start != NULL) {
 		ops.start(c);
 	}
 	
 	return read_uncores(NULL);
-#endif
+	#endif
 	preturn (ops.start, c);
 }
 
