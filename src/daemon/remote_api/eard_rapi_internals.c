@@ -704,11 +704,6 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 //cannot directly assign final_data = temp_data because the caller function (data_all_nodes) frees temp_data after passing through here
             }
             break;
-        case EAR_TYPE_STATUS:
-            final_data = realloc(final_data, final_size + data_head.size);
-            memcpy(&final_data[final_size], temp_data, data_head.size);
-            head.size = final_size + data_head.size;
-        break;
         case EAR_TYPE_POWER_STATUS:
             if (final_data != NULL)
             {
@@ -763,6 +758,11 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 //check if final_size == head.size??
 
             }
+        break;
+        default:
+            final_data = realloc(final_data, final_size + data_head.size);
+            memcpy(&final_data[final_size], temp_data, data_head.size);
+            head.size = final_size + data_head.size;
         break;
     }
 
