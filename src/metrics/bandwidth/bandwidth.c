@@ -68,8 +68,9 @@ int init_uncores(int cpu_model)
 	debug("family: %d", family);
 	debug("model: %d", model);
 
-	if (pci_status_uncores(&topo))
+	if (state_ok(bwidth_intel63_status(&topo)))
 	{
+		debug("selected intel63");
 		ops.init  = bwidth_intel63_init;
 		ops.count = bwidth_intel63_count;
 		ops.reset = bwidth_intel63_reset;
@@ -78,18 +79,20 @@ int init_uncores(int cpu_model)
 		ops.read  = bwidth_intel63_read;
 		ops.dispose = bwidth_intel63_dispose;
 	}
-	else if (bwidth_amd49_status(&topo))
+	else if (state_ok(bwidth_amd49_status(&topo)))
 	{
-		ops.init    = bwidth_amd23_init;
-		ops.count   = bwidth_amd23_count;
-		ops.reset   = bwidth_amd23_reset;
-		ops.start   = bwidth_amd23_start;
-		ops.stop    = bwidth_amd23_stop;
-		ops.read    = bwidth_amd23_read;
-		ops.dispose = bwidth_amd23_dispose;
+		debug("selected amd49");
+		ops.init    = bwidth_amd49_init;
+		ops.count   = bwidth_amd49_count;
+		ops.reset   = bwidth_amd49_reset;
+		ops.start   = bwidth_amd49_start;
+		ops.stop    = bwidth_amd49_stop;
+		ops.read    = bwidth_amd49_read;
+		ops.dispose = bwidth_amd49_dispose;
 	}
 	else
 	{
+		debug("selected dummy");
 		ops.init    = bwidth_dummy_init;
 		ops.count   = bwidth_dummy_count;
 		ops.reset   = bwidth_dummy_reset;

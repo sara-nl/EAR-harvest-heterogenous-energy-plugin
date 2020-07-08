@@ -26,6 +26,8 @@
 #include <common/hardware/topology.h>
 #include <common/hardware/hardware_info.h>
 
+#define INTEL_VENDOR_NAME       "GenuineIntel"
+
 void print_affinity_mask(topology_t *topo) 
 {
     cpu_set_t mask;

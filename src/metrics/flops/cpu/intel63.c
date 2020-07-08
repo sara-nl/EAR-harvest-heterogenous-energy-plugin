@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <metrics/common/perf.h>
 #include <metrics/flops/cpu/intel63.h>
@@ -55,7 +55,7 @@ state_t flops_intel63_status(topology_t *tp)
 	return EAR_ERROR;
 }
 
-state_t flops_intel63_init()
+state_t flops_intel63_init(ctx_t *c)
 {
 	state_t s;
 
@@ -75,7 +75,12 @@ state_t flops_intel63_init()
 	return EAR_SUCCESS;
 }
 
-state_t flops_intel63_reset()
+state_t flops_intel63_dispose(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
+
+state_t flops_intel63_reset(ctx_t *c)
 {
 	state_t s;
 
@@ -88,7 +93,7 @@ state_t flops_intel63_reset()
 	return EAR_SUCCESS;
 }
 
-state_t flops_intel63_start()
+state_t flops_intel63_start(ctx_t *c)
 {
 	state_t s;
 
@@ -101,7 +106,7 @@ state_t flops_intel63_start()
 	return EAR_SUCCESS;
 }
 
-state_t flops_intel63_read(llong *flops, llong *ops)
+state_t flops_intel63_read(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
@@ -125,6 +130,7 @@ state_t flops_intel63_read(llong *flops, llong *ops)
 	accum_512f += values_512f;
 	accum_512d += values_512d;
 
+	if (ops != NULL) {
 	ops[0] = values_064f;
 	ops[1] = values_064d;
 	ops[2] = values_128f;
@@ -133,23 +139,26 @@ state_t flops_intel63_read(llong *flops, llong *ops)
 	ops[5] = values_256d;
 	ops[6] = values_512f;
 	ops[7] = values_512d;
+	}
 
+	if (flops != NULL) {
 	*flops  = 0;
-	*flops += (accum_064f * 2);
-	*flops += (accum_064d * 1);
-	*flops += (accum_128f * 4);
-	*flops += (accum_128d * 2);
-	*flops += (accum_256f * 8);
-	*flops += (accum_256d * 4);
-	*flops += (accum_512f * 16);
-	*flops += (accum_512d * 8);
-	
+	*flops += (values_064f * 2);
+	*flops += (values_064d * 1);
+	*flops += (values_128f * 4);
+	*flops += (values_128d * 2);
+	*flops += (values_256f * 8);
+	*flops += (values_256d * 4);
+	*flops += (values_512f * 16);
+	*flops += (values_512d * 8);
+	}
+
 	debug("total flops %lld", *flops);
 
 	return EAR_SUCCESS;
 }
 
-state_t flops_intel63_stop(llong *flops, llong *ops)
+state_t flops_intel63_stop(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
@@ -159,24 +168,25 @@ state_t flops_intel63_stop(llong *flops, llong *ops)
 	// Remove warning
 	(void) (s);
 
-	return read_flops_metrics(flops, ops);
+	return flops_intel63_read(c, flops, ops);
 }
 
-state_t flops_intel63_count(uint *count)
+state_t flops_intel63_count(ctx_t *c, uint *count)
 {
-	return 8;
+	*count = 8;
+	return 0;
 }
 
-state_t flops_intel63_read_accum(llong *flops)
+state_t flops_intel63_read_accum(ctx_t *c, llong *ops)
 {
-	flops[0] = accum_064f;
-	flops[1] = accum_064d;
-	flops[2] = accum_128f;
-	flops[3] = accum_128d;
-	flops[4] = accum_256f;
-	flops[5] = accum_256d;
-	flops[6] = accum_512f;
-	flops[7] = accum_512d;
+	ops[0] = accum_064f;
+	ops[1] = accum_064d;
+	ops[2] = accum_128f;
+	ops[3] = accum_128d;
+	ops[4] = accum_256f;
+	ops[5] = accum_256d;
+	ops[6] = accum_512f;
+	ops[7] = accum_512d;
 	return EAR_SUCCESS;
 }
 

@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <metrics/bandwidth/cpu/dummy.h>
+
 state_t bwidth_dummy_init(ctx_t *c, topology_t *tp)
 {
 	return EAR_SUCCESS;

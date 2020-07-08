@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <metrics/flops/cpu/dummy.h>
+
 state_t flops_dummy_init(ctx_t *c)
 {
 	return EAR_SUCCESS;
@@ -37,16 +39,14 @@ state_t flops_dummy_start(ctx_t *c)
 
 state_t flops_dummy_read(ctx_t *c, llong *flops, llong *ops)
 {
-	*flops = 0;
-	*ops   = 0;
+	if (flops != NULL) *flops = 0;
+	if (ops   != NULL)   *ops = 0;
 	return EAR_SUCCESS;
 }
 
 state_t flops_dummy_stop(ctx_t *c, llong *flops, llong *ops)
 {
-	*flops = 0;
-	*ops   = 0;
-	return EAR_SUCCESS;
+	return flops_dummy_read(c, flops, ops);
 }
 
 state_t flops_dummy_count(ctx_t *c, uint *count)

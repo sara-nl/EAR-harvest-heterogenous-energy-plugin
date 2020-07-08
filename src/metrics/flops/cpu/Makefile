@@ -2,7 +2,9 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-flop_OBJS = intel63.o
+flop_OBJS = \
+    intel63.o \
+    dummy.o
 
 ######## RULES
 

@@ -309,7 +309,7 @@ int pci_check_uncores()
 }
 #endif
 
-state_t pci_status_uncores(topology_t *tp)
+state_t bwidth_intel63_status(topology_t *tp)
 {
     if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X){
         return EAR_SUCCESS;

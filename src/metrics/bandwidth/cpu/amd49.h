@@ -20,6 +20,8 @@
 
 #include <metrics/bandwidth/bandwidth.h>
 
+state_t bwidth_amd49_status(topology_t *tp);
+
 state_t bwidth_amd49_init(ctx_t *c, topology_t *tp);
 
 state_t bwidth_amd49_dispose(ctx_t *c);

@@ -15,6 +15,9 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
+
+#include <common/output/debug.h>
 #include <metrics/flops/flops.h>
 #include <metrics/flops/cpu/dummy.h>
 #include <metrics/flops/cpu/intel63.h>
@@ -23,12 +26,12 @@ static struct bandwidth_ops {
 	state_t (*init)		(ctx_t *c);
 	state_t (*dispose)	(ctx_t *c);
 	state_t (*count)	(ctx_t *c, uint *count);
-	state_t (*weights)	(ctx_t *c, uint *weights);
 	state_t (*reset)	(ctx_t *c);
 	state_t (*start)	(ctx_t *c);
 	state_t (*stop)		(ctx_t *c, llong *flops, llong *ops);
 	state_t (*read)		(ctx_t *c, llong *flops, llong *ops);
 	state_t (*read_accum) (ctx_t *c, llong *flops);
+	state_t (*weights)	(uint *weights);
 } ops;
 
 static ctx_t context;
@@ -39,10 +42,11 @@ int init_flops_metrics()
 {
 	topology_init(&topo);
 
-	if (flops_intel63_status(&topo))
+	if (state_ok(flops_intel63_status(&topo)))
 	{
+		debug("selected intel63");
 		ops.init       = flops_intel63_init;
-		ops.dispose    = flops_intel63_dipose;
+		ops.dispose    = flops_intel63_dispose;
 		ops.count      = flops_intel63_count;
 		ops.weights    = flops_intel63_weights;
 		ops.reset      = flops_intel63_reset;
@@ -51,8 +55,9 @@ int init_flops_metrics()
 		ops.read       = flops_intel63_read;
 		ops.read_accum = flops_intel63_read_accum;
 	} else {
+		debug("selected dummy");
 		ops.init       = flops_dummy_init;
-		ops.dispose    = flops_dummy_dipose;
+		ops.dispose    = flops_dummy_dispose;
 		ops.count      = flops_dummy_count;
 		ops.weights    = flops_dummy_weights;
 		ops.reset      = flops_dummy_reset;
