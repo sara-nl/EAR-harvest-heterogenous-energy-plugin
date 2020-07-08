@@ -118,6 +118,7 @@ state_t dvfs_pc_thread_main(void *p)
     /*debug(rapl_energy_str); */
     acum_energy=acum_rapl_energy(values_diff);
     power_rapl=(float)acum_energy/(1*RAPL_MSR_UNITS);
+		debug("DVFS monitoring exectuted power_computed=%f limit %u",power_rapl,current_dvfs_pc);
     /*debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);*/
     if (c_status==PC_STATUS_RUN){
       if (!dvfs_pc_secs){
@@ -273,11 +274,11 @@ state_t disable()
 	pthread_kill(dvfs_pc_th,SIGSTOP);
 }
 
-state_t enable()
+state_t enable(suscription_t *sus)
 {
 	int ret;
+	debug("DVFS");
 	#if USE_SUBSCRIPTIONS
-	sus=suscription();
 	if (sus == NULL){
 		debug("NULL subscription in DVFS powercap");
 		return EAR_ERROR;
@@ -286,10 +287,8 @@ state_t enable()
 	sus->call_init = dvfs_pc_thread_init;
 	sus->time_relax = 1000;
 	sus->time_burst = 1000;
-	if (monitor_register(sus) != EAR_SUCCESS){	
-		error("Error registering DVFS_pc subscription in the monitor");
-		return EAR_ERROR;
-	}
+	sus->suscribe(sus);
+	debug("DVFS Subscription done");
 	#else
 	/* Create thread */
 	if ((ret=pthread_create(&dvfs_pc_th, NULL, (void*)dvfs_pc_thread, (void *)NULL))){
