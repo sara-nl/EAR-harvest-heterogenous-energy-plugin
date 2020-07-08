@@ -1071,6 +1071,8 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 	dyn->max_sig_power=node->max_sig_power;
 	dyn->max_power_cap=node->max_power_cap;
 	dyn->report_loops=cluster->database.report_loops;
+	dyn->max_avx512_freq=my_node_conf->max_avx512_freq;
+	dyn->max_avx2_freq=my_node_conf->max_avx2_freq;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 
 

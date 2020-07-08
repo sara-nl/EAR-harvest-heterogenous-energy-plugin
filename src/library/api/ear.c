@@ -714,13 +714,15 @@ void ear_init()
 	}
 
 	// Policies && models
-	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
-		error("Retrieving architecture description");
-		/* How to proceeed here ? */
-		my_id=1;
-		verbose(0,"Error in EAR metrics initialization, setting EARL off");
-		return;
-	}
+  if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+    error("Retrieving architecture description");
+    /* How to proceeed here ? */
+    my_id=1;
+    verbose(0,"Error in EAR metrics initialization, setting EARL off");
+    return;
+  }
+  arch_desc.max_freq_avx512=system_conf->max_avx512_freq;
+  arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
 
 	debug("frequency_init");
 	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
@@ -760,7 +762,7 @@ void ear_init()
 		if (is_affinity_set(&arch_desc.top,getpid(),&is_set)!=EAR_SUCCESS){
 			error("Checking the affinity mask");
 		}else{
-			if (is_set)	verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
+			if (is_set)	verbose(2,"Affinity mask defined for rank %d",masters_info.my_master_rank);
 		}
 	}
 
