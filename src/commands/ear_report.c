@@ -37,6 +37,8 @@
 #include <mysql/mysql.h>
 #endif
 
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+
 /* MYSQL QUERIES */
 #if DB_MYSQL
 #define MET_TIME    "SELECT MIN(start_time), MAX(end_time) FROM Periodic_metrics WHERE start_time" \
@@ -93,8 +95,13 @@
                     "INNER JOIN Jobs ON job_id = Jobs.id AND Applications.step_id = Jobs.step_id " \
                     "WHERE start_time >= %d AND end_time <= %d AND DC_power < %d GROUP BY Jobs.user_id ORDER BY energy"
 
+#if USE_GPUS
+#define ALL_NODES   "select SUM(DC_energy), SUM(GPU_energy), node_id FROM Periodic_metrics WHERE start_time >= %d " \
+                    " AND end_time <= %d GROUP BY node_id "
+#else
 #define ALL_NODES   "select SUM(DC_energy), node_id FROM Periodic_metrics WHERE start_time >= %d " \
                     " AND end_time <= %d GROUP BY node_id "
+#endif
 
 #define ALL_ISLANDS "SELECT SUM(DC_energy), eardbd_host FROM Periodic_aggregations WHERE start_time >= %d "\
                     " AND end_time <= %d GROUP BY eardbd_host"
@@ -131,7 +138,7 @@ void usage(char *app)
     printf( "%s is a tool that reports energy consumption data\n", app);
 	printf( "Usage: %s [options]\n", app);
     printf( "Options are as follows:\n"\
-        "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default 1970-01-01.\n"
+        "\t-s start_time     \t indicates the start of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: end_time minus insertion time*2.\n"
         "\t-e end_time       \t indicates the end of the period from which the energy consumed will be computed. Format: YYYY-MM-DD. Default: current time.\n"
         "\t-n node_name |all \t indicates from which node the energy will be computed. Default: none (all nodes computed) \n\t\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
         "\t-u user_name |all \t requests the energy consumed by a user in the selected period of time. Default: none (all users computed). \n\t\t\t\t\t 'all' option shows all users individually, not aggregated.\n"
@@ -477,6 +484,11 @@ void compute_pow(MYSQL *connection, int start_time, int end_time, unsigned long 
         }
         if (global_start_time != global_end_time && result > 0)
             avg_pow = result / (global_end_time-global_start_time);
+        else if (start_time > 0)
+        {
+            global_start_time = start_time;
+            global_end_time = end_time;
+        }
     
         if (verbose)
         {
@@ -832,7 +844,11 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
         } else if (!strcmp(inc_query, ALL_TAGS)) {
             printf( "%15s %15s\n", "Energy (J)", "Energy tag");
         } else if (global_end_time > 0) {
-                printf( "%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power");
+#if USE_GPUS
+            printf( "%15s %15s %15s %15s\n", "Energy (J)", "Node", "Avg. DC Power", "Avg. GPU energy");
+#else
+            printf( "%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power");
+#endif
             all_nodes = 1;
         }
         else {
@@ -842,12 +858,22 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
 
         while ((row = mysql_fetch_row(result))!= NULL) 
         { 
+#if USE_GPUS
+            for(i = 0; i < num_fields; i++) {
+                if (i != 1)
+                    printf("%15s ", row[i] ? row[i] : "NULL");
+            }
+#else
             for(i = 0; i < num_fields; i++) {
                 printf("%15s ", row[i] ? row[i] : "NULL");
             }
+#endif
           
             if (row[0] && all_nodes) { //when getting energy we compute the avg_power
                 printf("%15lld", (atoll(row[0]) /(global_end_time - global_start_time)));
+#if USE_GPUS
+                printf("%15lld", (atoll(row[1]) /(global_end_time - global_start_time)));
+#endif
     	}
             printf("\n");
         }
@@ -1101,6 +1127,7 @@ int main(int argc,char *argv[])
         }
     }
 
+
     if (!all_users && !all_nodes && !all_tags && !all_eardbds && !global_energy && !report_events)
     {
         long long result = get_sum(connection, start_time, end_time, divisor);
@@ -1128,8 +1155,17 @@ int main(int argc,char *argv[])
                 printf( "Average power during the reported period: %llu W\n", avg_pow);
             }
         }    
+#if DB_MYSQL
+        mysql_close(connection);
+#elif DB_PSQL
+        PQfinish(connection);
+#endif
+        free_cluster_conf(&my_conf);
+        exit(0);
     }
-    else if (all_users)
+
+    if (start_time == 0) start_time = end_time - MAX(my_conf.eard.period_powermon, my_conf.db_manager.insr_time)*4;
+    if (all_users)
         print_all(connection, start_time, end_time, ALL_USERS, ALL_PER_METRIC_TYPE);
     else if (all_tags)
         print_all(connection, start_time, end_time, ALL_TAGS, ALL_PER_METRIC_TYPE);
