@@ -30,7 +30,7 @@
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>
 
-const char *nvml_names[] =
+static const char *nvml_names[] =
 {
 	"nvmlInit_v2",
 	"nvmlDeviceGetCount_v2",
