@@ -22,15 +22,6 @@
 #include <common/states.h>
 #include <common/hardware/topology.h>
 
-#define CPUMODEL 6126
-#if CPUMODEL == 6148
-#define MAX_FREQ_AVX2 2600000
-#define MAX_FREQ_AVX512 2200000
-#endif
-#if CPUMODEL == 6126
-#define MAX_FREQ_AVX2 2900000
-#define MAX_FREQ_AVX512 2300000
-#endif
 
 
 typedef struct architecture{
