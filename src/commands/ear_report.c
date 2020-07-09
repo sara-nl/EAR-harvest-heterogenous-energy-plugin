@@ -96,10 +96,10 @@
                     "WHERE start_time >= %d AND end_time <= %d AND DC_power < %d GROUP BY Jobs.user_id ORDER BY energy"
 
 #if USE_GPUS
-#define ALL_NODES   "select SUM(DC_energy), SUM(GPU_energy), node_id FROM Periodic_metrics WHERE start_time >= %d " \
+#define ALL_NODES   "select SUM(DC_energy), MIN(start_time), MAX(end_time), SUM(GPU_energy), node_id FROM Periodic_metrics WHERE start_time >= %d " \
                     " AND end_time <= %d GROUP BY node_id "
 #else
-#define ALL_NODES   "select SUM(DC_energy), node_id FROM Periodic_metrics WHERE start_time >= %d " \
+#define ALL_NODES   "select SUM(DC_energy), MIN(start_time), MAX(end_time), node_id FROM Periodic_metrics WHERE start_time >= %d " \
                     " AND end_time <= %d GROUP BY node_id "
 #endif
 
@@ -845,7 +845,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
             printf( "%15s %15s\n", "Energy (J)", "Energy tag");
         } else if (global_end_time > 0) {
 #if USE_GPUS
-            printf( "%15s %15s %15s %15s\n", "Energy (J)", "Node", "Avg. DC Power", "Avg. GPU energy");
+            printf( "%15s %15s %15s %15s\n", "Energy (J)", "Node", "Avg. DC Power", "Avg. GPU Power");
 #else
             printf( "%15s %15s %15s\n", "Energy (J)", "Node", "Avg. Power");
 #endif
@@ -860,7 +860,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
         { 
 #if USE_GPUS
             for(i = 0; i < num_fields; i++) {
-                if (i != 1)
+                if (i != 1 && i != 2 && i != 3)
                     printf("%15s ", row[i] ? row[i] : "NULL");
             }
 #else
@@ -870,9 +870,9 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
 #endif
           
             if (row[0] && all_nodes) { //when getting energy we compute the avg_power
-                printf("%15lld", (atoll(row[0]) /(global_end_time - global_start_time)));
+                printf("%15lld", (atoll(row[0]) /(atoll(row[2]) - atoll(row[1]))));
 #if USE_GPUS
-                printf("%15lld", (atoll(row[1]) /(global_end_time - global_start_time)));
+                printf("%15lld", (atoll(row[3]) /(atoll(row[2]) - atoll(row[1]))));
 #endif
     	}
             printf("\n");
