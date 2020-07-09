@@ -3,6 +3,7 @@
 #include <immintrin.h>
 #include <metrics/cpi/cpi.h>
 #include <metrics/flops/flops.h>
+#include <metrics/frequency/cpu.h>
 #include <metrics/bandwidth/bandwidth.h>
 
 // /hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -I ../ -g -o macrotest macrotest.c libmetrics.a ../common/libcommon.a -lpthread -ldl
@@ -50,29 +51,42 @@ void flops_a_saco()
 
 int main(int argc, char *argv[])
 {
+	// Bandwidth
 	ullong cas[100];
-	 llong ops[100];
-	
-	double dgfs;
 	double dgbs;
-	ullong gfs;
 	ullong gbs;
+	// Flops
+	llong ops[100];
+	double dgfs;
+	ullong gfs;
+	// Frequency
+	freq_cpu_t ef1;
+	freq_cpu_t ef2;
+	ulong ghz;
+	// Cpi	
 	llong instructions;
 	llong cycles;
-
+	// Indexes
+	topology_t topo;
 	state_t s;
 	int igbs;
 	int igfs;
+	int ighz;
 	int i;
+		
+	ret(topology_init(&topo));
 
 	ret(init_uncores(0));
 	ret(init_flops_metrics());
 	ret(init_basic_metrics());
+	ret(freq_cpu_init(&topo));
 
 	ret(count_uncores());
 	igbs = i;
 	ret(get_number_fops_events());
 	igfs = i;
+	ret(freq_cpu_data_alloc(&ef1, empty, empty));
+	ret(freq_cpu_data_alloc(&ef2, empty, empty));
 
 	ret(reset_uncores());
 	ret(start_uncores());
@@ -83,12 +97,16 @@ int main(int argc, char *argv[])
 	reset_basic_metrics();
 	start_basic_metrics();
 
+	ret(freq_cpu_read(&ef1));
+
 	sleep(2);
 	flops_a_saco();
 	
 	ret(stop_uncores(cas));
 	stop_flops_metrics(&gfs, ops);
 	stop_basic_metrics(&cycles, &instructions);
+	ret(freq_cpu_read(&ef2));
+	ret(freq_cpu_read_diff(&ef2, &ef1, empty, &ghz));
 
 	fprintf(stderr, "BANDWIDTH: ");
 	for (i = 0, gbs = 0; i < igbs; ++i) {
@@ -105,10 +123,10 @@ int main(int argc, char *argv[])
 	dgfs = (double) gfs;
 	dgfs = dgfs / (1024.0*1024.0*1024.0);
 	fprintf(stderr, "\nflops %0.4lf GF/s\n", dgfs);
-	
+	//
 	fprintf(stderr, "INSTRUCTIONS/CYCLES %llu/%llu\n", cycles, instructions);
-
-	
+	//
+	fprintf(stderr, "FREQUENCY %lu\n", ghz);
 
 	return 0;
 }
