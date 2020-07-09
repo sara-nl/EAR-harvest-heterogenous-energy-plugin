@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <immintrin.h>
+#include <metrics/cpi/cpi.h>
 #include <metrics/flops/flops.h>
 #include <metrics/bandwidth/bandwidth.h>
 
@@ -56,6 +57,8 @@ int main(int argc, char *argv[])
 	double dgbs;
 	ullong gfs;
 	ullong gbs;
+	llong instructions;
+	llong cycles;
 
 	state_t s;
 	int igbs;
@@ -64,6 +67,7 @@ int main(int argc, char *argv[])
 
 	ret(init_uncores(0));
 	ret(init_flops_metrics());
+	ret(init_basic_metrics());
 
 	ret(count_uncores());
 	igbs = i;
@@ -76,11 +80,15 @@ int main(int argc, char *argv[])
 	reset_flops_metrics();
 	start_flops_metrics();
 
+	reset_basic_metrics();
+	start_basic_metrics();
+
 	sleep(2);
 	flops_a_saco();
 	
 	ret(stop_uncores(cas));
 	stop_flops_metrics(&gfs, ops);
+	stop_basic_metrics(&cycles, &instructions);
 
 	fprintf(stderr, "BANDWIDTH: ");
 	for (i = 0, gbs = 0; i < igbs; ++i) {
@@ -97,6 +105,10 @@ int main(int argc, char *argv[])
 	dgfs = (double) gfs;
 	dgfs = dgfs / (1024.0*1024.0*1024.0);
 	fprintf(stderr, "\nflops %0.4lf GF/s\n", dgfs);
+	
+	fprintf(stderr, "INSTRUCTIONS/CYCLES %llu/%llu\n", cycles, instructions);
+
+	
 
 	return 0;
 }
