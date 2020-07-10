@@ -41,8 +41,7 @@ static struct imc_freq_ops
 
 state_t freq_imc_init(topology_t *tp)
 {
-	if (tp->vendor == VENDOR_INTEL &&
-		tp->model  >= MODEL_HASWELL_X)
+	if (state_ok(ifreq_intel63_status(topology_t *_tp)))
 	{
 		ops.init		= ifreq_intel63_init;
 		ops.dispose		= ifreq_intel63_dispose;
@@ -55,10 +54,21 @@ state_t freq_imc_init(topology_t *tp)
 		ops.data_free   = ifreq_intel63_data_free;
 		ops.data_diff   = ifreq_intel63_data_diff;
 		ops.data_print  = ifreq_intel63_data_print;
-		return ops.init(tp);
 	} else {
-		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
+		ops.init		= ifreq_dummy_init;
+		ops.dispose		= ifreq_dummy_dispose;
+		ops.read		= ifreq_dummy_read;
+		ops.read_diff	= ifreq_dummy_read_diff;
+		ops.read_copy	= ifreq_dummy_read_copy;
+		ops.data_alloc	= ifreq_dummy_data_alloc;
+		ops.data_count	= ifreq_dummy_data_count;
+		ops.data_copy	= ifreq_dummy_data_copy;
+		ops.data_free   = ifreq_dummy_data_free;
+		ops.data_diff   = ifreq_dummy_data_diff;
+		ops.data_print  = ifreq_dummy_data_print;
 	}
+
+	return ops.init(tp);
 }
 
 state_t freq_imc_dispose()

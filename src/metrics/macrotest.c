@@ -103,8 +103,10 @@ int main(int argc, char *argv[])
 	flops_a_saco();
 	
 	ret(stop_uncores(cas));
+
 	stop_flops_metrics(&gfs, ops);
 	stop_basic_metrics(&cycles, &instructions);
+
 	ret(freq_cpu_read(&ef2));
 	ret(freq_cpu_read_diff(&ef2, &ef1, empty, &ghz));
 

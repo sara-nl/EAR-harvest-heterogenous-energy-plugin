@@ -44,6 +44,14 @@ typedef struct imc_intel63_s
 static uint cpu_count;
 static topology_t tp;
 
+state_t ifreq_intel63_status(topology_t *_tp)
+{
+	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
+		return EAR_SUCCESS;
+	}
+	return EAR_ERROR;
+}
+
 state_t ifreq_intel63_init(topology_t *_tp)
 {
 	state_t s;
@@ -326,11 +334,11 @@ state_t ifreq_intel63_data_print(ulong *freqs, ulong *average)
 
 	if (freqs != NULL) {
 		printf(",");
-	}	
+	}
 	if (average != NULL) {
         freq_ghz = ((double) *average) / 1000000.0;
         printf(" avg %0.1lf", freq_ghz);
-	}	
+	}
 	printf(" (GHz)\n");
 
 	return EAR_SUCCESS;

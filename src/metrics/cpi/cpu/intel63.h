@@ -18,17 +18,20 @@
 #ifndef METRICS_CPI_INTEL63
 #define METRICS_CPI_INTEL63
 
-#include <metrics/common/perf.h>
 #include <metrics/cpi/cpi.h>
 
-int init_basic_metrics();
+state_t intel63_cpi_status(topology_t *tp);
 
-void reset_basic_metrics();
+state_t intel63_cpi_init(ctx_t *c);
 
-void start_basic_metrics();
+state_t intel63_cpi_dispose(ctx_t *c);
 
-void stop_basic_metrics(long long *cycles, long long *instructions);
+state_t intel63_cpi_reset(ctx_t *c);
 
-void get_basic_metrics(long long *total_cycles, long long *instructions);
+state_t intel63_cpi_start(ctx_t *c);
+
+state_t intel63_cpi_stop(ctx_t *c, llong *cycles, llong *insts);
+
+state_t intel63_cpi_read(ctx_t *c, llong *cycles, llong *insts);
 
 #endif //METRICS_CPI_INTEL63

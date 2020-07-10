@@ -41,6 +41,17 @@ typedef struct aperf_intel63_s
 	uint error;
 } aperf_intel63_t;
 
+state_t freq_intel63_status(topology_t *_tp)
+{
+	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN) {
+		return EAR_SUCCESS;
+	}
+	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
+		return EAR_SUCCESS;
+	}
+	return EAR_ERROR;
+}
+
 state_t freq_intel63_init(topology_t *_tp)
 {
 	state_t s;

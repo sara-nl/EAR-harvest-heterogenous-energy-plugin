@@ -69,6 +69,15 @@ state_t perf_open(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event
 	return EAR_SUCCESS;
 }
 
+state_t perf_close(perf_t *perf)
+{
+	if (perf->fd > 0) {
+		close(perf->fd);
+	}
+	memset(&perf, 0, sizeof(perf_t));
+	return EAR_SUCCESS;
+}
+
 state_t perf_reset(perf_t *perf)
 {
 	int gp_flag = 0;

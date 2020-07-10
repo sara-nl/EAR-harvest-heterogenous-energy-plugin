@@ -20,12 +20,12 @@
 
 #include <metrics/common/omsr.h>
 
-#define RAPL_POWER_EVS            2
+#define RAPL_POWER_EVS		2
 #define RAPL_DRAM0          0
 #define RAPL_DRAM1          1
 #define RAPL_PACKAGE0       2
 #define RAPL_PACKAGE1       3
-#define RAPL_MSR_UNITS 			1000000000.0
+#define RAPL_MSR_UNITS		1000000000.0
 
 /** Opens the necessary fds to read the MSR registers. Returns 0 on success
 * 	and -1 on error. */
@@ -36,13 +36,13 @@ void dispose_rapl_msr(int *fd_map);
 
 /** Reads rapl counters and stores them in values array. Returns 0 on success 
 *	and -1 on error. */
-int read_rapl_msr(int *fd_map,unsigned long long *_values);
+int read_rapl_msr(int *fd_map,ullong *_values);
 
-void rapl_msr_energy_to_str(char *b,unsigned long long *values);
+void rapl_msr_energy_to_str(char *b,ullong *values);
 
-unsigned long long acum_rapl_energy(unsigned long long *values);
+ullong acum_rapl_energy(ullong *values);
 
-void diff_rapl_msr_energy(unsigned long long *diff,unsigned long long *end, unsigned long long *init);
+void diff_rapl_msr_energy(ullong *diff, ullong *end, ullong *init);
 
 
 #endif

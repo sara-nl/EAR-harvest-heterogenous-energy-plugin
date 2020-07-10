@@ -22,64 +22,87 @@
 static llong values[2];
 static perf_t perf_cyc;
 static perf_t perf_ins;
+static uint initialized;
 
-int init_basic_metrics()
+state_t intel63_cpi_status(topology_t *tp)
+{
+	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN) {
+		return EAR_SUCCESS;
+	}
+	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
+		return EAR_SUCCESS;
+	}
+	return EAR_ERROR;
+}
+
+state_t intel63_cpi_init(ctx_t *c)
 {
 	state_t s;
-	s = perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
-	s = perf_open(&perf_cyc, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
-
-	// Remove warning
-	(void) (s);
-
+	if (xtate_fail(s, perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS))) {
+		return s;
+	}
+	if (xtate_fail(s, perf_open(&perf_cyc, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES))) {
+		perf_close(&perf_ins);
+		return s;
+	}
+	initialized = 1;
 	return EAR_SUCCESS;
 }
 
-void reset_basic_metrics()
+state_t intel63_cpi_dispose(ctx_t *c)
 {
-	state_t s;
-	s = perf_reset(&perf_ins);
-
-	// Remove warning
-	(void) (s);
+	return EAR_SUCCESS;
 }
 
-void start_basic_metrics()
+state_t reset_basic_metrics(ctx_t *c)
 {
-	state_t s;
-	s = perf_start(&perf_ins);
-
-	// Remove warning
-	(void) (s);
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	return perf_reset(&perf_ins);
 }
 
-void stop_basic_metrics(long long *cycles, long long *instructions)
+state_t start_basic_metrics(ctx_t *c)
 {
-	state_t s;
-
-	s = perf_stop(&perf_ins);
-
-	get_basic_metrics(cycles, instructions);
-
-	// Remove warning
-	(void) (s);
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	return perf_start(&perf_ins);
 }
 
-void get_basic_metrics(long long *cycles, long long *instructions)
+state_t stop_basic_metrics(ctx_t *c, llong *cycles, llong *insts)
 {
 	state_t s;
 
-	*instructions = 0;
-	*cycles       = 0;
-	
-	s = perf_read(&perf_ins, values);
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	if (xtate_fail, s, perf_stop(&perf_ins)) {
+		return s;
+	}
 
-	*instructions = values[0];
-	*cycles       = values[1];
+	return intel63_cpi_read(cycles, insts);
+}
 
-	debug("total ins %lld", *instructions);
+state_t intel63_cpi_read(ctx_t *c, llong *cycles, llong *insts)
+{
+	state_t s;
+
+	*insts  = 0;
+	*cycles = 0;
+
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	if (xtate_fail(s, perf_read(&perf_ins, values))) {
+		return s;
+	}
+
+	*insts  = values[0];
+	*cycles = values[1];
+
+	debug("total ins %lld", *insts);
 	debug("total cyc %lld", *cycles);
 
-	// Remove warning
-	(void) (s);
+	return EAR_SUCCESS;
 }

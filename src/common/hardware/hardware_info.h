@@ -25,6 +25,7 @@
 #include <common/hardware/cpuid.h>
 #include <common/hardware/topology.h>
 
+
 /** Returns if the cpu is examinable by this library */
 int is_cpu_examinable();
 

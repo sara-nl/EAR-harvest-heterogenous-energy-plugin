@@ -41,8 +41,7 @@ static struct cpu_freq_ops
 
 state_t freq_cpu_init(topology_t *tp)
 {
-	if (tp->vendor == VENDOR_INTEL &&
-		tp->model  >= MODEL_HASWELL_X)
+	if (state_ok(freq_intel63_status(tp)))
 	{
 		ops.init		= freq_intel63_init;
 		ops.dispose		= freq_intel63_dispose;
