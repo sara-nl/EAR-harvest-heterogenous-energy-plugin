@@ -1070,6 +1070,8 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 	dyn->max_sig_power=node->max_sig_power;
 	dyn->max_power_cap=node->powercap;
 	dyn->report_loops=cluster->database.report_loops;
+	dyn->max_avx512_freq=my_node_conf->max_avx512_freq;
+	dyn->max_avx2_freq=my_node_conf->max_avx2_freq;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 
 
@@ -1178,6 +1180,13 @@ void report_eard_init_error()
 	}
 }
 
+void     update_global_configuration_with_local_ssettings(cluster_conf_t *my_cluster_conf,my_node_conf_t *my_node_conf)
+{
+	strcpy(my_cluster_conf->install.obj_ener,my_node_conf->energy_plugin);
+	strcpy(my_cluster_conf->install.obj_power_model,my_node_conf->energy_model);
+}
+
+
 
 /*
 *
@@ -1280,6 +1289,7 @@ int main(int argc, char *argv[]) {
 		check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
+		update_global_configuration_with_local_ssettings(&my_cluster_conf,my_node_conf);
 	}
 	verbose(0,"Initializing dynamic information and creating tmp");
 	/* This info is used for eard checkpointing */

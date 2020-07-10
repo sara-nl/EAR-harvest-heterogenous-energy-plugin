@@ -18,6 +18,7 @@
 #ifndef INM_COMMANDS_H
 #define INM_COMMANDS_H
 #include <common/states.h>
+#include <common/system/monitor.h>
 
 
 state_t inm_disable_powercap_policy(uint pid);

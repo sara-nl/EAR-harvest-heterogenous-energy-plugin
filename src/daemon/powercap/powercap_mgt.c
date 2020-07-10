@@ -30,10 +30,11 @@
 #include <common/system/symplug.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/powercap/powercap_mgt.h>
+#include <common/system/monitor.h>
 
 
 typedef struct powercap_symbols {
-  state_t (*enable)        ();
+  state_t (*enable)        (suscription_t *sus);
   state_t (*disable)       ();
   state_t (*set_powercap_value)(uint pid,uint domain,uint limit);
   state_t (*get_powercap_value)(uint pid,uint *powercap);
@@ -54,6 +55,8 @@ static powercapsym_t pcsyms_fun[NUM_DOMAINS];
 static void *pcsyms_obj[NUM_DOMAINS] ={ NULL,NULL,NULL,NULL};
 const int   pcsyms_n = 12;
 extern cluster_conf_t my_cluster_conf;
+
+static suscription_t *sus;
 
 const char     *pcsyms_names[] ={
   "enable",
@@ -163,8 +166,9 @@ state_t pmgt_enable(pwr_mgt_t *phandler)
 {
 	state_t ret,gret=EAR_SUCCESS;
 	int i;
+	sus=suscription();
 	for (i=0;i<NUM_DOMAINS;i++){
-		ret=freturn(pcsyms_fun[i].enable);
+		ret=freturn(pcsyms_fun[i].enable,sus);
 		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
 	if (gret!=EAR_SUCCESS) return gret;

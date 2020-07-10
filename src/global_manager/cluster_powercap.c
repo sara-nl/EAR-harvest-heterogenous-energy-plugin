@@ -178,9 +178,10 @@ uint powercap_reallocation(cluster_powercap_status_t *cluster_status,powercap_op
   uint total_free;
 	uint num_nodes=cluster_status->total_nodes;
   uint min_reduction;
-  verbose(0,"There are %u nodes  %u idle nodes %u greedy nodes ",
-  cluster_status->total_nodes,cluster_status->idle_nodes,cluster_status->num_greedy);
+  verbose(0,"There are %u nodes  %u idle nodes %u greedy nodes ", cluster_status->total_nodes,cluster_status->idle_nodes,cluster_status->num_greedy);
   memset(cluster_options,0,sizeof(powercap_opt_t));
+	cluster_options->greedy_nodes=calloc(cluster_status->num_greedy,sizeof(int));
+	cluster_options->extra_power=calloc(cluster_status->num_greedy,sizeof(uint));
   cluster_options->num_greedy=cluster_status->num_greedy;
   memcpy(cluster_options->greedy_nodes,cluster_status->greedy_nodes,cluster_status->num_greedy*sizeof(int));
 	total_free=max_cluster_power-cluster_status->total_powercap;
@@ -374,6 +375,8 @@ void cluster_check_powercap()
   			}
 
 				free(my_cluster_power_status);
+				free(cluster_options.greedy_nodes);
+				free(cluster_options.extra_power);
 				debug("%sEND cluster_check_powercap----------%s",COL_BLU,COL_CLR);
 }
 #endif

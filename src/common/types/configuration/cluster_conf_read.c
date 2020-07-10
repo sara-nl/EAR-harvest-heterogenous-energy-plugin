@@ -402,7 +402,7 @@ void parse_island(cluster_conf_t *conf, char *line)
             }
             token = next_token;
         }
-        else if (!strcmp(token, "TAGS"))
+        else if (!strcmp(token, "TAGS") || !strcmp(token, "TAG") )
         {
             tag_parsing = 1;
             char aux_token[256], *next_token = NULL;

@@ -60,7 +60,7 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 	avx512_pstate=frequency_closest_pstate(arch.max_freq_avx512);
 	avx2_pstate=frequency_closest_pstate(arch.max_freq_avx2);
 	VERB_SET_EN(1);
-	debug("Pstate for maximum freq avx512 %d Pstate for maximum freq avx2 %d",avx512_pstate,avx2_pstate);
+	debug("Pstate for maximum freq avx512 %lu=%d Pstate for maximum freq avx2 %lu=%d",arch.max_freq_avx512,avx512_pstate,arch.max_freq_avx2,avx2_pstate);
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
   if (coefficients == NULL) {
