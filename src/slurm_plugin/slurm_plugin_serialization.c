@@ -292,7 +292,7 @@ int plug_print_variables(spank_t sp)
 	return ESPANK_SUCCESS;
 }
 
-int plug_clean_components(spank_t sp)
+int plug_deserialize_components(spank_t sp)
 {
 	int test;
 
@@ -316,6 +316,11 @@ int plug_clean_components(spank_t sp)
 	if (isenv_agnostic(sp, Var.comp_moni.cmp, "1")) {
 		plug_component_setenabled(sp, Component.monitor, 1);
 	}
+
+	// Return
+	if (!plug_component_isenabled(sp, Component.plugin)) {
+                return ESPANK_ERROR;
+        }
 
 	return ESPANK_SUCCESS;
 }
@@ -454,6 +459,10 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 		sd->subject.context_local = Context.sbatch;
 	} else {
 		sd->subject.context_local = Context.error;
+	}
+
+	if (sd->subject.context_local == Context.error) {
+		return ESPANK_ERROR;
 	}
 
 	/*
