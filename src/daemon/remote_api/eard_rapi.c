@@ -43,14 +43,14 @@ int eards_get_app_status(cluster_conf_t *my_cluster_conf,app_status_t **status)
     request_header_t head;
 
     debug("eards_status");
-	command.req=EAR_RC_STATUS;
+	command.req=EAR_RC_APP_STATUS;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
 
     send_command(&command);
 
     head = receive_data(eards_sfd, (void **)status);
-    if (head.size < sizeof(status_t) || head.type != EAR_TYPE_APP_STATUS) {
+    if (head.size < sizeof(app_status_t) || head.type != EAR_TYPE_APP_STATUS) {
         debug("Error sending command to node");
         if (head.size > 0 && head.type != EAR_ERROR) free(status);
         return 0;
