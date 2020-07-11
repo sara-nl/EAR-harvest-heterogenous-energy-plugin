@@ -40,7 +40,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 	}
 
 	if (model_force == MODEL_NVML) {
-		debug("loaded NVML");
+		debug("loaded GPU_DATA NVML");
 		ops.init		= nvml_init;
 		ops.dispose		= nvml_dispose;
 		ops.read		= nvml_read;
@@ -60,7 +60,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		model           = MODEL_NVML;
 		loaded			= 1;
 	} else {
-		debug("loaded DUMMY");
+		debug("loaded GPU_DATA DUMMY");
 		ops.init		= gpu_dummy_init;
 		ops.dispose		= gpu_dummy_dispose;
 		ops.read		= gpu_dummy_read;

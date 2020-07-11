@@ -75,9 +75,12 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 
 	// If ailed during the deserialization or plugstack reading,
 	// then disableing the plugin is mandatory.
+	
+	#if 0
 	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}
+	#endif
 
 	//
 	plug_serialize_remote(sp, &sd);
@@ -145,10 +148,11 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 	if (plug_context_was(&sd, Context.error)) {
 		plug_component_setenabled(sp, Component.plugin, 0);
 	}
-
+	#if 0
 	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}
+	#endif
 
 	if (sd.subject.is_master) {
 		plug_rcom_eargmd_job_start(sp, &sd);

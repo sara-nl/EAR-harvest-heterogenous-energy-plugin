@@ -1,3 +1,5 @@
+//#define SHOW_DEBUGS 1
+#include <common/output/debug.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
@@ -25,7 +27,7 @@ char *_errstr;
 
 //
 int _inactive;
-int _error;
+int _error=0;
 int _clean;
 int _help;
 
@@ -74,10 +76,11 @@ int fake_slurm_spank_user_init(spank_t sp, int ac, char **av)
 
 	//
 	plug_deserialize_remote(sp, &sd);
-	
+	#if 0	
 	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}
+	#endif
 
 	//
 	if (sd.subject.context_local == Context.srun)
@@ -97,20 +100,24 @@ int pipeline(int argc, char *argv[], int sp, int at)
 {
 	_sp = sp;
 	_at = at;
-
+	debug("pipeline");
 	if (plug_is_action(_at, Action.init))
 	{
+		debug("before slurm_spank_init");
 		slurm_spank_init(_sp, argc, argv);
 
 		if (plug_context_is(_sp, Context.srun))
 		{
+			debug("slurm_spank_init_post_opt");
 			slurm_spank_init_post_opt(_sp, argc, argv);
 		}
 		else if (plug_context_is(_sp, Context.remote))
 		{
 			if (_master) {
+				debug("before slurm_spank_user_init");
 				slurm_spank_user_init(_sp, argc, argv);
 			} else {
+				debug("before fake_slurm_spank_user_init");
 				fake_slurm_spank_user_init(_sp, argc, argv);
 			}
 
@@ -201,14 +208,19 @@ int job(int argc, char *argv[])
 		_argv[i] = argv[i];
 	}
 
+	setenv("EAR_INSTALL_PATH","/home/xjcorbalan/ear3.4",1);
+	setenv("EAR_ETC","/hpc/base/ctt/packages/EAR/ear/etc",1);
+	setenv("EAR_TMP","/var/ear",1);
 	if ((p = getenv("EAR_INSTALL_PATH")) != NULL) {
 		sprintf(plug_pfx, "prefix=%s", p);
 		err_pfx = 0;
 	}
+	debug("EAR_INSTALL_PATH %s",plug_pfx);
 	if ((p = getenv("EAR_ETC")) != NULL) {
 		sprintf(plug_etc, "sysconfdir=%s", p);
 		err_etc = 0;
 	}
+	debug("EAR_ETC %s",plug_etc);
 	if ((p = getenv("EAR_TMP")) != NULL) {
 		sprintf(plug_tmp, "localstatedir=%s", p);
 		sprintf(path_tmp, "%s", p);
@@ -216,6 +228,7 @@ int job(int argc, char *argv[])
 	} else {
 		sprintf(path_tmp, "/tmp");
 	}
+	debug("EAR_TMP %s",path_tmp);
 	if ((p = getenv("EAR_DEFAULT")) != NULL) {
 		sprintf(plug_def, "default=%s", p);
 		err_def = 0;
@@ -223,6 +236,7 @@ int job(int argc, char *argv[])
 		sprintf(plug_def, "default=on");
 		err_def = 0;
 	}
+	debug("EAR_DEFAULT %s",plug_def);
 	
 	for (i = 0; i < argc; ++i) {
 		_argv[i] = argv[i];
@@ -281,6 +295,7 @@ int job(int argc, char *argv[])
 	if (err_pfx | err_etc | err_tmp | err_def) {
 		_error = 1;
 	}
+	debug("error pfx %d etc %d tmp %d def %d",err_pfx,err_etc,err_tmp,err_def);
 
 	return 0;
 }
@@ -303,6 +318,7 @@ int execute(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+	setenv("SLURM_COMP_PLUGIN","1",1);
 	// Creating job and reading arguments
 	job(argc, argv);
 
@@ -364,12 +380,15 @@ int main(int argc, char *argv[])
 		_step = spinlock_step(path_tmp, _step);
 	}
 
+	debug("I'm the master? %d",_master);
+
 	// Creating step
 	step(_argc, _argv, _job, _step);
 
 	// Local context initialization
 	pipeline(_argc, _argv, Context.srun, Action.init);
 	// Remote context initialization
+	debug("Context.remote");
 	pipeline(_argc, _argv, Context.remote, Action.init);
 
 	if (_master) {

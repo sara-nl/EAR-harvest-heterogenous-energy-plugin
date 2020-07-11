@@ -1,8 +1,13 @@
 CFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
 
+ifdef MPI_API
 OBJS = \
     global_comm.o\
 		library_shared_data.o
+else
+OBJS = \
+    library_shared_data.o
+endif
 
 
 ######## RULES

@@ -1,13 +1,15 @@
-MPI_API = 1
-export MPI_API
+#MPI_API = 1
+#export MPI_API
 ifdef MPI_API 
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=1
 else
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=0
 MPI_VERSION = seq
+MPICC = $(CC)
+export MPICC
 endif
 export CFLAGS
-LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl -lm
+LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl -lm -lpthread
 
 ########
 

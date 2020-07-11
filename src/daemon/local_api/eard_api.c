@@ -30,7 +30,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
@@ -614,7 +614,6 @@ unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t mask)
   req.req_data.f_mask.f = newfreq;
   req.req_data.f_mask.mask= mask;
 
-  debug( "NewFreq %lu requested maskk %lu",  newfreq,(unsigned long)mask);
 
   if (ear_fd_req[freq_req] >= 0)
   {
@@ -1004,13 +1003,13 @@ int eards_gpu_dev_count(uint *gpu_dev_count)
   }   
   return ack;
 }
-int eards_gpu_data_read(gpu_t *gpu_info)
+int eards_gpu_data_read(gpu_t *gpu_info,uint num_dev)
 {
   int com_fd = gpu_req;
   ulong ack=EAR_SUCCESS;
   struct daemon_req req;
   
-	memset(gpu_info,0,sizeof(gpu_t));
+	memset(gpu_info,0,sizeof(gpu_t)*num_dev);
   if (!app_connected){
     return EAR_SUCCESS;
   }
@@ -1021,7 +1020,8 @@ int eards_gpu_data_read(gpu_t *gpu_info)
   {     
       if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
       "ERROR writing request for gpu data read ")) return EAR_ERROR;
-      if (warning_api(my_read(ear_fd_ack[com_fd],(char *)gpu_info,sizeof(gpu_t)) , sizeof(gpu_t),
+			debug("gpu_data_read, reading %lu bytes",sizeof(gpu_t)*num_dev);
+      if (warning_api(my_read(ear_fd_ack[com_fd],(char *)gpu_info,sizeof(gpu_t)*num_dev) , sizeof(gpu_t)*num_dev,
       "ERROR reading data for gpu data read ")) return EAR_ERROR;
 			ack = EAR_SUCCESS;
   } else

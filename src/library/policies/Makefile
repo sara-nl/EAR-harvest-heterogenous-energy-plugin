@@ -11,11 +11,14 @@ modl_BINS = \
        min_energy.so \
        min_time_no_models.so \
        min_energy_no_models.so \
-       monitoring.so \
+       monitoring.so 
+
+ifdef MPI_API
+modl_BINS += \
 			 min_time_mpi_info.so \
-			 min_energy_auto.so \
 			 monitoring_ext.so \
-			 monitoring_ext_notime.so
+			 monitoring_ext_notime.so 
+endif
 
 modl_PATH = $(DESTDIR)/lib/plugins/policies
 modl_PERM = 0775

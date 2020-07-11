@@ -16,6 +16,7 @@
 */
 
 #define _GNU_SOURCE
+#include <pthread.h>
 
 #include <time.h>
 #include <errno.h>
@@ -27,9 +28,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-#include <pthread.h>
 
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>
@@ -63,6 +63,7 @@
 #include <library/api/mpi.h>
 #endif
 extern const char *__progname;
+static uint ear_lib_initialized=0;
 
 // Statics
 #define BUFFSIZE 			128
@@ -103,7 +104,9 @@ static uint check_every=MPI_CALLS_TO_CHECK_PERIODIC;
 #endif
 #define MASTERS_SYNC_VERBOSE 1
 masters_info_t masters_info;
+#if MPI
 MPI_Comm new_world_comm,masters_comm;
+#endif
 int num_masters;
 int my_master_size;
 int masters_connected=0;
@@ -166,6 +169,8 @@ void notify_eard_connection(int status)
 		debug("Number of nodes expected %d\n",masters_info.my_master_size);
 	}
 	#if MPI
+	debug("Connecting with other masters. Status=%d",status);
+	masters_connected=0;
 	PMPI_Allgather(buffer_send, 1, MPI_BYTE, buffer_recv, 1, MPI_BYTE, masters_info.masters_comm);
 	for (i = 0; i < masters_info.my_master_size; ++i)
 	{       
@@ -382,8 +387,11 @@ void attach_to_master_set(int master)
 {
 	int color;
 	//my_master_rank=0;
+	color=0;
+	#if MPI
 	if (master) color=0;
 	else color=MPI_UNDEFINED;
+	#endif
 	if (master) masters_info.my_master_rank=0;
 	else masters_info.my_master_rank=-1;
 	#if MPI
@@ -482,7 +490,7 @@ static void get_job_identification()
 	}
 	if (account_id==NULL) strcpy(my_account,NULL_ACCOUNT);	
 	else strcpy(my_account,account_id);
-	debug("JOB ID %d STEP ID %d ",my_job_id,my_step_id);
+	debug("JOB ID %d STEP ID %d ACCOUNT %s",my_job_id,my_step_id,my_account);
 }
 
 static void get_app_name(char *my_name)
@@ -559,6 +567,12 @@ void ear_init()
 	char *ext_def_freq_str=getenv(SCHED_EAR_DEF_FREQ);
 	architecture_t arch_desc;
 
+
+	if (ear_lib_initialized){
+		verbose(1,"EAR library already initialized");
+		return;
+	}
+
 	// MPI
 	#if MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);
@@ -589,12 +603,13 @@ void ear_init()
 	gethostname(node_name, sizeof(node_name));
 	strtok(node_name, ".");
 
-	debug("Running in %s",node_name);
+	debug("Running in %s process=%d",node_name,getpid());
 	#if MPI
 	verb_level = get_ear_verbose();
 	#else
 	verb_level=1;
 	#endif
+	verb_level=1;
 	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
@@ -611,7 +626,7 @@ void ear_init()
 	/* my_id reflects whether we are the master or no my_id == 0 means we are the master *****/
 	my_id = get_local_id(node_name);
 
-	//debug("attach to master %d",my_id);
+	debug("attach to master %d",my_id);
 
 	/* All masters connect in a new MPI communicator */
 	attach_to_master_set(my_id==0);
@@ -622,12 +637,12 @@ void ear_init()
 		return;
 	}
 #endif
-	//debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
+	debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
-	//debug("system_conf_path %s",system_conf_path);
+	debug("system_conf_path %s",system_conf_path);
 	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
-	//debug("resched_conf_path %s",resched_conf_path);
+	debug("resched_conf_path %s",resched_conf_path);
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
 	/* Updating configuration */
@@ -636,7 +651,7 @@ void ear_init()
 		update_configuration();	
 	}else{
 		eard_ok=0;
-		//debug("Shared memory not present");
+		debug("Shared memory with EARD not present");
 #if USE_LOCK_FILES
     if (!my_id){ 
     	debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
@@ -657,30 +672,39 @@ void ear_init()
 #endif
 
 
+	debug("User type %u policy %u policy_name %s",system_conf->user_type,system_conf->policy,system_conf->policy_name);
 	// Application static data and metrics
 	debug("init application");
 	init_application(&application);
+	debug("init loop_signature");
 	init_application(&loop_signature);
 	application.is_mpi=1;
 	loop_signature.is_mpi=1;
 	application.is_learning=ear_whole_app;
 	application.job.def_f=getenv_ear_p_state();
 	loop_signature.is_learning=ear_whole_app;
+	debug("application data initialized");
 
 	// Getting environment data
 	get_app_name(ear_app_name);
+	debug("App name is %s",ear_app_name);
 	if (application.is_learning){
 		verbose(1,"Learning phase app %s p_state %lu\n",ear_app_name,application.job.def_f);
 	}
-	strcpy(application.job.user_id, getenv("LOGNAME"));
+	if (getenv("LOGNAME")!=NULL) strcpy(application.job.user_id, getenv("LOGNAME"));
+	else strcpy(application.job.user_id,"No userid");
+	debug("User %s",application.job.user_id);
 	strcpy(application.node_id, node_name);
 	strcpy(application.job.user_acc,my_account);
 	application.job.id = my_job_id;
 	application.job.step_id = my_step_id;
 
+	debug("Starting job");
 	//sets the job start_time
-	start_job(&application.job);
+	//start_job(&application.job);
 
+	debug("Job time initialized");
+	debug("EARD connection section");
 	if (!my_id){ //only the master will connect with eard
 		verbose(1, "%sConnecting with EAR Daemon (EARD) %d%s", COL_BLU,ear_my_rank,COL_CLR);
 		if (eards_connect(&application) == EAR_SUCCESS) {
@@ -692,8 +716,11 @@ void ear_init()
 		}
 	}
 
+	debug("End EARD connection section");
+
 	if (!eard_ok) return;
 
+	debug("Shared region creation section");
 
 	if (!my_id){
 		debug("%sI'm the master, creating shared regions%s",COL_BLU,COL_CLR);
@@ -702,17 +729,19 @@ void ear_init()
 		attach_shared_regions();
 	}
 
+	debug("END Shared region creation section");
 	/* Processes in same node connectes each other*/
 	debug("Dynais init");
 
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	debug("Starting metrics init ");
 	if (metrics_init()!=EAR_SUCCESS){
 		    my_id=1;
 				verbose(0,"Error in EAR metrics initialization, setting EARL off");
 				return;
 	}
-
+	debug("End metrics init");
 	// Policies && models
   if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
     error("Retrieving architecture description");
@@ -829,6 +858,8 @@ void ear_init()
 
 	traces_mpi_init();
 	}
+
+	ear_lib_initialized=1;
 	
 	// All is OK :D
 	if (masters_info.my_master_rank==0) {
@@ -1267,7 +1298,7 @@ void ear_new_iteration(unsigned long loop_id)
 void *earl_periodic_actions(void *no_arg)
 {
 		verbose(1,"EARL periodic thread ON");
-		if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
+		// if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
 		if (!my_id) traces_start();
     states_periodic_begin_period(my_id, NULL, 1, 1);
     ear_iterations=0;
@@ -1285,10 +1316,12 @@ void *earl_periodic_actions(void *no_arg)
 #if !MPI 
 void ear_constructor()
 {
+	debug("Calling ear_init in ear_constructor");
 	ear_init();
 }
 void ear_destructor()
 {
+	debug("Calling ear_finalize in ear_destructor");
 	ear_finalize();
 }
 #endif

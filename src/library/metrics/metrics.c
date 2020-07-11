@@ -40,6 +40,7 @@
 #include <common/system/time.h>
 #if USE_GPU_LIB
 #include <library/metrics/gpu.h>
+char gpu_str[256];
 #endif
 extern masters_info_t masters_info;
 extern int dispose;
@@ -235,6 +236,8 @@ static void metrics_global_stop()
 		}
 		debug("gpu_read in global_stop");
 		gpu_lib_data_diff(gpu_metrics_end[APP], gpu_metrics_init[APP], gpu_metrics_diff[APP]);
+		gpu_lib_data_tostr(gpu_metrics_diff[APP],gpu_str,sizeof(gpu_str));
+		debug("gpu_data in global_stop %s",gpu_str);
 		}
 		#endif
 	}else{
@@ -274,7 +277,7 @@ static void metrics_partial_start()
 	
 	if (masters_info.my_master_rank>=0){ 
 		eards_begin_compute_turbo_freq();
-		#if USE_GPU_LIST
+		#if USE_GPU_LIB
 		if (gpu_initialized){
 		if (gpu_loop_stopped) {
 			gpu_lib_data_copy(gpu_metrics_init[LOO],gpu_metrics_end[LOO]);
@@ -372,10 +375,8 @@ static int metrics_partial_stop(uint where)
 		debug("gpu_read in partial stop");
 		gpu_loop_stopped=1;
     gpu_lib_data_diff(gpu_metrics_end[LOO], gpu_metrics_init[LOO], gpu_metrics_diff[LOO]);
-		#if SHOW_DEBUGS
-		gpu_lib_data_tostr(gpu_metrics_diff[LOO],gpu_buff,sizeof(gpu_buff));
-		debug("gpu_diff in partial_stop: %s",gpu_buff);
-		#endif	
+		gpu_lib_data_tostr(gpu_metrics_diff[LOO],gpu_str,sizeof(gpu_str));
+		debug("gpu_diff in partial_stop: %s",gpu_str);
     }
 		#endif
 	}
@@ -563,7 +564,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 			metrics->GPU_util=gpu_computed.util_gpu;
 			metrics->GPU_mem_util=gpu_computed.util_mem;
 			metrics->GPU_power=gpu_computed.power_w;
-			debug("GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",metrics->GPU_power,metrics-> GPU_freq,metrics->GPU_mem_freq,metrics->GPU_util,metrics->GPU_mem_util);
+			verbose(1,"GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",metrics->GPU_power,metrics-> GPU_freq,metrics->GPU_mem_freq,metrics->GPU_util,metrics->GPU_mem_util);
 		}
 		#endif
 	}else{
