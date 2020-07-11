@@ -393,6 +393,7 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	d3->power_w      = (d2->power_w      - d1->power_w )     / (d3->samples * 1000);
 	d3->energy_j     = (d3->power_w)     * time_f;
 	d3->working      = (d2->working);
+	d3->correct      = 1;
 	//
 #if 0
 	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu_mhz, d2->freq_gpu_mhz, d1->freq_gpu_mhz);

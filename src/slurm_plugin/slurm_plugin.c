@@ -34,6 +34,11 @@ plug_serialization_t sd;
 int slurm_spank_init(spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_init");
+	
+	// If disabled
+	if (plug_deserialize_components(sp) != ESPANK_SUCCESS) {
+		return ESPANK_SUCCESS;
+	}
 
 	_opt_register(sp, ac, av);
 
@@ -56,7 +61,10 @@ int slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	plug_clean_components(sp);
+	// If disabled
+	if (plug_deserialize_components(sp) != ESPANK_SUCCESS) {
+		return ESPANK_SUCCESS;
+	}
 
 	//
 	if (plug_component_isenabled(sp, Component.test)) {
@@ -140,14 +148,13 @@ int slurm_spank_user_init(spank_t sp, int ac, char **av)
 		return ESPANK_SUCCESS;
 	}
 
-	plug_deserialize_remote(sp, &sd);
-
-	if (plug_context_was(&sd, Context.error)) {
-		plug_component_setenabled(sp, Component.plugin, 0);
+	// If disabled	
+	if (plug_deserialize_components(sp) != ESPANK_SUCCESS) {
+		return ESPANK_SUCCESS;
 	}
 
-	if (!plug_component_isenabled(sp, Component.plugin)) {
-		return ESPANK_SUCCESS;
+	if (plug_deserialize_remote(sp, &sd) != ESPANK_SUCCESS) {
+		return plug_component_setenabled(sp, Component.plugin, 0);
 	}
 
 	if (sd.subject.is_master) {
@@ -177,6 +184,10 @@ int slurm_spank_task_exit (spank_t sp, int ac, char **av)
 	spank_err_t err;
 	int status = 0;
 
+	if (!plug_component_isenabled(sp, Component.plugin)) {
+		return ESPANK_SUCCESS;
+	}
+
 	// ADVISE! No need of testing anything
 	if (sd.subject.exit_status == 0)
 	{
@@ -196,6 +207,10 @@ int slurm_spank_exit (spank_t sp, int ac, char **av)
 
 	// EARD disconnection
 	if (!plug_context_is(sp, Context.remote)) {
+		return ESPANK_SUCCESS;
+	}
+	
+	if (!plug_component_isenabled(sp, Component.plugin)) {
 		return ESPANK_SUCCESS;
 	}
 

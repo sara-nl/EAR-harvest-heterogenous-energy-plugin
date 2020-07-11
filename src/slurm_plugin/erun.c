@@ -48,8 +48,8 @@ int help(int argc, char *argv[])
 	printf("\t--job-id=<arg>\t\tSet the JOB_ID.\n");
 	printf("\t--nodes=<arg>\t\tSets the number of nodes.\n");
 	printf("\t--program=<arg>\t\tSets the program to run.\n");
-	printf("\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
-	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
+//	printf("\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
+//	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
 	printf("\t--clean\t\t\tRemoves the internal files.\n");
 	printf("SLURM options:\n");
 
@@ -158,6 +158,9 @@ int job(int argc, char *argv[])
 	int err_def = 1;
 	char *p = NULL;
 	int i = 0;
+
+	// Enabling plugin component
+	setenv(Var.comp_plug.cmp, "1", 1);
 
 	// Clean
 	for (i = 0; i < argc; ++i) {
