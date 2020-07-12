@@ -37,7 +37,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/system/symplug.h>
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/remote_api/eard_conf_rapi.h>

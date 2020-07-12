@@ -54,6 +54,8 @@ void init_application(application_t *app);
 void copy_application(application_t *destiny, application_t *source);
 #if TEST
 void copy_applicationt(application_t *destiny, tapplication_t *source);
+void copy_applicationn(tapplication_t *destiny, application_t *source);
+
 #endif
 
 /** Cleaned remake of the classic print 'fd' function */

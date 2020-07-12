@@ -105,7 +105,11 @@ int eards_new_job(application_t *new_job)
 	command.req=EAR_RC_NEW_JOB;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
+	#if TEST
+	copy_applicationn(&command.my_req.new_job,new_job);
+	#else
 	copy_application(&command.my_req.new_job,new_job);
+	#endif
 	debug("command %u job_id %lu,%lu",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_non_block_command(&command);
 }

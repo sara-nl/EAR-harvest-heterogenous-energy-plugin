@@ -45,9 +45,14 @@ void copy_application(application_t *destiny, application_t *source)
 void copy_applicationt(application_t *destiny, tapplication_t *source)
 {
 	char *app_raw=(char *)destiny;
-	copy_application(destiny,(application_t *)source);
-	memset(app_raw+sizeof(application_t),0,sizeof(tapplication_t)-sizeof(application_t));
+	memcpy(destiny, source, sizeof(tapplication_t));
+	memset(app_raw+sizeof(tapplication_t),0,sizeof(application_t)-sizeof(tapplication_t));
 }
+void copy_applicationn(tapplication_t *destiny, application_t *source)
+{
+	memcpy(destiny, source, sizeof(tapplication_t));
+}
+
 #endif
 
 

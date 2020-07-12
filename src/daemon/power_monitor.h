@@ -74,7 +74,11 @@ void powermon_mpi_finalize(ehandler_t *eh);
 /** It must be called at when job starts 
 */
 
+#if TEST
+void powermon_new_job(ehandler_t *eh,tapplication_t *j,uint from_mpi);
+#else
 void powermon_new_job(ehandler_t *eh,application_t *j,uint from_mpi);
+#endif
 
 /** It must be called at when job ends
 */
