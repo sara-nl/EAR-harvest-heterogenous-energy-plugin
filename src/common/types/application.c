@@ -38,6 +38,16 @@ void copy_application(application_t *destiny, application_t *source)
 	memcpy(destiny, source, sizeof(application_t));
 }
 
+#if TEST
+void copy_applicationt(application_t *destiny, tapplication_t *source)
+{
+	char *app_raw=(char *)destiny;
+	copy_application(destiny,(application_t *)source);
+	memset(app_raw+sizeof(application_t),0,sizeof(tapplication_t)-sizeof(application_t));
+}
+#endif
+
+
 void application_print_channel(FILE *file, application_t *app)
 {
 	fprintf(file, "application_t: id '%s', job id '%lu.%lu', node id '%s'\n",

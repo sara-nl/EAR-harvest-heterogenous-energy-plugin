@@ -73,6 +73,30 @@ typedef struct signature
     ulong def_f;
 } signature_t;
 
+#if TEST
+typedef struct tsignature
+{   
+    double DC_power;
+    double DRAM_power;
+    double PCK_power;
+    double EDP;
+    double GBS;
+    double TPI;
+    double CPI;
+    double Gflops;
+    double time;
+    ull FLOPS[FLOPS_EVENTS];
+    ull L1_misses;
+    ull L2_misses;
+    ull L3_misses;
+    ull instructions;
+    ull cycles;
+    ulong avg_f;
+    ulong def_f;
+}tsignature_t;
+
+#endif
+
 // Misc
 
 /** Initializes all values of the signature to 0.*/

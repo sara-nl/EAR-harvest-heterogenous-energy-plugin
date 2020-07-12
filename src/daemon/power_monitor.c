@@ -387,13 +387,20 @@ void form_database_paths()
 *	BASIC FUNCTIONS 
 *
 */
-
+#if TEST
+void job_init_powermon_app(ehandler_t *ceh, tapplication_t *new_app, uint from_mpi) {
+#else
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
+#endif
 	state_t s;
 	verbose(1,"job_init_powermon_app init");
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
+	#if TEST
+	copy_applicationt(&current_ear_app[ccontext]->app, new_app);
+	#else
 	copy_application(&current_ear_app[ccontext]->app, new_app);
+	#endif
 	strcpy(current_ear_app[ccontext]->app.node_id, nodename);
 	time(&current_ear_app[ccontext]->app.job.start_time);
 	current_ear_app[ccontext]->app.job.start_mpi_time = 0;
@@ -664,8 +671,11 @@ void powermon_mpi_finalize(ehandler_t *eh) {
 
 /* This functiono is called by dynamic_configuration thread when a new_job command arrives */
 
-
+#if TEST
+void powermon_new_job(ehandler_t *eh, tapplication_t *appID, uint from_mpi) {
+#else
 void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
+#endif
 	// New application connected
 	if (appID == NULL) {
 		error("powermon_new_job: NULL appID");
