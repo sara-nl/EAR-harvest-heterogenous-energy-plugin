@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>
@@ -622,6 +622,11 @@ void ear_init()
 	#endif
 
 	get_job_identification();
+
+	if (is_already_connected(my_job_id,my_step_id,getpid())){
+		fprintf(stderr,"Warning, Job %d step %d process %d already conncted\n",my_job_id,my_step_id,getpid());
+		return;	
+	}
 	// Getting if the local process is the master or not
 	/* my_id reflects whether we are the master or no my_id == 0 means we are the master *****/
 	my_id = get_local_id(node_name);
@@ -701,15 +706,21 @@ void ear_init()
 
 	debug("Starting job");
 	//sets the job start_time
-	//start_job(&application.job);
+	start_job(&application.job);
+
+
+
 
 	debug("Job time initialized");
+
+	
 	debug("EARD connection section");
 	if (!my_id){ //only the master will connect with eard
 		verbose(1, "%sConnecting with EAR Daemon (EARD) %d%s", COL_BLU,ear_my_rank,COL_CLR);
 		if (eards_connect(&application) == EAR_SUCCESS) {
 			debug("%sRank %d connected with EARD%s", COL_BLU,ear_my_rank,COL_CLR);
 			notify_eard_connection(1);
+			mark_as_eard_connected(my_job_id,my_step_id,getpid());
 		}else{   
 			eard_ok=0;
 			notify_eard_connection(0);
@@ -888,6 +899,7 @@ void ear_finalize()
 	if (!my_id){
 		debug("Application master releasing the lock %d %s", ear_my_rank,fd_lock_filename);
 		file_unlock_master(fd_master_lock,fd_lock_filename);
+		mark_as_eard_disconnected(my_job_id,my_step_id,getpid());
 	}
 #endif
 

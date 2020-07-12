@@ -22,9 +22,12 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <common/config.h>
 #include <common/system/file.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 
@@ -326,3 +329,58 @@ void report_mpi_application_data(application_t *app)
 
 	verbose(VTYPE,"-----------------------------------------------------------------------------------------------\n");
 }
+
+void mark_as_eard_connected(int jid,int sid,int pid)
+{
+	int my_id;	
+	char *tmp,con_file[128];
+	int fd;
+	tmp=getenv("EAR_TMP");
+	if (tmp == NULL){
+		debug("EAR_TMP not defined in mark_as_eard_connected");
+		return;
+	}
+	my_id=create_ID(jid,sid);
+	sprintf(con_file,"%s/.master.%d.%d",tmp,my_id,pid);
+	debug("Creating %s",con_file);	
+	fd=open(con_file,O_CREAT|O_WRONLY,S_IRUSR|S_IWUSR);
+	close(fd);
+	return;
+}
+uint is_already_connected(int jid,int sid,int pid)
+{
+	int my_id;
+	int fd;
+	char *tmp,con_file[128];;
+	tmp=getenv("EAR_TMP");
+	if (tmp == NULL){ 
+		debug("EAR_TMP not defined in is_already_connected");
+		return 0;
+	}
+	my_id=create_ID(jid,sid);
+	sprintf(con_file,"%s/.master.%d.%d",tmp,my_id,pid);
+	debug("Looking for %s ",con_file);
+	fd=open(con_file,O_RDONLY);
+	if (fd>=0){
+		close(fd);
+		return 1;
+	}
+	return 0;
+}
+
+void mark_as_eard_disconnected(int jid,int sid,int pid)
+{
+	int my_id;
+	int fd;
+	char *tmp,con_file[128];
+	tmp=getenv("EAR_TMP");
+	if (tmp == NULL){ 
+		debug("EAR_TMP not defined in mark_as_eard_disconnected");
+		return;
+	}
+	my_id=create_ID(jid,sid);
+	sprintf(con_file,"%s/.master.%d.%d",tmp,my_id,pid);
+	debug("Removing %s",con_file);
+	unlink(con_file);
+}
+
