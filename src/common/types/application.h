@@ -91,6 +91,10 @@ void read_application_fd_binary(int fd,application_t *app);
 
 void print_application_fd_binary(int fd,application_t *app);
 
+void mark_as_eard_connected(int jid,int sid,int pid);
+uint is_already_connected(int jid,int sid,int pid);
+void mark_as_eard_disconnected(int jid,int sid,int pid);
+
 /*
  *
  * We have to take a look these print functions and clean

@@ -30,7 +30,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
@@ -44,6 +44,8 @@ static int ear_fd_ack[ear_daemon_client_requests];
 char ear_commreq[1024];
 char ear_commack[1024];
 char ear_ping[1024];
+
+static int my_job_id,my_step_id;
 
 int ear_ping_fd;
 char *ear_tmp;
@@ -129,6 +131,7 @@ int my_write(int fd,char *buff,int size)
 void signal_handler(int s)
 {
 	debug("EARD has been disconnected");
+	mark_as_eard_disconnected(my_job_id,my_step_id,getpid());
 	app_connected=0;
 }
 void signal_catcher()
@@ -211,6 +214,8 @@ int eards_connect(application_t *my_app)
 	copy_application(&req.req_data.app,my_app);
 
 	// We create a single ID
+	my_job_id=my_app->job.id;
+	my_step_id=my_app->job.step_id;
 	my_id=create_ID(my_app->job.id,my_app->job.step_id);
 	debug("Connecting with daemon job_id=%lu step_id%lu\n",my_app->job.id,my_app->job.step_id);
 	for (i = 0; i < ear_daemon_client_requests; i++)

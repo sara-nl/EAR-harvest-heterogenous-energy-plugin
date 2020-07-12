@@ -564,7 +564,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 			metrics->GPU_util=gpu_computed.util_gpu;
 			metrics->GPU_mem_util=gpu_computed.util_mem;
 			metrics->GPU_power=gpu_computed.power_w;
-			verbose(1,"GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",metrics->GPU_power,metrics-> GPU_freq,metrics->GPU_mem_freq,metrics->GPU_util,metrics->GPU_mem_util);
+			debug("GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",metrics->GPU_power,metrics-> GPU_freq,metrics->GPU_mem_freq,metrics->GPU_util,metrics->GPU_mem_util);
 		}
 		#endif
 	}else{
