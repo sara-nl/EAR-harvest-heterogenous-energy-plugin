@@ -25,6 +25,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <common/types.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <common/system/monitor.h>
 #include <common/system/symplug.h>
@@ -295,8 +296,8 @@ state_t nvml_pool(void *p)
 		pool[i].samples      += metric.samples;
 		pool[i].freq_mem_mhz += metric.freq_mem_mhz;
 		pool[i].freq_gpu_mhz += metric.freq_gpu_mhz;
-		pool[i].util_mem     += metric.util_gpu;
-		pool[i].util_gpu     += metric.util_mem;
+		pool[i].util_mem     += metric.util_mem;
+		pool[i].util_gpu     += metric.util_gpu;
 		pool[i].temp_gpu     += metric.temp_gpu;
 		pool[i].temp_mem     += metric.temp_mem;
 		pool[i].energy_j      = metric.energy_j;
@@ -369,7 +370,12 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 
 	// Cleaning
 	nvml_data_null(d3);
-
+	#if 0
+	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu_mhz, d2->freq_gpu_mhz, d1->freq_gpu_mhz);
+	debug("%d freq mem (MHz), %lu = %lu - %lu", i, d3->freq_mem_mhz, d2->freq_mem_mhz, d1->freq_mem_mhz);
+	debug("%d power    (W)  , %0.2lf = %0.2lf - %0.2lf", i, d3->power_w, d2->power_w, d1->power_w);
+	debug("%d energy   (J)  , %0.2lf = %0.2lf - %0.2lf", i, d3->energy_j, d2->energy_j, d1->energy_j);
+	#endif
 	if (d2->correct != 1 || d1->correct != 1) {
 		return;
 	}
@@ -491,13 +497,14 @@ state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 	for (i = 0; i < dev_count && length > 0; ++i)
 	{
 		s = snprintf(&buffer[accuml], length,
-			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu, %lu, %lu, %lu, %u, %lu\n",
+			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu, %lu, %lu, %lu, %u, %lu correct=%u\n",
 			i                   ,
 			data[i].energy_j    , data[i].power_w,
 			data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
 			data[i].util_gpu    , data[i].util_mem,
 			data[i].temp_gpu    , data[i].temp_mem,
-			data[i].working     , data[i].samples);
+			data[i].working     , data[i].samples,
+			data[i].correct);
 		length = length - s;
 		accuml = accuml + s;
 	}

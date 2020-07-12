@@ -33,23 +33,30 @@ void init_job(job_t *job, ulong def_f, char *policy, double th, ulong procs)
 }
 void start_job(job_t *job)
 {
-   
-    time(&job->start_time);
+  	time_t j_time;
+		j_time=time(NULL); 
+		//job->start_time=j_time;
 }
 
 void end_job(job_t *job)
 {
-    time(&job->end_time);
+		time_t j_time;
+    j_time=time(NULL); 
+    job->end_time=j_time;
 }
 
 void start_mpi(job_t *job)
 {
-    time(&job->start_mpi_time);
+		time_t j_time;
+    j_time=time(NULL);
+		job->start_mpi_time=j_time;
 }
 
 void end_mpi(job_t *job)
 {
-    time(&job->end_mpi_time);
+		time_t j_time;
+    j_time=time(NULL);
+		job->end_mpi_time=j_time;
 }
 
 void copy_job(job_t *destiny, job_t *source)

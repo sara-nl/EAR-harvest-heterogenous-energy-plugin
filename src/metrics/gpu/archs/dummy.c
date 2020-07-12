@@ -162,10 +162,8 @@ state_t gpu_dummy_data_tostr(gpu_t *data, char *buffer, int length)
 		debug("data or buffer are null");
 		return_msg(EAR_ERROR, Error.null_data);
 	}
-	fprintf(stderr,"gpu_dummy_data_tostr en=%lf pow=%lf util=%lu util_mem=%lu\n",data->energy_j,data->power_w,data->util_gpu,data->util_mem);
 	for (i = 0; i < 1 && length > 0; ++i)
 	{
-		fprintf(stderr,"gpu_dummy_data_tostr accessing gpu %u\n",i);
 		
 		s = snprintf(&buffer[accuml], length,
 			"gpu%u: %.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",

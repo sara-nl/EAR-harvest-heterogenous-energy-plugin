@@ -100,7 +100,8 @@ extern uint check_periodic_mode;
 #if USE_GPU_LIB
 #define SET_VARIABLES_GPU() \
 		GPU_POWER = loop_signature.signature.GPU_power; \
-		GPU_FREQ = loop_signature.signature.GPU_freq;
+		GPU_FREQ = loop_signature.signature.GPU_freq; \ 
+		GPU_UTIL = loop_signature.signature.GPU_util;
 #else
 #define SET_VARIABLES_GPU()
 #endif
@@ -122,10 +123,9 @@ extern uint check_periodic_mode;
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
         policy_freqf=(float)policy_freq/1000000.0; \
-				GPU_f=(float)GPU_FREQ/1000000.0; \
+				GPU_f=(float)GPU_FREQ/1000.0; \
         verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
-        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lf Time=%.3lf Energy=%.1lfJ AVGF=%.2f:Next freq %.1f", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
-				verbose(1,"\t (GPU_power %.2lf GPU_freq %.1f)",GPU_POWER,GPU_f);\
+        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu) :Next freq %.1fGHz", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL,policy_freqf);\
 			}
 #else
 #define VERBOSE_SIG() \
@@ -135,7 +135,7 @@ extern uint check_periodic_mode;
         prev_ff=(float)prev_f/1000000.0; \
         policy_freqf=(float)policy_freq/1000000.0; \
         verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
-        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lf Time=%.3lf Energy=%.1lfJ AVGF=%.2f:Next freq %.1f", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
+        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec. Energy=%.1lfJ AVGF=%.2fGHz:Next freq %.1fGHz", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
 			}
 #endif
 
@@ -302,7 +302,7 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC,GPU_POWER;
-	ulong AVGF,GPU_FREQ;
+	ulong AVGF,GPU_FREQ,GPU_UTIL;
 	unsigned long prev_f;
 	int ready;
 	ull VI;

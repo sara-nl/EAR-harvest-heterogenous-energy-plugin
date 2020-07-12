@@ -114,7 +114,7 @@ ulong eards_node_energy_frequency();
 
 int eards_gpu_model(uint *gpu_model);
 int eards_gpu_dev_count(uint *gpu_dev_count);
-int eards_gpu_data_read(gpu_t *gpu_info);
+int eards_gpu_data_read(gpu_t *gpu_info,uint num_dev);
 
 #else
 #endif

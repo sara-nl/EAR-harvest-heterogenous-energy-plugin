@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <linux/limits.h>
-//#define SHOW_DEBUGS 0
+//#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/environment.h>
 #include <common/types/log_eard.h>
@@ -80,6 +80,13 @@ app_mgt_t *app_mgt_info;
 pc_app_info_t *pc_app_info_data;
 #endif
 /* END Shared memory regions */
+
+#if USE_GPUS
+gpu_t *eard_read_gpu;
+uint eard_num_gpus;
+uint eard_gpu_model;
+char gpu_str[256];
+#endif
 
 coefficient_t *my_coefficients;
 coefficient_t *my_coefficients_default;
@@ -795,7 +802,7 @@ int eard_gpu(int must_read)
   unsigned long ack = 0;
 	unsigned int model=0;
 	unsigned int dev_count=0;
-	gpu_t my_gpu;
+	gpu_t *my_gpu;
 	state_t ret;
   if (must_read) {
     if (read(ear_fd_req[comm_req], &req, sizeof(req)) != sizeof(req))
@@ -803,21 +810,23 @@ int eard_gpu(int must_read)
   }
   switch (req.req_service) {
     case GPU_MODEL:
-			model=gpu_model();
-			verbose(1,"GPU_MODEL %d",model);
-			write(ear_fd_ack[comm_req],&model,sizeof(model));	
+			debug("GPU_MODEL %d",eard_gpu_model);
+			write(ear_fd_ack[comm_req],&eard_gpu_model,sizeof(eard_gpu_model));	
       break;
     case GPU_DEV_COUNT:
-			if (eard_gpu_initialized) gpu_count(&eard_main_gpu_ctx,&dev_count);
-			write(ear_fd_ack[comm_req],&dev_count,sizeof(dev_count));	
+			debug("GPU_DEV_COUNT %d",eard_num_gpus);
+			write(ear_fd_ack[comm_req],&eard_num_gpus,sizeof(eard_num_gpus));	
 			break;
 		case GPU_DATA_READ:
 			if (eard_gpu_initialized){
-				gpu_read(&eard_main_gpu_ctx,&my_gpu);
+				gpu_read(&eard_main_gpu_ctx,eard_read_gpu);
 			}else{
-				memset(&my_gpu,0,sizeof(gpu_t));
+				memset(eard_read_gpu,0,sizeof(gpu_t));
 			}
-			write(ear_fd_ack[comm_req],&my_gpu,sizeof(my_gpu));
+			debug("Sending %lu bytes en gpu_data_read",sizeof(gpu_t)*eard_num_gpus);
+			gpu_data_tostr(eard_read_gpu,gpu_str,sizeof(gpu_str));
+			debug("gpu_data_read info: %s",gpu_str);
+			write(ear_fd_ack[comm_req],eard_read_gpu,sizeof(gpu_t)*eard_num_gpus);
 			break;
 	  default:
 			error("Invalid GPU command");
@@ -1558,6 +1567,7 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
+	#if USE_GPUS
 	/* GPU Initialization for app requests */
 	ret=gpu_init(&eard_main_gpu_ctx);
 	if (ret!=EAR_SUCCESS){
@@ -1566,6 +1576,12 @@ int main(int argc, char *argv[]) {
 	}else{
 		eard_gpu_initialized=1;
 	}
+	gpu_data_alloc(&eard_read_gpu);
+	gpu_count(&eard_main_gpu_ctx,&eard_num_gpus);
+	debug("gpu_count %u",eard_num_gpus);
+	eard_gpu_model=gpu_model();
+	debug("gpu_model %u",eard_gpu_model);
+	#endif
 
 	verbose(VCONF + 1, "Communicator for %s ON", nodename);
 	// we wait until EAR daemon receives a request

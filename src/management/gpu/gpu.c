@@ -14,7 +14,8 @@
 * use and EPL-1.0 license for commercial use. Full text of both licenses can be
 * found in COPYING.BSD and COPYING.EPL files.
 */
-
+//#define SHOW_DEBUGS 1
+#include <common/output/debug.h>
 #include <management/gpu/gpu.h>
 #include <management/gpu/archs/nvml.h>
 #include <management/gpu/archs/dummy.h>
@@ -30,6 +31,7 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 	#ifdef CUDA_BASE
 	if (state_ok(mgt_nvml_status()))
 	{
+		debug("Loading NVML GPU mgt");
 		ops.init                    = mgt_nvml_init;
 		ops.dispose                 = mgt_nvml_dispose;
 		ops.count                   = mgt_nvml_count;
@@ -46,6 +48,7 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 	} else
 	#endif
 	{
+		debug("Loading DUMMY GPU mgt");
 		ops.init                    = mgt_dummy_init;
 		ops.dispose                 = mgt_dummy_dispose;
 		ops.count                   = mgt_dummy_count;
