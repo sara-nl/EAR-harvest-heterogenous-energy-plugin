@@ -41,19 +41,6 @@ void copy_application(application_t *destiny, application_t *source)
 	memcpy(destiny, source, sizeof(application_t));
 }
 
-#if TEST
-void copy_applicationt(application_t *destiny, tapplication_t *source)
-{
-	char *app_raw=(char *)destiny;
-	memcpy(destiny, source, sizeof(tapplication_t));
-	memset(app_raw+sizeof(tapplication_t),0,sizeof(application_t)-sizeof(tapplication_t));
-}
-void copy_applicationn(tapplication_t *destiny, application_t *source)
-{
-	memcpy(destiny, source, sizeof(tapplication_t));
-}
-
-#endif
 
 
 void application_print_channel(FILE *file, application_t *app)

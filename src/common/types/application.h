@@ -35,28 +35,12 @@ typedef struct application
 	signature_t	signature; 		 // signature refers to the mpi part, it includes power metrics and performance metrics
 } application_t;
 
-#if TEST
-typedef struct tapplication
-{ 
-  job_t job;  
-  uint8_t is_mpi;
-  uint8_t is_learning;
-  char node_id[GENERIC_NAME];   
-  power_signature_t power_sig; // power_sig are power metrics related to the whole job, not only the mpi part
-  tsignature_t signature;     // signature refers to the mpi part, it includes power metrics and performance metrics
-} tapplication_t;
-#endif
 
 /** Resets the data. */
 void init_application(application_t *app);
 
 /** Replicates the application in *source to *destiny */
 void copy_application(application_t *destiny, application_t *source);
-#if TEST
-void copy_applicationt(application_t *destiny, tapplication_t *source);
-void copy_applicationn(tapplication_t *destiny, application_t *source);
-
-#endif
 
 /** Cleaned remake of the classic print 'fd' function */
 void application_print_channel(FILE *file, application_t *app);

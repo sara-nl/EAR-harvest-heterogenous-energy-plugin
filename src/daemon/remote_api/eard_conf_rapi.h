@@ -63,11 +63,7 @@ typedef struct risk_dec{
 }risk_dec_t;
 
 typedef union req_data{
-		#if TEST
-		tapplication_t 		new_job;
-		#else
 		application_t 		new_job;
-		#endif
 		end_job_req_t 		end_job;
 		new_conf_t 				ear_conf;
 		new_policy_cont_t	pol_conf;
