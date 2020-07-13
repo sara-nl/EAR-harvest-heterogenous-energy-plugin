@@ -31,6 +31,11 @@
 #include <common/types/risk.h>
 #include <daemon/powercap/powercap_status_conf.h>
 
+typedef struct new_job_req{
+  job_t job;
+  uint8_t is_mpi;
+  uint8_t is_learning;
+}new_job_req_t;
 
 typedef struct end_job_req{
 	job_id jid;
@@ -62,18 +67,26 @@ typedef struct risk_dec{
 	unsigned long target;
 }risk_dec_t;
 
+
+
 typedef union req_data{
+<<<<<<< HEAD
 		#if TEST
 		tapplication_t 		new_job;
 		#else
 		application_t 		new_job;
 		#endif
+=======
+		new_job_req_t 		new_job;
+>>>>>>> 476fa301de926fb6f7a0f8aaba27e9168cf2c155
 		end_job_req_t 		end_job;
 		new_conf_t 				ear_conf;
 		new_policy_cont_t	pol_conf;
-	  power_limit_t     pc;
 		risk_dec_t 			risk;
+#if POWERCAP
+	  power_limit_t     pc;
 		powercap_opt_t  pc_opt;
+#endif
 }req_data_t;
 
 
@@ -174,7 +187,7 @@ typedef struct performance{
 /******************* IMPORTANT ***********************/
 // UPDATE MAX_TYPE_VALUE FOR EACH NEW TYPE OR THE NEW TYPE WON'T BE ACCEPTED
 #define MIN_TYPE_VALUE  EAR_TYPE_COMMAND
-#define MAX_TYPE_VALUE  EAR_TYPE_APP_STATUS 
+#define MAX_TYPE_VALUE  EAR_TYPE_APP_STATUS
 /*****************************************************/
 
 #define NO_COMMAND 100000
