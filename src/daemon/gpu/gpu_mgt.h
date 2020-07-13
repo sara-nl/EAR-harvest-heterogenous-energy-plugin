@@ -19,6 +19,7 @@
 #define _GPU_NODE_MGR_H
 
 state_t gpu_mgr_init();
+state_t gpu_mgr_set_freq(uint num_dev,ulong *freqs);
 
 #endif
 

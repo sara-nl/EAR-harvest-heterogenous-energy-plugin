@@ -1037,3 +1037,41 @@ int eards_gpu_data_read(gpu_t *gpu_info,uint num_dev)
 	return ack;
 }
 
+int eards_gpu_set_freq(uint num_dev,ulong *freqs)
+{
+  int com_fd = gpu_req;
+  ulong ack=EAR_SUCCESS;
+  struct daemon_req req;
+	int i;
+  
+  if (!app_connected){
+    return EAR_SUCCESS;
+  }
+  debug( "setting GPU freqs ");
+	for (i=0;i<num_dev;i++) debug("GPU %d: Freq requested %lu",freqs[i]);
+  req.req_service = GPU_SET_FREQ;
+  req.sec=create_sec_tag();
+	req.req_data.gpu_freq.num_dev=num_dev;
+	if (num_dev>MAX_GPUS_SUPPORTED){
+		error("Using more GPUS than supported: Requested %u Max %u",num_dev,MAX_GPUS_SUPPORTED);
+		num_dev=MAX_GPUS_SUPPORTED;
+	}
+	memcpy(req.req_data.gpu_freq.gpu_freqs,freqs,sizeof(ulong)*num_dev);
+
+  if (ear_fd_req[com_fd]>=0)
+  {      
+      if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
+      "ERROR writing request for gpu set freq ")) return EAR_ERROR;
+      debug("eards_gpu_set_freq, reading %lu bytes",sizeof(ack));
+      if (warning_api(my_read(ear_fd_ack[com_fd],(char *)ack,sizeof(ack)) , sizeof(ack),
+      "ERROR reading data for eards_gpu_set_freq")) return EAR_ERROR;
+      ack = EAR_SUCCESS;
+  } else
+  { 
+    debug( "eards_gpu_set_freq service not provided");
+    ack=EAR_ERROR;
+  }   
+  return ack;
+}
+
+

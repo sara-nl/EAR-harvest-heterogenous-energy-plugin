@@ -25,10 +25,10 @@
 
 state_t init_power_policy(settings_conf_t *app_settings,resched_t *res);
 state_t policy_init();
-state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready);
+state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready,gpu_signature_t *gpu_sig);
 state_t policy_get_default_freq(ulong *freq_set);
 state_t policy_set_default_freq();
-state_t policy_ok(signature_t *c_sig,signature_t *l_sig,int *ok);
+state_t policy_ok(signature_t *c_sig,signature_t *l_sig,int *ok,gpu_signature_t *gpu_sig);
 state_t policy_max_tries(int *intents);
 state_t policy_end();
 state_t policy_loop_init(loop_id_t *loop_id);

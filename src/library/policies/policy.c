@@ -145,7 +145,7 @@ state_t policy_init()
 	preturn(polsyms_fun.init, c);
 }
 
-state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
+state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready,gpu_signature_t *gpu_sig)
 {
 	polctx_t *c=&my_pol_ctx;
 	state_t st=EAR_ERROR;
@@ -203,7 +203,7 @@ state_t policy_set_default_freq()
 
 
 
-state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
+state_t policy_ok(signature_t *curr,signature_t *prev,int *ok,gpu_signature_t *gpu_sig)
 {
 	polctx_t *c=&my_pol_ctx;
 	if (polsyms_fun.ok!=NULL){

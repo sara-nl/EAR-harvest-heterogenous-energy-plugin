@@ -828,6 +828,14 @@ int eard_gpu(int must_read)
 			debug("gpu_data_read info: %s",gpu_str);
 			write(ear_fd_ack[comm_req],eard_read_gpu,sizeof(gpu_t)*eard_num_gpus);
 			break;
+		case GPU_SET_FREQ:
+			if (eard_gpu_initialized){
+				debug("Setting the GPU freq");
+				gpu_mgr_set_freq(req.req_data.gpu_freq.num_dev,req.req_data.gpu_freq.gpu_freqs);
+			}else{
+				error("GPU not initialized and GPU_SET_FREQ requested");
+			}
+			write(ear_fd_ack[comm_req],&ack,sizeof(ack));
 	  default:
 			error("Invalid GPU command");
       return 0;
