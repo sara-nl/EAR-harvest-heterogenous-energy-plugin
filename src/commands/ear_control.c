@@ -667,10 +667,7 @@ int main(int argc, char *argv[])
                     break;
                 case EAR_TYPE_APP_STATUS:
                     num_status = eards_get_app_status(&my_cluster_conf, &appstatus);
-                    if (num_status > 0)
-                    {
-                        printf("recieved app_status\n");
-                    }
+                    process_app_status(num_status, appstatus);
                     break;
             }
 
