@@ -23,6 +23,6 @@
 #include <library/loader/module_mpic.h>
 #include <library/loader/module_mpif.h>
 
-void module_mpi();
+int module_mpi();
 
 #endif //LIBRARY_LOADER_MPI_H

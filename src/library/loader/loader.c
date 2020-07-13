@@ -19,14 +19,18 @@
 #include <library/loader/module_mpi.h>
 #include <library/loader/module_default.h>
 
-int _loaded_default;
+int _loaded_con;
+int _loaded_mpi;
 
 void  __attribute__ ((constructor)) loader()
 {
-	// Module default
-	_loaded_default = module_constructor();
 	// Module MPI
-	module_mpi();
+	_loaded_mpi = module_mpi();
+	// Module default
+	if (!_loaded_mpi) {
+		_loaded_con = module_constructor();
+	}
+	// New modules here...
 
 	return;
 }

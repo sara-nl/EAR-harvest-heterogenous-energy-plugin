@@ -37,11 +37,17 @@ static int module_constructor_dlsym(char *path_so)
 	char *hack;
 
 	// Last chance to force a concrete library file.
-	if ((hack = getenv(HACK_FILE_LIBR)) == NULL) {
-		return 0;
-        }
-	
-	sprintf(path_so, "%s", hack);
+	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
+		sprintf(path_so, "%s", hack);
+	} else if ((hack = getenv(HACK_PATH_LIBR)) != NULL) {
+		sprintf(path_so, "%s/libear.seq.so", hack);
+	} else if ((hack = getenv(VAR_INS_PATH)) != NULL) {
+		sprintf(path_so, "%s/libear.seq.so", hack);
+	} else {
+		verbose(2, "LOADER: installation path not found");
+		return;
+	}
+
 	verbose(2, "LOADER: module_constructor_dlsym loading library %s", path_so);
 
 	if (!module_file_exists(path_so)) {
