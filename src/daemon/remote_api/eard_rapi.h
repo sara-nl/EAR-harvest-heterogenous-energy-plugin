@@ -62,7 +62,7 @@ int eards_inc_th(ulong th);
 int eards_ping();
 
 /** Sends a new job request */
-int eards_new_job(application_t *new_job);
+int eards_new_job(new_job_req_t *new_job);
 
 /** Sends a end job request */
 int eards_end_job(job_id jid,job_id sid);
