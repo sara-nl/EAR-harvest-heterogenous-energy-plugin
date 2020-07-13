@@ -387,20 +387,12 @@ void form_database_paths()
 *	BASIC FUNCTIONS 
 *
 */
-#if TEST
-void job_init_powermon_app(ehandler_t *ceh, tapplication_t *new_app, uint from_mpi) {
-#else
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
-#endif
 	state_t s;
 	verbose(1,"job_init_powermon_app init");
 	check_context("job_init_powermon_app: ccontext<0, not initialized");
 	current_ear_app[ccontext]->job_created = !from_mpi;
-	#if TEST
-	copy_applicationt(&current_ear_app[ccontext]->app, new_app);
-	#else
 	copy_application(&current_ear_app[ccontext]->app, new_app);
-	#endif
 	strcpy(current_ear_app[ccontext]->app.node_id, nodename);
 	time(&current_ear_app[ccontext]->app.job.start_time);
 	current_ear_app[ccontext]->app.job.start_mpi_time = 0;
@@ -638,11 +630,7 @@ void powermon_mpi_init(ehandler_t *eh, application_t *appID) {
 	// As special case, we will detect if not job init has been specified
 	if ((ccontext < 0) || ((ccontext >= 0) &&
 						   (!current_ear_app[ccontext]->job_created))) {    // If the job is nt submitted through slurm, new_job would not be submitted
-		#if TEST
-		powermon_new_job(eh, (tapplication_t *)appID, 1);
-		#else
 		powermon_new_job(eh, appID, 1);
-		#endif
 	}
 	// MPI_init : It only changes mpi_init time, we don't need to acquire the lock
 	start_mpi(&current_ear_app[ccontext]->app.job);
@@ -675,11 +663,7 @@ void powermon_mpi_finalize(ehandler_t *eh) {
 
 /* This functiono is called by dynamic_configuration thread when a new_job command arrives */
 
-#if TEST
-void powermon_new_job(ehandler_t *eh, tapplication_t *appID, uint from_mpi) {
-#else
 void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
-#endif
 	// New application connected
 	if (appID == NULL) {
 		error("powermon_new_job: NULL appID");
@@ -710,11 +694,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	verbose(VJOBPMON + 1, "New job USER type is %u", user_type);
 	if (my_tag != NULL) print_energy_tag(my_tag);
 	/* Given a user type, application, and energy_tag, my_policy is the cofiguration for this user and application */
-	#if TEST
-	my_policy=configure_context(user_type, my_tag, (application_t *)appID);
-	#else
 	my_policy=configure_context(user_type, my_tag, appID);
-	#endif
 	debug("Node configuration for policy %u p_state %d th %lf",my_policy->policy,my_policy->p_state,my_policy->settings[0]);
 	/* Updating info in shared memory region */
 	f=frequency_pstate_to_freq(my_policy->p_state);

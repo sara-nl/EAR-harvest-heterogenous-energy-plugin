@@ -51,7 +51,7 @@ DBDaemonUseLog=1
 #---------------------------------------------------------------------------------------------------
 # EAR Library (EARL)
 #---------------------------------------------------------------------------------------------------
-CoefficientsDir=/home/xjcorbalan/ear/etc/ear/coeffs
+CoefficientsDir=/hpc/base/ctt/packages/EAR/ear/etc/ear/coeffs
 # Default power policy values
 MinTimePerformanceAccuracy=10000000
 # DynAIS configuration
@@ -111,9 +111,9 @@ EARGMPowerCapAction=no_action
 #---------------------------------------------------------------------------------------------------
 # Common configuration
 #---------------------------------------------------------------------------------------------------
-TmpDir=/var/run/ear
-EtcDir=/hpc/opt/ear/etc
-InstDir=/hpc/opt/ear3.4
+TmpDir=/var/ear
+EtcDir=/hpc/base/ctt/packages/EAR/ear/etc
+InstDir=/home/xjcorbalan/ear3.4
 Verbose=0
 # Network extension (using another network instead of the local one). If compute nodes must be accessed from login nodes with a network different than default, and can be accesed using a expension, uncommmet next line and define 'netext' accordingly. 
 # NetworkExtension=netext

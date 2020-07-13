@@ -45,6 +45,20 @@ typedef struct mini_sig
   ulong def_f;
 }ssig_t;
 
+typedef struct gpu_data{
+    double GPU_power;
+    ulong  GPU_freq;
+    ulong  GPU_mem_freq;
+    ulong  GPU_util;
+    ulong  GPU_mem_util;
+}gpu_app_t;
+
+typedef struct gpu_signature{
+  uint num_gpus;
+  gpu_app_t gpu_data[MAX_GPUS_SUPPORTED];
+}gpu_signature_t;
+
+
 typedef struct signature
 {
     double DC_power;
@@ -65,46 +79,15 @@ typedef struct signature
     ulong avg_f;
     ulong def_f;
 		#if USE_GPUS
-		gpu_signature_t gpu_sig;
-		#endif
-} signature_t;
-
-#if TEST
-typedef struct tsignature
-{   
-    double DC_power;
-    double DRAM_power;
-    double PCK_power;
-    double EDP;
-    double GBS;
-    double TPI;
-    double CPI;
-    double Gflops;
-    double time;
-    ull FLOPS[FLOPS_EVENTS];
-    ull L1_misses;
-    ull L2_misses;
-    ull L3_misses;
-    ull instructions;
-    ull cycles;
-    ulong avg_f;
-    ulong def_f;
-}tsignature_t;
-
-#endif
-
-typedef struct gpu_data{
     double GPU_power;
     ulong  GPU_freq;
     ulong  GPU_mem_freq;
     ulong  GPU_util;
     ulong  GPU_mem_util;
-}gpu_app_t;
+		#endif
+} signature_t;
 
-typedef struct gpu_signature{
-	uint num_gpus;
-	gpu_app_t gpu_data[MAX_GPUS_SUPPORTED];
-}gpu_signature_t;
+
 
 // Misc
 

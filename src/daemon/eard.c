@@ -44,6 +44,9 @@
 #endif
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
+#if USE_GPUS
+#include <daemon/gpu/gpu_mgt.h>
+#endif
 
 
 #define MIN_INTERVAL_RT_ERROR 3600

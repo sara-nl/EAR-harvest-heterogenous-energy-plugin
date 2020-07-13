@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,13 +136,9 @@ int read_command(int s, request_t *command)
     request_header_t head;
     char *tmp_command;
     head = receive_data(s, (void **)&tmp_command);
-    debug("received command type %d\t size: %u \t sizeof req: %u", head.type, head.size, sizeof(request_t));
+    debug("received command type %d\t size: %lu \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
 
-		#if TEST
-    if (head.type != 2004 || head.size < sizeof(request_t))
-		#else
     if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(request_t))
-		#endif
     {
 				debug("NO_COMMAND");
         command->req = NO_COMMAND;
