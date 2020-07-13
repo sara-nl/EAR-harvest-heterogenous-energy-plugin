@@ -35,7 +35,6 @@ typedef struct new_job_req{
   job_t job;
   uint8_t is_mpi;
   uint8_t is_learning;
-  char node_id[GENERIC_NAME];
 }new_job_req_t;
 
 typedef struct end_job_req{
