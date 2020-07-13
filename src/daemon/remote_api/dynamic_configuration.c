@@ -544,6 +544,15 @@ void dyncon_set_risk(int fd, request_t *command)
 	verbose(1,"New max frequency is %lu pstate=%lu rescheduling %u",new_max_freq,my_node_conf->max_pstate,resched_conf->force_rescheduling);
 }
 
+
+void adap_new_job_req_to_app(application_t *req_app,new_job_req_t *new_job)
+{
+	char *sig_start;
+	memcpy(req_app,new_job,sizeof(new_job_req_t));
+	sig_start=(char *)req_app+sizeof(new_job_req_t);
+	memset(sig_start,0,sizeof(application_t)-sizeof(new_job_req_t));
+}
+
 state_t process_remote_requests(int clientfd) {
 	request_t command;
 	uint req;
@@ -578,7 +587,9 @@ state_t process_remote_requests(int clientfd) {
 		case EAR_RC_NEW_JOB:
 			verbose(VRAPI, "*******************************************");
 			verbose(VRAPI, "new_job command received %lu", command.my_req.new_job.job.id);
-			powermon_new_job(&my_eh_rapi, &command.my_req.new_job, 0);
+			application_t req_app;
+			adap_new_job_req_to_app(&req_app,&command.my_req.new_job);
+			powermon_new_job(&my_eh_rapi, &req_app, 0);
 			break;
 		case EAR_RC_END_JOB:
 			powermon_end_job(&my_eh_rapi, command.my_req.end_job.jid, command.my_req.end_job.sid);

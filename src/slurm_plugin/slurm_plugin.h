@@ -53,7 +53,7 @@ typedef struct plug_user {
 
 typedef struct plug_job
 {
-	application_t app;
+	new_job_req_t app;
 	plug_user_t user;
 	uint node_n;
 } plug_job_t;

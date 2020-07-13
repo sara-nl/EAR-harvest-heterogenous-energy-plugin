@@ -97,7 +97,7 @@ int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status)
 }
 
 /** REMOTE FUNCTIONS FOR SINGLE NODE COMMUNICATION */
-int eards_new_job(application_t *new_job)
+int eards_new_job(new_job_req_t *new_job)
 {
 	request_t command;
 
@@ -105,7 +105,7 @@ int eards_new_job(application_t *new_job)
 	command.req=EAR_RC_NEW_JOB;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
-	copy_application(&command.my_req.new_job,new_job);
+	memcpy(&command.my_req.new_job,new_job,sizeof(new_job_req_t));
 	debug("command %u job_id %lu,%lu",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
 	return send_non_block_command(&command);
 }
