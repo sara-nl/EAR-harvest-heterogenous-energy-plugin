@@ -1048,7 +1048,7 @@ int eards_gpu_set_freq(uint num_dev,ulong *freqs)
     return EAR_SUCCESS;
   }
   debug( "setting GPU freqs ");
-	for (i=0;i<num_dev;i++) debug("GPU %d: Freq requested %lu",freqs[i]);
+	for (i=0;i<num_dev;i++) debug("GPU %d: Freq requested %lu",i,freqs[i]);
   req.req_service = GPU_SET_FREQ;
   req.sec=create_sec_tag();
 	req.req_data.gpu_freq.num_dev=num_dev;

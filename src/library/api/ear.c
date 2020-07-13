@@ -677,7 +677,6 @@ void ear_init()
 #endif
 
 
-	debug("User type %u policy %u policy_name %s",system_conf->user_type,system_conf->policy,system_conf->policy_name);
 	// Application static data and metrics
 	debug("init application");
 	init_application(&application);

@@ -9,7 +9,8 @@ MPICC = $(CC)
 export MPICC
 endif
 export CFLAGS
-LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl -lm -lpthread
+CC_FLAGS += $(CFLAGS)
+LDFLAGS = -shared  -ldl -lm -lpthread
 
 ########
 
