@@ -15,18 +15,25 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#include <stdio.h>
+#define _GNU_SOURCE
+#include <errno.h>
+#include <library/loader/loader.h>
 #include <library/loader/module_mpi.h>
 #include <library/loader/module_default.h>
 
-int _loaded_default;
+int _loaded_con;
+int _loaded_mpi;
 
 void  __attribute__ ((constructor)) loader()
 {
-	// Module default
-	_loaded_default = module_constructor();
+	verbose(3, "LOADER: loader for application '%s'", program_invocation_name);
 	// Module MPI
-	module_mpi();
+	_loaded_mpi = module_mpi();
+	// Module default
+	if (!_loaded_mpi) {
+		_loaded_con = module_constructor();
+	}
+	// New modules here...
 
 	return;
 }

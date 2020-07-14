@@ -19,8 +19,7 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <common/output/verbose.h>
-#include <common/config/config_env.h>
+#include <library/loader/loader.h>
 #include <library/loader/module_default.h>
 
 void (*func_con) (void);
@@ -37,12 +36,18 @@ static int module_constructor_dlsym(char *path_so)
 	char *hack;
 
 	// Last chance to force a concrete library file.
-	if ((hack = getenv(HACK_FILE_LIBR)) == NULL) {
+	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
+		sprintf(path_so, "%s", hack);
+	} else if ((hack = getenv(HACK_PATH_LIBR)) != NULL) {
+		sprintf(path_so, "%s/%s/%s.seq.so", hack, REL_PATH_LIBR, REL_NAME_LIBR);
+	} else if ((hack = getenv(VAR_INS_PATH)) != NULL) {
+		sprintf(path_so, "%s/%s/%s.seq.so", hack, REL_PATH_LIBR, REL_NAME_LIBR);
+	} else {
+		verbose(2, "LOADER: installation path not found");
 		return 0;
-        }
-	
-	sprintf(path_so, "%s", hack);
-	verbose(2, "LOADER: module_constructor_dlsym loading library %s", path_so);
+	}
+
+	verbose(2, "LOADER: loading library %s", path_so);
 
 	if (!module_file_exists(path_so)) {
 		verbose(0, "LOADER: impossible to find library '%s'", path_so);
@@ -60,6 +65,9 @@ static int module_constructor_dlsym(char *path_so)
 
 	func_con = dlsym(libear, "ear_constructor");
 	func_des = dlsym(libear, "ear_destructor");
+
+	verbose(3, "LOADER: function constructor %p", func_con);
+	verbose(3, "LOADER: function destructor %p", func_des);
 
 	if (func_con == NULL && func_des == NULL) {
 		dlclose(libear);
@@ -85,7 +93,7 @@ int module_constructor()
 	static char path_so[4096];
 
 	module_constructor_init();
-	verbose(3, "LOADER: function module_constructor");
+	verbose(3, "LOADER: loading module default (constructor)");
 
 	if (!module_constructor_dlsym(path_so)) {
 		return 0;
@@ -102,7 +110,7 @@ int module_constructor()
 
 void module_destructor()
 {
-	verbose(3, "LOADER: function module_destructor");
+	verbose(3, "LOADER: loading module default (destructor)");
 
 	if (func_des != NULL) {
 		func_des();

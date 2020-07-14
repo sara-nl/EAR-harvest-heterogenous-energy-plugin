@@ -130,6 +130,8 @@ int slurm_spank_user_init_eard(spank_t sp)
 				return ESPANK_ERROR;
 			}
 			plug_serialize_task(sp, &sd);
+		} else {
+			plug_verbose(sp, 2, "library is not enabled");
 		}
 	}
 
