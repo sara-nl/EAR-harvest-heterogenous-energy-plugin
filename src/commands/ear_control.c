@@ -249,15 +249,26 @@ void check_ip(status_t status, ip_table_t *ips, int num_ips)
 void check_app_status(app_status_t status, ip_table_t *ips, int num_ips)
 {
     int i;
+		int gpusi;
+		double GPU_power=0;
+		ulong GPU_freq=0;
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
         {
 #if USE_GPU_LIB
+						GPU_power=0;GPU_freq=0;
+						if (status.signature.gpu_sig.num_gpus>0){
+						for (gpusi=0;gpusi<status.signature.gpu_sig.num_gpus;gpusi++){
+							GPU_power += status.signature.gpu_sig.gpu_data[gpusi].GPU_power;
+							GPU_freq += status.signature.gpu_sig.gpu_data[gpusi].GPU_freq;
+						}
+						GPU_freq = GPU_freq/status.signature.gpu_sig.num_gpus;
+						}
             printf("%15s %7lu-%-4lu %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf\n", 
                         ips[i].name, status.job_id, status.step_id, status.signature.DC_power,
                         status.signature.CPI, status.signature.GBS, status.signature.Gflops,
                         status.signature.time, (double)status.signature.avg_f/1000000, 
-                        status.signature.GPU_power, (double)status.signature.GPU_freq/1000);
+                        GPU_power, (double)GPU_freq/1000);
 #else
             printf("%15s %7lu-%-4lu %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf\n", 
                         ips[i].name, status.job_id, status.step_id, status.signature.DC_power,

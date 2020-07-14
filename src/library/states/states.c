@@ -99,9 +99,19 @@ extern uint check_periodic_mode;
 
 #if USE_GPU_LIB
 #define SET_VARIABLES_GPU() \
-		GPU_POWER = loop_signature.signature.GPU_power; \
-		GPU_FREQ = loop_signature.signature.GPU_freq; \ 
-		GPU_UTIL = loop_signature.signature.GPU_util;
+		{ \
+		int gpui; \
+		GPU_POWER=0;GPU_FREQ=0;GPU_UTIL=0; \
+		if (loop_signature.signature.gpu_sig.num_gpus>0){ \
+		for(gpui=0;gpui<loop_signature.signature.gpu_sig.num_gpus;gpui++){ \
+			GPU_POWER += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_power; \
+			GPU_FREQ += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_freq; \ 
+			GPU_UTIL += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_util; \
+		} \
+		GPU_FREQ = GPU_FREQ/loop_signature.signature.gpu_sig.num_gpus; \
+		GPU_UTIL = GPU_UTIL/loop_signature.signature.gpu_sig.num_gpus; \
+		} \
+		}
 #else
 #define SET_VARIABLES_GPU()
 #endif

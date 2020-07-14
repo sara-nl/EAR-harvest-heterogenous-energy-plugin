@@ -214,9 +214,17 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					if (masters_info.my_master_rank>=0){
 						#if USE_GPU_LIB
-						GPU_POWER = loop_signature.signature.GPU_power;
-						GPU_FREQ = (float) loop_signature.signature.GPU_freq/1000.0;
-						GPU_UTIL = loop_signature.signature.GPU_util;
+						GPU_POWER=0;GPU_FREQ=0;GPU_UTIL=0;
+						if (loop_signature.signature.gpu_sig.num_gpus>0){
+						uint gpui;
+						for (gpui=0;gpui<loop_signature.signature.gpu_sig.num_gpus;gpui++){
+							GPU_POWER += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_power;
+							GPU_FREQ = loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_freq;
+							GPU_UTIL += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_util;
+						}
+						GPU_FREQ = (float)GPU_FREQ/(loop_signature.signature.gpu_sig.num_gpus*1000.0);
+						GPU_UTIL = GPU_UTIL/loop_signature.signature.gpu_sig.num_gpus;
+						}
 						#endif
             AVGFF=(float)AVGF/1000000.0;
             prev_ff=(float)prev_f/1000000.0;
