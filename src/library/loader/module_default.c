@@ -39,7 +39,7 @@ static int module_constructor_dlsym(char *path_so)
 	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
 		sprintf(path_so, "%s", hack);
 	} else if ((hack = getenv(HACK_PATH_LIBR)) != NULL) {
-		sprintf(path_so, "%s/%s/%s.seq.so", hack, REL_PATH_LIBR, REL_NAME_LIBR);
+		sprintf(path_so, "%s/%s.seq.so", hack, REL_NAME_LIBR);
 	} else if ((hack = getenv(VAR_INS_PATH)) != NULL) {
 		sprintf(path_so, "%s/%s/%s.seq.so", hack, REL_PATH_LIBR, REL_NAME_LIBR);
 	} else {
