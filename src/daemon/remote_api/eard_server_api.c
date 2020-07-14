@@ -438,7 +438,7 @@ int propagate_release_idle(request_t *command, uint port, pc_release_data_t *rel
 int propagate_and_cat_data(request_t *command, uint port, void **status, size_t size,uint type)
 {
     char *temp_status, *final_status;
-		int *ip;
+    int *ip;
     int num_status = 0;
 
     // if the current node is a leaf node (either last node or ip_init had failed)
@@ -446,7 +446,7 @@ int propagate_and_cat_data(request_t *command, uint port, void **status, size_t 
     if (command->node_dist > total_ips || self_id < 0 || ips == NULL || total_ips < 1)
     {
         final_status = (char *)calloc(1, size);
-				ip=(int *)final_status;
+        ip=(int *)final_status;
         if (self_id < 0 || ips == NULL)
             *ip = get_self_ip();
         else
@@ -475,7 +475,7 @@ int propagate_and_cat_data(request_t *command, uint port, void **status, size_t 
     memcpy(final_status, temp_status, head.size);
 
     //current node info
-    ip=(int*)final_status[num_status*size];
+    ip = (int *)&final_status[num_status*size];
     *ip = ips[self_id];
     *status = final_status;
     num_status++;   //we add the original status

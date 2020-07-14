@@ -1333,8 +1333,8 @@ void powermon_get_app_status(app_status_t *my_status)
 		my_status->job_id = current_ear_app[ccontext]->app.job.id;
 		my_status->step_id = current_ear_app[ccontext]->app.job.step_id;
 	} else {
-		/* No job running */
-		my_status->job_id = 0;
+		/* No job running. 0 is a valid job_id, therefore we set it to -1 */
+		my_status->job_id = -1;
 	}
   if (!(is_null(&current_loop_data)==1)){
 		signature_copy(&my_status->signature,&current_loop_data.signature);

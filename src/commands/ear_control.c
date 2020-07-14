@@ -313,7 +313,8 @@ void process_app_status(int num_status, app_status_t *status)
         free(ips);
         free(status);
     }
-    else printf("An error retrieving status has occurred.\n");
+    else if (num_status < 0) printf("An error retrieving status has occurred.\n");
+    else printf("No apps are currently running on any node\n");
 }
 
 void generate_ip(ip_table_t *ips, char *node_name)

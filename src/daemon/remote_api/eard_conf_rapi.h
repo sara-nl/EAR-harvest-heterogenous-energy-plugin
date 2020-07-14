@@ -125,7 +125,7 @@ typedef struct status{
 
 typedef struct app_status{
 	unsigned int ip;
-	ulong job_id,step_id;
+	long job_id,step_id; //need to be signed so we can set an invalid job_id (-1) to know when there is no job
 	signature_t signature;
 }app_status_t;
 
