@@ -29,7 +29,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>
@@ -706,10 +706,6 @@ void ear_init()
 	debug("Starting job");
 	//sets the job start_time
 	start_job(&application.job);
-
-
-
-
 	debug("Job time initialized");
 
 	
@@ -1327,12 +1323,12 @@ void *earl_periodic_actions(void *no_arg)
 #if !MPI 
 void ear_constructor()
 {
-	debug("Calling ear_init in ear_constructor");
+	debug("Calling ear_init in ear_constructor %d",getpid());
 	ear_init();
 }
 void ear_destructor()
 {
-	debug("Calling ear_finalize in ear_destructor");
+	debug("Calling ear_finalize in ear_destructor %d",getpid());
 	ear_finalize();
 }
 #endif

@@ -45,7 +45,7 @@ typedef struct mini_sig
   ulong def_f;
 }ssig_t;
 
-typedef struct gpu_data{
+typedef struct gpu_app{
     double GPU_power;
     ulong  GPU_freq;
     ulong  GPU_mem_freq;

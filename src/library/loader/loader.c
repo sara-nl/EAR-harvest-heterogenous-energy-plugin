@@ -17,6 +17,10 @@
 
 #define _GNU_SOURCE
 #include <errno.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+
 #include <library/loader/loader.h>
 #include <library/loader/module_mpi.h>
 #include <library/loader/module_default.h>
@@ -26,11 +30,20 @@ int _loaded_mpi;
 
 void  __attribute__ ((constructor)) loader()
 {
+	VERB_SET_EN(1);
+  VERB_SET_LV(4);
+
 	verbose(3, "LOADER: loader for application '%s'", program_invocation_name);
+	verbose(3, "LOADER: loader for PID %d", getpid());
+	if (getenv("SLURM_SCRIPT_CONTEXT")!=NULL){ 
+		verbose(3,"SLURM_SCRIPT_CONTEXT %s",getenv("SLURM_SCRIPT_CONTEXT"));
+	}else{ 
+		verbose(3,"SLURM_SCRIPT_CONTEXT undefined");
+	}
 	// Module MPI
 	_loaded_mpi = module_mpi();
 	// Module default
-	if (!_loaded_mpi) {
+	if (!_loaded_mpi && strcmp(program_invocation_name,"/bin/bash")) {
 		_loaded_con = module_constructor();
 	}
 	// New modules here...

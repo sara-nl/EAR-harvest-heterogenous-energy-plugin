@@ -356,6 +356,8 @@ int main(int argc, char *argv[])
     char path_name[128];
     char node_name[256];
 
+		strcpy(node_name,"");
+
     status_t *status;
 
     verb_level = -1;

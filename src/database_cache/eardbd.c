@@ -15,6 +15,10 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
+
 #include <database_cache/eardbd.h>
 #include <database_cache/eardbd_body.h>
 #include <database_cache/eardbd_sync.h>
@@ -75,7 +79,7 @@ int server_iam;
 int mirror_iam;
 
 // PID
-char *path_pid;
+char *path_pid,path_tmp_pid[128];;
 process_data_t proc_data_srv;
 process_data_t proc_data_mir;
 pid_t server_pid;
@@ -204,16 +208,8 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	server_too = (mode & 0x01);
 	mirror_too = (mode & 0x02) > 0;
 
-	#if 0
-	conf_clus->db_manager.insr_time = atoi(argv[4]);
-	conf_clus->db_manager.aggr_time = 60;
-
-	server_too = atoi(argv[1]);
-	mirror_too = atoi(argv[2]);
-
-	strcpy(server_host, argv[3]);
-	#endif
 	#else
+
 	conf_clus->db_manager.tcp_port      = 8811;
 	conf_clus->db_manager.sec_tcp_port  = 8812;
 	conf_clus->db_manager.sync_tcp_port = 8813;
@@ -239,7 +235,12 @@ static void init_general_configuration(int argc, char **argv, cluster_conf_t *co
 	// PID protection
 	pid_t other_server_pid;
 	pid_t other_mirror_pid;
-	path_pid = conf_clus->install.dir_temp;
+	sprintf(path_tmp_pid,"%s/%d",conf_clus->install.dir_temp,getpid());
+	if (mkdir(path_tmp_pid,S_IRUSR|S_IWUSR)<0){
+		verbose_maxxx("Error creating pid path");
+	}
+	verbose_maxxx("Creating pid path in %s",path_tmp_pid);
+	path_pid = path_tmp_pid;
 
 	// Neither server nor mirror
 	if (!server_too && !mirror_too) {
