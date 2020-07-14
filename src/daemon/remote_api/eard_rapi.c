@@ -50,7 +50,8 @@ int eards_get_app_status(cluster_conf_t *my_cluster_conf,app_status_t **status)
     send_command(&command);
 
     head = receive_data(eards_sfd, (void **)status);
-    if (head.size < sizeof(app_status_t) || head.type != EAR_TYPE_APP_STATUS) {
+    //we don't need to check if size is bigger than app_status since an empty message can be returned (no apps running)
+    if (head.type != EAR_TYPE_APP_STATUS) {
         debug("Error sending command to node");
         if (head.size > 0 && head.type != EAR_ERROR) free(status);
         return 0;

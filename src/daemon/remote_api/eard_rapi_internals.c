@@ -216,10 +216,13 @@ request_header_t receive_data(int fd, void **data)
     }
 
     if (head.size < 1 || !is_valid_type(head.type)) {
-        if (!((head.size == 0) && (head.type == 0))) error("Error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
-        head.type = EAR_ERROR;
-        head.size = 0;
-        return head;
+        if (!((head.size == 0) && (head.type == 0))) debug("Error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
+        if (head.type != EAR_TYPE_APP_STATUS)
+        {
+            head.type = EAR_ERROR;
+            head.size = 0;
+            return head;
+        }
     }
     //write ack should go here if we implement it
     read_data = calloc(head.size, sizeof(char));

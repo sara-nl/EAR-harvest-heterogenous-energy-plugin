@@ -367,7 +367,15 @@ void dyncon_get_app_status(int fd, request_t *command)
     return;
   }
   powermon_get_app_status(&status[num_status - 1]);
-    send_data(fd, sizeof(app_status_t) * num_status, (char *)status, EAR_TYPE_APP_STATUS);
+
+  //if no job is present on the current node, we free its data
+  if (status[num_status - 1].job_id < 0)
+  {
+    num_status--;
+    status = realloc(status, sizeof(app_status_t)*num_status);
+  }
+                  
+  send_data(fd, sizeof(app_status_t) * num_status, (char *)status, EAR_TYPE_APP_STATUS);
   debug("Returning from dyncon_get_app_status");
   free(status);
   debug("app_status released");
