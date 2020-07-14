@@ -387,7 +387,6 @@ void form_database_paths()
 *	BASIC FUNCTIONS 
 *
 */
-
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
 	state_t s;
 	verbose(1,"job_init_powermon_app init");
@@ -663,7 +662,6 @@ void powermon_mpi_finalize(ehandler_t *eh) {
 */
 
 /* This functiono is called by dynamic_configuration thread when a new_job command arrives */
-
 
 void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	// New application connected

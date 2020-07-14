@@ -5,9 +5,12 @@ CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=1
 else
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=0
 MPI_VERSION = seq
+MPICC = $(CC)
+export MPICC
 endif
 export CFLAGS
-LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl -lm
+CC_FLAGS += $(CFLAGS)
+LDFLAGS = -shared  -ldl -lm -lpthread
 
 ########
 

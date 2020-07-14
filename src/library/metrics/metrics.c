@@ -40,8 +40,8 @@
 #include <common/system/time.h>
 #if USE_GPU_LIB
 #include <library/metrics/gpu.h>
+char gpu_str[256];
 #endif
-extern masters_info_t masters_info;
 extern int dispose;
 //#define TEST_MB 0
 
@@ -195,9 +195,6 @@ static void metrics_global_start()
 		set_null_dc_energy(aux_energy);
 		set_null_rapl(aux_rapl);
 		set_null_uncores(metrics_bandwith_init[APP]);
-		#if USE_GPU_LIB
-		if (gpu_initialized) gpu_lib_data_null(gpu_metrics_init[APP]);
-		#endif
 	}
 	copy_uncores(metrics_bandwith_end[LOO],metrics_bandwith_init[APP],bandwith_elements);
 	//eards_start_uncore();
@@ -235,12 +232,11 @@ static void metrics_global_stop()
 		}
 		debug("gpu_read in global_stop");
 		gpu_lib_data_diff(gpu_metrics_end[APP], gpu_metrics_init[APP], gpu_metrics_diff[APP]);
+		gpu_lib_data_tostr(gpu_metrics_diff[APP],gpu_str,sizeof(gpu_str));
+		debug("gpu_data in global_stop %s",gpu_str);
 		}
 		#endif
 	}else{
-		#if USE_GPU_LIB
-		if (gpu_initialized) gpu_lib_data_null(gpu_metrics_diff[APP]);
-		#endif
 		set_null_uncores(metrics_bandwith_end[APP]);
 	}
 	//eards_start_uncore();
@@ -274,7 +270,7 @@ static void metrics_partial_start()
 	
 	if (masters_info.my_master_rank>=0){ 
 		eards_begin_compute_turbo_freq();
-		#if USE_GPU_LIST
+		#if USE_GPU_LIB
 		if (gpu_initialized){
 		if (gpu_loop_stopped) {
 			gpu_lib_data_copy(gpu_metrics_init[LOO],gpu_metrics_end[LOO]);
@@ -315,6 +311,7 @@ static int metrics_partial_stop(uint where)
 	char stop_energy_str[256],start_energy_str[256],gpu_buff[1024];
 
 	/* If the signature of the master is not ready, we cannot compute our signature */
+	debug("My rank is %d",masters_info.my_master_rank);
   if ((masters_info.my_master_rank<0) && (!sig_shared_region[0].ready)){
 			//debug("Master signature not ready at time %lld",metrics_time());
       return EAR_NOT_READY;
@@ -372,10 +369,8 @@ static int metrics_partial_stop(uint where)
 		debug("gpu_read in partial stop");
 		gpu_loop_stopped=1;
     gpu_lib_data_diff(gpu_metrics_end[LOO], gpu_metrics_init[LOO], gpu_metrics_diff[LOO]);
-		#if SHOW_DEBUGS
-		gpu_lib_data_tostr(gpu_metrics_diff[LOO],gpu_buff,sizeof(gpu_buff));
-		debug("gpu_diff in partial_stop: %s",gpu_buff);
-		#endif	
+		gpu_lib_data_tostr(gpu_metrics_diff[LOO],gpu_str,sizeof(gpu_str));
+		debug("gpu_diff in partial_stop: %s",gpu_str);
     }
 		#endif
 	}
@@ -587,6 +582,9 @@ int metrics_init()
 	ulong rapl_size;
 	state_t st;
 
+	debug("Masters region %p size %lu",&masters_info,sizeof(masters_info));
+
+	debug("My master rank %d",masters_info.my_master_rank);
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
 	//debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
@@ -692,6 +690,7 @@ int metrics_init()
 	memset(last_rapl, 0, rapl_size);
 
 	#if USE_GPU_LIB
+	if (masters_info.my_master_rank>=0){
 	if (gpu_lib_load(system_conf) !=EAR_SUCCESS){
       gpu_initialized=0;
 			debug("Error in gpu_lib_load");
@@ -710,6 +709,7 @@ int metrics_init()
 		}
 	}
 	debug("GPU initialization successfully");
+	}
 	fflush(stderr);	
 	#endif
 

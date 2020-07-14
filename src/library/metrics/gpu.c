@@ -15,6 +15,9 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
+#include <common/output/debug.h>
 #include <library/metrics/gpu.h>
 #include <daemon/local_api/eard_api.h>
 
@@ -26,6 +29,7 @@ state_t gpu_lib_load(settings_conf_t *settings)
 	uint gpu_model;
 	state_t ret;
 	if ((ret=eards_gpu_model(&gpu_model))!=EAR_SUCCESS) return ret;
+	debug("eards_gpu_model %u ",gpu_model);
 	return gpu_load(&ops, gpu_model, NULL);
 }
 
@@ -33,6 +37,7 @@ state_t gpu_lib_init(ctx_t *c)
 {
 	state_t ret;
 	if ((ret=eards_gpu_dev_count(&dev_count))!=EAR_SUCCESS) return ret;
+	debug("eards_gpu_dev_count %u",dev_count);
 	preturn (ops->data_init, dev_count);
 }
 
@@ -44,7 +49,11 @@ state_t gpu_lib_dispose(ctx_t *c)
 state_t gpu_lib_read(ctx_t *c, gpu_t *data)
 {
 	state_t ret;
-	if ((ret=eards_gpu_data_read(data))!=EAR_SUCCESS) return ret;	
+	char gpu_ste[256];
+	debug("reading %u gpus",dev_count);
+	if ((ret=eards_gpu_data_read(data,dev_count))!=EAR_SUCCESS) return ret;	
+	gpu_lib_data_tostr(data,gpu_ste,sizeof(gpu_ste));
+	debug("gpu data %s",gpu_ste);
 	return EAR_SUCCESS;
 }
 

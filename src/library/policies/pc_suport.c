@@ -20,7 +20,7 @@
 #include <string.h>
 
 #include <common/config.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <daemon/powercap/powercap_status.h>
 #include <common/types/signature.h>

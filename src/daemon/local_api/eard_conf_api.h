@@ -21,11 +21,17 @@
 #define _GNU_SOURCE             
 #include <sched.h>
 
-
+#include <common/config/config_install.h>
 #include <common/types/generic.h>
 #include <common/types/application.h>
 #include <common/types/job.h>
 #include <common/types/loop.h>
+
+
+typedef struct gpu_freq_req{
+	uint  num_dev;
+	ulong gpu_freqs[MAX_GPUS_SUPPORTED];
+}gpu_freq_req_t;
 
 typedef struct new_freq_type{
 	unsigned long f;
@@ -38,6 +44,7 @@ union daemon_req_opt {
 	loop_t		  loop;
 	ear_event_t event;
 	new_freq_type_t f_mask;
+	gpu_freq_req_t  gpu_freq;
 };
 
 struct daemon_req {
@@ -102,6 +109,7 @@ struct daemon_req {
 #define GPU_MODEL			500
 #define GPU_DEV_COUNT	501
 #define GPU_DATA_READ	502
+#define GPU_SET_FREQ  503
 
 #else
 #endif
