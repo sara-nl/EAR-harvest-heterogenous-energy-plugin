@@ -6,6 +6,7 @@ poli_OBJS = \
     policy.o \
 		pc_suport.o
 
+
 modl_BINS = \
        min_time.so  \
        min_energy.so \
@@ -18,6 +19,10 @@ modl_BINS += \
 			 min_time_mpi_info.so \
 			 monitoring_ext.so \
 			 monitoring_ext_notime.so 
+endif
+ifdef CUDA_BASE
+modl_BINS += \
+			gpu_monitoring.so
 endif
 
 modl_PATH = $(DESTDIR)/lib/plugins/policies

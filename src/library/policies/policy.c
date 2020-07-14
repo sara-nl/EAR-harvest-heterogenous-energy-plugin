@@ -64,7 +64,7 @@ typedef struct policy_symbols {
 } polsym_t;
 
 // Static data
-static polsym_t polsyms_fun;
+static polsym_t polsyms_fun,gpu_polsyms_fun;
 static void    *polsyms_obj = NULL;
 const int       polsyms_n = 12;
 const char     *polsyms_nam[] = {
@@ -83,15 +83,18 @@ const char     *polsyms_nam[] = {
 };
 polctx_t my_pol_ctx;
 
-state_t policy_load(char *obj_path)
+state_t policy_load(char *obj_path,polsym_t *psyms)
 {
-	return symplug_open(obj_path, (void **)&polsyms_fun, polsyms_nam, polsyms_n);
+	//return symplug_open(obj_path, (void **)&polsyms_fun, polsyms_nam, polsyms_n);
+	return symplug_open(obj_path, (void **)psyms, polsyms_nam, polsyms_n);
 }
 
 state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 {
   char basic_path[SZ_PATH_INCOMPLETE];
+  char basic_gpu_path[SZ_PATH_INCOMPLETE];
 	conf_install_t *data=&app_settings->installation;
+	state_t ret;
 
   char *obj_path = getenv(SCHED_EAR_POWER_POLICY);
 	#if SHOW_DEBUGS
@@ -106,7 +109,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
     	obj_path=basic_path;
 	}
   if (masters_info.my_master_rank>=0) debug("loading policy %s",obj_path);
-	if (policy_load(obj_path)!=EAR_SUCCESS){
+	if (policy_load(obj_path,&polsyms_fun)!=EAR_SUCCESS){
 		error("Error loading policy %s",obj_path);
 	}
 	ear_frequency=DEF_FREQ(app_settings->def_freq);
@@ -127,6 +130,27 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
   }
 	}
 	#endif
+
+	/********* GPU PART **********/
+	#if USE_GPUS
+  obj_path = getenv(SCHED_EAR_GPU_POWER_POLICY);
+  #if SHOW_DEBUGS
+  if (obj_path!=NULL){ 
+    debug("%s = %s",SCHED_EAR_GPU_POWER_POLICY,obj_path);
+  }else{
+    debug("%s undefined",SCHED_EAR_GPU_POWER_POLICY);
+  }
+  #endif
+  if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
+      sprintf(basic_path,"%s/policies/gpu_%s.so",data->dir_plug,app_settings->policy_name);
+      obj_path=basic_path;
+  }
+  if (masters_info.my_master_rank>=0) debug("loading policy %s",obj_path);
+  if (policy_load(obj_path,&gpu_polsyms_fun)!=EAR_SUCCESS){
+    error("Error loading policy %s",obj_path);
+  }
+
+	#endif
 	return policy_init();
 }
 
@@ -142,13 +166,26 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 state_t policy_init()
 {
 	polctx_t *c=&my_pol_ctx;
-	preturn(polsyms_fun.init, c);
+	state_t ret,retg=EAR_SUCCESS;
+	if (polsyms_fun.init != NULL){
+		ret=polsyms_fun.init(c);
+	}
+	#if USE_GPUS
+	if (gpu_polsyms_fun.init != NULL){
+		debug("Loading gpu init");
+		retg=gpu_polsyms_fun.init(c);
+	}else{
+		debug("gpu init policy null");
+	}
+	#endif
+	if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;
+	else return EAR_ERROR;
 }
 
 state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 {
 	polctx_t *c=&my_pol_ctx;
-	state_t st=EAR_ERROR;
+	state_t st=EAR_ERROR,stg=EAR_SUCCESS;
 	*ready=1;
 	if (polsyms_fun.apply!=NULL){
 		if (!eards_connected() || (masters_info.my_master_rank<0)){
@@ -175,14 +212,23 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
   } else{
 		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
 	}
-	return st;
+	#if USE_GPUS
+	/* At this point we are the master */
+	if (gpu_polsyms_fun.apply!=NULL){
+		stg=gpu_polsyms_fun.apply(c, my_sig,freq_set,ready);
+	}
+	#endif
+	if ((st == EAR_SUCCESS) && (stg == EAR_SUCCESS)) return EAR_SUCCESS;
+	else return EAR_ERROR;
 }
 
 state_t policy_get_default_freq(ulong *freq_set)
 {
 	polctx_t *c=&my_pol_ctx;
+	state_t ret,retg=EAR_SUCCESS;
 	if (polsyms_fun.get_default_freq!=NULL){
-		return polsyms_fun.get_default_freq( c, freq_set);
+		ret = polsyms_fun.get_default_freq( c, freq_set);
+		return ret;
 	}else{
 		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
 		return EAR_SUCCESS;
@@ -206,11 +252,20 @@ state_t policy_set_default_freq()
 state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
 {
 	polctx_t *c=&my_pol_ctx;
+	state_t ret,retg=EAR_SUCCESS;
 	if (polsyms_fun.ok!=NULL){
 #if POWERCAP
 		pc_support_compute_next_state(&my_pol_ctx.app->pc_opt,curr);
 #endif
-		return polsyms_fun.ok(c, curr,prev,ok);
+		ret = polsyms_fun.ok(c, curr,prev,ok);
+		#if USE_GPUS
+		if (gpu_polsyms_fun.ok!=NULL){
+			retg = gpu_polsyms_fun.ok(c, curr,prev,ok);
+		}
+		#endif
+		if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;
+		else return EAR_ERROR;
+		
 	}else{
 		*ok=1;
 		return EAR_SUCCESS;
