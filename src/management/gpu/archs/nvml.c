@@ -25,7 +25,7 @@
 #include <common/config/config_env.h>
 #include <management/gpu/archs/nvml.h>
 
-#define NVML_N 14
+#define NVML_N 15
 
 static const char *nvml_names[] =
 {
@@ -36,6 +36,7 @@ static const char *nvml_names[] =
 	"nvmlDeviceGetSupportedMemoryClocks",
 	"nvmlDeviceGetSupportedGraphicsClocks",
 	"nvmlDeviceSetGpuLockedClocks",
+	"nvmlDeviceSetApplicationsClocks",
 	"nvmlDeviceResetApplicationsClocks",
 	"nvmlDeviceResetGpuLockedClocks",
 	"nvmlDeviceGetPowerManagementLimit",
@@ -54,6 +55,7 @@ static struct nvml_s
 	nvmlReturn_t (*GetMemoryClocks)		(nvmlDevice_t dev, uint *count, uint *mhz);
 	nvmlReturn_t (*GetGraphicsClocks)	(nvmlDevice_t dev, uint mem_mhz, uint *count, uint *mhz);
 	nvmlReturn_t (*SetLockedClocks)		(nvmlDevice_t dev, uint min_mhz, uint max_mhz);
+	nvmlReturn_t (*SetAppsClocks)		(nvmlDevice_t dev, uint mem_mgz, uint gpu_mhz);
 	nvmlReturn_t (*ResetAppsClocks)		(nvmlDevice_t dev);
 	nvmlReturn_t (*ResetLockedClocks)	(nvmlDevice_t dev);
 	nvmlReturn_t (*GetPowerLimit)		(nvmlDevice_t dev, uint *watts);
@@ -81,9 +83,12 @@ static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static uint			 initialized;
 static uint			 dev_count;
 static nvmlDevice_t *devices;
+static uint			*clock_errors;
 static uint 		*clock_max_default; // KHz
 static uint 		*clock_max_current; // KHz
 static uint			*clock_max; // KHz
+static uint			*clock_max_mem; // KHz
+static uint			*power_errors;
 static uint			*power_max_default; // W
 static uint			*power_max; // W
 
@@ -134,6 +139,12 @@ static state_t static_init()
 	if (clock_max == NULL) {
 		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
 	}
+	if (clock_max_mem == NULL) {
+		clock_max_mem = calloc(dev_count, sizeof(uint));
+	}
+	if (clock_max_mem == NULL) {
+		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
+	}
 	if (power_max_default == NULL) {
 		power_max_default = calloc(dev_count, sizeof(uint));
 	}
@@ -169,12 +180,12 @@ static state_t static_init()
 		if ((r = nvml.ResetAppsClocks(devices[i0])) != NVML_SUCCESS) {
 			debug("nvmlDeviceResetApplicationsClocks(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 		if ((r = nvml.ResetLockedClocks(devices[i0])) != NVML_SUCCESS) {
 			debug("nvmlDeviceResetGpuLockedClocks(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 	}
 
@@ -183,12 +194,12 @@ static state_t static_init()
 		if ((r = nvml.GetPowerDefaultLimit(devices[i0], &aux)) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetPowerManagementDefaultLimit(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 		if ((r = nvml.SetPowerLimit(devices[i0], aux)) != NVML_SUCCESS) {
 			debug("nvmlDeviceSetPowerManagementLimit(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 	}
 
@@ -205,7 +216,7 @@ static state_t static_init()
 		if ((r = nvml.GetDefaultAppsClock(devices[i0], NVML_CLOCK_GRAPHICS, &clock_max_default[i0])) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetDefaultApplicationsClock(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 
 		clock_max_default[i0] *= 1000;
@@ -220,17 +231,20 @@ static state_t static_init()
 		if ((r = nvml.GetMemoryClocks(devices[i0], &c1, clock_list1)) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetSupportedMemoryClocks(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 		for (i1 = 0; i1 < c1; ++i1)
 		{
-			//debug("\tM%d: %d", i1, clock_list1[i1]);
+			if (clock_list1[i1] > clock_max_mem[i0]) {
+				clock_max_mem[i0] = clock_list1[i1];
+			}
+			//debug("D%d MEM %d: %d", i0, i1, clock_list1[i1]);
 
 			c2 = 1000;
 			if ((r = nvml.GetGraphicsClocks(devices[i0], clock_list1[i1], &c2, clock_list2)) != NVML_SUCCESS) {
 				debug("\t\tnvmlDeviceGetSupportedGraphicsClocks(dev: %d) returned %d (%s)",
 					  i0, r, nvml.ErrorString(r));
-				return_msg(EAR_ERROR, myErrorString(r));
+				//return_msg(EAR_ERROR, myErrorString(r));
 			}
 
 			for (i2 = 0; i2 < c2; ++i2) {
@@ -253,12 +267,12 @@ static state_t static_init()
 		if ((r = nvml.GetPowerDefaultLimit(devices[i0], &power_max_default[i0])) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetPowerManagementDefaultLimit returned %d (%s)",
 				  r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 		if ((r = nvml.GetPowerLimitConstraints(devices[i0], &aux, &power_max[i0])) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetPowerManagementLimitConstraints returned %d (%s)",
 				  r, nvml.ErrorString(r));
-			return_msg(EAR_ERROR, myErrorString(r));
+			//return_msg(EAR_ERROR, myErrorString(r));
 		}
 		power_max_default[i0] /= 1000;
 		power_max[i0]         /= 1000;
@@ -418,7 +432,10 @@ static state_t clocks_reset(int i)
 	{
 		debug("nvmlDeviceResetGpuLockedClocks(dev: %d) returned %d (%s)",
 			  i, r, nvml.ErrorString(r));
-		return_msg(EAR_ERROR, myErrorString(r));
+		
+		if ((r = nvml.ResetAppsClocks(devices[i])) != NVML_SUCCESS) {
+			return_msg(EAR_ERROR, myErrorString(r));
+		}
 	}
 	clock_max_current[i] = clock_max_default[i];
 	return EAR_SUCCESS;
@@ -442,20 +459,26 @@ state_t nvml_clock_limit_reset(ctx_t *c)
 static state_t clocks_set(int i, uint mhz)
 {
 	nvmlReturn_t r;
-	debug("D%d setting clock to %u MHz", i, mhz);
+	debug("D%d setting clock to %u KHz", i, mhz * 1000);
 	if ((r = nvml.SetLockedClocks(devices[i], 0, mhz)) != NVML_SUCCESS)
 	{
 		debug("nvmlDeviceSetGpuLockedClocks(dev: %d) returned %d (%s)",
-			  i, r, nvml.ErrorString(r));
-		// Unlike POWER functions, which have a function ask about the current
-		// POWER LIMIT value, CLOCK functions does not have that possibilty. So
-		// If the CLOCK SET function fails, it will try to set the default clock
-		// frequency, which we already know its value.
-		clocks_reset(i);
-		//
-		return_msg(EAR_ERROR, myErrorString(r));
+			i, r, nvml.ErrorString(r));
+
+		if ((r = nvml.SetAppsClocks(devices[i], clock_max_mem[i], mhz)) != NVML_SUCCESS)
+		{
+			debug("nvmlDeviceSetApplicationsClocks(dev: %d) returned %d (%s)",
+				i, r, nvml.ErrorString(r));
+			// Unlike POWER functions, which have a function ask about the current
+			// POWER LIMIT value, CLOCK functions does not have that possibilty. So
+			// If the CLOCK SET function fails, it will try to set the default clock
+			// frequency, which we already know its value.
+			clocks_reset(i);
+			//
+			return_msg(EAR_ERROR, myErrorString(r));
+		}
 	}
-	clock_max_current[i] = mhz;
+	clock_max_current[i] = mhz * 1000;
 	return EAR_SUCCESS;
 }
 

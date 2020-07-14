@@ -21,12 +21,10 @@
 #include <unistd.h>
 #include <common/system/file.h>
 #include <common/system/symplug.h>
-#include <common/output/verbose.h>
 #include <common/string_enhanced.h>
-#include <common/config/config_env.h>
+#include <library/loader/loader.h>
 #include <library/loader/module_mpi.h>
 
-extern int _loaded_default;
 static mpic_t next_mpic;
 static mpif_t next_mpif;
 mpic_t ear_mpic;
@@ -203,7 +201,7 @@ static void module_mpi_init()
 	}
 }
 
-void module_mpi()
+int module_mpi()
 {
 	static char path_so[4096];
 	int lang_c;
@@ -211,18 +209,17 @@ void module_mpi()
 
 	module_mpi_init();
 	
-	verbose(3, "LOADER: function module_mpi in '%s'", program_invocation_name);
+	verbose(3, "LOADER: loading module MPI");
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");
-		return;
+		return 0;
 	}
 
-	if (_loaded_default) {
-		module_mpi_dlsym_next();
-		return;
-	}
-	
+	//
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
+	//
 	module_mpi_dlsym(path_so, lang_c, lang_f);
+	// Returning 1 because is MPI (avoiding if loading went well).
+	return 1;
 }
