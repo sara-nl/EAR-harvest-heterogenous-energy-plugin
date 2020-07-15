@@ -160,7 +160,6 @@ int job(int argc, char *argv[])
 	int i = 0;
 
 	// Enabling plugin and erun components
-	setenv(Var.comp_erun.cmp, "1", 1);
 	setenv(Var.comp_plug.cmp, "1", 1);
 
 	// Clean
@@ -185,7 +184,7 @@ int job(int argc, char *argv[])
 	//
 	if (p != NULL) {
 		// Setting the job name
-		sprintf(path_app, "%s", p);
+		sprintf(path_app, "%s=1 %s", Var.comp_erun.cmp, p);
 		setenv("SLURM_JOB_NAME", p, 1);
 	} else {
 		_help = !_clean;
