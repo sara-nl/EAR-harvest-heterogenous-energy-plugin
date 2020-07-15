@@ -159,7 +159,8 @@ int job(int argc, char *argv[])
 	char *p = NULL;
 	int i = 0;
 
-	// Enabling plugin component
+	// Enabling plugin and erun components
+	setenv(Var.comp_erun.cmp, "1", 1);
 	setenv(Var.comp_plug.cmp, "1", 1);
 
 	// Clean

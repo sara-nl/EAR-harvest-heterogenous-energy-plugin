@@ -190,25 +190,12 @@ static int module_mpi_is()
 	return !(dlsym(RTLD_DEFAULT, "MPI_Get_library_version") == NULL);
 }
 
-static void module_mpi_init()
-{
-	char *verb;
-	
-	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
-	{
-		VERB_SET_EN(1);
-		VERB_SET_LV(atoi(verb));
-	}
-}
-
 int module_mpi()
 {
 	static char path_so[4096];
 	int lang_c;
 	int lang_f;
 
-	module_mpi_init();
-	
 	verbose(3, "LOADER: loading module MPI");
 
 	if (!module_mpi_is()) {

@@ -39,7 +39,7 @@
 #define REL_PATH_LOAD "lib/libearld.so"
 
 #define SCHED_SLURM 1
-#ifdef SCHED_SLURM
+#ifdef  SCHED_SLURM
 
 #define VAR_OPT_TRAC "SLURM_EAR_TRACE_PATH"
 
@@ -54,6 +54,8 @@
 
 // Adds a suffix to libear.so (i.e: libear.hello.so). 
 #define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION"
+// Enables the ERUN component in SLURM Plugin
+#define FLAG_COMP_ERUN "SLURM_COMP_ERUN"
 
 #define SCHED_LOADER_VERBOSE "SLURM_LOADER_VERBOSE"
 #define SCHED_EAR_SHOW_SIGNATURES "SLURM_EAR_SHOW_SIGNATURES"
