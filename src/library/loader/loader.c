@@ -37,29 +37,28 @@ static int init()
 	pid_t pid2 = 0;
 	
 	// Activating verbose
-	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL) {
+	if ((verb = getenv(FLAG_LOAD_VERB)) != NULL) {
 		VERB_SET_EN(1);
 		VERB_SET_LV(atoi(verb));
 	}
 	
 	// SLURM prolog/epilog control
-	if (getenv(FLAG_COMP_ERUN) != NULL) {
-		verbose(4, "LOADER: loader by erun");
-		return 1;
-	} else if ((task = getenv("SLURM_TASK_PID")) != NULL) {
-		pid1 = getpid();
-		pid2 = (pid_t) atoi(task);
-		verbose(4, "LOADER: loader pids: %d/%d", pid1, pid2);
-		return pid1 == pid2;
+	if ((task = getenv(FLAG_TASK_PID)) == NULL) {
+		return 0;
 	}
-	return 0;
+	
+	pid1 = getpid();
+	pid2 = (pid_t) atoi(task);
+	verbose(4, "LOADER: loader pids: %d/%d", pid1, pid2);
+	
+	return pid1 == pid2;
 }
 
 void  __attribute__ ((constructor)) loader()
 {
 	// Initialization
 	if (!init()) {
-		verbose(3, "LOADER: escaping the application '%s'", program_invocation_name);
+		verbose(4, "LOADER: escaping the application '%s'", program_invocation_name);
 		return;
 	}
 	verbose(3, "LOADER: loading for application '%s'", program_invocation_name);

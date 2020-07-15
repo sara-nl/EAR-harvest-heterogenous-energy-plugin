@@ -104,7 +104,6 @@ struct variables_s {
 	varnames_t comp_moni;
 	varnames_t comp_test;
 	varnames_t comp_verb;
-	varnames_t comp_erun;
 	varnames_t hack_load;
 	varnames_t verbose;
 	varnames_t policy;
@@ -130,6 +129,7 @@ struct variables_s {
 	varnames_t job_nodn;
 	varnames_t step_nodl;
 	varnames_t step_nodn;
+	varnames_t task_pid;
 	varnames_t ctx_last;
 	varnames_t was_sbac;
 	varnames_t was_srun;
@@ -145,7 +145,6 @@ struct variables_s {
 .comp_moni = { .cmp = "SLURM_COMP_MONITOR" },
 .comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
-.comp_erun = { .cmp =  FLAG_COMP_ERUN      },
 .hack_load = { .hck =  HACK_FILE_LOAD      },
 .verbose   = { .loc = "SLURM_LOC_VERB",      .ear = VAR_OPT_VERB      },
 .policy    = { .loc = "SLURM_LOC_POLI",      .ear = VAR_OPT_POLI      },
@@ -171,6 +170,7 @@ struct variables_s {
 .job_nodn  = { .rem = "SLURM_JOB_NUM_NODES", .ear = "" },
 .step_nodl = { .rem = "SLURM_STEP_NODELIST", .ear = "" },
 .step_nodn = { .rem = "SLURM_STEP_NUM_NODES",.ear = "" },
+.task_pid  = { .rem =  FLAG_TASK_PID,        .ear = "" },
 .ctx_last  = { .rem = "SLURM_ERLAST",        .ear = "" },
 .was_sbac  = { .rem = "SLURM_ERSBAC",        .ear = "" },
 .was_srun  = { .rem = "SLURM_ERSRUN",        .ear = "" },

@@ -66,8 +66,8 @@ static int module_constructor_dlsym(char *path_so)
 	func_con = dlsym(libear, "ear_constructor");
 	func_des = dlsym(libear, "ear_destructor");
 
-	verbose(3, "LOADER: function constructor %p", func_con);
-	verbose(3, "LOADER: function destructor %p", func_des);
+	verbose(4, "LOADER: function constructor %p", func_con);
+	verbose(4, "LOADER: function destructor %p", func_des);
 
 	if (func_con == NULL && func_des == NULL) {
 		dlclose(libear);
