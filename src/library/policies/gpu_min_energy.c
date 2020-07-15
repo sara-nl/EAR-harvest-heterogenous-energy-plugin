@@ -40,6 +40,13 @@ extern unsigned long ext_def_freq;
         dprintf(2, "\n"); \
 }
 
+#define LOW_UTIL_GPU_TH 25
+#define MED_UTIL_GPU_TH 50
+#define HIGH_UTIL_GPU_TH 75
+#define LOW_GPU_FREQ_RED (100 - (LOW_UTIL_GPU_TH + 10 ))
+#define MED_GPU_FREQ_RED (100 - (MED_UTIL_GPU_TH + 10))
+#define HIGH_GPU_FREQ_RED (100 - (HIGH_UTIL_GPU_TH + 10))
+
 
 state_t policy_init(polctx_t *c)
 {
@@ -49,15 +56,34 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 {
 	ulong eff_f,f;
 	uint i;
+	ulong util,freq;
 	debug("apply: num_gpus %d",my_sig->gpu_sig.num_gpus);
 	for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
 		debug("[GPU %d Power %.2lf Freq %.2f Mem_freq %.2f Util %lu Mem_util %lu]",i,
 		my_sig->gpu_sig.gpu_data[i].GPU_power,(float)my_sig->gpu_sig.gpu_data[i].GPU_freq/1000.0,(float)my_sig->gpu_sig.gpu_data[i].GPU_mem_freq/1000.0,
 		my_sig->gpu_sig.gpu_data[i].GPU_util,my_sig->gpu_sig.gpu_data[i].GPU_mem_util);
 	}
+
+	for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
+		util = my_sig->gpu_sig.gpu_data[i].GPU_util;
+		freq = my_sig->gpu_sig.gpu_data[i].GPU_freq;
+		if (util > 0){		
+			if (util < LOW_UTIL_GPU_TH){
+				new_freq[i] = freq - (freq * LOW_GPU_FREQ_RED);
+			}else if (util < MED_UTIL_GPU_TH){
+				new_freq[i] = freq - (freq * MED_GPU_FREQ_RED);
+			}else if (util < HIGH_UTIL_GPU_TH ){
+				new_freq[i] = freq - (freq * HIGH_GPU_FREQ_RED);
+			}else{		
+				new_freq[i] = freq ;
+			}
+		}else{
+			new_freq[i]=freq;
+		}
+			debug("Setting gpu_freq[%d]=%lu",i,new_freq[i]);
+	}		
 	
-	
-	*ready=0;
+	*ready=1;
 	
 	return EAR_SUCCESS;
 }

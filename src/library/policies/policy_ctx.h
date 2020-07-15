@@ -24,6 +24,9 @@
 #include <common/types/signature.h>
 #include <common/types/projection.h>
 #include <daemon/shared_configuration.h>
+#if USE_GPUS
+#include <library/metrics/gpu.h>
+#endif
 #if MPI
 #include <mpi.h>
 #endif
@@ -50,6 +53,11 @@ typedef struct policy_context {
 	unsigned int use_turbo;
 	mpi_ctx_t mpi;
 	//job_t 		*my_job
+	#if USE_GPUS
+	ctx_t     gpu_mgt_ctx;
+	uint			gpu_mgt_ctx_on;
+	uint      num_gpus;
+	#endif
 } polctx_t;
 
 void print_policy_ctx(polctx_t *p);

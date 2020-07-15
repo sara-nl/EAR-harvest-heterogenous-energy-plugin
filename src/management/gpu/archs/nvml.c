@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <nvml.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -456,10 +456,10 @@ state_t nvml_clock_limit_reset(ctx_t *c)
 	return e;
 }
 
-static state_t clocks_set(int i, uint mhz)
+static state_t clocks_set(int i, ulong mhz)
 {
 	nvmlReturn_t r;
-	debug("D%d setting clock to %u KHz", i, mhz * 1000);
+	debug("D%d setting clock to %lu KHz", i, mhz * 1000);
 	if ((r = nvml.SetLockedClocks(devices[i], 0, mhz)) != NVML_SUCCESS)
 	{
 		debug("nvmlDeviceSetGpuLockedClocks(dev: %d) returned %d (%s)",
@@ -482,13 +482,14 @@ static state_t clocks_set(int i, uint mhz)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_clock_limit_set(ctx_t *c, uint *khz)
+state_t nvml_clock_limit_set(ctx_t *c, ulong *khz)
 {
 	state_t s, e;
 	int i;
 	if (!initialized) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
+	debug("nvml_clock_limit_set devices %d",dev_count);
 	for (i = 0, e = EAR_SUCCESS; i < dev_count; ++i) {
 		if (xtate_fail(s, clocks_set(i, khz[i] / 1000u))) {
 			e = s;

@@ -111,7 +111,11 @@ state_t gpu_mgr_set_freq(uint num_dev_req,ulong *freqs)
 		error("Num GPUS requestedi(%u)  to change frequency greather than num GPUS detected (%u)",num_dev_req,num_dev);
 		num_dev_req=num_dev;
 	}
-	return mgt_gpu_clock_limit_set(&gpu_node_mgr,(uint *)freqs);
+	for (i=0;i<num_dev_req;i++){
+		freqs[i]=freqs[i]*1000;
+		debug("gpu_mgr_set_freq gpu[%d]=%lu",i,freqs[i]);
+	}
+	return mgt_gpu_clock_limit_set(&gpu_node_mgr,freqs);
 }
 
 

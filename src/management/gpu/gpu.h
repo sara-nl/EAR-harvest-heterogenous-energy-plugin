@@ -32,7 +32,7 @@ typedef struct mgt_gpu_ops_s
 	state_t (*clock_limit_get_default)  (ctx_t *c, uint *khz);
 	state_t (*clock_limit_get_max)      (ctx_t *c, uint *khz);
 	state_t (*clock_limit_reset)        (ctx_t *c);
-	state_t (*clock_limit_set)          (ctx_t *c, uint *khz);
+	state_t (*clock_limit_set)          (ctx_t *c, ulong *khz);
 	state_t (*power_limit_get_current)  (ctx_t *c, uint *watts);
 	state_t (*power_limit_get_default)  (ctx_t *c, uint *watts);
 	state_t (*power_limit_get_max)      (ctx_t *c, uint *watts);
@@ -65,7 +65,7 @@ state_t mgt_gpu_clock_limit_get_max(ctx_t *c, uint *khz);
 state_t mgt_gpu_clock_limit_reset(ctx_t *c);
 
 /** Sets the current clock limit on each GPU (one value per GPU in the khz array). */
-state_t mgt_gpu_clock_limit_set(ctx_t *c, uint *khz);
+state_t mgt_gpu_clock_limit_set(ctx_t *c, ulong *khz);
 
 /** Gets the current power limit for each GPU in the node. */
 state_t mgt_gpu_power_limit_get_current(ctx_t *c, uint *watts);

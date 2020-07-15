@@ -36,7 +36,7 @@ state_t nvml_clock_limit_get_max(ctx_t *c, uint *khz);
 
 state_t nvml_clock_limit_reset(ctx_t *c);
 
-state_t nvml_clock_limit_set(ctx_t *c, uint *khz);
+state_t nvml_clock_limit_set(ctx_t *c, ulong *khz);
 
 state_t nvml_power_limit_get_current(ctx_t *c, uint *watts);
 

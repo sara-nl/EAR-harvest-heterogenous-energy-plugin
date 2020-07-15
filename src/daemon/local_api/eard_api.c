@@ -1063,7 +1063,7 @@ int eards_gpu_set_freq(uint num_dev,ulong *freqs)
       if (warning_api(my_write(ear_fd_req[com_fd],(char *)&req,sizeof(req)) , sizeof(req),
       "ERROR writing request for gpu set freq ")) return EAR_ERROR;
       debug("eards_gpu_set_freq, reading %lu bytes",sizeof(ack));
-      if (warning_api(my_read(ear_fd_ack[com_fd],(char *)ack,sizeof(ack)) , sizeof(ack),
+      if (warning_api(my_read(ear_fd_ack[com_fd],(char *)&ack,sizeof(ack)) , sizeof(ack),
       "ERROR reading data for eards_gpu_set_freq")) return EAR_ERROR;
       ack = EAR_SUCCESS;
   } else

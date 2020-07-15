@@ -83,6 +83,7 @@ const char     *polsyms_nam[] = {
 };
 polctx_t my_pol_ctx;
 
+
 state_t policy_load(char *obj_path,polsym_t *psyms)
 {
 	//return symplug_open(obj_path, (void **)&polsyms_fun, polsyms_nam, polsyms_n);
@@ -149,7 +150,19 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
   if (policy_load(obj_path,&gpu_polsyms_fun)!=EAR_SUCCESS){
     error("Error loading policy %s",obj_path);
   }
-
+	my_pol_ctx.gpu_mgt_ctx_on=0;	
+	if (gpu_lib_load(app_settings) != EAR_SUCCESS){
+		error("gpu_lib_load in init_power_policy");
+	}else{
+		if (gpu_lib_init(&my_pol_ctx.gpu_mgt_ctx) == EAR_SUCCESS){
+			my_pol_ctx.gpu_mgt_ctx_on=1;
+			debug("gpu_lib_init success");
+			gpu_lib_count(&my_pol_ctx.gpu_mgt_ctx,&my_pol_ctx.num_gpus);
+			debug("Num gpus detected in policy_load %u",my_pol_ctx.num_gpus);	
+		}else{
+			error("gpu_lib_init");
+		}
+	}
 	#endif
 	return policy_init();
 }
@@ -162,6 +175,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
  * Policy wrappers
  *
  */
+
 
 state_t policy_init()
 {
@@ -177,6 +191,7 @@ state_t policy_init()
 	}else{
 		debug("gpu init policy null");
 	}
+	
 	#endif
 	if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;
 	else return EAR_ERROR;
@@ -214,8 +229,15 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 	}
 	#if USE_GPUS
 	/* At this point we are the master */
+	/* GPU frequency must be integrated in arguments, hardcoded for now */
 	if (gpu_polsyms_fun.apply!=NULL){
-		stg=gpu_polsyms_fun.apply(c, my_sig,freq_set,ready);
+		ulong *gpu_f=calloc(my_pol_ctx.num_gpus,sizeof(ulong));
+		stg=gpu_polsyms_fun.apply(c, my_sig,gpu_f,ready);
+		/* We must apply a gpu_freq change */
+		if (*ready == 1 ){
+			eards_gpu_set_freq(my_pol_ctx.num_gpus,gpu_f);
+		}
+		free(gpu_f);
 	}
 	#endif
 	if ((st == EAR_SUCCESS) && (stg == EAR_SUCCESS)) return EAR_SUCCESS;

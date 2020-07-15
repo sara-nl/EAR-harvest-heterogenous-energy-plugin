@@ -22,7 +22,9 @@ modl_BINS += \
 endif
 ifdef CUDA_BASE
 modl_BINS += \
-			gpu_monitoring.so
+			gpu_monitoring.so \
+			gpu_min_time.so \
+			gpu_min_energy.so 
 endif
 
 modl_PATH = $(DESTDIR)/lib/plugins/policies

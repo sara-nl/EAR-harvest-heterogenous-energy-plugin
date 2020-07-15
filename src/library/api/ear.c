@@ -797,7 +797,7 @@ void ear_init()
 		if (is_affinity_set(&arch_desc.top,getpid(),&is_set)!=EAR_SUCCESS){
 			error("Checking the affinity mask");
 		}else{
-			if (is_set)	verbose(2,"Affinity mask defined for rank %d",masters_info.my_master_rank);
+			if (is_set)	verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
 		}
 	}
 

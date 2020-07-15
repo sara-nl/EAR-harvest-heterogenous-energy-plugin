@@ -838,7 +838,9 @@ int eard_gpu(int must_read)
 			}else{
 				error("GPU not initialized and GPU_SET_FREQ requested");
 			}
+			ack=EAR_SUCCESS;
 			write(ear_fd_ack[comm_req],&ack,sizeof(ack));
+			break;
 	  default:
 			error("Invalid GPU command");
       return 0;

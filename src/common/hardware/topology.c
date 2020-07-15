@@ -215,7 +215,6 @@ state_t topology_init(topology_t *topo)
 
 	// TODO: spaguettis
 	if (topo_static.cpu_count != 0) {
-		printf("copying\n");
 		topology_copy(topo, &topo_static);
 	}
 

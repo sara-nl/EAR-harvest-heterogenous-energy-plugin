@@ -107,7 +107,7 @@ state_t mgt_gpu_clock_limit_reset(ctx_t *c)
 	preturn (ops.clock_limit_reset, c);
 }
 
-state_t mgt_gpu_clock_limit_set(ctx_t *c, uint *khz)
+state_t mgt_gpu_clock_limit_set(ctx_t *c, ulong *khz)
 {
 	preturn (ops.clock_limit_set, c, khz);
 }

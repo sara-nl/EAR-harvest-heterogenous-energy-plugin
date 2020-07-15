@@ -70,7 +70,7 @@ state_t dummy_clock_limit_reset(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_set(ctx_t *c, uint *khz)
+state_t dummy_clock_limit_set(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
