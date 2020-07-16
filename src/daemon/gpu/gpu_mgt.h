@@ -20,6 +20,8 @@
 
 state_t gpu_mgr_init();
 state_t gpu_mgr_set_freq(uint num_dev,ulong *freqs);
+state_t gpu_mgr_set_freq_all_gpus(ulong gfreq);
+
 
 #endif
 

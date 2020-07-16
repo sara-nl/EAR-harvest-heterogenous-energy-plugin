@@ -118,6 +118,20 @@ state_t gpu_mgr_set_freq(uint num_dev_req,ulong *freqs)
 	return mgt_gpu_clock_limit_set(&gpu_node_mgr,freqs);
 }
 
+state_t gpu_mgr_set_freq_all_gpus(ulong gfreq)
+{
+	int i;
+	state_t ret;
+	debug("Setting the GPU frequency %lu to all gpus",gfreq);
+	ulong *nfreq=calloc(num_dev,sizeof(ulong));	
+	for (i=0;i<num_dev;i++){
+		nfreq[i]=gfreq;
+  }
+  ret=mgt_gpu_clock_limit_set(&gpu_node_mgr,nfreq);
+	free(nfreq);
+	return ret;
+}
+
 
 
 

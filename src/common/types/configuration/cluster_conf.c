@@ -322,6 +322,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         n->max_avx2_freq = my_conf->tags[tag_id].max_avx2_freq;
 
         n->powercap_type = my_conf->tags[tag_id].powercap_type;
+				n->gpu_def_freq = my_conf->tags[tag_id].gpu_def_freq;
 
         if (my_conf->tags[tag_id].energy_plugin != NULL && strlen(my_conf->tags[tag_id].energy_plugin) > 0)
             n->energy_plugin = my_conf->tags[tag_id].energy_plugin;
@@ -527,6 +528,7 @@ void set_default_tag_values(tag_t *tag)
 	tag->powercap       = DEF_POWER_CAP;
 	tag->min_power      = MIN_SIG_POWER;
 	tag->max_temp       = MAX_TEMP;
+	tag->gpu_def_freq   = 0;
     
     strcpy(tag->coeffs, "coeffs.default");
     strcpy(tag->energy_model, "");

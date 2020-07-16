@@ -46,12 +46,14 @@ extern unsigned long ext_def_freq;
 #define LOW_GPU_FREQ_RED ((100 - (LOW_UTIL_GPU_TH + 10 ))/100.0)
 #define MED_GPU_FREQ_RED ((100 - (MED_UTIL_GPU_TH + 10))/100.0)
 #define HIGH_GPU_FREQ_RED ((100 - (HIGH_UTIL_GPU_TH + 10))/100.0)
-// #define LOW_GPU_FREQ 632
+#define LOW_GPU_FREQ 759
+#define MED_GPU_FREQ 949
+#define HIGH_GPU_FREQ 1088
+#if 0
 #define LOW_GPU_FREQ 544
-//#define MED_GPU_FREQ 810
 #define MED_GPU_FREQ 544
-//#define HIGH_GPU_FREQ 1088
 #define HIGH_GPU_FREQ 632
+#endif
 
 
 

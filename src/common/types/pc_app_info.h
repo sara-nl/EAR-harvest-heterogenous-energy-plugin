@@ -17,12 +17,17 @@
 
 #ifndef _EAR_PC_APP_INFO_H
 #define _EAR_PC_APP_INFO_H
+#include <common/config.h>
 #include <common/types/types.h>
 typedef struct pc_app_info{
 	uint 	mode;
 	ulong req_f;
 	ulong req_power;
 	uint  pc_status;
+	#if USE_GPUS
+	ulong req_gpu_f;
+	ulong req_gpu_f;
+	#endif
 }pc_app_info_t;
 
 void pcapp_info_new_job(pc_app_info_t *t);

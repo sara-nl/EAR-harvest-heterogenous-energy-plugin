@@ -605,6 +605,11 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		frequency_set_userspace_governor_all_cpus();
 		f = frequency_pstate_to_freq(my_policy->p_state);
 		frequency_set_all_cpus(f);
+		#if USE_GPUS
+		if (my_node_conf->gpu_def_freq>0){
+			gpu_mgr_set_freq_all_gpus(my_node_conf->gpu_def_freq);
+		}
+		#endif
 	}
 	appID->is_mpi = 0;
 	debug("context configured");
@@ -805,6 +810,12 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 		powercap_set_app_req_freq(current_ear_app[ccontext]->current_freq);
 	}
 #endif
+  #if USE_GPUS
+  if (my_node_conf->gpu_def_freq>0){
+      gpu_mgr_set_freq_all_gpus(my_node_conf->gpu_def_freq);
+  }
+  #endif
+
 
 }
 
@@ -1328,6 +1339,7 @@ void powermon_get_status(status_t *my_status) {
 
 void powermon_get_app_status(app_status_t *my_status)
 {
+	time_t consumed_time;
 	/* Current app info */
 	if (ccontext >= 0) {
 		my_status->job_id = current_ear_app[ccontext]->app.job.id;
@@ -1342,6 +1354,10 @@ void powermon_get_app_status(app_status_t *my_status)
 		signature_init(&my_status->signature);	
 		my_status->signature.DC_power = (ulong) last_power_reported;
     my_status->signature.avg_f = (ulong)(last_nm.avg_cpu_freq);
+	}
+	if (ccontext >= 0){
+		time(&consumed_time);
+		my_status->signature.time=difftime(consumed_time,current_ear_app[ccontext]->app.job.start_time);
 	}
 }
 
