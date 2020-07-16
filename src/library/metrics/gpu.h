@@ -27,6 +27,7 @@ state_t gpu_lib_init(ctx_t *c);
 
 state_t gpu_lib_dispose(ctx_t *c);
 
+/* Metrics. */
 state_t gpu_lib_count(ctx_t *c, uint *dev_count);
 
 state_t gpu_lib_read(ctx_t *c, gpu_t *data);
@@ -46,5 +47,26 @@ state_t gpu_lib_data_copy(gpu_t *data_dst, gpu_t *data_src);
 state_t gpu_lib_data_print(gpu_t *data, int fd);
 
 state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length);
+
+/* Management. */
+state_t gpu_lib_clock_limit_get_current(ctx_t *c, ulong *khz);
+
+state_t gpu_lib_clock_limit_get_default(ctx_t *c, ulong *khz);
+
+state_t gpu_lib_clock_limit_get_max(ctx_t *c, ulong *khz);
+
+state_t gpu_lib_clock_limit_reset(ctx_t *c);
+
+state_t gpu_lib_clock_limit_set(ctx_t *c, ulong *khz);
+
+state_t gpu_lib_power_limit_get_current(ctx_t *c, ulong *watts);
+
+state_t gpu_lib_power_limit_get_default(ctx_t *c, ulong *watts);
+
+state_t gpu_lib_power_limit_get_max(ctx_t *c, ulong *watts);
+
+state_t gpu_lib_power_limit_reset(ctx_t *c);
+
+state_t gpu_lib_power_limit_set(ctx_t *c, ulong *watts);
 
 #endif

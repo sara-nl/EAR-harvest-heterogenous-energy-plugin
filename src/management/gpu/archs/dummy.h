@@ -28,24 +28,24 @@ state_t mgt_dummy_dispose(ctx_t *c);
 
 state_t mgt_dummy_count(ctx_t *c, uint *_dev_count);
 
-state_t dummy_clock_limit_get_current(ctx_t *c, uint *khz);
+state_t dummy_clock_limit_get_current(ctx_t *c, ulong *khz);
 
-state_t dummy_clock_limit_get_default(ctx_t *c, uint *khz);
+state_t dummy_clock_limit_get_default(ctx_t *c, ulong *khz);
 
-state_t dummy_clock_limit_get_max(ctx_t *c, uint *khz);
+state_t dummy_clock_limit_get_max(ctx_t *c, ulong *khz);
 
 state_t dummy_clock_limit_reset(ctx_t *c);
 
-state_t dummy_clock_limit_set(ctx_t *c, uint *khz);
+state_t dummy_clock_limit_set(ctx_t *c, ulong *khz);
 
-state_t dummy_power_limit_get_current(ctx_t *c, uint *watts);
+state_t dummy_power_limit_get_current(ctx_t *c, ulong *watts);
 
-state_t dummy_power_limit_get_default(ctx_t *c, uint *watts);
+state_t dummy_power_limit_get_default(ctx_t *c, ulong *watts);
 
-state_t dummy_power_limit_get_max(ctx_t *c, uint *watts);
+state_t dummy_power_limit_get_max(ctx_t *c, ulong *watts);
 
 state_t dummy_power_limit_reset(ctx_t *c);
 
-state_t dummy_power_limit_set(ctx_t *c, uint *watts);
+state_t dummy_power_limit_set(ctx_t *c, ulong *watts);
 
 #endif

@@ -31,8 +31,8 @@ typedef struct gpu_s
 {
 	timestamp_t time;
 	ulong samples;
-	ulong freq_gpu_mhz;
-	ulong freq_mem_mhz;
+	ulong freq_gpu; // khz
+	ulong freq_mem; // khz
 	ulong util_gpu; // percent
 	ulong util_mem; // percent
 	ulong temp_gpu; // celsius

@@ -249,17 +249,17 @@ static int static_read(int i, gpu_t *metric)
 	s = nvml.DevProcs(device, &proc_count, procs);
 
 	// Pooling the data (time is not set here)
-	metric->samples      = 1;
-	metric->freq_mem_mhz = (ulong) freq_mem_mhz;
-	metric->freq_gpu_mhz = (ulong) freq_gpu_mhz;
-	metric->util_mem     = (ulong) util.memory;
-	metric->util_gpu     = (ulong) util.gpu;
-	metric->temp_gpu     = (ulong) temp_gpu;
-	metric->temp_mem     = 0;
-	metric->energy_j     = 0;
-	metric->power_w      = (double) power_mw;
-	metric->working      = proc_count > 0;
-	metric->correct      = 1;
+	metric->samples  = 1;
+	metric->freq_mem = (ulong) freq_mem_mhz * 1000LU;
+	metric->freq_gpu = (ulong) freq_gpu_mhz * 1000LU;
+	metric->util_mem = (ulong) util.memory;
+	metric->util_gpu = (ulong) util.gpu;
+	metric->temp_gpu = (ulong) temp_gpu;
+	metric->temp_mem = 0;
+	metric->energy_j = 0;
+	metric->power_w  = (double) power_mw;
+	metric->working  = proc_count > 0;
+	metric->correct  = 1;
 
 	return 1;
 }
@@ -291,18 +291,18 @@ state_t nvml_pool(void *p)
 		}
 
 		// Pooling the data
-		pool[i].time          = time;
-		pool[i].samples      += metric.samples;
-		pool[i].freq_mem_mhz += metric.freq_mem_mhz;
-		pool[i].freq_gpu_mhz += metric.freq_gpu_mhz;
-		pool[i].util_mem     += metric.util_gpu;
-		pool[i].util_gpu     += metric.util_mem;
-		pool[i].temp_gpu     += metric.temp_gpu;
-		pool[i].temp_mem     += metric.temp_mem;
-		pool[i].energy_j      = metric.energy_j;
-		pool[i].power_w      += metric.power_w;
-		pool[i].working       = metric.working;
-		pool[i].correct       = metric.correct;
+		pool[i].time      = time;
+		pool[i].samples  += metric.samples;
+		pool[i].freq_mem += metric.freq_mem;
+		pool[i].freq_gpu += metric.freq_gpu;
+		pool[i].util_mem += metric.util_gpu;
+		pool[i].util_gpu += metric.util_mem;
+		pool[i].temp_gpu += metric.temp_gpu;
+		pool[i].temp_mem += metric.temp_mem;
+		pool[i].energy_j  = metric.energy_j;
+		pool[i].power_w  += metric.power_w;
+		pool[i].working   = metric.working;
+		pool[i].correct   = metric.correct;
 
 		// Burst or not
 		working += pool[i].working;
@@ -384,20 +384,20 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 		return;
 	}
 	// No overflow control is required (64-bits are enough)
-	d3->freq_gpu_mhz = (d2->freq_gpu_mhz - d1->freq_gpu_mhz) / d3->samples;
-	d3->freq_mem_mhz = (d2->freq_mem_mhz - d1->freq_mem_mhz) / d3->samples;
-	d3->util_gpu     = (d2->util_gpu     - d1->util_gpu)     / d3->samples;
-	d3->util_mem     = (d2->util_mem     - d1->util_mem)     / d3->samples;
-	d3->temp_gpu     = (d2->temp_gpu     - d1->temp_gpu)     / d3->samples;
-	d3->temp_mem     = (d2->temp_mem     - d1->temp_mem)     / d3->samples;
-	d3->power_w      = (d2->power_w      - d1->power_w )     / (d3->samples * 1000);
-	d3->energy_j     = (d3->power_w)     * time_f;
-	d3->working      = (d2->working);
-	d3->correct      = 1;
+	d3->freq_gpu = (d2->freq_gpu - d1->freq_gpu) / d3->samples;
+	d3->freq_mem = (d2->freq_mem - d1->freq_mem) / d3->samples;
+	d3->util_gpu = (d2->util_gpu - d1->util_gpu) / d3->samples;
+	d3->util_mem = (d2->util_mem - d1->util_mem) / d3->samples;
+	d3->temp_gpu = (d2->temp_gpu - d1->temp_gpu) / d3->samples;
+	d3->temp_mem = (d2->temp_mem - d1->temp_mem) / d3->samples;
+	d3->power_w  = (d2->power_w  - d1->power_w ) / (d3->samples * 1000);
+	d3->energy_j = (d3->power_w) * time_f;
+	d3->working  = (d2->working);
+	d3->correct  = 1;
 	//
 #if 0
-	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu_mhz, d2->freq_gpu_mhz, d1->freq_gpu_mhz);
-	debug("%d freq mem (MHz), %lu = %lu - %lu", i, d3->freq_mem_mhz, d2->freq_mem_mhz, d1->freq_mem_mhz);
+	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu, d2->freq_gpu, d1->freq_gpu);
+	debug("%d freq mem (MHz), %lu = %lu - %lu", i, d3->freq_mem, d2->freq_mem, d1->freq_mem);
 	debug("%d power    (W)  , %0.2lf = %0.2lf - %0.2lf", i, d3->power_w, d2->power_w, d1->power_w);
 	debug("%d energy   (J)  , %0.2lf = %0.2lf - %0.2lf", i, d3->energy_j, d2->energy_j, d1->energy_j);
 #endif
@@ -473,7 +473,7 @@ state_t nvml_data_print(gpu_t *data, int fd)
 		dprintf(fd, "gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 		i                   ,
 		data[i].energy_j    , data[i].power_w,
-		data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+		data[i].freq_gpu    , data[i].freq_mem,
 		data[i].util_gpu    , data[i].util_mem,
 		data[i].temp_gpu    , data[i].temp_mem,
 		data[i].working     , data[i].samples);
@@ -494,7 +494,7 @@ state_t nvml_data_tostr(gpu_t *data, char *buffer, int length)
 			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 			i                   ,
 			data[i].energy_j    , data[i].power_w,
-			data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+			data[i].freq_gpu    , data[i].freq_mem,
 			data[i].util_gpu    , data[i].util_mem,
 			data[i].temp_gpu    , data[i].temp_mem,
 			data[i].working     , data[i].samples);
@@ -518,25 +518,25 @@ state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge)
 	// Accumulators: power and energy
 	for (i = 0; i < dev_count; ++i)
 	{
-		data_merge->freq_mem_mhz += data_diff[i].freq_mem_mhz;
-		data_merge->freq_gpu_mhz += data_diff[i].freq_gpu_mhz;
-		data_merge->util_mem     += data_diff[i].util_mem;
-		data_merge->util_gpu     += data_diff[i].util_gpu;
-		data_merge->temp_gpu     += data_diff[i].temp_gpu;
-		data_merge->temp_mem     += data_diff[i].temp_mem;
-		data_merge->energy_j     += data_diff[i].energy_j;
-		data_merge->power_w      += data_diff[i].power_w;
+		data_merge->freq_mem += data_diff[i].freq_mem;
+		data_merge->freq_gpu += data_diff[i].freq_gpu;
+		data_merge->util_mem += data_diff[i].util_mem;
+		data_merge->util_gpu += data_diff[i].util_gpu;
+		data_merge->temp_gpu += data_diff[i].temp_gpu;
+		data_merge->temp_mem += data_diff[i].temp_mem;
+		data_merge->energy_j += data_diff[i].energy_j;
+		data_merge->power_w  += data_diff[i].power_w;
 	}
 	// Static
 	data_merge->time          = data_diff[0].time;
 	data_merge->samples       = data_diff[0].samples;
 	// Averages
-	data_merge->freq_mem_mhz /= dev_count;
-	data_merge->freq_gpu_mhz /= dev_count;
-	data_merge->util_mem     /= dev_count;
-	data_merge->util_gpu     /= dev_count;
-	data_merge->temp_gpu     /= dev_count;
-	data_merge->temp_mem     /= dev_count;
+	data_merge->freq_mem /= dev_count;
+	data_merge->freq_gpu /= dev_count;
+	data_merge->util_mem /= dev_count;
+	data_merge->util_gpu /= dev_count;
+	data_merge->temp_gpu /= dev_count;
+	data_merge->temp_mem /= dev_count;
 	
 	return EAR_SUCCESS;
 }

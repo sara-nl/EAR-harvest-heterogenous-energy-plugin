@@ -41,7 +41,7 @@ state_t mgt_dummy_count(ctx_t *c, uint *_dev_count)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_get_current(ctx_t *c, uint *khz)
+state_t dummy_clock_limit_get_current(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -49,7 +49,7 @@ state_t dummy_clock_limit_get_current(ctx_t *c, uint *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_get_default(ctx_t *c, uint *khz)
+state_t dummy_clock_limit_get_default(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -57,7 +57,7 @@ state_t dummy_clock_limit_get_default(ctx_t *c, uint *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_get_max(ctx_t *c, uint *khz)
+state_t dummy_clock_limit_get_max(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -70,7 +70,7 @@ state_t dummy_clock_limit_reset(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_set(ctx_t *c, uint *khz)
+state_t dummy_clock_limit_set(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -78,7 +78,7 @@ state_t dummy_clock_limit_set(ctx_t *c, uint *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_get_current(ctx_t *c, uint *watts)
+state_t dummy_power_limit_get_current(ctx_t *c, ulong *watts)
 {
 	if (watts != NULL) {
 		watts[0] = 0;
@@ -86,7 +86,7 @@ state_t dummy_power_limit_get_current(ctx_t *c, uint *watts)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_get_default(ctx_t *c, uint *watts)
+state_t dummy_power_limit_get_default(ctx_t *c, ulong *watts)
 {
 	if (watts != NULL) {
 		watts[0] = 0;
@@ -94,7 +94,7 @@ state_t dummy_power_limit_get_default(ctx_t *c, uint *watts)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_get_max(ctx_t *c, uint *watts)
+state_t dummy_power_limit_get_max(ctx_t *c, ulong *watts)
 {
 	if (watts != NULL) {
 		watts[0] = 0;
@@ -107,7 +107,7 @@ state_t dummy_power_limit_reset(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_set(ctx_t *c, uint *watts)
+state_t dummy_power_limit_set(ctx_t *c, ulong *watts)
 {
 	if (watts != NULL) {
 		watts[0] = 0;

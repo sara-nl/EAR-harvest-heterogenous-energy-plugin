@@ -132,7 +132,7 @@ state_t gpu_dummy_data_print(gpu_t *data, int fd)
 		dprintf(fd, "gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 		i                   ,
 		data[i].energy_j    , data[i].power_w,
-		data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+		data[i].freq_gpu    , data[i].freq_mem,
 		data[i].util_gpu    , data[i].util_mem,
 		data[i].temp_gpu    , data[i].temp_mem,
 		data[i].working     , data[i].samples);
@@ -153,7 +153,7 @@ state_t gpu_dummy_data_tostr(gpu_t *data, char *buffer, int length)
 			"gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 			i                   ,
 			data[i].energy_j    , data[i].power_w,
-			data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+			data[i].freq_gpu    , data[i].freq_mem,
 			data[i].util_gpu    , data[i].util_mem,
 			data[i].temp_gpu    , data[i].temp_mem,
 			data[i].working     , data[i].samples);

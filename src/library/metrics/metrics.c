@@ -549,8 +549,8 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 		#if USE_GPU_LIB
 		if (gpu_initialized){
-			metrics->GPU_freq=(gpu_metrics_diff[s][0].freq_gpu_mhz+gpu_metrics_diff[s][1].freq_gpu_mhz)/2;
-			metrics->GPU_mem_freq=(gpu_metrics_diff[s][0].freq_mem_mhz+gpu_metrics_diff[s][1].freq_mem_mhz)/2;
+			metrics->GPU_freq=(gpu_metrics_diff[s][0].freq_gpu+gpu_metrics_diff[s][1].freq_gpu)/2;
+			metrics->GPU_mem_freq=(gpu_metrics_diff[s][0].freq_mem+gpu_metrics_diff[s][1].freq_mem)/2;
 			metrics->GPU_util=(gpu_metrics_diff[s][0].util_gpu+gpu_metrics_diff[s][1].util_gpu)/2;
 			metrics->GPU_mem_util=(gpu_metrics_diff[s][0].util_mem+gpu_metrics_diff[s][1].util_mem)/2;
 			metrics->GPU_energy=gpu_metrics_diff[s][0].energy_j+gpu_metrics_diff[s][1].energy_j;
