@@ -55,7 +55,7 @@ state_t mgt_gpu_dispose(ctx_t *c);
 state_t mgt_gpu_count(ctx_t *c, uint *_dev_count);
 
 /** Allocates an array of watts or clocks per device. */
-state_t mgt_gpu_alloc_array(ctx_t *c, ulong *array);
+state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array);
 
 /** Gets the current clock cap for each GPU in the node. */
 state_t mgt_gpu_clock_cap_get_current(ctx_t *c, ulong *khz);

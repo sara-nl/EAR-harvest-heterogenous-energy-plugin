@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <management/gpu/archs/dummy.h>
 
-static ulong  clock;
+static ulong  clock_khz;
 static ulong *clock_list[1]; // MHz
 static uint	  clock_lens[1];
 
@@ -29,9 +29,9 @@ state_t mgt_dummy_status()
 
 state_t mgt_dummy_init(ctx_t *c)
 {
-	clock_list[0] = &clock;
+	clock_list[0] = &clock_khz;
 	clock_lens[0] = 1;
-	clock         = 0;
+	clock_khz     = 0;
 	return EAR_SUCCESS;
 }
 

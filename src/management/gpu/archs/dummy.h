@@ -38,6 +38,8 @@ state_t dummy_clock_cap_reset(ctx_t *c);
 
 state_t dummy_clock_cap_set(ctx_t *c, ulong *khz);
 
+state_t dummy_clock_list(ctx_t *c, ulong ***list_khz, uint **list_len);
+
 state_t dummy_power_cap_get_current(ctx_t *c, ulong *watts);
 
 state_t dummy_power_cap_get_default(ctx_t *c, ulong *watts);

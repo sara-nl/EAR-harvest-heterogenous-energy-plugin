@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <common/output/debug.h>
 #include <management/gpu/gpu.h>
 #include <management/gpu/archs/nvml.h>
@@ -48,7 +50,7 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 		ops.clock_list            = nvml_clock_list;
 		ops.power_cap_get_current = nvml_power_cap_get_current;
 		ops.power_cap_get_default = nvml_power_cap_get_default;
-		ops.power_cap_get_max     = nvml_power_cap_get_max;
+		ops.power_cap_get_rank    = nvml_power_cap_get_rank;
 		ops.power_cap_reset       = nvml_power_cap_reset;
 		ops.power_cap_set         = nvml_power_cap_set;
 	} else
@@ -67,7 +69,7 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 		ops.clock_list            = dummy_clock_list;
 		ops.power_cap_get_current = dummy_power_cap_get_current;
 		ops.power_cap_get_default = dummy_power_cap_get_default;
-		ops.power_cap_get_max     = dummy_power_cap_get_max;
+		ops.power_cap_get_rank    = dummy_power_cap_get_rank;
 		ops.power_cap_reset       = dummy_power_cap_reset;
 		ops.power_cap_set         = dummy_power_cap_set;
 	}
@@ -145,7 +147,7 @@ state_t mgt_gpu_power_cap_get_default(ctx_t *c, ulong *watts)
 
 state_t mgt_gpu_power_cap_get_rank(ctx_t *c, ulong *watts_min, ulong *watts_max)
 {
-	preturn (ops.power_cap_get_max, c, watts_min, watts_max);
+	preturn (ops.power_cap_get_rank, c, watts_min, watts_max);
 }
 
 state_t mgt_gpu_power_cap_reset(ctx_t *c)
