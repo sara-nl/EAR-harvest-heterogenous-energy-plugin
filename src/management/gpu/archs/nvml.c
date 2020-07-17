@@ -273,14 +273,14 @@ static state_t static_init()
 		clock_lens[i0] = 1000;
 
 		if ((r = nvml.GetGraphicsClocks(devices[i0], clock_max_mem[i0], &clock_lens[i0], aux_gpu)) != NVML_SUCCESS) {
-			list_len[i0] = 0;
+			clock_lens[i0] = 0;
 			return_msg(EAR_ERROR, myErrorString(r));
 		}
 
 		clock_list[i0] = calloc(clock_lens[i0], sizeof(ulong *));
 
-		for (i = 0; i < clock_lens[i0]; ++i) {
-			clock_list[i0][i] = (ulong) aux_gpu[i];
+		for (i1 = 0; i1 < clock_lens[i0]; ++i1) {
+			clock_list[i0][i1] = (ulong) aux_gpu[i1];
 			//debug("D%u,i%u: %lu", d, i, clock_list[i0][i]);
 		}
 	}
@@ -478,26 +478,32 @@ state_t nvml_clock_limit_reset(ctx_t *c)
 
 static uint clocks_find(uint d, uint mhz)
 {
-	uint *_clock_list = clock_list[d];
-	uint  _clock_lens = clock_lens[d];
-	uint d;
+	ulong *_clock_list = clock_list[d];
+	uint   _clock_lens = clock_lens[d];
+	uint mhz0;
+	uint mhz1;
 	uint i;
 
-	if (mhz > _clock_list[0]) {
-		return _clock_list[0];
+	if (mhz > (uint) _clock_list[0]) {
+		return (uint) _clock_list[0];
 	}
 
-	for (i = 1; i < _clock_lens-1; ++i) {
-		if (mhz < _clock_list[i] && mhz > _clock_list[i+1]) {
-			if ((_clock_list[i] - mhz) <= (mhz - _clock_list[i+1]))	{
-				return _clock_list[i];
+	for (i = 0; i < _clock_lens-1; ++i)
+	{
+		mhz0 = (uint) _clock_list[i+0];
+		mhz1 = (uint) _clock_list[i+1];
+		//debug("mhz0 %u, mhz1 %u, mhz %u", mhz0, mhz1, mhz);
+
+		if (mhz <= mhz0 && mhz >= mhz1) {
+			if ((mhz0 - mhz) <= (mhz - mhz1)) {
+				return mhz0;
 			} else {
-				return _clock_list[i+1];
+				return mhz1;
 			}
 		}
 	}
 
-	return _clock_list[i];
+	return (uint) _clock_list[i];
 }
 
 static state_t clocks_set(int i, uint mhz)
