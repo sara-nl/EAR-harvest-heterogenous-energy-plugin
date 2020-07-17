@@ -87,17 +87,17 @@ state_t mgt_gpu_count(ctx_t *c, uint *dev_count)
 	preturn (ops.count, c, dev_count);
 }
 
-state_t mgt_gpu_clock_limit_get_current(ctx_t *c, uint *khz)
+state_t mgt_gpu_clock_limit_get_current(ctx_t *c, ulong *khz)
 {
 	preturn (ops.clock_limit_get_current, c, khz);
 }
 
-state_t mgt_gpu_clock_limit_get_default(ctx_t *c, uint *khz)
+state_t mgt_gpu_clock_limit_get_default(ctx_t *c, ulong *khz)
 {
 	preturn (ops.clock_limit_get_default, c, khz);
 }
 
-state_t mgt_gpu_clock_limit_get_max(ctx_t *c, uint *khz)
+state_t mgt_gpu_clock_limit_get_max(ctx_t *c, ulong *khz)
 {
 	preturn (ops.clock_limit_get_max, c, khz);
 }
@@ -107,22 +107,22 @@ state_t mgt_gpu_clock_limit_reset(ctx_t *c)
 	preturn (ops.clock_limit_reset, c);
 }
 
-state_t mgt_gpu_clock_limit_set(ctx_t *c, uint *khz)
+state_t mgt_gpu_clock_limit_set(ctx_t *c, ulong *khz)
 {
 	preturn (ops.clock_limit_set, c, khz);
 }
 
-state_t mgt_gpu_power_limit_get_current(ctx_t *c, uint *watts)
+state_t mgt_gpu_power_limit_get_current(ctx_t *c, ulong *watts)
 {
 	preturn (ops.power_limit_get_current, c, watts);
 }
 
-state_t mgt_gpu_power_limit_get_default(ctx_t *c, uint *watts)
+state_t mgt_gpu_power_limit_get_default(ctx_t *c, ulong *watts)
 {
 	preturn (ops.power_limit_get_default, c, watts);
 }
 
-state_t mgt_gpu_power_limit_get_max(ctx_t *c, uint *watts)
+state_t mgt_gpu_power_limit_get_max(ctx_t *c, ulong *watts)
 {
 	preturn (ops.power_limit_get_max, c, watts);
 }
@@ -132,7 +132,7 @@ state_t mgt_gpu_power_limit_reset(ctx_t *c)
 	preturn (ops.power_limit_reset, c);
 }
 
-state_t mgt_gpu_power_limit_set(ctx_t *c, uint *watts)
+state_t mgt_gpu_power_limit_set(ctx_t *c, ulong *watts)
 {
 	preturn (ops.power_limit_set, c, watts);
 }

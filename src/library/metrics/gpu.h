@@ -19,6 +19,7 @@
 #define LIBRARY_METRICS_GPU_H
 
 #include <metrics/gpu/gpu.h>
+#include <management/gpu/gpu.h>
 #include <daemon/shared_configuration.h>
 
 state_t gpu_lib_load(settings_conf_t *settings);
