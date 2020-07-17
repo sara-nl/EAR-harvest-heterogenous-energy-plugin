@@ -28,26 +28,26 @@ state_t mgt_nvml_dispose(ctx_t *c);
 
 state_t mgt_nvml_count(ctx_t *c, uint *_dev_count);
 
-state_t nvml_clock_limit_get_current(ctx_t *c, ulong *khz);
+state_t nvml_clock_cap_get_current(ctx_t *c, ulong *khz);
 
-state_t nvml_clock_limit_get_default(ctx_t *c, ulong *khz);
+state_t nvml_clock_cap_get_default(ctx_t *c, ulong *khz);
 
-state_t nvml_clock_limit_get_max(ctx_t *c, ulong *khz);
+state_t nvml_clock_cap_get_max(ctx_t *c, ulong *khz);
 
-state_t nvml_clock_limit_reset(ctx_t *c);
+state_t nvml_clock_cap_reset(ctx_t *c);
 
-state_t nvml_clock_limit_set(ctx_t *c, ulong *khz);
+state_t nvml_clock_cap_set(ctx_t *c, ulong *khz);
 
-state_t nvml_clock_list(ctx_t *c, ulong **list[], uint *count[]);
+state_t nvml_clock_list(ctx_t *c, ulong ***list_khz, uint **list_len);
 
-state_t nvml_power_limit_get_current(ctx_t *c, ulong *watts);
+state_t nvml_power_cap_get_current(ctx_t *c, ulong *watts);
 
-state_t nvml_power_limit_get_default(ctx_t *c, ulong *watts);
+state_t nvml_power_cap_get_default(ctx_t *c, ulong *watts);
 
-state_t nvml_power_limit_get_max(ctx_t *c, ulong *watts);
+state_t nvml_power_cap_get_rank(ctx_t *c, ulong *watts_min, ulong *watts_max);
 
-state_t nvml_power_limit_reset(ctx_t *c);
+state_t nvml_power_cap_reset(ctx_t *c);
 
-state_t nvml_power_limit_set(ctx_t *c, ulong *watts);
+state_t nvml_power_cap_set(ctx_t *c, ulong *watts);
 
 #endif

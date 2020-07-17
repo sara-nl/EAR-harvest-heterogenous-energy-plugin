@@ -18,6 +18,10 @@
 #include <stdlib.h>
 #include <management/gpu/archs/dummy.h>
 
+static ulong  clock;
+static ulong *clock_list[1]; // MHz
+static uint	  clock_lens[1];
+
 state_t mgt_dummy_status()
 {
 	return 1;
@@ -25,6 +29,9 @@ state_t mgt_dummy_status()
 
 state_t mgt_dummy_init(ctx_t *c)
 {
+	clock_list[0] = &clock;
+	clock_lens[0] = 1;
+	clock         = 0;
 	return EAR_SUCCESS;
 }
 
@@ -41,7 +48,7 @@ state_t mgt_dummy_count(ctx_t *c, uint *_dev_count)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_get_current(ctx_t *c, ulong *khz)
+state_t dummy_clock_cap_get_current(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -49,7 +56,7 @@ state_t dummy_clock_limit_get_current(ctx_t *c, ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_get_default(ctx_t *c, ulong *khz)
+state_t dummy_clock_cap_get_default(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -57,7 +64,7 @@ state_t dummy_clock_limit_get_default(ctx_t *c, ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_get_max(ctx_t *c, ulong *khz)
+state_t dummy_clock_cap_get_max(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -65,12 +72,12 @@ state_t dummy_clock_limit_get_max(ctx_t *c, ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_reset(ctx_t *c)
+state_t dummy_clock_cap_reset(ctx_t *c)
 {
 	return EAR_SUCCESS;
 }
 
-state_t dummy_clock_limit_set(ctx_t *c, ulong *khz)
+state_t dummy_clock_cap_set(ctx_t *c, ulong *khz)
 {
 	if (khz != NULL) {
 		khz[0] = 0;
@@ -78,7 +85,18 @@ state_t dummy_clock_limit_set(ctx_t *c, ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_get_current(ctx_t *c, ulong *watts)
+state_t dummy_clock_list(ctx_t *c, ulong ***list_khz, uint **list_len)
+{
+	if (list_khz != NULL) {
+		*list_khz = clock_list;
+	}
+	if (list_len != NULL) {
+		*list_len = clock_lens;
+	}
+	return EAR_SUCCESS;
+}
+
+state_t dummy_power_cap_get_current(ctx_t *c, ulong *watts)
 {
 	if (watts != NULL) {
 		watts[0] = 0;
@@ -86,7 +104,7 @@ state_t dummy_power_limit_get_current(ctx_t *c, ulong *watts)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_get_default(ctx_t *c, ulong *watts)
+state_t dummy_power_cap_get_default(ctx_t *c, ulong *watts)
 {
 	if (watts != NULL) {
 		watts[0] = 0;
@@ -94,20 +112,23 @@ state_t dummy_power_limit_get_default(ctx_t *c, ulong *watts)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_get_max(ctx_t *c, ulong *watts)
+state_t dummy_power_cap_get_rank(ctx_t *c, ulong *watts_min, ulong *watts_max)
 {
-	if (watts != NULL) {
-		watts[0] = 0;
+	if (watts_max != NULL) {
+		watts_max[0] = 0;
+	}
+	if (watts_min != NULL) {
+		watts_min[0] = 0;
 	}
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_reset(ctx_t *c)
+state_t dummy_power_cap_reset(ctx_t *c)
 {
 	return EAR_SUCCESS;
 }
 
-state_t dummy_power_limit_set(ctx_t *c, ulong *watts)
+state_t dummy_power_cap_set(ctx_t *c, ulong *watts)
 {
 	if (watts != NULL) {
 		watts[0] = 0;

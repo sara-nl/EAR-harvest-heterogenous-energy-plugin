@@ -45,12 +45,12 @@ typedef struct gpu_s
 
 typedef struct gpu_ops_s
 {
-	state_t (*init)		(ctx_t *c);
-	state_t (*dispose)	(ctx_t *c);
-	state_t (*read)		(ctx_t *c, gpu_t *data);
+	state_t (*init)			(ctx_t *c);
+	state_t (*dispose)		(ctx_t *c);
+	state_t (*read)			(ctx_t *c, gpu_t *data);
 	state_t (*read_raw)		(ctx_t *c, gpu_t *data);
 	state_t (*read_copy)	(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
-	state_t (*count)	(ctx_t *c, uint *gpu_count);
+	state_t (*count)		(ctx_t *c, uint *gpu_count);
 	state_t (*data_init)	(uint dev_count);
 	state_t (*data_diff)	(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 	state_t (*data_merge)	(gpu_t *data_diff, gpu_t *data_merge);

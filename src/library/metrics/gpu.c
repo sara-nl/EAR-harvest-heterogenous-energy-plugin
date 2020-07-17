@@ -18,8 +18,7 @@
 #include <library/metrics/gpu.h>
 #include <daemon/local_api/eard_api.h>
 
-static mgt_gpu_ops_t *ops_man;
-static     gpu_ops_t *ops_met;
+static gpu_ops_t *ops;
 static uint dev_count;
 
 state_t gpu_lib_load(settings_conf_t *settings)
@@ -34,7 +33,7 @@ state_t gpu_lib_init(ctx_t *c)
 {
 	state_t ret;
 	if ((ret=eards_gpu_dev_count(&dev_count))!=EAR_SUCCESS) return ret;
-	preturn (ops_met->data_init, dev_count);
+	preturn (ops->data_init, dev_count);
 }
 
 state_t gpu_lib_dispose(ctx_t *c)
@@ -66,45 +65,45 @@ state_t gpu_lib_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff
 	if (xtate_fail(s, gpu_lib_read(c, data2))) {
 		return s;
 	}
-	if (xtate_fail(s, ops_met->data_diff(data2, data1, data_diff))) {
+	if (xtate_fail(s, ops->data_diff(data2, data1, data_diff))) {
 		return s;
 	}
-	return ops_met->data_copy(data1, data2);
+	return ops->data_copy(data1, data2);
 }
 
 state_t gpu_lib_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
-	preturn (ops_met->data_diff, data2, data1, data_diff);
+	preturn (ops->data_diff, data2, data1, data_diff);
 }
 
 state_t gpu_lib_data_alloc(gpu_t **data)
 {
-	preturn (ops_met->data_alloc, data);
+	preturn (ops->data_alloc, data);
 }
 
 state_t gpu_lib_data_free(gpu_t **data)
 {
-	preturn (ops_met->data_free, data);
+	preturn (ops->data_free, data);
 }
 
 state_t gpu_lib_data_null(gpu_t *data)
 {
-	preturn (ops_met->data_null, data);
+	preturn (ops->data_null, data);
 }
 
 state_t gpu_lib_data_copy(gpu_t *data_dst, gpu_t *data_src)
 {
-	preturn (ops_met->data_copy, data_dst, data_src);
+	preturn (ops->data_copy, data_dst, data_src);
 }
 
 state_t gpu_lib_data_print(gpu_t *data, int fd)
 {
-	preturn (ops_met->data_print, data, fd);
+	preturn (ops->data_print, data, fd);
 }
 
 state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length)
 {
-	preturn (ops_met->data_tostr, data, buffer, length);
+	preturn (ops->data_tostr, data, buffer, length);
 }
 
 /*
@@ -112,52 +111,3 @@ state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length)
  * Management
  *
  */
-state_t gpu_lib_clock_limit_get_current(ctx_t *c, ulong *khz)
-{
-
-}
-
-state_t gpu_lib_clock_limit_get_default(ctx_t *c, ulong *khz)
-{
-
-}
-
-state_t gpu_lib_clock_limit_get_max(ctx_t *c, ulong *khz)
-{
-
-}
-
-state_t gpu_lib_clock_limit_reset(ctx_t *c)
-{
-
-}
-
-state_t gpu_lib_clock_limit_set(ctx_t *c, ulong *khz)
-{
-
-}
-
-state_t gpu_lib_power_limit_get_current(ctx_t *c, ulong *watts)
-{
-
-}
-
-state_t gpu_lib_power_limit_get_default(ctx_t *c, ulong *watts)
-{
-
-}
-
-state_t gpu_lib_power_limit_get_max(ctx_t *c, ulong *watts)
-{
-
-}
-
-state_t gpu_lib_power_limit_reset(ctx_t *c)
-{
-
-}
-
-state_t gpu_lib_power_limit_set(ctx_t *c, ulong *watts)
-{
-
-}
