@@ -26,7 +26,7 @@ typedef struct pc_app_info{
 	uint  pc_status;
 	#if USE_GPUS
 	ulong req_gpu_f;
-	ulong req_gpu_f;
+	ulong req_gpu_power;
 	#endif
 }pc_app_info_t;
 

@@ -36,10 +36,10 @@
 
 typedef struct mini_sig
 {
-	float DC_power;
-	float GBS;
-	float CPI;
-	float Gflops;
+  float DC_power;
+  float GBS;
+  float CPI;
+  float Gflops;
   float time;
   ulong avg_f;
   ulong def_f;
@@ -54,7 +54,7 @@ typedef struct gpu_app{
 }gpu_app_t;
 
 typedef struct gpu_signature{
-  uint num_gpus;
+  int num_gpus;
   gpu_app_t gpu_data[MAX_GPUS_SUPPORTED];
 }gpu_signature_t;
 
