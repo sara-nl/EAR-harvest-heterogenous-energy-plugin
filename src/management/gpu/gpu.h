@@ -26,6 +26,7 @@
 typedef struct mgt_gpu_ops_s
 {
 	state_t (*init)                   (ctx_t *c);
+	state_t (*init_unprivileged)      (ctx_t *c);
 	state_t (*dispose)                (ctx_t *c);
 	state_t (*count)                  (ctx_t *c, uint *dev_count);
 	state_t (*alloc_array)            (ctx_t *c, ulong **array);
@@ -48,6 +49,9 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **ops);
 
 /** Initializes the context. */
 state_t mgt_gpu_init(ctx_t *c);
+
+/** Initializes the context to use unprivileged functions only. */
+state_t mgt_gpu_init_unprivileged(ctx_t *c);
 
 state_t mgt_gpu_dispose(ctx_t *c);
 

@@ -24,6 +24,8 @@ state_t mgt_nvml_status();
 
 state_t mgt_nvml_init(ctx_t *c);
 
+state_t mgt_nvml_init_unprivileged(ctx_t *c);
+
 state_t mgt_nvml_dispose(ctx_t *c);
 
 state_t mgt_nvml_count(ctx_t *c, uint *_dev_count);
