@@ -84,17 +84,17 @@ static struct error_s {
 };
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static uint			 initialized;
-static uint			 dev_count;
-static nvmlDevice_t *devices;
+static uint			  initialized;
+static uint			  dev_count;
+static nvmlDevice_t  *devices;
 static ulong 		 *clock_max_default; // KHz
 static ulong 		 *clock_max_current; // KHz
 static ulong		 *clock_max; // KHz
 static ulong		 *clock_max_mem; // MHz
+static ulong		**clock_list; // MHz
+static uint			 *clock_lens;
 static ulong		 *power_max_default; // W
 static ulong		 *power_max; // W
-static ulong		**clock_list = NULL;
-static uint			 *clock_lens = NULL;
 
 #define myErrorString(r) \
 	((char *) nvml.ErrorString(r))
@@ -119,54 +119,24 @@ static state_t static_init()
 	/*
 	 * Allocation
 	 */
-	if (devices == NULL) {
-		devices = calloc(dev_count, sizeof(nvmlDevice_t));
-	}
-	if (devices == NULL) {
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
-	if (clock_max_current == NULL) {
-		clock_max_current = calloc(dev_count, sizeof(ulong));
-	}
-	if (clock_max_current == NULL) {
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
-	if (clock_max_default == NULL) {
-		clock_max_default = calloc(dev_count, sizeof(ulong));
-	}
-	if (clock_max_default == NULL) {
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
-	if (clock_max == NULL) {
-		clock_max = calloc(dev_count, sizeof(ulong));
-	}
-	if (clock_max == NULL) {
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
-	if (clock_max_mem == NULL) {
-		clock_max_mem = calloc(dev_count, sizeof(ulong));
-	}
-	if (clock_max_mem == NULL) {
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
-	if (power_max_default == NULL) {
-		power_max_default = calloc(dev_count, sizeof(ulong));
-	}
-	if (power_max_default == NULL) {
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
-	if (power_max == NULL) {
-		power_max = calloc(dev_count, sizeof(ulong));
-	}
-	if (power_max == NULL) {
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
-	}
+	#define static_alloc(v, l, s) \
+		if ((v = calloc(l, s)) == NULL) { return_msg(EAR_SYSCALL_ERROR, strerror(errno)); }
+
+	static_alloc(devices,           dev_count, sizeof(nvmlDevice_t));
+	static_alloc(clock_max_current, dev_count, sizeof(ulong));
+	static_alloc(clock_max_default, dev_count, sizeof(ulong));
+	static_alloc(clock_max,         dev_count, sizeof(ulong));
+	static_alloc(clock_max_mem,     dev_count, sizeof(ulong));
+	static_alloc(power_max_default, dev_count, sizeof(ulong));
+	static_alloc(power_max,         dev_count, sizeof(ulong));
+	static_alloc(clock_list,        dev_count, sizeof(ulong *));
+	static_alloc(clock_lens,        dev_count, sizeof(uint));
 
 	/*
 	 * Fill
 	 */
-	uint clock_list_mem[1000];
-	uint clock_list_gpu[1000];
+	uint aux_mem[1000];
+	uint aux_gpu[1000];
 	uint c1, c2, aux;
 	int i0, i1, i2;
 
@@ -184,7 +154,7 @@ static state_t static_init()
 		if ((r = nvml.ResetAppsClocks(devices[i0])) != NVML_SUCCESS) {
 			debug("nvmlDeviceResetApplicationsClocks(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			//return_msg(EAR_ERROR, myErrorString(r));
+			return_msg(EAR_ERROR, myErrorString(r));
 		}
 		if ((r = nvml.ResetLockedClocks(devices[i0])) != NVML_SUCCESS) {
 			debug("nvmlDeviceResetGpuLockedClocks(dev: %d) returned %d (%s)",
@@ -198,17 +168,20 @@ static state_t static_init()
 		if ((r = nvml.GetPowerDefaultLimit(devices[i0], &aux)) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetPowerManagementDefaultLimit(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			//return_msg(EAR_ERROR, myErrorString(r));
+			return_msg(EAR_ERROR, myErrorString(r));
 		}
 		if ((r = nvml.SetPowerLimit(devices[i0], aux)) != NVML_SUCCESS) {
 			debug("nvmlDeviceSetPowerManagementLimit(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			//return_msg(EAR_ERROR, myErrorString(r));
+			return_msg(EAR_ERROR, myErrorString(r));
 		}
 	}
 
-
-	// Clocks fill
+	/*
+	 *
+	 * Clocks fill
+	 *
+	 */
 	debug("clock list:");
 
 	for (i0 = 0; i0 < dev_count; ++i0)
@@ -220,7 +193,7 @@ static state_t static_init()
 		if ((r = nvml.GetDefaultAppsClock(devices[i0], NVML_CLOCK_GRAPHICS, &aux)) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetDefaultApplicationsClock(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			//return_msg(EAR_ERROR, myErrorString(r));
+			return_msg(EAR_ERROR, myErrorString(r));
 		}
 
 		clock_max_default[i0] = ((ulong) aux) * 1000LU;
@@ -232,38 +205,42 @@ static state_t static_init()
 		 * Retrieving a list of clock P_STATEs and saving its maximum.
 		 */
 		c1 = 1000;
-		if ((r = nvml.GetMemoryClocks(devices[i0], &c1, clock_list_mem)) != NVML_SUCCESS) {
+		if ((r = nvml.GetMemoryClocks(devices[i0], &c1, aux_mem)) != NVML_SUCCESS) {
 			debug("nvmlDeviceGetSupportedMemoryClocks(dev: %d) returned %d (%s)",
 				  i0, r, nvml.ErrorString(r));
-			//return_msg(EAR_ERROR, myErrorString(r));
+			return_msg(EAR_ERROR, myErrorString(r));
 		}
 		for (i1 = 0; i1 < c1; ++i1)
 		{
-			if (clock_list_mem[i1] > clock_max_mem[i0]) {
-				clock_max_mem[i0] = (ulong) clock_list_mem[i1];
+			if (aux_mem[i1] > clock_max_mem[i0]) {
+				clock_max_mem[i0] = (ulong) aux_mem[i1];
 			}
-			debug("D%d MEM %d: %d (%u)", i0, i1, clock_list_mem[i1], c1);
+			debug("D%d MEM %d: %d (%u)", i0, i1, aux_mem[i1], c1);
 
 			c2 = 1000;
-			if ((r = nvml.GetGraphicsClocks(devices[i0], clock_list_mem[i1], &c2, clock_list_gpu)) != NVML_SUCCESS) {
+			if ((r = nvml.GetGraphicsClocks(devices[i0], aux_mem[i1], &c2, aux_gpu)) != NVML_SUCCESS) {
 				debug("\t\tnvmlDeviceGetSupportedGraphicsClocks(dev: %d) returned %d (%s)",
 					  i0, r, nvml.ErrorString(r));
-				//return_msg(EAR_ERROR, myErrorString(r));
+				return_msg(EAR_ERROR, myErrorString(r));
 			}
 
 			for (i2 = 0; i2 < c2; ++i2) {
-				if (clock_list_gpu[i2] > clock_max[i0]) {
-					debug("D%d new max: %d MHz", i0, clock_list_gpu[i2]);
-					clock_max[i0] = (ulong) clock_list_gpu[i2];
+				if (aux_gpu[i2] > clock_max[i0]) {
+					debug("D%d new max: %d MHz", i0, aux_gpu[i2]);
+					clock_max[i0] = (ulong) aux_gpu[i2];
 				} else {
-					//debug("D%d: %d", i0, clock_list_gpu[i2]);
+					//debug("D%d: %d", i0, aux_gpu[i2]);
 				}
 			}
 		}
 		clock_max[i0] *= 1000LU;
 	}
 
-	// Power fill
+	/*
+	 *
+	 * Power fill
+	 *
+	 */
 	debug("power list:");
 	
 	for (i0 = 0; i0 < dev_count; ++i0)
@@ -286,8 +263,27 @@ static state_t static_init()
 		debug("D%d new min: %lu W", i0, ((ulong) c1) / 1000LU);
 	}
 
-	// Filling maximum clock list
-	nvml_clock_list(NULL, &clock_list, &clock_lens); 
+	/*
+ 	 *
+ 	 * Clock list allocation
+ 	 *
+	 */
+	for (i0 = 0; i0 < dev_count; ++i0)
+	{
+		clock_lens[i0] = 1000;
+
+		if ((r = nvml.GetGraphicsClocks(devices[i0], clock_max_mem[i0], &clock_lens[i0], aux_gpu)) != NVML_SUCCESS) {
+			list_len[i0] = 0;
+			return_msg(EAR_ERROR, myErrorString(r));
+		}
+
+		clock_list[i0] = calloc(clock_lens[i0], sizeof(ulong *));
+
+		for (i = 0; i < clock_lens[i0]; ++i) {
+			clock_list[i0][i] = (ulong) aux_gpu[i];
+			//debug("D%u,i%u: %lu", d, i, clock_list[i0][i]);
+		}
+	}
 
 	return EAR_SUCCESS;
 }
@@ -404,16 +400,18 @@ state_t nvml_clock_limit_get_current(ctx_t *c, ulong *khz)
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	uint mhz;
-	for (i = 0; i < dev_count; ++i) {
-		khz[i] = clock_max_current[i];
-	nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_CURRENT, &mhz);
-	fprintf(stderr, "NVML_CLOCK_ID_CURRENT %u\n", mhz*1000);
-	nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &mhz);
-	fprintf(stderr, "NVML_CLOCK_ID_APP_CLOCK_TARGET %u\n", mhz*1000);
-	nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_DEFAULT, &mhz);
-	fprintf(stderr, "NVML_CLOCK_ID_APP_CLOCK_DEFAULT %u\n", mhz*1000);
-	nvml.GetMaxClock(devices[i], NVML_CLOCK_GRAPHICS, &mhz);
-	fprintf(stderr, "nvmlDeviceGetMaxClockInfo %u\n", mhz*1000);
+	for (i = 0; i < dev_count; ++i)
+	{
+		//khz[i] = clock_max_current[i];
+		//nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_CURRENT, &mhz);
+		//fprintf(stderr, "NVML_CLOCK_ID_CURRENT %u\n", mhz*1000);
+		nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &mhz);
+		fprintf(stderr, "NVML_CLOCK_ID_APP_CLOCK_TARGET %u\n", mhz*1000U);
+		khz[i] = ((ulong) mhz) * 1000LU;
+		//nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_DEFAULT, &mhz);
+		//fprintf(stderr, "NVML_CLOCK_ID_APP_CLOCK_DEFAULT %u\n", mhz*1000);
+		//nvml.GetMaxClock(devices[i], NVML_CLOCK_GRAPHICS, &mhz);
+		//fprintf(stderr, "nvmlDeviceGetMaxClockInfo %u\n", mhz*1000);
 	}
 	return EAR_SUCCESS;
 }
@@ -447,18 +445,18 @@ static state_t clocks_reset(int i)
 	nvmlReturn_t r;
 	debug("resetting clocks of device %d", i);
 
-#if 0
+	#if 0
 	if ((r = nvml.ResetLockedClocks(devices[i])) != NVML_SUCCESS)
 	{
 		debug("nvmlDeviceResetGpuLockedClocks(dev: %d) returned %d (%s)",
 			  i, r, nvml.ErrorString(r));
-#endif	
+	#endif
 		if ((r = nvml.ResetAppsClocks(devices[i])) != NVML_SUCCESS) {
 			return_msg(EAR_ERROR, myErrorString(r));
 		}
-#if 0
+	#if 0
 	}
-#endif
+	#endif
 	clock_max_current[i] = clock_max_default[i];
 	return EAR_SUCCESS;
 }
@@ -478,17 +476,45 @@ state_t nvml_clock_limit_reset(ctx_t *c)
 	return e;
 }
 
+static uint clocks_find(uint d, uint mhz)
+{
+	uint *_clock_list = clock_list[d];
+	uint  _clock_lens = clock_lens[d];
+	uint d;
+	uint i;
+
+	if (mhz > _clock_list[0]) {
+		return _clock_list[0];
+	}
+
+	for (i = 1; i < _clock_lens-1; ++i) {
+		if (mhz < _clock_list[i] && mhz > _clock_list[i+1]) {
+			if ((_clock_list[i] - mhz) <= (mhz - _clock_list[i+1]))	{
+				return _clock_list[i];
+			} else {
+				return _clock_list[i+1];
+			}
+		}
+	}
+
+	return _clock_list[i];
+}
+
 static state_t clocks_set(int i, uint mhz)
 {
 	nvmlReturn_t r;
-	debug("D%d setting clock to %u KHz", i, mhz * 1000);
+	uint parsed_mhz;
+
+	parsed_mhz = clocks_find(i, mhz);
+
+	debug("D%d setting clock %u KHz (parsed => %u)", i, mhz * 1000, parsed_mhz * 1000);
 #if 0
-	if ((r = nvml.SetLockedClocks(devices[i], 0, mhz)) != NVML_SUCCESS)
+	if ((r = nvml.SetLockedClocks(devices[i], 0, parsed_mhz)) != NVML_SUCCESS)
 	{
 		debug("nvmlDeviceSetGpuLockedClocks(dev: %d) returned %d (%s)",
 			i, r, nvml.ErrorString(r));
 #endif
-		if ((r = nvml.SetAppsClocks(devices[i], clock_max_mem[i], mhz)) != NVML_SUCCESS)
+		if ((r = nvml.SetAppsClocks(devices[i], clock_max_mem[i], parsed_mhz)) != NVML_SUCCESS)
 		{
 			debug("nvmlDeviceSetApplicationsClocks(dev: %d) returned %d (%s)",
 				i, r, nvml.ErrorString(r));
@@ -503,7 +529,7 @@ static state_t clocks_set(int i, uint mhz)
 #if 0
 	}
 #endif
-	clock_max_current[i] = ((ulong) mhz) * 1000LU;
+	clock_max_current[i] = ((ulong) parsed_mhz) * 1000LU;
 	return EAR_SUCCESS;
 }
 
@@ -524,41 +550,15 @@ state_t nvml_clock_limit_set(ctx_t *c, ulong *khz)
 
 state_t nvml_clock_list(ctx_t *c, ulong ***list_khz, uint **list_len)
 {
-	static uint aux[1000];
-	nvmlReturn_t r;
-	int d;
-	int i;
-
-	if (clock_list != NULL)
-	{
+	if (!initialized) {
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
+	}
+	if (list_khz != NULL) {
 		*list_khz = clock_list;
+	}
+	if (list_len != NULL) {
 		*list_len = clock_lens;
-		return EAR_SUCCESS;
 	}
-
-	clock_list = calloc(dev_count, sizeof(ulong *));
-	clock_lens = calloc(dev_count, sizeof(uint));
-
-	for (d = 0; d < dev_count; ++d)
-	{
-		clock_lens[d] = 1000;
-
-		if ((r = nvml.GetGraphicsClocks(devices[d], clock_max_mem[d], &clock_lens[d], aux)) != NVML_SUCCESS) {
-			list_len[d] = 0;
-			//return_msg(EAR_ERROR, myErrorString(r));
-		}
-
-		clock_list[d] = calloc(clock_lens[d], sizeof(ulong *));
-
-		for (i = 0; i < clock_lens[d]; ++i) {
-			clock_list[d][i] = (ulong) aux[i];
-			//debug("D%u,i%u: %lu", d, i, clock_list[d][i]);
-		}
-	}
-		
-	*list_khz = clock_list;
-	*list_len = clock_lens;
-
 	return EAR_SUCCESS;
 }
 
