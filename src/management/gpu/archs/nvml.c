@@ -25,7 +25,7 @@
 #include <common/config/config_env.h>
 #include <management/gpu/archs/nvml.h>
 
-#define NVML_N 17
+#define NVML_N 16
 
 const char *nvml_names[] =
 {
@@ -35,6 +35,7 @@ const char *nvml_names[] =
 	"nvmlDeviceGetDefaultApplicationsClock",
 	"nvmlDeviceGetSupportedMemoryClocks",
 	"nvmlDeviceGetSupportedGraphicsClocks",
+	"nvmlDeviceGetClock",
 	"nvmlDeviceSetGpuLockedClocks",
 	"nvmlDeviceSetApplicationsClocks",
 	"nvmlDeviceResetApplicationsClocks",
@@ -44,8 +45,6 @@ const char *nvml_names[] =
 	"nvmlDeviceGetPowerManagementLimitConstraints",
 	"nvmlDeviceSetPowerManagementLimit",
 	"nvmlErrorString",
-	"nvmlDeviceGetClock",
-	"nvmlDeviceGetMaxClockInfo", 
 };
 
 static struct nvml_s
@@ -56,6 +55,7 @@ static struct nvml_s
 	nvmlReturn_t (*GetDefaultAppsClock)	(nvmlDevice_t dev, nvmlClockType_t clockType, uint* mhz);
 	nvmlReturn_t (*GetMemoryClocks)		(nvmlDevice_t dev, uint *count, uint *mhz);
 	nvmlReturn_t (*GetGraphicsClocks)	(nvmlDevice_t dev, uint mem_mhz, uint *count, uint *mhz);
+	nvmlReturn_t (*GetClock)			(nvmlDevice_t device, nvmlClockType_t clockType, nvmlClockId_t clockId, uint* mhz);
 	nvmlReturn_t (*SetLockedClocks)		(nvmlDevice_t dev, uint min_mhz, uint max_mhz);
 	nvmlReturn_t (*SetAppsClocks)		(nvmlDevice_t dev, uint mem_mgz, uint gpu_mhz);
 	nvmlReturn_t (*ResetAppsClocks)		(nvmlDevice_t dev);
@@ -65,8 +65,6 @@ static struct nvml_s
 	nvmlReturn_t (*GetPowerLimitConstraints)(nvmlDevice_t dev, uint *min_watts, uint *max_watts);
 	nvmlReturn_t (*SetPowerLimit)		(nvmlDevice_t dev, uint watts);
 	char*        (*ErrorString)			(nvmlReturn_t result);
-	nvmlReturn_t (*GetClock)			(nvmlDevice_t device, nvmlClockType_t clockType, nvmlClockId_t clockId, uint* mhz);
-	nvmlReturn_t (*GetMaxClock)			(nvmlDevice_t device, nvmlClockType_t clockType, uint* mhz);
 } nvml;
 
 static struct error_s {

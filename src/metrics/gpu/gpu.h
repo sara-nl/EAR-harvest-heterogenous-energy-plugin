@@ -46,6 +46,7 @@ typedef struct gpu_s
 typedef struct gpu_ops_s
 {
 	state_t (*init)			(ctx_t *c);
+	state_t (*init_unpvigileged) (ctx_t *c);
 	state_t (*dispose)		(ctx_t *c);
 	state_t (*read)			(ctx_t *c, gpu_t *data);
 	state_t (*read_raw)		(ctx_t *c, gpu_t *data);
@@ -65,6 +66,8 @@ typedef struct gpu_ops_s
 state_t gpu_load(gpu_ops_t **ops, uint model_force, uint *model_used);
 
 state_t gpu_init(ctx_t *c);
+
+state_t gpu_init_unprivileged(ctx_t *c);
 
 state_t gpu_dispose(ctx_t *c);
 

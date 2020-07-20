@@ -42,6 +42,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 	if (model_force == MODEL_NVML) {
 		debug("loaded NVML");
 		ops.init		= nvml_init;
+		ops.init_unprivileged = nvml_init_unprivileged;
 		ops.dispose		= nvml_dispose;
 		ops.read		= nvml_read;
 		ops.read_raw	= nvml_read_raw;
@@ -62,6 +63,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 	} else {
 		debug("loaded DUMMY");
 		ops.init		= gpu_dummy_init;
+		ops.init_unprivileged = gpu_dummy_init;
 		ops.dispose		= gpu_dummy_dispose;
 		ops.read		= gpu_dummy_read;
 		ops.read_raw	= gpu_dummy_read_raw;
@@ -94,6 +96,11 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 state_t gpu_init(ctx_t *c)
 {
 	preturn (ops.init, c);
+}
+
+state_t gpu_init_unprivileged(ctx_t *c)
+{
+	preturn (ops.init_unprivileged, c);
 }
 
 state_t gpu_dispose(ctx_t *c)
