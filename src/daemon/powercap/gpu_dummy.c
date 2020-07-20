@@ -32,6 +32,8 @@
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
 #include <daemon/powercap/powercap_status_conf.h>
+#include <common/system/monitor.h>
+
 
 
 
@@ -43,33 +45,39 @@ static uint c_mode=PC_MODE_LIMIT;
 #define NVIDIA_GPU_SET_POWER_LIMIT_CMD "nvidia-smi –pl %u"
 #define NVIDIA_CPU_TEST_CMD						 "nvidia-smi -h"
 
+static uint gpu_dummy_num_gpus=1;
+
 state_t disable()
 {
 	return EAR_SUCCESS;
 }
 
-state_t enable()
+state_t enable(suscription_t *sus)
 {
 	int ret;
 	char cmd[256];
-	debug("GPU: power cap  enable");
+	debug("GPU_dummy: power cap  enable");
 	gpu_pc_enabled=1;
 	return EAR_SUCCESS;
 }
 
-state_t set_powercap_value(uint pid,uint domain,uint limit)
+state_t set_powercap_value(uint pid,uint domain,uint limit,uint *gpu_util)
 {
 	char cmd[256];
+	int i;
 	/* Set data */
-	debug("GPU: set_powercap_value %u",limit);
+	debug("%sGPU_dummy: set_powercap_value %u%s",COL_BLU,limit,COL_CLR);
 	current_gpu_pc=limit;
+  for (i=0;i<gpu_dummy_num_gpus;i++) {
+    debug("GPU_dummy: util_gpu[%d]=%u",i,gpu_util[i]);
+  }
 	return EAR_SUCCESS;
 }
 
 state_t get_powercap_value(uint pid,uint *powercap)
 {
 	/* copy data */
-	debug("GPU::get_powercap_value");
+	debug("GPU_dummy::get_powercap_value");
 	*powercap=current_gpu_pc;
 	return EAR_SUCCESS;
 }
@@ -81,7 +89,7 @@ uint is_powercap_policy_enabled(uint pid)
 
 void print_powercap_value(int fd)
 {
-	dprintf(fd,"gpu_powercap_value %u\n",current_gpu_pc);
+	dprintf(fd,"GPU_dummy %u\n",current_gpu_pc);
 }
 void powercap_to_str(char *b)
 {
@@ -90,18 +98,18 @@ void powercap_to_str(char *b)
 
 void set_status(uint status)
 {
-	debug("GPU. set_status %u",status);
+	debug("GPU_dummy. set_status %u",status);
 	c_status=status;
 }
 uint get_powercap_strategy()
 {
-	debug("GPU. get_powercap_strategy");
+	debug("GPU_dummy. get_powercap_strategy");
 	return PC_POWER;
 }
 
 void set_pc_mode(uint mode)
 {
-	debug("GPU. set_pc_mode");
+	debug("GPU_dummy. set_pc_mode");
 	c_mode=mode;
 }
 
@@ -111,5 +119,13 @@ void set_verb_channel(int fd)
   WARN_SET_FD(fd);
   VERB_SET_FD(fd);
   DEBUG_SET_FD(fd);
+}
+
+void set_new_utilization(uint *util)
+{
+	int i;
+	for (i=0;i<gpu_dummy_num_gpus;i++) {
+		debug("GPU_dummy: util_gpu[%d]=%u",i,util[i]);
+	}
 }
 

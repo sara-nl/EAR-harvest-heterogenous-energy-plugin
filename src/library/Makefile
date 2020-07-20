@@ -1,5 +1,5 @@
-MPI_API = 1
-export MPI_API
+#MPI_API = 1
+#export MPI_API
 ifdef MPI_API 
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=1
 else

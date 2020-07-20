@@ -38,7 +38,13 @@ void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b);
 void pmgt_set_status(pwr_mgt_t *phandler,uint status);
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler);
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode);
-void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain);
+void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain,uint st);
 void pmgt_set_app_req_freq(pwr_mgt_t *phandler,ulong f);
+void pmgt_new_job(pwr_mgt_t *phandler);
+void pmgt_end_job(pwr_mgt_t *phandler);
+void pmgt_idle_to_run(pwr_mgt_t *phandler);
+void pmgt_run_to_idle(pwr_mgt_t *phandler);
+void pmgt_powercap_node_reallocation();
+
 
 #endif

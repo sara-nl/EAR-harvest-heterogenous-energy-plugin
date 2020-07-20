@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include <common/config.h>
+#include <common/config/config_install.h>
 #include <common/output/verbose.h>
 #if POWERCAP
 #include <common/types/pc_app_info.h>

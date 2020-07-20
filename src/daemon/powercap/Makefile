@@ -15,6 +15,11 @@ powercap_BINS = \
 
 powercap_PATH = $(DESTDIR)/lib/plugins/powercap
 powercap_PERM = 0775
+
+gpu_DEPS = \
+	$(SRCDIR)/management/libmgt.a \
+	$(SRCDIR)/common/libcommon.a 
+
 dvfs_DEPS = \
 	powercap_status.o \
 	$(SRCDIR)/metrics/libmetrics.a \
@@ -28,6 +33,9 @@ all:$(powercap_OBJS)  $(powercap_BINS)
 	$(CC) $(CFLAGS) -c $<
 dvfs.so:dvfs.o $(dvfs_DEPS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(dvfs_DEPS)
+
+gpu.so:gpu.o $(gpu_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(gpu_DEPS)
 
 
 %.so: %.o 

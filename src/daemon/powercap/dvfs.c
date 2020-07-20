@@ -118,7 +118,7 @@ state_t dvfs_pc_thread_main(void *p)
     /*debug(rapl_energy_str); */
     acum_energy=acum_rapl_energy(values_diff);
     power_rapl=(float)acum_energy/(1*RAPL_MSR_UNITS);
-		debug("DVFS monitoring exectuted power_computed=%f limit %u",power_rapl,current_dvfs_pc);
+		// debug("DVFS monitoring exectuted power_computed=%f limit %u",power_rapl,current_dvfs_pc);
     /*debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);*/
     if (c_status==PC_STATUS_RUN){
       if (!dvfs_pc_secs){
@@ -300,10 +300,10 @@ state_t enable(suscription_t *sus)
 	return EAR_SUCCESS;
 }
 
-state_t set_powercap_value(uint pid,uint domain,uint limit)
+state_t set_powercap_value(uint pid,uint domain,uint limit,uint *cpu_util)
 {
 	/* Set data */
-	debug("DVFS:set_powercap_value %u",limit);
+	debug("%sDVFS:set_powercap_value %u%s",COL_BLU,limit,COL_CLR);
 	current_dvfs_pc=limit;
 	return EAR_SUCCESS;
 }

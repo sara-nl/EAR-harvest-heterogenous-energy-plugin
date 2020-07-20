@@ -24,6 +24,7 @@
 #define DOMAIN_CPU 1
 #define DOMAIN_DRAM     2
 #define DOMAIN_GPU      3
+#define DOMAIN_GPUS      DOMAIN_GPU
 
 #define NUM_DOMAINS 4
 
