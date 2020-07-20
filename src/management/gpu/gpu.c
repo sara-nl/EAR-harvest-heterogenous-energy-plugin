@@ -39,7 +39,7 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 	#ifdef CUDA_BASE
 	if (state_ok(mgt_nvml_status()))
 	{
-		debug("selected NVML");
+		debug("loaded NVML");
 		ops.init                  = mgt_nvml_init;
 		ops.init_unprivileged     = mgt_nvml_init_unprivileged;
 		ops.dispose               = mgt_nvml_dispose;
@@ -59,7 +59,7 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 	} else
 	#endif
 	{
-		debug("selected DUMMY");
+		debug("loaded DUMMY");
 		ops.init                  = mgt_dummy_init;
 		ops.init_unprivileged     = mgt_dummy_init;
 		ops.dispose               = mgt_dummy_dispose;

@@ -26,7 +26,7 @@ state_t gpu_dummy_init(ctx_t *c);
 
 state_t gpu_dummy_dispose(ctx_t *c);
 
-state_t gpu_dummy_count(ctx_t *c, uint *_dev_count);
+state_t gpu_dummy_count(uint *dev_count);
 
 state_t gpu_dummy_read(ctx_t *c, gpu_t *data);
 
@@ -37,8 +37,6 @@ state_t gpu_dummy_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_di
 state_t gpu_dummy_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 
 state_t gpu_dummy_data_merge(gpu_t *data_diff, gpu_t *data_merge);
-
-state_t gpu_dummy_data_init(uint _dev_count);
 
 state_t gpu_dummy_data_alloc(gpu_t **data);
 

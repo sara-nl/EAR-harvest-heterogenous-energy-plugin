@@ -27,7 +27,7 @@
 
 #define NVML_N 16
 
-const char *nvml_names[] =
+static const char *nvml_names[] =
 {
 	"nvmlInit_v2",
 	"nvmlDeviceGetCount_v2",

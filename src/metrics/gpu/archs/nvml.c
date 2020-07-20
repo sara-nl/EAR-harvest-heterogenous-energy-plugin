@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
+
 #include <metrics/gpu/archs/nvml.h>
 
 #ifdef CUDA_BASE
@@ -30,7 +32,7 @@
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>
 
-const char *nvml_names[] =
+static const char *nvml_names[] =
 {
 	"nvmlInit_v2",
 	"nvmlDeviceGetCount_v2",
@@ -86,6 +88,9 @@ static struct error_s {
 	.gpus_not     = "no GPUs detected",
 	.dlopen       = "error during dlopen",
 };
+
+#define myErrorString(r) \
+	((char *) nvml.ErrorString(r))
 
 static state_t static_status_undo(char *error)
 {
@@ -193,7 +198,6 @@ state_t nvml_status()
 
 static state_t static_init()
 {
-	nvmlReturn_t r;
 	state_t s;
 
 	if (xtate_fail(s, nvml_data_alloc(&pool))) {
@@ -218,7 +222,7 @@ static state_t static_init()
 state_t nvml_init(ctx_t *c)
 {
 	state_t s;
-	if (xtate_fail(s, mgt_nvml_init_unprivileged(c))) {
+	if (xtate_fail(s, nvml_init_unprivileged(c))) {
 		return s;
 	}
 	while (pthread_mutex_trylock(&lock));
@@ -239,6 +243,7 @@ state_t nvml_init(ctx_t *c)
 state_t nvml_init_unprivileged(ctx_t *c)
 {
 	ok_unprivileged = 1;
+	debug("OK init unprivileged");
 	return EAR_SUCCESS;
 }
 
@@ -247,7 +252,7 @@ state_t nvml_dispose(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_count(ctx_t *c, uint *_dev_count)
+state_t nvml_count(uint *_dev_count)
 {
 	if (!ok_unprivileged) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
@@ -384,7 +389,7 @@ state_t nvml_read_raw(ctx_t *c, gpu_t *data)
 	for (i = 0; i < dev_count; ++i) {
 		static_read(i, &data[i]);
 		data[i].time     = time;
-		data[i].power_w *= 1000;
+		data[i].power_w /= 1000;
 	}
 	return EAR_SUCCESS;
 }
@@ -460,12 +465,6 @@ state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 	#ifdef SHOW_DEBUGS
 	nvml_data_print(data_diff, debug_channel);
 	#endif
-	return EAR_SUCCESS;
-}
-
-state_t nvml_data_init(uint _dev_count)
-{
-	dev_count = _dev_count;
 	return EAR_SUCCESS;
 }
 
@@ -603,14 +602,13 @@ state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge)
 state_t nvml_status() { return EAR_ERROR; }
 state_t nvml_init(ctx_t *c) { return EAR_ERROR; }
 state_t nvml_dispose(ctx_t *c) { return EAR_ERROR; }
-state_t nvml_count(ctx_t *c, uint *_dev_count) { return EAR_ERROR; }
+state_t nvml_count(uint *dev_count) { return EAR_ERROR; }
 state_t nvml_pool(void *p) { return EAR_ERROR; }
 state_t nvml_read(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
 state_t nvml_read_raw(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
 state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
 state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
 state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge) { return EAR_ERROR; }
-state_t nvml_data_init(uint _dev_count) { return EAR_ERROR; }
 state_t nvml_data_alloc(gpu_t **data) { return EAR_ERROR; }
 state_t nvml_data_free(gpu_t **data) { return EAR_ERROR; }
 state_t nvml_data_null(gpu_t *data) { return EAR_ERROR; }

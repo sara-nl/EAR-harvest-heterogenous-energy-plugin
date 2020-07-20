@@ -39,7 +39,7 @@ state_t gpu_dummy_dispose(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t gpu_dummy_count(ctx_t *c, uint *_dev_count)
+state_t gpu_dummy_count(uint *_dev_count)
 {
 	if (_dev_count != NULL) {
 		*_dev_count = 1;
@@ -81,11 +81,6 @@ state_t gpu_dummy_data_merge(gpu_t *data_diff, gpu_t *data_merge)
 	if (data_diff == NULL || data_merge == NULL) {
 		return_msg(EAR_ERROR, Error.null_data);
 	}
-	return EAR_SUCCESS;
-}
-
-state_t gpu_dummy_data_init(uint _dev_count)
-{
 	return EAR_SUCCESS;
 }
 

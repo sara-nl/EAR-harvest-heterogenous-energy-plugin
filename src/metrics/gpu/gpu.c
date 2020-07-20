@@ -15,6 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/gpu/archs/nvml.h>
@@ -48,7 +49,6 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		ops.read_raw	= nvml_read_raw;
 		ops.read_copy	= nvml_read_copy;
 		ops.count		= nvml_count;
-		ops.data_init   = nvml_data_init;
 		ops.data_diff	= nvml_data_diff;
 		ops.data_merge	= nvml_data_merge;
 		ops.data_alloc	= nvml_data_alloc;
@@ -69,7 +69,6 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		ops.read_raw	= gpu_dummy_read_raw;
 		ops.read_copy	= gpu_dummy_read_copy;
 		ops.count		= gpu_dummy_count;
-		ops.data_init   = gpu_dummy_data_init;
 		ops.data_diff	= gpu_dummy_data_diff;
 		ops.data_merge	= gpu_dummy_data_merge;
 		ops.data_alloc	= gpu_dummy_data_alloc;
@@ -125,12 +124,7 @@ state_t gpu_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 
 state_t gpu_count(ctx_t *c, uint *dev_count)
 {
-	preturn (ops.count, c, dev_count);
-}
-
-state_t gpu_data_init(uint dev_count)
-{
-	preturn (ops.data_init, dev_count);
+	preturn (ops.count, dev_count);
 }
 
 state_t gpu_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
