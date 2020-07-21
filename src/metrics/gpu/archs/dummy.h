@@ -26,7 +26,7 @@ state_t gpu_dummy_init(ctx_t *c);
 
 state_t gpu_dummy_dispose(ctx_t *c);
 
-state_t gpu_dummy_count(uint *dev_count);
+state_t gpu_dummy_count(ctx_t *c, uint *dev_count);
 
 state_t gpu_dummy_read(ctx_t *c, gpu_t *data);
 

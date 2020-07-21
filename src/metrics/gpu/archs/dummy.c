@@ -39,7 +39,7 @@ state_t gpu_dummy_dispose(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t gpu_dummy_count(uint *_dev_count)
+state_t gpu_dummy_count(ctx_t *c, uint *_dev_count)
 {
 	if (_dev_count != NULL) {
 		*_dev_count = 1;
@@ -48,11 +48,6 @@ state_t gpu_dummy_count(uint *_dev_count)
 }
 
 state_t gpu_dummy_read(ctx_t *c, gpu_t *data)
-{
-	return gpu_dummy_data_null(data);
-}
-
-state_t gpu_dummy_read_raw(ctx_t *c, gpu_t *data)
 {
 	return gpu_dummy_data_null(data);
 }
@@ -66,7 +61,13 @@ state_t gpu_dummy_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_di
 	if (xtate_fail(s, gpu_dummy_data_diff(data2, data1, data_diff))) {
 		return s;
 	}
-	return gpu_dummy_data_copy(data1, data2);}
+	return gpu_dummy_data_copy(data1, data2);
+}
+
+state_t gpu_dummy_read_raw(ctx_t *c, gpu_t *data)
+{
+	return gpu_dummy_data_null(data);
+}
 
 state_t gpu_dummy_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {

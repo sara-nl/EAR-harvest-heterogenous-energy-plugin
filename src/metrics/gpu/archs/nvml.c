@@ -43,22 +43,21 @@ static const char *nvml_names[] =
 	"nvmlDeviceGetTemperature",
 	"nvmlDeviceGetUtilizationRates",
 	"nvmlDeviceGetComputeRunningProcesses",
-	"nvmlDeviceSetPowerManagementLimit",
 	"nvmlErrorString",
 };
 
 static struct nvml_s
 {
-	nvmlReturn_t (*Init)		(void);
-	nvmlReturn_t (*Count)		(uint *devCount);
-	nvmlReturn_t (*Handle)		(uint index, nvmlDevice_t *device);
-	nvmlReturn_t (*DevMode)		(nvmlDevice_t dev, nvmlEnableState_t *mode);
-	nvmlReturn_t (*DevPower)	(nvmlDevice_t dev, uint *power);
-	nvmlReturn_t (*DevClocks)	(nvmlDevice_t dev, nvmlClockType_t type, uint *clock);
-	nvmlReturn_t (*DevTemp)		(nvmlDevice_t dev, nvmlTemperatureSensors_t type, uint *temp);
-	nvmlReturn_t (*DevUtil)		(nvmlDevice_t dev, nvmlUtilization_t *utilization);
-	nvmlReturn_t (*DevProcs)	(nvmlDevice_t dev, uint *infoCount, nvmlProcessInfo_t *infos);
-	char* (*ErrorString)		(nvmlReturn_t result);
+	nvmlReturn_t (*Init)	(void);
+	nvmlReturn_t (*Count)	(uint *devCount);
+	nvmlReturn_t (*Handle)	(uint index, nvmlDevice_t *device);
+	nvmlReturn_t (*Mode)	(nvmlDevice_t dev, nvmlEnableState_t *mode);
+	nvmlReturn_t (*Power)	(nvmlDevice_t dev, uint *power);
+	nvmlReturn_t (*Clocks)	(nvmlDevice_t dev, nvmlClockType_t type, uint *clock);
+	nvmlReturn_t (*Temp)	(nvmlDevice_t dev, nvmlTemperatureSensors_t type, uint *temp);
+	nvmlReturn_t (*Util)	(nvmlDevice_t dev, nvmlUtilization_t *utilization);
+	nvmlReturn_t (*Procs)	(nvmlDevice_t dev, uint *infoCount, nvmlProcessInfo_t *infos);
+	char* (*ErrorString)	(nvmlReturn_t result);
 } nvml;
 
 #define NVML_N 10
@@ -272,7 +271,7 @@ static int static_read(int i, gpu_t *metric)
 	memset(metric, 0, sizeof(gpu_t));
 
 	// Testing if all is right
-	if ((s = nvml.DevMode(devices[i], &mode)) != NVML_SUCCESS) {
+	if ((s = nvml.Mode(devices[i], &mode)) != NVML_SUCCESS) {
 		return 0;
 	}
 	if (mode != NVML_FEATURE_ENABLED) {
@@ -288,12 +287,12 @@ static int static_read(int i, gpu_t *metric)
 	uint power_mw;
 
 	// Getting the metrics by calling NVML (no MEM temp)
-	s = nvml.DevPower(devices[i], &power_mw);
-	s = nvml.DevClocks(devices[i], NVML_CLOCK_MEM, &freq_mem_mhz);
-	s = nvml.DevClocks(devices[i], NVML_CLOCK_SM , &freq_gpu_mhz);
-	s = nvml.DevTemp(devices[i], NVML_TEMPERATURE_GPU, &temp_gpu);
-	s = nvml.DevUtil(devices[i], &util);
-	s = nvml.DevProcs(devices[i], &proc_count, procs);
+	s = nvml.Power(devices[i], &power_mw);
+	s = nvml.Clocks(devices[i], NVML_CLOCK_MEM, &freq_mem_mhz);
+	s = nvml.Clocks(devices[i], NVML_CLOCK_SM , &freq_gpu_mhz);
+	s = nvml.Temp(devices[i], NVML_TEMPERATURE_GPU, &temp_gpu);
+	s = nvml.Util(devices[i], &util);
+	s = nvml.Procs(devices[i], &proc_count, procs);
 
 	// Pooling the data (time is not set here)
 	metric->samples  = 1;
@@ -378,6 +377,18 @@ state_t nvml_read(ctx_t *c, gpu_t *data)
 	return nvml_data_copy(data, pool);
 }
 
+state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
+{
+	state_t s;
+	if (xtate_fail(s, nvml_read(c, data2))) {
+		return s;
+	}
+	if (xtate_fail(s, nvml_data_diff(data2, data1, data_diff))) {
+		return s;
+	}
+	return nvml_data_copy(data1, data2);
+}
+
 state_t nvml_read_raw(ctx_t *c, gpu_t *data)
 {
 	timestamp_t time;
@@ -392,18 +403,6 @@ state_t nvml_read_raw(ctx_t *c, gpu_t *data)
 		data[i].power_w /= 1000;
 	}
 	return EAR_SUCCESS;
-}
-
-state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
-{
-	state_t s;
-	if (xtate_fail(s, nvml_read(c, data2))) {
-		return s;
-	}
-	if (xtate_fail(s, nvml_data_diff(data2, data1, data_diff))) {
-		return s;
-	}
-	return nvml_data_copy(data1, data2);
 }
 
 static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
