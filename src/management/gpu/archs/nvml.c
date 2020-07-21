@@ -15,7 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
 #include <nvml.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -449,7 +448,7 @@ state_t nvml_clock_cap_get_current(ctx_t *c, ulong *khz)
 	for (i = 0; i < dev_count; ++i)
 	{
 		nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &mhz);
-		fprintf(stderr, "NVML_CLOCK_ID_APP_CLOCK_TARGET %u\n", mhz*1000U);
+		debug("NVML_CLOCK_ID_APP_CLOCK_TARGET %u\n", mhz*1000U);
 		khz[i] = ((ulong) mhz) * 1000LU;
 	}
 	return EAR_SUCCESS;

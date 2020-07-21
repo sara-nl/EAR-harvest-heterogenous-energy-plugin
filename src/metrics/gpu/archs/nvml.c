@@ -15,8 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
-
 #include <metrics/gpu/archs/nvml.h>
 
 #ifdef CUDA_BASE
@@ -251,7 +249,7 @@ state_t nvml_dispose(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_count(uint *_dev_count)
+state_t nvml_count(ctx_t *c, uint *_dev_count)
 {
 	if (!ok_unprivileged) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
@@ -600,8 +598,9 @@ state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge)
 
 state_t nvml_status() { return EAR_ERROR; }
 state_t nvml_init(ctx_t *c) { return EAR_ERROR; }
+state_t nvml_init_unprivileged(ctx_t *c) { return EAR_ERROR; }
 state_t nvml_dispose(ctx_t *c) { return EAR_ERROR; }
-state_t nvml_count(uint *dev_count) { return EAR_ERROR; }
+state_t nvml_count(ctx_t *c, uint *dev_count) { return EAR_ERROR; }
 state_t nvml_pool(void *p) { return EAR_ERROR; }
 state_t nvml_read(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
 state_t nvml_read_raw(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
