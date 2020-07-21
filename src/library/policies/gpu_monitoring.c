@@ -33,6 +33,7 @@ extern unsigned long ext_def_freq;
 #else
 #define DEF_FREQ(f) f
 #endif
+static ulong ext_gpu_def_freq=0;
 
 #define debug(...) \
 { \
@@ -43,6 +44,8 @@ extern unsigned long ext_def_freq;
 
 state_t policy_init(polctx_t *c)
 {
+	char *gpu_freq=getenv(SCHED_EAR_GPU_DEF_FREQ);
+	if ((gpu_freq!=NULL) && (c->app->user_type==AUTHORIZED)) ext_gpu_def_freq=atol(gpu_freq);
 	return EAR_SUCCESS;
 }
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
@@ -55,9 +58,13 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 		my_sig->gpu_sig.gpu_data[i].GPU_power,(float)my_sig->gpu_sig.gpu_data[i].GPU_freq/1000.0,(float)my_sig->gpu_sig.gpu_data[i].GPU_mem_freq/1000.0,
 		my_sig->gpu_sig.gpu_data[i].GPU_util,my_sig->gpu_sig.gpu_data[i].GPU_mem_util);
 	}
-	
-	
-	*ready=0;
+
+	if (ext_gpu_def_freq){
+		for (i=0;i<my_sig->gpu_sig.num_gpus;i++)	new_freq[i]=ext_gpu_def_freq;		
+		*ready=1;
+	}else{	
+		*ready=0;
+	}
 	
 	return EAR_SUCCESS;
 }

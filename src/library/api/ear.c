@@ -16,6 +16,7 @@
 */
 
 #define _GNU_SOURCE
+#include <sched.h>
 #include <pthread.h>
 
 #include <time.h>
@@ -85,6 +86,8 @@ static int my_size;
 static int num_nodes;
 static int ppnode;
 
+cpu_set_t ear_process_mask;
+int ear_affinity_is_set=0;
 // Loop information
 static uint mpi_calls_per_loop;
 static uint ear_iterations=0;
@@ -467,6 +470,11 @@ static void get_job_identification()
 	char *job_id  = getenv(SCHED_JOB_ID);
 	char *step_id = getenv(SCHED_STEP_ID);
 	char *account_id=getenv(SCHED_JOB_ACCOUNT);
+	char *num_tasks=getenv(SCHED_NUM_TASKS);
+	
+	if (num_tasks != NULL){
+		debug("%s defined %s",SCHED_NUM_TASKS,num_tasks);
+	}
 
 	// It is missing to use JOB_ACCOUNT
 	
@@ -547,6 +555,26 @@ void update_configuration()
 	lib_period=system_conf->lib_info.lib_period;
 	check_every=system_conf->lib_info.check_every;
 	ear_whole_app=system_conf->learning;
+}
+
+void   pin_processes(topology_t *t,cpu_set_t *mask,int is_set,int ppn,int idx)
+{
+	int first,cpus,i;
+	debug("We are %d processes in this node and I'm the number %d , Total CPUS %d",ppn,idx,t->cpu_count);
+	if (!is_set){
+		if (ppn == 1){
+			first = 0;
+			cpus = 1;
+		}else{
+			cpus = t->cpu_count / ppn;
+			first = idx *cpus;
+		}
+		CPU_ZERO(mask);
+		for (i=0;i<t->cpu_count;i++){
+				if ((i >= first) && (i < (first+cpus))) CPU_SET(i,mask);
+		}	
+		sched_setaffinity(getpid(),sizeof(cpu_set_t),mask);
+	}
 }
 /****************************************************************************************************************************************************************/
 /****************************************************************************************************************************************************************/
@@ -792,18 +820,19 @@ void ear_init()
 		}
   	#endif
 
-		//print_affinity_mask(&arch_desc.top);
-		int is_set;
-		if (is_affinity_set(&arch_desc.top,getpid(),&is_set)!=EAR_SUCCESS){
+		if (is_affinity_set(&arch_desc.top,getpid(),&ear_affinity_is_set,&ear_process_mask)!=EAR_SUCCESS){
 			error("Checking the affinity mask");
 		}else{
-			if (is_set){	
+			if (ear_affinity_is_set){	
 				verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
 			}else{ 
 				verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);
 			}
 		}
 	}
+
+	pin_processes(&arch_desc.top,&ear_process_mask,ear_affinity_is_set,lib_shared_region->num_processes,my_node_id);
+	print_affinity_mask(&arch_desc.top);
 
 	#if SHOW_DEBUGS
 	print_arch_desc(&arch_desc);

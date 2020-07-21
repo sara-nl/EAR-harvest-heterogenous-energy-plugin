@@ -37,6 +37,9 @@
 #endif
 
 extern masters_info_t masters_info;
+extern cpu_set_t ear_process_mask;
+extern int ear_affinity_is_set;
+
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) (!ext_def_freq?f:ext_def_freq)
@@ -222,7 +225,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 #endif
   	if (*freq_set != *(c->ear_frequency))
   	{
-    	*(c->ear_frequency) =  eards_change_freq(*freq_set);
+    		*(c->ear_frequency) =  eards_change_freq(*freq_set);
 		}
   } else{
 		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);

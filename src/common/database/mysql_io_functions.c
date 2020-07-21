@@ -1376,7 +1376,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
         strcat(query, params);
 
 #if USE_GPUS
-    int *gpu_sig_ids, current_gpu_sig_id, starter_gpu_sig_id;
+    int *gpu_sig_ids, current_gpu_sig_id=0, starter_gpu_sig_id;
     starter_gpu_sig_id = mysql_batch_insert_gpu_signatures(connection, cont, num_sigs);
     if (starter_gpu_sig_id >= 0)
     {
