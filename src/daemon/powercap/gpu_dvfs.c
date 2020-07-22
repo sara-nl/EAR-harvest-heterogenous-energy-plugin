@@ -56,6 +56,7 @@ static uint *gpu_pc_max_power;
 static uint *gpu_pc_curr_power;
 static uint *gpu_pc_util;
 static float *pdist;
+static uint *c_freq,*t_freq,*n_freq;
 
 
 void mgt_gpu_power_limit_get_min(ctx_t *c,uint *minv)
@@ -77,6 +78,9 @@ state_t gpu_dvfs_pc_thread_init(void *p)
 	gpu_data_alloc(&values_gpu_init);
 	gpu_data_alloc(&values_gpu_end);
 	gpu_data_alloc(&values_gpu_diff);
+	c_freq=calloc(gpu_pc_num_gpus,sizeof(uint));
+	t_freq=calloc(gpu_pc_num_gpus,sizeof(uint));
+	n_freq=calloc(gpu_pc_num_gpus,sizeof(uint));
   gpu_dvfs_pc_enabled=1;
   verbose(1,"Power measurement initialized in dvfs_pc thread initialization");
 	gpu_read(&gpu_metric_ctx,values_gpu_init);
@@ -89,7 +93,6 @@ state_t gpu_dvfs_pc_thread_main(void *p)
 		char gpu_str[512];
 		unsigned long long acum_energy;
   	uint c_pstate,t_pstate;
-  	ulong c_freq;
 		uint extra;
 
 		gpu_read(&gpu_metric_ctx,values_gpu_end);
@@ -97,39 +100,26 @@ state_t gpu_dvfs_pc_thread_main(void *p)
 		gpu_data_diff(values_gpu_end,values_gpu_init,values_gpu_diff);
 		gpu_data_tostr(values_gpu_diff,gpu_str,sizeof(gpu_str));
     /* debug(gpu_str); */
+		mgt_gpu_clock_limit_get_current(&gpu_pc_ctx,c_freq);
 		for (i=0;i<gpu_pc_num_gpus;i++){
     if (c_status==PC_STATUS_RUN){
       /* Aplicar limites */
-      if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
-      if (power_rapl>(current_dvfs_pc*RAPL_VS_NODE_POWER)){ /* We are above the PC */
-        c_freq=frequency_get_cpu_freq(0);
-        c_pstate=frequency_freq_to_pstate(c_freq);
-        c_pstate=c_pstate+1;
-        c_freq=frequency_pstate_to_freq(c_pstate);
-        debug("GPU-DVFS:%sReducing freq to %lu%s",COL_RED,c_freq,COL_CLR);
-        frequency_set_all_cpus(c_freq);
+      if ((current_gpu_pc>0)  && (c_status==PC_STATUS_RUN)){
+      if (values_gpu_diff[i].power_w > gpu_pc_curr_power[i]){ /* We are above the PC */
+				/* Use the list of freuencies */
+				n_freq[i] = select_lower_gpu_freq(c_freq[i]);
       }else{ /* We are below the PC */
-        t_pstate=frequency_freq_to_pstate(c_req_f);
-        c_freq=frequency_get_cpu_freq(0);
-        c_pstate=frequency_freq_to_pstate(c_freq);
-        if (c_pstate>t_pstate){
-          extra=compute_extra_power(power_rapl,1,t_pstate);
-          if (((power_rapl+extra)<current_dvfs_pc) && (c_mode==PC_MODE_TARGET)){
-            c_pstate=c_pstate-1;
-            c_freq=frequency_pstate_to_freq(c_pstate);
-            debug("GPU-DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u)%s",COL_RED,c_freq,t_pstate,c_pstate,COL_CLR);
-            frequency_set_all_cpus(c_freq);
-          }else{
-            if (!dvfs_pc_secs) debug("GPU-DVFS:Not increasing becase not enough power");
+        if (c_freq[i] < t_freq[i]){
+          extra=compute_extra_gpu_power(c_freq[i],t_freq[i]);
+          if (((values_gpu_diff[i].power_w+extra)< gpu_pc_curr_power[i]) && (c_mode==PC_MODE_TARGET)){
+						n_freq[i] = select_higher_gpu_freq(c_freq[i]);
           }
-        }else{
-          if (!dvfs_pc_secs) debug("GPU-DVFS: Not increasing because c_pstate %u == t_pstate %u",c_pstate,t_pstate);
         }
       }
-
     } /* (current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN) */
     } /* c_status==PC_STATUS_RUN */
 		}
+		mgt_gpu_clock_limit_set(&gpu_metric_ctx,n_freq[i]);
     /* Copiar init=end */
 		gpu_data_copy(values_gpu_init,values_gpu_end);
 		return EAR_SUCCESS;
