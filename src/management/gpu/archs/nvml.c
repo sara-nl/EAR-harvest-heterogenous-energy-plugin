@@ -438,7 +438,7 @@ state_t mgt_nvml_count(ctx_t *c, uint *_dev_count)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_clock_cap_get_current(ctx_t *c, ulong *khz)
+state_t nvml_freq_limit_get_current(ctx_t *c, ulong *khz)
 {
 	int i;
 	if (!ok_unprivileged) {
@@ -454,7 +454,7 @@ state_t nvml_clock_cap_get_current(ctx_t *c, ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_clock_cap_get_default(ctx_t *c, ulong *khz)
+state_t nvml_freq_limit_get_default(ctx_t *c, ulong *khz)
 {
 	int i;
 	if (!ok_unprivileged) {
@@ -466,7 +466,7 @@ state_t nvml_clock_cap_get_default(ctx_t *c, ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_clock_cap_get_max(ctx_t *c, ulong *khz)
+state_t nvml_freq_limit_get_max(ctx_t *c, ulong *khz)
 {
 	int i;
 	if (!ok_unprivileged) {
@@ -498,7 +498,7 @@ static state_t clocks_reset(int i)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_clock_cap_reset(ctx_t *c)
+state_t nvml_freq_limit_reset(ctx_t *c)
 {
 	state_t s, e;
 	int i;
@@ -575,7 +575,7 @@ static state_t clocks_set(int i, uint mhz)
 	return EAR_SUCCESS;
 }
 
-state_t nvml_clock_cap_set(ctx_t *c, ulong *khz)
+state_t nvml_freq_limit_set(ctx_t *c, ulong *khz)
 {
 	state_t s, e;
 	int i;
@@ -590,7 +590,7 @@ state_t nvml_clock_cap_set(ctx_t *c, ulong *khz)
 	return e;
 }
 
-state_t nvml_clock_list(ctx_t *c, ulong ***list_khz, uint **list_len)
+state_t nvml_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len)
 {
 	if (!ok_unprivileged) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
