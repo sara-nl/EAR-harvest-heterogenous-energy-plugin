@@ -555,16 +555,6 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		metrics->DRAM_power  = (metrics->DRAM_power / 1000000000.0) / time_s;
 		#if USE_GPU_LIB
 		if (gpu_initialized){
-			#if 0
-			gpu_t gpu_computed;
-			gpu_lib_data_merge(gpu_metrics_diff[s],&gpu_computed);
-			metrics->GPU_freq=gpu_computed.freq_gpu_mhz;
-			metrics->GPU_mem_freq=gpu_computed.freq_mem_mhz;
-			metrics->GPU_util=gpu_computed.util_gpu;
-			metrics->GPU_mem_util=gpu_computed.util_mem;
-			metrics->GPU_power=gpu_computed.power_w;
-			debug("GPU_power %.2lf GPU_freq %lu GPU_mem_freq %lu GPU_util %lu GPU_mem_util %lu",metrics->GPU_power,metrics-> GPU_freq,metrics->GPU_mem_freq,metrics->GPU_util,metrics->GPU_mem_util);
-			#endif
 			metrics->gpu_sig.num_gpus=ear_num_gpus_in_node;
 			for (p=0;p<metrics->gpu_sig.num_gpus;p++){
 				metrics->gpu_sig.gpu_data[p].GPU_power    = gpu_metrics_diff[s][p].power_w;

@@ -57,11 +57,6 @@ state_t gpu_dummy_read(ctx_t *c, gpu_t *data)
 	return gpu_dummy_data_null(data);
 }
 
-state_t gpu_dummy_read_raw(ctx_t *c, gpu_t *data)
-{
-	return gpu_dummy_data_null(data);
-}
-
 state_t gpu_dummy_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
 	state_t s;
@@ -71,7 +66,13 @@ state_t gpu_dummy_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_di
 	if (xtate_fail(s, gpu_dummy_data_diff(data2, data1, data_diff))) {
 		return s;
 	}
-	return gpu_dummy_data_copy(data1, data2);}
+	return gpu_dummy_data_copy(data1, data2);
+}
+
+state_t gpu_dummy_read_raw(ctx_t *c, gpu_t *data)
+{
+	return gpu_dummy_data_null(data);
+}
 
 state_t gpu_dummy_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
@@ -89,11 +90,6 @@ state_t gpu_dummy_data_merge(gpu_t *data_diff, gpu_t *data_merge)
 		return_msg(EAR_ERROR, Error.null_data);
 	}
 	return gpu_dummy_data_null(data_merge);
-}
-
-state_t gpu_dummy_data_init(uint _dev_count)
-{
-	return EAR_SUCCESS;
 }
 
 state_t gpu_dummy_data_alloc(gpu_t **data)
@@ -144,7 +140,7 @@ state_t gpu_dummy_data_print(gpu_t *data, int fd)
 		dprintf(fd, "gpu%u: %0.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 		i                   ,
 		data[i].energy_j    , data[i].power_w,
-		data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+		data[i].freq_gpu    , data[i].freq_mem,
 		data[i].util_gpu    , data[i].util_mem,
 		data[i].temp_gpu    , data[i].temp_mem,
 		data[i].working     , data[i].samples);
@@ -169,7 +165,7 @@ state_t gpu_dummy_data_tostr(gpu_t *data, char *buffer, int length)
 			"gpu%u: %.2lfJ, %0.2lfW, %luMHz, %luMHz, %lu%%, %lu%%, %luº, %luº, %u, %lu\n",
 			i                   ,
 			data[i].energy_j    , data[i].power_w,
-			data[i].freq_gpu_mhz, data[i].freq_mem_mhz,
+			data[i].freq_gpu    , data[i].freq_mem,
 			data[i].util_gpu    , data[i].util_mem,
 			data[i].temp_gpu    , data[i].temp_mem,
 			data[i].working     , data[i].samples);

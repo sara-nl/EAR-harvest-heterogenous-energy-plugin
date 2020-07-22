@@ -25,19 +25,22 @@
 
 typedef struct mgt_gpu_ops_s
 {
-	state_t (*init)                     (ctx_t *c);
-	state_t (*dispose)                  (ctx_t *c);
-	state_t (*count)                    (ctx_t *c, uint *dev_count);
-	state_t (*clock_limit_get_current)  (ctx_t *c, uint *khz);
-	state_t (*clock_limit_get_default)  (ctx_t *c, uint *khz);
-	state_t (*clock_limit_get_max)      (ctx_t *c, uint *khz);
-	state_t (*clock_limit_reset)        (ctx_t *c);
-	state_t (*clock_limit_set)          (ctx_t *c, ulong *khz);
-	state_t (*power_limit_get_current)  (ctx_t *c, uint *watts);
-	state_t (*power_limit_get_default)  (ctx_t *c, uint *watts);
-	state_t (*power_limit_get_max)      (ctx_t *c, uint *watts);
-	state_t (*power_limit_reset)        (ctx_t *c);
-	state_t (*power_limit_set)          (ctx_t *c, uint *watts);
+	state_t (*init)                   (ctx_t *c);
+	state_t (*init_unprivileged)      (ctx_t *c);
+	state_t (*dispose)                (ctx_t *c);
+	state_t (*count)                  (ctx_t *c, uint *dev_count);
+	state_t (*alloc_array)            (ctx_t *c, ulong **array);
+	state_t (*clock_cap_get_current)  (ctx_t *c, ulong *khz);
+	state_t (*clock_cap_get_default)  (ctx_t *c, ulong *khz);
+	state_t (*clock_cap_get_max)      (ctx_t *c, ulong *khz);
+	state_t (*clock_cap_reset)        (ctx_t *c);
+	state_t (*clock_cap_set)          (ctx_t *c, ulong *khz);
+	state_t (*clock_list)             (ctx_t *c, ulong ***list_khz, uint **list_len);
+	state_t (*power_cap_get_current)  (ctx_t *c, ulong *watts);
+	state_t (*power_cap_get_default)  (ctx_t *c, ulong *watts);
+	state_t (*power_cap_get_rank)     (ctx_t *c, ulong *watts_min, ulong *watts_max);
+	state_t (*power_cap_reset)        (ctx_t *c);
+	state_t (*power_cap_set)          (ctx_t *c, ulong *watts);
 } mgt_gpu_ops_t;
 
 
@@ -47,39 +50,48 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **ops);
 /** Initializes the context. */
 state_t mgt_gpu_init(ctx_t *c);
 
+/** Initializes the context to use unprivileged functions only. */
+state_t mgt_gpu_init_unprivileged(ctx_t *c);
+
 state_t mgt_gpu_dispose(ctx_t *c);
 
 /** Counts the number of GPUs in the node. */
 state_t mgt_gpu_count(ctx_t *c, uint *_dev_count);
 
-/** Gets the current clock limit for each GPU in the node. */
-state_t mgt_gpu_clock_limit_get_current(ctx_t *c, uint *khz);
+/** Allocates an array of watts or clocks per device. */
+state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array);
 
-/** Gets the default clock limit for each GPU in the node. */
-state_t mgt_gpu_clock_limit_get_default(ctx_t *c, uint *khz);
+/** Gets the current clock cap for each GPU in the node. */
+state_t mgt_gpu_clock_cap_get_current(ctx_t *c, ulong *khz);
 
-/** Gets the maximum clock limit for each GPU in the node. */
-state_t mgt_gpu_clock_limit_get_max(ctx_t *c, uint *khz);
+/** Gets the default clock cap for each GPU in the node. */
+state_t mgt_gpu_clock_cap_get_default(ctx_t *c, ulong *khz);
 
-/** Resets the current clock limit on each GPU to its default value. */
-state_t mgt_gpu_clock_limit_reset(ctx_t *c);
+/** Gets the maximum clock cap for each GPU in the node. */
+state_t mgt_gpu_clock_cap_get_max(ctx_t *c, ulong *khz);
 
-/** Sets the current clock limit on each GPU (one value per GPU in the khz array). */
-state_t mgt_gpu_clock_limit_set(ctx_t *c, ulong *khz);
+/** Resets the current clock cap on each GPU to its default value. */
+state_t mgt_gpu_clock_cap_reset(ctx_t *c);
 
-/** Gets the current power limit for each GPU in the node. */
-state_t mgt_gpu_power_limit_get_current(ctx_t *c, uint *watts);
+/** Sets the current clock cap on each GPU (one value per GPU in the khz array). */
+state_t mgt_gpu_clock_cap_set(ctx_t *c, ulong *khz);
 
-/** Gets the default power limit for each GPU in the node. */
-state_t mgt_gpu_power_limit_get_default(ctx_t *c, uint *watts);
+/** Gets a list of clocks and list length per device. */
+state_t mgt_gpu_clock_list(ctx_t *c, ulong ***list_khz, uint **list_len);
 
-/** Gets the maximum possible power limit for each GPU in the node. */
-state_t mgt_gpu_power_limit_get_max(ctx_t *c, uint *watts);
+/** Gets the current power cap for each GPU in the node. */
+state_t mgt_gpu_power_cap_get_current(ctx_t *c, ulong *watts);
 
-/** Resets the current power limit on each GPU to its default value. */
-state_t mgt_gpu_power_limit_reset(ctx_t *c);
+/** Gets the default power cap for each GPU in the node. */
+state_t mgt_gpu_power_cap_get_default(ctx_t *c, ulong *watts);
 
-/** Sets the current power limit on each GPU (one value per GPU in the watts array). */
-state_t mgt_gpu_power_limit_set(ctx_t *c, uint *watts);
+/** Gets the minimum/maximum possible power cap for each GPU in the node. */
+state_t mgt_gpu_power_cap_get_rank(ctx_t *c, ulong *watts_min, ulong *watts_max);
+
+/** Resets the current power cap on each GPU to its default value. */
+state_t mgt_gpu_power_cap_reset(ctx_t *c);
+
+/** Sets the current power cap on each GPU (one value per GPU in the watts array). */
+state_t mgt_gpu_power_cap_set(ctx_t *c, ulong *watts);
 
 #endif

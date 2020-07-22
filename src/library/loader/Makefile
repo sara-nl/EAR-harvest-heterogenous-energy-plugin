@@ -20,7 +20,7 @@ load_PERM = 0775
 
 ######## RULES
 
-all: clean $(load_OBJS) $(load_BINS)
+all: $(load_OBJS) $(load_BINS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<

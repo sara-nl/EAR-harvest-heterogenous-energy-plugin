@@ -39,7 +39,7 @@
 #define REL_PATH_LOAD "lib/libearld.so"
 
 #define SCHED_SLURM 1
-#ifdef SCHED_SLURM
+#ifdef  SCHED_SLURM
 
 #define VAR_OPT_TRAC "SLURM_EAR_TRACE_PATH"
 
@@ -51,9 +51,12 @@
 #define HACK_FILE_LOAD "SLURM_HACK_LOADER"
 // The GPU API loads a specific NVML library file.
 #define HACK_FILE_NVML "SLURM_HACK_NVML"
-
 // Adds a suffix to libear.so (i.e: libear.hello.so). 
 #define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION"
+// Delivered by SLURM, this flag contains the task PID.
+#define FLAG_TASK_PID  "SLURM_TASK_PID"
+// Sets the value of the loader's verbosity.
+#define FLAG_LOAD_VERB "SLURM_LOADER_VERBOSE"
 
 #define SCHED_LOADER_VERBOSE "SLURM_LOADER_VERBOSE"
 #define SCHED_EAR_SHOW_SIGNATURES "SLURM_EAR_SHOW_SIGNATURES"

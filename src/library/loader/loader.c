@@ -20,26 +20,50 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 #include <library/loader/loader.h>
 #include <library/loader/module_mpi.h>
 #include <library/loader/module_default.h>
+#include <common/config/config_env.h>
 
-int _loaded_con;
-int _loaded_mpi;
+static int _loaded_con;
+static int _loaded_mpi;
+
+static int init()
+{
+	char *verb;
+	char *task;
+	pid_t pid1 = 1;
+	pid_t pid2 = 0;
+	
+	// Activating verbose
+	if ((verb = getenv(FLAG_LOAD_VERB)) != NULL) {
+		VERB_SET_EN(1);
+		VERB_SET_LV(atoi(verb));
+	}
+	
+	// SLURM prolog/epilog control
+	if ((task = getenv(FLAG_TASK_PID)) == NULL) {
+		return 0;
+	}
+	
+	pid1 = getpid();
+	pid2 = (pid_t) atoi(task);
+	verbose(4, "LOADER: loader pids: %d/%d", pid1, pid2);
+	
+	return pid1 == pid2;
+}
 
 void  __attribute__ ((constructor)) loader()
 {
-	VERB_SET_EN(1);
-  VERB_SET_LV(4);
 
-	verbose(3, "LOADER: loader for application '%s'", program_invocation_name);
-	verbose(3, "LOADER: loader for PID %d", getpid());
-	if (getenv("SLURM_SCRIPT_CONTEXT")!=NULL){ 
-		verbose(3,"SLURM_SCRIPT_CONTEXT %s",getenv("SLURM_SCRIPT_CONTEXT"));
-	}else{ 
-		verbose(3,"SLURM_SCRIPT_CONTEXT undefined");
+	// Initialization
+	if (!init()) {
+		verbose(4, "LOADER: escaping the application '%s'", program_invocation_name);
+		return;
 	}
+	verbose(3, "LOADER: loading for application '%s'", program_invocation_name);
+	
 	// Module MPI
 	_loaded_mpi = module_mpi();
 	// Module default

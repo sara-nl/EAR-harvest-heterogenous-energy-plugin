@@ -40,7 +40,6 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 
 	int found_earmgd_port = 0;
 	int found_eargmd_host = 0;
-	int found_eargmd_minn = 0;
 	int found_path_inst = 0;
 	int found_path_temp = 0;
 	int i;
