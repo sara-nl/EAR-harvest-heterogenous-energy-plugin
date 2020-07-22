@@ -339,8 +339,8 @@ state_t nvml_pool(void *p)
 		pool[i].samples  += metric.samples;
 		pool[i].freq_mem += metric.freq_mem;
 		pool[i].freq_gpu += metric.freq_gpu;
-		pool[i].util_mem += metric.util_gpu;
-		pool[i].util_gpu += metric.util_mem;
+		pool[i].util_mem += metric.util_mem;
+		pool[i].util_gpu += metric.util_gpu;
 		pool[i].temp_gpu += metric.temp_gpu;
 		pool[i].temp_mem += metric.temp_mem;
 		pool[i].energy_j  = metric.energy_j;
