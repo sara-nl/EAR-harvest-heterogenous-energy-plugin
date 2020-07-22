@@ -470,13 +470,6 @@ void copy_node_data(signature_t *dest,signature_t *src)
 	dest->avg_f=src->avg_f;
 	#if USE_GPU_LIB
 	memcpy(&dest->gpu_sig,&src->gpu_sig,sizeof(gpu_signature_t));
-	#if 0
-	dest->GPU_power = src->GPU_power;
-	dest->GPU_freq = src->GPU_freq;
-	dest->GPU_mem_freq = src->GPU_mem_freq;
-	dest->GPU_util = src->GPU_util;
-	dest->GPU_mem_util = src->GPU_mem_util;
-	#endif
 	#endif
 }
 
@@ -558,8 +551,8 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 			metrics->gpu_sig.num_gpus=ear_num_gpus_in_node;
 			for (p=0;p<metrics->gpu_sig.num_gpus;p++){
 				metrics->gpu_sig.gpu_data[p].GPU_power    = gpu_metrics_diff[s][p].power_w;
-				metrics->gpu_sig.gpu_data[p].GPU_freq     = gpu_metrics_diff[s][p].freq_gpu_mhz;
-				metrics->gpu_sig.gpu_data[p].GPU_mem_freq = gpu_metrics_diff[s][p].freq_mem_mhz;
+				metrics->gpu_sig.gpu_data[p].GPU_freq     = gpu_metrics_diff[s][p].freq_gpu;
+				metrics->gpu_sig.gpu_data[p].GPU_mem_freq = gpu_metrics_diff[s][p].freq_mem;
 				metrics->gpu_sig.gpu_data[p].GPU_util     = gpu_metrics_diff[s][p].util_gpu;
 				metrics->gpu_sig.gpu_data[p].GPU_mem_util = gpu_metrics_diff[s][p].util_mem;
 			}	
@@ -709,7 +702,7 @@ int metrics_init()
 			gpu_lib_data_alloc(&gpu_metrics_init[LOO]);gpu_lib_data_alloc(&gpu_metrics_init[APP]);
 			gpu_lib_data_alloc(&gpu_metrics_end[LOO]);gpu_lib_data_alloc(&gpu_metrics_end[APP]);
 			gpu_lib_data_alloc(&gpu_metrics_diff[LOO]);gpu_lib_data_alloc(&gpu_metrics_diff[APP]);
-			gpu_lib_count(&gpu_lib_ctx,&ear_num_gpus_in_node);
+			gpu_lib_count(&ear_num_gpus_in_node);
 			debug("GPU library data initialized");
 		}
 	}

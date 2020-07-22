@@ -65,6 +65,7 @@ int loop_init(loop_t *loop, job_t *job,ulong event, ulong size, ulong level)
   loop->jid = job->id;
 	loop->step_id=job->step_id;
 	gethostname(loop->node_id,sizeof(loop->node_id));
+	strtok(loop->node_id,".");
 	return EAR_SUCCESS;
 }
 

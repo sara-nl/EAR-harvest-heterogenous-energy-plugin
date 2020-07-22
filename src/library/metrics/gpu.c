@@ -233,8 +233,4 @@ state_t gpu_lib_power_cap_set(ulong *watts)
 	return EAR_SUCCESS;
 }
 
-state_t gpu_lib_data_merge(gpu_t *data_diff, gpu_t *data_merge)
-{
-  preturn (ops->data_merge, data_diff, data_merge);
-}
 

@@ -238,7 +238,7 @@ int set_powercap_value(uint domain,uint limit)
 	my_pc_opt.current_pc=limit;
 	update_node_powercap_opt_shared_info();
 	pmgt_set_app_req_freq(pcmgr,pc_app_info_data->req_f);
-	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,limit);
+	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,(ulong)limit);
 }
 
 

@@ -2,9 +2,16 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -O2 -fPIC
 
 ########
 
+TARGETS = \
+	metrics.o
+
+ifdef CUDA_BASE
+TARGETS += \
+		gpu.o
+endif
+
 all: \
-        gpu.o \
-        metrics.o 
+	$(TARGETS)
 
 %.o: %.c %.h
 	$(MPICC) $(CFLAGS) -c $<

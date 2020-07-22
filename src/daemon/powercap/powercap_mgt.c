@@ -43,8 +43,8 @@
 typedef struct powercap_symbols {
   state_t (*enable)        (suscription_t *sus);
   state_t (*disable)       ();
-  state_t (*set_powercap_value)(uint pid,uint domain,uint limit,uint *util);
-  state_t (*get_powercap_value)(uint pid,uint *powercap);
+  state_t (*set_powercap_value)(uint pid,uint domain,uint limit,ulong *util);
+  state_t (*get_powercap_value)(uint pid,ulong *powercap);
   uint    (*is_powercap_policy_enabled)(uint pid);
   void    (*set_status)(uint status);
 	void		(*set_pc_mode)(uint mode);
@@ -53,7 +53,7 @@ typedef struct powercap_symbols {
 	void 		(*print_powercap_value)(int fd);
 	void 		(*set_app_req_freq)(ulong f);
 	void 		(*set_verb_channel)(int fd);	
-	void 		(*set_new_utilization)(uint *util);	
+	void 		(*set_new_utilization)(ulong *util);	
 } powercapsym_t;
 
 /*****
@@ -67,7 +67,7 @@ static dom_power_t pdist_per_domain;
 static uint pmgt_limit;
 static float pdomains[NUM_DOMAINS]={0.6,0.45,0,0.45};
 static float pdomains_idle[NUM_DOMAINS]={0.6,0.45,0,0.45};
-static uint *current_util[NUM_DOMAINS],dom_util[NUM_DOMAINS],last_dom_util[NUM_DOMAINS];
+static ulong *current_util[NUM_DOMAINS],dom_util[NUM_DOMAINS],last_dom_util[NUM_DOMAINS];
 #if USE_GPUS
 static float pdomains_def_nogpus[NUM_DOMAINS]={0.6,0.45,0,0.45};
 static float pdomains_def_withgpus[NUM_DOMAINS]={0.5,0.4,0,0.5};
@@ -107,7 +107,7 @@ const char     *pcsyms_names[] ={
 #define DEFAULT_PC_PLUGIN_NAME_CPU  "dvfs"
 #define DEFAULT_PC_PLUGIN_NAME_DRAM "noplugin"
 #if USE_GPUS
-#define DEFAULT_PC_PLUGIN_NAME_GPU  "gpu"
+#define DEFAULT_PC_PLUGIN_NAME_GPU  "gpu_dvfs"
 #else
 #define DEFAULT_PC_PLUGIN_NAME_GPU  "noplugin"
 #endif
@@ -149,7 +149,7 @@ static state_t util_detect_main(void *p)
 	if (pmgt_utilization_changed()){
     pmgt_powercap_node_reallocation();
   }
-	memcpy(last_dom_util,dom_util,sizeof(uint)*NUM_DOMAINS);
+	memcpy(last_dom_util,dom_util,sizeof(ulong)*NUM_DOMAINS);
   return EAR_SUCCESS;
 }
 static state_t util_detect_init(void *p)
@@ -210,7 +210,7 @@ state_t pmgt_init()
 	}
 	/* We have a single domain node */
 	debug("Initialzing Node util");
-	current_util[DOMAIN_NODE]=calloc(1,sizeof(uint));
+	current_util[DOMAIN_NODE]=calloc(1,sizeof(ulong));
 	if (current_util[DOMAIN_NODE]!=NULL) current_util[DOMAIN_NODE][0]=100;
 	debug("Static NODE utilization set to 100");
 	if (!domains_loaded[DOMAIN_NODE]){
@@ -231,7 +231,7 @@ state_t pmgt_init()
 		debug("DOMAIN_CPU not loaded");
 	}
 	debug("Initialzing CPU util");
-	current_util[DOMAIN_CPU]=calloc(pc_topology_info.cpu_count,sizeof(uint));
+	current_util[DOMAIN_CPU]=calloc(pc_topology_info.cpu_count,sizeof(ulong));
 	for (i=0;i<pc_topology_info.cpu_count;i++) current_util[DOMAIN_CPU][i]=100;
 	debug("Static CPU utilization set to 100 for %d cpus",pc_topology_info.cpu_count);
 
@@ -253,7 +253,7 @@ state_t pmgt_init()
 	}
 	}
 	debug("Initialzing DRAM util");
-	current_util[DOMAIN_DRAM]=calloc(pc_topology_info.socket_count,sizeof(uint));
+	current_util[DOMAIN_DRAM]=calloc(pc_topology_info.socket_count,sizeof(ulong));
 	for (i=0;i<pc_topology_info.socket_count;i++) current_util[DOMAIN_DRAM][i]=100;
 	debug("Static DRAM utilization set to 100 for %d sockets",pc_topology_info.socket_count);
 
@@ -275,7 +275,7 @@ state_t pmgt_init()
 		debug("DOMAIN_GPU not loaded");
 	}
 	debug("Initialzing GPU util");
-	current_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(uint));
+	current_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(ulong));
 	for (i=0;i<gpu_pc_num_gpus;i++) current_util[DOMAIN_GPUS][i]=100;
 	debug("Static GPU utilization set to 100 for %d GPUS",gpu_pc_num_gpus);
 	debug("Initializing Util monitoring");
@@ -319,12 +319,12 @@ state_t pmgt_handler_alloc(pwr_mgt_t **phandler)
 	return EAR_ERROR;
 }
 
-state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,uint limit)
+state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,ulong limit)
 {
 	state_t ret,gret=EAR_SUCCESS;
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
-		debug("Using %f weigth for domain %d: Total %u allocated %f",pdomains[i],i,limit,limit*pdomains[i]);
+		debug("Using %f weigth for domain %d: Total %lu allocated %f",pdomains[i],i,limit,limit*pdomains[i]);
 		ret=freturn(pcsyms_fun[i].set_powercap_value,pid,domain,limit*pdomains[i],current_util[i]);
 		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
@@ -342,10 +342,10 @@ static void reallocate_power_between_domains()
 		ret=freturn(pcsyms_fun[i].set_powercap_value,pid,domain,pmgt_limit*pdomains[i],current_util[i]);
 	}
 }
-state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,uint *powercap)
+state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,ulong *powercap)
 {
 	state_t ret,gret;
-	uint total=0,parc;
+	ulong total=0,parc;
 	int i;
 	for (i=0;i<NUM_DOMAINS;i++){
 		ret=freturn(pcsyms_fun[i].get_powercap_value,pid,&parc);

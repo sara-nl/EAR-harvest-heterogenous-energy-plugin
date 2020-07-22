@@ -45,10 +45,10 @@ static uint c_mode=PC_MODE_LIMIT;
 
 static ctx_t gpu_pc_ctx;
 static uint gpu_pc_num_gpus;
-static uint *gpu_pc_min_power;
-static uint *gpu_pc_max_power;
-static uint *gpu_pc_curr_power;
-static uint *gpu_pc_util;
+static ulong *gpu_pc_min_power;
+static ulong *gpu_pc_max_power;
+static ulong *gpu_pc_curr_power;
+static ulong *gpu_pc_util;
 static float *pdist;
 
 #define MIN_GPU_IDLE_POWER 30
@@ -59,11 +59,6 @@ state_t disable()
 	return EAR_SUCCESS;
 }
 
-void mgt_gpu_power_limit_get_min(ctx_t *c,uint *minv)
-{
-	int i;
-	for (i=0;i<gpu_pc_num_gpus;i++) minv[i]=125;
-}
 
 state_t enable(suscription_t *sus)
 {
@@ -77,19 +72,19 @@ state_t enable(suscription_t *sus)
 		gpu_pc_enabled = 1;
 		mgt_gpu_count(&gpu_pc_ctx,&gpu_pc_num_gpus);
 		debug("%d GPUS detectd in gpu_powercap",gpu_pc_num_gpus);
-		gpu_pc_min_power = calloc(gpu_pc_num_gpus,sizeof(uint));
+		gpu_pc_min_power = calloc(gpu_pc_num_gpus,sizeof(ulong));
 		if (gpu_pc_min_power == NULL){
 			gpu_pc_enabled = 0;
 			ret = EAR_ERROR;
 			debug("Error allocating memory in GPU enable");
 		}
-    gpu_pc_max_power = calloc(gpu_pc_num_gpus,sizeof(uint));
+    gpu_pc_max_power = calloc(gpu_pc_num_gpus,sizeof(ulong));
     if (gpu_pc_max_power == NULL){
       gpu_pc_enabled = 0;
       ret = EAR_ERROR;
       debug("Error allocating memory in GPU enable");
     }
-    gpu_pc_curr_power = calloc(gpu_pc_num_gpus,sizeof(uint));
+    gpu_pc_curr_power = calloc(gpu_pc_num_gpus,sizeof(ulong));
     if (gpu_pc_curr_power == NULL){
       gpu_pc_enabled = 0;
       ret = EAR_ERROR;
@@ -107,27 +102,26 @@ state_t enable(suscription_t *sus)
       ret = EAR_ERROR;
       debug("Error allocating memory in GPU enable");
 		}
-		mgt_gpu_power_limit_get_max(&gpu_pc_ctx,gpu_pc_max_power);
-		mgt_gpu_power_limit_get_min(&gpu_pc_ctx,gpu_pc_min_power);
+		mgt_gpu_power_cap_get_rank(&gpu_pc_ctx,gpu_pc_min_power,gpu_pc_max_power);
 	}
 	return ret;
 }
 
-static state_t int_set_powercap_value(uint limit,uint *gpu_util);
-state_t set_powercap_value(uint pid,uint domain,uint limit,uint *gpu_util)
+static state_t int_set_powercap_value(ulong limit,ulong *gpu_util);
+state_t set_powercap_value(uint pid,uint domain,ulong limit,ulong *gpu_util)
 {
 	return int_set_powercap_value(limit,gpu_util);
 }
-static state_t int_set_powercap_value(uint limit,uint *gpu_util)
+static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 {
 	char cmd[256];
 	state_t ret;
 	int i;
 	float alloc,ualloc;
-	uint gpu_idle=0,gpu_run=0,total_util=0;
+	ulong gpu_idle=0,gpu_run=0,total_util=0;
 	/* Set data */
 	debug("%s",COL_BLU);
-	debug("GPU: set_powercap_value %u",limit);
+	debug("GPU: set_powercap_value %lu",limit);
 	debug("GPU: Phase 1, allocating power to idle GPUS");
 	for (i=0;i<gpu_pc_num_gpus;i++){	
 		pdist[i]=0.0;
@@ -140,28 +134,28 @@ static state_t int_set_powercap_value(uint limit,uint *gpu_util)
 			gpu_run++;
 		}
 	}
-	debug("GPU: Phase 2: Allocating power to %u running GPUS",gpu_run);
+	debug("GPU: Phase 2: Allocating power to %lu running GPUS",gpu_run);
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		if (gpu_util[i]>0){
 			pdist[i]=(float)gpu_util[i]/(float)total_util;
 			alloc=(float)limit*pdist[i];
-			ualloc = (uint)alloc;
+			ualloc = alloc;
 			if (ualloc > gpu_pc_max_power[i]) ualloc = gpu_pc_max_power[i];
 			if (ualloc < gpu_pc_min_power[i]) ualloc = gpu_pc_min_power[i];
 			gpu_pc_curr_power[i] = ualloc;
 		}
 	}
-	ret = mgt_gpu_power_limit_set(&gpu_pc_ctx,gpu_pc_curr_power);
+	ret = mgt_gpu_power_cap_set(&gpu_pc_ctx,gpu_pc_curr_power);
   for (i=0;i<gpu_pc_num_gpus;i++) {
-    debug("GPU: util_gpu[%d]=%u power_alloc=%u",i,gpu_util[i],gpu_pc_curr_power[i]);
+    debug("GPU: util_gpu[%d]=%lu power_alloc=%lu",i,gpu_util[i],gpu_pc_curr_power[i]);
   }
-	memcpy(gpu_pc_util,gpu_util,sizeof(uint)*gpu_pc_num_gpus);
+	memcpy(gpu_pc_util,gpu_util,sizeof(ulong)*gpu_pc_num_gpus);
 	current_gpu_pc=limit;
 	debug("%s",COL_CLR);
 	return EAR_SUCCESS;
 }
 
-state_t get_powercap_value(uint pid,uint *powercap)
+state_t get_powercap_value(uint pid,ulong *powercap)
 {
 	/* copy data */
 	debug("GPU::get_powercap_value");
@@ -208,11 +202,11 @@ void set_verb_channel(int fd)
   DEBUG_SET_FD(fd);
 }
 
-void set_new_utilization(uint *util)
+void set_new_utilization(ulong *util)
 {
 	int i;
   for (i=0;i<gpu_pc_num_gpus;i++) {
-    debug("GPU: util_gpu[%d]=%u",i,util[i]);
+    debug("GPU: util_gpu[%d]=%lu",i,util[i]);
   }
 	int_set_powercap_value(current_gpu_pc,util);
 

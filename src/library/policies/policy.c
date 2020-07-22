@@ -160,7 +160,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 		if (gpu_lib_init(&my_pol_ctx.gpu_mgt_ctx) == EAR_SUCCESS){
 			my_pol_ctx.gpu_mgt_ctx_on=1;
 			debug("gpu_lib_init success");
-			gpu_lib_count(&my_pol_ctx.gpu_mgt_ctx,&my_pol_ctx.num_gpus);
+			gpu_lib_count(&my_pol_ctx.num_gpus);
 			debug("Num gpus detected in policy_load %u",my_pol_ctx.num_gpus);	
 		}else{
 			error("gpu_lib_init");

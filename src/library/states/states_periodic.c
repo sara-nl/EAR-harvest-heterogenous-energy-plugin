@@ -222,7 +222,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 							GPU_FREQ += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_freq;
 							GPU_UTIL += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_util;
 						}
-						GPU_FREQ = (float)GPU_FREQ/(loop_signature.signature.gpu_sig.num_gpus*1000.0);
+						GPU_FREQ = (float)GPU_FREQ/(loop_signature.signature.gpu_sig.num_gpus*1000000.0);
 						GPU_UTIL = GPU_UTIL/loop_signature.signature.gpu_sig.num_gpus;
 						}
 						#endif

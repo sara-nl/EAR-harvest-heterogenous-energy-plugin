@@ -1,5 +1,5 @@
-#MPI_API = 1
-#export MPI_API
+MPI_API = 1
+export MPI_API
 ifdef MPI_API 
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=1
 else
@@ -35,6 +35,11 @@ comm_OBJS = \
     $(SRCDIR)/daemon/powercap/powercap_status.o \
     $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a
+
+ifdef CUDA_BASE
+comm_OBJS += \
+		$(SRCDIR)/management/libmgt.a
+endif
 
 api_OBJS=api/ear.o
 

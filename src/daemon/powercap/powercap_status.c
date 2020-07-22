@@ -69,6 +69,12 @@ uint compute_extra_power(uint current,uint diff,uint target)
 	return total;
 }
 
+uint compute_extra_gpu_power(uint current,uint diff,uint target)
+{
+	/* This function mut be improved */
+	return 10;
+}
+
 uint compute_power_to_ask(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f)
 {
 	ulong adapted_f;

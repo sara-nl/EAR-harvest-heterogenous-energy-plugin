@@ -48,9 +48,6 @@ state_t dummy_power_cap_get_rank(ctx_t *c, ulong *watts_min, ulong *watts_max);
 
 state_t dummy_power_cap_reset(ctx_t *c);
 
-<<<<<<< HEAD
-=======
 state_t dummy_power_cap_set(ctx_t *c, ulong *watts);
 
->>>>>>> development
 #endif
