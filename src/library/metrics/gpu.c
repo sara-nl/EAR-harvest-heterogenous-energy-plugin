@@ -172,37 +172,37 @@ state_t gpu_lib_alloc_array(ulong **array)
 	return ops_man->alloc_array(NULL, array);
 }
 
-state_t gpu_lib_clock_cap_get_current(ctx_t *_c, ulong *khz)
+state_t gpu_lib_freq_limit_get_current(ctx_t *_c, ulong *khz)
 {
 	ctx_gpu_t *c = (ctx_gpu_t *) _c->context;
-	return ops_man->clock_cap_get_current(&c->ctx_man, khz);
+	return ops_man->freq_limit_get_current(&c->ctx_man, khz);
 }
 
-state_t gpu_lib_clock_cap_get_default(ulong *khz)
+state_t gpu_lib_freq_limit_get_default(ulong *khz)
 {
-	return ops_man->clock_cap_get_default(NULL, khz);
+	return ops_man->freq_limit_get_default(NULL, khz);
 }
 
-state_t gpu_lib_clock_cap_get_max(ulong *khz)
+state_t gpu_lib_freq_limit_get_max(ulong *khz)
 {
-	return ops_man->clock_cap_get_max(NULL, khz);
+	return ops_man->freq_limit_get_max(NULL, khz);
 }
 
-state_t gpu_lib_clock_cap_reset()
-{
-	// EARD
-	return EAR_SUCCESS;
-}
-
-state_t gpu_lib_clock_cap_set(ulong *khz)
+state_t gpu_lib_freq_limit_reset()
 {
 	// EARD
 	return EAR_SUCCESS;
 }
 
-state_t gpu_lib_clock_list(ulong ***list_khz, uint **list_len)
+state_t gpu_lib_freq_limit_set(ulong *khz)
 {
-	return ops_man->clock_list(NULL, list_khz, list_len);
+	// EARD
+	return EAR_SUCCESS;
+}
+
+state_t gpu_lib_freq_list(ulong ***list_khz, uint **list_len)
+{
+	return ops_man->freq_list(NULL, list_khz, list_len);
 }
 
 state_t gpu_lib_power_cap_get_current(ctx_t *_c, ulong *watts)

@@ -44,12 +44,12 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 		ops.dispose               = mgt_nvml_dispose;
 		ops.count                 = mgt_nvml_count;
 		ops.alloc_array           = mgt_gpu_alloc_array;
-		ops.clock_cap_get_current = nvml_clock_cap_get_current;
-		ops.clock_cap_get_default = nvml_clock_cap_get_default;
-		ops.clock_cap_get_max     = nvml_clock_cap_get_max;
-		ops.clock_cap_reset       = nvml_clock_cap_reset;
-		ops.clock_cap_set         = nvml_clock_cap_set;
-		ops.clock_list            = nvml_clock_list;
+		ops.freq_limit_get_current = nvml_freq_limit_get_current;
+		ops.freq_limit_get_default = nvml_freq_limit_get_default;
+		ops.freq_limit_get_max     = nvml_freq_limit_get_max;
+		ops.freq_limit_reset       = nvml_freq_limit_reset;
+		ops.freq_limit_set         = nvml_freq_limit_set;
+		ops.freq_list            = nvml_freq_list;
 		ops.power_cap_get_current = nvml_power_cap_get_current;
 		ops.power_cap_get_default = nvml_power_cap_get_default;
 		ops.power_cap_get_rank    = nvml_power_cap_get_rank;
@@ -64,12 +64,12 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 		ops.dispose               = mgt_dummy_dispose;
 		ops.count                 = mgt_dummy_count;
 		ops.alloc_array           = mgt_gpu_alloc_array;
-		ops.clock_cap_get_current = dummy_clock_cap_get_current;
-		ops.clock_cap_get_default = dummy_clock_cap_get_default;
-		ops.clock_cap_get_max     = dummy_clock_cap_get_max;
-		ops.clock_cap_reset       = dummy_clock_cap_reset;
-		ops.clock_cap_set         = dummy_clock_cap_set;
-		ops.clock_list            = dummy_clock_list;
+		ops.freq_limit_get_current = dummy_freq_limit_get_current;
+		ops.freq_limit_get_default = dummy_freq_limit_get_default;
+		ops.freq_limit_get_max     = dummy_freq_limit_get_max;
+		ops.freq_limit_reset       = dummy_freq_limit_reset;
+		ops.freq_limit_set         = dummy_freq_limit_set;
+		ops.freq_list            = dummy_freq_list;
 		ops.power_cap_get_current = dummy_power_cap_get_current;
 		ops.power_cap_get_default = dummy_power_cap_get_default;
 		ops.power_cap_get_rank    = dummy_power_cap_get_rank;
@@ -108,34 +108,34 @@ state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array)
 	return EAR_SUCCESS;
 }
 
-state_t mgt_gpu_clock_cap_get_current(ctx_t *c, ulong *khz)
+state_t mgt_gpu_freq_limit_get_current(ctx_t *c, ulong *khz)
 {
-	preturn (ops.clock_cap_get_current, c, khz);
+	preturn (ops.freq_limit_get_current, c, khz);
 }
 
-state_t mgt_gpu_clock_cap_get_default(ctx_t *c, ulong *khz)
+state_t mgt_gpu_freq_limit_get_default(ctx_t *c, ulong *khz)
 {
-	preturn (ops.clock_cap_get_default, c, khz);
+	preturn (ops.freq_limit_get_default, c, khz);
 }
 
-state_t mgt_gpu_clock_cap_get_max(ctx_t *c, ulong *khz)
+state_t mgt_gpu_freq_limit_get_max(ctx_t *c, ulong *khz)
 {
-	preturn (ops.clock_cap_get_max, c, khz);
+	preturn (ops.freq_limit_get_max, c, khz);
 }
 
-state_t mgt_gpu_clock_cap_reset(ctx_t *c)
+state_t mgt_gpu_freq_limit_reset(ctx_t *c)
 {
-	preturn (ops.clock_cap_reset, c);
+	preturn (ops.freq_limit_reset, c);
 }
 
-state_t mgt_gpu_clock_cap_set(ctx_t *c, ulong *khz)
+state_t mgt_gpu_freq_limit_set(ctx_t *c, ulong *khz)
 {
-	preturn (ops.clock_cap_set, c, khz);
+	preturn (ops.freq_limit_set, c, khz);
 }
 
-state_t mgt_gpu_clock_list(ctx_t *c, ulong ***list_khz, uint **list_len)
+state_t mgt_gpu_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len)
 {
-	preturn (ops.clock_list, c, list_khz, list_len);
+	preturn (ops.freq_list, c, list_khz, list_len);
 }
 
 state_t mgt_gpu_power_cap_get_current(ctx_t *c, ulong *watts)

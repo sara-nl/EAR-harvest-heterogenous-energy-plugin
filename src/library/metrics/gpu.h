@@ -57,17 +57,17 @@ state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length);
 /* Management. */
 state_t gpu_lib_alloc_array(ulong **array);
 
-state_t gpu_lib_clock_cap_get_current(ctx_t *c, ulong *khz);
+state_t gpu_lib_freq_limit_get_current(ctx_t *c, ulong *khz);
 
-state_t gpu_lib_clock_cap_get_default(ulong *khz);
+state_t gpu_lib_freq_limit_get_default(ulong *khz);
 
-state_t gpu_lib_clock_cap_get_max(ulong *khz);
+state_t gpu_lib_freq_limit_get_max(ulong *khz);
 
-state_t gpu_lib_clock_cap_reset();
+state_t gpu_lib_freq_limit_reset();
 
-state_t gpu_lib_clock_cap_set(ulong *khz);
+state_t gpu_lib_freq_limit_set(ulong *khz);
 
-state_t gpu_lib_clock_list(ulong ***list_khz, uint **list_len);
+state_t gpu_lib_freq_list(ulong ***list_khz, uint **list_len);
 
 state_t gpu_lib_power_cap_get_current(ctx_t *c, ulong *watts);
 
