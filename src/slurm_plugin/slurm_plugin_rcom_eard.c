@@ -26,10 +26,8 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 	sd->pack.eard.connected = 1;
 
 	//
-	plug_verbose(sp, 2, "connecting to EARD: '%s:%d'", node, port);
-
 	if (eards_remote_connect(node, port) < 0) {
-		plug_error(sp, "while connecting with EAR daemon");
+		plug_verbose(sp, 2, "connecting to EARD: '%s:%d': FAILED", node, port);
 		sd->pack.eard.connected = 0;
 		return ESPANK_ERROR;
 	}
@@ -39,6 +37,7 @@ static int plug_rcom_eard(spank_t sp, plug_serialization_t *sd, int new_job)
 	} else {
 		eards_end_job(sd->job.app.job.id, sd->job.app.job.step_id);
 	}
+	plug_verbose(sp, 2, "connecting to EARD: '%s:%d': OK", node, port);
 	eards_remote_disconnect();
 
 	return ESPANK_SUCCESS;

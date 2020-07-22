@@ -16,6 +16,7 @@
 */
 
 #include <metrics/frequency/imc.h>
+#include <metrics/frequency/imc/dummy.h>
 #include <metrics/frequency/imc/intel63.h>
 
 #define opreturn(call, ...) \
@@ -41,7 +42,7 @@ static struct imc_freq_ops
 
 state_t freq_imc_init(topology_t *tp)
 {
-	if (state_ok(ifreq_intel63_status(topology_t *_tp)))
+	if (state_ok(ifreq_intel63_status(tp)))
 	{
 		ops.init		= ifreq_intel63_init;
 		ops.dispose		= ifreq_intel63_dispose;

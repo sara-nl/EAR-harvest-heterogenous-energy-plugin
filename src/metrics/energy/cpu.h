@@ -18,6 +18,6 @@
 #ifndef METRICS_ENERGY_CPU_H
 #define METRICS_ENERGY_CPU_H
 
-#include <metrics/energy/cpu/intel_haswell.h>
+#include <metrics/energy/cpu/intel63.h>
 
 #endif 

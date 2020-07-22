@@ -26,12 +26,12 @@
 #include <common/types/log_eard.h>
 #include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
-#include <metrics/frequency/cpu.h>
-#include <metrics/energy/energy_cpu.h>
+#include <common/hardware/hardware_info.h>
+#include <metrics/gpu/gpu.h>
+#include <metrics/energy/cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
-#include <metrics/gpu/gpu.h>
-#include <common/hardware/hardware_info.h>
+#include <metrics/frequency/cpu.h>
 #include <daemon/local_api/eard_conf_api.h>
 #include <daemon/remote_api/dynamic_configuration.h>
 #include <daemon/power_monitor.h>
@@ -1071,6 +1071,8 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
 	dyn->max_sig_power=node->max_sig_power;
 	dyn->max_power_cap=node->max_power_cap;
 	dyn->report_loops=cluster->database.report_loops;
+	dyn->max_avx512_freq=my_node_conf->max_avx512_freq;
+	dyn->max_avx2_freq=my_node_conf->max_avx2_freq;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 
 

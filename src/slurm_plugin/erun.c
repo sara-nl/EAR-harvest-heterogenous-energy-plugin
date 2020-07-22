@@ -1,3 +1,4 @@
+#include <sys/wait.h>
 #include <slurm_plugin/slurm_plugin.h>
 #include <slurm_plugin/slurm_plugin_environment.h>
 #include <slurm_plugin/slurm_plugin_serialization.h>
@@ -48,8 +49,8 @@ int help(int argc, char *argv[])
 	printf("\t--job-id=<arg>\t\tSet the JOB_ID.\n");
 	printf("\t--nodes=<arg>\t\tSets the number of nodes.\n");
 	printf("\t--program=<arg>\t\tSets the program to run.\n");
-	printf("\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
-	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
+//	printf("\t--plugstack [ARGS]\tSet the SLURM's plugstack arguments. I.e:\n");
+//	printf("\t\t\t\t--plugstack prefix=/hpc/opt/ear default=on...\n");
 	printf("\t--clean\t\t\tRemoves the internal files.\n");
 	printf("SLURM options:\n");
 
@@ -158,6 +159,9 @@ int job(int argc, char *argv[])
 	int err_def = 1;
 	char *p = NULL;
 	int i = 0;
+
+	// Enabling plugin and erun components
+	setenv(Var.comp_plug.cmp, "1", 1);
 
 	// Clean
 	for (i = 0; i < argc; ++i) {
@@ -295,9 +299,63 @@ int step(int argc, char *argv[], int job_id, int step_id)
 	return 0;
 }
 
-int execute(int argc, char *argv[])
+static void execute_parse(char *program, char *args[])
 {
-	system(path_app);
+	int len = strlen(program);
+	int i;
+	int j;
+	
+	args[0] = program;
+	for (i = 0, j = 1; i < len; ++i) {
+		if (program[i] == ' ') {
+			program[i] = '\0';
+			if (program[i+1] != '\0' && program[i+1] != ' ') {
+				args[j] = &program[i+1];
+				++j;
+			}
+		}
+		if (program[i] == '\0') {
+			i = len; 
+		}
+	}
+	args[j] = NULL;
+	
+	plug_verbose(_sp, 4, "ERUN --program decomposition:");
+	for (i = 0; args[i] != NULL; ++i) {
+		plug_verbose(_sp, 4, "%d: %s", i, args[i]);
+	}
+}
+
+static int execute(int argc, char *argv[])
+{
+	char *args[128];
+	pid_t fpid;
+
+	//
+	execute_parse(path_app, args);
+	//
+	fpid = fork();
+
+	if (fpid == 0)
+	{
+		// Setting SLURMs task pid
+		sprintf(buffer, "%d", getpid());
+		setenv(Var.task_pid.rem, buffer, 1);
+
+		// Executting
+		if (execvp(args[0], args) == -1) {
+			plug_verbose(_sp, 0, "failed to run the program (exec)");
+			exit(0);
+		}
+		// No return
+	} else if (fpid == -1) {
+		plug_verbose(_sp, 0, "failed to run the program (fork)");
+	} else {
+		waitpid(fpid, &sd.subject.exit_status, 0);
+		plug_verbose(_sp, 2, "program returned with status %d",
+			sd.subject.exit_status);
+	}	
+
 	return 0;
 }
 

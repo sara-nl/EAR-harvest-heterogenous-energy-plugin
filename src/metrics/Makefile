@@ -21,19 +21,20 @@ mets_OBJS = \
     $(SRCDIR)/metrics/cache/cache.o \
     $(SRCDIR)/metrics/cpi/cpi.o \
     $(SRCDIR)/metrics/cpi/cpu/intel63.o \
-    $(SRCDIR)/metrics/energy/energy_cpu.o \
+    $(SRCDIR)/metrics/energy/cpu.o \
     $(SRCDIR)/metrics/energy/energy_node.o \
     $(SRCDIR)/metrics/energy/energy_node_lib.o \
-    $(SRCDIR)/metrics/energy/cpu/intel_haswell.o \
+    $(SRCDIR)/metrics/energy/cpu/intel63.o \
     $(SRCDIR)/metrics/flops/flops.o \
     $(SRCDIR)/metrics/flops/cpu/intel63.o \
     $(SRCDIR)/metrics/flops/cpu/dummy.o \
     $(SRCDIR)/metrics/gpu/gpu.o \
     $(SRCDIR)/metrics/gpu/archs/dummy.o \
     $(SRCDIR)/metrics/gpu/archs/nvml.o \
-    $(SRCDIR)/metrics/frequency/imc.o \
     $(SRCDIR)/metrics/frequency/cpu.o \
     $(SRCDIR)/metrics/frequency/cpu/intel63.o \
+    $(SRCDIR)/metrics/frequency/imc.o \
+    $(SRCDIR)/metrics/frequency/imc/dummy.o \
     $(SRCDIR)/metrics/frequency/imc/intel63.o \
     $(SRCDIR)/metrics/stalls/stalls.o \
     $(SRCDIR)/metrics/temperature/temperature.o

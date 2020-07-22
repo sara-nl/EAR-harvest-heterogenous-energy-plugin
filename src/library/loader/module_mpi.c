@@ -21,9 +21,8 @@
 #include <unistd.h>
 #include <common/system/file.h>
 #include <common/system/symplug.h>
-#include <common/output/verbose.h>
 #include <common/string_enhanced.h>
-#include <common/config/config_env.h>
+#include <library/loader/loader.h>
 #include <library/loader/module_mpi.h>
 
 static mpic_t next_mpic;
@@ -191,26 +190,13 @@ static int module_mpi_is()
 	return !(dlsym(RTLD_DEFAULT, "MPI_Get_library_version") == NULL);
 }
 
-static void module_mpi_init()
-{
-	char *verb;
-	
-	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
-	{
-		VERB_SET_EN(1);
-		VERB_SET_LV(atoi(verb));
-	}
-}
-
 int module_mpi()
 {
 	static char path_so[4096];
 	int lang_c;
 	int lang_f;
 
-	module_mpi_init();
-	
-	verbose(3, "LOADER: function module_mpi in '%s'", program_invocation_name);
+	verbose(3, "LOADER: loading module MPI");
 
 	if (!module_mpi_is()) {
 		verbose(3, "LOADER: no MPI detected");

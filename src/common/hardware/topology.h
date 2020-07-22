@@ -96,6 +96,8 @@ typedef struct topology_s
 
 state_t topology_select(topology_t *t, topology_t *s, int component, int group, int val);
 
+state_t topology_copy(topology_t *dst, topology_t *src);
+
 state_t topology_init(topology_t *topo);
 
 state_t topology_close(topology_t *topo);

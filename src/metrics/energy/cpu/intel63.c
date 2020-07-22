@@ -30,7 +30,7 @@
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
 
-#include <metrics/energy/energy_cpu.h>
+#include <metrics/energy/cpu.h>
 #include <metrics/common/omsr.h>
 
 /** Intel */
@@ -47,7 +47,7 @@
 //#define MSR_DRAM_POWER_INFO			0x61C
 /** AMD */
 #define MSR_AMD_RAPL_POWER_UNIT			0xC0010299
-#deifne MSR_AMD_PKG_ENERGY_STATUS		0xC001029B
+#define MSR_AMD_PKG_ENERGY_STATUS		0xC001029B
 #define MSR_AMD_CORE_ENERGY_STATUS		0xC001029A
 
 //

@@ -74,5 +74,3 @@ state_t ifreq_dummy_data_print(ulong *freqs, ulong *average)
 {
 	return EAR_SUCCESS;
 }
-
-#endif //EAR_FREQUENCY_UNCORE_H

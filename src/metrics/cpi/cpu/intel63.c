@@ -17,6 +17,7 @@
 
 //#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
+#include <metrics/common/perf.h>
 #include <metrics/cpi/cpu/intel63.h>
 
 static llong values[2];
@@ -24,7 +25,7 @@ static perf_t perf_cyc;
 static perf_t perf_ins;
 static uint initialized;
 
-state_t intel63_cpi_status(topology_t *tp)
+state_t cpi_intel63_status(topology_t *tp)
 {
 	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN) {
 		return EAR_SUCCESS;
@@ -35,7 +36,7 @@ state_t intel63_cpi_status(topology_t *tp)
 	return EAR_ERROR;
 }
 
-state_t intel63_cpi_init(ctx_t *c)
+state_t cpi_intel63_init(ctx_t *c)
 {
 	state_t s;
 	if (xtate_fail(s, perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS))) {
@@ -49,12 +50,12 @@ state_t intel63_cpi_init(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t intel63_cpi_dispose(ctx_t *c)
+state_t cpi_intel63_dispose(ctx_t *c)
 {
 	return EAR_SUCCESS;
 }
 
-state_t reset_basic_metrics(ctx_t *c)
+state_t cpi_intel63_reset(ctx_t *c)
 {
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
@@ -62,7 +63,7 @@ state_t reset_basic_metrics(ctx_t *c)
 	return perf_reset(&perf_ins);
 }
 
-state_t start_basic_metrics(ctx_t *c)
+state_t cpi_intel63_start(ctx_t *c)
 {
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
@@ -70,21 +71,21 @@ state_t start_basic_metrics(ctx_t *c)
 	return perf_start(&perf_ins);
 }
 
-state_t stop_basic_metrics(ctx_t *c, llong *cycles, llong *insts)
+state_t cpi_intel63_stop(ctx_t *c, llong *cycles, llong *insts)
 {
 	state_t s;
 
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
-	if (xtate_fail, s, perf_stop(&perf_ins)) {
+	if (xtate_fail(s, perf_stop(&perf_ins))) {
 		return s;
 	}
 
-	return intel63_cpi_read(cycles, insts);
+	return cpi_intel63_read(c, cycles, insts);
 }
 
-state_t intel63_cpi_read(ctx_t *c, llong *cycles, llong *insts)
+state_t cpi_intel63_read(ctx_t *c, llong *cycles, llong *insts)
 {
 	state_t s;
 

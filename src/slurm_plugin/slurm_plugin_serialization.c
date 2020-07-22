@@ -40,7 +40,6 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 
 	int found_earmgd_port = 0;
 	int found_eargmd_host = 0;
-	int found_eargmd_minn = 0;
 	int found_path_inst = 0;
 	int found_path_temp = 0;
 	int i;
@@ -143,7 +142,7 @@ static int frequency_exists(spank_t sp, ulong *freqs, int n_freqs, ulong freq)
 	return 0;
 }
 
-int plug_print_application(spank_t sp, application_t *app)
+int plug_print_application(spank_t sp, new_job_req_t *app)
 {
 	plug_verbose(sp, 3, "---------- application summary ---");
 	plug_verbose(sp, 3, "job/step/name '%lu'/'%lu'/'%s'", app->job.id, app->job.step_id, app->job.app_id);
@@ -158,12 +157,12 @@ int plug_read_application(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_read_application");
 	
-	application_t *app = &sd->job.app;
+	new_job_req_t *app = &sd->job.app;
 	ulong *freqs = sd->pack.eard.freqs.freqs;
 	int n_freqs = sd->pack.eard.freqs.n_freqs;
 	int item;
 
-	init_application(app);
+	memset(app,0,sizeof(new_job_req_t));
 
 	// Gathering variables
 	app->is_mpi = plug_component_isenabled(sp, Component.library);
@@ -292,7 +291,7 @@ int plug_print_variables(spank_t sp)
 	return ESPANK_SUCCESS;
 }
 
-int plug_clean_components(spank_t sp)
+int plug_deserialize_components(spank_t sp)
 {
 	int test;
 
@@ -316,6 +315,11 @@ int plug_clean_components(spank_t sp)
 	if (isenv_agnostic(sp, Var.comp_moni.cmp, "1")) {
 		plug_component_setenabled(sp, Component.monitor, 1);
 	}
+
+	// Return
+	if (!plug_component_isenabled(sp, Component.plugin)) {
+                return ESPANK_ERROR;
+        }
 
 	return ESPANK_SUCCESS;
 }
@@ -454,6 +458,10 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 		sd->subject.context_local = Context.sbatch;
 	} else {
 		sd->subject.context_local = Context.error;
+	}
+
+	if (sd->subject.context_local == Context.error) {
+		return ESPANK_ERROR;
 	}
 
 	/*

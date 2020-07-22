@@ -15,8 +15,13 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <common/output/debug.h>
+#include <metrics/cpi/cpi.h>
+#include <metrics/cpi/cpu/dummy.h>
+#include <metrics/cpi/cpu/intel63.h>
+
 static struct uncore_op {
-	state_t (*init)		(ctx_t *c, topology_t *tp);
+	state_t (*init)		(ctx_t *c);
 	state_t (*dispose)	(ctx_t *c);
 	state_t (*reset)	(ctx_t *c);
 	state_t (*start)	(ctx_t *c);
@@ -32,7 +37,7 @@ int init_basic_metrics()
 {
 	topology_init(&topo);
 
-	if (state_ok(intel63_cpi_status(&topo)))
+	if (state_ok(cpi_intel63_status(&topo)))
 	{
 		debug("selected intel63");
 		ops.init  = cpi_intel63_init;
@@ -77,7 +82,7 @@ void stop_basic_metrics(llong *cycles, llong *insts)
 	}
 }
 
-void get_basic_metrics(llong *total_cycles, llong *insts)
+void get_basic_metrics(llong *cycles, llong *insts)
 {
 	if (ops.read != NULL) {
 		ops.read(c, cycles, insts);

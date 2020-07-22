@@ -28,8 +28,6 @@ state_t get_arch_desc(architecture_t *arch)
 {
 	state_t ret;
 	if (arch==NULL) return EAR_ERROR;
-	arch->max_freq_avx512=MAX_FREQ_AVX512;
-	arch->max_freq_avx2=MAX_FREQ_AVX2;
 	arch->pstates=CPUfreq_get_num_pstates(0);
 	topology_init(&arch->top);
 	return EAR_SUCCESS;	

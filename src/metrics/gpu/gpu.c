@@ -42,12 +42,12 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 	if (model_force == MODEL_NVML) {
 		debug("loaded NVML");
 		ops.init		= nvml_init;
+		ops.init_unprivileged = nvml_init_unprivileged;
 		ops.dispose		= nvml_dispose;
-		ops.read		= nvml_read;
-		ops.read_raw	= nvml_read_raw;
-		ops.read_copy	= nvml_read_copy;
 		ops.count		= nvml_count;
-		ops.data_init   = nvml_data_init;
+		ops.read		= nvml_read;
+		ops.read_copy	= nvml_read_copy;
+		ops.read_raw	= nvml_read_raw;
 		ops.data_diff	= nvml_data_diff;
 		ops.data_merge	= nvml_data_merge;
 		ops.data_alloc	= nvml_data_alloc;
@@ -62,12 +62,12 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 	} else {
 		debug("loaded DUMMY");
 		ops.init		= gpu_dummy_init;
+		ops.init_unprivileged = gpu_dummy_init;
 		ops.dispose		= gpu_dummy_dispose;
-		ops.read		= gpu_dummy_read;
-		ops.read_raw	= gpu_dummy_read_raw;
-		ops.read_copy	= gpu_dummy_read_copy;
 		ops.count		= gpu_dummy_count;
-		ops.data_init   = gpu_dummy_data_init;
+		ops.read		= gpu_dummy_read;
+		ops.read_copy	= gpu_dummy_read_copy;
+		ops.read_raw	= gpu_dummy_read_raw;
 		ops.data_diff	= gpu_dummy_data_diff;
 		ops.data_merge	= gpu_dummy_data_merge;
 		ops.data_alloc	= gpu_dummy_data_alloc;
@@ -96,24 +96,14 @@ state_t gpu_init(ctx_t *c)
 	preturn (ops.init, c);
 }
 
+state_t gpu_init_unprivileged(ctx_t *c)
+{
+	preturn (ops.init_unprivileged, c);
+}
+
 state_t gpu_dispose(ctx_t *c)
 {
 	preturn (ops.dispose, c);
-}
-
-state_t gpu_read(ctx_t *c, gpu_t *data)
-{
-	preturn (ops.read, c, data);
-}
-
-state_t gpu_read_raw(ctx_t *c, gpu_t *data)
-{
-	preturn (ops.read_raw, c, data);
-}
-
-state_t gpu_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
-{
-	preturn (ops.read_copy, c, data2, data1, data_diff);
 }
 
 state_t gpu_count(ctx_t *c, uint *dev_count)
@@ -121,9 +111,19 @@ state_t gpu_count(ctx_t *c, uint *dev_count)
 	preturn (ops.count, c, dev_count);
 }
 
-state_t gpu_data_init(uint dev_count)
+state_t gpu_read(ctx_t *c, gpu_t *data)
 {
-	preturn (ops.data_init, dev_count);
+	preturn (ops.read, c, data);
+}
+
+state_t gpu_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
+{
+	preturn (ops.read_copy, c, data2, data1, data_diff);
+}
+
+state_t gpu_read_raw(ctx_t *c, gpu_t *data)
+{
+	preturn (ops.read_raw, c, data);
 }
 
 state_t gpu_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)

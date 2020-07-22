@@ -46,7 +46,7 @@ static topology_t tp;
 
 state_t ifreq_intel63_status(topology_t *_tp)
 {
-	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
+	if (_tp->vendor == VENDOR_INTEL && _tp->model >= MODEL_HASWELL_X) {
 		return EAR_SUCCESS;
 	}
 	return EAR_ERROR;

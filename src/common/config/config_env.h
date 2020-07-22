@@ -18,8 +18,6 @@
 #ifndef CONFIG_ENVIRONMENT_H
 #define CONFIG_ENVIRONMENT_H
 
-#define SCHED_SLURM 1
-// Database
 #define VAR_INS_PATH "EAR_INSTALL_PATH"
 #define VAR_TMP_PATH "EAR_TMP"
 #define VAR_ETC_PATH "EAR_ETC"
@@ -40,16 +38,25 @@
 #define REL_NAME_LIBR "libear"
 #define REL_PATH_LOAD "lib/libearld.so"
 
+#define SCHED_SLURM 1
+#ifdef  SCHED_SLURM
 
-#ifdef SCHED_SLURM
-//
 #define VAR_OPT_TRAC "SLURM_EAR_TRACE_PATH"
-#define HACK_PATH_LIBR "SLURM_HACK_LIBRARY"
-#define HACK_FILE_LIBR "SLURM_HACK_LIBRARY_FILE"
-#define HACK_FILE_LOAD "SLURM_HACK_LOADER"
-#define HACK_FILE_NVML "SLURM_HACK_NVML"
-#define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION"
 
+// Sets a specific library path (the loader selects the file).
+#define HACK_PATH_LIBR "SLURM_HACK_LIBRARY"
+// Sets a specific library file.
+#define HACK_FILE_LIBR "SLURM_HACK_LIBRARY_FILE"
+// Sets a specific loader file.
+#define HACK_FILE_LOAD "SLURM_HACK_LOADER"
+// The GPU API loads a specific NVML library file.
+#define HACK_FILE_NVML "SLURM_HACK_NVML"
+// Adds a suffix to libear.so (i.e: libear.hello.so). 
+#define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION"
+// Delivered by SLURM, this flag contains the task PID.
+#define FLAG_TASK_PID  "SLURM_TASK_PID"
+// Sets the value of the loader's verbosity.
+#define FLAG_LOAD_VERB "SLURM_LOADER_VERBOSE"
 
 #define SCHED_LOADER_VERBOSE "SLURM_LOADER_VERBOSE"
 #define SCHED_EAR_SHOW_SIGNATURES "SLURM_EAR_SHOW_SIGNATURES"
@@ -57,7 +64,9 @@
 #define SCHED_EAR_POWER_MODEL "SLURM_EAR_POWER_MODEL"
 #define SCHED_EAR_MIN_PERC_MPI "SLURM_EAR_MIN_PERC_MPI"
 #define SCHED_EAR_RED_FREQ_IN_MPI "SLURM_EAR_RED_FREQ_IN_MPI"
-
+#define SCHED_EAR_DYNAIS_WINDOW_SIZE "SLURM_EAR_DYNAIS_WINDOW_SIZE"
+#define SCHED_EAR_DEF_FREQ "SLURM_EAR_DEF_FREQ"
+#define SCHED_EAR_TRACE_PLUGIN "SLURM_EAR_TRACE_PLUGIN"
 
 #define SCHED_JOB_ID  "SLURM_JOB_ID"
 #define SCHED_STEP_ID "SLURM_STEP_ID"
@@ -68,10 +77,6 @@
 #define NULL_STEPID (0xfffffffe)
 #define NULL_ACCOUNT "NO_SLURM_ACCOUNT"
 
-#define SCHED_EAR_DYNAIS_WINDOW_SIZE "SLURM_EAR_DYNAIS_WINDOW_SIZE"
-#define SCHED_EAR_DEF_FREQ "SLURM_EAR_DEF_FREQ"
-#define SCHED_EAR_TRACE_PLUGIN "SLURM_EAR_TRACE_PLUGIN"
-
-#endif
+#endif //SCHED_SLURM
 
 #endif //CONFIG_ENVIRONMENT_H

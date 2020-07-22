@@ -173,13 +173,14 @@ static state_t topology_init_thread(topology_t *topo, uint thread)
 	return EAR_SUCCESS;
 }
 
-static void topology_copy(topology_t *dst, topology_t *src)
+state_t topology_copy(topology_t *dst, topology_t *src)
 {
 	void *p;
 	p = memcpy(dst, src, sizeof(topology_t));
 	p = malloc(sizeof(core_t) * src->cpu_count);
 	p = memcpy(p, src->cpus, sizeof(core_t) * src->cpu_count);
-	src->cpus = (core_t *) p;
+	dst->cpus = (core_t *) p;
+	return EAR_SUCCESS;
 }
 
 static void topology_cpuid(topology_t *topo)
@@ -225,6 +226,7 @@ state_t topology_init(topology_t *topo)
 
 	// TODO: spaguettis
 	if (topo_static.cpu_count != 0) {
+		printf("copying\n");
 		topology_copy(topo, &topo_static);
 	}
 

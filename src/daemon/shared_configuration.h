@@ -60,6 +60,8 @@ typedef struct settings_conf{
 	double max_power_cap;
 	uint report_loops;
 	conf_install_t 	installation;
+	ulong   max_avx512_freq;
+  ulong   max_avx2_freq;
 #if POWERCAP
 	node_powercap_opt_t pc_opt;
 #endif
