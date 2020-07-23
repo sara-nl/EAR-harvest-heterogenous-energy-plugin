@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/system/symplug.h>
 
@@ -33,7 +33,7 @@ state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 		if ((calls[i] != NULL) && (error == NULL)) {
 			debug("symbol %s found (%p)", names[i], calls[i]);
 		} else {
-			debug("symbol %s not found (%s)", names[i], error);
+			error("warning, symbol %s not found (%s)", names[i], error);
 			calls[i] = NULL;
 		}
 	}
@@ -49,7 +49,7 @@ state_t symplug_open(char *path, void *calls[], const char *names[], uint n)
 	if (!handle)
 	{
 		
-		debug("error when loading shared object (%s)", dlerror());
+		error("error when loading shared object (%s)", dlerror());
 		for (i=0;i<n;i++) calls[i]=NULL;	
 		state_return_msg(EAR_DL_ERROR, 0, dlerror());
 	}
@@ -65,7 +65,7 @@ state_t symplug_open_lazy(char *path, void *calls[], const char *names[], uint n
   if (!handle)
   {
 
-    debug("error when loading shared object (%s)", dlerror());
+    error("error when loading shared object (%s)", dlerror());
     state_return_msg(EAR_DL_ERROR, 0, dlerror());
   }
 

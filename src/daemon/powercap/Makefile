@@ -21,19 +21,11 @@ endif
 powercap_PATH = $(DESTDIR)/lib/plugins/powercap
 powercap_PERM = 0775
 
-gpu_DEPS = \
-	$(SRCDIR)/management/libmgt.a \
-	$(SRCDIR)/common/libcommon.a 
+gpu_DEPS = 
 
-gpu_dvfs_DEPS = \
-	$(SRCDIR)/metrics/libmetrics.a \
-	$(SRCDIR)/management/libmgt.a \
-	$(SRCDIR)/common/libcommon.a 
+gpu_dvfs_DEPS = 
 
-dvfs_DEPS = \
-	powercap_status.o \
-	$(SRCDIR)/metrics/libmetrics.a \
-	$(SRCDIR)/common/libcommon.a 
+dvfs_DEPS = 
 
 ######## RULES
 

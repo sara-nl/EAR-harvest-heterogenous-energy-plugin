@@ -60,11 +60,13 @@ static float *pdist;
 static ulong *c_freq,*t_freq,*n_freq;
 static ulong **gpu_freq_list=NULL;
 static uint *gpu_num_freqs=NULL;
+static gpu_ops_t     *ops_met;
 
 ulong select_lower_gpu_freq(uint i,ulong f)
 {
 	int j=0,found=0;
 	/* If we are the minimum*/
+	debug("Looking for lower freq for %lu",f);
 	if (f == gpu_freq_list[i][gpu_num_freqs[i]-1]) return f;
 	/* Otherwise, look for f*/
 	do{
@@ -86,6 +88,7 @@ ulong select_lower_gpu_freq(uint i,ulong f)
 ulong select_higher_gpu_freq(uint i,ulong f)
 {
   int j=0,found=0;
+	debug("Looking for higher freq for %lu",f);
 	/* If we are the maximum*/
 	if (f == gpu_freq_list[i][0]) return f;
 	/* Otherwise, look for f*/
@@ -119,7 +122,7 @@ static void printf_gpu_freq_list(ulong **f,uint *num_f)
 state_t gpu_dvfs_pc_thread_init(void *p)
 {
   state_t s;
-	if (gpu_load(NULL,0,NULL)!=EAR_SUCCESS){
+	if (gpu_load(&ops_met,0,NULL)!=EAR_SUCCESS){
 		debug("Error at gpu load");
 		gpu_dvfs_pc_enabled = 0;
     return EAR_ERROR;
@@ -139,7 +142,10 @@ state_t gpu_dvfs_pc_thread_init(void *p)
 	printf_gpu_freq_list(gpu_freq_list,gpu_num_freqs);
   gpu_dvfs_pc_enabled=1;
   debug("Power measurement initialized in gpu_dvfs_pc thread initialization");
-	gpu_read(&gpu_metric_ctx,values_gpu_init);
+	if (gpu_read(&gpu_metric_ctx,values_gpu_init)!= EAR_SUCCESS){
+		debug("Error in gpu_read in gpu_dvfs_pc");
+		gpu_dvfs_pc_enabled=0;
+	}
 	return EAR_SUCCESS;
 }
 /************************ This function is called by the monitor in iterative part ************************/
@@ -150,13 +156,27 @@ state_t gpu_dvfs_pc_thread_main(void *p)
 		ulong extra;
 		uint i;
 
-		gpu_read(&gpu_metric_ctx,values_gpu_end);
+		if (!gpu_dvfs_pc_enabled) return EAR_SUCCESS;
+		if (gpu_read(&gpu_metric_ctx,values_gpu_end)!=EAR_SUCCESS){
+    	debug("Error in gpu_read gpu_dvfs_pc");
+			return EAR_ERROR;
+		}
+		#if 0
+		gpu_data_tostr(values_gpu_end,gpu_str,sizeof(gpu_str));
+    debug(gpu_str); 
+		#endif
     /* Calcular power */
 		gpu_data_diff(values_gpu_end,values_gpu_init,values_gpu_diff);
+		#if 0
 		gpu_data_tostr(values_gpu_diff,gpu_str,sizeof(gpu_str));
-    /* debug(gpu_str); */
+    debug(gpu_str); 
+		#endif
 		mgt_gpu_freq_limit_get_current(&gpu_pc_ctx,c_freq);
 		for (i=0;i<gpu_pc_num_gpus;i++){
+				debug("GPU_DVFS[%u] current_f=%lu powercap %lu consumption %.1lf",i,c_freq[i],gpu_pc_curr_power[i], values_gpu_diff[i].power_w);
+		}
+		for (i=0;i<gpu_pc_num_gpus;i++){
+		n_freq[i] = c_freq[i];
     if (c_status==PC_STATUS_RUN){
       /* Aplicar limites */
       if ((current_gpu_pc>0)  && (c_status==PC_STATUS_RUN)){
@@ -174,10 +194,14 @@ state_t gpu_dvfs_pc_thread_main(void *p)
     } /* (current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN) */
     } /* c_status==PC_STATUS_RUN */
 		}
-		for (i=0;i<gpu_pc_num_gpus;i++){
-			debug("GPU_DVFS[%u] selecting f=%lu",i,n_freq[i]);
+		if (c_status==PC_STATUS_RUN){
+			for (i=0;i<gpu_pc_num_gpus;i++){
+				debug("GPU_DVFS[%u] selecting f=%lu",i,n_freq[i]);
+			}
+			mgt_gpu_freq_limit_set(&gpu_metric_ctx,n_freq);
+		}else{
+			debug("GPU-dvfs freq not modifies because idle");
 		}
-		mgt_gpu_freq_limit_set(&gpu_metric_ctx,n_freq);
     /* Copiar init=end */
 		gpu_data_copy(values_gpu_init,values_gpu_end);
 		return EAR_SUCCESS;
