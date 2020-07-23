@@ -1248,8 +1248,8 @@ unsigned long ear_new_loop()
 	manual_loopid++;
   if (!ear_whole_app)
   {
+		debug("New loop reported");
 		switch (ear_status){
-			debug("New loop reported");
 			case NO_LOOP:
 				ear_status=IN_LOOP;
 				ear_iterations=0;

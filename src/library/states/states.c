@@ -105,7 +105,7 @@ extern uint check_periodic_mode;
 		if (loop_signature.signature.gpu_sig.num_gpus>0){ \
 		for(gpui=0;gpui<loop_signature.signature.gpu_sig.num_gpus;gpui++){ \
 			GPU_POWER += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_power; \
-			GPU_FREQ += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_freq; \ 
+			GPU_FREQ += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_freq; \
 			GPU_UTIL += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_util; \
 		} \
 		GPU_FREQ = GPU_FREQ/loop_signature.signature.gpu_sig.num_gpus; \
