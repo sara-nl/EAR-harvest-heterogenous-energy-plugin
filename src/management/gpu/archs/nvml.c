@@ -86,7 +86,7 @@ static nvmlDevice_t  *devices;
 static ulong 		 *clock_max_default; // KHz
 static ulong		 *clock_max; // KHz
 static ulong		 *clock_max_mem; // MHz
-static ulong		**clock_list; // MHz
+static ulong		**clock_list; // KHz
 static uint			 *clock_lens;
 static ulong		 *power_max_default; // W
 static ulong		 *power_max; // W
@@ -336,7 +336,7 @@ static state_t static_init_unprivileged()
 		}
 		clock_list[d] = calloc(clock_lens[d], sizeof(ulong *));
 		for (m = 0; m < clock_lens[d]; ++m) {
-			clock_list[d][m] = (ulong) aux_gpu[m];
+			clock_list[d][m] = ((ulong) aux_gpu[m]) * 1000LU;
 			//debug("D%u,i%u: %lu", d, i, clock_list[d][i]);
 		}
 	}
@@ -517,25 +517,28 @@ static uint clocks_find(uint d, uint mhz)
 {
 	ulong *_clock_list = clock_list[d];
 	uint   _clock_lens = clock_lens[d];
-	uint mhz0;
-	uint mhz1;
+	uint khz0;
+	uint khz1;
+	uint khz;
 	uint i;
 
-	if (mhz > (uint) _clock_list[0]) {
+	khz = mhz * 1000U;
+
+	if (khz > (uint) _clock_list[0]) {
 		return (uint) _clock_list[0];
 	}
 
 	for (i = 0; i < _clock_lens-1; ++i)
 	{
-		mhz0 = (uint) _clock_list[i+0];
-		mhz1 = (uint) _clock_list[i+1];
-		//debug("mhz0 %u, mhz1 %u, mhz %u", mhz0, mhz1, mhz);
+		khz0 = (uint) _clock_list[i+0];
+		khz1 = (uint) _clock_list[i+1];
+		//debug("khz0 %u, khz1 %u, khz %u", khz0, khz1, khz);
 
-		if (mhz <= mhz0 && mhz >= mhz1) {
-			if ((mhz0 - mhz) <= (mhz - mhz1)) {
-				return mhz0;
+		if (khz <= khz0 && khz >= khz1) {
+			if ((khz0 - khz) <= (khz - khz1)) {
+				return khz0;
 			} else {
-				return mhz1;
+				return khz1;
 			}
 		}
 	}
