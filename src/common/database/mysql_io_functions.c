@@ -1376,7 +1376,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
         strcat(query, params);
 
 #if USE_GPUS
-    int *gpu_sig_ids, current_gpu_sig_id, starter_gpu_sig_id;
+    long int *gpu_sig_ids, current_gpu_sig_id = 0, starter_gpu_sig_id;
     starter_gpu_sig_id = mysql_batch_insert_gpu_signatures(connection, cont, num_sigs);
     if (starter_gpu_sig_id >= 0)
     {
@@ -1391,7 +1391,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             current_gpu_sig_id += gpu_sig->num_gpus;
         }
 
-        gpu_sig_ids = calloc(current_gpu_sig_id, sizeof(int));
+        gpu_sig_ids = calloc(current_gpu_sig_id, sizeof(long int));
 
         if (autoincrement_offset < 1)
         {
@@ -1406,7 +1406,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
 
         for (i = 0; i < current_gpu_sig_id; i++)
         {
-            gpu_sig_ids[i] = starter_gpu_sig_id + i+autoincrement_offset;
+            gpu_sig_ids[i] = starter_gpu_sig_id + i*autoincrement_offset;
         }
         current_gpu_sig_id = 0;
     }
@@ -1472,7 +1472,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[19+offset].buffer = (char *)&signature->avg_f;
             bind[20+offset].buffer = (char *)&signature->def_f;
 #if USE_GPUS
-            if (signature->gpu_sig.num_gpus > 0)
+            if (signature->gpu_sig.num_gpus > 0 && starter_gpu_sig_id >= 0) //if there are gpu signatures and no error occured
             {
                 bind[21+offset].buffer = (char *)&gpu_sig_ids[current_gpu_sig_id];
 
@@ -1493,9 +1493,8 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             bind[9 +offset].buffer = (char *)&signature->avg_f;
             bind[10+offset].buffer = (char *)&signature->def_f;
 
-
 #if USE_GPUS
-            if (signature->gpu_sig.num_gpus > 0)
+            if (signature->gpu_sig.num_gpus > 0 && starter_gpu_sig_id >= 0)
             {
                 bind[11+offset].buffer = (char *)&gpu_sig_ids[current_gpu_sig_id];
 
@@ -1539,7 +1538,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
     free(bind);
     free(query);
 #if USE_GPUS
-    if (starter_gpu_sig_id > 0)
+    if (starter_gpu_sig_id >= 0)
         free(gpu_sig_ids);
 #endif
 
@@ -1552,15 +1551,21 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
 {
     signature_t *sig_aux = calloc(1, sizeof(signature_t));
     signature_t *sigs_aux = NULL;
-    int num_signatures;
+    int num_signatures, num_params;
     int i = 0;
     int status = 0;
-
-    int num_params;
+#if USE_GPUS
+    long int min_gpu_sig_id = -1, max_gpu_sig_id = -1;
+    if (full_signature)
+        num_params = 24;
+    else 
+        num_params = 14;
+#else
     if (full_signature)
         num_params = 22;
     else 
         num_params = 12;
+#endif
 
     MYSQL_BIND *bind = calloc(num_params, sizeof(MYSQL_BIND));
     
@@ -1596,14 +1601,6 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     bind[1].buffer = &sig_aux->DC_power;
     bind[2].buffer = &sig_aux->DRAM_power;
     bind[3].buffer = &sig_aux->PCK_power;
-#if 0
-#if USE_GPUS
-    bind[4].buffer = &sig_aux->GPU_power;
-#else
-    double temp;
-    bind[4].buffer = &temp;
-#endif
-#endif
     bind[4].buffer = &sig_aux->EDP;
     bind[5].buffer = &sig_aux->GBS;
     bind[6].buffer = &sig_aux->TPI;
@@ -1624,11 +1621,19 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
         bind[19].buffer = &sig_aux->cycles;
         bind[20].buffer = &sig_aux->avg_f;
         bind[21].buffer = &sig_aux->def_f;
+#if USE_GPUS
+        bind[22].buffer = &min_gpu_sig_id;
+        bind[23].buffer = &max_gpu_sig_id;
+#endif
     }
     else
     {
         bind[10].buffer = &sig_aux->avg_f;
         bind[11].buffer = &sig_aux->def_f;
+#if USE_GPUS
+        bind[12].buffer = &min_gpu_sig_id;
+        bind[13].buffer = &max_gpu_sig_id;
+#endif
     }
 
     if (mysql_stmt_bind_result(statement, bind)) 
@@ -1666,6 +1671,22 @@ int mysql_retrieve_signatures(MYSQL *connection, char *query, signature_t **sigs
     while (status == 0 || status == MYSQL_DATA_TRUNCATED)
     {
         signature_copy(&(sigs_aux[i]), sig_aux);
+
+#if USE_GPUS
+        if (min_gpu_sig_id > 0 && max_gpu_sig_id > 0)
+        {
+            char gpu_sig_query[256];
+            sprintf(gpu_sig_query, "SELECT * FROM GPU_signatures WHERE id<= %ld AND id >= %ld", max_gpu_sig_id, min_gpu_sig_id);
+            int num_gpu_sigs = mysql_retrieve_gpu_signatures(connection, gpu_sig_query, &sigs_aux[i].gpu_sig);
+            if (num_gpu_sigs < 1)
+                sigs_aux[i].gpu_sig.num_gpus = 0;
+        }
+        else
+            sigs_aux[i].gpu_sig.num_gpus = 0;
+
+        max_gpu_sig_id = -1;
+        min_gpu_sig_id = -1;
+#endif
         status = mysql_stmt_fetch(statement);
         i++;
     }
@@ -1860,8 +1881,6 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     if (offset/GPU_SIGNATURE_ARGS < num_gpu_sigs) { verbose(VMYSQL, "Assigned less signatures than allocated"); }
     else if (offset/GPU_SIGNATURE_ARGS > num_gpu_sigs) { verbose(VMYSQL, "Assigned more signatures than allocated"); }
 
-
-
     if (mysql_stmt_bind_param(statement, bind)) 
     {
         free(bind);
@@ -1877,15 +1896,90 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     }
     
     int id = mysql_stmt_insert_id(statement);
-    
+
+    long long affected_rows = mysql_stmt_affected_rows(statement);
+
+    if (affected_rows != num_gpu_sigs) 
+    {
+        verbose(VMYSQL, "ERROR: inserting batch gpu signature failed (affected rows does not match num_sigs).\n");
+        id = EAR_ERROR;
+    }
+
     free(bind);
     free(query);
 
     if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
 
-
     return id;
 }
+
+int mysql_retrieve_gpu_signatures(MYSQL *connection, char *query, gpu_signature_t *gpu_sig)
+{
+    MYSQL_STMT *statement = mysql_stmt_init(connection);
+    if (!statement) return EAR_MYSQL_ERROR;
+    int status = 0;
+    int num_gpu_sigs;
+
+    unsigned long id;
+
+    if (mysql_stmt_prepare(statement, query, strlen(query))) return mysql_statement_error(statement);
+
+    MYSQL_BIND bind[6];
+    gpu_app_t base_data;
+    memset(bind, 0, sizeof(bind));
+    memset(&base_data, 0, sizeof(gpu_app_t));
+
+    //double types
+    int i;
+    for (i = 0; i < 6; i++)
+    {
+        bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
+        bind[i].is_unsigned = 1;
+    }
+
+    //integer types
+    bind[1].buffer_type = MYSQL_TYPE_DOUBLE;
+
+    //storage variable assignation
+    bind[0].buffer = &id;
+    bind[1].buffer = &base_data.GPU_power;
+    bind[2].buffer = &base_data.GPU_freq;
+    bind[3].buffer = &base_data.GPU_mem_freq;
+    bind[4].buffer = &base_data.GPU_util;
+    bind[5].buffer = &base_data.GPU_mem_util;
+
+    if (mysql_stmt_bind_result(statement, bind)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_execute(statement)) return mysql_statement_error(statement);
+
+    if (mysql_stmt_store_result(statement)) return mysql_statement_error(statement);
+
+    num_gpu_sigs = mysql_stmt_num_rows(statement);
+    if (num_gpu_sigs < 1 || num_gpu_sigs > MAX_GPUS_SUPPORTED)
+    {
+        mysql_stmt_close(statement);
+        return EAR_ERROR;
+    }
+    
+    i = 0;
+    gpu_sig->num_gpus = num_gpu_sigs;
+    
+
+    //fetching and storing of power_signatures
+    status = mysql_stmt_fetch(statement);
+    while (status == 0 || status == MYSQL_DATA_TRUNCATED)
+    {
+        memcpy(&gpu_sig->gpu_data[i], &base_data, sizeof(gpu_app_t));
+        status = mysql_stmt_fetch(statement);
+        i++;
+    }
+
+    if (mysql_stmt_close(statement)) return EAR_MYSQL_ERROR;
+
+    return num_gpu_sigs;
+
+}
+
 int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signature_t **pow_sigs)
 {
     MYSQL_STMT *statement = mysql_stmt_init(connection);
