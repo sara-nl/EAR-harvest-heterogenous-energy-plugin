@@ -36,6 +36,11 @@ comm_OBJS = \
     $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a
 
+ifdef CUDA_BASE
+comm_OBJS += \
+		$(SRCDIR)/management/libmgt.a
+endif
+
 api_OBJS=api/ear.o
 
 mpix_OBJS = \

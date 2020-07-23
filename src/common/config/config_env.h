@@ -39,7 +39,7 @@
 #define REL_PATH_LOAD "lib/libearld.so"
 
 #define SCHED_SLURM 1
-#ifdef SCHED_SLURM
+#ifdef  SCHED_SLURM
 
 #define VAR_OPT_TRAC "SLURM_EAR_TRACE_PATH"
 
@@ -51,9 +51,12 @@
 #define HACK_FILE_LOAD "SLURM_HACK_LOADER"
 // The GPU API loads a specific NVML library file.
 #define HACK_FILE_NVML "SLURM_HACK_NVML"
-
 // Adds a suffix to libear.so (i.e: libear.hello.so). 
 #define FLAG_NAME_LIBR "SLURM_EAR_MPI_VERSION"
+// Delivered by SLURM, this flag contains the task PID.
+#define FLAG_TASK_PID  "SLURM_TASK_PID"
+// Sets the value of the loader's verbosity.
+#define FLAG_LOAD_VERB "SLURM_LOADER_VERBOSE"
 
 #define SCHED_LOADER_VERBOSE "SLURM_LOADER_VERBOSE"
 #define SCHED_EAR_SHOW_SIGNATURES "SLURM_EAR_SHOW_SIGNATURES"
@@ -64,12 +67,14 @@
 #define SCHED_EAR_RED_FREQ_IN_MPI "SLURM_EAR_RED_FREQ_IN_MPI"
 #define SCHED_EAR_DYNAIS_WINDOW_SIZE "SLURM_EAR_DYNAIS_WINDOW_SIZE"
 #define SCHED_EAR_DEF_FREQ "SLURM_EAR_DEF_FREQ"
+#define SCHED_EAR_GPU_DEF_FREQ "SLURM_EAR_GPU_DEF_FREQ"
 #define SCHED_EAR_TRACE_PLUGIN "SLURM_EAR_TRACE_PLUGIN"
 
 #define SCHED_JOB_ID  "SLURM_JOB_ID"
 #define SCHED_STEP_ID "SLURM_STEP_ID"
 #define SCHED_STEPID "SLURM_STEPID"
 #define SCHED_JOB_ACCOUNT "SLURM_JOB_ACCOUNT"
+#define SCHED_NUM_TASKS "SLURM_STEP_TASKS_PER_NODE"
 
 #define NULL_JOB_ID getpid()
 #define NULL_STEPID (0xfffffffe)

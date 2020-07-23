@@ -133,7 +133,7 @@ extern uint check_periodic_mode;
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
         policy_freqf=(float)policy_freq/1000000.0; \
-				GPU_f=(float)GPU_FREQ/1000.0; \
+				GPU_f=(float)GPU_FREQ/1000000.0; \
         verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
         verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu) :Next freq %.1fGHz", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL,policy_freqf);\
 			}

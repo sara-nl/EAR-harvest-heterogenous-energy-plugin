@@ -52,6 +52,8 @@ int is_powercap_on(node_powercap_opt_t *pc_opt);
 uint get_powercapopt_value(node_powercap_opt_t *pc_opt);
 uint get_powercap_allocated(node_powercap_opt_t *pc_opt);
 uint compute_extra_power(uint current,uint diff,uint target);
+uint compute_extra_gpu_power(uint current,uint diff,uint target);
+
 
 /** Given a current power , when running an application, returns the powercap status. It must be used only when powercap is set */
 uint compute_power_status(node_powercap_opt_t *pc,uint current_power);

@@ -262,12 +262,6 @@ int _slurm_spank_init_post_opt(spank_t sp, int ac, char **av)
 	return (ESPANK_SUCCESS);
 }
 
-int slurm_spank_task_init (spank_t sp, int ac, char **av)
-{
-	plug_verbose(sp, 2, "function slurm_spank_task_init");
-	return (ESPANK_SUCCESS);
-}
-
 int slurm_spank_task_post_fork (spank_t sp, int ac, char **av)
 {
 	plug_verbose(sp, 2, "function slurm_spank_task_post_fork");

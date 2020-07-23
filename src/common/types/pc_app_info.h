@@ -18,6 +18,7 @@
 #ifndef _EAR_PC_APP_INFO_H
 #define _EAR_PC_APP_INFO_H
 #include <common/config.h>
+#include <common/config/config_install.h>
 #include <common/types/types.h>
 typedef struct pc_app_info{
 	uint 	mode;

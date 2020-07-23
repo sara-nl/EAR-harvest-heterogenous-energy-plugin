@@ -19,6 +19,7 @@
 #define LIBRARY_METRICS_GPU_H
 
 #include <metrics/gpu/gpu.h>
+#include <management/gpu/gpu.h>
 #include <daemon/shared_configuration.h>
 
 state_t gpu_lib_load(settings_conf_t *settings);
@@ -27,11 +28,15 @@ state_t gpu_lib_init(ctx_t *c);
 
 state_t gpu_lib_dispose(ctx_t *c);
 
-state_t gpu_lib_count(ctx_t *c, uint *dev_count);
+/* Metrics. */
+state_t gpu_lib_count(uint *dev_count);
 
+// The ctx_t is obsolete.
 state_t gpu_lib_read(ctx_t *c, gpu_t *data);
 
-state_t gpu_lib_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
+state_t gpu_lib_read_raw(ctx_t *c, gpu_t *data);
+
+state_t gpu_lib_read_copy(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 
 state_t gpu_lib_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff);
 
@@ -48,5 +53,30 @@ state_t gpu_lib_data_copy(gpu_t *data_dst, gpu_t *data_src);
 state_t gpu_lib_data_print(gpu_t *data, int fd);
 
 state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length);
+
+/* Management. */
+state_t gpu_lib_alloc_array(ulong **array);
+
+state_t gpu_lib_freq_limit_get_current(ctx_t *c, ulong *khz);
+
+state_t gpu_lib_freq_limit_get_default(ulong *khz);
+
+state_t gpu_lib_freq_limit_get_max(ulong *khz);
+
+state_t gpu_lib_freq_limit_reset();
+
+state_t gpu_lib_freq_limit_set(ulong *khz);
+
+state_t gpu_lib_freq_list(ulong ***list_khz, uint **list_len);
+
+state_t gpu_lib_power_cap_get_current(ctx_t *c, ulong *watts);
+
+state_t gpu_lib_power_cap_get_default(ulong *watts);
+
+state_t gpu_lib_power_cap_get_rank(ulong *watts_min, ulong *watts_max);
+
+state_t gpu_lib_power_cap_reset();
+
+state_t gpu_lib_power_cap_set(ulong *watts);
 
 #endif

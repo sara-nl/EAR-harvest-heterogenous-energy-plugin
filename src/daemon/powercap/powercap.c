@@ -36,8 +36,9 @@
 #include <daemon/powercap/powercap_mgt.h>
 #include <daemon/shared_configuration.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/system/monitor.h>
 
-#define POWERCAP_MON 0
+#define POWERCAP_MON 1
 
 
 
@@ -62,6 +63,9 @@ extern pc_app_info_t *pc_app_info_data;
 
 #define min(a,b) ((a<b)?a:b)
 
+#if POWERCAP_MON
+static suscription_t *sus_powercap_monitor;
+#endif
 
 
 void get_date_str(char *msg,int size)
@@ -73,7 +77,7 @@ void get_date_str(char *msg,int size)
   strftime(msg, size, "%c", current_t);
 }
 
-#if POWERCAP_MON
+#if 0
 void * powercapmon_f(void * arg)
 {
 	unsigned long f=5;
@@ -104,6 +108,30 @@ void * powercapmon_f(void * arg)
 	pthread_exit(0);
 }
 #endif
+
+/***** These two functions monitors node power for status update *****/
+state_t pc_monitor_thread_init(void *p)
+{
+	return EAR_SUCCESS;
+}
+state_t pc_monitor_thread_main(void *p)
+{
+	return EAR_SUCCESS;
+}
+
+void  powercap_monitor_init()
+{
+	#if POWERCAP_MON
+  sus_powercap_monitor=suscription();
+	sus_powercap_monitor->call_main = pc_monitor_thread_main;
+	sus_powercap_monitor->call_init = pc_monitor_thread_init;
+	sus_powercap_monitor->time_relax = 1000;
+	sus_powercap_monitor->time_burst = 1000;
+	sus_powercap_monitor->suscribe(sus_powercap_monitor);
+  #endif
+}
+
+
 
 void update_node_powercap_opt_shared_info()
 {
@@ -190,20 +218,7 @@ int powercap_init()
 	pmgt_set_pc_mode(pcmgr,PC_MODE_TARGET);
 	set_powercap_value(DOMAIN_NODE,my_pc_opt.powercap_idle);
 	debug("powercap initialization finished");
-	#if POWERCAP_MON
-	fd_powercap_values=open("/var/run/ear/powercap_values.txt",O_WRONLY|O_CREAT|O_TRUNC,S_IRUSR|S_IWUSR);
-	if (fd_powercap_values<0){
-		fprintf(stderr,"Error creating file for powercap_values %s\n",strerror(errno));
-	}else{
-		dprintf(fd_powercap_values,"File created\n");
-		debug("/var/run/ear/powercap_values.txt created");
-	}
-		
-	debug("Creating thread for powercap  monitor");
-	if (pthread_create(&powercapmon_th,NULL,powercapmon_f,NULL)){
-		error("Error creating powercapmon_th");
-	}
-	#endif
+	powercap_monitor_init();
 	update_node_powercap_opt_shared_info();
 	return EAR_SUCCESS;	
 }
@@ -223,7 +238,7 @@ int set_powercap_value(uint domain,uint limit)
 	my_pc_opt.current_pc=limit;
 	update_node_powercap_opt_shared_info();
 	pmgt_set_app_req_freq(pcmgr,pc_app_info_data->req_f);
-	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,limit);
+	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,(ulong)limit);
 }
 
 
@@ -273,6 +288,7 @@ int powercap_idle_to_run()
 		error("We go to run and we were not in idle ");
 		break;
 	}
+	pmgt_idle_to_run(pcmgr);
 	pthread_mutex_unlock(&my_pc_opt.lock);
 	return EAR_SUCCESS;
 }
@@ -300,6 +316,7 @@ int powercap_run_to_idle()
     break;
   }
 	pmgt_set_status(pcmgr,PC_STATUS_IDLE);
+	pmgt_run_to_idle(pcmgr);
   pthread_mutex_unlock(&my_pc_opt.lock);
   return EAR_SUCCESS;
 }
@@ -316,7 +333,8 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 	if (!is_powercap_on(&my_pc_opt)) return EAR_SUCCESS;
 	debug("periodic_metric_info");
 	while(pthread_mutex_trylock(&my_pc_opt.lock));
-	pmgt_set_power_per_domain(pcmgr,cp);
+	if (my_pc_opt.powercap_status == PC_STATUS_IDLE) pmgt_set_power_per_domain(pcmgr,cp,PC_STATUS_IDLE);
+	else pmgt_set_power_per_domain(pcmgr,cp,PC_STATUS_RUN);
 	powercap_set_app_req_freq(pc_app_info_data->req_f);
 	debug("%spc_app_info req_f %lu req_power %lu pc_status %u%s",COL_GRE,pc_app_info_data->req_f,pc_app_info_data->req_power,pc_app_info_data->pc_status,COL_CLR);
 	debug("%sPM event, current power %u powercap %u allocated %u status %u released %u requested %u%s",\
@@ -619,4 +637,14 @@ void powercap_release_idle_power(pc_release_data_t *release)
 
 void powercap_set_default()
 {
+	/*PENDING*/
+}
+
+void powercap_new_job()
+{
+	pmgt_new_job(pcmgr);
+}
+void powercap_end_job()
+{
+	pmgt_end_job(pcmgr);
 }

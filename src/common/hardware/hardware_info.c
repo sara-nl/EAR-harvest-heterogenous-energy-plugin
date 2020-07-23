@@ -31,18 +31,19 @@ void print_affinity_mask(topology_t *topo)
     cpu_set_t mask;
 		int i;
     if (sched_getaffinity(0, sizeof(cpu_set_t), &mask) == -1) return;
-    fprintf(stdout,"sched_getaffinity = ");
+    fprintf(stderr,"sched_getaffinity = ");
     for (i = 0; i < topo->cpu_count; i++) {
-        fprintf(stdout,"%d=%d ", i,CPU_ISSET(i, &mask));
+        fprintf(stderr,"%d=%d ", i,CPU_ISSET(i, &mask));
     }
-    printf("\n");
+    fprintf(stderr,"\n");
 }
 
-state_t is_affinity_set(topology_t *topo,int pid,int *is_set)
+state_t is_affinity_set(topology_t *topo,int pid,int *is_set,cpu_set_t *my_mask)
 {
 	cpu_set_t mask;
 	*is_set=0;
 	if (sched_getaffinity(pid,sizeof(cpu_set_t), &mask) == -1) return EAR_ERROR;
+	memcpy(my_mask,&mask,sizeof(cpu_set_t));
 	int i;
 	for (i = 0; i < topo->cpu_count; i++) {
 		if (!CPU_ISSET(i, &mask)) {
@@ -51,6 +52,14 @@ state_t is_affinity_set(topology_t *topo,int pid,int *is_set)
 		}
 	}
 	return EAR_SUCCESS;
+}
+
+state_t set_affinity(int pid,cpu_set_t *mask)
+{
+	int ret;
+	ret=sched_setaffinity(pid,sizeof(cpu_set_t),mask);
+	if (ret <0 ) return EAR_ERROR;
+	else return EAR_SUCCESS;
 }
 
 

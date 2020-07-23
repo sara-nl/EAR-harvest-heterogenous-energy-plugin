@@ -317,7 +317,7 @@ char *plug_context_str(spank_t sp)
         } else if (plug_context_is(sp, Context.remote)) {
                 return "remote";
         } else {
-                return "unknown";
+                return "erun";
         }
 }
 

@@ -138,7 +138,7 @@ state_t enable(suscription_t *sus)
   return ret;
 }
 
-state_t set_powercap_value(uint pid,uint domain,uint limit)
+state_t set_powercap_value(uint pid,uint domain,uint limit,uint *cpu_util)
 {
 	char cmd[1024];
 	char c_date[128];

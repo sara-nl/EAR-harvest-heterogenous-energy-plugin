@@ -66,8 +66,8 @@ static int module_constructor_dlsym(char *path_so)
 	func_con = dlsym(libear, "ear_constructor");
 	func_des = dlsym(libear, "ear_destructor");
 
-	verbose(3, "LOADER: function constructor %p", func_con);
-	verbose(3, "LOADER: function destructor %p", func_des);
+	verbose(4, "LOADER: function constructor %p", func_con);
+	verbose(4, "LOADER: function destructor %p", func_des);
 
 	if (func_con == NULL && func_des == NULL) {
 		dlclose(libear);
@@ -77,22 +77,10 @@ static int module_constructor_dlsym(char *path_so)
 	return 1;
 }
 
-static void module_constructor_init()
-{
-	char *verb;
-
-	if ((verb = getenv("SLURM_LOADER_VERBOSE")) != NULL)
-	{
-		VERB_SET_EN(1);
-		VERB_SET_LV(atoi(verb));
-	}
-}
-
 int module_constructor()
 {
 	static char path_so[4096];
 
-	module_constructor_init();
 	verbose(3, "LOADER: loading module default (constructor)");
 
 	if (!module_constructor_dlsym(path_so)) {

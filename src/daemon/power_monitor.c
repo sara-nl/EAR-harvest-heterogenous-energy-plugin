@@ -683,6 +683,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 #if POWERCAP
 	if (powermon_is_idle()) powercap_idle_to_run();
   set_powercapstatus_mode(AUTO_CONFIG);
+	powercap_new_job();
 #endif
 	if (new_context(appID->job.id, appID->job.step_id) != EAR_SUCCESS) {
 		error("Maximum number of contexts reached, no more concurrent jobs supported");
@@ -803,6 +804,7 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 #if POWERCAP
 	app_mgt_end_job(app_mgt_info);
 	pcapp_info_end_job(pc_app_info_data);
+	powercap_end_job();
   if (powermon_is_idle()){ 
 		powercap_set_app_req_freq(powermon_freq_list[powermon_num_pstates-1]);
 		powercap_run_to_idle();
