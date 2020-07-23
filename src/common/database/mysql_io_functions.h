@@ -215,8 +215,12 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
 
 /** PENDING */
 int mysql_statement_error(MYSQL_STMT *statement);
-/** PENDING */
+
+/** Given a MYSQL connection and a query, retrieves the pwoer_signatures corresponding to that query */
 int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signature_t **pow_sigs);
+
+/** Given a MYSQL connection and a query, retrieves the gpu signatures corresponding to that query */
+int mysql_retrieve_gpu_signatures(MYSQL *connection, char *query, gpu_signature_t *gpu_sig);
 
 
 #endif
