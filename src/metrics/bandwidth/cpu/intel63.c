@@ -355,7 +355,6 @@ state_t bwidth_intel63_start(ctx_t *c)
 state_t bwidth_intel63_reset(ctx_t *c)
 {
     int n_cmd, n_ctl;
-    printf("bwidth_intel63_reset\n");
     if (n_functions<=0) return 0;
     int *cmd = get_arch_reset_commands(&n_cmd);
     char *ctl = get_arch_reset_controls(&n_ctl);
@@ -395,12 +394,6 @@ state_t bwidth_intel63_read(ctx_t *c, ullong *cas)
             }
         }
     }
-
-    return EAR_SUCCESS;
-}
-
-state_t bwidth_intel63_stop(ctx_t *c, ullong *cas, ullong *bps, ullong UNITS)
-{
 
     return EAR_SUCCESS;
 }

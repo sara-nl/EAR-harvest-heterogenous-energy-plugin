@@ -22,9 +22,9 @@
 #include <common/plugins.h>
 #include <common/hardware/topology.h>
 
-#define BW_KBS 1024.0
-#define BW_MBS 1048576.0
-#define BW_GBS 1073741824.0
+#define BW_KB 1024.0
+#define BW_MB 1048576.0
+#define BW_GB 1073741824.0
 
 int init_uncores(int nothing);
 
@@ -42,7 +42,7 @@ int read_uncores(ullong *cas);
 
 int dispose_uncores();
 
-int compute_uncores(ullong *cas2, ullong cas1, double *bps, double units);
+int compute_uncores(ullong *cas2, ullong *cas1, double *bytes, double units);
 
 int alloc_array_uncores(ullong **array);
 

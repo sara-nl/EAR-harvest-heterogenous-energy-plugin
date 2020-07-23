@@ -156,10 +156,11 @@ int stop_uncores(ullong *cas)
 	preturn (ops.stop, c, cas);
 }
 
-int compute_uncores(ullong *cas2, ullong cas1, double *bps, double units)
+int compute_uncores(ullong *cas2, ullong *cas1, double *bps, double units)
 {
-	ullong accum;
 	int dev_count = count_uncores();
+	ullong accum;
+	int i;
 	if (dev_count == 0) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}

@@ -6,15 +6,29 @@
 #include <metrics/frequency/cpu.h>
 #include <metrics/bandwidth/bandwidth.h>
 
+ullong data[8*1024];
+
 // /hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -I ../ -g -o macrotest macrotest.c libmetrics.a ../common/libcommon.a -lpthread -ldl
 
 #define ret(fun) \
 	retval = fun; \
-	printf(#fun " returned %d\n", i);
+	printf("------- " #fun " returned %d\n", retval);
 
 void stress()
 {
-	sleep(2);
+	int i = 0;
+	int j = 0;
+	for (j = 0; j < 1024*1024; ++j)
+	for (i = 0; i < 1024; i+=8) {
+		data[i+0] = i+3;
+		data[i+1] = i+6;
+		data[i+2] = i+9;
+		data[i+3] = i+3;
+		data[i+4] = i+6;
+		data[i+5] = i+9;
+		data[i+6] = i+3;
+		data[i+7] = i+6;
+	}
 }
 
 int main(int argc, char *argv[])
@@ -41,9 +55,9 @@ int main(int argc, char *argv[])
 	stress();
 	ret(stop_uncores(cas2));
 
-	ret(compute_uncores(cas2, cas1, &gbs, BW_GBS));
+	ret(compute_uncores(cas2, cas1, &gbs, BW_GB));
 
-	fprintf(stderr, "Bandwidth %0.4lf GB/s\n", gbs);
+	fprintf(stderr, "bandwidth %0.4lf GB/s\n", gbs);
 
 	return 0;
 }

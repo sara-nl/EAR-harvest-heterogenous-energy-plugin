@@ -66,6 +66,8 @@ typedef struct bwidth_amd49_s
 	uint fd_count;
 } bwidth_amd49_t;
 
+static int initialized;
+
 state_t bwidth_amd49_status(topology_t *tp)
 {
 	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN){
@@ -98,7 +100,6 @@ state_t bwidth_amd49_init(ctx_t *c, topology_t *tp)
 	uint ccd_count = ccx_count / 2;
 
 	bw->fd_count  = ccx_count;
-	bw->data_prev = calloc(ccx_count, sizeof(ulong) + 2);
 	bw->data_curr = calloc(ccx_count, sizeof(ulong) + 2);
 
 	// Getting the L3 groups
@@ -137,7 +138,6 @@ state_t bwidth_amd49_dispose(ctx_t *c)
 	}
 
 	topology_close(&bw->tp);
-	free(bw->data_prev);
 	free(bw->data_curr);
 
 	return EAR_SUCCESS;
