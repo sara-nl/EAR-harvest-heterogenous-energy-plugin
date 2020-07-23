@@ -107,7 +107,7 @@ const char     *pcsyms_names[] ={
 #define DEFAULT_PC_PLUGIN_NAME_CPU  "dvfs"
 #define DEFAULT_PC_PLUGIN_NAME_DRAM "noplugin"
 #if USE_GPUS
-#define DEFAULT_PC_PLUGIN_NAME_GPU  "gpu_dvfs"
+#define DEFAULT_PC_PLUGIN_NAME_GPU  "gpu"
 #else
 #define DEFAULT_PC_PLUGIN_NAME_GPU  "noplugin"
 #endif
