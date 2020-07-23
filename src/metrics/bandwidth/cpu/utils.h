@@ -20,9 +20,6 @@
 
 unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end);
 
-/** Calculates diff=end-begin, with vectors of N elements */
-void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned long long  *begin,int N); 
-
 /** Copies DEST=SRC */
 void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N);
 

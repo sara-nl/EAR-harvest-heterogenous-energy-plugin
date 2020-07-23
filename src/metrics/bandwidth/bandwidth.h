@@ -22,36 +22,28 @@
 #include <common/plugins.h>
 #include <common/hardware/topology.h>
 
-// All these functions returns the specific funcion errror.
-// pmons.init for init_uncores etc.
+#define BW_KBS 1024.0
+#define BW_MBS 1048576.0
+#define BW_GBS 1073741824.0
 
-/** Init the uncore counters for an specific cpu model number. */
-int init_uncores(int cpu_model);
+int init_uncores(int nothing);
 
-/** Get the number of performance monitor counters.
-*   init_uncore_reading() have to be called before to scan the buses. */
 int count_uncores();
 
-/** Checks the state of the system uncore functions.
-*   Returns EAR_SUCCESS, EAR_ERROR or EAR_WARNING. */
 int check_uncores();
 
-/** Freezes and resets all performance monitor (PMON) uncore counters. */
 int reset_uncores();
 
-/** Unfreezes all PMON uncore counters. */
 int start_uncores();
 
-/** Freezes all PMON uncore counters and gets it's values. The array
-*   has to be greater or equal than the number of PMON uncore counters
-*   returned by count_uncores() function. The returned values are the
-*   read and write bandwith values in index [i] and [i+1] respectively. */
-int stop_uncores(unsigned long long *values);
+int stop_uncores(ullong *cas);
 
-/** Gets the PMON uncore counters values. */
-int read_uncores(unsigned long long *values);
+int read_uncores(ullong *cas);
 
-/** Closes file descriptors and frees memory. */
 int dispose_uncores();
+
+int compute_uncores(ullong *cas2, ullong cas1, double *bps, double units);
+
+int alloc_array_uncores(ullong **array);
 
 #endif

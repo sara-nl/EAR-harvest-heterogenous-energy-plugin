@@ -62,13 +62,9 @@ typedef struct bwidth_amd49_s
 {
 	topology_t tp;
 	timestamp_t time;
-	ulong *data_prev;
 	ulong *data_curr;
 	uint fd_count;
-	uint filled;
 } bwidth_amd49_t;
-
-static int initialized;
 
 state_t bwidth_amd49_status(topology_t *tp)
 {
@@ -248,18 +244,14 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 	msr_read(bw->tp.cpus[2].id, &bw->data_curr[2], sizeof(ulong), ctr_l3);
 	msr_read(bw->tp.cpus[3].id, &bw->data_curr[3], sizeof(ulong), ctr_l3);
 
-	// Substracting data first (overflow safety).
-	ulong aux_mem0 = bw->data_curr[i0] - bw->data_prev[i0];
-	ulong aux_mem1 = bw->data_curr[i1] - bw->data_prev[i1];
-	ulong aux_ccx0 = bw->data_curr[0]  - bw->data_prev[0];
-	ulong aux_ccx1 = bw->data_curr[1]  - bw->data_prev[1];
-	ulong aux_ccx2 = bw->data_curr[2]  - bw->data_prev[2];
-	ulong aux_ccx3 = bw->data_curr[3]  - bw->data_prev[3];
+	//
+	ulong aux_mem0 = bw->data_curr[i0];
+	ulong aux_mem1 = bw->data_curr[i1];
+	ulong aux_ccx0 = bw->data_curr[0];
+	ulong aux_ccx1 = bw->data_curr[1];
+	ulong aux_ccx2 = bw->data_curr[2];
+	ulong aux_ccx3 = bw->data_curr[3];
 	
-	// Saving the memory channel ticks for the next reading
-	bw->data_prev[i0] = bw->data_curr[i0];
-	bw->data_prev[i1] = bw->data_curr[i1];
-
 	if (cas == NULL) {
 		return EAR_SUCCESS;
 	}
@@ -268,38 +260,16 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 	double ccx_ticks = (double) (aux_ccx0 + aux_ccx1 + aux_ccx2 + aux_ccx3);
 	double mem_ticks = (double) (aux_mem0 + aux_mem1);
 	double ccx_coeff = (mem_ticks / ccx_ticks);
-
-	//
-	double aux1;
-	double aux2;
-	//*gbs = 0.0;
+	double aux;
 
 	for (i = 0; i < bw->fd_count; ++i)
 	{
 		// Reading each L3 miss counters
 		msr_read(bw->tp.cpus[i].id, &bw->data_curr[i], sizeof(ulong), ctr_l3);
-
 		// Passing the data to double
-		aux2 = (double) (bw->data_curr[i]);
-		aux1 = (double) (bw->data_prev[i]);
-		aux2 = aux2 - aux1;
-
-		#if 1
-		cas[i] = aux2 * ccx_coeff;
-		#else
-		// Doing the division first (overflow safety)
-		aux2 = aux2 / (1000000000.0 * 4.0);
-		aux2 = aux2 * 64.0 * ccx_coeff;
-		*gbs = *gbs + aux2;
-		#endif
-
-		// Saving the L3 counters for the next reading
-		bw->data_prev[i] = bw->data_curr[i];
-	}
-
-	if (bw->filled == 0) {
-		bw->filled = 1;
-		//*gbs = 0;
+		aux = ((double) bw->data_curr[i]) * ccx_coeff;
+		// Deploying to CAS count
+		cas[i] = (ullong) aux;
 	}
 
 	return EAR_SUCCESS;

@@ -295,20 +295,6 @@ static void pci_scan_uncores()
     debug( "pci_uncores.c: %i total uncore functions found\n", n_functions);
 }
 
-#if 0
-// Compares the supposed quantity of buses to be
-// detected with the quantity of detected ones.
-int pci_check_uncores()
-{
-    int supposed = n_buses * get_cpu_n_functions();
-    debug( "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
-
-    if (supposed != n_functions) return EAR_WARNING;
-    if (supposed <= 0) return EAR_ERROR;
-    return EAR_SUCCESS;
-}
-#endif
-
 state_t bwidth_intel63_status(topology_t *tp)
 {
     if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X){
@@ -330,17 +316,24 @@ state_t bwidth_intel63_init(ctx_t *c, topology_t *tp)
     return EAR_SUCCESS;
 }
 
-#if 0
-//Open PCI files and also allocates the memory needed
-
-int bwidth_intel63_init(int cpu_model)
+state_t bwidth_intel63_dispose(ctx_t *c)
 {
-    _cpu_model = cpu_model;
-    pci_scan_uncores();
+    int i;
 
-    return bwidth_intel63_count();
+    if(fd_functions == NULL) {
+        return EAR_ERROR;
+    }
+
+    for(i = 0; i < n_functions; i++) {
+        if (fd_functions[i] != -1) {
+            close(fd_functions[i]);
+        }
+    }
+
+    free(fd_functions);
+
+    return EAR_SUCCESS;
 }
-#endif
 
 state_t bwidth_intel63_count(ctx_t *c, uint *count)
 {
@@ -348,29 +341,6 @@ state_t bwidth_intel63_count(ctx_t *c, uint *count)
     get_arch_read_counters(&n_ctrs);
     *count = n_functions * n_ctrs;
     return EAR_SUCCESS;
-}
-
-#if 0
-// Get the number of the performance monitor uncore
-// counters that will be needed. Needed when you
-// stop the counters and pass a buffer to be filled
-// with those values.
-int bwidth_intel63_count()
-{
-    int n_ctrs;
-    get_arch_read_counters(&n_ctrs);
-    return n_functions * n_ctrs;
-}
-#endif
-
-state_t bwidth_intel63_reset(ctx_t *c)
-{
-	int n_cmd, n_ctl;
-	printf("bwidth_intel63_reset\n");
-	if (n_functions<=0) return 0;
-	int *cmd = get_arch_reset_commands(&n_cmd);
-	char *ctl = get_arch_reset_controls(&n_ctl);
-	return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
 state_t bwidth_intel63_start(ctx_t *c)
@@ -382,15 +352,14 @@ state_t bwidth_intel63_start(ctx_t *c)
     return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
-state_t bwidth_intel63_stop(ctx_t *c, ullong *cas)
+state_t bwidth_intel63_reset(ctx_t *c)
 {
-    int n_cmd, n_ctl, res;
+    int n_cmd, n_ctl;
+    printf("bwidth_intel63_reset\n");
     if (n_functions<=0) return 0;
-    int *cmd = get_arch_stop_commands(&n_cmd);
-    char *ctl = get_arch_stop_controls(&n_ctl);
-    res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
-    bwidth_intel63_read(c, cas);
-    return res;
+    int *cmd = get_arch_reset_commands(&n_cmd);
+    char *ctl = get_arch_reset_controls(&n_ctl);
+    return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
 }
 
 state_t bwidth_intel63_read(ctx_t *c, ullong *cas)
@@ -430,21 +399,58 @@ state_t bwidth_intel63_read(ctx_t *c, ullong *cas)
     return EAR_SUCCESS;
 }
 
-state_t bwidth_intel63_dispose(ctx_t *c)
+state_t bwidth_intel63_stop(ctx_t *c, ullong *cas, ullong *bps, ullong UNITS)
 {
-    int i;
-
-    if(fd_functions == NULL) {
-        return EAR_ERROR;
-    }
-
-    for(i = 0; i < n_functions; i++) {
-        if (fd_functions[i] != -1) {
-            close(fd_functions[i]);
-        }
-    }
-
-    free(fd_functions);
 
     return EAR_SUCCESS;
 }
+
+state_t bwidth_intel63_stop(ctx_t *c, ullong *cas)
+{
+    int n_cmd, n_ctl, res;
+    if (n_functions<=0) return 0;
+    int *cmd = get_arch_stop_commands(&n_cmd);
+    char *ctl = get_arch_stop_controls(&n_ctl);
+    res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
+    bwidth_intel63_read(c, cas);
+    return res;
+}
+
+#if 0
+//Open PCI files and also allocates the memory needed
+
+int bwidth_intel63_init(int cpu_model)
+{
+    _cpu_model = cpu_model;
+    pci_scan_uncores();
+
+    return bwidth_intel63_count();
+}
+#endif
+
+#if 0
+// Get the number of the performance monitor uncore
+// counters that will be needed. Needed when you
+// stop the counters and pass a buffer to be filled
+// with those values.
+int bwidth_intel63_count()
+{
+    int n_ctrs;
+    get_arch_read_counters(&n_ctrs);
+    return n_functions * n_ctrs;
+}
+#endif
+
+#if 0
+// Compares the supposed quantity of buses to be
+// detected with the quantity of detected ones.
+int pci_check_uncores()
+{
+    int supposed = n_buses * get_cpu_n_functions();
+    debug( "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
+
+    if (supposed != n_functions) return EAR_WARNING;
+    if (supposed <= 0) return EAR_ERROR;
+    return EAR_SUCCESS;
+}
+#endif

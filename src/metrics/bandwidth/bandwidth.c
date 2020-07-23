@@ -42,12 +42,12 @@
 
 static struct uncore_op {
 	state_t (*init)		(ctx_t *c, topology_t *tp);
-	state_t (*count)	(ctx_t *c, uint *count);
-	state_t (*reset)	(ctx_t *c);
-	state_t (*start)	(ctx_t *c);
-	state_t (*stop)		(ctx_t *c, ullong *cas);
-	state_t (*read)		(ctx_t *c, ullong *cas);
 	state_t (*dispose)	(ctx_t *c);
+	state_t (*count)	(ctx_t *c, uint *count);
+	state_t (*start)	(ctx_t *c);
+	state_t (*reset)	(ctx_t *c);
+	state_t (*read)		(ctx_t *c, ullong *cas);
+	state_t (*stop)		(ctx_t *c, ullong *cas);
 } ops;
 
 static ctx_t context;
@@ -109,6 +109,11 @@ int init_uncores(int cpu_model)
 	return 0;
 }
 
+int dispose_uncores()
+{
+	preturn (ops.dispose, c);
+}
+
 int count_uncores()
 {
 	int count = 0;
@@ -141,17 +146,37 @@ int start_uncores()
 	preturn (ops.start, c);
 }
 
-int stop_uncores(ullong *values)
+int read_uncores(ullong *cas)
 {
-	preturn (ops.stop, c, values);
+	preturn (ops.read, c, cas);
 }
 
-int read_uncores(ullong *values)
+int stop_uncores(ullong *cas)
 {
-	preturn (ops.read, c, values);
+	preturn (ops.stop, c, cas);
 }
 
-int dispose_uncores()
+int compute_uncores(ullong *cas2, ullong cas1, double *bps, double units)
 {
-	preturn (ops.dispose, c);
+	ullong accum;
+	int dev_count = count_uncores();
+	if (dev_count == 0) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	for (i = 0, accum = 0; i < dev_count; ++i) {
+		accum += cas2[i] - cas1[i];
+	}
+	*bps = (double) accum;
+	*bps = ((*bps)*64.0) / (units*4.0);
+	return EAR_SUCCESS;
+}
+
+int alloc_array_uncores(ullong **array)
+{
+	int dev_count = count_uncores();
+	if (dev_count == 0) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	*array = calloc(dev_count, sizeof(ullong));
+	return EAR_SUCCESS;
 }
