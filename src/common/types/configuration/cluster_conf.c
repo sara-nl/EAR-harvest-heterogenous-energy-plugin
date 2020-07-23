@@ -81,9 +81,37 @@ int get_ip(char *nodename, cluster_conf_t *conf)
     return ip1;
 }
 
+int get_num_nodes(cluster_conf_t *my_conf)
+{
+    int i, j, k;
+    int total_nodes = 0;
+    
+    if (my_conf->num_islands < 1)
+    {
+        error("No island ranges found.");
+        return EAR_ERROR;
+    }
+
+    for (i = 0; i < my_conf->num_islands; i++)
+    {
+        for (j = 0; j < my_conf->islands[i].num_ranges; j++)
+        {
+            node_range_t range = my_conf->islands[i].ranges[j];
+            if (range.end == -1)
+                total_nodes++;
+            else if (range.end == range.start)
+                total_nodes++;
+            else
+                total_nodes += (range.end - range.start);
+        }
+    }
+    
+    return total_nodes;
+        
+}
+
 int get_ip_ranges(cluster_conf_t *my_conf, int **num_ips, int ***ips)
 {
-    
     int i, j, k;
     int **aux_ips;
     int *sec_aux_ips;
