@@ -183,11 +183,13 @@ state_t gpu_dvfs_pc_thread_main(void *p)
       if (values_gpu_diff[i].power_w > gpu_pc_curr_power[i]){ /* We are above the PC */
 				/* Use the list of freuencies */
 				n_freq[i] = select_lower_gpu_freq(i,c_freq[i]);
+				debug("%sReducing the GPU-freq[%d] from %lu to %lu%s",COL_RED,i,c_freq[i],n_freq[i],COL_CLR);
       }else{ /* We are below the PC */
         if (c_freq[i] < t_freq[i]){
           extra=compute_extra_gpu_power(values_gpu_diff[i].power_w,c_freq[i],t_freq[i]);
           if (((values_gpu_diff[i].power_w+extra)< gpu_pc_curr_power[i]) && (c_mode==PC_MODE_TARGET)){
 						n_freq[i] = select_higher_gpu_freq(i,c_freq[i]);
+						debug("%sIncreasing the GPU-freq[%d] from %lu to %lu%s",COL_GRE,i,c_freq[i],n_freq[i],COL_CLR);
           }
         }
       }

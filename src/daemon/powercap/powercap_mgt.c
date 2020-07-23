@@ -142,7 +142,7 @@ static state_t util_detect_main(void *p)
   }
 	dom_util[DOMAIN_GPU]=0;
   for (i=0;i<gpu_pc_num_gpus;i++){
-    dom_util[DOMAIN_GPU] += (gpu_detection_raw_data[i].working>0);
+    dom_util[DOMAIN_GPU] += gpu_detection_raw_data[i].util_gpu;
     current_util[DOMAIN_GPU][i]=gpu_detection_raw_data[i].util_gpu;
   }
 	#endif
@@ -276,7 +276,7 @@ state_t pmgt_init()
 	}
 	debug("Initialzing GPU util");
 	current_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(ulong));
-	for (i=0;i<gpu_pc_num_gpus;i++) current_util[DOMAIN_GPUS][i]=100;
+	for (i=0;i<gpu_pc_num_gpus;i++) current_util[DOMAIN_GPUS][i]=0;
 	debug("Static GPU utilization set to 100 for %d GPUS",gpu_pc_num_gpus);
 	debug("Initializing Util monitoring");
 	util_monitoring_init();
