@@ -8,6 +8,8 @@
 
 ullong data[8*1024];
 
+// /hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -I ../ -g -o macrotest macrotest.c libmetrics.a ../common/libcommon.a -lpthread -ldl
+
 #define ret(fun) \
 	retval = fun; \
 	printf("------- " #fun " returned %d\n", retval);
@@ -31,31 +33,28 @@ void stress()
 
 int main(int argc, char *argv[])
 {
-	ullong *cas2;
-	ullong *cas1;
-	double gbs;
+	llong instructions1;
+	llong instructions2;
+	llong cycles1;
+	llong cycles2;
 	int retval;
 
 	// Init también inicializa su propia topologia
-	ret(init_uncores(0));
+	ret(init_basic_metrics());
 
 	if (retval == 0) {
 		return 0;
 	}
 
-	ret(alloc_array_uncores(&cas2));
-	ret(alloc_array_uncores(&cas1));
+	ret(reset_basic_metrics());
+	ret(start_basic_metrics());
 
-	ret(reset_uncores());
-	ret(start_uncores());
-
-	ret(read_uncores(cas1));
+	ret(read_basic_metrics(&cycles1, &instructions1));
 	stress();
-	ret(stop_uncores(cas2));
+	ret(stop_basic_metrics(&cycles2, &instructions2));
 
-	ret(compute_uncores(cas2, cas1, &gbs, BW_GB));
-
-	fprintf(stderr, "bandwidth %0.4lf GB/s\n", gbs);
+	fprintf(stderr, "instructions %lld\n", instructions2 - instructions1);
+	fprintf(stderr, "cycles %lld\n", cycles2 - cycles1);
 
 	return 0;
 }

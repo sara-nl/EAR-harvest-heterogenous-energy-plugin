@@ -82,9 +82,14 @@ void stop_basic_metrics(llong *cycles, llong *insts)
 	}
 }
 
-void get_basic_metrics(llong *cycles, llong *insts)
+void read_basic_metrics(llong *cycles, llong *insts)
 {
 	if (ops.read != NULL) {
 		ops.read(c, cycles, insts);
 	}
+}
+
+void get_basic_metrics(llong *cycles, llong *insts)
+{
+	return read_basic_metrics(cycles, insts);
 }
