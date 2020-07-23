@@ -369,6 +369,14 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
     n->max_pstate=my_conf->eard.max_pstate;
 
+		/* Automatic computation of powercap */
+		if (n->powercap == -1){
+			if (my_conf->eargm.power > 0){
+				n->powercap = my_conf->eargm.power / my_conf->cluster_num_nodes;
+			}else{
+				n->powercap = 0;
+			}
+		}
 
 
 	return n;

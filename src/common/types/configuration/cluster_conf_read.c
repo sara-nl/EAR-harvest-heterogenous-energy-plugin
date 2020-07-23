@@ -665,6 +665,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		error( "Error: ear.conf does not contain any island or policy definition or there is no default policy specified.\n");
 		return EAR_ERROR;
     }
+	my_conf->cluster_num_nodes=get_num_nodes(my_conf);
 	fclose(conf_file);
 	//print_cluster_conf(my_conf);
 	return EAR_SUCCESS;

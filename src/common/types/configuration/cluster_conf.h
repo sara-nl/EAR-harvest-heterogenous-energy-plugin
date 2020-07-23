@@ -84,6 +84,7 @@ typedef struct cluster_conf
 	char DB_pathname[GENERIC_NAME];
   char net_ext[ID_SIZE];
 	uint verbose;
+	uint cluster_num_nodes;
 	eard_conf_t		eard;
 	eargm_conf_t 	eargm;
 	// List of policies	

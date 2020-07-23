@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-// #define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <nvml.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -526,7 +526,7 @@ static uint clocks_find(uint d, uint mhz)
 	khz = mhz * 1000U;
 
 	if (khz > (uint) _clock_list[0]) {
-		return (uint) _clock_list[0];
+		return (uint) (_clock_list[0] / 1000U);
 	}
 
 	for (i = 0; i < _clock_lens-1; ++i)
@@ -537,14 +537,14 @@ static uint clocks_find(uint d, uint mhz)
 
 		if (khz <= khz0 && khz >= khz1) {
 			if ((khz0 - khz) <= (khz - khz1)) {
-				return khz0;
+				return (khz0 / 1000U);
 			} else {
-				return khz1;
+				return (khz1 / 1000U);
 			}
 		}
 	}
 
-	return ((uint) _clock_list[i]) / 1000U;
+	return (uint) (_clock_list[i] / 1000U);
 }
 
 static state_t clocks_set(int i, uint mhz)
