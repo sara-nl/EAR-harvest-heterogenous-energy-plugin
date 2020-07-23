@@ -544,7 +544,7 @@ static uint clocks_find(uint d, uint mhz)
 		}
 	}
 
-	return (uint) _clock_list[i];
+	return ((uint) _clock_list[i]) / 1000U;
 }
 
 static state_t clocks_set(int i, uint mhz)
