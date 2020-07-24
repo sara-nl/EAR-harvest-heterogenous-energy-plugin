@@ -102,7 +102,7 @@ int get_num_nodes(cluster_conf_t *my_conf)
             else if (range.end == range.start)
                 total_nodes++;
             else
-                total_nodes += (range.end - range.start);
+                total_nodes += (range.end - range.start) + 1; //end - start does not count the starting node
         }
     }
     
