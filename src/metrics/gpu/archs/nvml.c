@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <common/types.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <common/system/monitor.h>
 #include <common/system/symplug.h>

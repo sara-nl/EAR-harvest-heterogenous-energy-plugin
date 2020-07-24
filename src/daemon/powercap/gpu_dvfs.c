@@ -26,7 +26,7 @@
 #include <common/config.h>
 #include <common/colors.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/powercap/powercap_status_conf.h>
 #include <daemon/powercap/powercap_status.h>
@@ -183,13 +183,13 @@ state_t gpu_dvfs_pc_thread_main(void *p)
       if (values_gpu_diff[i].power_w > gpu_pc_curr_power[i]){ /* We are above the PC */
 				/* Use the list of freuencies */
 				n_freq[i] = select_lower_gpu_freq(i,c_freq[i]);
-				debug("%sReducing the GPU-freq[%d] from %lu to %lu%s",COL_RED,i,c_freq[i],n_freq[i],COL_CLR);
+				verbose(0,"%sReducing the GPU-freq[%d] from %lu to %lu%s",COL_RED,i,c_freq[i],n_freq[i],COL_CLR);
       }else{ /* We are below the PC */
         if (c_freq[i] < t_freq[i]){
           extra=compute_extra_gpu_power(values_gpu_diff[i].power_w,c_freq[i],t_freq[i]);
           if (((values_gpu_diff[i].power_w+extra)< gpu_pc_curr_power[i]) && (c_mode==PC_MODE_TARGET)){
 						n_freq[i] = select_higher_gpu_freq(i,c_freq[i]);
-						debug("%sIncreasing the GPU-freq[%d] from %lu to %lu%s",COL_GRE,i,c_freq[i],n_freq[i],COL_CLR);
+						verbose(0,"%sIncreasing the GPU-freq[%d] from %lu to %lu%s",COL_GRE,i,c_freq[i],n_freq[i],COL_CLR);
           }
         }
       }
@@ -293,6 +293,7 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 	ulong ualloc;
 	uint gpu_idle=0,gpu_run=0,total_util=0;
 	/* Set data */
+	current_gpu_pc=limit;
 	debug("%s",COL_BLU);
 	debug("GPU: set_powercap_value %lu",limit);
 	debug("GPU: Phase 1, allocating power to idle GPUS");
@@ -322,7 +323,6 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
     debug("GPU: util_gpu[%d]=%lu power_alloc=%lu",i,gpu_util[i],gpu_pc_curr_power[i]);
   }
 	memcpy(gpu_pc_util,gpu_util,sizeof(ulong)*gpu_pc_num_gpus);
-	current_gpu_pc=limit;
 	debug("%s",COL_CLR);
 	return EAR_SUCCESS;
 }

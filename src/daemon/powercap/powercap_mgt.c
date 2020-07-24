@@ -455,7 +455,7 @@ void pmgt_powercap_node_reallocation()
 
 	for (i=0; i< NUM_DOMAINS;i++){
 		if (dom_util[i] != last_dom_util[i]){
-			debug("%sDomain %d has changed its utilization %s",COL_RED,i,COL_CLR);
+			// debug("%sDomain %d has changed its utilization %s",COL_RED,i,COL_CLR);
     	freturn(pcsyms_fun[i].set_new_utilization,current_util[i]);
 		} 
 	}
