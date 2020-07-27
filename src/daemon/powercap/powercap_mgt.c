@@ -30,6 +30,7 @@
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <daemon/shared_configuration.h>
 #include <daemon/powercap/powercap_mgt.h>
 #include <common/system/monitor.h>
 #if USE_GPUS
@@ -37,6 +38,7 @@
 #include <management/gpu/gpu.h>
 #endif
 #include <common/hardware/topology.h>
+extern settings_conf_t *dyn_conf;
 
 
 
@@ -51,9 +53,10 @@ typedef struct powercap_symbols {
   uint    (*get_powercap_strategy)();
   void    (*powercap_to_str)(char *b);
 	void 		(*print_powercap_value)(int fd);
-	void 		(*set_app_req_freq)(ulong f);
+	void 		(*set_app_req_freq)(ulong *f);
 	void 		(*set_verb_channel)(int fd);	
 	void 		(*set_new_utilization)(ulong *util);	
+	uint    (*get_powercap_status)(uint *in_target,uint *tbr);
 } powercapsym_t;
 
 /*****
@@ -77,7 +80,7 @@ static float pdomains_defnogpus[NUM_DOMAINS]={1.0,0.85,0,0};
 static uint domains_loaded[NUM_DOMAINS]={0,0,0,0};
 static powercapsym_t pcsyms_fun[NUM_DOMAINS];
 static void *pcsyms_obj[NUM_DOMAINS] ={ NULL,NULL,NULL,NULL};
-const int   pcsyms_n = 13;
+const int   pcsyms_n = 14;
 extern cluster_conf_t my_cluster_conf;
 
 static suscription_t *sus[NUM_DOMAINS];
@@ -95,7 +98,8 @@ const char     *pcsyms_names[] ={
 	"print_powercap_value",
 	"set_app_req_freq",	
 	"set_verb_channel",
-	"set_new_utilization"
+	"set_new_utilization",
+	"get_powercap_status"
 };
 
 
@@ -326,6 +330,7 @@ state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,ulong l
 	for (i=0;i<NUM_DOMAINS;i++){
 		debug("Using %f weigth for domain %d: Total %lu allocated %f",pdomains[i],i,limit,limit*pdomains[i]);
 		ret=freturn(pcsyms_fun[i].set_powercap_value,pid,domain,limit*pdomains[i],current_util[i]);
+		dyn_conf->pc_opt.pper_domain[i]=limit*pdomains[i];
 		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
 	pmgt_limit=limit;
@@ -437,15 +442,24 @@ void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain,uint st)
 		pdomains[DOMAIN_GPU]=pgpu;
 		break;
 	}
-	reallocate_power_between_domains();
+	if (st == PC_STATUS_RUN){
+		pmgt_powercap_status_per_domain();
+	}
+	//reallocate_power_between_domains();
 }
 
-void pmgt_set_app_req_freq(pwr_mgt_t *phandler,ulong f)
+void pmgt_set_app_req_freq(pwr_mgt_t *phandler,pc_app_info_t *pc_app)
 {
 	int i;
-  for (i=0;i<NUM_DOMAINS;i++){
-    freturn(pcsyms_fun[i].set_app_req_freq,f);
-  }
+	if (pcsyms_fun[DOMAIN_NODE].set_app_req_freq != NULL){
+  	freturn(pcsyms_fun[DOMAIN_NODE].set_app_req_freq,&pc_app->req_f);
+	}
+	if (pcsyms_fun[DOMAIN_CPU].set_app_req_freq != NULL){
+  	freturn(pcsyms_fun[DOMAIN_CPU].set_app_req_freq,&pc_app->req_f);
+	}
+	if (pcsyms_fun[DOMAIN_GPU].set_app_req_freq != NULL) {
+  	freturn(pcsyms_fun[DOMAIN_GPU].set_app_req_freq,pc_app->req_gpu_f);
+	}
 }
 
 /* Power needs some reallocation internally in components */
@@ -484,3 +498,19 @@ void pmgt_run_to_idle(pwr_mgt_t *phandler)
 	reallocate_power_between_domains();
 }
 
+void pmgt_powercap_status_per_domain()
+{
+	int i;
+	uint ret;
+	uint intarget,tbr;
+	for (i=0; i< NUM_DOMAINS;i++){
+		if (pcsyms_fun[i].get_powercap_status != NULL){
+			ret=pcsyms_fun[i].get_powercap_status(&intarget,&tbr);
+			if (ret){
+				debug("Domain %d is ok with the power: in_target %u, power TBR %u",i,intarget,tbr);
+			}else{
+				debug("Domain %d cannot share power because is not in the target",i);
+			}
+		}
+	}
+}

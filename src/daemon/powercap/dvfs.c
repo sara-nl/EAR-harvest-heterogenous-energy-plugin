@@ -53,6 +53,7 @@ static ulong c_req_f;
 static uint dvfs_pc_secs=0,num_packs;
 static  unsigned long long *values_rapl_init,*values_rapl_end,*values_diff;
 static int *fd_rapl;
+static float power_rapl,my_limit;
 
 /************************ This function is called by the monitor before the iterative part ************************/
 state_t dvfs_pc_thread_init(void *p)
@@ -98,7 +99,6 @@ state_t dvfs_pc_thread_init(void *p)
 /************************ This function is called by the monitor in iterative part ************************/
 state_t dvfs_pc_thread_main(void *p)
 {
-  	float power_rapl;
 		char rapl_energy_str[512];
 		unsigned long long acum_energy;
   	uint c_pstate,t_pstate;
@@ -113,24 +113,23 @@ state_t dvfs_pc_thread_main(void *p)
     /*debug(rapl_energy_str); */
     acum_energy=acum_rapl_energy(values_diff);
     power_rapl=(float)acum_energy/(1*RAPL_MSR_UNITS);
+		my_limit=(float)current_dvfs_pc;
 		// debug("DVFS monitoring exectuted power_computed=%f limit %u",power_rapl,current_dvfs_pc);
     /*debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);*/
     if (c_status==PC_STATUS_RUN){
+			#if 0
       if (!dvfs_pc_secs){
-        debug("DVFS:%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);
+        debug("DVFS:%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,my_limit,my_limit,COL_CLR);
       }
-      #if 0
-      debug("DRAM0 %f DRAM1 %f PCK0 %f PCK1 %f",((float)values_diff[0]/(1*RAPL_MSR_UNITS)),((float)values_diff[1]/(1*RAPL_MSR_UNITS)),
-      ((float)values_diff[2]/(1*RAPL_MSR_UNITS)),((float)values_diff[3]/(1*RAPL_MSR_UNITS)));
-      #endif
+			#endif
       /* Aplicar limites */
       if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
-      if (power_rapl>(current_dvfs_pc*RAPL_VS_NODE_POWER)){ /* We are above the PC */
+      if (power_rapl > my_limit){ /* We are above the PC */
         c_freq=frequency_get_cpu_freq(0);
         c_pstate=frequency_freq_to_pstate(c_freq);
         c_pstate=c_pstate+1;
         c_freq=frequency_pstate_to_freq(c_pstate);
-        debug("DVFS:%sReducing freq to %lu%s",COL_RED,c_freq,COL_CLR);
+        debug("DVFS:%sReducing freq to %lu: power %f limit %f%s",COL_RED,c_freq,power_rapl,my_limit,COL_CLR);
         frequency_set_all_cpus(c_freq);
       }else{ /* We are below the PC */
         t_pstate=frequency_freq_to_pstate(c_req_f);
@@ -138,10 +137,10 @@ state_t dvfs_pc_thread_main(void *p)
         c_pstate=frequency_freq_to_pstate(c_freq);
         if (c_pstate>t_pstate){
           extra=compute_extra_power(power_rapl,1,t_pstate);
-          if (((power_rapl+extra)<current_dvfs_pc) && (c_mode==PC_MODE_TARGET)){
+          if (((power_rapl+extra)<my_limit) && (c_mode==PC_MODE_TARGET)){
             c_pstate=c_pstate-1;
             c_freq=frequency_pstate_to_freq(c_pstate);
-            debug("DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u)%s",COL_RED,c_freq,t_pstate,c_pstate,COL_CLR);
+            debug("DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u) estimated %f = %f + %u, limit %f%s",COL_RED,c_freq,t_pstate,c_pstate,power_rapl+extra,power_rapl,extra,my_limit,COL_CLR);
             frequency_set_all_cpus(c_freq);
           }else{
             if (!dvfs_pc_secs) debug("DVFS:Not increasing becase not enough power");
@@ -231,10 +230,10 @@ void set_pc_mode(uint mode)
 
 
 
-void set_app_req_freq(ulong f)
+void set_app_req_freq(ulong *f)
 {
-	debug("DVFS:Requested application freq set to %lu",f);
-	c_req_f=f;	
+	debug("DVFS:Requested application freq set to %lu",*f);
+	c_req_f=*f;	
 }
 
 void set_verb_channel(int fd)
@@ -244,3 +243,17 @@ void set_verb_channel(int fd)
   DEBUG_SET_FD(fd);
 }
 
+uint get_powercap_status(uint *in_target,uint *tbr)
+{
+	ulong c_freq;
+	uint ctbr;
+	/* If we don't know the req_f we cannot release power */
+	if (c_req_f == 0) return 0;
+	c_freq=frequency_get_cpu_freq(0);
+	if (c_freq != c_req_f) return 0;
+	ctbr = (my_limit -  power_rapl) * 0.75;
+	debug("We can reuse %u W of power from the CPU since target %lu and current %lu",ctbr,c_req_f,c_freq);
+	*in_target=1;
+	*tbr = ctbr; 
+	return 1;
+}

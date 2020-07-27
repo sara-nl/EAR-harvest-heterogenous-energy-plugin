@@ -237,7 +237,7 @@ int set_powercap_value(uint domain,uint limit)
 	}
 	my_pc_opt.current_pc=limit;
 	update_node_powercap_opt_shared_info();
-	pmgt_set_app_req_freq(pcmgr,pc_app_info_data->req_f);
+	pmgt_set_app_req_freq(pcmgr,pc_app_info_data);
 	return pmgt_set_powercap_value(pcmgr,pc_pid,domain,(ulong)limit);
 }
 
@@ -335,13 +335,13 @@ int periodic_metric_info(dom_power_t *cp,uint use_earl,ulong avg_f)
 	while(pthread_mutex_trylock(&my_pc_opt.lock));
 	if (my_pc_opt.powercap_status == PC_STATUS_IDLE) pmgt_set_power_per_domain(pcmgr,cp,PC_STATUS_IDLE);
 	else pmgt_set_power_per_domain(pcmgr,cp,PC_STATUS_RUN);
-	powercap_set_app_req_freq(pc_app_info_data->req_f);
+	powercap_set_app_req_freq(pc_app_info_data);
 	if (current > my_pc_opt.current_pc){
 		debug("%s",COL_RED);
 	}else{
 		debug("%s",COL_GRE);
 	}
-	debug("pc_app_info req_f %lu req_power %lu pc_status %u",pc_app_info_data->req_f,pc_app_info_data->req_power,pc_app_info_data->pc_status);
+	debug_pc_app_info(pc_app_info_data);
 	debug("PM event, current power %u powercap %u allocated %u status %u released %u requested %u",\
 		current,my_pc_opt.current_pc,my_pc_opt.last_t1_allocated,my_pc_opt.powercap_status,my_pc_opt.released,\
 		my_pc_opt.requested);
@@ -621,9 +621,9 @@ uint powercap_get_strategy()
 	return pmgt_get_powercap_strategy(pcmgr);
 }
 
-void powercap_set_app_req_freq(ulong f)
+void powercap_set_app_req_freq(pc_app_info_t *pc_app)
 {
-	pmgt_set_app_req_freq(pcmgr,f);
+	pmgt_set_app_req_freq(pcmgr,pc_app);
 }
 
 void powercap_release_idle_power(pc_release_data_t *release)

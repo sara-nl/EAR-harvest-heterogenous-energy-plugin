@@ -18,6 +18,7 @@
 #ifndef _EAR_POWERCAP_H
 #define _EAR_POWERCAP_H
 #include <pthread.h>
+#include <common/types/pc_app_info.h>
 #include <daemon/powercap/powercap_status_conf.h>
 
 
@@ -41,7 +42,7 @@ void set_powercapstatus_mode(uint mode);
 
 void copy_node_powercap_opt(node_powercap_opt_t *dst);
 uint powercap_get_strategy();
-void powercap_set_app_req_freq(ulong f);
+void powercap_set_app_req_freq(pc_app_info_t *pc_app);
 void powercap_release_idle_power(pc_release_data_t *release);
 void powercap_set_default();
 

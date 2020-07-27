@@ -108,4 +108,9 @@ void copy_mini_sig(ssig_t *dst,ssig_t *src);
 void minis_to_str(ssig_t *s,char *b);
 
 
+double sig_total_gpu_power(signature_t *s);
+double sig_node_power(signature_t *s);
+int sig_gpus_used(signature_t *s);
+
+
 #endif

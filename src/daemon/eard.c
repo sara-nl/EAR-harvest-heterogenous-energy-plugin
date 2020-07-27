@@ -663,6 +663,10 @@ int eard_freq(int must_read)
 		case SET_FREQ:
 			eard_set_freq(req.req_data.req_value, min(eard_max_freq, max_dyn_freq()));
 			break;
+		case SET_FREQ_WITH_MASK:
+			ack=frequency_set_with_mask(&req.req_data.f_mask.mask,req.req_data.f_mask.f);
+			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
+			break;
 		case START_GET_FREQ:
 			ack = EAR_COM_OK;
 			if (xtate_fail(s, freq_cpu_read(&freq_local1))) {

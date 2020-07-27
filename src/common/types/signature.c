@@ -115,3 +115,41 @@ void minis_to_str(ssig_t *s,char *b)
 	s->avg_f,s->def_f);
 }
 
+/* New functions for GPU support */
+
+double sig_total_gpu_power(signature_t *s)
+{
+  int i;
+  double gpup=0;
+	#if USE_GPUS
+  for (i=0;i<s->gpu_sig.num_gpus;i++){
+    gpup+=s->gpu_sig.gpu_data[i].GPU_power;
+  }
+	#endif
+  return gpup;
+}
+
+double sig_node_power(signature_t *s)
+{
+  #if USE_GPUS
+  return (s->DC_power - sig_total_gpu_power(s));
+  #else
+    return s->DC_power;
+  #endif
+
+}
+
+int sig_gpus_used(signature_t *s)
+{
+  uint i,util=0;
+	#if USE_GPUS
+  for (i=0;i<s->gpu_sig.num_gpus;i++){
+    if (s->gpu_sig.gpu_data[i].GPU_util){
+      util++;
+    }
+  }
+	#endif
+  return util;
+}
+
+

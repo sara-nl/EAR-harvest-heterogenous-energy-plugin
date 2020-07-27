@@ -66,6 +66,7 @@ typedef struct node_powercap_opt {
   uint powercap_status; /* Current status */
   uint max_inc_new_jobs; /* Max extra power for new jobs */
   uint requested; /* Extra power requested, used when node is greedy or powercap < def_powercap */
+	uint pper_domain[NUM_DOMAINS]; /* Power allocated to each domain */
 }node_powercap_opt_t;
 
 #define POWERCAP_STATUS_ACUM_ELEMS 8
