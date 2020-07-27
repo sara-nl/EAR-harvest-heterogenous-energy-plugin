@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-// #define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <nvml.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -338,7 +338,7 @@ static state_t static_init_unprivileged()
 		clock_list[d] = calloc(clock_lens[d], sizeof(ulong *));
 		for (m = 0; m < clock_lens[d]; ++m) {
 			clock_list[d][m] = ((ulong) aux_gpu[m]) * 1000LU;
-			//debug("D%u,i%u: %lu", d, i, clock_list[d][i]);
+			debug("D%u,M%u: %lu", d, m, clock_list[d][m]);
 		}
 	}
 
@@ -449,7 +449,7 @@ state_t nvml_freq_limit_get_current(ctx_t *c, ulong *khz)
 	for (i = 0; i < dev_count; ++i)
 	{
 		nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &mhz);
-		debug("NVML_CLOCK_ID_APP_CLOCK_TARGET %u\n", mhz*1000U);
+		debug("NVML_CLOCK_ID_APP_CLOCK_TARGET %u KHz", mhz * 1000U);
 		khz[i] = ((ulong) mhz) * 1000LU;
 	}
 	return EAR_SUCCESS;
@@ -514,47 +514,56 @@ state_t nvml_freq_limit_reset(ctx_t *c)
 	return e;
 }
 
-static uint clocks_find(uint d, uint mhz)
+state_t nvml_freq_valid_get(ctx_t *c, uint d, ulong freq_ref, ulong *freq_near)
 {
 	ulong *_clock_list = clock_list[d];
 	uint   _clock_lens = clock_lens[d];
-	uint khz0;
-	uint khz1;
-	uint khz;
+	ulong freq_floor;
+	ulong freq_ceil;
 	uint i;
 
-	khz = mhz * 1000U;
+	if (!ok_unprivileged) {
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
+	}
 
-	if (khz > (uint) _clock_list[0]) {
-		return (uint) _clock_list[0];
+	*freq_near = freq_ref;
+
+	if (*freq_near > _clock_list[0]) {
+		*freq_near  = _clock_list[0];
+		return EAR_SUCCESS;
 	}
 
 	for (i = 0; i < _clock_lens-1; ++i)
 	{
-		khz0 = (uint) _clock_list[i+0];
-		khz1 = (uint) _clock_list[i+1];
+		freq_ceil  = _clock_list[i+0];
+		freq_floor = _clock_list[i+1];
 		//debug("khz0 %u, khz1 %u, khz %u", khz0, khz1, khz);
 
-		if (khz <= khz0 && khz >= khz1) {
-			if ((khz0 - khz) <= (khz - khz1)) {
-				return khz0;
+		if (*freq_near <= freq_ceil && *freq_near >= freq_floor) {
+			if ((freq_ceil - *freq_near) <= (*freq_near - freq_floor)) {
+				*freq_near = freq_ceil;
+				return EAR_SUCCESS;
 			} else {
-				return khz1;
+				*freq_near = freq_floor;
+				return EAR_SUCCESS;
 			}
 		}
 	}
 
-	return ((uint) _clock_list[i]) / 1000U;
+	*freq_near  = _clock_list[i];
+	return EAR_SUCCESS;
 }
 
 static state_t clocks_set(int i, uint mhz)
 {
 	nvmlReturn_t r;
 	uint parsed_mhz;
+	ulong aux;
 
-	parsed_mhz = clocks_find(i, mhz);
+	nvml_freq_valid_get(NULL, i, ((ulong) mhz) * 1000LU, &aux);
+	parsed_mhz = ((uint) aux) / 1000U;
 
-	debug("D%d setting clock %u KHz (parsed => %u)", i, mhz * 1000, parsed_mhz * 1000);
+	debug("D%d setting clock %u KHz (parsed => %u)", i, mhz * 1000U, parsed_mhz * 1000U);
 #if 0
 	if ((r = nvml.SetLockedClocks(devices[i], 0, parsed_mhz)) != NVML_SUCCESS)
 	{

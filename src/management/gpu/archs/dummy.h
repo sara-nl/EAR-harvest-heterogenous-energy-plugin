@@ -38,6 +38,8 @@ state_t dummy_freq_limit_reset(ctx_t *c);
 
 state_t dummy_freq_limit_set(ctx_t *c, ulong *khz);
 
+state_t dummy_freq_valid_get(ctx_t *c, uint d, ulong freq_ref, ulong *freq_near);
+
 state_t dummy_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len);
 
 state_t dummy_power_cap_get_current(ctx_t *c, ulong *watts);
