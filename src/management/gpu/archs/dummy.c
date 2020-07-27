@@ -85,10 +85,18 @@ state_t dummy_freq_limit_set(ctx_t *c, ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t dummy_freq_valid_get(ctx_t *c, uint d, ulong freq_ref, ulong *freq_near)
+state_t dummy_freq_get_valid(ctx_t *c, uint d, ulong freq_ref, ulong *freq_near)
 {
 	if (freq_near != NULL) {
 		*freq_near = 0;
+	}
+	return EAR_SUCCESS;
+}
+
+state_t dummy_freq_get_next(ctx_t *c, uint d, ulong freq_ref, uint *freq_idx, uint flag)
+{
+	if (freq_idx != NULL) {
+		*freq_idx = 0;
 	}
 	return EAR_SUCCESS;
 }
