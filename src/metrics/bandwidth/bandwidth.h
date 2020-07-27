@@ -28,19 +28,19 @@
 
 int init_uncores(int nothing);
 
+int dispose_uncores();
+
 int count_uncores();
 
 int check_uncores();
 
-int reset_uncores();
-
 int start_uncores();
+
+int reset_uncores();
 
 int stop_uncores(ullong *cas);
 
 int read_uncores(ullong *cas);
-
-int dispose_uncores();
 
 int compute_uncores(ullong *cas2, ullong *cas1, double *bytes, double units);
 

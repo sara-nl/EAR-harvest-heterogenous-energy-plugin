@@ -21,6 +21,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/cache/cache.o \
     $(SRCDIR)/metrics/cpi/cpi.o \
     $(SRCDIR)/metrics/cpi/cpu/intel63.o \
+    $(SRCDIR)/metrics/cpi/cpu/dummy.o \
     $(SRCDIR)/metrics/energy/cpu.o \
     $(SRCDIR)/metrics/energy/energy_node.o \
     $(SRCDIR)/metrics/energy/energy_node_lib.o \

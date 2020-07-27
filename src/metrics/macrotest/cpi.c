@@ -1,60 +1,45 @@
 #include <stdio.h>
 #include <unistd.h>
-#include <immintrin.h>
 #include <metrics/cpi/cpi.h>
-#include <metrics/flops/flops.h>
-#include <metrics/frequency/cpu.h>
-#include <metrics/bandwidth/bandwidth.h>
-
-ullong data[8*1024];
-
-// /hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -I ../ -g -o macrotest macrotest.c libmetrics.a ../common/libcommon.a -lpthread -ldl
 
 #define ret(fun) \
-	retval = fun; \
-	printf("------- " #fun " returned %d\n", retval);
+	fun;
 
 void stress()
 {
 	int i = 0;
-	int j = 0;
-	for (j = 0; j < 1024*1024; ++j)
-	for (i = 0; i < 1024; i+=8) {
-		data[i+0] = i+3;
-		data[i+1] = i+6;
-		data[i+2] = i+9;
-		data[i+3] = i+3;
-		data[i+4] = i+6;
-		data[i+5] = i+9;
-		data[i+6] = i+3;
-		data[i+7] = i+6;
+	for (i = 0; i < 5000; ++i) {
+		// 1: cond
+		// 1: add
+		// 1: jmp
+		// T: 15.000
 	}
 }
 
 int main(int argc, char *argv[])
 {
-	llong instructions1;
-	llong instructions2;
-	llong cycles1;
-	llong cycles2;
-	int retval;
+	ullong instructions1;
+	ullong instructions2;
+	ullong cycles1;
+	ullong cycles2;
+	int i;
 
 	// Init también inicializa su propia topologia
 	ret(init_basic_metrics());
 
-	if (retval == 0) {
-		return 0;
-	}
-
 	ret(reset_basic_metrics());
 	ret(start_basic_metrics());
 
-	ret(read_basic_metrics(&cycles1, &instructions1));
+	ret(read_basic_metrics((ullong *) &cycles1, (ullong *) &instructions1));
 	stress();
-	ret(stop_basic_metrics(&cycles2, &instructions2));
+	ret(stop_basic_metrics((ullong *) &cycles2, (ullong *) &instructions2));
 
-	fprintf(stderr, "instructions %lld\n", instructions2 - instructions1);
-	fprintf(stderr, "cycles %lld\n", cycles2 - cycles1);
+	fprintf(stderr, "instructions1 %llu\n", instructions1);
+	fprintf(stderr, "instructions2 %llu\n", instructions2);
+	fprintf(stderr, "instructionsT %llu\n", instructions2 - instructions1);
+	fprintf(stderr, "cycles1 %llu\n", cycles1);
+	fprintf(stderr, "cycles2 %llu\n", cycles2);
+	fprintf(stderr, "cyclesT %llu\n", cycles2 - cycles1);
 
 	return 0;
 }

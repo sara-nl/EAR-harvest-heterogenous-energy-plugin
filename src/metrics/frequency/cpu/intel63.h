@@ -20,6 +20,8 @@
 
 #include <metrics/frequency/cpu.h>
 
+state_t freq_intel63_status(topology_t *tp);
+
 state_t freq_intel63_init(topology_t *tp);
 
 state_t freq_intel63_dispose();

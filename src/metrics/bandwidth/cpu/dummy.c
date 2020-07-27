@@ -38,14 +38,14 @@ state_t bwidth_dummy_start(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t bwidth_dummy_stop(ctx_t *c, ullong *cas)
-{
-	return bwidth_dummy_read(c, cas);
-}
-
 state_t bwidth_dummy_reset(ctx_t *c)
 {
 	return EAR_SUCCESS;
+}
+
+state_t bwidth_dummy_stop(ctx_t *c, ullong *cas)
+{
+	return bwidth_dummy_read(c, cas);
 }
 
 state_t bwidth_dummy_read(ctx_t *c, ullong *cas)

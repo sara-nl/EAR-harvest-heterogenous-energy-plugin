@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
 #include <metrics/cpi/cpi.h>
 #include <metrics/cpi/cpu/dummy.h>
@@ -39,7 +41,7 @@ int init_basic_metrics()
 
 	if (state_ok(cpi_intel63_status(&topo)))
 	{
-		debug("selected intel63");
+		debug("loaded intel63");
 		ops.init  = cpi_intel63_init;
 		ops.reset = cpi_intel63_reset;
 		ops.start = cpi_intel63_start;
@@ -49,7 +51,7 @@ int init_basic_metrics()
 	}
 	else
 	{
-		debug("selected dummy");
+		debug("loaded dummy");
 		ops.init    = cpi_dummy_init;
 		ops.reset   = cpi_dummy_reset;
 		ops.start   = cpi_dummy_start;

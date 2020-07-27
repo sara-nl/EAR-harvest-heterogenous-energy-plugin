@@ -43,16 +43,16 @@ state_t bwidth_intel63_status(topology_t *tp);
 
 state_t bwidth_intel63_init(ctx_t *c, topology_t *tp);
 
+state_t bwidth_intel63_dispose(ctx_t *c);
+
 state_t bwidth_intel63_count(ctx_t *c, uint *count);
 
-state_t bwidth_intel63_reset(ctx_t *c);
-
 state_t bwidth_intel63_start(ctx_t *c);
+
+state_t bwidth_intel63_reset(ctx_t *c);
 
 state_t bwidth_intel63_stop(ctx_t *c, ullong *cas);
 
 state_t bwidth_intel63_read(ctx_t *c, ullong *cas);
-
-state_t bwidth_intel63_dispose(ctx_t *c);
 
 #endif

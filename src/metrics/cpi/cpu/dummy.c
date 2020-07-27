@@ -15,25 +15,36 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_BANDWIDTH_AMD49_H
-#define METRICS_BANDWIDTH_AMD49_H
+#include <metrics/cpi/cpu/dummy.h>
 
-#include <metrics/bandwidth/bandwidth.h>
+state_t cpi_dummy_init(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
 
-state_t bwidth_amd49_status(topology_t *tp);
+state_t cpi_dummy_dispose(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
 
-state_t bwidth_amd49_init(ctx_t *c, topology_t *tp);
+state_t cpi_dummy_reset(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
 
-state_t bwidth_amd49_dispose(ctx_t *c);
+state_t cpi_dummy_start(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
 
-state_t bwidth_amd49_count(ctx_t *c, uint *count);
+state_t cpi_dummy_stop(ctx_t *c, llong *cycles, llong *insts)
+{
+	return cpi_dummy_read(c, cycles, insts);
+}
 
-state_t bwidth_amd49_start(ctx_t *c);
-
-state_t bwidth_amd49_reset(ctx_t *c);
-
-state_t bwidth_amd49_stop(ctx_t *c, ullong *cas);
-
-state_t bwidth_amd49_read(ctx_t *c, ullong *cas);
-
-#endif
+state_t cpi_dummy_read(ctx_t *c, llong *cycles, llong *insts)
+{
+	*cycles = 0;
+	*insts  = 0;
+	return EAR_SUCCESS;
+}

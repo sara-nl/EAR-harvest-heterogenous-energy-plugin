@@ -28,9 +28,9 @@ state_t bwidth_dummy_count(ctx_t *c, uint *count);
 
 state_t bwidth_dummy_start(ctx_t *c);
 
-state_t bwidth_dummy_stop(ctx_t *c, ullong *cas);
-
 state_t bwidth_dummy_reset(ctx_t *c);
+
+state_t bwidth_dummy_stop(ctx_t *c, ullong *cas);
 
 state_t bwidth_dummy_read(ctx_t *c, ullong *cas);
 

@@ -23,9 +23,13 @@
 static gpu_ops_t ops;
 static uint loaded;
 static uint model;
+static int test;
 
 state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 {
+	printf("test %d\n", test);
+	test = 1;
+
 	if (loaded != 0) {
 		return EAR_SUCCESS;
 	}
