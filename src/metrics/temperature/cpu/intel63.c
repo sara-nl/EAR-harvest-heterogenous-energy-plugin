@@ -21,6 +21,7 @@
 #include <common/config.h>
 #include <common/output/debug.h>
 #include <metrics/common/omsr.h>
+#include <metrics/temperature/cpu/intel63.h>
 
 /* Thermal Domain */
 #define IA32_THERM_STATUS               0x19C
@@ -39,7 +40,7 @@ int init_temp_msr(int *fd_map)
 	topology_init(&topo);
 	vendor = topo.vendor;
 
-	if (vendor != VENDOR_AMD) {
+	if (vendor == VENDOR_AMD) {
 		return EAR_SUCCESS;
 	}
 
@@ -69,7 +70,7 @@ int read_temp_msr(int *fds, ullong *_values)
 
 	for (j = 0; j < get_total_packages(); j++)
 	{
-		if (vendor != VENDOR_AMD) {
+		if (vendor == VENDOR_AMD) {
 			_values[j] = 0LLU;
 		} else {
 			/* PKG reading */
@@ -89,7 +90,7 @@ int read_temp_limit_msr(int *fds, ullong *_values)
 
 	for (j = 0; j < get_total_packages(); j++)
 	{
-		if (vendor != VENDOR_AMD) {
+		if (vendor == VENDOR_AMD) {
 			_values[j] = 0LLU;
 		} else {
 			/* PKG reading */
@@ -107,7 +108,7 @@ int reset_temp_limit_msr(int *fds)
 	ullong result;
 	int j;
 
-	if (vendor != VENDOR_AMD) {
+	if (vendor == VENDOR_AMD) {
 		return EAR_SUCCESS;
 	}
 

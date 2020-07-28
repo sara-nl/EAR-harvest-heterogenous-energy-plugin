@@ -18,10 +18,6 @@
 #ifndef METRICS_TEMPERATURE_H
 #define METRICS_TEMPERATURE_H
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
-//
-#include <metrics/temperature/intel63.h>
+#include <metrics/temperature/cpu/intel63.h>
 
 #endif
