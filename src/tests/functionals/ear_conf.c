@@ -54,7 +54,7 @@ int main(int argc,char *argv[])
             free(my_node_conf);
         }
     }
-		printf("Releasing cluste_cnf\n");
+    printf("releasing cluster_conf\n");
     free_cluster_conf(&my_cluster);
     printf("freed cluster_conf\n");
     printf("reading cluster_conf again\n");

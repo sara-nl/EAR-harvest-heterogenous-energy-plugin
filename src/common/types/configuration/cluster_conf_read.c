@@ -409,13 +409,16 @@ void parse_island(cluster_conf_t *conf, char *line)
             token = strtok(NULL, " ");
             strcpy(aux_token, token);
             token = strtok(NULL, " ");
+
             if (token != NULL && strlen(token) > 0)
                 next_token = token;
+
             token = aux_token;
             token = strtok(token, ",");
             int id_f = idx < 0 ? conf->num_islands: idx;
             int current_num_tags = 0;
             int *current_tags = NULL;
+
             if (conf->islands[id_f].num_specific_tags < 1)
                     conf->islands[id_f].specific_tags = NULL;
             char found = 0;

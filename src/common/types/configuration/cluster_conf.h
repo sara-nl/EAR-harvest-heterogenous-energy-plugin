@@ -225,6 +225,8 @@ int policy_name_to_id(char *my_policy, cluster_conf_t *conf);
 /** Converts from policy_id to policy name. Returns error if policy_id is not valid*/
 int policy_id_to_name(int policy_id,char *my_policy, cluster_conf_t *conf);
 
-
+/** Given a default tag id, returns the number of default policies and allocates them in the policies vector.
+ *  The function implementation can be found in policy_conf.c*/
+int get_default_policies(cluster_conf_t *conf, policy_conf_t **policies, int tag_id);
 
 #endif
