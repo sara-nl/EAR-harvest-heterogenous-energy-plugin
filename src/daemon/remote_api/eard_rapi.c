@@ -36,6 +36,30 @@
 
 extern int eards_sfd;
 
+/** Asks application status for a single node */
+int eards_get_app_status(cluster_conf_t *my_cluster_conf,app_status_t **status)
+{
+	request_t command;
+    request_header_t head;
+
+    debug("eards_status");
+	command.req=EAR_RC_APP_STATUS;
+    command.node_dist = INT_MAX;
+    command.time_code = time(NULL);
+
+    send_command(&command);
+
+    head = receive_data(eards_sfd, (void **)status);
+    //we don't need to check if size is bigger than app_status since an empty message can be returned (no apps running)
+    if (head.type != EAR_TYPE_APP_STATUS) {
+        debug("Error sending command to node");
+        if (head.size > 0 && head.type != EAR_ERROR) free(status);
+        return 0;
+    }
+
+    return head.size >= sizeof(app_status_t);
+}
+
 int send_status(request_t *command, status_t **status)
 {
     request_header_t head;
@@ -50,6 +74,27 @@ int send_status(request_t *command, status_t **status)
 
     return (head.size/sizeof(status_t));
 
+}
+int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status)
+{
+	request_t command;
+    request_header_t head;
+
+    debug("eards_status");
+	command.req=EAR_RC_STATUS;
+    command.node_dist = INT_MAX;
+    command.time_code = time(NULL);
+
+    send_command(&command);
+
+    head = receive_data(eards_sfd, (void **)status);
+    if (head.size < sizeof(status_t) || head.type != EAR_TYPE_STATUS) {
+        debug("Error sending command to node");
+        if (head.size > 0 && head.type != EAR_ERROR) free(status);
+        return 0;
+    }
+
+    return head.size >= sizeof(status_t);
 }
 
 /** REMOTE FUNCTIONS FOR SINGLE NODE COMMUNICATION */
@@ -234,12 +279,43 @@ int eards_set_default_powercap()
     return send_command(&command);
 }
 
+
+
 /* END OF SINGLE NODE COMMUNICATION */
 
 
 /*
 *	SAME FUNCTIONALLITY BUT SENT TO ALL NODES
 */
+/** Asks application status for all single nodes */
+int get_app_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **status)
+{
+		/** LLUIS REPASA */
+    request_t command;
+    app_status_t *temp_status;
+    request_header_t head;
+    time_t ctime = time(NULL);
+    int num_status = 0;
+
+    command.time_code = ctime;
+    command.req = EAR_RC_APP_STATUS;
+    command.node_dist = 0;
+
+    head = data_all_nodes(&command, my_cluster_conf, (void **)&temp_status);
+    num_status = head.size / sizeof(app_status_t);
+
+    if (head.type != EAR_TYPE_APP_STATUS || head.size < sizeof(app_status_t))
+    {
+        if (head.size > 0) free (temp_status);
+        *status = temp_status;
+        return 0;
+    }
+
+    *status = temp_status;
+
+    return num_status;
+
+}
 
 void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)
 {

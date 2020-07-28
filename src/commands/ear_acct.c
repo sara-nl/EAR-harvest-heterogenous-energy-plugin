@@ -816,17 +816,32 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 void print_loops(loop_t *loops, int num_loops)
 {
     int i;
+		int s;
+		double gpup=0,gpupu=0;
+		ulong  gpuf=0,gpuu=0,gpuused=0;
     char line[256];
 
-    strcpy(line, "%6s-%-7s\t %-10s %-12s %-10s %-10s %-10s %-10s %-10s %-10s \n");
-    printf(line, "JOB", "STEP", "NODE ID", "ITERATIONS", "POWER", "GBS", "CPI", "GFLOPS/W", "TIME", "AVG_F");
+    strcpy(line, "%6s-%-4s\t %-10s %-6s %-8s %-8s %-8s %-8s %-8s %-8s %-12s %-8s %-8s\n");
+    printf(line, "JOB", "STEP", "NODE ID", "ITER.", "POWER", "GBS", "CPI", "GFLOPS/W", "TIME", "AVG_F","G-POWER(T/U)","G-FREQ","G-UTIL");
 
-    strcpy(line, "%6u-%-7u\t %-10s %-12u %-10.1lf %-10.1lf %-10.3lf %-10.3lf %-10.3lf %-10.2lf \n");
+    strcpy(line, "%6u-%-4u\t %-10s %-6u %-8.1lf %-8.1lf %-8.3lf %-8.3lf %-8.3lf %-8.2lf %-5.1lf/%5.1lf  %-8.2lf %-8lu\n");
     for (i = 0; i < num_loops; i++)
     {
         signature_t sig = loops[i].signature;
+				for (s=0;s<sig.gpu_sig.num_gpus;s++){
+					gpup+=sig.gpu_sig.gpu_data[s].GPU_power;
+					if (sig.gpu_sig.gpu_data[s].GPU_util){
+						gpupu+=sig.gpu_sig.gpu_data[s].GPU_power;
+						gpuf+=sig.gpu_sig.gpu_data[s].GPU_freq;
+						gpuu+=sig.gpu_sig.gpu_data[s].GPU_util;
+						gpuused++;
+					}
+				}
+				gpuf=gpuf/gpuused;
+				gpuu=gpuu/gpuused;
         printf(line, loops[i].jid, loops[i].step_id, loops[i].node_id, loops[i].total_iterations,
-                     sig.DC_power, sig.GBS, sig.CPI, sig.Gflops/sig.DC_power, sig.time, (double)(sig.avg_f)/1000000);
+                     sig.DC_power, sig.GBS, sig.CPI, sig.Gflops/sig.DC_power, sig.time, (double)(sig.avg_f)/1000000,
+										 gpup,gpupu,(double)gpuf/1000000.0,gpuu);
     }
 }
 
@@ -1022,9 +1037,9 @@ int main(int argc, char *argv[])
     char path_name[256];
     char *file_name = NULL;
 
+
     verb_level = -1;
     verb_enabled = 0;
-
     if (get_ear_conf_path(path_name)==EAR_ERROR){
         fprintf(stderr, "Error getting ear.conf path\n");
         exit(1);

@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 0
+//#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -216,10 +216,13 @@ request_header_t receive_data(int fd, void **data)
     }
 
     if (head.size < 1 || !is_valid_type(head.type)) {
-        if (!((head.size == 0) && (head.type == 0))) error("Error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
-        head.type = EAR_ERROR;
-        head.size = 0;
-        return head;
+        if (!((head.size == 0) && (head.type == 0))) debug("Error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
+        if (head.type != EAR_TYPE_APP_STATUS)
+        {
+            head.type = EAR_ERROR;
+            head.size = 0;
+            return head;
+        }
     }
     //write ack should go here if we implement it
     read_data = calloc(head.size, sizeof(char));
@@ -704,11 +707,6 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 //cannot directly assign final_data = temp_data because the caller function (data_all_nodes) frees temp_data after passing through here
             }
             break;
-        case EAR_TYPE_STATUS:
-            final_data = realloc(final_data, final_size + data_head.size);
-            memcpy(&final_data[final_size], temp_data, data_head.size);
-            head.size = final_size + data_head.size;
-        break;
         case EAR_TYPE_POWER_STATUS:
             if (final_data != NULL)
             {
@@ -763,6 +761,11 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
                 //check if final_size == head.size??
 
             }
+        break;
+        default:
+            final_data = realloc(final_data, final_size + data_head.size);
+            memcpy(&final_data[final_size], temp_data, data_head.size);
+            head.size = final_size + data_head.size;
         break;
     }
 

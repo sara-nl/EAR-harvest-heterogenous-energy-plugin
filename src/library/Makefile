@@ -5,9 +5,12 @@ CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=1
 else
 CFLAGS  = -fPIC -O3 -I$(SRCDIR) $(CONSTANTS) -pthread -DMPI=0
 MPI_VERSION = seq
+MPICC = $(CC)
+export MPICC
 endif
 export CFLAGS
-LDFLAGS = -shared $(PAPI_LDFLAGS) -ldl -lm
+CC_FLAGS += $(CFLAGS)
+LDFLAGS = -shared  -ldl -lm -lpthread
 
 ########
 
@@ -32,6 +35,11 @@ comm_OBJS = \
     $(SRCDIR)/daemon/powercap/powercap_status.o \
     $(SRCDIR)/metrics/libmetrics.a \
     $(SRCDIR)/common/libcommon.a
+
+ifdef CUDA_BASE
+comm_OBJS += \
+		$(SRCDIR)/management/libmgt.a
+endif
 
 api_OBJS=api/ear.o
 

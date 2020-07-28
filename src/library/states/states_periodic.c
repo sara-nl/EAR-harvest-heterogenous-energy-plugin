@@ -138,8 +138,9 @@ static void report_loop_signature(uint iterations,loop_t *loop)
 */
 void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
-	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP,VPI;
-	ulong AVGF;
+	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP,VPI,GPU_POWER;
+	ulong AVGF,GPU_UTIL;
+	float GPU_FREQ;
 	unsigned long long VI;
 	unsigned long prev_f;
 	int result;
@@ -195,6 +196,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 					ENERGY = TIME * POWER;
 					EDP = ENERGY * TIME;
+
 		      signature_t app_signature;
       		adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
 					st=policy_apply(&app_signature,&policy_freq,&ready);
@@ -211,13 +213,25 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					}
 
 					if (masters_info.my_master_rank>=0){
+						#if USE_GPU_LIB
+						GPU_POWER=0;GPU_FREQ=0;GPU_UTIL=0;
+						if (loop_signature.signature.gpu_sig.num_gpus>0){
+						uint gpui;
+						for (gpui=0;gpui<loop_signature.signature.gpu_sig.num_gpus;gpui++){
+							GPU_POWER += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_power;
+							GPU_FREQ += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_freq;
+							GPU_UTIL += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_util;
+						}
+						GPU_FREQ = (float)GPU_FREQ/(loop_signature.signature.gpu_sig.num_gpus*1000000.0);
+						GPU_UTIL = GPU_UTIL/loop_signature.signature.gpu_sig.num_gpus;
+						}
+						#endif
             AVGFF=(float)AVGF/1000000.0;
             prev_ff=(float)prev_f/1000000.0;
             policy_freqf=(float)policy_freq/1000000.0;
             verbose(1,
-                  "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lf Time=%.3lf Energy=%.2lfJ AVGF=%.2f)--> New frequency selected %.2f\n",
-                  ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, ENERGY, AVGFF,
-                  policy_freqf);
+                  "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz)\n\t              (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)--> New frequency selected %.2fGHz\n",
+                  ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, AVGFF,GPU_POWER,GPU_FREQ,GPU_UTIL, policy_freqf);
 
 					}	
 					// Loop printing algorithm

@@ -246,6 +246,39 @@ void check_ip(status_t status, ip_table_t *ips, int num_ips)
 		}
 }
 
+void check_app_status(app_status_t status, ip_table_t *ips, int num_ips)
+{
+    int i;
+		int gpusi;
+		double GPU_power=0;
+		ulong GPU_freq=0;
+    for (i = 0; i < num_ips; i++)
+        if (htonl(status.ip) == htonl(ips[i].ip_int))
+        {
+#if USE_GPU_LIB
+						GPU_power=0;GPU_freq=0;
+						if (status.signature.gpu_sig.num_gpus>0){
+						for (gpusi=0;gpusi<status.signature.gpu_sig.num_gpus;gpusi++){
+							GPU_power += status.signature.gpu_sig.gpu_data[gpusi].GPU_power;
+							GPU_freq += status.signature.gpu_sig.gpu_data[gpusi].GPU_freq;
+						}
+						GPU_freq = GPU_freq/status.signature.gpu_sig.num_gpus;
+						}
+            printf("%15s %7lu-%-4lu %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf\n", 
+                        ips[i].name, status.job_id, status.step_id, status.signature.DC_power,
+                        status.signature.CPI, status.signature.GBS, status.signature.Gflops,
+                        status.signature.time, (double)status.signature.avg_f/1000000, 
+                        GPU_power, (double)GPU_freq/1000000);
+#else
+            printf("%15s %7lu-%-4lu %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf\n", 
+                        ips[i].name, status.job_id, status.step_id, status.signature.DC_power,
+                        status.signature.CPI, status.signature.GBS, status.signature.Gflops,
+                        status.signature.time, (double)status.signature.avg_f/1000000);
+#endif
+
+        }
+}
+
 void clean_ips(ip_table_t *ips, int num_ips)
 {
     int i = 0;
@@ -268,6 +301,31 @@ void process_status(int num_status, status_t *status, char error_only)
         free(status);
     }
     else printf("An error retrieving status has occurred.\n");
+}
+
+void process_app_status(int num_status, app_status_t *status)
+{
+    if (num_status > 0)
+    {
+        int i, num_ips;
+#if USE_GPU_LIB
+            printf("%15s %7s-%-4s %10s %8s %8s %8s %8s %8s %8s %8s\n", 
+                    "Node id", "Job", "Step", "DC power", "CPI", "GBS", "Gflops", "Time", "CPU Freq",
+                    "GPU power", "GPU freq");
+#else
+            printf("%15s %7s-%-4s %10s %8s %8s %8s %8s %8s\n", 
+                    "Node id", "Job", "Step", "DC power", "CPI", "GBS", "Gflops", "Time", "Avg Freq");
+#endif
+        ip_table_t *ips = NULL;
+        num_ips = generate_node_names(my_cluster_conf, &ips);
+        clean_ips(ips, num_ips);
+        for (i = 0; i < num_status; i++)
+            check_app_status(status[i], ips, num_ips);
+        free(ips);
+        free(status);
+    }
+    else if (num_status < 0) printf("An error retrieving status has occurred.\n");
+    else printf("No apps are currently running on any node\n");
 }
 
 void generate_ip(ip_table_t *ips, char *node_name)
@@ -304,9 +362,16 @@ void process_single_status(int num_status, status_t *status, char *node_name)
 int main(int argc, char *argv[])
 {
     int c = 0;
-    char path_name[128];
-    status_t *status;
     int num_status = 0;
+    int status_type = 0;
+
+    char path_name[128];
+    char node_name[256];
+
+		strcpy(node_name,"");
+
+    status_t *status;
+
     verb_level = -1;
     verb_enabled = 0;
     if (argc < 2) usage(argv[0]);
@@ -341,7 +406,8 @@ int main(int argc, char *argv[])
             {"powerstatus",     optional_argument, 0, 'w'},
             {"release",         optional_argument, 0, 'l'},
             {"set-risk",        required_argument, 0, 'r'},
-            {"setopt",        required_argument, 0, 'o'},
+            {"setopt",          required_argument, 0, 'o'},
+            {"type",            required_argument, 0, 't'},
             {"error",           no_argument, 0, 'e'},
             {"help",         	no_argument, 0, 'h'},
             {"version",         no_argument, 0, 'v'},
@@ -427,7 +493,6 @@ int main(int argc, char *argv[])
             case 6:
                 if (optarg)
                 {
-                    char node_name[256];
                     strcpy(node_name, optarg);
                     strtoup(node_name);
                     if (strcmp(node_name, optarg))
@@ -452,7 +517,6 @@ int main(int argc, char *argv[])
             case 'p':
                 if (optarg)
                 {
-                    char node_name[256];
                     strcpy(node_name, optarg);
                     strtoup(node_name);
                     if (strcmp(node_name, optarg))
@@ -474,9 +538,9 @@ int main(int argc, char *argv[])
                     ping_all_nodes(&my_cluster_conf);
                 break;
             case 's':
+                status_type = EAR_TYPE_STATUS;
                 if (optarg)
                 {
-                    char node_name[256];
                     strcpy(node_name, optarg);
                     strtoup(node_name);
                     if (strcmp(node_name, optarg))
@@ -485,23 +549,15 @@ int main(int argc, char *argv[])
                         strcat(node_name, my_cluster_conf.net_ext);
                     }
                     else strcpy(node_name, optarg);
-                    int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
-                    if (rc<0){
-                        printf("Error connecting with node %s\n", node_name);
-                    }else{
-                        request_t command;
-                        command.req = EAR_RC_STATUS;
-                        command.node_dist = INT_MAX;
-                        if ((num_status = send_status(&command, &status)) != 1) printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
-                        process_single_status(num_status, status, node_name);
-                        eards_remote_disconnect();
-                    }
                 }
-                else
-                {
-                    num_status = status_all_nodes(&my_cluster_conf, &status);
-                    process_status(num_status, status, 0);
-                }
+                break;
+            case 't':
+                if (!strcasecmp(optarg, "HARDWARE"))
+                    status_type = EAR_TYPE_STATUS;
+                else if (!strcasecmp(optarg, "APP"))
+                    status_type = EAR_TYPE_APP_STATUS;
+                else if (!strcasecmp(optarg, "POWER"))
+                    status_type = EAR_TYPE_POWER_STATUS;
                 break;
             case 'r':
                 if (optarg)
@@ -524,46 +580,17 @@ int main(int argc, char *argv[])
                 }
                 break;
             case 'w':
+                status_type = EAR_TYPE_POWER_STATUS;
                 if (optarg)
                 {
-                    int num_power_status = 0;
-                    powercap_status_t *powerstatus;
-                    int rc = eards_remote_connect(optarg, my_cluster_conf.eard.port);
-                    if (rc < 0) {
-                        printf("Error connecting with node %s\n", optarg);
-                    }else{
-                        printf("Reading power_status from node %s\n", optarg);
-                        num_power_status = eards_get_powercap_status(&my_cluster_conf, &powerstatus);
-                        eards_remote_disconnect();
-                    }
-                    if (num_power_status > 0)
+                    strcpy(node_name, optarg);
+                    strtoup(node_name);
+                    if (strcmp(node_name, optarg))
                     {
-                        int i;
-                        for (i = 0; i < num_power_status; i++)
-                        {
-                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
-                                        powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, powerstatus[i].current_power, powerstatus[i].total_powercap);
-                        }
-                        free(powerstatus);
+                        strcpy(node_name, optarg);
+                        strcat(node_name, my_cluster_conf.net_ext);
                     }
-
-                }
-                else
-                {
-                    int num_power_status = 0;
-                    powercap_status_t *powerstatus;
-                    num_power_status = cluster_get_powercap_status(&my_cluster_conf, &powerstatus);
-                    if (num_power_status > 0)
-                    {
-                        int i;
-                        for (i = 0; i < num_power_status; i++)
-                        {
-                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\t total_nodes: %d\n", i, powerstatus[i].idle_nodes,
-                                        powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, powerstatus[i].current_power, powerstatus[i].total_powercap, powerstatus[i].total_nodes);
-                        }
-                        free(powerstatus);
-                    }
-                    else printf("powercap_status returned with invalid (%d) num_powerstatus\n", num_power_status);
+                    else strcpy(node_name, optarg);
                 }
                 break;
             case 'o':
@@ -621,5 +648,76 @@ int main(int argc, char *argv[])
         }
     }
 
+    if (strlen(node_name) > 0 && status_type > 0)
+    {
+        int num_status = 0;
+        int rc=eards_remote_connect(node_name, my_cluster_conf.eard.port);
+        powercap_status_t *powerstatus;
+        app_status_t *appstatus;
+        if (rc<0)
+            printf("Error connecting with node %s\n", node_name);
+        else
+        {
+            switch(status_type)
+            {
+                case EAR_TYPE_STATUS:
+                    if ((num_status = eards_get_status(&my_cluster_conf, &status)) != 1) 
+                        printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
+                    process_single_status(num_status, status, node_name);
+                    break;
+                case EAR_TYPE_POWER_STATUS:
+                    printf("Reading power_status from node %s\n", node_name);
+                    num_status = eards_get_powercap_status(&my_cluster_conf, &powerstatus);
+                    if (num_status > 0)
+                    {
+                        int i;
+                        for (i = 0; i < num_status; i++)
+                        {
+                            printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\n", i, powerstatus[i].idle_nodes,
+                                        powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, powerstatus[i].current_power, powerstatus[i].total_powercap);
+                        }
+                        free(powerstatus);
+                    }
+                    break;
+                case EAR_TYPE_APP_STATUS:
+                    num_status = eards_get_app_status(&my_cluster_conf, &appstatus);
+                    process_app_status(num_status, appstatus);
+                    break;
+            }
+
+            eards_remote_disconnect();
+        }
+    }
+    else if (status_type > 0)
+    {
+        switch(status_type)
+        {
+            powercap_status_t *powerstatus;
+            app_status_t *appstatus;
+            case EAR_TYPE_STATUS:
+                num_status = status_all_nodes(&my_cluster_conf, &status);
+                process_status(num_status, status, 0);
+                break;
+            case EAR_TYPE_POWER_STATUS:
+                num_status = cluster_get_powercap_status(&my_cluster_conf, &powerstatus);
+                if (num_status > 0)
+                {
+                    int i;
+                    for (i = 0; i < num_status; i++)
+                    {
+                        printf("powercap_status %d: idle_nodes: %d\t released_pow: %d\t int num_greedy: %d \trequested: %d\t current_pow: %u total_powcap: %u\t total_nodes: %d\n", 
+                                        i, powerstatus[i].idle_nodes, powerstatus[i].released, powerstatus[i].num_greedy, powerstatus[i].requested, 
+                                        powerstatus[i].current_power, powerstatus[i].total_powercap, powerstatus[i].total_nodes);
+                    }
+                    free(powerstatus);
+                }
+                else printf("powercap_status returned with invalid (%d) num_powerstatus\n", num_status);
+                break;
+            case EAR_TYPE_APP_STATUS:
+                num_status = get_app_status_all_nodes(&my_cluster_conf, &appstatus);
+                process_app_status(num_status, appstatus);
+                break;
+        }
+    }
     free_cluster_conf(&my_cluster_conf);
 }

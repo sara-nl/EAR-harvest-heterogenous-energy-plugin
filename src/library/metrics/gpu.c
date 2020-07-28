@@ -15,6 +15,9 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
+#include <common/output/debug.h>
 #include <library/metrics/gpu.h>
 #include <daemon/local_api/eard_api.h>
 
@@ -30,13 +33,10 @@ static mgt_gpu_ops_t *ops_man;
 state_t gpu_lib_load(settings_conf_t *settings)
 {
 	uint gpu_model;
+	state_t ret;
 	state_t s;
-
-	#ifdef EARDS
-	if ((s=eards_gpu_model(&gpu_model))!=EAR_SUCCESS) {
-		return s;
-	}
-	#endif
+	if ((ret=eards_gpu_model(&gpu_model))!=EAR_SUCCESS) return ret;
+	debug("eards_gpu_model %u ",gpu_model);
 	//
 	if (xtate_fail(s, gpu_load(&ops_met, none, empty))) {
 		error("gpu_load returned %d (%s)", s, state_msg);
@@ -54,12 +54,9 @@ state_t gpu_lib_init(ctx_t *_c)
 {
 	ctx_gpu_t *c = (ctx_gpu_t *) _c->context;
 	state_t s;
-
-	#ifdef EARDS
-	if ((s=eards_gpu_dev_count(&dev_count))!=EAR_SUCCESS) {
-		return s;
-	}
-	#endif
+	state_t ret;
+	if ((ret=eards_gpu_dev_count(&dev_count))!=EAR_SUCCESS) return ret;
+	debug("eards_gpu_dev_count %u",dev_count);
 	if (c == NULL) {
 		c = calloc(1, sizeof(ctx_gpu_t));
 		_c->context = (ctx_t *) c;
@@ -98,12 +95,12 @@ state_t gpu_lib_count(uint *_dev_count)
  */
 state_t gpu_lib_read(ctx_t *c, gpu_t *data)
 {
-	state_t s;
-	#ifdef EARDS
-	if (xtate_fail(s, eards_gpu_data_read(data))) {
-		return s;
-	}
-	#endif
+	state_t ret;
+	char gpu_ste[256];
+	debug("reading %u gpus",dev_count);
+	if ((ret=eards_gpu_data_read(data,dev_count))!=EAR_SUCCESS) return ret;	
+	gpu_lib_data_tostr(data,gpu_ste,sizeof(gpu_ste));
+	debug("gpu data %s",gpu_ste);
 	return EAR_SUCCESS;
 }
 
@@ -235,3 +232,5 @@ state_t gpu_lib_power_cap_set(ulong *watts)
 	// EARD
 	return EAR_SUCCESS;
 }
+
+

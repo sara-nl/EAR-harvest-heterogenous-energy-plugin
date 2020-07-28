@@ -15,27 +15,14 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef _EAR_PC_APP_INFO_H
-#define _EAR_PC_APP_INFO_H
-#include <common/config.h>
-#include <common/config/config_install.h>
-#include <common/types/types.h>
-typedef struct pc_app_info{
-	uint 	mode;
-	ulong req_f;
-	ulong req_power;
-	uint  pc_status;
-	#if USE_GPUS
-	ulong req_gpu_f;
-	ulong req_gpu_power;
-	#endif
-}pc_app_info_t;
+#ifndef _GPU_NODE_MGR_H
+#define _GPU_NODE_MGR_H
 
-void pcapp_info_new_job(pc_app_info_t *t);
-void pcapp_info_end_job(pc_app_info_t *t);
-
-/** Sets the req_f and the status to OK */
-void pcapp_info_set_req_f(pc_app_info_t *t,ulong f);
+state_t gpu_mgr_init();
+state_t gpu_mgr_set_freq(uint num_dev,ulong *freqs);
+state_t gpu_mgr_set_freq_all_gpus(ulong gfreq);
 
 
 #endif
+
+

@@ -22,9 +22,12 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <common/config.h>
 #include <common/system/file.h>
 #include <common/states.h>
+//#define SHOW_DEBUGS 1
+#include <common/output/debug.h>
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 
@@ -37,6 +40,8 @@ void copy_application(application_t *destiny, application_t *source)
 {
 	memcpy(destiny, source, sizeof(application_t));
 }
+
+
 
 void application_print_channel(FILE *file, application_t *app)
 {
@@ -250,14 +255,12 @@ void verbose_gpu_app(uint vl,application_t *myapp)
 {
 	signature_t *app=&myapp->signature;
 #if USE_GPU_LIB
-#if USE_GPUS
-	if (app->GPU_util>0){
-  	verbose(vl,"GPU [Power %.2lf Energy %lu freq %lu mem_freq %lu util %lu mem_util %lu]\n",app->GPU_power,app->GPU_energy,app->GPU_freq,app->GPU_mem_freq,
-  	app->GPU_util,app->GPU_mem_util);
-	}else{
-		verbose(vl,"NO GPU application\n");
+	gpu_app_t  *mys;
+	uint gpui;
+	for (gpui=0;gpui<app->gpu_sig.num_gpus;gpui++){
+		mys=&app->gpu_sig.gpu_data[gpui];
+  	verbose(vl,"GPU%u [Power %.2lf freq %lu mem_freq %lu util %lu mem_util %lu]\n",gpui,mys->GPU_power,mys->GPU_freq,mys->GPU_mem_freq,mys->GPU_util,mys->GPU_mem_util);
 	}
-#endif
 #endif
 }
 
@@ -328,3 +331,58 @@ void report_mpi_application_data(application_t *app)
 
 	verbose(VTYPE,"-----------------------------------------------------------------------------------------------\n");
 }
+
+void mark_as_eard_connected(int jid,int sid,int pid)
+{
+	int my_id;	
+	char *tmp,con_file[128];
+	int fd;
+	tmp=getenv("EAR_TMP");
+	if (tmp == NULL){
+		debug("EAR_TMP not defined in mark_as_eard_connected");
+		return;
+	}
+	my_id=create_ID(jid,sid);
+	sprintf(con_file,"%s/.master.%d.%d",tmp,my_id,pid);
+	debug("Creating %s",con_file);	
+	fd=open(con_file,O_CREAT|O_WRONLY,S_IRUSR|S_IWUSR);
+	close(fd);
+	return;
+}
+uint is_already_connected(int jid,int sid,int pid)
+{
+	int my_id;
+	int fd;
+	char *tmp,con_file[128];;
+	tmp=getenv("EAR_TMP");
+	if (tmp == NULL){ 
+		debug("EAR_TMP not defined in is_already_connected");
+		return 0;
+	}
+	my_id=create_ID(jid,sid);
+	sprintf(con_file,"%s/.master.%d.%d",tmp,my_id,pid);
+	debug("Looking for %s ",con_file);
+	fd=open(con_file,O_RDONLY);
+	if (fd>=0){
+		close(fd);
+		return 1;
+	}
+	return 0;
+}
+
+void mark_as_eard_disconnected(int jid,int sid,int pid)
+{
+	int my_id;
+	int fd;
+	char *tmp,con_file[128];
+	tmp=getenv("EAR_TMP");
+	if (tmp == NULL){ 
+		debug("EAR_TMP not defined in mark_as_eard_disconnected");
+		return;
+	}
+	my_id=create_ID(jid,sid);
+	sprintf(con_file,"%s/.master.%d.%d",tmp,my_id,pid);
+	debug("Removing %s",con_file);
+	unlink(con_file);
+}
+

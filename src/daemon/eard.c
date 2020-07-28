@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 #include <sys/select.h>
 #include <linux/limits.h>
-//#define SHOW_DEBUGS 0
+//#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/environment.h>
 #include <common/types/log_eard.h>
@@ -44,6 +44,9 @@
 #endif
 #include <daemon/eard.h>
 #include <daemon/app_api/app_server_api.h>
+#if USE_GPUS
+#include <daemon/gpu/gpu_mgt.h>
+#endif
 
 
 #define MIN_INTERVAL_RT_ERROR 3600
@@ -80,6 +83,13 @@ app_mgt_t *app_mgt_info;
 pc_app_info_t *pc_app_info_data;
 #endif
 /* END Shared memory regions */
+
+#if USE_GPUS
+gpu_t *eard_read_gpu;
+uint eard_num_gpus;
+uint eard_gpu_model;
+char gpu_str[256];
+#endif
 
 coefficient_t *my_coefficients;
 coefficient_t *my_coefficients_default;
@@ -795,7 +805,7 @@ int eard_gpu(int must_read)
   unsigned long ack = 0;
 	unsigned int model=0;
 	unsigned int dev_count=0;
-	gpu_t my_gpu;
+	gpu_t *my_gpu;
 	state_t ret;
   if (must_read) {
     if (read(ear_fd_req[comm_req], &req, sizeof(req)) != sizeof(req))
@@ -803,22 +813,33 @@ int eard_gpu(int must_read)
   }
   switch (req.req_service) {
     case GPU_MODEL:
-			//if (eard_gpu_initialized) ret=gpu_model(&eard_main_gpu_ctx,&model);
-			if (eard_gpu_initialized) model=MODEL_NVML;
-			else model=MODEL_UNDEFINED;
-			write(ear_fd_ack[comm_req],&model,sizeof(model));	
+			debug("GPU_MODEL %d",eard_gpu_model);
+			write(ear_fd_ack[comm_req],&eard_gpu_model,sizeof(eard_gpu_model));	
       break;
     case GPU_DEV_COUNT:
-			if (eard_gpu_initialized) gpu_count(&eard_main_gpu_ctx,&dev_count);
-			write(ear_fd_ack[comm_req],&dev_count,sizeof(dev_count));	
+			debug("GPU_DEV_COUNT %d",eard_num_gpus);
+			write(ear_fd_ack[comm_req],&eard_num_gpus,sizeof(eard_num_gpus));	
 			break;
 		case GPU_DATA_READ:
 			if (eard_gpu_initialized){
-				gpu_read(&eard_main_gpu_ctx,&my_gpu);
+				gpu_read(&eard_main_gpu_ctx,eard_read_gpu);
 			}else{
-				memset(&my_gpu,0,sizeof(gpu_t));
+				memset(eard_read_gpu,0,sizeof(gpu_t));
 			}
-			write(ear_fd_ack[comm_req],&my_gpu,sizeof(my_gpu));
+			debug("Sending %lu bytes en gpu_data_read",sizeof(gpu_t)*eard_num_gpus);
+			gpu_data_tostr(eard_read_gpu,gpu_str,sizeof(gpu_str));
+			debug("gpu_data_read info: %s",gpu_str);
+			write(ear_fd_ack[comm_req],eard_read_gpu,sizeof(gpu_t)*eard_num_gpus);
+			break;
+		case GPU_SET_FREQ:
+			if (eard_gpu_initialized){
+				debug("Setting the GPU freq");
+				gpu_mgr_set_freq(req.req_data.gpu_freq.num_dev,req.req_data.gpu_freq.gpu_freqs);
+			}else{
+				error("GPU not initialized and GPU_SET_FREQ requested");
+			}
+			ack=EAR_SUCCESS;
+			write(ear_fd_ack[comm_req],&ack,sizeof(ack));
 			break;
 	  default:
 			error("Invalid GPU command");
@@ -1026,7 +1047,7 @@ void configure_new_values(settings_conf_t *dyn, resched_t *resched, cluster_conf
     memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
-	dyn->max_power_cap=node->max_power_cap;
+	dyn->max_power_cap=node->powercap;
 	dyn->report_loops=cluster->database.report_loops;
 	memcpy(&dyn->installation,&cluster->install,sizeof(conf_install_t));
 	resched->force_rescheduling=1;
@@ -1069,7 +1090,7 @@ void configure_default_values(settings_conf_t *dyn, resched_t *resched, cluster_
     memcpy(dyn->settings, my_policy->settings, sizeof(double)*MAX_POLICY_SETTINGS);
 	dyn->min_sig_power=node->min_sig_power;
 	dyn->max_sig_power=node->max_sig_power;
-	dyn->max_power_cap=node->max_power_cap;
+	dyn->max_power_cap=node->powercap;
 	dyn->report_loops=cluster->database.report_loops;
 	dyn->max_avx512_freq=my_node_conf->max_avx512_freq;
 	dyn->max_avx2_freq=my_node_conf->max_avx2_freq;
@@ -1181,6 +1202,13 @@ void report_eard_init_error()
 	}
 }
 
+void     update_global_configuration_with_local_ssettings(cluster_conf_t *my_cluster_conf,my_node_conf_t *my_node_conf)
+{
+	strcpy(my_cluster_conf->install.obj_ener,my_node_conf->energy_plugin);
+	strcpy(my_cluster_conf->install.obj_power_model,my_node_conf->energy_model);
+}
+
+
 
 /*
 *
@@ -1283,6 +1311,7 @@ int main(int argc, char *argv[]) {
 		check_policy_values(my_node_conf->policies,my_node_conf->num_policies);
 		print_my_node_conf(my_node_conf);
 		copy_my_node_conf(&my_original_node_conf, my_node_conf);
+		update_global_configuration_with_local_ssettings(&my_cluster_conf,my_node_conf);
 	}
 	verbose(0,"Initializing dynamic information and creating tmp");
 	/* This info is used for eard checkpointing */
@@ -1551,6 +1580,7 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
+	#if USE_GPUS
 	/* GPU Initialization for app requests */
 	ret=gpu_init(&eard_main_gpu_ctx);
 	if (ret!=EAR_SUCCESS){
@@ -1559,6 +1589,12 @@ int main(int argc, char *argv[]) {
 	}else{
 		eard_gpu_initialized=1;
 	}
+	gpu_data_alloc(&eard_read_gpu);
+	gpu_count(&eard_main_gpu_ctx,&eard_num_gpus);
+	debug("gpu_count %u",eard_num_gpus);
+	eard_gpu_model=gpu_model();
+	debug("gpu_model %u",eard_gpu_model);
+	#endif
 
 	verbose(VCONF + 1, "Communicator for %s ON", nodename);
 	// we wait until EAR daemon receives a request

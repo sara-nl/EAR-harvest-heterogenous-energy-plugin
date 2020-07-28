@@ -18,6 +18,10 @@
 #ifndef _HW_INFO_H_
 #define _HW_INFO_H_
 
+#define _GNU_SOURCE
+#include <sched.h>
+
+
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/system/file.h>
@@ -56,6 +60,6 @@ int detect_packages(int **package_map);
 /** Prints the affinity mask of the current process */
 void print_affinity_mask(topology_t *topo);
 /** Checks if process with pid=pid has some cpu forbiden to run , then is_set is set to 1 */
-state_t is_affinity_set(topology_t *topo,int pid,int *is_set);
+state_t is_affinity_set(topology_t *topo,int pid,int *is_set,cpu_set_t *my_mask);
 
 #endif

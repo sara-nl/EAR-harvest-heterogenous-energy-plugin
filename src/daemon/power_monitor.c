@@ -50,6 +50,9 @@
 #include <daemon/node_metrics.h>
 #include <daemon/eard_checkpoint.h>
 #include <daemon/shared_configuration.h>
+#if USE_GPUS
+#include <daemon/gpu/gpu_mgt.h>
+#endif
 
 #if SYSLOG_MSG
 #include <syslog.h>
@@ -384,7 +387,6 @@ void form_database_paths()
 *	BASIC FUNCTIONS 
 *
 */
-
 void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mpi) {
 	state_t s;
 	verbose(1,"job_init_powermon_app init");
@@ -603,6 +605,11 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		frequency_set_userspace_governor_all_cpus();
 		f = frequency_pstate_to_freq(my_policy->p_state);
 		frequency_set_all_cpus(f);
+		#if USE_GPUS
+		if (my_node_conf->gpu_def_freq>0){
+			gpu_mgr_set_freq_all_gpus(my_node_conf->gpu_def_freq);
+		}
+		#endif
 	}
 	appID->is_mpi = 0;
 	debug("context configured");
@@ -661,7 +668,6 @@ void powermon_mpi_finalize(ehandler_t *eh) {
 
 /* This functiono is called by dynamic_configuration thread when a new_job command arrives */
 
-
 void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	// New application connected
 	if (appID == NULL) {
@@ -677,6 +683,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 #if POWERCAP
 	if (powermon_is_idle()) powercap_idle_to_run();
   set_powercapstatus_mode(AUTO_CONFIG);
+	powercap_new_job();
 #endif
 	if (new_context(appID->job.id, appID->job.step_id) != EAR_SUCCESS) {
 		error("Maximum number of contexts reached, no more concurrent jobs supported");
@@ -797,6 +804,7 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 #if POWERCAP
 	app_mgt_end_job(app_mgt_info);
 	pcapp_info_end_job(pc_app_info_data);
+	powercap_end_job();
   if (powermon_is_idle()){ 
 		powercap_set_app_req_freq(powermon_freq_list[powermon_num_pstates-1]);
 		powercap_run_to_idle();
@@ -804,6 +812,12 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 		powercap_set_app_req_freq(current_ear_app[ccontext]->current_freq);
 	}
 #endif
+  #if USE_GPUS
+  if (my_node_conf->gpu_def_freq>0){
+      gpu_mgr_set_freq_all_gpus(my_node_conf->gpu_def_freq);
+  }
+  #endif
+
 
 }
 
@@ -1244,6 +1258,12 @@ void *eard_power_monitoring(void *noinfo)
 	powermon_freq_list=frequency_get_freq_rank_list();
 	powermon_num_pstates=frequency_get_num_pstates();
 
+	#if USE_GPUS
+	if (gpu_mgr_init() != EAR_SUCCESS){
+		error("Error initializing GPU management");
+	}
+	#endif
+
 	/*
 	*	MAIN LOOP
 	*/
@@ -1319,6 +1339,31 @@ void powermon_get_status(status_t *my_status) {
 	my_status->node.max_freq = (ulong) frequency_pstate_to_freq(my_node_conf->max_pstate);
 }
 
+void powermon_get_app_status(app_status_t *my_status)
+{
+	time_t consumed_time;
+	/* Current app info */
+	if (ccontext >= 0) {
+		my_status->job_id = current_ear_app[ccontext]->app.job.id;
+		my_status->step_id = current_ear_app[ccontext]->app.job.step_id;
+	} else {
+		/* No job running. 0 is a valid job_id, therefore we set it to -1 */
+		my_status->job_id = -1;
+	}
+  if (!(is_null(&current_loop_data)==1)){
+		signature_copy(&my_status->signature,&current_loop_data.signature);
+  }else{
+		signature_init(&my_status->signature);	
+		my_status->signature.DC_power = (ulong) last_power_reported;
+    my_status->signature.avg_f = (ulong)(last_nm.avg_cpu_freq);
+	}
+	if (ccontext >= 0){
+		time(&consumed_time);
+		my_status->signature.time=difftime(consumed_time,current_ear_app[ccontext]->app.job.start_time);
+	}
+}
+
+
 
 void print_powermon_app(powermon_app_t *app) {
 	print_application(&app->app);
@@ -1336,7 +1381,14 @@ uint powermon_current_power()
 }
 uint powermon_get_powercap_def()
 {
-	return (uint) my_node_conf->max_power_cap;
+	return (uint) my_node_conf->powercap;
 }
+uint powermon_get_max_powercap_def()
+{
+  return (uint) my_node_conf->max_powercap;
+}
+
+
+
 
 

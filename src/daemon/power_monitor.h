@@ -123,6 +123,7 @@ void print_powermon_app(powermon_app_t *app);
 powermon_app_t *get_powermon_app();
 
 void powermon_get_status(status_t *my_status);
+void powermon_get_app_status(app_status_t *my_status);
 
 uint node_energy_lock(uint *tries);
 void node_energy_unlock();
@@ -130,5 +131,7 @@ void node_energy_unlock();
 uint powermon_is_idle();
 uint powermon_current_power();
 uint powermon_get_powercap_def();
+uint powermon_get_max_powercap_def();
+
 
 #endif

@@ -45,11 +45,8 @@ state_t copy_arch_desc(architecture_t *dest,architecture_t *src)
 void print_arch_desc(architecture_t *arch)
 {
 	if (arch==NULL){ 
-		printf("arch NULL pointer\n");
 		return;
 	}
-	printf("max avx512 %lu max freq for avx2 instructions %lu num pstates %d\n",arch->max_freq_avx512,
-	arch->max_freq_avx2,arch->pstates);
 	
 }
 

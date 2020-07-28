@@ -97,6 +97,26 @@ extern uint check_periodic_mode;
       ENERGY = TIME * POWER; \
       EDP = ENERGY * TIME;
 
+#if USE_GPU_LIB
+#define SET_VARIABLES_GPU() \
+		{ \
+		int gpui; \
+		GPU_POWER=0;GPU_FREQ=0;GPU_UTIL=0; \
+		if (loop_signature.signature.gpu_sig.num_gpus>0){ \
+		for(gpui=0;gpui<loop_signature.signature.gpu_sig.num_gpus;gpui++){ \
+			GPU_POWER += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_power; \
+			GPU_FREQ += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_freq; \
+			GPU_UTIL += loop_signature.signature.gpu_sig.gpu_data[gpui].GPU_util; \
+		} \
+		GPU_FREQ = GPU_FREQ/loop_signature.signature.gpu_sig.num_gpus; \
+		GPU_UTIL = GPU_UTIL/loop_signature.signature.gpu_sig.num_gpus; \
+		} \
+		}
+#else
+#define SET_VARIABLES_GPU()
+#endif
+
+
 
 
 #define  REPORT_TRACES() \
@@ -106,6 +126,18 @@ extern uint check_periodic_mode;
 			}
       // traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
+#if USE_GPU_LIB
+#define VERBOSE_SIG() \
+			if (masters_info.my_master_rank>=0){\
+        float AVGFF,prev_ff,policy_freqf,GPU_f; \
+        AVGFF=(float)AVGF/1000000.0; \
+        prev_ff=(float)prev_f/1000000.0; \
+        policy_freqf=(float)policy_freq/1000000.0; \
+				GPU_f=(float)GPU_FREQ/1000000.0; \
+        verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
+        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu) :Next freq %.1fGHz", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL,policy_freqf);\
+			}
+#else
 #define VERBOSE_SIG() \
 			if (masters_info.my_master_rank>=0){\
         float AVGFF,prev_ff,policy_freqf; \
@@ -113,8 +145,9 @@ extern uint check_periodic_mode;
         prev_ff=(float)prev_f/1000000.0; \
         policy_freqf=(float)policy_freq/1000000.0; \
         verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
-        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lf Time=%.3lf Energy=%.1lfJ AVGF=%.2f:Next freq %.1f", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
+        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec. Energy=%.1lfJ AVGF=%.2fGHz:Next freq %.1fGHz", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
 			}
+#endif
 
 
 
@@ -278,8 +311,8 @@ static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
 
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
-	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC;
-	ulong AVGF;
+	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC,GPU_POWER;
+	ulong AVGF,GPU_FREQ,GPU_UTIL;
 	unsigned long prev_f;
 	int ready;
 	ull VI;
@@ -465,6 +498,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			current_loop_id = event;
 
 			SET_VARIABLES();
+			SET_VARIABLES_GPU();
 			begin_iter = iterations;
 
 			// memcpy(&last_signature, &loop_signature, sizeof(application_t));

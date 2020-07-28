@@ -20,6 +20,7 @@
 #include <string.h>
 
 #include <common/config.h>
+#include <common/config/config_install.h>
 #include <common/output/verbose.h>
 #if POWERCAP
 #include <common/types/pc_app_info.h>
@@ -30,12 +31,20 @@ void pcapp_info_new_job(pc_app_info_t *t)
 	t->req_f=0;
 	t->req_power=0;
 	t->pc_status=PC_STATUS_IDLE;
+	#if USE_GPUS
+	t->req_gpu_f=0;
+	t->req_gpu_power=0;
+	#endif
 }
 void pcapp_info_end_job(pc_app_info_t *t)
 {
 	t->req_f=0;
 	t->req_power=0;
 	t->pc_status=PC_STATUS_IDLE;
+	#if USE_GPUS
+	t->req_gpu_f=0;
+	t->req_gpu_power=0;
+	#endif
 }
 void pcapp_info_set_req_f(pc_app_info_t *t,ulong f)
 {

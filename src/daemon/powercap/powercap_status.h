@@ -20,6 +20,10 @@
 #include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/pc_app_info.h>
 
+/** Limits the power to be requested to the hardware configuration */
+uint limit_max_power(node_powercap_opt_t *pc_opt,uint extra);
+
+
 /** Given a powercap settings and a given power consumption computes the power to be released */
 uint compute_power_to_release(node_powercap_opt_t *pc_opt,uint current);
 uint compute_power_to_release_with_earl(node_powercap_opt_t *pc_opt,uint current,pc_app_info_t *app,ulong avg_f);
@@ -48,6 +52,8 @@ int is_powercap_on(node_powercap_opt_t *pc_opt);
 uint get_powercapopt_value(node_powercap_opt_t *pc_opt);
 uint get_powercap_allocated(node_powercap_opt_t *pc_opt);
 uint compute_extra_power(uint current,uint diff,uint target);
+uint compute_extra_gpu_power(uint current,uint diff,uint target);
+
 
 /** Given a current power , when running an application, returns the powercap status. It must be used only when powercap is set */
 uint compute_power_status(node_powercap_opt_t *pc,uint current_power);

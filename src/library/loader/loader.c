@@ -17,10 +17,10 @@
 
 #define _GNU_SOURCE
 #include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 #include <sys/types.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <library/loader/loader.h>
 #include <library/loader/module_mpi.h>
 #include <library/loader/module_default.h>
@@ -56,6 +56,7 @@ static int init()
 
 void  __attribute__ ((constructor)) loader()
 {
+
 	// Initialization
 	if (!init()) {
 		verbose(4, "LOADER: escaping the application '%s'", program_invocation_name);
@@ -66,7 +67,7 @@ void  __attribute__ ((constructor)) loader()
 	// Module MPI
 	_loaded_mpi = module_mpi();
 	// Module default
-	if (!_loaded_mpi) {
+	if (!_loaded_mpi && strcmp(program_invocation_name,"/bin/bash")) {
 		_loaded_con = module_constructor();
 	}
 	// New modules here...

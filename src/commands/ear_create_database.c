@@ -261,8 +261,12 @@ FLOPS8 INT unsigned,\
 instructions INT unsigned, \
 cycles INT unsigned,\
 avg_f INT unsigned,\
-def_f INT unsigned, \
-PRIMARY KEY (id))");
+def_f INT unsigned, "
+#if USE_GPUS
+"min_GPU_sig_id INT unsigned, \
+max_GPU_sig_id INT unsigned, "
+#endif
+"PRIMARY KEY (id))");
     else
         sprintf(query, "CREATE TABLE IF NOT EXISTS Signatures (\
 id INT unsigned NOT NULL AUTO_INCREMENT,\
@@ -276,9 +280,25 @@ CPI FLOAT,\
 Gflops FLOAT,\
 time FLOAT,\
 avg_f INT unsigned,\
-def_f INT unsigned, \
-PRIMARY KEY (id))");
+def_f INT unsigned, "
+#if USE_GPUS
+"min_GPU_sig_id INT unsigned, \
+max_GPU_sig_id INT unsigned, "
+#endif
+"PRIMARY KEY (id))");
     run_query(connection, query);
+
+#if USE_GPUS
+    sprintf(query, "CREATE TABLE IF NOT EXISTS GPU_signatures ( \
+id INT unsigned NOT NULL AUTO_INCREMENT, \
+GPU_power FLOAT NOT NULL, \
+GPU_freq INT unsigned NOT NULL, \
+GPU_mem_freq INT unsigned NOT NULL, \
+GPU_util INT unsigned NOT NULL, \
+GPU_mem_util INT unsigned NOT NULL, "
+"PRIMARY KEY (id))");
+    run_query(connection, query);
+#endif
 
 if (db_node_detail){
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
@@ -412,8 +432,12 @@ FLOPS8 INT unsigned,\
 instructions INT unsigned, \
 cycles INT unsigned,\
 avg_f INT unsigned,\
-def_f INT unsigned, \
-PRIMARY KEY (id))");
+def_f INT unsigned, "
+#if USE_GPUS
+"min_GPU_sig_id INT unsigned, \
+max_GPU_sig_id INT unsigned, "
+#endif
+"PRIMARY KEY (id))");
     else
         sprintf(query, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
 id INT unsigned NOT NULL AUTO_INCREMENT,\
@@ -427,8 +451,12 @@ CPI FLOAT,\
 Gflops FLOAT,\
 time FLOAT,\
 avg_f INT unsigned,\
-def_f INT unsigned, \
-PRIMARY KEY (id))");
+def_f INT unsigned, "
+#if USE_GPUS
+"min_GPU_sig_id INT unsigned, \
+max_GPU_sig_id INT unsigned, "
+#endif
+"PRIMARY KEY (id))");
 
     run_query(connection, query);
 
@@ -502,8 +530,12 @@ FLOPS8 INT ,\
 instructions INT , \
 cycles INT ,\
 avg_f INT ,\
-def_f INT , \
-PRIMARY KEY (id))");
+def_f INT , "
+#if USE_GPUS
+"min_GPU_sig_id INT, \
+max_GPU_sig_id INT, "
+#endif
+"PRIMARY KEY (id))");
     else
         sprintf(query, "CREATE TABLE IF NOT EXISTS Signatures (\
 id SERIAL NOT NULL,\
@@ -517,10 +549,25 @@ CPI FLOAT,\
 Gflops FLOAT,\
 time FLOAT,\
 avg_f INT ,\
-def_f INT , \
-PRIMARY KEY (id))");
+def_f INT , "
+#if USE_GPUS
+"min_GPU_sig_id INT, \
+max_GPU_sig_id INT, "
+#endif
+"PRIMARY KEY (id))");
     run_query(connection, query);
 
+#if USE_GPUS
+    sprintf(query, "CREATE TABLE IF NOT EXISTS GPU_signatures ( \
+id SERIA NOT NULL, \
+GPU_power FLOAT, \
+GPU_freq INT, \
+GPU_mem_freq INT, \
+GPU_util INT, \
+GPU_mem_util INT, "
+"PRIMARY KEY (id))");
+    run_query(connection, query);
+#endif
 if (db_node_detail){
     sprintf(query, "CREATE TABLE IF NOT EXISTS Periodic_metrics ( \
 id SERIAL NOT NULL, \
@@ -653,8 +700,12 @@ FLOPS8 INT ,\
 instructions INT , \
 cycles INT ,\
 avg_f INT ,\
-def_f INT , \
-PRIMARY KEY (id))");
+def_f INT , "
+#if USE_GPUS
+"min_GPU_sig_id INT, \
+max_GPU_sig_id INT, "
+#endif
+"PRIMARY KEY (id))");
     else
         sprintf(query, "CREATE TABLE IF NOT EXISTS Learning_signatures (\
 id SERIAL NOT NULL,\
@@ -668,8 +719,12 @@ CPI FLOAT,\
 Gflops FLOAT,\
 time FLOAT,\
 avg_f INT ,\
-def_f INT , \
-PRIMARY KEY (id))");
+def_f INT , "
+#if USE_GPUS
+"min_GPU_sig_id INT, \
+max_GPU_sig_id INT, "
+#endif
+"PRIMARY KEY (id))");
 
     run_query(connection, query);
 

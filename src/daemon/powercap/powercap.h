@@ -43,6 +43,9 @@ void copy_node_powercap_opt(node_powercap_opt_t *dst);
 uint powercap_get_strategy();
 void powercap_set_app_req_freq(ulong f);
 void powercap_release_idle_power(pc_release_data_t *release);
+void powercap_set_default();
 
+void powercap_new_job();
+void powercap_end_job();
 
 #endif

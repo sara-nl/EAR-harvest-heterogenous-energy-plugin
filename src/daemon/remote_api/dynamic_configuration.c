@@ -37,7 +37,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <common/system/symplug.h>
 
-#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <daemon/remote_api/eard_conf_rapi.h>
@@ -351,6 +351,37 @@ int dyncon_set_policy(new_policy_cont_t *p)
 	
 }
 
+/** This function returns the current application status */
+void dyncon_get_app_status(int fd, request_t *command) 
+{
+  app_status_t *status;
+  long int ack;
+  send_answer(fd, &ack); //send ack before propagating
+  int num_status = propagate_app_status(command, my_cluster_conf.eard.port, &status);
+  unsigned long return_status = num_status;
+  debug("return_app_tatus %lu status=%p",return_status,status);
+  if (num_status < 1) {
+    error("Panic propagate_app_status returns less than 1 status");
+    return_status = 0;
+    write(fd, &return_status, sizeof(return_status));
+    return;
+  }
+  powermon_get_app_status(&status[num_status - 1]);
+
+  //if no job is present on the current node, we free its data
+  if (status[num_status - 1].job_id < 0)
+  {
+    num_status--;
+    status = realloc(status, sizeof(app_status_t)*num_status);
+  }
+                  
+  send_data(fd, sizeof(app_status_t) * num_status, (char *)status, EAR_TYPE_APP_STATUS);
+  debug("Returning from dyncon_get_app_status");
+  free(status);
+  debug("app_status released");
+
+}
+
 /* This function will propagate the status command and will return the list of node failures */
 void dyncon_get_status(int fd, request_t *command) {
 	status_t *status;
@@ -382,11 +413,11 @@ void dyncon_power_management(int fd, request_t *command)
     case EAR_RC_RED_POWER:
 			if (command->my_req.pc.type==ABSOLUTE){
 				verbose(1,"We must reduce the power in %lu watts",command->my_req.pc.limit);
-				limit=my_node_conf->max_power_cap-command->my_req.pc.limit;
+				limit=my_node_conf->powercap-command->my_req.pc.limit;
 			}
 			if (command->my_req.pc.type==RELATIVE){
 				verbose(1,"We must reduce the power by %lu watts",command->my_req.pc.limit);
-				limit=my_node_conf->max_power_cap-(my_node_conf->max_power_cap*command->my_req.pc.limit);
+				limit=my_node_conf->powercap-(my_node_conf->powercap*command->my_req.pc.limit);
 			}
 			break;	
     case EAR_RC_GET_POWER:
@@ -402,11 +433,11 @@ void dyncon_power_management(int fd, request_t *command)
     case EAR_RC_INC_POWER:
 			if (command->my_req.pc.type==ABSOLUTE){
 				verbose(1,"We can increase the power in %lu watts",command->my_req.pc.limit);
-				limit=my_node_conf->max_power_cap+command->my_req.pc.limit;
+				limit=my_node_conf->powercap+command->my_req.pc.limit;
 			}
 			if (command->my_req.pc.type==RELATIVE){
 				verbose(1,"We can increase the power by %lu watts",command->my_req.pc.limit);
-				limit=my_node_conf->max_power_cap+(my_node_conf->max_power_cap*command->my_req.pc.limit);
+				limit=my_node_conf->powercap+(my_node_conf->powercap*command->my_req.pc.limit);
 			}
 			break;	
     case EAR_RC_SET_POWERCAP_OPT:
@@ -453,6 +484,20 @@ void dyncon_release_idle_power(int fd, request_t *command)
     debug("returning from release_idle_power");
 
 }
+
+void dyncon_set_default_powercap(int fd, request_t *command)
+{
+    int return_status;
+    long int ack;
+
+    debug("setting default powercap");
+
+    powercap_set_default();
+
+    debug("returning from set_default_powercap");
+
+}
+
 
 void dyncon_get_powerstatus(int fd, request_t *command)
 {
@@ -607,6 +652,11 @@ state_t process_remote_requests(int clientfd) {
 			dyncon_get_status(clientfd, &command);
 			return EAR_SUCCESS;
 			break;
+		case EAR_RC_APP_STATUS:
+			verbose(VRAPI + 1, "App status received");
+			dyncon_get_app_status(clientfd, &command);
+      return EAR_SUCCESS;
+      break;
 		case EAR_RC_RED_POWER:
 		case EAR_RC_GET_POWER:
 		case EAR_RC_SET_POWER:
@@ -619,12 +669,15 @@ state_t process_remote_requests(int clientfd) {
 			dyncon_set_risk(clientfd, &command);
 			return EAR_SUCCESS;
 			break;
-        case EAR_RC_GET_POWERCAP_STATUS:
+   case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd, &command);
             return EAR_SUCCESS;
 		case EAR_RC_RELEASE_IDLE:
             dyncon_release_idle_power(clientfd, &command);
             return EAR_SUCCESS;
+		case EAR_RC_DEF_POWERCAP:
+						dyncon_set_default_powercap(clientfd, &command);
+						break;
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;

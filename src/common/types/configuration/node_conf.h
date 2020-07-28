@@ -78,8 +78,10 @@ typedef struct my_node_conf
     ulong   max_temp;
     ulong   max_avx512_freq;
     ulong   max_avx2_freq;
-    double  max_power_cap;
+    long    max_powercap;
+    long    powercap;
     char    powercap_type;
+		ulong   gpu_def_freq;
     uint 	use_log;
 }my_node_conf_t;
 

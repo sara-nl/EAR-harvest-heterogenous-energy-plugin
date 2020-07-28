@@ -9,16 +9,23 @@ powercap_OBJS = \
 
 powercap_BINS = \
     inm.so \
-		dvfs.so \
+		dvfs.so 
+
+ifdef CUDA_BASE
+powercap_BINS += \
 		gpu_dummy.so \
-	  gpu.so
+	  gpu.so \
+		gpu_dvfs.so
+endif
 
 powercap_PATH = $(DESTDIR)/lib/plugins/powercap
 powercap_PERM = 0775
-dvfs_DEPS = \
-	powercap_status.o \
-	$(SRCDIR)/metrics/libmetrics.a \
-	$(SRCDIR)/common/libcommon.a 
+
+gpu_DEPS = 
+
+gpu_dvfs_DEPS = 
+
+dvfs_DEPS = 
 
 ######## RULES
 
@@ -28,6 +35,12 @@ all:$(powercap_OBJS)  $(powercap_BINS)
 	$(CC) $(CFLAGS) -c $<
 dvfs.so:dvfs.o $(dvfs_DEPS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(dvfs_DEPS)
+
+gpu.so:gpu.o $(gpu_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(gpu_DEPS)
+
+gpu_dvfs.so:gpu_dvfs.o $(gpu_dvfs_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(gpu_dvfs_DEPS)
 
 
 %.so: %.o 

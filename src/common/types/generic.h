@@ -35,8 +35,8 @@ typedef long double			ldouble;
 typedef uint8_t			job_type;
 typedef ulong			job_id;
 
-// Obsolete
 #define GENERIC_NAME 		256
+#define SHORT_GENERIC_NAME 		16
 #define	UID_NAME			8
 #define POLICY_NAME 		32
 #define ENERGY_TAG_SIZE		32

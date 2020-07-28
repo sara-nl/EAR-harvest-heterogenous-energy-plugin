@@ -30,6 +30,7 @@
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
 #include <daemon/powercap/powercap_status_conf.h>
+#include <common/system/monitor.h>
 
 #define POWERCAP_MON 0
 
@@ -110,7 +111,7 @@ state_t inm_enable_powercap_policies()
   }
 	return EAR_SUCCESS;
 }
-state_t enable()
+state_t enable(suscription_t *sus)
 {
 	char cmd[1024];
 	state_t ret;
@@ -137,7 +138,7 @@ state_t enable()
   return ret;
 }
 
-state_t set_powercap_value(uint pid,uint domain,uint limit)
+state_t set_powercap_value(uint pid,uint domain,uint limit,uint *cpu_util)
 {
 	char cmd[1024];
 	char c_date[128];

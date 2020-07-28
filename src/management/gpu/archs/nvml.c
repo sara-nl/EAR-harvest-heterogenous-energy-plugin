@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <nvml.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -86,7 +88,7 @@ static nvmlDevice_t  *devices;
 static ulong 		 *clock_max_default; // KHz
 static ulong		 *clock_max; // KHz
 static ulong		 *clock_max_mem; // MHz
-static ulong		**clock_list; // MHz
+static ulong		**clock_list; // KHz
 static uint			 *clock_lens;
 static ulong		 *power_max_default; // W
 static ulong		 *power_max; // W
@@ -336,8 +338,8 @@ static state_t static_init_unprivileged()
 		}
 		clock_list[d] = calloc(clock_lens[d], sizeof(ulong *));
 		for (m = 0; m < clock_lens[d]; ++m) {
-			clock_list[d][m] = (ulong) aux_gpu[m];
-			//debug("D%u,i%u: %lu", d, i, clock_list[d][i]);
+			clock_list[d][m] = ((ulong) aux_gpu[m]) * 1000LU;
+			debug("D%u,M%u: %lu", d, m, clock_list[d][m]);
 		}
 	}
 
@@ -448,7 +450,7 @@ state_t nvml_freq_limit_get_current(ctx_t *c, ulong *khz)
 	for (i = 0; i < dev_count; ++i)
 	{
 		nvml.GetClock(devices[i], NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &mhz);
-		debug("NVML_CLOCK_ID_APP_CLOCK_TARGET %u\n", mhz*1000U);
+		debug("NVML_CLOCK_ID_APP_CLOCK_TARGET %u KHz", mhz * 1000U);
 		khz[i] = ((ulong) mhz) * 1000LU;
 	}
 	return EAR_SUCCESS;
@@ -513,44 +515,91 @@ state_t nvml_freq_limit_reset(ctx_t *c)
 	return e;
 }
 
-static uint clocks_find(uint d, uint mhz)
+state_t nvml_freq_get_valid(ctx_t *c, uint d, ulong freq_ref, ulong *freq_near)
 {
 	ulong *_clock_list = clock_list[d];
 	uint   _clock_lens = clock_lens[d];
-	uint mhz0;
-	uint mhz1;
+	ulong freq_floor;
+	ulong freq_ceil;
 	uint i;
 
-	if (mhz > (uint) _clock_list[0]) {
-		return (uint) _clock_list[0];
+	if (!ok_unprivileged) {
+		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
+	}
+
+	if (freq_ref > _clock_list[0]) {
+		*freq_near = _clock_list[0];
+		return EAR_SUCCESS;
 	}
 
 	for (i = 0; i < _clock_lens-1; ++i)
 	{
-		mhz0 = (uint) _clock_list[i+0];
-		mhz1 = (uint) _clock_list[i+1];
-		//debug("mhz0 %u, mhz1 %u, mhz %u", mhz0, mhz1, mhz);
+		freq_ceil  = _clock_list[i+0];
+		freq_floor = _clock_list[i+1];
 
-		if (mhz <= mhz0 && mhz >= mhz1) {
-			if ((mhz0 - mhz) <= (mhz - mhz1)) {
-				return mhz0;
+		if (freq_ref <= freq_ceil && freq_ref >= freq_floor) {
+			if ((freq_ceil - freq_ref) <= (freq_ref - freq_floor)) {
+				*freq_near = freq_ceil;
+				return EAR_SUCCESS;
 			} else {
-				return mhz1;
+				*freq_near = freq_floor;
+				return EAR_SUCCESS;
 			}
 		}
 	}
 
-	return (uint) _clock_list[i];
+	*freq_near  = _clock_list[i];
+	return EAR_SUCCESS;
+}
+
+state_t nvml_freq_get_next(ctx_t *c, uint d, ulong freq_ref, uint *freq_idx, uint flag)
+{
+	ulong *_clock_list = clock_list[d];
+	uint   _clock_lens = clock_lens[d];
+	ulong freq_floor;
+	ulong freq_ceil;
+	uint i;
+	
+	if (freq_ref >= _clock_list[0]) {
+		if (flag == FREQ_TOP) {
+			*freq_idx = 0;
+		} else {
+			*freq_idx = 1;
+		}
+		return EAR_SUCCESS;
+	}
+	for (i = 1; i < _clock_lens-1; ++i)
+	{
+		freq_ceil  = _clock_list[i+0];
+		freq_floor = _clock_list[i+1];
+		
+		if (freq_ref == freq_ceil || (freq_ref < freq_ceil && freq_ref > freq_floor)) {
+			if (flag == FREQ_TOP) {
+				*freq_idx = i-1;
+			} else {
+				*freq_idx = i+1;
+			}
+			return EAR_SUCCESS;
+		}
+	}
+	if (flag == FREQ_TOP) {
+		*freq_idx = i-1;
+	} else {
+		*freq_idx = i;
+	}
+	return EAR_SUCCESS;
 }
 
 static state_t clocks_set(int i, uint mhz)
 {
 	nvmlReturn_t r;
 	uint parsed_mhz;
+	ulong aux;
 
-	parsed_mhz = clocks_find(i, mhz);
+	nvml_freq_get_valid(NULL, i, ((ulong) mhz) * 1000LU, &aux);
+	parsed_mhz = ((uint) aux) / 1000U;
 
-	debug("D%d setting clock %u KHz (parsed => %u)", i, mhz * 1000, parsed_mhz * 1000);
+	debug("D%d setting clock %u KHz (parsed => %u)", i, mhz * 1000U, parsed_mhz * 1000U);
 #if 0
 	if ((r = nvml.SetLockedClocks(devices[i], 0, parsed_mhz)) != NVML_SUCCESS)
 	{
@@ -582,6 +631,7 @@ state_t nvml_freq_limit_set(ctx_t *c, ulong *khz)
 	if (!ok_init) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
+	debug("nvml_clock_limit_set devices %d",dev_count);
 	for (i = 0, e = EAR_SUCCESS; i < dev_count; ++i) {
 		if (xtate_fail(s, clocks_set(i, (uint) (khz[i] / 1000LU)))) {
 			e = s;
