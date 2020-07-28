@@ -136,6 +136,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	#endif
 
 	/********* GPU PART **********/
+	if (masters_info.my_master_rank>=0){
 	#if USE_GPUS
   obj_path = getenv(SCHED_EAR_GPU_POWER_POLICY);
   #if SHOW_DEBUGS
@@ -149,7 +150,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
       sprintf(basic_path,"%s/policies/gpu_%s.so",data->dir_plug,app_settings->policy_name);
       obj_path=basic_path;
   }
-  if (masters_info.my_master_rank>=0) debug("loading policy %s",obj_path);
+  debug("loading policy %s",obj_path);
   if (policy_load(obj_path,&gpu_polsyms_fun)!=EAR_SUCCESS){
     error("Error loading policy %s",obj_path);
   }
@@ -165,6 +166,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 		}else{
 			error("gpu_lib_init");
 		}
+	}
 	}
 	#endif
 	
@@ -189,16 +191,17 @@ state_t policy_init()
 		ret=polsyms_fun.init(c);
 	}
 	#if USE_GPUS
+	if (masters_info.my_master_rank>=0){
 	if (gpu_polsyms_fun.init != NULL){
 		debug("Loading gpu init");
 		retg=gpu_polsyms_fun.init(c);
 	}else{
 		debug("gpu init policy null");
 	}
-	
+	}	
 	#endif
 	#if POWERCAP
-	pc_support_init(c);
+	if (masters_info.my_master_rank>=0) pc_support_init(c);
 	#endif
 	if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;
 	else return EAR_ERROR;
@@ -312,8 +315,10 @@ state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
 #endif
 		ret = polsyms_fun.ok(c, curr,prev,ok);
 		#if USE_GPUS
+		if (masters_info.my_master_rank>=0){
 		if (gpu_polsyms_fun.ok!=NULL){
 			retg = gpu_polsyms_fun.ok(c, curr,prev,ok);
+		}
 		}
 		#endif
 		if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;

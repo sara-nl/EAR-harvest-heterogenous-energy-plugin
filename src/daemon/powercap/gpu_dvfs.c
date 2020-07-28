@@ -311,7 +311,6 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 			alloc=(float)limit*pdist[i];
 			ualloc = (ulong)alloc;
 			if (ualloc > gpu_pc_max_power[i]) ualloc = gpu_pc_max_power[i];
-			if (ualloc < gpu_pc_min_power[i]) ualloc = gpu_pc_min_power[i];
 			gpu_pc_curr_power[i] = ualloc;
 		}
 	}
@@ -390,7 +389,7 @@ void set_app_req_freq(ulong *f)
 {
 	int i;
 	for (i=0;i<gpu_pc_num_gpus;i++) {
-  	debug("GPU_DVFS:GPU %d Requested application freq set to %lu",i,f[i]);
+  	/* debug("GPU_DVFS:GPU %d Requested application freq set to %lu",i,f[i]); */
 		t_freq[i]=f[i];
 	}
 }

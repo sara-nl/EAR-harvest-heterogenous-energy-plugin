@@ -25,8 +25,15 @@
 #define DOMAIN_DRAM     2
 #define DOMAIN_GPU      3
 #define DOMAIN_GPUS      DOMAIN_GPU
-
 #define NUM_DOMAINS 4
+
+#ifdef USE_GPUS
+#define GPU_PERC_UTIL 0.45
+#else
+#define GPU_PERC_UTIL 0
+#endif
+
+
 
 
 #define PC_STATUS_OK      0
