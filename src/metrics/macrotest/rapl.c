@@ -8,6 +8,7 @@
 
 void stress()
 {
+	#if 0
 	int i;
 	double d1;
 	double d2;
@@ -16,7 +17,8 @@ void stress()
 		d1 = d1 + 3;
 		d2 = d2 + d1/((double) i);
 	}
-	sleep(2);
+	#endif
+	sleep(1);
 }
 
 ullong vals1[512];
@@ -30,6 +32,7 @@ int main(int argc, char *argv[])
 	int i;
 
 	ret(init_rapl_msr(fds));
+	if (retval == -1) return 0;
 
 	ret(read_rapl_msr(fds, vals1));
 
@@ -43,7 +46,8 @@ int main(int argc, char *argv[])
 		double val = ((double) valsD[i]) / RAPL_MSR_UNITS;
 		//printf("%llu ", vals1[i]);
 		//printf("%llu ", vals2[i]);
-		//printf("%llu ", valsD[i]);
+		printf("%llu ", valsD[i]);
+		//printf("%llu ", valsD[i] / (ulong) RAPL_MSR_UNITS);
 		//printf("%0.2lf ", val);
 	}
 	printf("\n");

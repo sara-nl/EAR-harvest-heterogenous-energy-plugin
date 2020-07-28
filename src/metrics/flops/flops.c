@@ -44,7 +44,7 @@ int init_flops_metrics()
 
 	if (state_ok(flops_intel63_status(&topo)))
 	{
-		debug("selected intel63");
+		debug("loaded intel63");
 		ops.init       = flops_intel63_init;
 		ops.dispose    = flops_intel63_dispose;
 		ops.count      = flops_intel63_count;
@@ -55,7 +55,7 @@ int init_flops_metrics()
 		ops.read       = flops_intel63_read;
 		ops.read_accum = flops_intel63_read_accum;
 	} else {
-		debug("selected dummy");
+		debug("load dummy");
 		ops.init       = flops_dummy_init;
 		ops.dispose    = flops_dummy_dispose;
 		ops.count      = flops_dummy_count;

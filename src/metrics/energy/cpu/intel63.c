@@ -60,11 +60,9 @@ static int rapl_msr_instances = 0;
 
 static double cpu_energy_units;
 static double dram_energy_units;
-//static double power_units;
-//static double time_units;
+static double power_units;
+static double time_units;
 static int vendor;
-
-#define get_total_packagesa() 128
 
 int init_rapl_msr(int *fd_map)
 {
@@ -80,23 +78,13 @@ int init_rapl_msr(int *fd_map)
 
 	if (is_msr_initialized() == 0) {
 		debug("MSR registers already initialized");
-		//init_msr(fd_mapa);
-	} //else get_msr_ids(fd_mapa);
+		init_msr(fd_map);
+	} else get_msr_ids(fd_map);
+	
 	rapl_msr_instances++;
 
-	printf("packages: %d\n", get_total_packagesa());
-
-	int ret;
-	for (j = 0; j < get_total_packagesa(); ++j) {
-		fd_map[j] = -1;
-		if ((ret = omsr_open(j, &fd_map[j])) != EAR_SUCCESS) {
-			printf("ERROR on fd %d\n", j);
-			return EAR_ERROR;
-		}
-	}
-
 	/* Ask for msr info */
-	for (j = 0; j < get_total_packagesa(); j++)
+	for (j = 0; j < get_total_packages(); j++)
 	{
 		off_t energy_status;
 
@@ -112,25 +100,16 @@ int init_rapl_msr(int *fd_map)
 			return EAR_ERROR;
 		}
 
-		// This is energy units
-		cpu_energy_units  = pow(0.5, (double) ((result >>  8) & 0x1f));
+		//power_units = pow(0.5, (double) (result & 0xf));
+		//time_units = pow(0.5, (double) ((result >> 16) & 0xf));
+		
+		cpu_energy_units = pow(0.5, (double) ((result >> 8) & 0x1f));
+		// Take a look to Intel's RAPL test
 		dram_energy_units = pow(0.5, (double) 16);
-
-		if (vendor == VENDOR_AMD) {
-			dram_energy_units = cpu_energy_units;
-		}
-
-		printf("pkg units %lf\n", cpu_energy_units);
-		printf("dram/core units %lf\n", dram_energy_units);
 	}
 	pthread_mutex_unlock(&rapl_msr_lock);
 	return EAR_SUCCESS;
 }
-
-double d1[512];
-double d2[512];
-double dT[512];
-int ridi = 1;
 
 /* DRAM 0, DRAM 1,..DRAM N, PCK0,PCK1,...PCKN */
 int read_rapl_msr(int *fd_map, ullong *_values)
@@ -138,7 +117,7 @@ int read_rapl_msr(int *fd_map, ullong *_values)
 	ullong result;
 	int j;
 	int nump;
-	nump = get_total_packagesa();
+	nump = get_total_packages();
 
 	for (j = 0; j < nump; j++)
 	{
@@ -156,11 +135,6 @@ int read_rapl_msr(int *fd_map, ullong *_values)
 			return EAR_ERROR;
 		}
 		result &= 0xffffffff;
-
-		if (ridi) d1[nump + j] = ((double) result) * cpu_energy_units;
-		else      d2[nump + j] = ((double) result) * cpu_energy_units;
-
-		//printf("result PKG %d: %llu\n", j, result);
 		_values[nump + j] = (ullong) result * (cpu_energy_units * 1000000000);
 
 		/* DRAM reading */
@@ -175,35 +149,13 @@ int read_rapl_msr(int *fd_map, ullong *_values)
 			return EAR_ERROR;
 		}
 		result &= 0xffffffff;
-		
-		if (ridi) d1[j] = ((double) result) * cpu_energy_units;
-		else      d2[j] = ((double) result) * cpu_energy_units;
-	
-		_values[j] = (ullong) result * (dram_energy_units * 1000000000);
-		
-		if (!ridi) {
-			dT[       j] = d2[       j] - d1[       j];
-			dT[nump + j] = d2[nump + j] - d1[nump + j];
-			printf("result %d PKG: %lf - %lf = %lf", j, d2[nump + j], d1[nump + j], dT[nump + j]);
-			printf(",RAM: %lf - %lf = %lf\n", j, d2[j], d1[j], dT[j]);
-		}
 
-		//printf("result RAM/CORE: %llu => %lf\n", result, _values[j]);
-
-		if (vendor == VENDOR_AMD) {
-			//_values[j] = _values[nump + j] - _values[j];
+		if (vendor != VENDOR_AMD) {
+			_values[j] = (ullong) result * (dram_energy_units * 1000000000);
+		} else {
+			_values[j] = 0;
 		}
 	}
-	if (!ridi) {
-		double dpkg = 0.0;
-		double dram = 0.0;
-		for (j = 0; j < get_total_packagesa();++j) {
-			dram += dT[       j];
-            dpkg += dT[nump + j];
-		}
-		printf("TOTAL RAM: %lf\n", dram);
-	}
-	ridi = 0;
 	return EAR_SUCCESS;
 }
 
@@ -213,7 +165,7 @@ void dispose_rapl_msr(int *fd_map)
 	pthread_mutex_lock(&rapl_msr_lock);
 	rapl_msr_instances--;
 	if (rapl_msr_instances == 0) {
-		tp = get_total_packagesa();
+		tp = get_total_packages();
 		for (j = 0; j < tp; j++) omsr_close(&fd_map[j]);
 	}
 	pthread_mutex_unlock(&rapl_msr_lock);
@@ -223,7 +175,7 @@ void diff_rapl_msr_energy(ullong *diff, ullong *end, ullong *init)
 {
 	ullong ret = 0;
 	int nump, j;
-	nump = get_total_packagesa();
+	nump = get_total_packages();
 
 	for (j = 0; j < nump * RAPL_ENERGY_EV; j++) {
 		if (end[j] >= init[j]) {
@@ -231,7 +183,6 @@ void diff_rapl_msr_energy(ullong *diff, ullong *end, ullong *init)
 		} else {
 			ret = ullong_diff_overflow(init[j], end[j]);
 		}
-		//printf("%d: %llu - %llu = %llu\n", j, end[j], init[j], ret);
 		diff[j] = ret;
 	}
 }
@@ -240,7 +191,7 @@ ullong acum_rapl_energy(ullong *values)
 {
 	ullong ret = 0;
 	int nump, j;
-	nump = get_total_packagesa();
+	nump = get_total_packages();
 	for (j = 0; j < nump * RAPL_ENERGY_EV; j++) {
 		ret = ret + values[j];
 	}
@@ -251,7 +202,7 @@ void rapl_msr_energy_to_str(char *b, ullong *values)
 {
 	int nump, j;
 	char baux[512];
-	nump = get_total_packagesa();
+	nump = get_total_packages();
 
 	sprintf(baux, ", CPU (");
 	for (j = 0; j < nump; j++) {
