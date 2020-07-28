@@ -15,13 +15,17 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_ENERGY_CPU_H
-#define METRICS_ENERGY_CPU_H
+#ifndef METRICS_TEMPERATURE_H
+#define METRICS_TEMPERATURE_H
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
-//
-#include <metrics/energy/cpu/intel63.h>
+#define RAPL_TEMP_EVS 1
 
-#endif 
+int init_temp_msr(int *fd);
+
+int read_temp_msr(int *fd,unsigned long long *_values);
+
+int read_temp_limit_msr(int *fds, unsigned long long *_values);
+
+int reset_temp_limit_msr(int *fds);
+
+#endif //METRICS_TEMPERATURE_H

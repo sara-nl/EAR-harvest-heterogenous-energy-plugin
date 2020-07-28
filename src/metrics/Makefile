@@ -38,7 +38,8 @@ mets_OBJS = \
     $(SRCDIR)/metrics/frequency/imc/dummy.o \
     $(SRCDIR)/metrics/frequency/imc/intel63.o \
     $(SRCDIR)/metrics/stalls/stalls.o \
-    $(SRCDIR)/metrics/temperature/temperature.o
+    $(SRCDIR)/metrics/temperature/temperature.o \
+    $(SRCDIR)/metrics/temperature/cpu/intel63.o
 
 ######## RULES
 

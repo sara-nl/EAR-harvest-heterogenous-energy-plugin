@@ -79,7 +79,9 @@ int init_rapl_msr(int *fd_map)
 	if (is_msr_initialized() == 0) {
 		debug("MSR registers already initialized");
 		init_msr(fd_map);
-	} else get_msr_ids(fd_map);
+	} else {
+		get_msr_ids(fd_map);
+	}
 	
 	rapl_msr_instances++;
 
