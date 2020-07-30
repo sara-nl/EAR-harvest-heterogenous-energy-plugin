@@ -810,6 +810,7 @@ int eard_gpu(int must_read)
   unsigned long ack = 0;
 	unsigned int model=0;
 	unsigned int dev_count=0;
+	#if USE_GPUS
 	gpu_t *my_gpu;
 	state_t ret;
   if (must_read) {
@@ -850,6 +851,12 @@ int eard_gpu(int must_read)
 			error("Invalid GPU command");
       return 0;
   }
+	#else
+	ack=EAR_ERROR;
+	write(ear_fd_ack[comm_req],&ack,sizeof(ack));
+	error("GPUS not supported");
+	return 0;
+	#endif
   return 1;
 }
 

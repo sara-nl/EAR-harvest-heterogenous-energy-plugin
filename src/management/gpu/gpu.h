@@ -23,6 +23,9 @@
 #include <common/plugins.h>
 #include <common/system/time.h>
 
+#define FREQ_TOP	0
+#define FREQ_BOTTOM	1
+
 typedef struct mgt_gpu_ops_s
 {
 	state_t (*init)                   (ctx_t *c);
@@ -35,6 +38,8 @@ typedef struct mgt_gpu_ops_s
 	state_t (*freq_limit_get_max)     (ctx_t *c, ulong *khz);
 	state_t (*freq_limit_reset)       (ctx_t *c);
 	state_t (*freq_limit_set)         (ctx_t *c, ulong *khz);
+	state_t (*freq_get_valid)         (ctx_t *c, uint d, ulong freq_ref, ulong *freq_near);
+	state_t (*freq_get_next)          (ctx_t *c, uint d, ulong freq_ref, uint *freq_idx, uint flag);
 	state_t (*freq_list)              (ctx_t *c, ulong ***list_khz, uint **list_len);
 	state_t (*power_cap_get_current)  (ctx_t *c, ulong *watts);
 	state_t (*power_cap_get_default)  (ctx_t *c, ulong *watts);
@@ -42,7 +47,6 @@ typedef struct mgt_gpu_ops_s
 	state_t (*power_cap_reset)        (ctx_t *c);
 	state_t (*power_cap_set)          (ctx_t *c, ulong *watts);
 } mgt_gpu_ops_t;
-
 
 /** Discovers the low level API. Returns function pointers, but is not required. */
 state_t mgt_gpu_load(mgt_gpu_ops_t **ops);
@@ -75,6 +79,12 @@ state_t mgt_gpu_freq_limit_reset(ctx_t *c);
 
 /** Sets the current clock cap on each GPU (one value per GPU in the khz array). */
 state_t mgt_gpu_freq_limit_set(ctx_t *c, ulong *khz);
+
+/** Given a GPU index and reference frequency, get the nearest valid (in khz). */
+state_t mgt_gpu_freq_get_valid(ctx_t *c, uint dev, ulong freq_ref, ulong *freq_near);
+
+/** Given a GPU index, a flag and a reference frequency, get the next frequency index in the list. */
+state_t mgt_gpu_freq_get_next(ctx_t *c, uint dev, ulong freq_ref, uint *freq_idx, uint flag);
 
 /** Gets a list of clocks and list length per device. */
 state_t mgt_gpu_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len);
