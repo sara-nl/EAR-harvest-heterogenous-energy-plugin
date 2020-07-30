@@ -268,19 +268,25 @@ int get_default_tag_id(cluster_conf_t *conf)
     return id;
 }
 
-my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
+
+my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf, char *nodename)
 {
 	int i=0, j=0, range_found=0;
+    int num_spec_nodes = 0;
+    int range_id = -1;
+    int tag_id = -1, def_tag_id = -1;
 
 	if (my_conf->num_islands == 0) return NULL;
 
-	my_node_conf_t *n=calloc(1, sizeof(my_node_conf_t));
-    n->num_policies = my_conf->num_policies;
-    n->policies=malloc(sizeof(policy_conf_t)*n->num_policies);
-    int num_spec_nodes = 0;
-    int range_id = -1;
-    //char tag[GENERIC_NAME] = "";
-    int tag_id = -1;
+    def_tag_id = get_default_tag_id(my_conf);
+
+	my_node_conf_t *n = calloc(1, sizeof(my_node_conf_t));
+
+    n->num_policies = get_default_policies(my_conf, &n->policies, def_tag_id);
+    //n->num_policies = my_conf->num_policies;
+    //n->policies = malloc(sizeof(policy_conf_t)*n->num_policies);
+
+    n->max_pstate=my_conf->eard.max_pstate;
 
     while(i<my_conf->num_nodes)
     {
@@ -336,7 +342,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         n->energy_plugin = my_conf->install.obj_ener;
         n->energy_model = my_conf->install.obj_power_model;
 
-    if (tag_id < 0) tag_id = get_default_tag_id(my_conf);
+    if (tag_id < 0) tag_id = def_tag_id; // if no tag found, we apply the default tag
     if (tag_id >= 0)
     {
         debug("Found my_node_conf with tag: %s\n", my_conf->tags[tag_id].id);
@@ -350,7 +356,7 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
         n->max_avx2_freq = my_conf->tags[tag_id].max_avx2_freq;
 
         n->powercap_type = my_conf->tags[tag_id].powercap_type;
-				n->gpu_def_freq = my_conf->tags[tag_id].gpu_def_freq;
+        n->gpu_def_freq = my_conf->tags[tag_id].gpu_def_freq;
 
         if (my_conf->tags[tag_id].energy_plugin != NULL && strlen(my_conf->tags[tag_id].energy_plugin) > 0)
             n->energy_plugin = my_conf->tags[tag_id].energy_plugin;
@@ -364,19 +370,46 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf,char *nodename)
     }
     else warning("No tag found for current node in ear.conf\n");
 
+    //POLICY management
+    char found;
+    if (tag_id >= 0 && tag_id != def_tag_id) // policies with the default tag have already been added
+    {
+        for (i = 0; i < my_conf->num_policies; i++)
+        {
+            found = 0;
+            debug("comparing current tag (%s) with policy tag (%s)\n", my_conf->tags[tag_id].id, my_conf->power_policies[i].tag);
+            if (!strcmp(my_conf->tags[tag_id].id, my_conf->power_policies[i].tag)) //we only need the policies for our current tag
+            {
+                debug("match found!\n");
+                for (j = 0; j < n->num_policies; j++)
+                {
+                    if (!strcmp(my_conf->power_policies[i].name, n->policies[j].name)) //two policies are the same if they are have the same name, so we replace them
+                    {
+                        memcpy(&n->policies[j], &my_conf->power_policies[i], sizeof(policy_conf_t));
+                        found = 1;
+                        break;
+                    }
+                }
+                if (!found) // if the policy didn't exist as a default one, we add it for this node
+                {
+                    debug("new policy found for this tag, adding it to my_node_conf's list\n");
+                    n->policies = realloc(n->policies, sizeof(policy_conf_t)*(n->num_policies + 1));
+                    memcpy(&n->policies[n->num_policies], &my_conf->power_policies[i], sizeof(policy_conf_t));
+                    n->num_policies ++;
+                }
+            }
 
-    //pending checks for policies
-    memcpy(n->policies,my_conf->power_policies,sizeof(policy_conf_t)*my_conf->num_policies);
-    n->max_pstate=my_conf->eard.max_pstate;
 
-		/* Automatic computation of powercap */
-		if (n->powercap == -1){
-			if (my_conf->eargm.power > 0){
-				n->powercap = my_conf->eargm.power / my_conf->cluster_num_nodes;
-			}else{
-				n->powercap = 0;
-			}
-		}
+        }
+    }
+    /* Automatic computation of powercap */
+    if (n->powercap == -1){
+      if (my_conf->eargm.power > 0){
+        n->powercap = my_conf->eargm.power / my_conf->cluster_num_nodes;
+      }else{
+        n->powercap = 0;
+      }
+    }
 
 
 	return n;
