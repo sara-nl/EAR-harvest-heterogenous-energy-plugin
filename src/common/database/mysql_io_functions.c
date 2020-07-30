@@ -1808,6 +1808,7 @@ int mysql_batch_insert_power_signatures(MYSQL *connection, application_t *pow_si
     return id;
 }
 
+#if USE_GPUS
 int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t cont, int num_sigs)
 {
     int i, j, k;
@@ -1979,6 +1980,7 @@ int mysql_retrieve_gpu_signatures(MYSQL *connection, char *query, gpu_signature_
     return num_gpu_sigs;
 
 }
+#endif
 
 int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signature_t **pow_sigs)
 {
