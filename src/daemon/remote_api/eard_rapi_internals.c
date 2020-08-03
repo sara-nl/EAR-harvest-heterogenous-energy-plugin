@@ -37,6 +37,61 @@
 int eards_remote_connected=0;
 int eards_sfd=-1;
 
+#if DYNAMIC_COMMANDS
+size_t get_command_size(request_t *command, char **data_to_send)
+{
+    size_t size = sizeof(internal_request_t);
+    size_t offset = 0;
+    char *command_b;
+
+
+    switch(command->req)
+    {
+        case EAR_RC_SET_POWERCAP_OPT:
+            size += command->my_req.pc_opt.num_greedy * sizeof(int) * 2;
+            offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            break;
+        case EAR_RC_MAX_FREQ:       //max_freq is an ulong
+        case EAR_RC_SET_FREQ:
+        case EAR_RC_INC_TH:         //th is an ulong
+        case EAR_RC_NEW_TH:
+        case EAR_RC_SET_POWER:      //limit is an ulong
+            size += sizeof(ulong);  //size of max_freq, th and limit
+            break;
+        case EAR_RC_INC_POWER:      //type is an uint, limit is an ulong
+        case EAR_RC_SET_RISK:       //level is an uint (risk_t), target is an ulong
+            size += sizeof(ulong);
+            size += sizeof(uint);
+            break;
+        case EAR_RC_RED_PSTATE:
+            size += sizeof(uint);
+            break;
+        case EAR_RC_SET_POLICY:
+            size += sizeof(new_policy_cont_t); 
+            break;
+
+    }
+
+    //copy the original command
+    command_b = calloc(1, size);
+    memcpy(command_b, command, sizeof(internal_request_t)); //the first portion of request_t and internal_request_t align
+
+    switch(command->req)
+    {
+        case EAR_RC_SET_POWERCAP_OPT:
+            memcpy(&command_b[sizeof(internal_request_t)], command->my_req.pc_opt.greedy_nodes, offset);
+            memcpy(&command_b[sizeof(internal_request_t) + offset], command->my_req.pc_opt.extra_power, offset);
+            break;
+        default:
+            memcpy(&command_b[sizeof(internal_request_t)], &command->my_req, size-sizeof(internal_request_t));
+            break;
+    }
+
+    *data_to_send = command_b; 
+    return size;
+
+}
+#else
 size_t get_command_size(request_t *command, char **data_to_send)
 {
     size_t size = sizeof(request_t);
@@ -67,6 +122,7 @@ size_t get_command_size(request_t *command, char **data_to_send)
     *data_to_send = command_b; 
     return size;
 }
+#endif
 
 // Sends a command to eard
 int send_command(request_t *command)

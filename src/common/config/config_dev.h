@@ -43,6 +43,10 @@
 #define NUM_PROPS                           3
 // #define EAR_TRACER_MPI 1
 
+/** Specifies if eard's rapi uses dynamic size commands. Set to 0 if you want 
+ * compatibility with old EAR versions. */
+#define DYNAMIC_COMMANDS    0
+
 // Maximum number of tries when doing non-blocking communications
 #define MAX_SOCKET_COMM_TRIES 	10000000
 

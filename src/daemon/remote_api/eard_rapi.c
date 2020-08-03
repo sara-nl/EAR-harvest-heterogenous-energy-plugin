@@ -248,16 +248,6 @@ int eards_set_risk(risk_t risk,unsigned long target)
     return send_command(&command);
 }
 
-void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t *my_cluster_conf)
-{
-    request_t command;
-    command.req=EAR_RC_SET_RISK;
-    command.time_code = time(NULL);
-	command.my_req.risk.level=risk;
-	command.my_req.risk.target=target;
-    send_command_all(command, my_cluster_conf);
-}
-
 /* End new functions for power limit management */
 
 int eards_set_policy_info(new_policy_cont_t *p)
@@ -315,6 +305,16 @@ int get_app_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **sta
 
     return num_status;
 
+}
+
+void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t *my_cluster_conf)
+{
+    request_t command;
+    command.req=EAR_RC_SET_RISK;
+    command.time_code = time(NULL);
+	command.my_req.risk.level=risk;
+	command.my_req.risk.target=target;
+    send_command_all(command, my_cluster_conf);
 }
 
 void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)

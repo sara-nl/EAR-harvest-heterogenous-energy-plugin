@@ -44,51 +44,56 @@ typedef struct end_job_req{
 }end_job_req_t;
 
 typedef struct new_conf{
-	ulong max_freq;
-	ulong min_freq;
-	ulong th;
-	uint p_states;
-	uint p_id;
+	ulong   max_freq;
+	ulong   min_freq;
+	ulong   th;
+	uint    p_states;
+	uint    p_id;
 }new_conf_t;
 
 typedef struct new_policy_cont{
-	char name[POLICY_NAME_SIZE];
-	ulong def_freq;
-	double settings[MAX_POLICY_SETTINGS];
+	char    name[POLICY_NAME_SIZE];
+	ulong   def_freq;
+	double  settings[MAX_POLICY_SETTINGS];
 }new_policy_cont_t;
 
 typedef struct power_limit{
-	unsigned int type;
-	unsigned long limit;
+	unsigned long   limit;
+	unsigned int    type;
 }power_limit_t;
 
 typedef struct risk_dec{
-	risk_t level;
 	unsigned long target;
+	risk_t level;
 }risk_dec_t;
 
 
-
 typedef union req_data{
-		new_job_req_t 		new_job;
-		end_job_req_t 		end_job;
-		new_conf_t 				ear_conf;
-		new_policy_cont_t	pol_conf;
-		risk_dec_t 			risk;
+    new_job_req_t       new_job;
+    end_job_req_t       end_job;
+    new_conf_t          ear_conf;
+    new_policy_cont_t   pol_conf;
+    risk_dec_t          risk;
 #if POWERCAP
-	  power_limit_t     pc;
-		powercap_opt_t  pc_opt;
+    power_limit_t       pc;
+    powercap_opt_t      pc_opt;
 #endif
 }req_data_t;
-
-
 
 typedef struct request{
     uint        req;
     uint        node_dist;
-    int        time_code;
-    req_data_t  my_req;
+    int         time_code;
+    req_data_t  my_req; //all new variables must be specified after time_code so the first portion aligns with internal_request_t
 }request_t;
+
+#if DYNAMIC_COMMANDS
+typedef struct internal_request {
+    uint    req;
+    uint    node_dist;
+    int     time_code; //only the necessary my_req content is sent, and what is sent can be identified by the req code 
+} internal_request_t;
+#endif
 
 typedef struct status_node_info{
 	ulong avg_freq; // In KH
@@ -126,6 +131,7 @@ typedef struct status{
 typedef struct app_status{
 	unsigned int ip;
 	long job_id,step_id; //need to be signed so we can set an invalid job_id (-1) to know when there is no job
+    uint nodes, master_rank;
 	signature_t signature;
 }app_status_t;
 

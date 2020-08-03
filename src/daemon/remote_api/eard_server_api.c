@@ -131,6 +131,45 @@ void close_server_socket(int sock)
 	close(sock);
 }
 
+#if DYNAMIC_COMMANDS
+int read_command(int s, request_t *command)
+{
+    request_header_t head;
+    char *tmp_command;
+    head = receive_data(s, (void **)&tmp_command);
+    debug("received command type %d\t size: %lu \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
+
+    if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(internal_request_t))
+    {
+        debug("NO_COMMAND");
+        command->req = NO_COMMAND;
+        if (head.size > 0) free(tmp_command);
+#if DYN_PAR
+        return EAR_SOCK_DISCONNECTED;
+#endif
+        return command->req;
+    }
+    memcpy(command, tmp_command, sizeof(internal_request_t));
+    if (head.size > sizeof(internal_request_t))
+    {
+        if (command->req == EAR_RC_SET_POWERCAP_OPT)
+        {
+            debug("received powercap_opt");
+            size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[sizeof(request_t)], offset);
+            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
+        }
+        else
+        {
+            memcpy(&command->my_req, &tmp_command[sizeof(internal_request_t)], head.size - sizeof(internal_request_t));
+        }
+    }
+    free(tmp_command);
+    return command->req;
+}
+#else
 int read_command(int s, request_t *command)
 {
     request_header_t head;
@@ -140,7 +179,7 @@ int read_command(int s, request_t *command)
 
     if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(request_t))
     {
-				debug("NO_COMMAND");
+        debug("NO_COMMAND");
         command->req = NO_COMMAND;
         if (head.size > 0) free(tmp_command);
 #if DYN_PAR
@@ -164,6 +203,7 @@ int read_command(int s, request_t *command)
     free(tmp_command);
     return command->req;
 }
+#endif
 
 void send_answer(int s,long *ack)
 {
