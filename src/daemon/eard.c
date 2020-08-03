@@ -67,6 +67,7 @@ static int num_packs=0;
 static unsigned long long *values_rapl;
 pthread_t power_mon_th; // It is pending to see whether it works with threads
 pthread_t dyn_conf_th;
+int num_nodes_cluster=0;
 cluster_conf_t my_cluster_conf;
 my_node_conf_t *my_node_conf;
 my_node_conf_t my_original_node_conf;
@@ -805,6 +806,7 @@ int eard_gpu(int must_read)
   unsigned long ack = 0;
 	unsigned int model=0;
 	unsigned int dev_count=0;
+	#if USE_GPUS
 	gpu_t *my_gpu;
 	state_t ret;
   if (must_read) {
@@ -845,6 +847,12 @@ int eard_gpu(int must_read)
 			error("Invalid GPU command");
       return 0;
   }
+	#else
+	ack=EAR_ERROR;
+	write(ear_fd_ack[comm_req],&ack,sizeof(ack));
+	error("GPUS not supported");
+	return 0;
+	#endif
   return 1;
 }
 
@@ -923,6 +931,7 @@ void signal_handler(int sig) {
 			error(" Error reading cluster configuration\n");
 		} else {
 			verbose(VCONF, "Loading EAR configuration");
+			verbose(VCONF, "There are %d Nodes in the cluster",my_cluster_conf.num_nodes);
 			print_cluster_conf(&my_cluster_conf);
 			free(my_node_conf);
 			my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
@@ -1301,6 +1310,7 @@ int main(int argc, char *argv[]) {
 		error(" Error reading cluster configuration\n");
 		_exit(1);
 	} else {
+		verbose(0,"%d Nodes detected in ear.conf configuration",my_cluster_conf.cluster_num_nodes);
 		compute_default_pstates_per_policy(my_cluster_conf.num_policies, my_cluster_conf.power_policies);
 		print_cluster_conf(&my_cluster_conf);
 		my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);

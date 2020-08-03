@@ -72,7 +72,7 @@ static ulong *current_util[NUM_DOMAINS],dom_util[NUM_DOMAINS],last_dom_util[NUM_
 static float pdomains_def_nogpus[NUM_DOMAINS]={0.6,0.45,0,0.45};
 static float pdomains_def_withgpus[NUM_DOMAINS]={0.5,0.4,0,0.5};
 #else
-static float pdomains_defnogpus[NUM_DOMAINS]={1.0,0.85,0,0};
+static float pdomains_def_nogpus[NUM_DOMAINS]={1.0,0.85,0,0};
 #endif
 static uint domains_loaded[NUM_DOMAINS]={0,0,0,0};
 static powercapsym_t pcsyms_fun[NUM_DOMAINS];
@@ -118,6 +118,8 @@ static suscription_t *sus_util_detection;
 static gpu_t *gpu_detection_raw_data;
 static ctx_t gpu_pc;
 static uint gpu_pc_num_gpus=0;
+#else
+static uint gpu_pc_num_gpus=1;
 #endif
 static topology_t pc_topology_info;
 /* These functions identies and monitors load changes */
@@ -142,7 +144,7 @@ static state_t util_detect_main(void *p)
   }
 	dom_util[DOMAIN_GPU]=0;
   for (i=0;i<gpu_pc_num_gpus;i++){
-    dom_util[DOMAIN_GPU] += (gpu_detection_raw_data[i].working>0);
+    dom_util[DOMAIN_GPU] += gpu_detection_raw_data[i].util_gpu;
     current_util[DOMAIN_GPU][i]=gpu_detection_raw_data[i].util_gpu;
   }
 	#endif
@@ -168,12 +170,14 @@ static state_t util_detect_init(void *p)
 
 void util_monitoring_init()
 {
+	#if USE_GPUS
   sus_util_detection=suscription();
   sus_util_detection->call_main = util_detect_main;
   sus_util_detection->call_init = util_detect_init;
   sus_util_detection->time_relax = 100;
   sus_util_detection->time_burst = 100;
   sus_util_detection->suscribe(sus_util_detection);
+	#endif
 }
 
 /* This function will load any plugin , detect components etc . It must me executed just once */
@@ -276,7 +280,7 @@ state_t pmgt_init()
 	}
 	debug("Initialzing GPU util");
 	current_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(ulong));
-	for (i=0;i<gpu_pc_num_gpus;i++) current_util[DOMAIN_GPUS][i]=100;
+	for (i=0;i<gpu_pc_num_gpus;i++) current_util[DOMAIN_GPUS][i]=0;
 	debug("Static GPU utilization set to 100 for %d GPUS",gpu_pc_num_gpus);
 	debug("Initializing Util monitoring");
 	util_monitoring_init();

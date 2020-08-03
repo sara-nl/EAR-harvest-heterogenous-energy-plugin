@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 
 #include <nvml.h>
 #include <stdlib.h>
@@ -547,7 +547,6 @@ state_t nvml_freq_get_valid(ctx_t *c, uint d, ulong freq_ref, ulong *freq_near)
 			}
 		}
 	}
-
 	*freq_near  = _clock_list[i];
 	return EAR_SUCCESS;
 }

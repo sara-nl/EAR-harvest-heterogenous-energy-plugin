@@ -31,7 +31,43 @@
  *   POLICY FUNCTIONS
  */
 
+int get_default_policies(cluster_conf_t *conf, policy_conf_t **policies, int tag_id)
+{
+    int i, total_policies = 0, uses_def_tag = 1;
+    policy_conf_t *policy_aux = NULL;
+    if (tag_id < 0)
+    {
+        uses_def_tag = 0;
+        verbose(VCCONF, "No default tag id found");
+    }
 
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        // If there's a default tag we search compatibilities with default tags and non-tagged policies
+        if (uses_def_tag)
+        {
+            if (conf->power_policies[i].tag == NULL || !strcmp(conf->tags[tag_id].id, conf->power_policies[i].tag) || strlen(conf->power_policies[i].tag) < 1)
+            {
+                policy_aux = realloc(policy_aux, sizeof(policy_conf_t)*(total_policies + 1));
+                memcpy(&policy_aux[total_policies], &conf->power_policies[i], sizeof(policy_conf_t));
+                total_policies++;
+            }
+        }
+        else // if there is no default tag, we just search for non-tagged policies as defaults
+        {
+            if (conf->power_policies[i].tag == NULL || strlen(conf->power_policies[i].tag) < 1)
+            {
+                policy_aux = realloc(policy_aux, sizeof(policy_conf_t)*(total_policies + 1));
+                memcpy(&policy_aux[total_policies], &conf->power_policies[i], sizeof(policy_conf_t));
+                total_policies++;
+            }
+        }
+    }
+
+    *policies = policy_aux;
+    return total_policies;
+
+}
 
 void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src)
 {
@@ -40,11 +76,11 @@ void copy_policy_conf(policy_conf_t *dest,policy_conf_t *src)
 
 void init_policy_conf(policy_conf_t *p)
 {
-    p->policy = -1;
 //    p->th = 0;
+    p->policy = -1;
     p->is_available = 0;
-		p->def_freq=(float)0;
-		p->p_state=UINT_MAX;
+    p->def_freq=(float)0;
+    p->p_state=UINT_MAX;
     memset(p->settings, 0, sizeof(double)*MAX_POLICY_SETTINGS);
 }
 
@@ -152,6 +188,7 @@ state_t POLICY_token(unsigned int *num_policiesp, policy_conf_t **power_policies
         }
         else if (!strcmp(key, "TAG"))
         {
+            strclean(value, '\n');
             strcpy(curr_policy->tag, value);
         }
 

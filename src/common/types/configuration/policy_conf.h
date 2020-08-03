@@ -69,5 +69,4 @@ void compute_policy_def_freq(policy_conf_t *p);
 
 state_t POLICY_token(unsigned int *num_policiesp, policy_conf_t **power_policiesl,char *line);
 
-
 #endif

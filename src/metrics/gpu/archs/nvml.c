@@ -173,7 +173,6 @@ static int static_load()
 state_t nvml_status()
 {
 	state_t s;
-	debug("poll = %p ",pool);
 	while (pthread_mutex_trylock(&lock));
 	if (ok_status) {
 		pthread_mutex_unlock(&lock);

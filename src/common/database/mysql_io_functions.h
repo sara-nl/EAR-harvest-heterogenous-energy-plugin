@@ -208,19 +208,21 @@ int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning);
 *   or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_batch_insert_avg_signatures(MYSQL *connection, application_t *app, int num_sigs);
 
+#if USE_GPUS
 /** Given a MYSQL connection and an array of applications or loops, inserts said application's
 *   signatures into the database. Returns the first signature's database id on 
 *   success, and either EAR_MYSQL_ERROR or EAR_MYSQL_STMT_ERROR on error.*/
 int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t cont, int num_sigs);
+
+/** Given a MYSQL connection and a query, retrieves the gpu signatures corresponding to that query */
+int mysql_retrieve_gpu_signatures(MYSQL *connection, char *query, gpu_signature_t *gpu_sig);
+#endif
 
 /** PENDING */
 int mysql_statement_error(MYSQL_STMT *statement);
 
 /** Given a MYSQL connection and a query, retrieves the pwoer_signatures corresponding to that query */
 int mysql_retrieve_power_signatures(MYSQL *connection, char *query, power_signature_t **pow_sigs);
-
-/** Given a MYSQL connection and a query, retrieves the gpu signatures corresponding to that query */
-int mysql_retrieve_gpu_signatures(MYSQL *connection, char *query, gpu_signature_t *gpu_sig);
 
 
 #endif

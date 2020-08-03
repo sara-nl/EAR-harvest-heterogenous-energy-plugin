@@ -749,10 +749,10 @@ void print_warning_level(int warn_level)
             printf("%12s ", "NO PROBLEM");
             break;
         case 2:
-            printf("%12s ", "WARNING 2");
+            printf("%12s ", "WARNING 1");
             break;
         case 1:
-            printf("%12s ", "WARNING 1");
+            printf("%12s ", "WARNING 2");
             break;
         case 0:
             printf("%12s ", "PANIC");

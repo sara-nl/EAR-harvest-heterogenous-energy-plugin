@@ -409,13 +409,16 @@ void parse_island(cluster_conf_t *conf, char *line)
             token = strtok(NULL, " ");
             strcpy(aux_token, token);
             token = strtok(NULL, " ");
+
             if (token != NULL && strlen(token) > 0)
                 next_token = token;
+
             token = aux_token;
             token = strtok(token, ",");
             int id_f = idx < 0 ? conf->num_islands: idx;
             int current_num_tags = 0;
             int *current_tags = NULL;
+
             if (conf->islands[id_f].num_specific_tags < 1)
                     conf->islands[id_f].specific_tags = NULL;
             char found = 0;
@@ -665,6 +668,7 @@ int read_cluster_conf(char *conf_path,cluster_conf_t *my_conf)
 		error( "Error: ear.conf does not contain any island or policy definition or there is no default policy specified.\n");
 		return EAR_ERROR;
     }
+	my_conf->cluster_num_nodes=get_num_nodes(my_conf);
 	fclose(conf_file);
 	//print_cluster_conf(my_conf);
 	return EAR_SUCCESS;

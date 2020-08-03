@@ -1361,6 +1361,8 @@ void powermon_get_app_status(app_status_t *my_status)
 		time(&consumed_time);
 		my_status->signature.time=difftime(consumed_time,current_ear_app[ccontext]->app.job.start_time);
 	}
+    my_status->nodes = app_mgt_info->nodes;
+    my_status->master_rank = app_mgt_info->master_rank;
 }
 
 
