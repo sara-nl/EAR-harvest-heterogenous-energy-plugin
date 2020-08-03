@@ -123,6 +123,7 @@ static suscription_t *sus_util_detection;
 static gpu_t *gpu_detection_raw_data;
 static ctx_t gpu_pc;
 static uint gpu_pc_num_gpus=0;
+static uint gpu_pc_model = 0;
 #else
 static uint gpu_pc_num_gpus=1;
 #endif
@@ -161,7 +162,7 @@ uint pmgt_utilization_changed()
 			dom_changed[i]=1;
 		}
 		#if USE_GPUS
-		if (i == DOMAIN_GPU){
+		if ((i == DOMAIN_GPU ) && (gpu_pc_model != MODEL_DUMMY)){
 				for (g=0;g<gpu_pc_num_gpus;g++){
 					//debug("Comparing utilization for GPU %d : %lu vs %lu",g,current_util[DOMAIN_GPU][g],prev_util[DOMAIN_GPU][g]);
 					if (gpu_util_changed(current_util[DOMAIN_GPU][g],prev_util[DOMAIN_GPU][g])){ 
@@ -240,6 +241,14 @@ state_t pmgt_init()
   if (gpu_count(&gpu_pc,&gpu_pc_num_gpus)!=EAR_SUCCESS){
     error("Getting num gpus");
   }
+	gpu_pc_model = gpu_model();
+	if (gpu_pc_model == MODEL_DUMMY) {
+	  pdomains_def_nogpus[DOMAIN_GPUS] = 0.0;
+    pdomains_def_withgpus[DOMAIN_GPUS] = 0.0;
+		pdomains[DOMAIN_GPUS] = 0.0;
+		pdomains_idle[DOMAIN_GPUS] = 0.0;
+		debug("Setting the percentage of powercap to GPUS to 0 because DUMMY");
+	}
 	#endif
 	/* DOMAIN_NODE is not cmpatible with CPU+DRAM */
 	/* DOMAIN_NODE */
@@ -330,13 +339,17 @@ state_t pmgt_init()
 		else debug("Error loading GPU powercap plugin");
   }else{
 		debug("DOMAIN_GPU not loaded");
+		pdomains_def_nogpus[DOMAIN_GPUS] = 0.0;
+		pdomains_def_withgpus[DOMAIN_GPUS] = 0.0;
 	}
 	debug("Initialzing GPU util");
-	current_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(ulong));
-	for (i=0;i<gpu_pc_num_gpus;i++) current_util[DOMAIN_GPUS][i]=0;
-	prev_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(ulong));
-	for (i=0;i<gpu_pc_num_gpus;i++) prev_util[DOMAIN_GPUS][i]=0;
-	debug("Static GPU utilization set to 100 for %d GPUS",gpu_pc_num_gpus);
+	if (domains_loaded[DOMAIN_GPU]){
+		current_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(ulong));
+		for (i=0;i<gpu_pc_num_gpus;i++) current_util[DOMAIN_GPUS][i]=0;
+		prev_util[DOMAIN_GPU]=calloc(gpu_pc_num_gpus,sizeof(ulong));
+		for (i=0;i<gpu_pc_num_gpus;i++) prev_util[DOMAIN_GPUS][i]=0;
+		debug("Static GPU utilization set to 100 for %d GPUS",gpu_pc_num_gpus);
+	}
 	if (domains_loaded[DOMAIN_NODE]  || domains_loaded[DOMAIN_CPU] || domains_loaded[DOMAIN_DRAM] || domains_loaded[DOMAIN_GPU]) ret=EAR_SUCCESS;
 	else ret=EAR_ERROR;
 	#else

@@ -29,14 +29,14 @@ typedef struct ctx_gpu_s {
 static uint			  dev_count;
 static gpu_ops_t     *ops_met;
 static mgt_gpu_ops_t *ops_man;
+static uint the_gpu_model = MODEL_UNDEFINED;
 
 state_t gpu_lib_load(settings_conf_t *settings)
 {
-	uint gpu_model;
 	state_t ret;
 	state_t s;
-	if ((ret=eards_gpu_model(&gpu_model))!=EAR_SUCCESS) return ret;
-	debug("eards_gpu_model %u ",gpu_model);
+	if ((ret=eards_gpu_model(&the_gpu_model))!=EAR_SUCCESS) return ret;
+	debug("eards_gpu_model %u ",the_gpu_model);
 	//
 	if (xtate_fail(s, gpu_load(&ops_met, none, empty))) {
 		error("gpu_load returned %d (%s)", s, state_msg);
@@ -74,6 +74,17 @@ state_t gpu_lib_init(ctx_t *_c)
 	return EAR_SUCCESS;
 }
 
+state_t gpu_lib_model(ctx_t *_c,uint *model)
+{
+  ctx_gpu_t *c = (ctx_gpu_t *) _c->context;
+  state_t s;
+  state_t ret;
+
+	*model = the_gpu_model;
+	
+	return EAR_SUCCESS;
+}
+
 state_t gpu_lib_dispose(ctx_t *_c)
 {
 	ctx_gpu_t *c = (ctx_gpu_t *) _c->context;
@@ -87,6 +98,8 @@ state_t gpu_lib_count(uint *_dev_count)
 	*_dev_count = dev_count;
 	return EAR_SUCCESS;
 }
+
+
 
 /*
  *

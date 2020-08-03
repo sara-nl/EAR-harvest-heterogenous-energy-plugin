@@ -28,6 +28,10 @@ state_t gpu_lib_init(ctx_t *c);
 
 state_t gpu_lib_dispose(ctx_t *c);
 
+/* If not loaded, model is undefined */
+state_t gpu_lib_model(ctx_t *_c,uint *model);
+
+
 /* Metrics. */
 state_t gpu_lib_count(uint *dev_count);
 

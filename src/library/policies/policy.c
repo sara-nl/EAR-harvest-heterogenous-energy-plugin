@@ -86,6 +86,8 @@ const char     *polsyms_nam[] = {
 };
 polctx_t my_pol_ctx;
 
+static uint policy_gpu_model;
+
 
 state_t policy_load(char *obj_path,polsym_t *psyms)
 {
@@ -161,7 +163,13 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 		if (gpu_lib_init(&my_pol_ctx.gpu_mgt_ctx) == EAR_SUCCESS){
 			my_pol_ctx.gpu_mgt_ctx_on=1;
 			debug("gpu_lib_init success");
-			gpu_lib_count(&my_pol_ctx.num_gpus);
+      gpu_lib_model(&my_pol_ctx.gpu_mgt_ctx,&policy_gpu_model);
+			if (policy_gpu_model == MODEL_DUMMY){ 
+				debug("Setting policy num gpus to 0 because DUMMY");
+				my_pol_ctx.num_gpus = 0;
+			}else{
+				gpu_lib_count(&my_pol_ctx.num_gpus);
+			}
 			debug("Num gpus detected in policy_load %u",my_pol_ctx.num_gpus);	
 		}else{
 			error("gpu_lib_init");
@@ -251,7 +259,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 	#if USE_GPUS
 	/* At this point we are the master */
 	/* GPU frequency must be integrated in arguments, hardcoded for now */
-	if (gpu_polsyms_fun.apply!=NULL){
+	if ((gpu_polsyms_fun.apply!=NULL) && (my_pol_ctx.num_gpus)) {
 		ulong *gpu_f=calloc(my_pol_ctx.num_gpus,sizeof(ulong));
 		stg=gpu_polsyms_fun.apply(c, my_sig,gpu_f,ready);
 		/* We must apply a gpu_freq change */
@@ -316,7 +324,7 @@ state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
 		ret = polsyms_fun.ok(c, curr,prev,ok);
 		#if USE_GPUS
 		if (masters_info.my_master_rank>=0){
-		if (gpu_polsyms_fun.ok!=NULL){
+		if ((gpu_polsyms_fun.ok!=NULL) && (my_pol_ctx.num_gpus)){
 			retg = gpu_polsyms_fun.ok(c, curr,prev,ok);
 		}
 		}
