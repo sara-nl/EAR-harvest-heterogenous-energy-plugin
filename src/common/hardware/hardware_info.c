@@ -108,72 +108,6 @@ int detect_packages(int **mypackage_map)
 	return num_packages;
 }
 
-
-static state_t hardware_sibling_read(const char *path, int *result)
-{
-	char cbuf[2];
-	ssize_t r;
-	long n;
-	int fd;
-
-	if ((fd = open(path, F_RD)) < 0) {
-		state_return_msg(EAR_OPEN_ERROR, errno, strerror(errno));
-	}
-
-	while((r = read(fd, cbuf, 1)) > 0)
-	{
-		cbuf[1] = '\0';
-
-		if (isxdigit(cbuf[0])) {
-			for (n = strtol(cbuf, NULL, 16); n > 0; n /= 2) {
-				if (n % 2) *result = *result + 1;
-			}
-		}
-	}
-
-	close(fd);
-
-	if (r < 0) {
-		state_return_msg(EAR_READ_ERROR, errno, strerror(errno));
-	}
-
-	state_return(EAR_SUCCESS);
-}
-
-int is_cpu_examinable()
-{
-    char vendor_id[16];
-
-    get_vendor_id(vendor_id);
-
-    if(strcmp(INTEL_VENDOR_NAME, vendor_id) != 0) {
-        return EAR_ERROR;
-	}
-	if (!cpuid_isleaf(11)) {
-		return EAR_WARNING;
-	}
-    return EAR_SUCCESS;
-}
-
-int get_vendor_id(char *vendor_id)
-{
-    cpuid_regs_t r;
-	int *pointer = (int *) vendor_id;
-
-	CPUID(r,0,0);
-	pointer[0] = r.ebx;
-	pointer[1] = r.edx;
-	pointer[2] = r.ecx;
-	return 1;
-}
-
-int get_family()
-{
-    cpuid_regs_t r;
-	CPUID(r,1,0);
-	return cpuid_getbits(r.eax, 11, 8);
-}
-
 int get_model()
 {
     cpuid_regs_t r;
@@ -196,39 +130,6 @@ int is_aperf_compatible()
 
 	CPUID(r,6,0);
     return r.ecx & 0x01;
-}
-
-int get_cache_line_size()
-{
-    unsigned int max_level = 0;
-    unsigned int line_size = 0;
-	unsigned int level = 0;
-	cpuid_regs_t r;
-	int index = 0;
-
-	while (1)
-	{
-		CPUID(r,4,index);
-
-		if (!(r.eax & 0x0F)) return line_size;
-        level = cpuid_getbits(r.eax, 7, 5);
-
-        if (level >= max_level) {
-            max_level = level;
-            line_size = cpuid_getbits(r.ebx, 11, 0) + 1;
-		}
-
-		index = index + 1;
-	}
-}
-
-int is_cpu_hyperthreading_capable()
-{
-    cpuid_regs_t r;
-    //
-    CPUID(r,1,0);
-    //
-    return cpuid_getbits(r.edx, 28, 28);
 }
 
 // References:

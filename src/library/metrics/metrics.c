@@ -576,7 +576,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 }
 
 /**************************** Init function used in ear_init ******************/
-int metrics_init()
+int metrics_init(topology_t *topo)
 {
 	ulong flops_size;
 	ulong bandwith_size;
@@ -585,13 +585,17 @@ int metrics_init()
 
 	debug("Masters region %p size %lu",&masters_info,sizeof(masters_info));
 	debug("My master rank %d",masters_info.my_master_rank);
-	
-	// Cache line (using custom hardware scanning)
-	hw_cache_line_size = (double) get_cache_line_size();
-	//debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
-	
-	num_packs=detect_packages(NULL);
-	if (num_packs==0){
+
+	hw_cache_line_size = topo->cache_line_size;
+	num_packs = topo->socket_count;
+
+	debug("detected cache line size: %0.2lf bytes", hw_cache_line_size);
+	debug("detected sockets: %d", num_packs);
+
+	if (hw_cache_line_size == 0) {
+		return_msg(EAR_ERROR, "error detecting the cache line size");
+	}
+	if (num_packs == 0) {
 		return_msg(EAR_ERROR, "error detecting number of packges");
 	}
 

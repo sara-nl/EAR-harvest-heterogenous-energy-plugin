@@ -82,16 +82,17 @@ typedef struct core_s
 
 typedef struct topology_s
 {
-	core_t *cpus;		// Take a look to core_t structure.
-	int cpu_count;		// Total CPUs including threads.
-	int core_count;		// Total cores (not counting threads).
-	int socket_count;	// 
-	int threads_per_core; 	// Number or threads per core (not the whole system).
-	int smt_enabled; 	// Multithreading enabled = 1, disabled = 0.
-	int l3_count;		// Chunks of L3 in the system.
-	int vendor;		// Take a look to top defines.
-	int family;		// Take a look to top defines.
-	int model;		// Take a look to top defines.
+	core_t *cpus;       // Take a look to core_t structure.
+	int cpu_count;      // Total CPUs including threads.
+	int core_count;     // Total cores (not counting threads).
+	int socket_count;   //
+	int threads_per_core; // Number or threads per core (not the whole system).
+	int smt_enabled;    // Multithreading enabled = 1, disabled = 0.
+	int l3_count;       // Chunks of L3 in the system.
+	int cache_line_size; //
+	int vendor;         // Take a look to top defines.
+	int family;         // Take a look to top defines.
+	int model;          // Take a look to top defines.
 } topology_t;
 
 state_t topology_select(topology_t *t, topology_t *s, int component, int group, int val);

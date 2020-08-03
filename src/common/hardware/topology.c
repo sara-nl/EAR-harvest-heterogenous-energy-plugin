@@ -217,6 +217,32 @@ static void topology_cpuid(topology_t *topo)
 	} else {
 		topo->model = buffer[0];
 	}
+
+	/* Cache line size */
+	uint max_level = 0;
+	uint cur_level = 0;
+	int index      = 0;
+
+	if (topo->model == VENDOR_INTEL)
+	{
+		while (topo->cache_line_size == 0)
+		{
+			CPUID(r,4,index);
+
+			if (!(r.eax & 0x0F)) topo->cache_line_size;
+			cur_level = cpuid_getbits(r.eax, 7, 5);
+
+			if (cur_level >= max_level) {
+				topo->cache_line_size = cpuid_getbits(r.ebx, 11, 0) + 1;
+				max_level = cur_level;
+			}
+
+			index = index + 1;
+		}
+	} else {
+		CPUID(r,0x80000005,0);
+		topo->cache_line_size = r.edx & 0xFF;
+	}
 }
 
 state_t topology_init(topology_t *topo)

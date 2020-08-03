@@ -770,7 +770,7 @@ void ear_init()
 	// Initializing sub systems
 	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
 	debug("Starting metrics init ");
-	if (metrics_init()!=EAR_SUCCESS){
+	if (metrics_init(&arch_desc.top)!=EAR_SUCCESS){
 		    my_id=1;
 				verbose(0,"Error in EAR metrics initialization, setting EARL off");
 				return;

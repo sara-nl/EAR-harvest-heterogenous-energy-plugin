@@ -19,12 +19,13 @@
 #include <assert.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <common/hardware/hardware_info.h>
+#include <common/hardware/topology.h>
 
 int main ()
 {
-    int examinable = is_cpu_examinable();
-    verbose(0, "%d", examinable);
+    topology_t topo;
+    state_t s = topology_init(&topo);
+    verbose(0, "%d", s == EAR_SUCCESS);
     assert(examinable == EAR_SUCCESS);
     return 0;
 }
