@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -62,7 +64,12 @@ typedef struct bwidth_amd49_s
 {
 	topology_t tp;
 	timestamp_t time;
-	ulong *data_curr;
+	ulong *cas_curr;
+	ulong *cas_prev;
+	ulong *l3_prev;
+	ulong *l3_curr;
+	double coeff_count;
+	double coeff;
 	uint fd_count;
 } bwidth_amd49_t;
 
@@ -99,8 +106,11 @@ state_t bwidth_amd49_init(ctx_t *c, topology_t *tp)
 	uint ccx_count = tp->l3_count;
 	uint ccd_count = ccx_count / 2;
 
-	bw->fd_count  = ccx_count;
-	bw->data_curr = calloc(ccx_count, sizeof(ulong) + 2);
+	bw->fd_count = ccx_count;
+	bw->cas_prev = calloc(2, sizeof(ulong));
+	bw->cas_curr = calloc(2, sizeof(ulong));
+	bw->l3_curr  = calloc(ccx_count, sizeof(ulong));
+	bw->l3_prev  = calloc(ccx_count, sizeof(ulong));
 
 	// Getting the L3 groups
 	topology_select(tp, &bw->tp, TPSelect.l3, TPGroup.merge, 0);
@@ -138,7 +148,7 @@ state_t bwidth_amd49_dispose(ctx_t *c)
 	}
 
 	topology_close(&bw->tp);
-	free(bw->data_curr);
+	free(bw->cas_curr);
 
 	return EAR_SUCCESS;
 }
@@ -202,7 +212,8 @@ state_t bwidth_amd49_reset(ctx_t *c)
 
 	// One chunk of L3 per CCX	
 	for (i = 0; i < bw->fd_count; ++i) {
-		s = msr_write(bw->tp.cpus[i].id, &cmd_l3, sizeof(ulong), ctl_l3);
+		s = msr_write(bw->tp.cpus[i].id, &cmd_off, sizeof(ulong), ctr_l3);
+		s = msr_write(bw->tp.cpus[i].id, &cmd_l3 , sizeof(ulong), ctl_l3);
 	}
 
 	return EAR_SUCCESS;
@@ -219,39 +230,54 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
 
-	// Timestamp	
-	timestamp_t aux0;
-	ulong secs;
-
-	aux0 = bw->time;
-	timestamp_getfast(&bw->time);
-	secs = timestamp_diff(&bw->time, &aux0, TIME_MSECS);
-
 	// Reading the memory access channels of channels 0 and 1 of CCD0 and CCD1.
 	// This is valid for CPUs with at least 2 CCDs.
-	int i0 = bw->fd_count+0;
-	int i1 = bw->fd_count+1;
+	msr_read(bw->tp.cpus[0].id, &bw->cas_curr[0], sizeof(ulong), df_ctr0);
+	msr_read(bw->tp.cpus[0].id, &bw->cas_curr[1], sizeof(ulong), df_ctr1);
 
-	msr_read(bw->tp.cpus[0].id, &bw->data_curr[i0], sizeof(ulong), df_ctr0);
-	msr_read(bw->tp.cpus[0].id, &bw->data_curr[i1], sizeof(ulong), df_ctr1);
-
-	debug("CH0 counted %llu CAS", bw->data_curr[i0]);
-	debug("CH1 counted %llu CAS", bw->data_curr[i1]);
+	debug("CH0 counted %llu CAS", bw->cas_curr[0]);
+	debug("CH1 counted %llu CAS", bw->cas_curr[1]);
 
 	// Reading the L3 counters of CCX0, CCX1, CCX2, CCX3
-	msr_read(bw->tp.cpus[0].id, &bw->data_curr[0], sizeof(ulong), ctr_l3);
-	msr_read(bw->tp.cpus[1].id, &bw->data_curr[1], sizeof(ulong), ctr_l3);
-	msr_read(bw->tp.cpus[2].id, &bw->data_curr[2], sizeof(ulong), ctr_l3);
-	msr_read(bw->tp.cpus[3].id, &bw->data_curr[3], sizeof(ulong), ctr_l3);
+	msr_read(bw->tp.cpus[0].id, &bw->l3_curr[0], sizeof(ulong), ctr_l3);
+	msr_read(bw->tp.cpus[1].id, &bw->l3_curr[1], sizeof(ulong), ctr_l3);
+	msr_read(bw->tp.cpus[2].id, &bw->l3_curr[2], sizeof(ulong), ctr_l3);
+	msr_read(bw->tp.cpus[3].id, &bw->l3_curr[3], sizeof(ulong), ctr_l3);
 
-	//
-	ulong aux_mem0 = bw->data_curr[i0];
-	ulong aux_mem1 = bw->data_curr[i1];
-	ulong aux_ccx0 = bw->data_curr[0];
-	ulong aux_ccx1 = bw->data_curr[1];
-	ulong aux_ccx2 = bw->data_curr[2];
-	ulong aux_ccx3 = bw->data_curr[3];
+	// Substracting data first (overflow safety).
+	ulong aux_mem0 = bw->cas_curr[0] - bw->cas_prev[0];
+	ulong aux_mem1 = bw->cas_curr[1] - bw->cas_prev[1];
+	ulong aux_ccx0 = bw->l3_curr[0]  - bw->l3_prev[0];
+	ulong aux_ccx1 = bw->l3_curr[1]  - bw->l3_prev[1];
+	ulong aux_ccx2 = bw->l3_curr[2]  - bw->l3_prev[2];
+	ulong aux_ccx3 = bw->l3_curr[3]  - bw->l3_prev[3];
+
+	debug("cas0 diff %llu", aux_mem0);
+	debug("cas1 diff %llu", aux_mem1);
+	debug("l3-0 diff %llu", aux_ccx0);
+	debug("l3-1 diff %llu", aux_ccx1);
+	debug("l3-2 diff %llu", aux_ccx2);
+	debug("l3-3 diff %llu", aux_ccx3);
+	debug("cas sum %llu", aux_mem0+aux_mem1);
+	debug("l3  sum %llu", aux_ccx0+aux_ccx1+aux_ccx2+aux_ccx3);
 	
+	// Detecting overflows
+	int error = 
+		(bw->cas_prev[0] >= bw->cas_curr[0]) ||
+		(bw->cas_prev[1] >= bw->cas_curr[1]) ||
+		(bw->l3_prev[0]  >= bw->l3_curr[0])  ||
+		(bw->l3_prev[1]  >= bw->l3_curr[1])  ||
+		(bw->l3_prev[2]  >= bw->l3_curr[2])  ||
+		(bw->l3_prev[3]  >= bw->l3_curr[3]);
+
+	// Saving the memory channel ticks for the next reading
+	bw->cas_prev[0] = bw->cas_curr[0];
+	bw->cas_prev[1] = bw->cas_curr[1];
+	bw->l3_prev[0]  = bw->l3_curr[0];
+	bw->l3_prev[1]  = bw->l3_curr[1];
+	bw->l3_prev[2]  = bw->l3_curr[2];
+	bw->l3_prev[3]  = bw->l3_curr[3];
+
 	if (cas == NULL) {
 		return EAR_SUCCESS;
 	}
@@ -259,17 +285,35 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 	// Comparing the percentage of L3 ticks respect the memory channel accesses
 	double ccx_ticks = (double) (aux_ccx0 + aux_ccx1 + aux_ccx2 + aux_ccx3);
 	double mem_ticks = (double) (aux_mem0 + aux_mem1);
-	double ccx_coeff = (mem_ticks / ccx_ticks);
+	double aux_coeff = bw->coeff;
 	double aux;
+	
+	if (!error) {
+		// Improving coeff iteration per iteration
+		bw->coeff       = bw->coeff + (mem_ticks / ccx_ticks); 
+		bw->coeff_count = bw->coeff_count + 1.0;	
+		aux_coeff       = bw->coeff / bw->coeff_count;
+	}
+
+	debug("coeff %lf of %lf", bw->coeff, bw->coeff_count);
 
 	for (i = 0; i < bw->fd_count; ++i)
 	{
 		// Reading each L3 miss counters
-		msr_read(bw->tp.cpus[i].id, &bw->data_curr[i], sizeof(ulong), ctr_l3);
-		// Passing the data to double
-		aux = ((double) bw->data_curr[i]) * ccx_coeff;
-		// Deploying to CAS count
-		cas[i] = (ullong) aux;
+		msr_read(bw->tp.cpus[i].id, &cas[i], sizeof(ulong), ctr_l3);
+#if 0
+		ulong readed = cas[i];
+
+		if (!error) {
+			aux = ((double) cas[i]) / ccx_ticks;
+			aux = mem_ticks * aux;
+			cas[i] = (ulong) aux;
+		} else {
+			cas[i] = 0;
+		}
+		
+		debug("CCX%d, read L3 %llu, estimated %llu CAS", i, readed, cas[i]);
+#endif
 	}
 
 	return EAR_SUCCESS;

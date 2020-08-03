@@ -172,15 +172,17 @@ long long metrics_time()
 
 static void metrics_global_start()
 {
-	//
-  aux_time = metrics_time();
-	if (masters_info.my_master_rank>=0){
+	aux_time = metrics_time();
+
+	if (masters_info.my_master_rank>=0)
+	{
 		eards_begin_app_compute_turbo_freq();
-	// New
-  	eards_node_dc_energy(aux_energy,node_energy_datasize);
-  	eards_read_rapl(aux_rapl);
+		// New
+		eards_node_dc_energy(aux_energy,node_energy_datasize);
+		eards_read_rapl(aux_rapl);
 		eards_start_uncore();
 		eards_read_uncore(metrics_bandwith_init[APP]);
+
 		#if USE_GPU_LIB
 		if (gpu_initialized){
 			gpu_lib_data_null(gpu_metrics_init[APP]);
@@ -516,10 +518,12 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	}
 	// Transactions and cycles
 	aux = time_s * (double) (1024 * 1024 * 1024);
-  cas_counter = 0.0;
-  for (i = 0; i < bandwith_elements; ++i) {
-    cas_counter += (double) metrics_bandwith[s][i];
-  }
+
+	cas_counter = 0.0;
+	for (i = 0; i < bandwith_elements; ++i) {
+		cas_counter += (double) metrics_bandwith[s][i];
+	}
+
 	if(masters_info.my_master_rank>=0) lib_shared_region->cas_counters=cas_counter;
 	else cas_counter=lib_shared_region->cas_counters;
 
@@ -580,26 +584,25 @@ int metrics_init()
 	state_t st;
 
 	debug("Masters region %p size %lu",&masters_info,sizeof(masters_info));
-
 	debug("My master rank %d",masters_info.my_master_rank);
+	
 	// Cache line (using custom hardware scanning)
 	hw_cache_line_size = (double) get_cache_line_size();
 	//debug("detected cache line has a size %0.2lf bytes", hw_cache_line_size);
+	
 	num_packs=detect_packages(NULL);
 	if (num_packs==0){
-		verbose(0,"Error detecting number of packges");
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, "error detecting number of packges");
 	}
 
 	st=energy_lib_init(system_conf);
 	if (st!=EAR_SUCCESS){
-		verbose(1,"Error loading energy plugin");
-		return EAR_ERROR;
+		return_msg(EAR_ERROR, "error loading energy plugin");
 	}
-
 
 	// Local metrics initialization
 	if (init_basic_metrics()!=EAR_SUCCESS) return EAR_ERROR;
+	
 	#if CACHE_METRICS
 	init_cache_metrics();
 	#endif
@@ -616,14 +619,11 @@ int metrics_init()
 		metrics_flops[LOO] = (long long *) malloc(flops_size);
 		metrics_flops_weights = (int *) malloc(flops_size);
 
-		if (metrics_flops[LOO] == NULL || metrics_flops[APP] == NULL)
-		{
-			error("error allocating memory, exiting");
-			return EAR_ERROR;
+		if (metrics_flops[LOO] == NULL || metrics_flops[APP] == NULL) {
+			return_msg(EAR_ERROR, "error allocating memory, exiting");
 		}
 
 		get_weigth_fops_instructions(metrics_flops_weights);
-
 		//debug( "detected %d FLOP counter", flops_elements);
 	}
 
@@ -650,8 +650,6 @@ int metrics_init()
 	memset(metrics_ipmi[1],0,node_energy_datasize);
 	acum_ipmi[0]=0;acum_ipmi[1]=0;
 	
-
-
 	metrics_bandwith[LOO] = malloc(bandwith_size);
 	metrics_bandwith[APP] = malloc(bandwith_size);
 	metrics_bandwith[ACUM] = malloc(bandwith_size);
@@ -665,14 +663,14 @@ int metrics_init()
 	aux_rapl = malloc(rapl_size);
 	last_rapl = malloc(rapl_size);
 
-
-	if (diff_uncore_value == NULL || metrics_bandwith[LOO] == NULL || metrics_bandwith[APP] == NULL || metrics_bandwith[ACUM] == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
-		metrics_bandwith_end[LOO] == NULL || metrics_bandwith_end[APP] == NULL  ||
-			metrics_rapl[LOO] == NULL || metrics_rapl[APP] == NULL || aux_rapl == NULL || last_rapl == NULL)
+	if (diff_uncore_value         == NULL || metrics_bandwith[LOO]      == NULL || metrics_bandwith[APP]      == NULL ||
+		metrics_bandwith[ACUM]    == NULL || metrics_bandwith_init[LOO] == NULL || metrics_bandwith_init[APP] == NULL ||
+		metrics_bandwith_end[LOO] == NULL || metrics_bandwith_end[APP]  == NULL || metrics_rapl[LOO]          == NULL ||
+		metrics_rapl[APP]         == NULL || aux_rapl                   == NULL || last_rapl                  == NULL)
 	{
-			verbose(0, "error allocating memory in metrics, exiting");
-			return EAR_ERROR;
+			return_msg(EAR_ERROR, "error allocating memory in metrics, exiting");
 	}
+	
 	memset(metrics_bandwith[LOO], 0, bandwith_size);
 	memset(metrics_bandwith[APP], 0, bandwith_size);
 	memset(metrics_bandwith[ACUM], 0, bandwith_size);

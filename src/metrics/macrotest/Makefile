@@ -2,6 +2,7 @@ CC     = /hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc
 CFLAGS = -I ../.. -g
 
 all:
+	$(CC) $(CFLAGS) -o pstates pstates.c ../libmetrics.a ../../common/libcommon.a -lpthread -ldl
 	$(CC) $(CFLAGS) -o temperature temperature.c ../libmetrics.a ../../common/libcommon.a -lpthread -ldl
 	$(CC) $(CFLAGS) -o flops flops.c ../libmetrics.a ../../common/libcommon.a -lpthread -ldl
 	$(CC) $(CFLAGS) -o rapl_test rapl_test.c -lm
@@ -10,6 +11,7 @@ all:
 	$(CC) $(CFLAGS) -o rapl rapl.c ../libmetrics.a ../../common/libcommon.a -lpthread -ldl -lm
 
 clean:
+	rm -f pstates
 	rm -f temperature
 	rm -f bandwidth
 	rm -f cpi

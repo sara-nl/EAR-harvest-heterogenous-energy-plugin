@@ -14,7 +14,7 @@
 * use and EPL-1.0 license for commercial use. Full text of both licenses can be
 * found in COPYING.BSD and COPYING.EPL files.
 */
-#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/gpu/archs/nvml.h>
@@ -23,13 +23,9 @@
 static gpu_ops_t ops;
 static uint loaded;
 static uint model;
-static int test;
 
 state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 {
-	printf("test %d\n", test);
-	test = 1;
-
 	if (loaded != 0) {
 		return EAR_SUCCESS;
 	}

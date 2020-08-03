@@ -281,7 +281,7 @@ static void pci_scan_uncores()
 
         if (read_tag == look_tag)
         {
-            debug( "pci_uncores.c: uncore function found in %s\n", path);
+            debug("uncore function found in %s", path);
             fd_functions[n_functions] = fd;
             n_functions = n_functions + 1;
 
@@ -292,7 +292,7 @@ static void pci_scan_uncores()
     	}
     }
 
-    debug( "pci_uncores.c: %i total uncore functions found\n", n_functions);
+    debug("%i total uncore functions found", n_functions);
 }
 
 state_t bwidth_intel63_status(topology_t *tp)
@@ -383,6 +383,7 @@ state_t bwidth_intel63_read(ctx_t *c, ullong *cas)
             if (fd_functions[i] != -1)
             {
                 res = pread(fd_functions[i], &cas[k], sizeof(ull), ctrs[j]);
+				debug("%d cas %llu", k, cas[k]);
 
                 if (res == -1 || res != sizeof(ull))
                 {

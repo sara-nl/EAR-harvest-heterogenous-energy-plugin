@@ -69,7 +69,6 @@ int init_uncores(int cpu_model)
 	debug("family: %d", family);
 	debug("model: %d", model);
 
-#if 0
 	if (state_ok(bwidth_intel63_status(&topo)))
 	{
 		debug("selected intel63");
@@ -93,7 +92,6 @@ int init_uncores(int cpu_model)
 		ops.dispose = bwidth_amd49_dispose;
 	}
 	else
-#endif
 	{
 		debug("selected dummy");
 		ops.init    = bwidth_dummy_init;
