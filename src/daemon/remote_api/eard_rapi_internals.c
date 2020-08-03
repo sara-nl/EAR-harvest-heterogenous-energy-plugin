@@ -42,32 +42,38 @@ size_t get_command_size(request_t *command, char **data_to_send)
 {
     size_t size = sizeof(internal_request_t);
     size_t offset = 0;
+    size_t aux_size = 0;
     char *command_b;
-
 
     switch(command->req)
     {
         case EAR_RC_SET_POWERCAP_OPT:
+            size += sizeof(powercap_opt_t);
             size += command->my_req.pc_opt.num_greedy * sizeof(int) * 2;
             offset = command->my_req.pc_opt.num_greedy * sizeof(int);
             break;
-        case EAR_RC_MAX_FREQ:       //max_freq is an ulong
+        
+        //NOTE: individual values are not being passed to keep the code simple. Instead, we measure the actual data size of the
+        //union and send that instead. Ideally we would only copy the value that we need, but that would require a big re-write.
+
+        case EAR_RC_MAX_FREQ:
         case EAR_RC_SET_FREQ:
-        case EAR_RC_INC_TH:         //th is an ulong
-        case EAR_RC_NEW_TH:
-        case EAR_RC_SET_POWER:      //limit is an ulong
-            size += sizeof(ulong);  //size of max_freq, th and limit
-            break;
-        case EAR_RC_INC_POWER:      //type is an uint, limit is an ulong
-        case EAR_RC_SET_RISK:       //level is an uint (risk_t), target is an ulong
-            size += sizeof(ulong);
-            size += sizeof(uint);
-            break;
+        case EAR_RC_DEF_FREQ:
+        case EAR_RC_INC_TH:
         case EAR_RC_RED_PSTATE:
-            size += sizeof(uint);
+        case EAR_RC_NEW_TH:
+            size += sizeof(new_conf_t); //all this values use the union as ear_conf (a new_conf_t)
+            break;
+        case EAR_RC_SET_POWER:
+        case EAR_RC_INC_POWER:
+        case EAR_RC_RED_POWER:
+            size += sizeof(power_limit_t); //powercap struct
+            break;
+        case EAR_RC_SET_RISK:
+            size += sizeof(risk_dec_t); //risk struct
             break;
         case EAR_RC_SET_POLICY:
-            size += sizeof(new_policy_cont_t); 
+            size += sizeof(new_policy_cont_t); //new policy_conf
             break;
 
     }
@@ -79,8 +85,12 @@ size_t get_command_size(request_t *command, char **data_to_send)
     switch(command->req)
     {
         case EAR_RC_SET_POWERCAP_OPT:
-            memcpy(&command_b[sizeof(internal_request_t)], command->my_req.pc_opt.greedy_nodes, offset);
-            memcpy(&command_b[sizeof(internal_request_t) + offset], command->my_req.pc_opt.extra_power, offset);
+            aux_size = sizeof(internal_request_t) + sizeof(powercap_opt_t);
+            //copy the base powercap_opt_t since we don't automatically copy anything beyond internal_request_t
+            memcpy(&command_b[sizeof(internal_request_t)], &command->my_req, sizeof(powercap_opt_t)); 
+            //proceed as with fixed size method, copying both arrays
+            memcpy(&command_b[aux_size], command->my_req.pc_opt.greedy_nodes, offset);
+            memcpy(&command_b[aux_size + offset], command->my_req.pc_opt.extra_power, offset);
             break;
         default:
             memcpy(&command_b[sizeof(internal_request_t)], &command->my_req, size-sizeof(internal_request_t));

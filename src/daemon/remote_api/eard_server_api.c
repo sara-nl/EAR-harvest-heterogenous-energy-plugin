@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -155,14 +155,22 @@ int read_command(int s, request_t *command)
         if (command->req == EAR_RC_SET_POWERCAP_OPT)
         {
             debug("received powercap_opt");
+            memcpy(&command->my_req, &tmp_command[sizeof(internal_request_t)], sizeof(powercap_opt_t)); //first we copy the base powercap_opt_t
+            //auxiliar variables
             size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            size_t start_size = sizeof(internal_request_t) + sizeof(powercap_opt_t);
+
+            //allocation
             command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
             command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
-            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[sizeof(request_t)], offset);
-            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
+
+            //copy
+            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[start_size], offset);
+            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[start_size + offset], offset);
         }
         else
         {
+            debug("recieved command with additional data: %d", command->req);
             memcpy(&command->my_req, &tmp_command[sizeof(internal_request_t)], head.size - sizeof(internal_request_t));
         }
     }
