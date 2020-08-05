@@ -77,23 +77,37 @@ size_t get_command_size(request_t *command, char **data_to_send)
             break;
 
     }
+ 
+#if NODE_PROP
+    if (command->num_nodes > 0)
+    {
+        size += command->num_nodes * sizeof(int);
+        aux_size = command->num_nodes * sizeof(int);
+    }
+#endif
 
     //copy the original command
     command_b = calloc(1, size);
     memcpy(command_b, command, sizeof(internal_request_t)); //the first portion of request_t and internal_request_t align
+#if NODE_PROP
+    memcpy(command_b, command->nodes, aux_offset); //copy the nodes to propagate to
+#endif
+
+    aux_size += sizeof(internal_request_t); //aux_size holds the position we have to start writing from
 
     switch(command->req)
     {
         case EAR_RC_SET_POWERCAP_OPT:
-            aux_size = sizeof(internal_request_t) + sizeof(powercap_opt_t);
             //copy the base powercap_opt_t since we don't automatically copy anything beyond internal_request_t
-            memcpy(&command_b[sizeof(internal_request_t)], &command->my_req, sizeof(powercap_opt_t)); 
+            memcpy(&command_b[aux_size], &command->my_req, sizeof(powercap_opt_t)); 
+            aux_size += sizeof(powercap_opt_t); //add the copied size to the index
+
             //proceed as with fixed size method, copying both arrays
             memcpy(&command_b[aux_size], command->my_req.pc_opt.greedy_nodes, offset);
             memcpy(&command_b[aux_size + offset], command->my_req.pc_opt.extra_power, offset);
             break;
         default:
-            memcpy(&command_b[sizeof(internal_request_t)], &command->my_req, size-sizeof(internal_request_t));
+            memcpy(&command_b[aux_size], &command->my_req, size-aux_size); 
             break;
     }
 
