@@ -35,11 +35,18 @@
 #include <common/math_operations.h>
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <metrics/energy/node/dcmi.h>
+#include <metrics/energy/node/energy_dcmi.h>
+#include <metrics/energy/node/energy_node.h>
+#include <common/system/monitor.h>
 
 
 static pthread_mutex_t ompi_lock = PTHREAD_MUTEX_INITIALIZER;
 static ulong timeframe;
+static suscription_t *dcmi_sus;
+static ulong dcmi_already_loaded=0;
+static ulong dcmi_accumulated_energy=0;
+static dcmi_power_data_t dcmi_current_power_reading,dcmi_last_power_reading;
+static struct ipmi_intf dcmi_context_for_pool;
 
 static int opendev(struct ipmi_intf *intf)
 {
@@ -295,7 +302,7 @@ state_t dcmi_get_capabilities(struct ipmi_intf *intf, struct ipmi_data *out)
 }
 
 
-state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,power_data_t *cpower)
+state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,dcmi_power_data_t *cpower)
 {
 	struct ipmi_rs *rsp;
 	struct ipmi_rq req;
@@ -404,6 +411,38 @@ state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,power_d
 	return EAR_SUCCESS;
 }
 
+/**** These functions are used to accumulate the eneergy */
+state_t dcmi_thread_main(void *p)
+{
+	state_t st;
+	struct ipmi_data out;
+	ulong current_elapsed,current_energy;
+	st=dcmi_power_reading(&dcmi_context_for_pool, &out,&dcmi_current_power_reading);
+	if (dcmi_current_power_reading.current_power > 0){
+		current_elapsed = dcmi_current_power_reading.timestamp - dcmi_last_power_reading.timestamp;	
+		current_energy = current_elapsed * dcmi_current_power_reading.avg_power;
+		/* Energy is reported in MJ */
+		dcmi_accumulated_energy += (current_energy*1000);
+		debug("AVG power in last %lu ms is %lu",current_elapsed,dcmi_current_power_reading.avg_power);		
+	}else{
+		debug("Current power is 0 in dcmi power reading pool reading");
+		return EAR_ERROR;
+	}
+  memcpy(&dcmi_last_power_reading,&dcmi_current_power_reading,sizeof(dcmi_power_data_t));
+	return EAR_SUCCESS;
+}
+state_t dcmi_thread_init(void *p)
+{
+	int ret;
+  ret	= opendev(&dcmi_context_for_pool);
+ 	if (ret < 0){
+		debug("opendev fails in dcmi energy plugin when initializing pool");
+		return EAR_ERROR;
+	} 
+	debug("OK");
+	return EAR_SUCCESS;
+}
+
 
 
 /*
@@ -414,7 +453,7 @@ state_t energy_init(void **c)
 {
 	struct ipmi_data out;
 	state_t st;
-	power_data_t my_power;
+	dcmi_power_data_t my_power;
 	int ret;
 
 	if (c == NULL) {
@@ -434,8 +473,20 @@ state_t energy_init(void **c)
 		pthread_mutex_unlock(&ompi_lock);
 		return EAR_ERROR;
 	}
-	st=dcmi_power_reading(*c, &out,&my_power)
-	timeframe = my_power.my_power * 1000;
+
+	if (dcmi_already_loaded == 0){
+		dcmi_already_loaded = 1;
+		st=dcmi_power_reading(*c, &out,&my_power);
+		memcpy(&dcmi_last_power_reading,&my_power,sizeof(dcmi_power_data_t));
+		timeframe = my_power.timeframe * 1000;
+		dcmi_sus = suscription();
+		dcmi_sus->call_main = dcmi_thread_main;
+		dcmi_sus->call_init = dcmi_thread_init;
+		dcmi_sus->time_relax = timeframe;
+		dcmi_sus->time_burst = timeframe;
+		dcmi_sus->suscribe(dcmi_sus);
+		debug("dcmi energy plugin suscription initialized with timeframe %lu ms",timeframe);
+	}
 	pthread_mutex_unlock(&ompi_lock);
 
 	return EAR_SUCCESS;
@@ -498,7 +549,20 @@ state_t energy_dc_read(void *c, edata_t energy_mj) {
 
   debug("energy_dc_read\n");
 
-  *penergy_mj=0;
+  *penergy_mj=dcmi_accumulated_energy;
 
 	return EAR_SUCCESS;
+}
+
+state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms) 
+{
+  ulong *penergy_mj=(ulong *)energy_mj;
+
+  debug("energy_dc_read\n");
+
+  *penergy_mj = dcmi_accumulated_energy;
+	*time_ms = dcmi_last_power_reading.timestamp*1000;
+
+  return EAR_SUCCESS;
+
 }

@@ -5,11 +5,14 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 ener_OBJS = \
     energy_nm.o \
     energy_rapl.o \
-		energy_sd650.o
+		energy_sd650.o \
+		energy_dcmi.o
 ener_BINS = \
     energy_nm.so \
     energy_rapl.so \
-		energy_sd650.so
+		energy_sd650.so \
+		energy_dcmi.so
+
 ener_PATH = $(DESTDIR)/lib/plugins/energy
 ener_PERM = 0775
 ener_DEPS = \

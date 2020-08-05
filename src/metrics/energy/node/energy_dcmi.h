@@ -42,10 +42,10 @@
 #define DCMI_PARAM_OPTIONAL_PLAT 3
 #define DCMI_PARAM_ENH_POWER		5
 
-typedef struct power_data{
+typedef struct dcmi_power_data{
 	unsigned long  current_power,min_power,max_power,avg_power;
 	unsigned long  timeframe,timestamp;
-}power_data_t;
+}dcmi_power_data_t;
 
 
 
