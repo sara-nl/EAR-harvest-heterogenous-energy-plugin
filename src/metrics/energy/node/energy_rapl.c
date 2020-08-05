@@ -31,7 +31,7 @@
 #include <metrics/energy/cpu.h>
 #include <metrics/energy/node/energy_node.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #ifdef SHOW_DEBUGS
 #define plug_debug(...) \
 { \

@@ -18,6 +18,7 @@
 #ifndef EAR_EAR_METRICS_H
 #define EAR_EAR_METRICS_H
 
+#include <common/hardware/topology.h>
 #include <common/types/application.h>
 
 /** Returns the current time in usecs */

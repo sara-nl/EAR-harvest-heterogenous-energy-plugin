@@ -22,6 +22,7 @@
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/system/file.h>
+#include <common/output/debug.h>
 #include <common/hardware/cpuid.h>
 #include <common/hardware/topology.h>
 #include <common/hardware/topology_frequency.h>
@@ -221,15 +222,16 @@ static void topology_cpuid(topology_t *topo)
 	/* Cache line size */
 	uint max_level = 0;
 	uint cur_level = 0;
+	uint line_size = 0;
 	int index      = 0;
 
-	if (topo->model == VENDOR_INTEL)
+	if (topo->vendor == VENDOR_INTEL)
 	{
-		while (topo->cache_line_size == 0)
+		while (1)
 		{
 			CPUID(r,4,index);
 
-			if (!(r.eax & 0x0F)) topo->cache_line_size;
+			if (!(r.eax & 0x0F)) break;
 			cur_level = cpuid_getbits(r.eax, 7, 5);
 
 			if (cur_level >= max_level) {
@@ -243,6 +245,11 @@ static void topology_cpuid(topology_t *topo)
 		CPUID(r,0x80000005,0);
 		topo->cache_line_size = r.edx & 0xFF;
 	}
+
+	debug("topology: cache_line_size = %d", topo->cache_line_size);
+	debug("topology: vendor = %d", topo->vendor);
+	debug("topology: family = %d", topo->family);
+	debug("topology: model = %d", topo->model);
 }
 
 state_t topology_init(topology_t *topo)
@@ -259,6 +266,7 @@ state_t topology_init(topology_t *topo)
 	topo->core_count = 0;
 	topo->socket_count = 0;
 	topo->threads_per_core = 1;
+	topo->cache_line_size = 0;
 	topo->smt_enabled = 0;
 	topo->l3_count = 0;
 

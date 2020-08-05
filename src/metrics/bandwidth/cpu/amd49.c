@@ -15,8 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

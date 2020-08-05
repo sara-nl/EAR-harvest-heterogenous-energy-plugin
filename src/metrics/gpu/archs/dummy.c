@@ -15,9 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
-#include <common/output/debug.h>
 #include <stdlib.h>
+#include <common/output/debug.h>
 #include <metrics/gpu/archs/dummy.h>
 
 static struct error_s {

@@ -26,6 +26,6 @@ int main ()
     topology_t topo;
     state_t s = topology_init(&topo);
     verbose(0, "%d", s == EAR_SUCCESS);
-    assert(examinable == EAR_SUCCESS);
+    assert(s == EAR_SUCCESS);
     return 0;
 }

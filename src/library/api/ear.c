@@ -30,7 +30,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>
@@ -762,31 +762,35 @@ void ear_init()
 	}else{
 		attach_shared_regions();
 	}
-
 	debug("END Shared region creation section");
 	/* Processes in same node connectes each other*/
-	debug("Dynais init");
 
-	// Initializing sub systems
-	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	// Initializing architecture and topology
+	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+		error("Retrieving architecture description");
+		/* How to proceeed here ? */
+    	my_id=1;
+		return;
+	}
+	
+	// Initializing metrics
 	debug("Starting metrics init ");
-	if (metrics_init(&arch_desc.top)!=EAR_SUCCESS){
-		    my_id=1;
-				verbose(0,"Error in EAR metrics initialization, setting EARL off");
-				return;
+	
+	if (metrics_init(&arch_desc.top) != EAR_SUCCESS) {
+		error("in EAR metrics initialization (%s), setting EARL off", state_msg);
+		my_id=1;
+		return;
 	}
 	debug("End metrics init");
-	// Policies && models
-  if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
-    error("Retrieving architecture description");
-    /* How to proceeed here ? */
-    my_id=1;
-    verbose(0,"Error in EAR metrics initialization, setting EARL off");
-    return;
-  }
-  arch_desc.max_freq_avx512=system_conf->max_avx512_freq;
-  arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
 
+	// Initializing DynAIS
+	debug("Dynais init");
+	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	debug("Dynais end");
+
+	// Policies && models
+	arch_desc.max_freq_avx512=system_conf->max_avx512_freq;
+	arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
 	debug("frequency_init");
 	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
 
@@ -832,9 +836,9 @@ void ear_init()
 	}
 
 	pin_processes(&arch_desc.top,&ear_process_mask,ear_affinity_is_set,lib_shared_region->num_processes,my_node_id);
-	print_affinity_mask(&arch_desc.top);
 
-	#if SHOW_DEBUGS
+	#ifdef SHOW_DEBUGS
+	print_affinity_mask(&arch_desc.top);
 	print_arch_desc(&arch_desc);
 	#endif
 

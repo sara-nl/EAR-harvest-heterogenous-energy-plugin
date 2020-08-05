@@ -32,8 +32,6 @@
  * When an error occurs, those calls returns -1.
  */
 
-#define SHOW_DEBUGS 1
-
 #include <stdlib.h>
 #include <common/output/debug.h>
 #include <metrics/bandwidth/bandwidth.h>
