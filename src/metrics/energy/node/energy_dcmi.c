@@ -315,9 +315,6 @@ state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,dcmi_po
 	int i;
 	int s;
 
-	if (pthread_mutex_trylock(&ompi_lock)) {
-    return EAR_BUSY;
-  }
 /*
  * NETFN=0x2c 
  * COMMAND=0x02 
@@ -350,14 +347,12 @@ state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,dcmi_po
   rsp = sendcmd(intf, &req);
   if (rsp == NULL) {
         out->mode=-1;
-				error("sendcmd returns NULL");
-				pthread_mutex_unlock(&ompi_lock);
+				debug("sendcmd returns NULL");
         return EAR_ERROR;
   };
   if (rsp->ccode > 0) {
-				error("Power reading command returned with error 0x%02x",(int)rsp->ccode);
+				debug("Power reading command returned with error 0x%02x",(int)rsp->ccode);
         out->mode=-1;
-				pthread_mutex_unlock(&ompi_lock);
         return EAR_ERROR;
         };
 
@@ -407,7 +402,6 @@ state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,dcmi_po
 	cpower->timeframe=(ulong)timeframe;
 	cpower->timestamp=(ulong)timestamp;
 	
-	pthread_mutex_unlock(&ompi_lock);
 	return EAR_SUCCESS;
 }
 
