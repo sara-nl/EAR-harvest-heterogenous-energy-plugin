@@ -33,7 +33,7 @@
 #include <common/states.h> 
 #include <common/types/generic.h> 
 #include <common/math_operations.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <metrics/energy/node/energy_dcmi.h>
 #include <metrics/energy/node/energy_node.h>
