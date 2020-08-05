@@ -41,7 +41,7 @@
 
 
 static pthread_mutex_t ompi_lock = PTHREAD_MUTEX_INITIALIZER;
-static ulong timeframe;
+static ulong dcmi_timeframe;
 static suscription_t *dcmi_sus;
 static ulong dcmi_already_loaded=0;
 static ulong dcmi_accumulated_energy=0;
@@ -478,14 +478,14 @@ state_t energy_init(void **c)
 		dcmi_already_loaded = 1;
 		st=dcmi_power_reading(*c, &out,&my_power);
 		memcpy(&dcmi_last_power_reading,&my_power,sizeof(dcmi_power_data_t));
-		timeframe = my_power.timeframe * 1000;
+		dcmi_timeframe = my_power.timeframe;
 		dcmi_sus = suscription();
 		dcmi_sus->call_main = dcmi_thread_main;
 		dcmi_sus->call_init = dcmi_thread_init;
-		dcmi_sus->time_relax = timeframe;
-		dcmi_sus->time_burst = timeframe;
+		dcmi_sus->time_relax = dcmi_timeframe;
+		dcmi_sus->time_burst = dcmi_timeframe;
 		dcmi_sus->suscribe(dcmi_sus);
-		debug("dcmi energy plugin suscription initialized with timeframe %lu ms",timeframe);
+		debug("dcmi energy plugin suscription initialized with timeframe %lu ms",dcmi_timeframe);
 	}
 	pthread_mutex_unlock(&ompi_lock);
 
@@ -508,7 +508,7 @@ state_t energy_datasize(size_t *size)
 }
 
 state_t energy_frequency(ulong *freq_us) {
-	*freq_us = timeframe;
+	*freq_us = dcmi_timeframe;
 	return EAR_SUCCESS;
 }
 
