@@ -209,7 +209,7 @@ state_t dcmi_get_capabilities_enh_power(struct ipmi_intf *intf, struct ipmi_data
   for (i=0;i<rsp->data_len; i++) {
   	out->data[i]=rsp->data[i];
 		#if SHOW_DEBUGS
-		printf("Byte %d: 0x%02x\n",i,rsp->data[i]);
+		debug("Byte %d: 0x%02x\n",i,rsp->data[i]);
 		#endif
   }
 	/* 0: Group extension
@@ -223,12 +223,12 @@ state_t dcmi_get_capabilities_enh_power(struct ipmi_intf *intf, struct ipmi_data
  *    */
 	num_rolling_avg=rsp->data[6];
 	#if SHOW_DEBUGS
-	printf("There are %u rolling averag periods\n",num_rolling_avg);
+	debug("There are %u rolling averag periods\n",num_rolling_avg);
 	#endif
 
 	for (i=0;i<num_rolling_avg;i++){
 		ra_time_period=rsp->data[7+i];
-		printf("Units %u Time %u\n",ra_time_period&0xC0,ra_time_period&0x3F);
+		debug("Units %u Time %u\n",ra_time_period&0xC0,ra_time_period&0x3F);
 	}		
 	
 	pthread_mutex_unlock(&ompi_lock);
@@ -275,7 +275,7 @@ state_t dcmi_get_capabilities(struct ipmi_intf *intf, struct ipmi_data *out)
   for (i=0;i<rsp->data_len; i++) {
   	out->data[i]=rsp->data[i];
 		#if 0
-		printf("Byte %d: 0x%02x\n",i,rsp->data[i]);
+		debug("Byte %d: 0x%02x\n",i,rsp->data[i]);
 		#endif
   }
 	/* 0: Group extension
@@ -293,7 +293,7 @@ state_t dcmi_get_capabilities(struct ipmi_intf *intf, struct ipmi_data *out)
 	power_enabled=rsp->data[5]&(uint8_t)0x01;
 		
 	#if SHOW_DEBUGS
-	printf("Major %u minor %u revision %u power management enabled %u \n",(uint)major,(uint)minor,(uint)revision,(uint)power_enabled);
+	debug("Major %u minor %u revision %u power management enabled %u \n",(uint)major,(uint)minor,(uint)revision,(uint)power_enabled);
 	#endif
 	
 	pthread_mutex_unlock(&ompi_lock);
@@ -365,7 +365,7 @@ state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,dcmi_po
   for (i=0;i<rsp->data_len; i++) {
   	out->data[i]=rsp->data[i];
 		#if 0
-		printf("Byte %d: 0x%02x\n",i,rsp->data[i]);
+		debug("Byte %d: 0x%02x\n",i,rsp->data[i]);
 		#endif
   }
 	/*
@@ -395,10 +395,10 @@ state_t dcmi_power_reading(struct ipmi_intf *intf, struct ipmi_data *out,dcmi_po
 	timestamp=*timestampp;
 	power_state=((*power_statep&0x40) > 0);
 	#if SHOW_DEBUGS
-	printf("current power 0x%04x min power 0x%04x max power 0x%04x avg power 0x%04x\n",current_power,min_power,max_power,avg_power);
-	printf("current power %u min power %u max power %u avg power %u\n",(uint)current_power,(uint)min_power,(uint)max_power,(uint)avg_power);
-	printf("timeframe %u timestamp %u\n",timeframe,timestamp);
-	printf("power state %u\n",(uint)power_state);
+	debug("current power 0x%04x min power 0x%04x max power 0x%04x avg power 0x%04x\n",current_power,min_power,max_power,avg_power);
+	debug("current power %u min power %u max power %u avg power %u\n",(uint)current_power,(uint)min_power,(uint)max_power,(uint)avg_power);
+	debug("timeframe %u timestamp %u\n",timeframe,timestamp);
+	debug("power state %u\n",(uint)power_state);
 	#endif
 	cpower->current_power=(ulong)current_power;
 	cpower->min_power=(ulong)min_power;
@@ -439,7 +439,7 @@ state_t dcmi_thread_init(void *p)
 		debug("opendev fails in dcmi energy plugin when initializing pool");
 		return EAR_ERROR;
 	} 
-	debug("OK");
+	debug("thread_init for dcmi_power OK");
 	return EAR_SUCCESS;
 }
 
@@ -477,15 +477,19 @@ state_t energy_init(void **c)
 	if (dcmi_already_loaded == 0){
 		dcmi_already_loaded = 1;
 		st=dcmi_power_reading(*c, &out,&my_power);
-		memcpy(&dcmi_last_power_reading,&my_power,sizeof(dcmi_power_data_t));
-		dcmi_timeframe = my_power.timeframe;
-		dcmi_sus = suscription();
-		dcmi_sus->call_main = dcmi_thread_main;
-		dcmi_sus->call_init = dcmi_thread_init;
-		dcmi_sus->time_relax = dcmi_timeframe;
-		dcmi_sus->time_burst = dcmi_timeframe;
-		dcmi_sus->suscribe(dcmi_sus);
-		debug("dcmi energy plugin suscription initialized with timeframe %lu ms",dcmi_timeframe);
+		if (st != EAR_SUCCESS){
+			debug("dcmi_power_reading fails");
+		}else{
+			memcpy(&dcmi_last_power_reading,&my_power,sizeof(dcmi_power_data_t));
+			dcmi_timeframe = my_power.timeframe;
+			dcmi_sus = suscription();
+			dcmi_sus->call_main = dcmi_thread_main;
+			dcmi_sus->call_init = dcmi_thread_init;
+			dcmi_sus->time_relax = dcmi_timeframe;
+			dcmi_sus->time_burst = dcmi_timeframe;
+			dcmi_sus->suscribe(dcmi_sus);
+			debug("dcmi energy plugin suscription initialized with timeframe %lu ms",dcmi_timeframe);
+		}
 	}
 	pthread_mutex_unlock(&ompi_lock);
 
