@@ -90,7 +90,7 @@ size_t get_command_size(request_t *command, char **data_to_send)
     command_b = calloc(1, size);
     memcpy(command_b, command, sizeof(internal_request_t)); //the first portion of request_t and internal_request_t align
 #if NODE_PROP
-    memcpy(command_b, command->nodes, aux_offset); //copy the nodes to propagate to
+    memcpy(command_b, command->nodes, aux_size); //copy the nodes to propagate to
 #endif
 
     aux_size += sizeof(internal_request_t); //aux_size holds the position we have to start writing from
