@@ -246,10 +246,6 @@ static void topology_cpuid(topology_t *topo)
 		topo->cache_line_size = r.edx & 0xFF;
 	}
 
-	debug("topology: cache_line_size = %d", topo->cache_line_size);
-	debug("topology: vendor = %d", topo->vendor);
-	debug("topology: family = %d", topo->family);
-	debug("topology: model = %d", topo->model);
 }
 
 state_t topology_init(topology_t *topo)
@@ -302,6 +298,22 @@ state_t topology_init(topology_t *topo)
 		// Base frequency	
 		topology_freq_getbase(i, &topo->cpus[i].freq_base);
 	}
+
+ int cpu_count;      // Total CPUs including threads.
+    int core_count;     // Total cores (not counting threads).
+    int socket_count;   //
+    int threads_per_core; // Number or threads per core (not the whole system).
+    int smt_enabled;    // Multithreading enabled = 1, disabled = 0.
+    int l3_count;       // Chunks of L3 in the system.
+	
+	debug("cpu_count = %d", topo->cpu_count);
+	debug("socket_count = %d", topo->socket_count);
+	debug("threads_per_core = %d", topo->threads_per_core);
+	debug("smt_enabled = %d", topo->smt_enabled);
+	debug("l3_count = %d", topo->l3_count);
+	debug("vendor = %d", topo->vendor);
+	debug("family = %d", topo->family);
+	debug("model = %d", topo->model);
 
 	// TODO: spaguettis
 	topology_copy(&topo_static, topo);

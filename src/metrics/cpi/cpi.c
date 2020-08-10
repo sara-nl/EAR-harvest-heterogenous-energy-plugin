@@ -75,11 +75,16 @@ void start_basic_metrics()
 	}
 }
 
+static long long accum_cycles;
+static long long accum_insts;
+
 void stop_basic_metrics(llong *cycles, llong *insts)
 {
 	if (ops.stop != NULL) {
 		ops.stop(c, cycles, insts);
 	}
+	accum_cycles += *cycles;
+	accum_insts  += *insts;
 }
 
 void read_basic_metrics(llong *cycles, llong *insts)
@@ -87,9 +92,12 @@ void read_basic_metrics(llong *cycles, llong *insts)
 	if (ops.read != NULL) {
 		ops.read(c, cycles, insts);
 	}
+	accum_cycles += *cycles;
+	accum_insts  += *insts;
 }
 
 void get_basic_metrics(llong *cycles, llong *insts)
 {
-	return read_basic_metrics(cycles, insts);
+	*cycles = accum_cycles;
+	*insts  = accum_insts;
 }

@@ -46,6 +46,7 @@ state_t cpi_intel63_init(ctx_t *c)
 		return s;
 	}
 	initialized = 1;
+	
 	return EAR_SUCCESS;
 }
 
@@ -56,6 +57,7 @@ state_t cpi_intel63_dispose(ctx_t *c)
 
 state_t cpi_intel63_reset(ctx_t *c)
 {
+	debug("function");
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
@@ -64,6 +66,7 @@ state_t cpi_intel63_reset(ctx_t *c)
 
 state_t cpi_intel63_start(ctx_t *c)
 {
+	debug("function");
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
@@ -72,6 +75,7 @@ state_t cpi_intel63_start(ctx_t *c)
 
 state_t cpi_intel63_stop(ctx_t *c, llong *cycles, llong *insts)
 {
+	debug("function");
 	state_t s;
 
 	if (!initialized) {

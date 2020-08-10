@@ -835,7 +835,9 @@ void ear_init()
 		}
 	}
 
+	#if 0
 	pin_processes(&arch_desc.top,&ear_process_mask,ear_affinity_is_set,lib_shared_region->num_processes,my_node_id);
+	#endif
 
 	#ifdef SHOW_DEBUGS
 	print_affinity_mask(&arch_desc.top);

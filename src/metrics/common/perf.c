@@ -15,7 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -39,7 +38,7 @@ state_t perf_open(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event
 	if (group != NULL) {
 		if (perf != group) {
 			gp_fd = group->fd;
-		} 
+		}
 		perf->group = group;
 		gp_flag = PERF_FORMAT_GROUP;
 	}

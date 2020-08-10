@@ -225,6 +225,7 @@ static void metrics_global_stop()
 	get_cache_metrics(&metrics_l1[APP], &metrics_l2[APP], &metrics_l3[APP]);
 	#endif
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
+
 	get_total_fops(metrics_flops[APP]);
 	if (masters_info.my_master_rank>=0){
 		eards_read_uncore(metrics_bandwith_end[APP]);
@@ -531,7 +532,6 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	// Cycles, instructions and transactions
 	metrics->cycles = metrics_cycles[s];
 	metrics->instructions = metrics_instructions[s];
-
 	metrics->GBS = cas_counter * hw_cache_line_size / aux;
 	metrics->CPI = (double) metrics_cycles[s] / (double) metrics_instructions[s];
 	metrics->TPI = cas_counter * hw_cache_line_size / (double) metrics_instructions[s];

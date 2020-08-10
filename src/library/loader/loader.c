@@ -74,12 +74,15 @@ void  __attribute__ ((constructor)) loader()
 	}
 	// New modules here...
 	char *s = NULL;
+	char *o = NULL;
 
-	if ((s = getenv("SLURM_LOCALID")) != NULL && getenv("SLURM_JEJE") != NULL)
+	if ((s = getenv("SLURM_LOCALID")) != NULL && (o = getenv("SLURM_JEJE")) != NULL)
 	{
 		cpu_set_t mask;
 		int cpu = atoi(s);
+		int off = atoi(o); 
 
+		cpu = cpu * off;
 		CPU_ZERO(&mask);
 		CPU_SET(cpu, &mask);
 		
