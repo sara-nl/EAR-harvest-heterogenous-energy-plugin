@@ -84,6 +84,10 @@ typedef struct request{
     uint        req;
     uint        node_dist;
     int         time_code;
+#if NODE_PROP
+    int         num_nodes;
+    int         *nodes;
+#endif
     req_data_t  my_req; //all new variables must be specified after time_code so the first portion aligns with internal_request_t
 }request_t;
 
@@ -91,8 +95,12 @@ typedef struct request{
 typedef struct internal_request {
     uint    req;
     uint    node_dist;
-    int     time_code; //only the necessary my_req content is sent, and what is sent can be identified by the req code 
-} internal_request_t;
+    int     time_code; 
+#if NODE_PROP
+    int     num_nodes;
+    int     *nodes;
+#endif
+} internal_request_t; //only the necessary my_req content is sent, and what is sent can be identified by the req code 
 #endif
 
 typedef struct status_node_info{

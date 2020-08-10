@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,6 +136,7 @@ int read_command(int s, request_t *command)
 {
     request_header_t head;
     char *tmp_command;
+    size_t aux_size = 0;
     head = receive_data(s, (void **)&tmp_command);
     debug("received command type %d\t size: %lu \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
 
@@ -150,20 +151,38 @@ int read_command(int s, request_t *command)
         return command->req;
     }
     memcpy(command, tmp_command, sizeof(internal_request_t));
+    aux_size += sizeof(internal_request_t);
+
+#if NODE_PROP
+    if (command->nodes > 0)
+    {
+        memcpy(command->nodes, &tmp_command[aux_size], command->num_nodes * sizeof(int));
+        aux_size += command->num_nodes * sizeof(int);
+    }
+#endif
+
     if (head.size > sizeof(internal_request_t))
     {
         if (command->req == EAR_RC_SET_POWERCAP_OPT)
         {
             debug("received powercap_opt");
+            memcpy(&command->my_req, &tmp_command[aux_size], sizeof(powercap_opt_t)); //first we copy the base powercap_opt_t
+            //auxiliar variables
             size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            aux_size += sizeof(powercap_opt_t);
+
+            //allocation
             command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
             command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
-            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[sizeof(request_t)], offset);
-            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
+
+            //copy
+            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[aux_size], offset);
+            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[aux_size + offset], offset);
         }
         else
         {
-            memcpy(&command->my_req, &tmp_command[sizeof(internal_request_t)], head.size - sizeof(internal_request_t));
+            debug("recieved command with additional data: %d", command->req);
+            memcpy(&command->my_req, &tmp_command[aux_size], head.size - sizeof(internal_request_t));
         }
     }
     free(tmp_command);

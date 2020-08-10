@@ -1830,7 +1830,7 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
         num_gpu_sigs += gpu_sig->num_gpus;
     }
 
-    verbose(VMYSQL, "total number of gpu_sigs: %d", num_gpu_sigs);
+    verbose(VMYSQL + 1, "total number of gpu_sigs: %d", num_gpu_sigs);
 
     if (num_gpu_sigs < 1)
         return -1; //non-valid index, zero gpu signatures to be inserted (non-gpu apps)
