@@ -15,9 +15,12 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
 #include <metrics/flops/flops.h>
 #include <metrics/flops/cpu/dummy.h>
+#include <metrics/flops/cpu/amd49.h>
 #include <metrics/flops/cpu/intel63.h>
 
 static struct bandwidth_ops {
@@ -52,6 +55,18 @@ int init_flops_metrics()
 		ops.stop       = flops_intel63_stop;
 		ops.read       = flops_intel63_read;
 		ops.read_accum = flops_intel63_read_accum;
+	} else if (state_ok(flops_amd49_status(&topo)))
+	{
+		debug("loaded amd49");
+		ops.init       = flops_amd49_init;
+		ops.dispose    = flops_amd49_dispose;
+		ops.count      = flops_amd49_count;
+		ops.weights    = flops_amd49_weights;
+		ops.reset      = flops_amd49_reset;
+		ops.start      = flops_amd49_start;
+		ops.stop       = flops_amd49_stop;
+		ops.read       = flops_amd49_read;
+		ops.read_accum = flops_amd49_read_accum;
 	} else {
 		debug("load dummy");
 		ops.init       = flops_dummy_init;

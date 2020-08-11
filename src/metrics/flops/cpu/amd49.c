@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
 #include <metrics/common/perf.h>
 #include <metrics/flops/cpu/amd49.h>
@@ -39,9 +41,9 @@ state_t flops_amd49_init(ctx_t *c)
 	state_t s;
 
 	//
-	s = perf_open(&perf_gen,      NULL, 0, PMU_GENERAL, 0x0000004cb);
-	s = perf_open(&perf_256, &perf_gen, 0, PMU_GENERAL, 0x000000f03);
-	s = perf_open(&perf_mer, &perf_gen, 0, PMU_GENERAL, 0xf000000ff);
+	s = perf_open(&perf_gen, NULL, 0, PERF_TYPE_RAW, 0x0000004cb);
+	s = perf_open(&perf_256, NULL, 0, PERF_TYPE_RAW, 0x000000f03);
+	s = perf_open(&perf_mer, NULL, 0, PERF_TYPE_RAW, 0xf000000ff);
 
 	// Remove warning
 	(void) (s);
@@ -59,6 +61,8 @@ state_t flops_amd49_reset(ctx_t *c)
 	state_t s;
 
 	s = perf_reset(&perf_gen);
+	s = perf_reset(&perf_256);
+	s = perf_reset(&perf_mer);
 
 	// Remove warning
 	(void) (s);
@@ -71,6 +75,8 @@ state_t flops_amd49_start(ctx_t *c)
 	state_t s;
 
 	s = perf_start(&perf_gen);
+	s = perf_start(&perf_256);
+	s = perf_start(&perf_mer);
 
 	// Remove warning
 	(void) (s);
@@ -82,7 +88,8 @@ state_t flops_amd49_read(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
-	s = perf_read(&perf_gen, &values);
+	s = perf_read(&perf_gen, &values[0]);
+	s = perf_read(&perf_256, &values[1]);
 
 	// Remove warning
 	(void) (s);
@@ -91,7 +98,7 @@ state_t flops_amd49_read(ctx_t *c, llong *flops, llong *ops)
 	debug("read 1 %lld", values[1]);
 	debug("read 2 %lld", values[2]);
 
-	accums[0] += values[0];
+	accums[0]  = 0;
 	accums[1] += values[1];
 	accums[2]  = 0;
 
@@ -119,8 +126,7 @@ state_t flops_amd49_stop(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
-	s = perf_stop(&perf_064f);
-	s = perf_stop(&perf_256f);
+	s = perf_stop(&perf_gen);
 	
 	// Remove warning
 	(void) (s);
