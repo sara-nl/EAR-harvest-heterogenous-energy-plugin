@@ -37,6 +37,85 @@
 int eards_remote_connected=0;
 int eards_sfd=-1;
 
+#if DYNAMIC_COMMANDS
+size_t get_command_size(request_t *command, char **data_to_send)
+{
+    size_t size = sizeof(internal_request_t);
+    size_t offset = 0;
+    size_t aux_size = 0;
+    char *command_b;
+
+    switch(command->req)
+    {
+        case EAR_RC_SET_POWERCAP_OPT:
+            size += sizeof(powercap_opt_t);
+            size += command->my_req.pc_opt.num_greedy * sizeof(int) * 2;
+            offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            break;
+        
+        //NOTE: individual values are not being passed to keep the code simple. Instead, we measure the actual data size of the
+        //union and send that instead. Ideally we would only copy the value that we need, but that would require a big re-write.
+
+        case EAR_RC_MAX_FREQ:
+        case EAR_RC_SET_FREQ:
+        case EAR_RC_DEF_FREQ:
+        case EAR_RC_INC_TH:
+        case EAR_RC_RED_PSTATE:
+        case EAR_RC_NEW_TH:
+            size += sizeof(new_conf_t); //all this values use the union as ear_conf (a new_conf_t)
+            break;
+        case EAR_RC_SET_POWER:
+        case EAR_RC_INC_POWER:
+        case EAR_RC_RED_POWER:
+            size += sizeof(power_limit_t); //powercap struct
+            break;
+        case EAR_RC_SET_RISK:
+            size += sizeof(risk_dec_t); //risk struct
+            break;
+        case EAR_RC_SET_POLICY:
+            size += sizeof(new_policy_cont_t); //new policy_conf
+            break;
+
+    }
+ 
+#if NODE_PROP
+    if (command->num_nodes > 0)
+    {
+        size += command->num_nodes * sizeof(int);
+        aux_size = command->num_nodes * sizeof(int);
+    }
+#endif
+
+    //copy the original command
+    command_b = calloc(1, size);
+    memcpy(command_b, command, sizeof(internal_request_t)); //the first portion of request_t and internal_request_t align
+#if NODE_PROP
+    memcpy(command_b, command->nodes, aux_size); //copy the nodes to propagate to
+#endif
+
+    aux_size += sizeof(internal_request_t); //aux_size holds the position we have to start writing from
+
+    switch(command->req)
+    {
+        case EAR_RC_SET_POWERCAP_OPT:
+            //copy the base powercap_opt_t since we don't automatically copy anything beyond internal_request_t
+            memcpy(&command_b[aux_size], &command->my_req, sizeof(powercap_opt_t)); 
+            aux_size += sizeof(powercap_opt_t); //add the copied size to the index
+
+            //proceed as with fixed size method, copying both arrays
+            memcpy(&command_b[aux_size], command->my_req.pc_opt.greedy_nodes, offset);
+            memcpy(&command_b[aux_size + offset], command->my_req.pc_opt.extra_power, offset);
+            break;
+        default:
+            memcpy(&command_b[aux_size], &command->my_req, size-aux_size); 
+            break;
+    }
+
+    *data_to_send = command_b; 
+    return size;
+
+}
+#else
 size_t get_command_size(request_t *command, char **data_to_send)
 {
     size_t size = sizeof(request_t);
@@ -67,6 +146,7 @@ size_t get_command_size(request_t *command, char **data_to_send)
     *data_to_send = command_b; 
     return size;
 }
+#endif
 
 // Sends a command to eard
 int send_command(request_t *command)
