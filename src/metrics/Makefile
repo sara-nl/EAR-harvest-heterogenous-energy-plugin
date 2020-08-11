@@ -27,6 +27,7 @@ mets_OBJS = \
     $(SRCDIR)/metrics/energy/energy_node_lib.o \
     $(SRCDIR)/metrics/energy/cpu/intel63.o \
     $(SRCDIR)/metrics/flops/flops.o \
+    $(SRCDIR)/metrics/flops/cpu/amd49.o \
     $(SRCDIR)/metrics/flops/cpu/intel63.o \
     $(SRCDIR)/metrics/flops/cpu/dummy.o \
     $(SRCDIR)/metrics/gpu/gpu.o \
