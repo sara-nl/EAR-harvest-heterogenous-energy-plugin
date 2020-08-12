@@ -86,6 +86,8 @@ const char     *polsyms_nam[] = {
 };
 polctx_t my_pol_ctx;
 
+static uint policy_gpu_model;
+
 
 state_t policy_load(char *obj_path,polsym_t *psyms)
 {
@@ -136,6 +138,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	#endif
 
 	/********* GPU PART **********/
+	if (masters_info.my_master_rank>=0){
 	#if USE_GPUS
   obj_path = getenv(SCHED_EAR_GPU_POWER_POLICY);
   #if SHOW_DEBUGS
@@ -149,7 +152,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
       sprintf(basic_path,"%s/policies/gpu_%s.so",data->dir_plug,app_settings->policy_name);
       obj_path=basic_path;
   }
-  if (masters_info.my_master_rank>=0) debug("loading policy %s",obj_path);
+  debug("loading policy %s",obj_path);
   if (policy_load(obj_path,&gpu_polsyms_fun)!=EAR_SUCCESS){
     error("Error loading policy %s",obj_path);
   }
@@ -160,13 +163,21 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 		if (gpu_lib_init(&my_pol_ctx.gpu_mgt_ctx) == EAR_SUCCESS){
 			my_pol_ctx.gpu_mgt_ctx_on=1;
 			debug("gpu_lib_init success");
-			gpu_lib_count(&my_pol_ctx.num_gpus);
+      gpu_lib_model(&my_pol_ctx.gpu_mgt_ctx,&policy_gpu_model);
+			if (policy_gpu_model == MODEL_DUMMY){ 
+				debug("Setting policy num gpus to 0 because DUMMY");
+				my_pol_ctx.num_gpus = 0;
+			}else{
+				gpu_lib_count(&my_pol_ctx.num_gpus);
+			}
 			debug("Num gpus detected in policy_load %u",my_pol_ctx.num_gpus);	
 		}else{
 			error("gpu_lib_init");
 		}
 	}
+	}
 	#endif
+	
 	return policy_init();
 }
 
@@ -188,13 +199,17 @@ state_t policy_init()
 		ret=polsyms_fun.init(c);
 	}
 	#if USE_GPUS
+	if (masters_info.my_master_rank>=0){
 	if (gpu_polsyms_fun.init != NULL){
 		debug("Loading gpu init");
 		retg=gpu_polsyms_fun.init(c);
 	}else{
 		debug("gpu init policy null");
 	}
-	
+	}	
+	#endif
+	#if POWERCAP
+	if (masters_info.my_master_rank>=0) pc_support_init(c);
 	#endif
 	if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;
 	else return EAR_ERROR;
@@ -203,6 +218,8 @@ state_t policy_init()
 state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 {
 	polctx_t *c=&my_pol_ctx;
+	signature_t node_sig;
+	int i;
 	state_t st=EAR_ERROR,stg=EAR_SUCCESS;
 	*ready=1;
 	if (polsyms_fun.apply!=NULL){
@@ -210,12 +227,15 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 			*ready=0;
 			return EAR_SUCCESS;
 		}
-		st=polsyms_fun.apply(c, my_sig,freq_set,ready);
+		signature_copy(&node_sig,my_sig);
+		node_sig.DC_power=sig_node_power(my_sig);
+
+		st=polsyms_fun.apply(c, &node_sig,freq_set,ready);
 #if POWERCAP
 		if (pc_app_info_data->mode==PC_DVFS){
 			ulong f;
 			pcapp_info_set_req_f(pc_app_info_data,*freq_set);
-			f=pc_support_adapt_freq(&my_pol_ctx.app->pc_opt,*freq_set,my_sig);
+			f=pc_support_adapt_freq(c,&my_pol_ctx.app->pc_opt,*freq_set,my_sig);
 			debug("Adapting frequency because pc: selected %lu new %lu",*freq_set,f);
 			*freq_set=f;
 		}else{
@@ -225,7 +245,13 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 #endif
   	if (*freq_set != *(c->ear_frequency))
   	{
+			if(ear_affinity_is_set == 0){
     		*(c->ear_frequency) =  eards_change_freq(*freq_set);
+			}else{
+				debug("We ARE using affinity mask");
+				/* How to manage cores vs CPUS */
+    		*(c->ear_frequency) =  eards_change_freq_with_mask(*freq_set,&ear_process_mask);
+			}
 		}
   } else{
 		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
@@ -233,11 +259,24 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 	#if USE_GPUS
 	/* At this point we are the master */
 	/* GPU frequency must be integrated in arguments, hardcoded for now */
-	if (gpu_polsyms_fun.apply!=NULL){
+	if ((gpu_polsyms_fun.apply!=NULL) && (my_pol_ctx.num_gpus)) {
 		ulong *gpu_f=calloc(my_pol_ctx.num_gpus,sizeof(ulong));
 		stg=gpu_polsyms_fun.apply(c, my_sig,gpu_f,ready);
 		/* We must apply a gpu_freq change */
 		if (*ready == 1 ){
+		#if POWERCAP
+			for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
+				debug("GPU[%d] freq requested %lu",i,gpu_f[i]);
+			}
+			pc_app_info_data->num_gpus_used=my_sig->gpu_sig.num_gpus;
+			memcpy(pc_app_info_data->req_gpu_f,gpu_f,my_pol_ctx.num_gpus*sizeof(ulong));
+    	if (pc_app_info_data->mode==PC_DVFS){
+      	pc_support_adapt_gpu_freq(c,&my_pol_ctx.app->pc_opt,gpu_f,my_sig);
+    	}
+			for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
+				debug("GPU[%d] freq selected after powercap filter %lu",i,gpu_f[i]);
+			}
+		#endif
 			eards_gpu_set_freq(my_pol_ctx.num_gpus,gpu_f);
 		}
 		free(gpu_f);
@@ -280,12 +319,14 @@ state_t policy_ok(signature_t *curr,signature_t *prev,int *ok)
 	state_t ret,retg=EAR_SUCCESS;
 	if (polsyms_fun.ok!=NULL){
 #if POWERCAP
-		pc_support_compute_next_state(&my_pol_ctx.app->pc_opt,curr);
+		pc_support_compute_next_state(c,&my_pol_ctx.app->pc_opt,curr);
 #endif
 		ret = polsyms_fun.ok(c, curr,prev,ok);
 		#if USE_GPUS
-		if (gpu_polsyms_fun.ok!=NULL){
+		if (masters_info.my_master_rank>=0){
+		if ((gpu_polsyms_fun.ok!=NULL) && (my_pol_ctx.num_gpus)){
 			retg = gpu_polsyms_fun.ok(c, curr,prev,ok);
+		}
 		}
 		#endif
 		if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;

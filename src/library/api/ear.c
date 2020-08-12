@@ -569,6 +569,7 @@ void   pin_processes(topology_t *t,cpu_set_t *mask,int is_set,int ppn,int idx)
 			cpus = t->cpu_count / ppn;
 			first = idx *cpus;
 		}
+		debug("I'm the process %d: My cpu rank is [%d-%d)",idx,first,first+cpus);
 		CPU_ZERO(mask);
 		for (i=0;i<t->cpu_count;i++){
 				if ((i >= first) && (i < (first+cpus))) CPU_SET(i,mask);
@@ -835,12 +836,9 @@ void ear_init()
 		}
 	}
 
-	#if 0
-	pin_processes(&arch_desc.top,&ear_process_mask,ear_affinity_is_set,lib_shared_region->num_processes,my_node_id);
-	#endif
-
-	#ifdef SHOW_DEBUGS
+	ear_affinity_is_set=1;
 	print_affinity_mask(&arch_desc.top);
+	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
 

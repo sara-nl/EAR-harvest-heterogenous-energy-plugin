@@ -107,14 +107,14 @@ state_t gpu_mgr_init()
 state_t gpu_mgr_set_freq(uint num_dev_req,ulong *freqs)
 {
 	int i;
-	debug("Setting the GPU frequency");
+	/* debug("Setting the GPU frequency"); */
 	if (num_dev_req>num_dev){
 		error("Num GPUS requestedi(%u)  to change frequency greather than num GPUS detected (%u)",num_dev_req,num_dev);
 		num_dev_req=num_dev;
 	}
 	for (i=0;i<num_dev_req;i++){
 		freqs[i]=freqs[i];
-		debug("gpu_mgr_set_freq gpu[%d]=%lu",i,freqs[i]);
+		/* debug("gpu_mgr_set_freq gpu[%d]=%lu",i,freqs[i]);*/
 	}
 	return mgt_gpu_freq_limit_set(&gpu_node_mgr,freqs);
 }

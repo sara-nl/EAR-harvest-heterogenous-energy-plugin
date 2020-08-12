@@ -12,6 +12,7 @@ ener_BINS = \
     energy_rapl.so \
     energy_dcmi.so \
     energy_sd650.so
+
 ener_PATH = $(DESTDIR)/lib/plugins/energy
 ener_PERM = 0775
 ener_DEPS = \

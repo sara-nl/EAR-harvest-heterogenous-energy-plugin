@@ -708,7 +708,7 @@ void powermon_new_job(ehandler_t *eh, application_t *appID, uint from_mpi) {
 	#if POWERCAP
 	app_mgt_new_job(app_mgt_info);
 	pcapp_info_new_job(pc_app_info_data);
-	powercap_set_app_req_freq(f);
+	powercap_set_app_req_freq(pc_app_info_data);
 	#endif
 	dyn_conf->id=new_app_id;
 	dyn_conf->user_type=user_type;
@@ -806,10 +806,12 @@ void powermon_end_job(ehandler_t *eh, job_id jid, job_id sid) {
 	pcapp_info_end_job(pc_app_info_data);
 	powercap_end_job();
   if (powermon_is_idle()){ 
-		powercap_set_app_req_freq(powermon_freq_list[powermon_num_pstates-1]);
+		pc_app_info_data->req_f = powermon_freq_list[powermon_num_pstates-1];
+		powercap_set_app_req_freq(pc_app_info_data);
 		powercap_run_to_idle();
 	}else{ 
-		powercap_set_app_req_freq(current_ear_app[ccontext]->current_freq);
+		pc_app_info_data->req_f = current_ear_app[ccontext]->current_freq;
+		powercap_set_app_req_freq(pc_app_info_data);
 	}
 #endif
   #if USE_GPUS

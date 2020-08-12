@@ -141,6 +141,7 @@ static gpu_t *gpu_metrics_init[2],*gpu_metrics_end[2],*gpu_metrics_diff[2];
 static ctx_t gpu_lib_ctx;
 static uint gpu_initialized;
 static uint gpu_loop_stopped=0;
+static uint earl_gpu_model=MODEL_UNDEFINED;
 #endif
 #if CACHE_METRICS
 static long long metrics_l1[2];
@@ -553,6 +554,10 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		#if USE_GPU_LIB
 		if (gpu_initialized){
 			metrics->gpu_sig.num_gpus=ear_num_gpus_in_node;
+			if ((s == APP) && (earl_gpu_model == MODEL_DUMMY)){ 
+				debug("Setting num_gpu to 0 because model is DUMMY");
+				metrics->gpu_sig.num_gpus = 0;
+			}
 			for (p=0;p<metrics->gpu_sig.num_gpus;p++){
 				metrics->gpu_sig.gpu_data[p].GPU_power    = gpu_metrics_diff[s][p].power_w;
 				metrics->gpu_sig.gpu_data[p].GPU_freq     = gpu_metrics_diff[s][p].freq_gpu;
@@ -701,6 +706,8 @@ int metrics_init(topology_t *topo)
 				gpu_initialized=0;
 		}else{
 			debug("GPU initialization successfully");
+			gpu_lib_model(&gpu_lib_ctx,&earl_gpu_model);
+			debug("GPU model %u",earl_gpu_model);
 			gpu_lib_data_alloc(&gpu_metrics_init[LOO]);gpu_lib_data_alloc(&gpu_metrics_init[APP]);
 			gpu_lib_data_alloc(&gpu_metrics_end[LOO]);gpu_lib_data_alloc(&gpu_metrics_end[APP]);
 			gpu_lib_data_alloc(&gpu_metrics_diff[LOO]);gpu_lib_data_alloc(&gpu_metrics_diff[APP]);

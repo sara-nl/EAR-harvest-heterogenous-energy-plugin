@@ -25,8 +25,15 @@
 #define DOMAIN_DRAM     2
 #define DOMAIN_GPU      3
 #define DOMAIN_GPUS      DOMAIN_GPU
-
 #define NUM_DOMAINS 4
+
+#ifdef USE_GPUS
+#define GPU_PERC_UTIL 0.45
+#else
+#define GPU_PERC_UTIL 0
+#endif
+
+
 
 
 #define PC_STATUS_OK      0
@@ -66,6 +73,7 @@ typedef struct node_powercap_opt {
   uint powercap_status; /* Current status */
   uint max_inc_new_jobs; /* Max extra power for new jobs */
   uint requested; /* Extra power requested, used when node is greedy or powercap < def_powercap */
+	uint pper_domain[NUM_DOMAINS]; /* Power allocated to each domain */
 }node_powercap_opt_t;
 
 #define POWERCAP_STATUS_ACUM_ELEMS 8
