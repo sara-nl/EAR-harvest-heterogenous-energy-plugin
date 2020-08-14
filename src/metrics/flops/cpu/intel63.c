@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <metrics/flops/cpu/intel63.h>
 
@@ -28,6 +28,7 @@ static perf_t perf_256d;
 static perf_t perf_512f;
 static perf_t perf_512d;
 
+static llong values_flops[8];
 static llong values_064f;
 static llong values_064d;
 static llong values_128f;
@@ -92,8 +93,17 @@ void read_flops_metrics(long long *total_flops, long long *f_operations)
 {
 	state_t s;
 
-	s = perf_read(&perf_064f, &values_064f);
-	s = perf_read(&perf_256f, &values_256f);
+	s = perf_read(&perf_064f, &values_flops[0]);
+	s = perf_read(&perf_256f, &values_flops[4]);
+
+	values_064f = values_flops[0];
+	values_064d = values_flops[1];
+	values_128f = values_flops[2];
+	values_128d =	values_flops[3];
+	values_256f = values_flops[4];
+	values_256d = values_flops[5];
+	values_512f = values_flops[6];
+	values_512d = values_flops[7];
 	
 	// Remove warning
 	(void) (s);
@@ -112,6 +122,7 @@ void read_flops_metrics(long long *total_flops, long long *f_operations)
 	accum_512f += values_512f;
 	accum_512d += values_512d;
 
+	#if 0
 	f_operations[0] = values_064f;
 	f_operations[1] = values_064d;
 	f_operations[2] = values_128f;
@@ -120,9 +131,12 @@ void read_flops_metrics(long long *total_flops, long long *f_operations)
 	f_operations[5] = values_256d;
 	f_operations[6] = values_512f;
 	f_operations[7] = values_512d;
+	#endif
+	memcpy(f_operations,values_flops,sizeof(llong)*8);
 
 	*total_flops  = 0;
-	*total_flops += (accum_064f * 2);
+	/* Warning: Jordi was using 2, based on papi weigths, modified to 1 */
+	*total_flops += (accum_064f * 1);
 	*total_flops += (accum_064d * 1);
 	*total_flops += (accum_128f * 4);
 	*total_flops += (accum_128d * 2);
@@ -170,7 +184,8 @@ double gflops(ulong total_time, uint total_cores)
 	llong total;
 
 	total  = 0;
-	total += accum_064f * 2;
+	
+	total += accum_064f * 1;
 	total += accum_064d * 1;
 	total += accum_128f * 4;
 	total += accum_128d * 2;
@@ -185,7 +200,7 @@ double gflops(ulong total_time, uint total_cores)
 
 void get_weigth_fops_instructions(int *weigth_vector)
 {
-	 weigth_vector[0] = 2;
+	 weigth_vector[0] = 1;
 	 weigth_vector[1] = 1;
 	 weigth_vector[2] = 4;
 	 weigth_vector[3] = 2;
