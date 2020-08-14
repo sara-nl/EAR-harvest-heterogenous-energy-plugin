@@ -32,8 +32,10 @@
  * When an error occurs, those calls returns -1.
  */
 
+#include <limits.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
+#include <common/math_operations.h>
 #include <metrics/bandwidth/bandwidth.h>
 #include <metrics/bandwidth/cpu/dummy.h>
 #include <metrics/bandwidth/cpu/amd49.h>
@@ -179,4 +181,47 @@ int alloc_array_uncores(ullong **array)
 	}
 	*array = calloc(dev_count, sizeof(ullong));
 	return EAR_SUCCESS;
+}
+
+static ullong uncore_ullong_diff_overflow(ullong begin, ullong end)
+{
+	ullong max_64 = ULLONG_MAX;
+	ullong max_48 = 281474976710656; //2^48
+	ullong ret = 0;
+
+	if (begin < max_48 && end < max_48) {
+		ret = max_48 - begin + end;
+	} else {
+		ret = max_64 - begin + end;
+	}
+	return ret;
+}
+
+void diff_uncores(ullong * diff,ullong *end,ullong  *begin,int N)
+{
+	int i;
+	for (i=0;i<N;i++){
+		if (end[i]<begin[i]){
+			diff[i]=uncore_ullong_diff_overflow(begin[i],end[i]);
+		}else{
+			diff[i]=end[i]-begin[i];
+		}
+	}
+}
+
+void copy_uncores(ullong * DEST,ullong * SRC,int N)
+{
+	memcpy((void *)DEST, (void *)SRC, N*sizeof(ullong));
+}
+
+int uncore_are_frozen(ullong * DEST,int N)
+{
+	int i,frozen=1;
+	for (i=0;i<N;i++){
+		if (DEST[i]>0){
+			frozen=0;
+			break;
+		}
+	}
+	return frozen;
 }

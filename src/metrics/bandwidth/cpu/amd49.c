@@ -24,10 +24,12 @@
 #include <metrics/common/msr.h>
 #include <metrics/bandwidth/cpu/amd49.h>
 
-// Vendor	AuthenticAMD
-// Family	17
-// Model	X
 
+// References:
+// PPR for AMD Family 17h.
+// 	Topic 2.1.15.4.1 Floating Point (FP) Events.
+//	Topic 2.1.14.3 MSRs - MSRC001_0xxx. Look for DF_ word.
+//
 // Up to 8 CCDs. But these data counters
 // belongs to a Data Fabric, so are shared
 // by all cores. So just accessing the
@@ -223,11 +225,29 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 	bwidth_amd49_t *bw = (bwidth_amd49_t *) c->context;
 	state_t s;
 	int i;
+
+	// Currently we are just using the L3 miss per L3 chunk to
+	// estimate the bandwidth. Before that we were using the
+	// CAS counters of channel 0 and 1, corresponding to CCD0
+	// and CCD0, and the L3 misses of both CCDs (CCX0, 1, 2
+	// and 3). With that data, we got a coefficient to match
+	// the L3 readings with the CAS values. That coefficient
+	// were used with the other L3 chunks to convert to CAS
+	// values.
+	//
+	// Problem. When is the coefficient good enough to
+	// approximate the CAS values with the L3 counts? Because
+	// the coefficient is variable every time is generated.
+	//
+	// Possible solution. Use the L3 values to bring the
+	// bandwidth until a coefficient is good enough (100
+	// iterations?) to convert L3 values to CAS values.
 	
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
 
+	#if 0
 	// Reading the memory access channels of channels 0 and 1 of CCD0 and CCD1.
 	// This is valid for CPUs with at least 2 CCDs.
 	msr_read(bw->tp.cpus[0].id, &bw->cas_curr[0], sizeof(ulong), df_ctr0);
@@ -294,12 +314,13 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 	}
 
 	debug("coeff %lf of %lf", bw->coeff, bw->coeff_count);
+	#endif
 
 	for (i = 0; i < bw->fd_count; ++i)
 	{
 		// Reading each L3 miss counters
 		msr_read(bw->tp.cpus[i].id, &cas[i], sizeof(ulong), ctr_l3);
-#if 0
+		#if 0
 		ulong readed = cas[i];
 
 		if (!error) {
@@ -311,7 +332,7 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 		}
 		
 		debug("CCX%d, read L3 %llu, estimated %llu CAS", i, readed, cas[i]);
-#endif
+		#endif
 	}
 
 	return EAR_SUCCESS;

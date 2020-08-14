@@ -46,4 +46,10 @@ int compute_uncores(ullong *cas2, ullong *cas1, double *bytes, double units);
 
 int alloc_array_uncores(ullong **array);
 
+void copy_uncores(ullong *dest, ullong *src, int n);
+
+int uncore_are_frozen(ullong *dest, int n);
+
+void diff_uncores(ullong *diff, ullong *end, ullong *begin, int n);
+
 #endif
