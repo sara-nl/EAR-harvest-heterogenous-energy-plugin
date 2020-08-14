@@ -138,7 +138,7 @@ int read_command(int s, request_t *command)
     char *tmp_command;
     size_t aux_size = 0;
     head = receive_data(s, (void **)&tmp_command);
-    debug("received command type %d\t size: %lu \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
+    debug("received command type %d\t size: %u \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
 
     if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(internal_request_t))
     {

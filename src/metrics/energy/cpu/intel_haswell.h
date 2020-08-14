@@ -28,7 +28,7 @@
 #define RAPL_MSR_UNITS 			1000000000.0
 
 /** Opens the necessary fds to read the MSR registers. Returns 0 on success
-* 	and -1 on error. */
+* 	and -1 on error. fd_map is an already allocated vector with num_packages positions*/
 int init_rapl_msr(int *fd_map);
 
 /** */
