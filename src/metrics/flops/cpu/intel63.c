@@ -136,6 +136,7 @@ void read_flops_metrics(long long *total_flops, long long *f_operations)
 
 	*total_flops  = 0;
 	/* Warning: Jordi was using 2, based on papi weigths, modified to 1 */
+	#if 0
 	*total_flops += (accum_064f * 1);
 	*total_flops += (accum_064d * 1);
 	*total_flops += (accum_128f * 4);
@@ -144,6 +145,16 @@ void read_flops_metrics(long long *total_flops, long long *f_operations)
 	*total_flops += (accum_256d * 4);
 	*total_flops += (accum_512f * 16);
 	*total_flops += (accum_512d * 8);
+	#endif
+	*total_flops += (values_064f * 1);
+  *total_flops += (values_064d * 1);
+  *total_flops += (values_128f * 4);
+  *total_flops += (values_128d * 2);
+  *total_flops += (values_256f * 8);
+  *total_flops += (values_256d * 4);
+  *total_flops += (values_512f * 16);
+  *total_flops += (values_512d * 8);
+
 	
 	debug("total flops %lld", *total_flops);
 }
