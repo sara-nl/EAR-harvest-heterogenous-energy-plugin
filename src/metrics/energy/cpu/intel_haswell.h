@@ -27,6 +27,10 @@
 #define RAPL_PACKAGE1       3
 #define RAPL_MSR_UNITS 			1000000000.0
 
+#define RAPL_ENERGY_EV 2
+#define RAPL_DRAM_EV 0
+#define RAPL_PCK_EV 1
+
 /** Opens the necessary fds to read the MSR registers. Returns 0 on success
 * 	and -1 on error. fd_map is an already allocated vector with num_packages positions*/
 int init_rapl_msr(int *fd_map);
@@ -36,6 +40,7 @@ void dispose_rapl_msr(int *fd_map);
 
 /** Reads rapl counters and stores them in values array. Returns 0 on success 
 *	and -1 on error. */
+/* DRAM 0, DRAM 1,..DRAM N, PCK0,PCK1,...PCKN  */
 int read_rapl_msr(int *fd_map,unsigned long long *_values);
 
 void rapl_msr_energy_to_str(char *b,unsigned long long *values);
