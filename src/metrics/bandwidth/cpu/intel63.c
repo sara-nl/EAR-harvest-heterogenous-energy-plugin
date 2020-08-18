@@ -85,7 +85,6 @@
 #include <unistd.h>
 #include <linux/limits.h>
 #include <common/output/debug.h>
-#include <metrics/bandwidth/cpu/utils.h>
 #include <metrics/bandwidth/cpu/intel63.h>
 
 #define IJKFOR(i_len, j_len, k_len) \

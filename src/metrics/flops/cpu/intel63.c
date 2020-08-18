@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
 #include <metrics/common/perf.h>
 #include <metrics/flops/cpu/intel63.h>
@@ -28,14 +30,8 @@ static perf_t perf_256d;
 static perf_t perf_512f;
 static perf_t perf_512d;
 
-static llong values_064f;
-static llong values_064d;
-static llong values_128f;
-static llong values_128d;
-static llong values_256f;
-static llong values_256d;
-static llong values_512f;
-static llong values_512d;
+static llong values_064[4];
+static llong values_256[4];
 
 static llong accum_064f;
 static llong accum_064d;
@@ -109,47 +105,48 @@ state_t flops_intel63_read(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
-	s = perf_read(&perf_064f, &values_064f);
-	s = perf_read(&perf_256f, &values_256f);
+	s = perf_read(&perf_064f, values_064);
+	s = perf_read(&perf_256f, values_256);
 	
 	// Remove warning
 	(void) (s);
 
-	debug("read 064 f/d %lld/%lld", values_064f, values_064d);
-	debug("read 128 f/d %lld/%lld", values_128f, values_128d);
-	debug("read 256 f/d %lld/%lld", values_256f, values_256d);
-	debug("read 512 f/d %lld/%lld", values_512f, values_512d);
+	debug("read 064 f/d %lld/%lld", values_064[0], values_064[1]);
+	debug("read 128 f/d %lld/%lld", values_064[2], values_064[3]);
+	debug("read 256 f/d %lld/%lld", values_256[0], values_256[1]);
+	debug("read 512 f/d %lld/%lld", values_256[2], values_256[3]);
 
-	accum_064f += values_064f;
-	accum_064d += values_064d;
-	accum_128f += values_128f;
-	accum_128d += values_128d;
-	accum_256f += values_256f;
-	accum_256d += values_256d;
-	accum_512f += values_512f;
-	accum_512d += values_512d;
+	accum_064f += values_064[0];
+	accum_064d += values_064[1];
+	accum_128f += values_064[2];
+	accum_128d += values_064[3];
+	accum_256f += values_256[0];
+	accum_256d += values_256[1];
+	accum_512f += values_256[2];
+	accum_512d += values_256[3];
 
 	if (ops != NULL) {
-	ops[0] = values_064f;
-	ops[1] = values_064d;
-	ops[2] = values_128f;
-	ops[3] = values_128d;
-	ops[4] = values_256f;
-	ops[5] = values_256d;
-	ops[6] = values_512f;
-	ops[7] = values_512d;
+	ops[0] = values_064[0];
+	ops[1] = values_064[1];
+	ops[2] = values_064[2];
+	ops[3] = values_064[3];
+	ops[4] = values_256[0];
+	ops[5] = values_256[1];
+	ops[6] = values_256[2];
+	ops[7] = values_256[3];
 	}
 
 	if (flops != NULL) {
 	*flops  = 0;
-	*flops += (values_064f * 2);
-	*flops += (values_064d * 1);
-	*flops += (values_128f * 4);
-	*flops += (values_128d * 2);
-	*flops += (values_256f * 8);
-	*flops += (values_256d * 4);
-	*flops += (values_512f * 16);
-	*flops += (values_512d * 8);
+	*flops += (values_064[0] * 1);
+	*flops += (values_064[1] * 1);
+	*flops += (values_064[2] * 4);
+	*flops += (values_064[3] * 2);
+
+	*flops += (values_256[0] * 8);
+	*flops += (values_256[1] * 4);
+	*flops += (values_256[2] * 16);
+	*flops += (values_256[3] * 8);
 	}
 
 	debug("total flops %lld", *flops);
@@ -196,7 +193,7 @@ double gflops(ulong total_time, uint total_cores)
 	llong total;
 
 	total  = 0;
-	total += accum_064f * 2;
+	total += accum_064f * 1;
 	total += accum_064d * 1;
 	total += accum_128f * 4;
 	total += accum_128d * 2;
@@ -212,7 +209,7 @@ double gflops(ulong total_time, uint total_cores)
 
 state_t flops_intel63_weights(uint *weigths)
 {
-	weigths[0] = 2;
+	weigths[0] = 1;
 	weigths[1] = 1;
 	weigths[2] = 4;
 	weigths[3] = 2;

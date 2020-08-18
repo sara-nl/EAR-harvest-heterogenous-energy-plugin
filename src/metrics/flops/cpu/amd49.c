@@ -164,7 +164,7 @@ state_t flops_amd49_stop(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
-	s = perf_stop(&perf_gen);
+	s = perf_stop(&perf_evn0);
 	
 	// Remove warning
 	(void) (s);
@@ -203,3 +203,12 @@ state_t flops_amd49_weights(uint *weigths)
 	weigths[7] = 0;
 	return EAR_SUCCESS;
 }
+
+
+
+
+
+
+
+
+

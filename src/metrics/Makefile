@@ -17,7 +17,6 @@ mets_OBJS = \
     $(SRCDIR)/metrics/bandwidth/cpu/amd49.o \
     $(SRCDIR)/metrics/bandwidth/cpu/intel63.o \
     $(SRCDIR)/metrics/bandwidth/cpu/dummy.o \
-    $(SRCDIR)/metrics/bandwidth/cpu/utils.o \
     $(SRCDIR)/metrics/cache/cache.o \
     $(SRCDIR)/metrics/cpi/cpi.o \
     $(SRCDIR)/metrics/cpi/cpu/intel63.o \
