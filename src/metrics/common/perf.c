@@ -195,6 +195,7 @@ state_t perf_read(perf_t *perf, llong *value)
 		value_d  = (double) value_s.values[i];
 		total_d  = value_d * time_mul;
 		value[i] = (llong) total_d;
+		debug("i=%d value %llu\n",i,value_s.values[i]);
 	}
 
 	return EAR_SUCCESS;

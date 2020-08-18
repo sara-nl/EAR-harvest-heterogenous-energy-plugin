@@ -22,6 +22,15 @@
 #include <common/plugins.h>
 #include <common/hardware/topology.h>
 
+#define INDEX_064F 0
+#define INDEX_064D 4
+#define INDEX_128F 1
+#define INDEX_128D 5
+#define INDEX_256F 2
+#define INDEX_256D 6
+#define INDEX_512F 3
+#define INDEX_512D 7
+
 int init_flops_metrics();
 
 void reset_flops_metrics();

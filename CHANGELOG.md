@@ -1,4 +1,6 @@
 ### EAR3.4
+- TAGS support included in policies
+- Request dynamic in eard_rapi
 - GPU basic support in EAR library
 - Node powercap and cluster power cap supported
 - papi dependency removed

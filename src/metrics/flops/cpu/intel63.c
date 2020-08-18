@@ -32,6 +32,7 @@ static perf_t perf_512d;
 
 static llong values_064[4];
 static llong values_256[4];
+static uint weights[4];
 
 static llong accum_064f;
 static llong accum_064d;
@@ -66,6 +67,9 @@ state_t flops_intel63_init(ctx_t *c)
 	
 	// Remove warning
 	(void) (s);
+
+	// Copying weights
+	flops_intel63_weights(weights);
 
 	return EAR_SUCCESS;
 }
@@ -126,27 +130,26 @@ state_t flops_intel63_read(ctx_t *c, llong *flops, llong *ops)
 	accum_512d += values_256[3];
 
 	if (ops != NULL) {
-	ops[0] = values_064[0];
-	ops[1] = values_064[1];
-	ops[2] = values_064[2];
-	ops[3] = values_064[3];
-	ops[4] = values_256[0];
-	ops[5] = values_256[1];
-	ops[6] = values_256[2];
-	ops[7] = values_256[3];
+	ops[INDEX_064F] = values_064[0];
+	ops[INDEX_064D] = values_064[1];
+	ops[INDEX_128F] = values_064[2];
+	ops[INDEX_128D] = values_064[3];
+	ops[INDEX_256F] = values_256[0];
+	ops[INDEX_256D] = values_256[1];
+	ops[INDEX_512F] = values_256[2];
+	ops[INDEX_512D] = values_256[3];
 	}
 
 	if (flops != NULL) {
 	*flops  = 0;
-	*flops += (values_064[0] * 1);
-	*flops += (values_064[1] * 1);
-	*flops += (values_064[2] * 4);
-	*flops += (values_064[3] * 2);
-
-	*flops += (values_256[0] * 8);
-	*flops += (values_256[1] * 4);
-	*flops += (values_256[2] * 16);
-	*flops += (values_256[3] * 8);
+	*flops += (values_064[0] * weights[INDEX_064F]);
+	*flops += (values_064[1] * weights[INDEX_064D]);
+	*flops += (values_064[2] * weights[INDEX_128F]);
+	*flops += (values_064[3] * weights[INDEX_128D]);
+	*flops += (values_256[0] * weights[INDEX_256F]);
+	*flops += (values_256[1] * weights[INDEX_256D]);
+	*flops += (values_256[2] * weights[INDEX_512F]);
+	*flops += (values_256[3] * weights[INDEX_512D]);
 	}
 
 	debug("total flops %lld", *flops);
@@ -175,47 +178,26 @@ state_t flops_intel63_count(ctx_t *c, uint *count)
 
 state_t flops_intel63_read_accum(ctx_t *c, llong *ops)
 {
-	ops[0] = accum_064f;
-	ops[1] = accum_064d;
-	ops[2] = accum_128f;
-	ops[3] = accum_128d;
-	ops[4] = accum_256f;
-	ops[5] = accum_256d;
-	ops[6] = accum_512f;
-	ops[7] = accum_512d;
+	ops[INDEX_064F] = accum_064f;
+	ops[INDEX_064D] = accum_064d;
+	ops[INDEX_128F] = accum_128f;
+	ops[INDEX_128D] = accum_128d;
+	ops[INDEX_256F] = accum_256f;
+	ops[INDEX_256D] = accum_256d;
+	ops[INDEX_512F] = accum_512f;
+	ops[INDEX_512D] = accum_512d;
 	return EAR_SUCCESS;
 }
 
-#if 0
-double gflops(ulong total_time, uint total_cores)
-{
-	double gflops;
-	llong total;
-
-	total  = 0;
-	total += accum_064f * 1;
-	total += accum_064d * 1;
-	total += accum_128f * 4;
-	total += accum_128d * 2;
-	total += accum_256f * 8;
-	total += accum_256d * 4;
-	total += accum_512f * 16;
-	total += accum_512d * 8;
-
-	gflops = (double)(total*total_cores)/(double)(total_time*1000);
-	return gflops;
-}
-#endif
-
 state_t flops_intel63_weights(uint *weigths)
 {
-	weigths[0] = 1;
-	weigths[1] = 1;
-	weigths[2] = 4;
-	weigths[3] = 2;
-	weigths[4] = 8;
-	weigths[5] = 4;
-	weigths[6] = 16;
-	weigths[7] = 8;
+	weigths[INDEX_064F] = 1;
+	weigths[INDEX_064D] = 1;
+	weigths[INDEX_128F] = 4;
+	weigths[INDEX_128D] = 2;
+	weigths[INDEX_256F] = 8;
+	weigths[INDEX_256D] = 4;
+	weigths[INDEX_512F] = 16;
+	weigths[INDEX_512D] = 8;
 	return EAR_SUCCESS;
 }

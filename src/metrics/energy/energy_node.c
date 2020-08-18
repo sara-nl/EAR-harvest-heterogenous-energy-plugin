@@ -55,6 +55,36 @@ const char *energy_names[] = {
 	"energy_power_limit"
 };
 
+state_t energy_load(char *energy_obj)
+{
+	state_t ret;
+	if (energy_obj == NULL) {
+		state_return_msg(EAR_BAD_ARGUMENT, 0,
+		 "the energy_obj value cannot be NULL if the plugin is not loaded");
+	}
+  debug("loading shared object '%s'", energy_obj);
+
+  ret = symplug_open(energy_obj, (void **) &energy_ops, energy_names, energy_nops);
+  if (ret!=EAR_SUCCESS) debug("symplug_open() returned %d (%s)", ret, intern_error_str);
+    
+  if (state_fail(ret)) {
+    	return ret;
+  }
+  energy_loaded = 1;
+  return EAR_SUCCESS; 
+
+}
+state_t energy_initialization(ehandler_t *eh)
+{
+	state_t ret;
+	if (!energy_loaded){
+		state_return_msg(EAR_NOT_READY,0,"Energy plugin not loaded");
+	} 
+	ret = energy_ops.init(&eh->context);
+  if (ret!=EAR_SUCCESS) debug("energy_ops.init() returned %d", ret);
+  return ret;
+
+}
 state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 {
 	state_t ret;
@@ -96,6 +126,8 @@ state_t energy_init(cluster_conf_t *conf, ehandler_t *eh)
 
 	return ret;
 }
+
+
 
 state_t energy_dispose(ehandler_t *eh)
 {
