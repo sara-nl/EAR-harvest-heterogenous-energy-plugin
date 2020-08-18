@@ -30,7 +30,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>
@@ -671,16 +671,25 @@ void ear_init()
 		return;
 	}
 #endif
-	debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
+	
+	debug("Executing EAR library IDs(%d,%d)", ear_my_rank, my_id);
+
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
-	debug("system_conf_path %s",system_conf_path);
-	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
-	debug("resched_conf_path %s",resched_conf_path);
+
+	debug("system_conf_path  = %s",system_conf_path);
+	debug("resched_conf_path = %s",resched_conf_path);
+
+	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
+	debug("system_conf  = %p", system_conf);
+	debug("resched_conf = %p", resched_conf);
+	debug("system_conf->id = %u", system_conf->id);
+	debug("create_ID() = %u", create_ID(my_job_id,my_step_id)); // id*100+sid
+
 	/* Updating configuration */
-	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
+	if ((system_conf != NULL) && (resched_conf != NULL) && (system_conf->id == create_ID(my_job_id,my_step_id))){
 		debug("Updating the configuration sent by the EARD");
 		update_configuration();	
 	}else{

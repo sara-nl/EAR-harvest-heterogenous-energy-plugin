@@ -73,6 +73,7 @@ void  __attribute__ ((constructor)) loader()
 		_loaded_con = module_constructor();
 	}
 	// New modules here...
+#if 0
 	char *s = NULL;
 	char *o = NULL;
 
@@ -89,6 +90,7 @@ void  __attribute__ ((constructor)) loader()
 		int result = sched_setaffinity(0, sizeof(cpu_set_t), &mask);
 		verbose(0, "TASK %s: set to CPU %d (%d, %d, %s) %d", s, cpu, result, errno, strerror(errno), mask);
 	}
+#endif
 
 	return;
 }
