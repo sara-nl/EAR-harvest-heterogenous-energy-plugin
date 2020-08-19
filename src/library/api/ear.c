@@ -30,7 +30,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>

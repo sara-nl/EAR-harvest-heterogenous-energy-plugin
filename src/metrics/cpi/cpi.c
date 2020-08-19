@@ -98,6 +98,7 @@ void read_basic_metrics(llong *cycles, llong *insts)
 
 void get_basic_metrics(llong *cycles, llong *insts)
 {
+	return read_basic_metrics(cycles, insts);
 	*cycles = accum_cycles;
 	*insts  = accum_insts;
 }

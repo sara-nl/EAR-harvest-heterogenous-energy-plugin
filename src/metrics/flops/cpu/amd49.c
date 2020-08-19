@@ -15,8 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
-
 #include <common/output/debug.h>
 #include <metrics/common/perf.h>
 #include <metrics/flops/cpu/amd49.h>
