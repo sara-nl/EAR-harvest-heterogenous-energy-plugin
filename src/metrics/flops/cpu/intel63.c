@@ -32,7 +32,7 @@ static perf_t perf_512d;
 
 static llong values_064[4];
 static llong values_256[4];
-static uint weights[4];
+static uint weights[8];
 
 static llong accum_064f;
 static llong accum_064d;
