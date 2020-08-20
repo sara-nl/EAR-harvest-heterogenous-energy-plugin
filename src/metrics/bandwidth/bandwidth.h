@@ -21,7 +21,7 @@
 #include <metrics/bandwidth/cpu/intel_haswell.h>
 
 // All these functions returns the specific funcion errror.
-// pmons.init for init_uncores etc.
+// pmons.init for init_uncores etc. Returns the number of uncore countes detected
 
 /** Init the uncore counters for an specific cpu model number. */
 int init_uncores(int cpu_model);

@@ -38,7 +38,9 @@
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/hardware/hardware_info.h>
+#include <common/hardware/topology.h>
 #include <metrics/bandwidth/cpu/intel_haswell.h>
+#include <metrics/bandwidth/cpu/utils.h>
 
 
 struct uncore_op
@@ -142,6 +144,13 @@ int dispose_uncores()
     debug("dispose_uncores");
    	if (pmons.dispose!=NULL) return pmons.dispose();
 		else return EAR_ERROR;
+}
+
+double compute_mem_bw(unsigned long long *unc, int n, topology_t *t,unsigned long t)
+{
+	unsigned long long total;
+	total=acum_uncores(unc,n);
+	return (double)(total*t->cache_line)/(double)t;
 }
 
 

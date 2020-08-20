@@ -74,3 +74,14 @@ void print_uncores(unsigned long long * DEST,int N)
 	fprintf(stdout,"\n");
 }
 
+unsigned long long acum_uncores(unsigned long long * unc,int n)
+{
+	unsigned long long total=0;
+	int i;
+	for (i=0;i<n; i++){
+		total + = unc[i];
+	}
+	return total;
+}
+
+

@@ -29,4 +29,8 @@ void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N);
 int uncore_are_frozen(unsigned long long * DEST,int N);
 void print_uncores(unsigned long long * DEST,int N);
 
+/* Returns the total number of memory accesses */
+unsigned long long acum_uncores(unsigned long long * unc,int n);
+
+
 #endif
