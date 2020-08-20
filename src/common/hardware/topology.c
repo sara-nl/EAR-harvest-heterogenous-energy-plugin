@@ -45,7 +45,7 @@ state_t topology_select(topology_t *t, topology_t *s, int component, int group, 
 	int i;
 	int j;
 	int c;
-
+;
 	just = (group == TPGroup.merge);
 
 	if (component == TPSelect.l3) {
@@ -184,6 +184,24 @@ state_t topology_copy(topology_t *dst, topology_t *src)
 	return EAR_SUCCESS;
 }
 
+static void topology_extras(topology_t *topo)
+{
+	char path[SZ_NAME_LARGE];
+	char c[2];
+	int fd;
+	
+	// NMI Watchdog
+	sprintf(path, "/proc/sys/kernel/nmi_watchdog");
+
+	if ((fd = open(path, F_RD)) >= 0) {
+		if (read(fd, c, sizeof(char)) > 0) {
+			c[1] = '\0';
+			topo->nmi_watchdog = atoi(c);
+		}
+		close(fd);
+	}
+}
+
 static void topology_cpuid(topology_t *topo)
 {
 	cpuid_regs_t r;
@@ -246,6 +264,22 @@ static void topology_cpuid(topology_t *topo)
 		topo->cache_line_size = r.edx & 0xFF;
 	}
 
+	/* General-purpose/fixed registers */
+    CPUID(r, 0x0a, 0);
+
+	if (topo->vendor == VENDOR_INTEL) {
+		//  Intel Vol. 2A
+		// 	bits   7,0: version of architectural performance monitoring
+		// 	bits  15,8: number of GPR counters per logical processor
+		//	bits 23,16: bit width of GPR counters
+		topo->gpr_count = cpuid_getbits(r.eax, 15,  8);
+		topo->gpr_bits  = cpuid_getbits(r.eax, 23, 16);
+	} else {
+		if (topo->family >= FAMILY_ZEN) {
+			topo->gpr_count = 6;
+			topo->gpr_bits  = 48;
+		}
+	}
 }
 
 state_t topology_init(topology_t *topo)
@@ -299,25 +333,26 @@ state_t topology_init(topology_t *topo)
 		topology_freq_getbase(i, &topo->cpus[i].freq_base);
 	}
 
- int cpu_count;      // Total CPUs including threads.
-    int core_count;     // Total cores (not counting threads).
-    int socket_count;   //
-    int threads_per_core; // Number or threads per core (not the whole system).
-    int smt_enabled;    // Multithreading enabled = 1, disabled = 0.
-    int l3_count;       // Chunks of L3 in the system.
-	
-	debug("cpu_count = %d", topo->cpu_count);
-	debug("socket_count = %d", topo->socket_count);
-	debug("threads_per_core = %d", topo->threads_per_core);
-	debug("smt_enabled = %d", topo->smt_enabled);
-	debug("l3_count = %d", topo->l3_count);
-	debug("vendor = %d", topo->vendor);
-	debug("family = %d", topo->family);
-	debug("model = %d", topo->model);
+	topology_extras(topo);
 
 	// TODO: spaguettis
 	topology_copy(&topo_static, topo);
 
+	return EAR_SUCCESS;
+}
+
+state_t topology_print(topology_t *topo, int fd)
+{
+	dprintf(fd, "cpu_count        : %d\n", topo->cpu_count);
+	dprintf(fd, "socket_count     : %d\n", topo->socket_count);
+	dprintf(fd, "threads_per_core : %d\n", topo->threads_per_core);
+	dprintf(fd, "smt_enabled      : %d\n", topo->smt_enabled);
+	dprintf(fd, "l3_count         : %d\n", topo->l3_count);
+	dprintf(fd, "vendor           : %d\n", topo->vendor);
+	dprintf(fd, "family           : %d\n", topo->family);
+	dprintf(fd, "gpr_count        : %d\n", topo->gpr_count);
+	dprintf(fd, "gpr_bits         : %d\n", topo->gpr_bits);
+	dprintf(fd, "nmi_watchdog     : %d\n", topo->nmi_watchdog);
 	return EAR_SUCCESS;
 }
 

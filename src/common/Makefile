@@ -13,12 +13,12 @@ incl_PERM = 0660
 
 ######## RULES
 
-all: all.components $(libc_BINS)
+all: all.components $(comm_OBJS) $(libc_BINS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-libcommon.a: $(comm_OBJS)
+libcommon.a: $(libc_OBJS)
 	$(AR) rvs $@ $(libc_OBJS)
 
 ######## OPTIONS

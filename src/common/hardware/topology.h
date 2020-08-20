@@ -23,11 +23,11 @@
 // https://en.wikichip.org/wiki/intel/cpuid
 // arch/x86/include/asm/intel-family.h
 #define MODEL_UNIDENTIFIED			-1
-#define MODEL_SANDY_BRIDGE_X		45  //X means Server
+#define MODEL_SANDY_BRIDGE_X		45
 #define MODEL_IVY_BRIDGE_X			62
 #define MODEL_HASWELL_X				63
 #define MODEL_BROADWELL_X			79
-#define MODEL_SKYLAKE_X				85
+#define MODEL_SKYLAKE_X				85	//Arch tested
 #define MODEL_CASCADE_LAKE_X		85
 #define MODEL_COOPER_LAKE_X			85
 #define MODEL_HEWITT_LAKE_X			86  //Broadwell X arch based
@@ -38,7 +38,7 @@
 #define FAMILY_BOBCAT				20
 #define FAMILY_BULLDOZER			21
 #define FAMILY_JAGUAR				22
-#define FAMILY_ZEN					23
+#define FAMILY_ZEN					23	//Arch tested
 #define FAMILY_ZEN3					25
 // Supported vendors
 #define VENDOR_INTEL				0
@@ -93,6 +93,9 @@ typedef struct topology_s
 	int vendor;         // Take a look to top defines.
 	int family;         // Take a look to top defines.
 	int model;          // Take a look to top defines.
+	int gpr_count;		// Number of general purpose registers.
+	int gpr_bits;		// General purpose registers bit width.
+	int nmi_watchdog;	// NMI watdog enabled.
 } topology_t;
 
 state_t topology_select(topology_t *t, topology_t *s, int component, int group, int val);
@@ -102,5 +105,7 @@ state_t topology_copy(topology_t *dst, topology_t *src);
 state_t topology_init(topology_t *topo);
 
 state_t topology_close(topology_t *topo);
+
+state_t topology_print(topology_t *topo, int fd);
 
 #endif

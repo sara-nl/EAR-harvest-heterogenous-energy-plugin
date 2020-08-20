@@ -45,6 +45,7 @@ static llong accum_512d;
 
 state_t flops_intel63_status(topology_t *tp)
 {
+	return EAR_ERROR;
 	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
 		return EAR_SUCCESS;
 	}

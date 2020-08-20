@@ -1,3 +1,6 @@
+export FEAT_MPI_API
+export FEAT_AVX512
+
 export CC
 export CC_FLAGS
 export MPICC
@@ -6,9 +9,6 @@ export MPICC_CFLAGS
 export MPI_BASE
 export MPI_CFLAGS
 export MPI_VERSION
-export PAPI_BASE
-export PAPI_CFLAGS
-export PAPI_LDFLAGS
 export GSL_BASE
 export GSL_CFLAGS
 export GSL_LDFLAGS
@@ -17,6 +17,9 @@ export SLURM_CFLAGS
 export DB_BASE
 export DB_CFLAGS
 export DB_LDFLAGS
+export PAPI_BASE
+export PAPI_CFLAGS
+export PAPI_LDFLAGS
 export CUDA_BASE
 
 export ROOTDIR
@@ -26,9 +29,6 @@ export ETCDIR
 export TMPDIR
 export DOCDIR
 
-export FEAT_AVX512
-export VER_MAJOR
-export VER_MINOR
 export CHOWN_USR
 export CHOWN_GRP
 export CONSTANTS
