@@ -27,6 +27,11 @@
 #define RAPL_PACKAGE1       3
 #define RAPL_MSR_UNITS		1000000000.0
 
+#define RAPL_ENERGY_EV        2
+#define RAPL_DRAM_EV        0
+#define RAPL_PCK_EV         1
+
+
 /** Opens the necessary fds to read the MSR registers. Returns 0 on success
 * 	and -1 on error. */
 int init_rapl_msr(int *fd_map);

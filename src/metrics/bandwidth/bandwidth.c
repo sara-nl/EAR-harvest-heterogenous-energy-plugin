@@ -32,6 +32,8 @@
  * When an error occurs, those calls returns -1.
  */
 
+
+// #define SHOW_DEBUGS 1
 #include <limits.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
@@ -179,8 +181,12 @@ ullong acum_diff(ullong *end, ullong *init,int N)
   if (dev_count == 0) {
     return_msg(EAR_ERROR, Generr.api_uninitialized);
   }
-    for (i = 0; i < dev_count; ++i) {
-    acum += uncore_ullong_diff_overflow(init[i],end[i]);
+  for (i = 0; i < dev_count; ++i) {
+		if (end[i] >= init[i]){
+			acum += end[i] -init[i];
+		}else{
+    	acum += uncore_ullong_diff_overflow(init[i],end[i]);
+		}
   }
   return acum;
 }
@@ -195,8 +201,8 @@ int compute_mem_bw(ullong *cas2, ullong *cas1, double *bps, double t,int N)
 	}
 	topology_init(&topo);
 	accum = acum_diff(cas2,cas1,N);
-	*bps = (double) accum;
-	*bps = ((*bps)* topo.cache_line_size)/(t*BW_GB);
+	debug("Total uncore events %llu cache line size %u\n",accum,topo.cache_line_size);
+	*bps = (double)(accum * topo.cache_line_size)/(t*BW_GB);
 	return EAR_SUCCESS;
 }
 
