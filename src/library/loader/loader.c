@@ -16,6 +16,9 @@
 */
 
 #define _GNU_SOURCE
+#include <sched.h>
+
+
 #include <errno.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -56,7 +59,6 @@ static int init()
 
 void  __attribute__ ((constructor)) loader()
 {
-
 	// Initialization
 	if (!init()) {
 		verbose(4, "LOADER: escaping the application '%s'", program_invocation_name);
@@ -71,6 +73,24 @@ void  __attribute__ ((constructor)) loader()
 		_loaded_con = module_constructor();
 	}
 	// New modules here...
+#if 0
+	char *s = NULL;
+	char *o = NULL;
+
+	if ((s = getenv("SLURM_LOCALID")) != NULL && (o = getenv("SLURM_JEJE")) != NULL)
+	{
+		cpu_set_t mask;
+		int cpu = atoi(s);
+		int off = atoi(o); 
+
+		cpu = cpu * off;
+		CPU_ZERO(&mask);
+		CPU_SET(cpu, &mask);
+		
+		int result = sched_setaffinity(0, sizeof(cpu_set_t), &mask);
+		verbose(0, "TASK %s: set to CPU %d (%d, %d, %s) %d", s, cpu, result, errno, strerror(errno), mask);
+	}
+#endif
 
 	return;
 }

@@ -195,11 +195,14 @@ state_t nm_arg(struct ipmi_intf *intf, struct ipmi_data *out)
 				debug("Error rsp null\n");
         return EAR_ERROR;
   };
-  if (rsp->ccode > 0) {
-        out->mode=-1;
-				debug("error code>0\n");
-        return EAR_ERROR;
-        };
+
+#if 1
+	if (rsp->ccode > 0) {
+		out->mode=-1;
+		debug("error code greater than zero (%d)", rsp->ccode);
+		return EAR_ERROR;
+	}
+#endif
 
   out->data_len=rsp->data_len;
   int i;

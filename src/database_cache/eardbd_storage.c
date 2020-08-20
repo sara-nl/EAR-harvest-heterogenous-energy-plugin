@@ -486,16 +486,19 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	// Storage
 	if (type == CONTENT_TYPE_APM)
 	{
+		print_application_fd_binary(0, (application_t *) content);
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSM);
 	}
 	else if (type == CONTENT_TYPE_APN)
 	{
+		print_application_fd_binary(0, (application_t *) content);
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 		   &sam_index[index], content, typ_sizof[index], SYNC_APPSN);
 	}
 	else if (type == CONTENT_TYPE_APL)
 	{
+		print_application_fd_binary(0, (application_t *) content);
 		storage_sample_add(typ_alloc[index], sam_inmax[index],
 			&sam_index[index], content, typ_sizof[index], SYNC_APPSL);
 	}

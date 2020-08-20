@@ -18,6 +18,7 @@
 #ifndef EAR_EAR_METRICS_H
 #define EAR_EAR_METRICS_H
 
+#include <common/hardware/topology.h>
 #include <common/types/application.h>
 
 /** Returns the current time in usecs */
@@ -27,7 +28,7 @@ long long metrics_time();
 long long metrics_usecs_diff(long long end, long long init);
 
 /** Initializes local metrics as well as daemon's metrics */
-int metrics_init();
+int metrics_init(topology_t *topo);
 
 /** Stops metrics collection and computes the accumulated data*/
 void metrics_dispose(signature_t *metrics, ulong procs);

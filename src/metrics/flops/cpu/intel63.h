@@ -18,27 +18,26 @@
 #ifndef METRICS_FLOPS_INTEL63
 #define METRICS_FLOPS_INTEL63
 
-#include <metrics/common/perf.h>
 #include <metrics/flops/flops.h>
 
-int init_flops_metrics();
+state_t flops_intel63_status(topology_t *tp);
 
-void reset_flops_metrics();
+state_t flops_intel63_init(ctx_t *c);
 
-void start_flops_metrics();
+state_t flops_intel63_dispose(ctx_t *c);
 
-void read_flops_metrics(long long *total_flops, long long *f_operations);
+state_t flops_intel63_reset(ctx_t *c);
 
-void stop_flops_metrics(long long *total_flops, long long *f_operations);
+state_t flops_intel63_start(ctx_t *c);
 
-int get_number_fops_events();
+state_t flops_intel63_read(ctx_t *c, llong *flops, llong *ops);
 
-void get_total_fops(long long *metrics);
+state_t flops_intel63_stop(ctx_t *c, llong *flops, llong *ops);
 
-double gflops(ulong total_timei, uint total_cores);
+state_t flops_intel63_count(ctx_t *c, uint *count);
 
-void get_weigth_fops_instructions(int *weigth_vector);
+state_t flops_intel63_read_accum(ctx_t *c, llong *metrics);
 
-void print_gflops(long long total_inst, ulong total_time, uint total_cores);
+state_t flops_intel63_weights(uint *weigths);
 
 #endif

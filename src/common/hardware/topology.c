@@ -22,6 +22,7 @@
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/system/file.h>
+#include <common/output/debug.h>
 #include <common/hardware/cpuid.h>
 #include <common/hardware/topology.h>
 #include <common/hardware/topology_frequency.h>
@@ -185,27 +186,66 @@ state_t topology_copy(topology_t *dst, topology_t *src)
 
 static void topology_cpuid(topology_t *topo)
 {
-	int buffer[4];
 	cpuid_regs_t r;
+	int buffer[4];
 
 	/* Vendor */
 	CPUID(r,0,0);
 	buffer[0] = r.ebx;
 	buffer[1] = r.edx;
 	buffer[2] = r.ecx;
-	topo->vendor = !(buffer[0] == 1970169159);
+	topo->vendor = !(buffer[0] == 1970169159); // Intel
 	
 	/* Family */
 	CPUID(r,1,0);
 	buffer[0] = cpuid_getbits(r.eax, 11,  8);
-	buffer[1] = cpuid_getbits(r.eax, 27, 20);
-	topo->family = (buffer[1] << 4) | buffer[0];
+	buffer[1] = cpuid_getbits(r.eax, 27, 20); // extended
+	buffer[2] = buffer[0]; // auxiliar
+	
+	if (buffer[0] == 0x0F) {
+		topo->family = buffer[1] + buffer[0];
+	} else {
+		topo->family = buffer[0];
+	}
 
 	/* Model */
 	CPUID(r,1,0);
 	buffer[0] = cpuid_getbits(r.eax,  7,  4);
-	buffer[1] = cpuid_getbits(r.eax, 19, 16);
-	topo->model = (buffer[1] << 4) | buffer[0];
+	buffer[1] = cpuid_getbits(r.eax, 19, 16); // extended
+	
+	if (buffer[2] == 0x0F || (buffer[2] == 0x06 && topo->vendor == VENDOR_INTEL)) {
+		topo->model = (buffer[1] << 4) | buffer[0];
+	} else {
+		topo->model = buffer[0];
+	}
+
+	/* Cache line size */
+	uint max_level = 0;
+	uint cur_level = 0;
+	uint line_size = 0;
+	int index      = 0;
+
+	if (topo->vendor == VENDOR_INTEL)
+	{
+		while (1)
+		{
+			CPUID(r,4,index);
+
+			if (!(r.eax & 0x0F)) break;
+			cur_level = cpuid_getbits(r.eax, 7, 5);
+
+			if (cur_level >= max_level) {
+				topo->cache_line_size = cpuid_getbits(r.ebx, 11, 0) + 1;
+				max_level = cur_level;
+			}
+
+			index = index + 1;
+		}
+	} else {
+		CPUID(r,0x80000005,0);
+		topo->cache_line_size = r.edx & 0xFF;
+	}
+
 }
 
 state_t topology_init(topology_t *topo)
@@ -222,6 +262,7 @@ state_t topology_init(topology_t *topo)
 	topo->core_count = 0;
 	topo->socket_count = 0;
 	topo->threads_per_core = 1;
+	topo->cache_line_size = 0;
 	topo->smt_enabled = 0;
 	topo->l3_count = 0;
 
@@ -257,6 +298,22 @@ state_t topology_init(topology_t *topo)
 		// Base frequency	
 		topology_freq_getbase(i, &topo->cpus[i].freq_base);
 	}
+
+ int cpu_count;      // Total CPUs including threads.
+    int core_count;     // Total cores (not counting threads).
+    int socket_count;   //
+    int threads_per_core; // Number or threads per core (not the whole system).
+    int smt_enabled;    // Multithreading enabled = 1, disabled = 0.
+    int l3_count;       // Chunks of L3 in the system.
+	
+	debug("cpu_count = %d", topo->cpu_count);
+	debug("socket_count = %d", topo->socket_count);
+	debug("threads_per_core = %d", topo->threads_per_core);
+	debug("smt_enabled = %d", topo->smt_enabled);
+	debug("l3_count = %d", topo->l3_count);
+	debug("vendor = %d", topo->vendor);
+	debug("family = %d", topo->family);
+	debug("model = %d", topo->model);
 
 	// TODO: spaguettis
 	topology_copy(&topo_static, topo);

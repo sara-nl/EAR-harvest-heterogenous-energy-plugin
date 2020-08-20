@@ -26,12 +26,12 @@
 #include <common/types/log_eard.h>
 #include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
-#include <metrics/frequency/cpu.h>
-#include <metrics/energy/energy_cpu.h>
+#include <common/hardware/hardware_info.h>
+#include <metrics/gpu/gpu.h>
+#include <metrics/energy/cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
-#include <metrics/gpu/gpu.h>
-#include <common/hardware/hardware_info.h>
+#include <metrics/frequency/cpu.h>
 #include <daemon/local_api/eard_conf_api.h>
 #include <daemon/remote_api/dynamic_configuration.h>
 #include <daemon/power_monitor.h>

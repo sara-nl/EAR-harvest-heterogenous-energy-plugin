@@ -15,8 +15,10 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
+#include <metrics/common/perf.h>
 #include <metrics/flops/cpu/intel63.h>
 
 static perf_t perf_064f;
@@ -28,15 +30,9 @@ static perf_t perf_256d;
 static perf_t perf_512f;
 static perf_t perf_512d;
 
-static llong values_flops[8];
-static llong values_064f;
-static llong values_064d;
-static llong values_128f;
-static llong values_128d;
-static llong values_256f;
-static llong values_256d;
-static llong values_512f;
-static llong values_512d;
+static llong values_064[4];
+static llong values_256[4];
+static uint weights[4];
 
 static llong accum_064f;
 static llong accum_064d;
@@ -47,7 +43,15 @@ static llong accum_256d;
 static llong accum_512f;
 static llong accum_512d;
 
-int init_flops_metrics()
+state_t flops_intel63_status(topology_t *tp)
+{
+	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
+		return EAR_SUCCESS;
+	}
+	return EAR_ERROR;
+}
+
+state_t flops_intel63_init(ctx_t *c)
 {
 	state_t s;
 
@@ -64,10 +68,18 @@ int init_flops_metrics()
 	// Remove warning
 	(void) (s);
 
-	return 1;
+	// Copying weights
+	flops_intel63_weights(weights);
+
+	return EAR_SUCCESS;
 }
 
-void reset_flops_metrics()
+state_t flops_intel63_dispose(ctx_t *c)
+{
+	return EAR_SUCCESS;
+}
+
+state_t flops_intel63_reset(ctx_t *c)
 {
 	state_t s;
 
@@ -76,9 +88,11 @@ void reset_flops_metrics()
 	
 	// Remove warning
 	(void) (s);
+
+	return EAR_SUCCESS;
 }
 
-void start_flops_metrics()
+state_t flops_intel63_start(ctx_t *c)
 {
 	state_t s;
 
@@ -87,79 +101,63 @@ void start_flops_metrics()
 	
 	// Remove warning
 	(void) (s);
+
+	return EAR_SUCCESS;
 }
 
-void read_flops_metrics(long long *total_flops, long long *f_operations)
+state_t flops_intel63_read(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
-	s = perf_read(&perf_064f, &values_flops[0]);
-	s = perf_read(&perf_256f, &values_flops[4]);
-
-	values_064f = values_flops[0];
-	values_064d = values_flops[1];
-	values_128f = values_flops[2];
-	values_128d =	values_flops[3];
-	values_256f = values_flops[4];
-	values_256d = values_flops[5];
-	values_512f = values_flops[6];
-	values_512d = values_flops[7];
+	s = perf_read(&perf_064f, values_064);
+	s = perf_read(&perf_256f, values_256);
 	
 	// Remove warning
 	(void) (s);
 
-	debug("read 064 f/d %lld/%lld", values_064f, values_064d);
-	debug("read 128 f/d %lld/%lld", values_128f, values_128d);
-	debug("read 256 f/d %lld/%lld", values_256f, values_256d);
-	debug("read 512 f/d %lld/%lld", values_512f, values_512d);
+	debug("read 064 f/d %lld/%lld", values_064[0], values_064[1]);
+	debug("read 128 f/d %lld/%lld", values_064[2], values_064[3]);
+	debug("read 256 f/d %lld/%lld", values_256[0], values_256[1]);
+	debug("read 512 f/d %lld/%lld", values_256[2], values_256[3]);
 
-	accum_064f += values_064f;
-	accum_064d += values_064d;
-	accum_128f += values_128f;
-	accum_128d += values_128d;
-	accum_256f += values_256f;
-	accum_256d += values_256d;
-	accum_512f += values_512f;
-	accum_512d += values_512d;
+	accum_064f += values_064[0];
+	accum_064d += values_064[1];
+	accum_128f += values_064[2];
+	accum_128d += values_064[3];
+	accum_256f += values_256[0];
+	accum_256d += values_256[1];
+	accum_512f += values_256[2];
+	accum_512d += values_256[3];
 
-	#if 0
-	f_operations[0] = values_064f;
-	f_operations[1] = values_064d;
-	f_operations[2] = values_128f;
-	f_operations[3] = values_128d;
-	f_operations[4] = values_256f;
-	f_operations[5] = values_256d;
-	f_operations[6] = values_512f;
-	f_operations[7] = values_512d;
-	#endif
-	memcpy(f_operations,values_flops,sizeof(llong)*8);
+	if (ops != NULL) {
+	ops[INDEX_064F] = values_064[0];
+	ops[INDEX_064D] = values_064[1];
+	ops[INDEX_128F] = values_064[2];
+	ops[INDEX_128D] = values_064[3];
+	ops[INDEX_256F] = values_256[0];
+	ops[INDEX_256D] = values_256[1];
+	ops[INDEX_512F] = values_256[2];
+	ops[INDEX_512D] = values_256[3];
+	}
 
-	*total_flops  = 0;
-	/* Warning: Jordi was using 2, based on papi weigths, modified to 1 */
-	#if 0
-	*total_flops += (accum_064f * 1);
-	*total_flops += (accum_064d * 1);
-	*total_flops += (accum_128f * 4);
-	*total_flops += (accum_128d * 2);
-	*total_flops += (accum_256f * 8);
-	*total_flops += (accum_256d * 4);
-	*total_flops += (accum_512f * 16);
-	*total_flops += (accum_512d * 8);
-	#endif
-	*total_flops += (values_064f * 1);
-  *total_flops += (values_064d * 1);
-  *total_flops += (values_128f * 4);
-  *total_flops += (values_128d * 2);
-  *total_flops += (values_256f * 8);
-  *total_flops += (values_256d * 4);
-  *total_flops += (values_512f * 16);
-  *total_flops += (values_512d * 8);
+	if (flops != NULL) {
+	*flops  = 0;
+	*flops += (values_064[0] * weights[INDEX_064F]);
+	*flops += (values_064[1] * weights[INDEX_064D]);
+	*flops += (values_064[2] * weights[INDEX_128F]);
+	*flops += (values_064[3] * weights[INDEX_128D]);
+	*flops += (values_256[0] * weights[INDEX_256F]);
+	*flops += (values_256[1] * weights[INDEX_256D]);
+	*flops += (values_256[2] * weights[INDEX_512F]);
+	*flops += (values_256[3] * weights[INDEX_512D]);
+	}
 
-	
-	debug("total flops %lld", *total_flops);
+	debug("total flops %lld", *flops);
+
+	return EAR_SUCCESS;
 }
 
-void stop_flops_metrics(long long *total_flops, long long *f_operations)
+state_t flops_intel63_stop(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
@@ -169,59 +167,37 @@ void stop_flops_metrics(long long *total_flops, long long *f_operations)
 	// Remove warning
 	(void) (s);
 
-	read_flops_metrics(total_flops, f_operations);
+	return flops_intel63_read(c, flops, ops);
 }
 
-int get_number_fops_events()
+state_t flops_intel63_count(ctx_t *c, uint *count)
 {
-	return 8;
+	*count = 8;
+	return 0;
 }
 
-void get_total_fops(long long *metrics)
+state_t flops_intel63_read_accum(ctx_t *c, llong *ops)
 {
-	metrics[0] = accum_064f;
-	metrics[1] = accum_064d;
-	metrics[2] = accum_128f;
-	metrics[3] = accum_128d;
-	metrics[4] = accum_256f;
-	metrics[5] = accum_256d;
-	metrics[6] = accum_512f;
-	metrics[7] = accum_512d;
+	ops[INDEX_064F] = accum_064f;
+	ops[INDEX_064D] = accum_064d;
+	ops[INDEX_128F] = accum_128f;
+	ops[INDEX_128D] = accum_128d;
+	ops[INDEX_256F] = accum_256f;
+	ops[INDEX_256D] = accum_256d;
+	ops[INDEX_512F] = accum_512f;
+	ops[INDEX_512D] = accum_512d;
+	return EAR_SUCCESS;
 }
 
-double gflops(ulong total_time, uint total_cores)
+state_t flops_intel63_weights(uint *weigths)
 {
-	double gflops;
-	llong total;
-
-	total  = 0;
-	
-	total += accum_064f * 1;
-	total += accum_064d * 1;
-	total += accum_128f * 4;
-	total += accum_128d * 2;
-	total += accum_256f * 8;
-	total += accum_256d * 4;
-	total += accum_512f * 16;
-	total += accum_512d * 8;
-
-	gflops = (double)(total*total_cores)/(double)(total_time*1000);
-	return gflops;
-}
-
-void get_weigth_fops_instructions(int *weigth_vector)
-{
-	 weigth_vector[0] = 1;
-	 weigth_vector[1] = 1;
-	 weigth_vector[2] = 4;
-	 weigth_vector[3] = 2;
-	 weigth_vector[4] = 8;
-	 weigth_vector[5] = 4;
-	 weigth_vector[6] = 16;
-	 weigth_vector[7] = 8;
-}
-
-void print_gflops(long long total_inst, ulong total_time, uint total_cores)
-{
-	printf("print_gflops\n");
+	weigths[INDEX_064F] = 1;
+	weigths[INDEX_064D] = 1;
+	weigths[INDEX_128F] = 4;
+	weigths[INDEX_128D] = 2;
+	weigths[INDEX_256F] = 8;
+	weigths[INDEX_256D] = 4;
+	weigths[INDEX_512F] = 16;
+	weigths[INDEX_512D] = 8;
+	return EAR_SUCCESS;
 }

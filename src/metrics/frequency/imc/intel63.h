@@ -20,6 +20,8 @@
 
 #include <metrics/frequency/imc.h>
 
+state_t ifreq_intel63_status(topology_t *tp);
+
 state_t ifreq_intel63_init(topology_t *tp);
 
 state_t ifreq_intel63_dispose();
