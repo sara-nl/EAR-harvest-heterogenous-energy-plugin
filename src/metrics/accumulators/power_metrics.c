@@ -47,7 +47,6 @@ static int 		*pm_fds_rapl;
 #if USE_GPUS
 static gpu_t	*gpu_diff;
 static ctx_t	 gpu_context;
-static uint		 gpu_loop_ms;
 static uint		 gpu_sel_model;
 static uint		 gpu_num;
 #endif

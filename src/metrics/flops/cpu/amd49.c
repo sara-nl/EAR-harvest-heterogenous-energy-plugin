@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
 #include <metrics/common/perf.h>
 #include <metrics/flops/cpu/amd49.h>
@@ -44,10 +46,12 @@ const ulong cmd_avx_flops = 0x0000000000000f03; // Flops event
 const ulong cmd_avx_merge = 0x0000000f000000ff; // Merge event
 
 static perf_t perf_evn0;
+#if 0
 static perf_t perf_mer1;
 static perf_t perf_mer2;
 static perf_t perf_evn3;
 static perf_t perf_mer4;
+#endif
 
 // The counters are 48 bit values. But it can be added the MergeEvent
 // counter which supposedly expands the counters to 64 bits.
@@ -66,12 +70,19 @@ state_t flops_amd49_init(ctx_t *c)
 {
 	state_t s;
 
+	// Why we are then counting the instructions instead the pure FLOPS?
 	//
-	s = perf_open(&perf_evn0, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_flops);
+	// Because 
+	s = perf_open(&perf_evn0, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_insts);
+	
+	//
+	#if 0
+	s = perf_opex(&perf_evn0, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_flops, pf_exc);
 	s = perf_open(&perf_mer1, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
 	s = perf_open(&perf_mer2, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
 	s = perf_open(&perf_evn3, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_flops);
 	s = perf_open(&perf_mer4, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
+	#endif
 
 	// Remove warning
 	(void) (s);

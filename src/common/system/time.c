@@ -64,11 +64,6 @@ ullong timestamp_diff(timestamp *ts2, timestamp *ts1, ullong time_unit)
 	return stamp;
 }
 
-void print_timestamp(timestamp *ts)
-{
-	fprintf(stdout,"Secs %llu nsec %llu\n",ts->tv_sec,ts->tv_nsec);
-}
-
 ullong timestamp_getconvert(ullong time_unit)
 {
 	timestamp_t ts;
@@ -81,4 +76,9 @@ void timestamp_revert(timestamp *ts, ullong *tr, ullong time_unit)
     ullong aux_ns = (*tr) * time_unit;
     ts->tv_sec    = aux_ns / 1000000000; 
     ts->tv_nsec   = aux_ns - (ts->tv_sec * 1000000000);
+}
+
+void print_timestamp(timestamp *ts)
+{
+	fprintf(stdout,"Secs %ld nsec %ld\n", ts->tv_sec,ts->tv_nsec);
 }
