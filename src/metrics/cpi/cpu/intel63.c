@@ -40,11 +40,9 @@ state_t cpi_intel63_init(ctx_t *c)
 	debug("function");
 	state_t s;
 	
-#if 0
 	if (initialized) {
 		return EAR_SUCCESS;
 	}
-#endif
 	if (xtate_fail(s, perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS))) {
 		debug("perf_open returned %d (%s)", s, state_msg);
 		return s;
@@ -56,12 +54,6 @@ state_t cpi_intel63_init(ctx_t *c)
 	}
 
 	initialized = 1;
-#if 0
-	llong cycles;
-	llong insts;
-	s = cpi_intel63_read(c, &cycles, &insts);
-	debug("s = %d", s);
-#endif 
 	
 	return EAR_SUCCESS;
 }

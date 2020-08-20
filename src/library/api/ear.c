@@ -833,7 +833,6 @@ void ear_init()
 		}
   	#endif
 
-#if 0
 		if (is_affinity_set(&arch_desc.top,getpid(),&ear_affinity_is_set,&ear_process_mask)!=EAR_SUCCESS){
 			error("Checking the affinity mask");
 		}else{
@@ -843,13 +842,10 @@ void ear_init()
 				verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);
 			}
 		}
-#endif
 	}
 
-#if 0
 	ear_affinity_is_set=1;
 	print_affinity_mask(&arch_desc.top);
-#endif
 	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
