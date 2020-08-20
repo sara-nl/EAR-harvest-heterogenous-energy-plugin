@@ -51,9 +51,6 @@
 #define MSR_AMD_CORE_ENERGY_STATUS		0xC001029A
 
 //
-#define RAPL_ENERGY_EV				2
-#define RAPL_DRAM_EV				0
-#define RAPL_PCK_EV					1
 
 static pthread_mutex_t rapl_msr_lock = PTHREAD_MUTEX_INITIALIZER;
 static int rapl_msr_instances = 0;

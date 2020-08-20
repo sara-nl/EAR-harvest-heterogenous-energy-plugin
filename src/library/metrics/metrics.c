@@ -32,6 +32,7 @@
 #include <common/hardware/hardware_info.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
+#include <metrics/bandwidth/bandwidth.h>
 #include <metrics/cpi/cpi.h>
 #include <metrics/flops/flops.h>
 #include <metrics/energy/energy_node_lib.h>

@@ -46,10 +46,21 @@ int compute_uncores(ullong *cas2, ullong *cas1, double *bytes, double units);
 
 int alloc_array_uncores(ullong **array);
 
-void copy_uncores(ullong *dest, ullong *src, int n);
 
 int uncore_are_frozen(ullong *dest, int n);
 
-void diff_uncores(ullong *diff, ullong *end, ullong *begin, int n);
+/* All these functions are unprivileged */
+
+
+/* Given two uncore counter readings and a period of time computes the memory bandwith in GS/s. T is supposed to be in secs. N is the number of uncore counters */
+int compute_mem_bw(ullong *cas2, ullong *cas1, double *bps, double t,int N);
+void copy_uncores(ullong *dest, ullong *src, int n);
+ullong uncore_ullong_diff_overflow(ullong begin, ullong end);
+void diff_uncores(ullong * diff,ullong *end,ullong  *begin,int N);
+void print_uncores(unsigned long long * DEST,int N);
+void uncores_to_str(unsigned long long * DEST,int N,char *txt,int len);
+int alloc_uncores(ullong **array,int N);
+
+
 
 #endif

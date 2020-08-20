@@ -32,6 +32,8 @@
  * When an error occurs, those calls returns -1.
  */
 
+
+// #define SHOW_DEBUGS 1
 #include <limits.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
@@ -157,21 +159,67 @@ int stop_uncores(ullong *cas)
 	preturn (ops.stop, c, cas);
 }
 
-int compute_uncores(ullong *cas2, ullong *cas1, double *bps, double units)
+ullong acum_uncores(ullong *cas,int N)
 {
-	int dev_count = count_uncores();
+	ullong acum=0;
+	int i;
+  int dev_count = N;
+  if (dev_count == 0) {
+    return_msg(EAR_ERROR, Generr.api_uninitialized);
+  }
+	  for (i = 0; i < dev_count; ++i) {
+    acum += cas[i] ;
+  }
+	return acum;
+}
+
+ullong acum_diff(ullong *end, ullong *init,int N)
+{
+  ullong acum=0;
+  int i;
+  int dev_count = N;
+  if (dev_count == 0) {
+    return_msg(EAR_ERROR, Generr.api_uninitialized);
+  }
+  for (i = 0; i < dev_count; ++i) {
+		if (end[i] >= init[i]){
+			acum += end[i] -init[i];
+		}else{
+    	acum += uncore_ullong_diff_overflow(init[i],end[i]);
+		}
+  }
+  return acum;
+}
+
+int compute_mem_bw(ullong *cas2, ullong *cas1, double *bps, double t,int N)
+{
+	int dev_count = N;
 	ullong accum;
 	int i;
 	if (dev_count == 0) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
-	for (i = 0, accum = 0; i < dev_count; ++i) {
-		accum += cas2[i] - cas1[i];
+	topology_init(&topo);
+	accum = acum_diff(cas2,cas1,N);
+	debug("Total uncore events %llu cache line size %u\n",accum,topo.cache_line_size);
+	*bps = (double)(accum * topo.cache_line_size)/(t*BW_GB);
+	return EAR_SUCCESS;
+}
+
+int compute_uncores(ullong *cas2, ullong *cas1, double *bps, double units)
+{
+	int dev_count = count_uncores();
+	ullong accum=0;
+	int i;
+	if (dev_count == 0) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
+	accum = acum_diff(cas2,cas1,dev_count);
 	*bps = (double) accum;
 	*bps = ((*bps)*64.0) / (units*4.0);
 	return EAR_SUCCESS;
 }
+
 
 int alloc_array_uncores(ullong **array)
 {
@@ -183,7 +231,19 @@ int alloc_array_uncores(ullong **array)
 	return EAR_SUCCESS;
 }
 
-static ullong uncore_ullong_diff_overflow(ullong begin, ullong end)
+int alloc_uncores(ullong **array,int N)
+{
+  int dev_count = N;
+  if (dev_count == 0) {
+    return_msg(EAR_ERROR, Generr.api_uninitialized);
+  }
+  *array = calloc(dev_count, sizeof(ullong));
+  return EAR_SUCCESS;
+
+}
+
+
+ullong uncore_ullong_diff_overflow(ullong begin, ullong end)
 {
 	ullong max_64 = ULLONG_MAX;
 	ullong max_48 = 281474976710656; //2^48
@@ -225,3 +285,25 @@ int uncore_are_frozen(ullong * DEST,int N)
 	}
 	return frozen;
 }
+
+void print_uncores(unsigned long long * DEST,int N)
+{
+  int i,frozen=1;
+  for (i=0;i<N;i++){
+		fprintf(stdout,"Counter %d= %llu \t",i,DEST[i]);
+	}
+	fprintf(stdout,"\n");
+}
+
+void uncores_to_str(unsigned long long * DEST,int N,char *txt,int len)
+{
+	int i;
+	char coun[128];
+	txt[0]='\0';
+  for (i=0;i<N;i++){
+		sprintf(coun,"cas[%d]= %llu ",i,DEST[i]);
+		if ((strlen(txt) +  strlen(coun)) > len) return;
+		strcat(txt,coun);	
+  }
+}
+

@@ -36,4 +36,8 @@ state_t bwidth_amd49_stop(ctx_t *c, ullong *cas);
 
 state_t bwidth_amd49_read(ctx_t *c, ullong *cas);
 
+/* Returns the total number of memory accesses */
+unsigned long long acum_uncores(unsigned long long * unc,int n);
+
+
 #endif

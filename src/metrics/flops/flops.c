@@ -115,7 +115,7 @@ int get_number_fops_events()
 {
 	int count = 0;
 	if (ops.count != NULL) {
-		ops.count(c, &count);
+		ops.count(c, (unsigned int *)&count);
 	}
 	return count;
 }
@@ -130,6 +130,6 @@ void get_total_fops(llong *flops)
 void get_weigth_fops_instructions(int *weigths)
 {
 	if (ops.weights != NULL) {
-		ops.weights(weigths);
+		ops.weights((unsigned int *)weigths);
 	}
 }
