@@ -1,4 +1,4 @@
-CFLAGS  = -fPIC -O2 -I$(SRCDIR) -DMPI=$(FEAT_MPI_API)
+CFLAGS  = -fPIC -O2 -I$(SRCDIR)
 LDFLAGS = -shared -ldl -lm -lpthread
 
 ifeq ($(FEAT_MPI_API), 0)
@@ -7,8 +7,15 @@ MPICC_FLAGS = $(CC_FLAGS)
 MPI_VERSION = seq
 endif
 
+ifeq ($(FEAT_MPI_API), 1)
+MPI_CFLAGS += -DMPI=1
+else
+MPI_CFLAGS  = -DMPI=0
+endif
+
 export MPICC
 export MPICC_FLAGS
+export MPI_CFLAGS
 export CFLAGS
 
 ########
@@ -50,7 +57,6 @@ core_OBJS = \
 ifeq ($(FEAT_MPI_API), 1)
 mpix_OBJS = \
     api/ear_mpi.o \
-    api/ear_default.o \
     api/mpic.o \
     api/mpif.o \
     common/global_comm.o
@@ -77,12 +83,14 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'api'        $* || exit
 	@ $(MAKE) -C 'common'     $* || exit
 	@ $(MAKE) -C 'dynais'     $* || exit
-	@ $(MAKE) -C 'loader'     $* || exit
 	@ $(MAKE) -C 'metrics'    $* || exit
 	@ $(MAKE) -C 'models'     $* || exit
 	@ $(MAKE) -C 'policies'   $* || exit
 	@ $(MAKE) -C 'states'     $* || exit
 	@ $(MAKE) -C 'tracer'     $* || exit
+ifeq ($(FEAT_MPI_API), 1)
+	@ $(MAKE) -C 'loader'     $* || exit
+endif
 
 ######## DEPENDENCIES
 

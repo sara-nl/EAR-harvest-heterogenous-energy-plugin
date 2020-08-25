@@ -2,10 +2,14 @@
 
 OBJS = \
     ear.o \
+    ear_seq.o
+
+ifeq ($(FEAT_MPI_API), 1)
+OBJS = \
     ear_mpi.o \
-    ear_seq.o \
     mpic.o \
-    mpif.o \
+    mpif.o
+endif
 
 BINS = libear_seq.so
 
