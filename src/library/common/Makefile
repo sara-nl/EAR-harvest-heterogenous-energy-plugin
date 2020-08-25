@@ -1,4 +1,4 @@
-GCFLAGS = $(CFLAGS) $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
+########
 
 OBJS = library_shared_data.o
 
@@ -12,10 +12,10 @@ endif
 all: $(OBJS)
 
 %.o: %.c %.h
-	$(MPICC) $(CC_FLAGS) $(GCFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
 
-library_shared_data.o:library_shared_data.c 
-	$(MPICC) $(MPICC_FLAGS) $(GCFLAGS) -c $< 	
+global_comm.o: global_comm.c global_comm.h 
+	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 

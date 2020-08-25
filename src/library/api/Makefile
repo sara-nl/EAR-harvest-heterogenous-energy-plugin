@@ -1,5 +1,3 @@
-API_CFLAGS = $(CFLAGS) $(MPI_CFLAGS) 
-
 ######## FILES
 
 OBJS = \
@@ -15,14 +13,11 @@ BINS = libear_seq.so
 
 all: $(OBJS) $(BINS)
 
-ear.o: ear.c ear.h
-	$(CC) $(API_CFLAGS) -c $<	
-
 %.o: %.c %.h
-	$(CC) $(API_CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
 
 libear_seq.so: ear_seq.o
-	$(CC) -shared -o libear_seq.so ear_seq.o -ldl
+	$(CC) $(CC_FLAGS) -shared -o $@ $^ -ldl
 
 ######## OPTIONS 
 

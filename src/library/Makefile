@@ -1,5 +1,5 @@
-CFLAGS  = -fPIC -O3 -I$(SRCDIR) -DMPI=$(FEAT_MPI_API)
-LDFLAGS = -shared  -ldl -lm -lpthread
+CFLAGS  = -fPIC -O2 -I$(SRCDIR) -DMPI=$(FEAT_MPI_API)
+LDFLAGS = -shared -ldl -lm -lpthread
 
 ifeq ($(FEAT_MPI_API), 0)
 MPICC       = $(CC)
@@ -61,7 +61,7 @@ endif
 all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
-	$(MPICC) $(MPICC_FLAGS) $(CFLAGS) -o $*.$(ext) $(mpix_OBJS) $(core_OBJS) $(comm_OBJS) $(LDFLAGS)
+	$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $^ $(LDFLAGS)
 
 ######## OPTIONS
 
@@ -75,6 +75,7 @@ clean: clean.components rclean;
 
 %.components:
 	@ $(MAKE) -C 'api'        $* || exit
+	@ $(MAKE) -C 'common'     $* || exit
 	@ $(MAKE) -C 'dynais'     $* || exit
 	@ $(MAKE) -C 'loader'     $* || exit
 	@ $(MAKE) -C 'metrics'    $* || exit
@@ -82,7 +83,6 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'policies'   $* || exit
 	@ $(MAKE) -C 'states'     $* || exit
 	@ $(MAKE) -C 'tracer'     $* || exit
-	@ $(MAKE) -C 'common'     $* || exit
 
 ######## DEPENDENCIES
 

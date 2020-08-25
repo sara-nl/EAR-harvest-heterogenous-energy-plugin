@@ -1,4 +1,4 @@
-CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) $(SLURM_CFLAGS) -fPIC
+CFLAGS  = -fPIC -O2 $(SLURM_CFLAGS) -I$(SRCDIR)
 LDFLAGS = -lm
 
 ######## INSTALLATION
@@ -47,10 +47,10 @@ plug_HDRS = \
 all: $(plug_BINS)
 
 earplug.so: $(plug_SRCS) $(plug_HDRS)
-	$(CC) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
 erun: $(erun_SRCS) $(plug_SRCS) $(plug_HDRS)
-	$(CC) $(CFLAGS) -DERUN -g -o $@ $(erun_SRCS) $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -DERUN -o $@ $(erun_SRCS) $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
 
 ######## OPTIONS
 
