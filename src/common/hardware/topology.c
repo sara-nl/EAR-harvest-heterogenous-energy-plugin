@@ -341,21 +341,6 @@ state_t topology_init(topology_t *topo)
 	return EAR_SUCCESS;
 }
 
-state_t topology_print(topology_t *topo, int fd)
-{
-	dprintf(fd, "cpu_count        : %d\n", topo->cpu_count);
-	dprintf(fd, "socket_count     : %d\n", topo->socket_count);
-	dprintf(fd, "threads_per_core : %d\n", topo->threads_per_core);
-	dprintf(fd, "smt_enabled      : %d\n", topo->smt_enabled);
-	dprintf(fd, "l3_count         : %d\n", topo->l3_count);
-	dprintf(fd, "vendor           : %d\n", topo->vendor);
-	dprintf(fd, "family           : %d\n", topo->family);
-	dprintf(fd, "gpr_count        : %d\n", topo->gpr_count);
-	dprintf(fd, "gpr_bits         : %d\n", topo->gpr_bits);
-	dprintf(fd, "nmi_watchdog     : %d\n", topo->nmi_watchdog);
-	return EAR_SUCCESS;
-}
-
 state_t topology_close(topology_t *topo)
 {
 	// TODO: spaguettis
@@ -370,3 +355,40 @@ state_t topology_close(topology_t *topo)
 	return EAR_SUCCESS;
 }
 
+#define f_print(f, ...) \
+	f (__VA_ARGS__, \
+		"cpu_count        : %d\n" \
+    	"socket_count     : %d\n" \
+		"threads_per_core : %d\n" \
+		"smt_enabled      : %d\n" \
+    	"l3_count         : %d\n" \
+		"vendor           : %d\n" \
+		"family           : %d\n" \
+		"gpr_count        : %d\n" \
+		"gpr_bits         : %d\n" \
+		"nmi_watchdog     : %d\n" \
+	, \
+		topo->cpu_count, \
+		topo->socket_count, \
+		topo->threads_per_core, \
+		topo->smt_enabled, \
+		topo->l3_count, \
+		topo->vendor, \
+		topo->family, \
+		topo->gpr_count, \
+		topo->gpr_bits, \
+		topo->nmi_watchdog);
+
+state_t topology_print(topology_t *topo, int fd)
+{
+	f_print(dprintf, fd);
+
+	return EAR_SUCCESS;
+}
+
+state_t topology_tostr(topology_t *topo, char *buffer, size_t n)
+{
+	f_print(snprintf, buffer, n);
+
+	return EAR_SUCCESS;
+}
