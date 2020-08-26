@@ -32,8 +32,6 @@
  * When an error occurs, those calls returns -1.
  */
 
-
-// #define SHOW_DEBUGS 1
 #include <limits.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
@@ -62,14 +60,6 @@ static topology_t topo;
 int init_uncores(int cpu_model)
 {
 	topology_init(&topo);
-	int vendor = topo.vendor;
-	int family = topo.family;
-	int model  = topo.model;	
-
-	debug("called");
-	debug("vendor: %d", vendor);
-	debug("family: %d", family);
-	debug("model: %d", model);
 
 	if (state_ok(bwidth_intel63_status(&topo)))
 	{
@@ -195,7 +185,6 @@ int compute_mem_bw(ullong *cas2, ullong *cas1, double *bps, double t,int N)
 {
 	int dev_count = N;
 	ullong accum;
-	int i;
 	if (dev_count == 0) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
@@ -210,7 +199,6 @@ int compute_uncores(ullong *cas2, ullong *cas1, double *bps, double units)
 {
 	int dev_count = count_uncores();
 	ullong accum=0;
-	int i;
 	if (dev_count == 0) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
@@ -288,7 +276,7 @@ int uncore_are_frozen(ullong * DEST,int N)
 
 void print_uncores(unsigned long long * DEST,int N)
 {
-  int i,frozen=1;
+  int i;
   for (i=0;i<N;i++){
 		fprintf(stdout,"Counter %d= %llu \t",i,DEST[i]);
 	}

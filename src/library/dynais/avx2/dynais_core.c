@@ -213,7 +213,9 @@ void dynais_core_0(uint sample, uint size, uint level)
 
 	uint l = level;
 	uint cur_width_aux;
+	#ifdef DYN_CORE_N
 	uint cur_sizes_aux;
+	#endif
 	uint cur_zeros_aux;
 	uint res_nol;
 	uint res_inl;
@@ -223,7 +225,9 @@ void dynais_core_0(uint sample, uint size, uint level)
 	uint res_dif;
 	uint *pz;
 	uint *pw;
+	#ifdef DYN_CORE_N
 	uint *ps;
+	#endif
 
 	pz = (uint *) &zmmx26;
 	pw = (uint *) &zmmx25;

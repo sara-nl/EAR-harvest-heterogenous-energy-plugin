@@ -46,10 +46,12 @@ const ulong cmd_avx_flops = 0x0000000000000f03; // Flops event
 const ulong cmd_avx_merge = 0x0000000f000000ff; // Merge event
 
 static perf_t perf_evn0;
+#if 0
 static perf_t perf_mer1;
 static perf_t perf_mer2;
 static perf_t perf_evn3;
 static perf_t perf_mer4;
+#endif
 
 // The counters are 48 bit values. But it can be added the MergeEvent
 // counter which supposedly expands the counters to 64 bits.

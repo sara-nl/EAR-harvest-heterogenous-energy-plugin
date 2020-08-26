@@ -240,7 +240,6 @@ static void topology_cpuid(topology_t *topo)
 	/* Cache line size */
 	uint max_level = 0;
 	uint cur_level = 0;
-	uint line_size = 0;
 	int index      = 0;
 
 	if (topo->vendor == VENDOR_INTEL)
@@ -338,6 +337,21 @@ state_t topology_init(topology_t *topo)
 	// TODO: spaguettis
 	topology_copy(&topo_static, topo);
 
+	return EAR_SUCCESS;
+}
+
+state_t topology_print(topology_t *topo, int fd)
+{
+	dprintf(fd, "cpu_count        : %d\n", topo->cpu_count);
+	dprintf(fd, "socket_count     : %d\n", topo->socket_count);
+	dprintf(fd, "threads_per_core : %d\n", topo->threads_per_core);
+	dprintf(fd, "smt_enabled      : %d\n", topo->smt_enabled);
+	dprintf(fd, "l3_count         : %d\n", topo->l3_count);
+	dprintf(fd, "vendor           : %d\n", topo->vendor);
+	dprintf(fd, "family           : %d\n", topo->family);
+	dprintf(fd, "gpr_count        : %d\n", topo->gpr_count);
+	dprintf(fd, "gpr_bits         : %d\n", topo->gpr_bits);
+	dprintf(fd, "nmi_watchdog     : %d\n", topo->nmi_watchdog);
 	return EAR_SUCCESS;
 }
 
