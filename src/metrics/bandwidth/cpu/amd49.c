@@ -334,7 +334,7 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 	for (i = 0; i < bw->fd_count; ++i)
 	{
 		// Reading each L3 miss counters
-		msr_read(bw->tp.cpus[i].id, &cas[i], sizeof(ulong), ctr_l3);
+		s = msr_read(bw->tp.cpus[i].id, &cas[i], sizeof(ulong), ctr_l3);
 		#if 0
 		ulong readed = cas[i];
 
