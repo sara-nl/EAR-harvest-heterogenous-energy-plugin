@@ -28,7 +28,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-
 #include <daemon/remote_api/eard_rapi.h>
 #include <daemon/remote_api/eard_rapi_internals.h>
 
@@ -51,13 +50,13 @@ typedef struct ip_table
     char ip[IP_LENGTH];
     char name[IP_LENGTH];
     int counter;
-		uint power;
+    uint power;
     uint max_power;
     int job_id;
     int step_id;
     uint current_freq;
     uint temp;
-		eard_policy_info_t policies[TOTAL_POLICIES];
+    eard_policy_info_t policies[TOTAL_POLICIES];
 } ip_table_t;
 
 cluster_conf_t my_cluster_conf;
@@ -330,11 +329,9 @@ void generate_ip(ip_table_t *ips, char *node_name)
         fprintf(stderr, "Error reading node %s configuration\n", node_name);
     else
         ips[0].max_power = (uint) aux_node_conf->max_error_power;
-/*#if USE_EXT
-    strcat(node_name,NW_EXT);
-#endif*/
     if (strlen(my_cluster_conf.net_ext) > 0)
         strcat(node_name, my_cluster_conf.net_ext);
+
     fill_ip(node_name, &ips[0]);
 
 }
@@ -401,6 +398,7 @@ int main(int argc, char *argv[])
             {"set-risk",        required_argument, 0, 'r'},
             {"setopt",          required_argument, 0, 'o'},
             {"type",            required_argument, 0, 't'},
+            {"verbose",         optional_argument, 0, 'b'},
             {"error",           no_argument, 0, 'e'},
             {"help",         	no_argument, 0, 'h'},
             {"version",         no_argument, 0, 'v'},
@@ -446,7 +444,19 @@ int main(int argc, char *argv[])
                     printf("Indicated threshold increase above theoretical maximum (100%%)\n");
                     break;
                 }
+#define TEST_NODE_PROP 0
+#if TEST_NODE_PROP
+                int *ips;
+                ips = calloc(2, sizeof(int));
+                ips[0] = get_ip("cmp2545", &my_cluster_conf);
+                ips[1] = get_ip("cmp2546", &my_cluster_conf);
+                printf("ip0 %d ip1 %d\n", ips[0], ips[1]);
+                increase_th_nodes(arg, arg2, &my_cluster_conf, ips, 2);
+                free(ips);
+
+#else
                 increase_th_all_nodes(arg, arg2, &my_cluster_conf);
+#endif
                 break;
             case 4:
                 arg = atoi(optarg);
@@ -636,6 +646,7 @@ int main(int argc, char *argv[])
                 verb_enabled = 1;
                 if (optarg) verb_level = atoi(optarg);
                 else verb_level = 1;
+                break;
 
 
         }

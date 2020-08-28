@@ -144,4 +144,8 @@ void set_default_powercap_all_nodes(cluster_conf_t *my_cluster_conf);
 
 int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_t *released);
 
+#if NODE_PROP
+void increase_th_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf, int *ips, int num_ips);
+#endif
+
 #endif

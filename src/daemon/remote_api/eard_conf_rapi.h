@@ -67,7 +67,6 @@ typedef struct risk_dec{
 	risk_t level;
 }risk_dec_t;
 
-
 typedef union req_data{
     new_job_req_t       new_job;
     end_job_req_t       end_job;
@@ -124,8 +123,6 @@ typedef struct eard_policy_info{
     ulong freq; /* default freq in KH, divide by 1000000 to show Ghz */
     uint th;     /* th x 100, divide by 100 */
 }eard_policy_info_t;
-
-
 
 typedef struct status{
     unsigned int     ip;

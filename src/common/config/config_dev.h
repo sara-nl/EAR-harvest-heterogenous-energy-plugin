@@ -45,7 +45,7 @@
 
 /** Specifies if eard's rapi uses dynamic size commands. Set to 0 if you want 
  * compatibility with old EAR versions. */
-#define DYNAMIC_COMMANDS    1
+#define DYNAMIC_COMMANDS    0
 
 //Specifies if specific node propagation can be used
 #define NODE_PROP           0
