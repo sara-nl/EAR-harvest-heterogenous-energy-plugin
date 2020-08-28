@@ -17,12 +17,16 @@
 
 #ifndef PC_SUPPORT_H
 #define PC_SUPPORT_H
+#include <common/states.h>
 #include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/signature.h>
 #if POWERCAP
 
-ulong pc_support_adapt_freq(node_powercap_opt_t *pc,ulong f,signature_t *s);
-void pc_support_compute_next_state(node_powercap_opt_t *pc,signature_t *s);
+state_t pc_support_init(polctx_t *c);
+ulong pc_support_adapt_freq(polctx_t *c,node_powercap_opt_t *pc,ulong f,signature_t *s);
+void pc_support_adapt_gpu_freq(polctx_t *c,node_powercap_opt_t *pc,ulong *f,signature_t *s);
+
+void pc_support_compute_next_state(polctx_t *c,node_powercap_opt_t *pc,signature_t *s);
 
 #endif
 #endif

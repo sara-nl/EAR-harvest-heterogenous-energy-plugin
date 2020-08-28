@@ -115,6 +115,7 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 	return;
 }
 
+#if 0
 static void module_mpi_dlsym_next()
 {
 	verbose(2, "LOADER: module_mpi_dlsym_next loading library");
@@ -123,6 +124,7 @@ static void module_mpi_dlsym_next()
 	verbose(3, "LOADER: dlsym for C init returned %p", ear_mpic.Init);
 	verbose(3, "LOADER: dlsym for F init returned %p", ear_mpif.init);
 }
+#endif
 
 static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 {

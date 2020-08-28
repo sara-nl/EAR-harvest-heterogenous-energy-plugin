@@ -15,7 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -31,15 +30,23 @@
 
 state_t perf_open(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event)
 {
+	return perf_opex(perf, group, pid, type, event, 0);
+}
+
+state_t perf_opex(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event, uint options)
+{
 	int gp_flag =  0;	
 	int gp_fd   = -1;
 
+	//
 	memset(perf, 0, sizeof(perf_t));
 
 	if (group != NULL) {
 		if (perf != group) {
 			gp_fd = group->fd;
-		} 
+		} else {
+			
+		}
 		perf->group = group;
 		gp_flag = PERF_FORMAT_GROUP;
 	}
@@ -49,6 +56,7 @@ state_t perf_open(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event
 	perf->attr.config         = event;
 //	perf->attr.config         = event | 0x200000;
 //	perf->attr.config1        = 0x200000;
+	perf->attr.exclusive      = options;
 	perf->attr.disabled       = 1;
 	perf->attr.exclude_kernel = 1;
 	perf->attr.exclude_hv     = 1;
@@ -66,6 +74,15 @@ state_t perf_open(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event
 	if (perf->fd == -1) {
 		return_msg(EAR_ERROR, strerror(errno));
 	}
+	return EAR_SUCCESS;
+}
+
+state_t perf_close(perf_t *perf)
+{
+	if (perf->fd >= 0) {
+		close(perf->fd);
+	}
+	memset(perf, 0, sizeof(perf_t));
 	return EAR_SUCCESS;
 }
 
@@ -187,6 +204,7 @@ state_t perf_read(perf_t *perf, llong *value)
 		value_d  = (double) value_s.values[i];
 		total_d  = value_d * time_mul;
 		value[i] = (llong) total_d;
+		debug("i=%d value %llu\n",i,value_s.values[i]);
 	}
 
 	return EAR_SUCCESS;

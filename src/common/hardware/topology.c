@@ -22,6 +22,7 @@
 #include <common/sizes.h>
 #include <common/states.h>
 #include <common/system/file.h>
+#include <common/output/debug.h>
 #include <common/hardware/cpuid.h>
 #include <common/hardware/topology.h>
 #include <common/hardware/topology_frequency.h>
@@ -44,7 +45,7 @@ state_t topology_select(topology_t *t, topology_t *s, int component, int group, 
 	int i;
 	int j;
 	int c;
-
+;
 	just = (group == TPGroup.merge);
 
 	if (component == TPSelect.l3) {
@@ -183,29 +184,101 @@ state_t topology_copy(topology_t *dst, topology_t *src)
 	return EAR_SUCCESS;
 }
 
+static void topology_extras(topology_t *topo)
+{
+	char path[SZ_NAME_LARGE];
+	char c[2];
+	int fd;
+	
+	// NMI Watchdog
+	sprintf(path, "/proc/sys/kernel/nmi_watchdog");
+
+	if ((fd = open(path, F_RD)) >= 0) {
+		if (read(fd, c, sizeof(char)) > 0) {
+			c[1] = '\0';
+			topo->nmi_watchdog = atoi(c);
+		}
+		close(fd);
+	}
+}
+
 static void topology_cpuid(topology_t *topo)
 {
-	int buffer[4];
 	cpuid_regs_t r;
+	int buffer[4];
 
 	/* Vendor */
 	CPUID(r,0,0);
 	buffer[0] = r.ebx;
 	buffer[1] = r.edx;
 	buffer[2] = r.ecx;
-	topo->vendor = !(buffer[0] == 1970169159);
+	topo->vendor = !(buffer[0] == 1970169159); // Intel
 	
 	/* Family */
 	CPUID(r,1,0);
 	buffer[0] = cpuid_getbits(r.eax, 11,  8);
-	buffer[1] = cpuid_getbits(r.eax, 27, 20);
-	topo->family = (buffer[1] << 4) | buffer[0];
+	buffer[1] = cpuid_getbits(r.eax, 27, 20); // extended
+	buffer[2] = buffer[0]; // auxiliar
+	
+	if (buffer[0] == 0x0F) {
+		topo->family = buffer[1] + buffer[0];
+	} else {
+		topo->family = buffer[0];
+	}
 
 	/* Model */
 	CPUID(r,1,0);
 	buffer[0] = cpuid_getbits(r.eax,  7,  4);
-	buffer[1] = cpuid_getbits(r.eax, 19, 16);
-	topo->model = (buffer[1] << 4) | buffer[0];
+	buffer[1] = cpuid_getbits(r.eax, 19, 16); // extended
+	
+	if (buffer[2] == 0x0F || (buffer[2] == 0x06 && topo->vendor == VENDOR_INTEL)) {
+		topo->model = (buffer[1] << 4) | buffer[0];
+	} else {
+		topo->model = buffer[0];
+	}
+
+	/* Cache line size */
+	uint max_level = 0;
+	uint cur_level = 0;
+	int index      = 0;
+
+	if (topo->vendor == VENDOR_INTEL)
+	{
+		while (1)
+		{
+			CPUID(r,4,index);
+
+			if (!(r.eax & 0x0F)) break;
+			cur_level = cpuid_getbits(r.eax, 7, 5);
+
+			if (cur_level >= max_level) {
+				topo->cache_line_size = cpuid_getbits(r.ebx, 11, 0) + 1;
+				max_level = cur_level;
+			}
+
+			index = index + 1;
+		}
+	} else {
+		CPUID(r,0x80000005,0);
+		topo->cache_line_size = r.edx & 0xFF;
+	}
+
+	/* General-purpose/fixed registers */
+    CPUID(r, 0x0a, 0);
+
+	if (topo->vendor == VENDOR_INTEL) {
+		//  Intel Vol. 2A
+		// 	bits   7,0: version of architectural performance monitoring
+		// 	bits  15,8: number of GPR counters per logical processor
+		//	bits 23,16: bit width of GPR counters
+		topo->gpr_count = cpuid_getbits(r.eax, 15,  8);
+		topo->gpr_bits  = cpuid_getbits(r.eax, 23, 16);
+	} else {
+		if (topo->family >= FAMILY_ZEN) {
+			topo->gpr_count = 6;
+			topo->gpr_bits  = 48;
+		}
+	}
 }
 
 state_t topology_init(topology_t *topo)
@@ -222,6 +295,7 @@ state_t topology_init(topology_t *topo)
 	topo->core_count = 0;
 	topo->socket_count = 0;
 	topo->threads_per_core = 1;
+	topo->cache_line_size = 0;
 	topo->smt_enabled = 0;
 	topo->l3_count = 0;
 
@@ -258,9 +332,26 @@ state_t topology_init(topology_t *topo)
 		topology_freq_getbase(i, &topo->cpus[i].freq_base);
 	}
 
+	topology_extras(topo);
+
 	// TODO: spaguettis
 	topology_copy(&topo_static, topo);
 
+	return EAR_SUCCESS;
+}
+
+state_t topology_print(topology_t *topo, int fd)
+{
+	dprintf(fd, "cpu_count        : %d\n", topo->cpu_count);
+	dprintf(fd, "socket_count     : %d\n", topo->socket_count);
+	dprintf(fd, "threads_per_core : %d\n", topo->threads_per_core);
+	dprintf(fd, "smt_enabled      : %d\n", topo->smt_enabled);
+	dprintf(fd, "l3_count         : %d\n", topo->l3_count);
+	dprintf(fd, "vendor           : %d\n", topo->vendor);
+	dprintf(fd, "family           : %d\n", topo->family);
+	dprintf(fd, "gpr_count        : %d\n", topo->gpr_count);
+	dprintf(fd, "gpr_bits         : %d\n", topo->gpr_bits);
+	dprintf(fd, "nmi_watchdog     : %d\n", topo->nmi_watchdog);
 	return EAR_SUCCESS;
 }
 

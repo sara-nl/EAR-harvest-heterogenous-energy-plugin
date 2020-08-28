@@ -613,7 +613,6 @@ int main(int argc,char *argv[])
 		error("Asking for total energy system. Using aggregated %d",use_aggregation);
 	}
 	verbose(1,"db_select_acum_energy inicial %lu%s",result,unit_energy);
-	if (result<(0.95*energy_budget)) result=0.95*energy_budget;
 	fill_periods(result);
 	/*
 	*
@@ -751,11 +750,11 @@ int main(int argc,char *argv[])
 			}
 			if (current_level!=last_level) T1_stables=0;
 			else T1_stables++;
-			last_level=current_level;
+			#if USE_DB
+			db_insert_gm_warning(&my_warning);
+			#endif
+			last_level = current_level;
 		}// ALARM
-		#if USE_DB
-		db_insert_gm_warning(&my_warning);
-		#endif
 		if (powercap_th_start){
 			cluster_powercap_init(&my_cluster_conf);	
 			powercap_th_start=0;

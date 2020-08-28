@@ -188,7 +188,7 @@ void print_tags_conf(tag_t *tag)
     verbosen(VCCONF, "--> Tag: %s\ttype: %d\tdefault: %d\tpowercap_type: %d\n", tag->id, tag->type, tag->is_default, tag->powercap_type);
     verbosen(VCCONF, "\t\tavx512_freq: %lu\tavx2_freq: %lu\tmax_power: %lu\tmin_power: %lu\terror_power: %lu\tpowercap: %lu\t max_powercap: %lu\n", 
                      tag->max_avx512_freq, tag->max_avx2_freq, tag->max_power, tag->min_power, tag->error_power, tag->powercap, tag->max_powercap);
-		verbosen(VCCONF, "\t\tgpu_def_freq %lu\n",tag->gpu_def_freq);
+	verbosen(VCCONF, "\t\tgpu_def_freq %lu\n",tag->gpu_def_freq);
     verbosen(VCCONF, "\t\tenergy_model: %s\tenergy_plugin: %s\tpowercap_plugin: %s\n", tag->energy_model, tag->energy_plugin, tag->powercap_plugin);
 }
 

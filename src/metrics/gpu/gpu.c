@@ -14,7 +14,7 @@
 * use and EPL-1.0 license for commercial use. Full text of both licenses can be
 * found in COPYING.BSD and COPYING.EPL files.
 */
-#define SHOW_DEBUGS 1
+
 #include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/gpu/archs/nvml.h>
@@ -40,7 +40,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 	}
 
 	if (model_force == MODEL_NVML) {
-		debug("loaded GPU_DATA NVML");
+		debug("loaded NVML");
 		ops.init		= nvml_init;
 		ops.init_unprivileged = nvml_init_unprivileged;
 		ops.dispose		= nvml_dispose;
@@ -60,7 +60,7 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		model           = MODEL_NVML;
 		loaded			= 1;
 	} else {
-		debug("loaded GPU_DATA DUMMY");
+		debug("loaded DUMMY");
 		ops.init		= gpu_dummy_init;
 		ops.init_unprivileged = gpu_dummy_init;
 		ops.dispose		= gpu_dummy_dispose;

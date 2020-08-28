@@ -15,71 +15,116 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
+#include <metrics/common/perf.h>
 #include <metrics/cpi/cpu/intel63.h>
 
 static llong values[2];
 static perf_t perf_cyc;
 static perf_t perf_ins;
+static uint initialized;
 
-int init_basic_metrics()
+state_t cpi_intel63_status(topology_t *tp)
 {
-	state_t s;
-	s = perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS);
-	s = perf_open(&perf_cyc, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES);
+	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN) {
+		return EAR_SUCCESS;
+	}
+	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
+		return EAR_SUCCESS;
+	}
+	return EAR_ERROR;
+}
 
-	// Remove warning
-	(void) (s);
+state_t cpi_intel63_init(ctx_t *c)
+{
+	debug("function");
+	state_t s;
+	
+	if (initialized) {
+		return EAR_SUCCESS;
+	}
+	if (xtate_fail(s, perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS))) {
+		debug("perf_open returned %d (%s)", s, state_msg);
+		return s;
+	}
+	if (xtate_fail(s, perf_open(&perf_cyc, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES))) {
+		debug("perf_open returned %d (%s)", s, state_msg);
+		perf_close(&perf_ins);
+		return s;
+	}
+
+	initialized = 1;
+	
+	return EAR_SUCCESS;
+}
+
+state_t cpi_intel63_dispose(ctx_t *c)
+{
+	return EAR_SUCCESS;
+
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	
+	cpi_intel63_stop(c, NULL, NULL);
+	perf_close(&perf_cyc);
+	perf_close(&perf_ins);
 
 	return EAR_SUCCESS;
 }
 
-void reset_basic_metrics()
+state_t cpi_intel63_reset(ctx_t *c)
 {
-	state_t s;
-	s = perf_reset(&perf_ins);
-
-	// Remove warning
-	(void) (s);
+	debug("function");
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	return perf_reset(&perf_ins);
 }
 
-void start_basic_metrics()
+state_t cpi_intel63_start(ctx_t *c)
 {
-	state_t s;
-	s = perf_start(&perf_ins);
-
-	// Remove warning
-	(void) (s);
+	debug("function");
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	return perf_start(&perf_ins);
 }
 
-void stop_basic_metrics(long long *cycles, long long *instructions)
+state_t cpi_intel63_stop(ctx_t *c, llong *cycles, llong *insts)
 {
+	debug("function");
 	state_t s;
 
-	s = perf_stop(&perf_ins);
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	if (xtate_fail(s, perf_stop(&perf_ins))) {
+		return s;
+	}
 
-	get_basic_metrics(cycles, instructions);
-
-	// Remove warning
-	(void) (s);
+	return cpi_intel63_read(c, cycles, insts);
 }
 
-void get_basic_metrics(long long *cycles, long long *instructions)
+state_t cpi_intel63_read(ctx_t *c, llong *cycles, llong *insts)
 {
 	state_t s;
 
-	*instructions = 0;
-	*cycles       = 0;
-	
-	s = perf_read(&perf_ins, values);
+	if (insts  != NULL) *insts  = 0;
+	if (cycles != NULL) *cycles = 0;
 
-	*instructions = values[0];
-	*cycles       = values[1];
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	if (xtate_fail(s, perf_read(&perf_ins, values))) {
+		return s;
+	}
 
-	debug("total ins %lld", *instructions);
-	debug("total cyc %lld", *cycles);
+	if (insts  != NULL) *insts  = values[0];
+	if (cycles != NULL) *cycles = values[1];
 
-	// Remove warning
-	(void) (s);
+	debug("total ins %lld", values[0]);
+	debug("total cyc %lld", values[1]);
+
+	return EAR_SUCCESS;
 }

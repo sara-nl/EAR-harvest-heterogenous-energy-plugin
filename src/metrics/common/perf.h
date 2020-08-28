@@ -22,6 +22,10 @@
 #include <common/states.h>
 #include <linux/perf_event.h>
 
+// Options (combine with &)
+#define pf_exc	0x0001
+#define pf_pin	0x0002		 
+
 typedef struct perf_s {
 	struct perf_event_attr attr;
 	void *group;
@@ -29,6 +33,8 @@ typedef struct perf_s {
 } perf_t;
 
 state_t perf_open(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event);
+
+state_t perf_opex(perf_t *perf, perf_t *group, pid_t pid, uint type, ulong event, uint options);
 
 state_t perf_reset(perf_t *perf);
 

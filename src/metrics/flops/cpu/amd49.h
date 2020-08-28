@@ -15,18 +15,29 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef _MB_NOT_PRIV_H_
-#define _MB_NOT_PRIV_H_
+#ifndef METRICS_FLOPS_AMD49
+#define METRICS_FLOPS_AMD49
 
-unsigned long long uncore_ullong_diff_overflow(unsigned long long begin, unsigned long long end);
+#include <metrics/flops/flops.h>
 
-/** Calculates diff=end-begin, with vectors of N elements */
-void diff_uncores(unsigned long long * diff,unsigned long long *end,unsigned long long  *begin,int N); 
+state_t flops_amd49_status(topology_t *tp);
 
-/** Copies DEST=SRC */
-void copy_uncores(unsigned long long * DEST,unsigned long long * SRC,int N);
+state_t flops_amd49_init(ctx_t *c);
 
-int uncore_are_frozen(unsigned long long * DEST,int N);
-void print_uncores(unsigned long long * DEST,int N);
+state_t flops_amd49_dispose(ctx_t *c);
+
+state_t flops_amd49_reset(ctx_t *c);
+
+state_t flops_amd49_start(ctx_t *c);
+
+state_t flops_amd49_read(ctx_t *c, llong *flops, llong *ops);
+
+state_t flops_amd49_stop(ctx_t *c, llong *flops, llong *ops);
+
+state_t flops_amd49_count(ctx_t *c, uint *count);
+
+state_t flops_amd49_read_accum(ctx_t *c, llong *metrics);
+
+state_t flops_amd49_weights(uint *weigths);
 
 #endif

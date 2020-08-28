@@ -15,10 +15,10 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef EAR_BANDWIDTH_INTEL_SKYLAKE_H
-#define EAR_BANDWIDTH_INTEL_SKYLAKE_H
+#ifndef METRICS_BANDWIDTH_INTEL63_H
+#define METRICS_BANDWIDTH_INTEL63_H
 
-#include <metrics/bandwidth/cpu/utils.h>
+#include <metrics/bandwidth/bandwidth.h>
 
 // HASWELL_X & BROADWELL_X
 static short HASWELL_X_IDS[]      = { 0x2FB4, 0x2FB5, 0x2FB0, 0x2FB1, 0x2FD4, 0x2FD5, 0x2FD0, 0x2FD1 };
@@ -39,38 +39,20 @@ static char SKYLAKE_X_REGISTERS[] = { 0xF8, 0xF4, 0xD8, 0xA0 };
 static char SKYLAKE_X_FUNCTIONS[] = { 0x02, 0x06 };
 static int  SKYLAKE_X_N_FUNCTIONS = 6;
 
-/** Scans PCI buses and allocates file descriptors memory.
-*   Returns the number of uncores counters on success or EAR_ERROR. */
-int pci_init_uncores(int cpu_model);
+state_t bwidth_intel63_status(topology_t *tp);
 
-/** Get the number of performance monitor counters. 
-*   pci_init_uncores() have to be called before.
-*   Returns the number of PCI uncore counters. */
-int pci_count_uncores();
+state_t bwidth_intel63_init(ctx_t *c, topology_t *tp);
 
-/** Freezes and resets all performance monitor uncore counters.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_reset_uncores();
+state_t bwidth_intel63_dispose(ctx_t *c);
 
-/** Unfreezes all PCI uncore counters.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_start_uncores();
+state_t bwidth_intel63_count(ctx_t *c, uint *count);
 
-/** Freezes all PMON uncore counters and gets it's values. The array
-*   has to be greater or equal than the number of PMON uncore counters
-*   returned by count_uncores() function. The returned values are the
-*   read and write bandwidth values in index [i] and [i+1] respectively.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_stop_uncores(unsigned long long *values);
+state_t bwidth_intel63_start(ctx_t *c);
 
-/** Gets uncore counters values.
-*   Returns 0. */
-int pci_read_uncores(unsigned long long *values);
+state_t bwidth_intel63_reset(ctx_t *c);
 
-/** Closes file descriptors and frees memory.
-*   Returns 0 on success or EAR_ERROR. */
-int pci_dispose_uncores();
+state_t bwidth_intel63_stop(ctx_t *c, ullong *cas);
 
-/** Checks if the found pci uncore functions have any abnormality.
-*   Returned values are EAR_SUCCESS, EAR_WARNING or EAR_ERROR. */
-int pci_check_uncores();
+state_t bwidth_intel63_read(ctx_t *c, ullong *cas);
+
+#endif

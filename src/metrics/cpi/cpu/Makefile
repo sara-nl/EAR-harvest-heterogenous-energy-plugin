@@ -2,7 +2,9 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
-cycl_OBJS = intel63.o
+cycl_OBJS = \
+    intel63.o \
+    dummy.o
 
 ######## RULES
 
@@ -21,6 +23,10 @@ install: ;
 %.install: ;
 
 clean: rclean;
+
+depend: ;
+
+depend-clean: ;
 
 ######## DEPENDENCIES
 

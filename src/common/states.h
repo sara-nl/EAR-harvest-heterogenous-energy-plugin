@@ -70,6 +70,7 @@ struct generr_s {
 	char *input_null;
 	char *input_uninitialized;
 	char *lock;
+	char *context_null;
 } Generr __attribute__((weak)) = {
 	.api_undefined = "the API is undefined",
 	.api_incompatible = "the current hardware is not supported by the API",
@@ -78,6 +79,7 @@ struct generr_s {
 	.input_null = "an argument of the input is NULL",
 	.input_uninitialized = "an argument is not initialized",
 	.lock = "error while using mutex_lock",
+	.context_null = "context can not be null",
 };
 
 /*

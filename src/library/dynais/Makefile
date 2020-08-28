@@ -1,12 +1,12 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -O3 -fPIC -march=native
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -O3 -fPIC
 
 ######## FILES
 
 ifeq ($(FEAT_AVX512), 1)
-DEFI = -DFEAT_AVX512=1
+DEFI = -march=native -DFEAT_AVX512=1
 FOLD = avx512
 else
-DEFI =
+DEFI = -mavx2
 FOLD = avx2
 endif
 

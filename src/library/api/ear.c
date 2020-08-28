@@ -30,7 +30,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>
@@ -569,6 +568,7 @@ void   pin_processes(topology_t *t,cpu_set_t *mask,int is_set,int ppn,int idx)
 			cpus = t->cpu_count / ppn;
 			first = idx *cpus;
 		}
+		debug("I'm the process %d: My cpu rank is [%d-%d)",idx,first,first+cpus);
 		CPU_ZERO(mask);
 		for (i=0;i<t->cpu_count;i++){
 				if ((i >= first) && (i < (first+cpus))) CPU_SET(i,mask);
@@ -670,16 +670,25 @@ void ear_init()
 		return;
 	}
 #endif
-	debug("Executing EAR library IDs(%d,%d)",ear_my_rank,my_id);
+	
+	debug("Executing EAR library IDs(%d,%d)", ear_my_rank, my_id);
+
 	get_settings_conf_path(get_ear_tmp(),system_conf_path);
-	debug("system_conf_path %s",system_conf_path);
-	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	get_resched_path(get_ear_tmp(),resched_conf_path);
-	debug("resched_conf_path %s",resched_conf_path);
+
+	debug("system_conf_path  = %s",system_conf_path);
+	debug("resched_conf_path = %s",resched_conf_path);
+
+	system_conf = attach_settings_conf_shared_area(system_conf_path);
 	resched_conf = attach_resched_shared_area(resched_conf_path);
 
+	debug("system_conf  = %p", system_conf);
+	debug("resched_conf = %p", resched_conf);
+	debug("system_conf->id = %u", system_conf->id);
+	debug("create_ID() = %u", create_ID(my_job_id,my_step_id)); // id*100+sid
+
 	/* Updating configuration */
-	if ((system_conf!=NULL) && (resched_conf!=NULL) && (system_conf->id==create_ID(my_job_id,my_step_id))){
+	if ((system_conf != NULL) && (resched_conf != NULL) && (system_conf->id == create_ID(my_job_id,my_step_id))){
 		debug("Updating the configuration sent by the EARD");
 		update_configuration();	
 	}else{
@@ -762,31 +771,35 @@ void ear_init()
 	}else{
 		attach_shared_regions();
 	}
-
 	debug("END Shared region creation section");
 	/* Processes in same node connectes each other*/
-	debug("Dynais init");
 
-	// Initializing sub systems
-	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	// Initializing architecture and topology
+	if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
+		error("Retrieving architecture description");
+		/* How to proceeed here ? */
+    	my_id=1;
+		return;
+	}
+	
+	// Initializing metrics
 	debug("Starting metrics init ");
-	if (metrics_init()!=EAR_SUCCESS){
-		    my_id=1;
-				verbose(0,"Error in EAR metrics initialization, setting EARL off");
-				return;
+	
+	if (metrics_init(&arch_desc.top) != EAR_SUCCESS) {
+		error("in EAR metrics initialization (%s), setting EARL off", state_msg);
+		my_id=1;
+		return;
 	}
 	debug("End metrics init");
-	// Policies && models
-  if ((st=get_arch_desc(&arch_desc))!=EAR_SUCCESS){
-    error("Retrieving architecture description");
-    /* How to proceeed here ? */
-    my_id=1;
-    verbose(0,"Error in EAR metrics initialization, setting EARL off");
-    return;
-  }
-  arch_desc.max_freq_avx512=system_conf->max_avx512_freq;
-  arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
 
+	// Initializing DynAIS
+	debug("Dynais init");
+	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	debug("Dynais end");
+
+	// Policies && models
+	arch_desc.max_freq_avx512=system_conf->max_avx512_freq;
+	arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
 	debug("frequency_init");
 	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
 
@@ -831,10 +844,9 @@ void ear_init()
 		}
 	}
 
-	pin_processes(&arch_desc.top,&ear_process_mask,ear_affinity_is_set,lib_shared_region->num_processes,my_node_id);
+	ear_affinity_is_set=1;
 	print_affinity_mask(&arch_desc.top);
-
-	#if SHOW_DEBUGS
+	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
 

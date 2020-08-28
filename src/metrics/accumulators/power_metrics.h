@@ -27,7 +27,7 @@
 
 #include <common/states.h>
 #include <metrics/gpu/gpu.h>
-#include <metrics/energy/energy_cpu.h>
+#include <metrics/energy/cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/accumulators/types.h>
 

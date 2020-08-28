@@ -21,7 +21,9 @@
 
 #include <common/config.h>
 #include <common/config/config_install.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
+#include <common/output/debug.h>
 #if POWERCAP
 #include <common/types/pc_app_info.h>
 #include <daemon/powercap/powercap_status_conf.h>
@@ -32,7 +34,8 @@ void pcapp_info_new_job(pc_app_info_t *t)
 	t->req_power=0;
 	t->pc_status=PC_STATUS_IDLE;
 	#if USE_GPUS
-	t->req_gpu_f=0;
+	t->num_gpus_used=0;
+	memset(t->req_gpu_f,0,sizeof(ulong)*MAX_GPUS_SUPPORTED);
 	t->req_gpu_power=0;
 	#endif
 }
@@ -42,7 +45,8 @@ void pcapp_info_end_job(pc_app_info_t *t)
 	t->req_power=0;
 	t->pc_status=PC_STATUS_IDLE;
 	#if USE_GPUS
-	t->req_gpu_f=0;
+	t->num_gpus_used=0;
+	memset(t->req_gpu_f,0,sizeof(ulong)*MAX_GPUS_SUPPORTED);
 	t->req_gpu_power=0;
 	#endif
 }
@@ -50,6 +54,20 @@ void pcapp_info_set_req_f(pc_app_info_t *t,ulong f)
 {
 	t->req_f=f;
 	t->pc_status=PC_STATUS_OK;
+}
+
+void debug_pc_app_info(pc_app_info_t *t)
+{
+	float f;
+	int i;
+	f=(float)t->req_f/1000000.0;
+	debug("PC_APP_INFO: mode %u CPU (req_f %.2f power %lu status %u)",t->mode, f,t->req_power,t->pc_status);
+	#if USE_GPUS
+	for (i=0;i<t->num_gpus_used;i++){
+		f=(float)t->req_gpu_f[i]/1000000.0;
+		debug("\t(GPU[%d] req_f %.2f power %lu status %u)",i,f,t->req_gpu_power,t->pc_gpu_status);
+	}
+	#endif
 }
 
 #endif

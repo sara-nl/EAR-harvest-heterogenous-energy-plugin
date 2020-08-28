@@ -23,7 +23,7 @@
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/node_metrics.h>
-#include <metrics/energy/energy_cpu.h>
+#include <metrics/energy/cpu.h>
 #include <metrics/temperature/temperature.h>
 
 #define NM_CONNECTED	100

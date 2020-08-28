@@ -84,12 +84,8 @@
 #include <stdint.h>
 #include <unistd.h>
 #include <linux/limits.h>
-#include <common/config.h>
-#include <common/states.h>
-#include <common/types/generic.h>
-#include <common/output/verbose.h>
-#include <common/hardware/hardware_info.h>
-#include <metrics/bandwidth/cpu/intel_haswell.h>
+#include <common/output/debug.h>
+#include <metrics/bandwidth/cpu/intel63.h>
 
 #define IJKFOR(i_len, j_len, k_len) \
     for(i = 0; i < i_len; i++)      \
@@ -114,9 +110,9 @@ static int _cpu_model;
 static char* get_arch_devices(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_DEVICES);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_DEVICES);
-        pci_case(CPU_SKYLAKE_X, SKYLAKE_X_DEVICES);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_DEVICES);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_DEVICES);
+        pci_case(MODEL_SKYLAKE_X, SKYLAKE_X_DEVICES);
         default: *length = 0; return NULL;
     }
 }
@@ -124,9 +120,9 @@ static char* get_arch_devices(int *length)
 static char* get_arch_functions(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_FUNCTIONS);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_FUNCTIONS);
-        pci_case(CPU_SKYLAKE_X, SKYLAKE_X_FUNCTIONS);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_FUNCTIONS);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_FUNCTIONS);
+        pci_case(MODEL_SKYLAKE_X, SKYLAKE_X_FUNCTIONS);
         default: *length = 0; return NULL;
     }
 }
@@ -134,9 +130,9 @@ static char* get_arch_functions(int *length)
 static char* get_arch_reset_controls(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_RST_CTL);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_RST_CTL);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_RST_CTL);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_RST_CTL);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_RST_CTL);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_RST_CTL);
         default: *length = 0; return NULL;
     }
 }
@@ -144,9 +140,9 @@ static char* get_arch_reset_controls(int *length)
 static int* get_arch_reset_commands(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_RST_CMD);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_RST_CMD);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_RST_CMD);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_RST_CMD);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_RST_CMD);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_RST_CMD);
         default: *length = 0; return NULL;
     }
 }
@@ -154,9 +150,9 @@ static int* get_arch_reset_commands(int *length)
 static int* get_arch_start_commands(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STA_CMD);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STA_CMD);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STA_CMD);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STA_CMD);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STA_CMD);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STA_CMD);
         default: *length = 0; return NULL;
     }
 }
@@ -164,9 +160,9 @@ static int* get_arch_start_commands(int *length)
 static char* get_arch_start_controls(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STA_CTL);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STA_CTL);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STA_CTL);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STA_CTL);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STA_CTL);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STA_CTL);
         default: *length = 0; return NULL;
     }
 }
@@ -174,9 +170,9 @@ static char* get_arch_start_controls(int *length)
 static int* get_arch_stop_commands(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STO_CMD);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STO_CMD);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STO_CMD);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STO_CMD);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STO_CMD);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STO_CMD);
         default: *length = 0; return NULL;
     }
 }
@@ -184,9 +180,9 @@ static int* get_arch_stop_commands(int *length)
 static char* get_arch_stop_controls(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_STO_CTL);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_STO_CTL);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_STO_CTL);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_STO_CTL);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_STO_CTL);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_STO_CTL);
         default: *length = 0; return NULL;
     }
 }
@@ -194,9 +190,9 @@ static char* get_arch_stop_controls(int *length)
 static char* get_arch_read_counters(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_RED_CTR);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_RED_CTR);
-        pci_case(CPU_SKYLAKE_X, HASWELL_X_RED_CTR);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_RED_CTR);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_RED_CTR);
+        pci_case(MODEL_SKYLAKE_X, HASWELL_X_RED_CTR);
         default: *length = 0; return NULL;
     }
 }
@@ -204,9 +200,9 @@ static char* get_arch_read_counters(int *length)
 static short* get_arch_ids(int *length)
 {
     switch (_cpu_model) {
-        pci_case(CPU_HASWELL_X, HASWELL_X_IDS);
-        pci_case(CPU_BROADWELL_X, HASWELL_X_IDS);
-        pci_case(CPU_SKYLAKE_X, SKYLAKE_X_IDS);
+        pci_case(MODEL_HASWELL_X, HASWELL_X_IDS);
+        pci_case(MODEL_BROADWELL_X, HASWELL_X_IDS);
+        pci_case(MODEL_SKYLAKE_X, SKYLAKE_X_IDS);
         default: *length = 0; return NULL;
     }
 }
@@ -214,9 +210,9 @@ static short* get_arch_ids(int *length)
 static int get_cpu_n_functions()
 {
     switch (_cpu_model) {
-        case CPU_HASWELL_X: return HASWELL_X_N_FUNCTIONS;
-        case CPU_BROADWELL_X: return HASWELL_X_N_FUNCTIONS;
-        case CPU_SKYLAKE_X: return SKYLAKE_X_N_FUNCTIONS;
+        case MODEL_HASWELL_X: return HASWELL_X_N_FUNCTIONS;
+        case MODEL_BROADWELL_X: return HASWELL_X_N_FUNCTIONS;
+        case MODEL_SKYLAKE_X: return SKYLAKE_X_N_FUNCTIONS;
         default: return 0;
     }
 }
@@ -244,7 +240,8 @@ static int write_command(uchar *ctl, int *cmd, int n_ctl, int n_cmd)
             }
         }
     }
-    return -(n_functions == EAR_ERROR);
+
+    return EAR_SUCCESS;
 }
 
 static void pci_scan_uncores()
@@ -283,7 +280,7 @@ static void pci_scan_uncores()
 
         if (read_tag == look_tag)
         {
-            debug( "pci_uncores.c: uncore function found in %s\n", path);
+            debug("uncore function found in %s", path);
             fd_functions[n_functions] = fd;
             n_functions = n_functions + 1;
 
@@ -294,111 +291,31 @@ static void pci_scan_uncores()
     	}
     }
 
-    debug( "pci_uncores.c: %i total uncore functions found\n", n_functions);
+    debug("%i total uncore functions found", n_functions);
 }
 
-// Compares the supposed quantity of buses to be
-// detected with the quantity of detected ones.
-int pci_check_uncores()
+state_t bwidth_intel63_status(topology_t *tp)
 {
-    int supposed = n_buses * get_cpu_n_functions();
-    debug( "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
+    if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X){
+        return EAR_SUCCESS;
+    }
+    return EAR_ERROR;
+}
 
-    if (supposed != n_functions) return EAR_WARNING;
-    if (supposed <= 0) return EAR_ERROR;
+state_t bwidth_intel63_init(ctx_t *c, topology_t *tp)
+{
+    _cpu_model = tp->model;
+
+    pci_scan_uncores();
+
+    if (n_functions == 0) {
+        return EAR_ERROR;
+    }
+
     return EAR_SUCCESS;
 }
 
-//Open PCI files and also allocates the memory needed
-int pci_init_uncores(int cpu_model)
-{
-    _cpu_model = cpu_model;
-    pci_scan_uncores();
-
-    return pci_count_uncores();
-}
-
-// Get the number of the performance monitor uncore
-// counters that will be needed. Needed when you
-// stop the counters and pass a buffer to be filled
-// with those values.
-int pci_count_uncores()
-{
-    int n_ctrs;
-    get_arch_read_counters(&n_ctrs);
-    return n_functions * n_ctrs;
-}
-
-// Freezes and reset all uncore counters
-int pci_reset_uncores()
-{
-	int n_cmd, n_ctl;
-	printf("pci_reset_uncores\n");
-	if (n_functions<=0) return 0;
-	int *cmd = get_arch_reset_commands(&n_cmd);
-	char *ctl = get_arch_reset_controls(&n_ctl);
-	return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
-}
-
-// Unfreezes all uncore counters
-int pci_start_uncores()
-{
-    int n_cmd, n_ctl;
-		if (n_functions<=0) return 0;
-    int *cmd = get_arch_start_commands(&n_cmd);
-    char *ctl = get_arch_start_controls(&n_ctl);
-    return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
-}
-
-// Stop all uncore counters and also gets it's values
-int pci_stop_uncores(ull *values)
-{
-    int n_cmd, n_ctl, res;
-		if (n_functions<=0) return 0;
-    int *cmd = get_arch_stop_commands(&n_cmd);
-    char *ctl = get_arch_stop_controls(&n_ctl);
-    res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
-    pci_read_uncores(values);
-    return res;
-}
-
-// Reads registers values.
-int pci_read_uncores(ull *values)
-{
-    int i, j, k, res;
-    int n_ctrs;
-
-		if (n_functions<=0){ 
-			return 0;
-		}
-    uchar *ctrs = (uchar *) get_arch_read_counters(&n_ctrs);
-
-    for(i = k = 0; i < n_functions; i++)
-    {
-        for (j = 0; j < n_ctrs; ++j, ++k)
-        {
-            values[k] = 0;
-            if (fd_functions[i] != -1)
-            {
-                res = pread(fd_functions[i], &values[k], sizeof(ull), ctrs[j]);
-
-                if (res == -1 || res != sizeof(ull))
-                {
-                    error("pci_uncores.c: reading file error (%s)\n",
-                                strerror(errno));
-                    close(fd_functions[i]);
-                    fd_functions[i] = -1;
-                }
-            }
-        }
-    }
-
-    return  0;
-}
-
-// Just closes all file descriptors and frees it's
-// allocated memory
-int pci_dispose_uncores()
+state_t bwidth_intel63_dispose(ctx_t *c)
 {
     int i;
 
@@ -414,5 +331,119 @@ int pci_dispose_uncores()
 
     free(fd_functions);
 
-    return 0;
+    return EAR_SUCCESS;
 }
+
+state_t bwidth_intel63_count(ctx_t *c, uint *count)
+{
+    int n_ctrs;
+    get_arch_read_counters(&n_ctrs);
+    *count = n_functions * n_ctrs;
+    return EAR_SUCCESS;
+}
+
+state_t bwidth_intel63_start(ctx_t *c)
+{
+    int n_cmd, n_ctl;
+    if (n_functions<=0) return 0;
+    int *cmd = get_arch_start_commands(&n_cmd);
+    char *ctl = get_arch_start_controls(&n_ctl);
+    return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
+}
+
+state_t bwidth_intel63_reset(ctx_t *c)
+{
+    int n_cmd, n_ctl;
+    if (n_functions<=0) return 0;
+    int *cmd = get_arch_reset_commands(&n_cmd);
+    char *ctl = get_arch_reset_controls(&n_ctl);
+    return write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
+}
+
+state_t bwidth_intel63_read(ctx_t *c, ullong *cas)
+{
+    int i, j, k, res;
+    int n_ctrs;
+
+	if (n_functions<=0){
+		return EAR_ERROR;
+	}
+	if (cas == NULL) {
+		return EAR_SUCCESS;
+	}
+
+    uchar *ctrs = (uchar *) get_arch_read_counters(&n_ctrs);
+
+    for(i = k = 0; i < n_functions; i++)
+    {
+        for (j = 0; j < n_ctrs; ++j, ++k)
+        {
+            cas[k] = 0;
+            if (fd_functions[i] != -1)
+            {
+                res = pread(fd_functions[i], &cas[k], sizeof(ull), ctrs[j]);
+				debug("%d cas %llu", k, cas[k]);
+
+                if (res == -1 || res != sizeof(ull))
+                {
+                    error("pci_uncores.c: reading file error (%s)\n",
+                                strerror(errno));
+                    close(fd_functions[i]);
+                    fd_functions[i] = -1;
+                }
+            }
+        }
+    }
+
+    return EAR_SUCCESS;
+}
+
+state_t bwidth_intel63_stop(ctx_t *c, ullong *cas)
+{
+    int n_cmd, n_ctl, res;
+    if (n_functions<=0) return 0;
+    int *cmd = get_arch_stop_commands(&n_cmd);
+    char *ctl = get_arch_stop_controls(&n_ctl);
+    res = write_command((uchar *) ctl, cmd, n_ctl, n_cmd);
+    bwidth_intel63_read(c, cas);
+    return res;
+}
+
+#if 0
+//Open PCI files and also allocates the memory needed
+
+int bwidth_intel63_init(int cpu_model)
+{
+    _cpu_model = cpu_model;
+    pci_scan_uncores();
+
+    return bwidth_intel63_count();
+}
+#endif
+
+#if 0
+// Get the number of the performance monitor uncore
+// counters that will be needed. Needed when you
+// stop the counters and pass a buffer to be filled
+// with those values.
+int bwidth_intel63_count()
+{
+    int n_ctrs;
+    get_arch_read_counters(&n_ctrs);
+    return n_functions * n_ctrs;
+}
+#endif
+
+#if 0
+// Compares the supposed quantity of buses to be
+// detected with the quantity of detected ones.
+int pci_check_uncores()
+{
+    int supposed = n_buses * get_cpu_n_functions();
+    debug( "pci_uncores.c: %d detected functions versus %d supposed\n", n_functions, supposed);
+
+    if (supposed != n_functions) return EAR_WARNING;
+    if (supposed <= 0) return EAR_ERROR;
+    return EAR_SUCCESS;
+}
+#endif

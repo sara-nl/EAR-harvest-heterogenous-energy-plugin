@@ -26,12 +26,12 @@
 #include <common/types/log_eard.h>
 #include <common/types/pc_app_info.h>
 #include <common/hardware/frequency.h>
-#include <metrics/frequency/cpu.h>
-#include <metrics/energy/energy_cpu.h>
+#include <common/hardware/hardware_info.h>
+#include <metrics/gpu/gpu.h>
+#include <metrics/energy/cpu.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/bandwidth/bandwidth.h>
-#include <metrics/gpu/gpu.h>
-#include <common/hardware/hardware_info.h>
+#include <metrics/frequency/cpu.h>
 #include <daemon/local_api/eard_conf_api.h>
 #include <daemon/remote_api/dynamic_configuration.h>
 #include <daemon/power_monitor.h>
@@ -662,6 +662,10 @@ int eard_freq(int must_read)
 			break;
 		case SET_FREQ:
 			eard_set_freq(req.req_data.req_value, min(eard_max_freq, max_dyn_freq()));
+			break;
+		case SET_FREQ_WITH_MASK:
+			ack=frequency_set_with_mask(&req.req_data.f_mask.mask,req.req_data.f_mask.f);
+			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case START_GET_FREQ:
 			ack = EAR_COM_OK;

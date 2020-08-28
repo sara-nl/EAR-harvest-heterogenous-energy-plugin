@@ -609,7 +609,7 @@ ulong eards_change_freq(ulong newfreq)
 
 	return real_freq;
 }
-unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t mask)
+unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t *mask)
 {
   ulong real_freq = EAR_ERROR;
   struct daemon_req req;
@@ -617,18 +617,17 @@ unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t mask)
   req.req_service = SET_FREQ_WITH_MASK;
   req.sec=create_sec_tag();
   req.req_data.f_mask.f = newfreq;
-  req.req_data.f_mask.mask= mask;
-
+	memcpy(&req.req_data.f_mask.mask,mask,sizeof(cpu_set_t));
 
   if (ear_fd_req[freq_req] >= 0)
   {
-    if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)) , sizeof(req),
-       "ERROR writing request for changing frequency")) return EAR_ERROR;
+    if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)), sizeof(req),
+       "while writing request for changing frequency")) return EAR_ERROR;
 
-    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)&real_freq, sizeof(ulong)) , sizeof(ulong),
-      "ERROR reading ack for changing frequency ")) return EAR_ERROR;
+    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)&real_freq, sizeof(ulong)), sizeof(ulong),
+      "while reading ack for changing frequency")) return EAR_ERROR;
 
-    debug("Frequency_changed to %lu",  real_freq);
+    debug("Frequency_changed to %lu", real_freq);
   } else {
     real_freq = 0;
     debug( "change_freq service not provided");

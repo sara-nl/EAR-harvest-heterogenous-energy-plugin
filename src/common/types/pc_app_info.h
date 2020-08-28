@@ -19,6 +19,7 @@
 #define _EAR_PC_APP_INFO_H
 #include <common/config.h>
 #include <common/config/config_install.h>
+#include <common/config/config_dev.h>
 #include <common/types/types.h>
 typedef struct pc_app_info{
 	uint 	mode;
@@ -26,8 +27,10 @@ typedef struct pc_app_info{
 	ulong req_power;
 	uint  pc_status;
 	#if USE_GPUS
-	ulong req_gpu_f;
+	ulong num_gpus_used;
+	ulong req_gpu_f[MAX_GPUS_SUPPORTED];
 	ulong req_gpu_power;
+	uint pc_gpu_status;
 	#endif
 }pc_app_info_t;
 
@@ -36,6 +39,8 @@ void pcapp_info_end_job(pc_app_info_t *t);
 
 /** Sets the req_f and the status to OK */
 void pcapp_info_set_req_f(pc_app_info_t *t,ulong f);
+void debug_pc_app_info(pc_app_info_t *t);
+
 
 
 #endif
