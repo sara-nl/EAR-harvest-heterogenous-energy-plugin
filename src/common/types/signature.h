@@ -78,9 +78,9 @@ typedef struct signature
     ull cycles;
     ulong avg_f;
     ulong def_f;
-		#if USE_GPUS
-		gpu_signature_t gpu_sig;
-		#endif
+    #if USE_GPUS
+    gpu_signature_t gpu_sig;
+    #endif
 } signature_t;
 
 

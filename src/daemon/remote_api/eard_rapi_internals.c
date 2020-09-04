@@ -276,11 +276,9 @@ int send_non_block_command(request_t *command)
 
 int send_non_block_data(int fd, size_t size, char *data, int type)
 {
-    ulong ack; 
     int ret; 
 	int tries=0;
 	uint to_send,sent=0;
-	uint to_recv,received=0;
 	uint must_abort=0;
 
     /* Prepare header */

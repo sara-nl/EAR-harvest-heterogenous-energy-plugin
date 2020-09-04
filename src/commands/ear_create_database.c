@@ -561,7 +561,7 @@ max_GPU_sig_id INT, "
 
 #if USE_GPUS
     sprintf(query, "CREATE TABLE IF NOT EXISTS GPU_signatures ( \
-id SERIA NOT NULL, \
+id SERIAL NOT NULL, \
 GPU_power FLOAT, \
 GPU_freq INT, \
 GPU_mem_freq INT, \

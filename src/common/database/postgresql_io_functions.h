@@ -54,6 +54,9 @@
 #define AVG_SIGNATURE_ARGS          14
 #endif
 
+#if USE_GPUS
+#define GPU_SIGNATURE_ARGS 5
+#endif
 
 
 /** Sets the database layer to operate with full signatures or simplified one. */

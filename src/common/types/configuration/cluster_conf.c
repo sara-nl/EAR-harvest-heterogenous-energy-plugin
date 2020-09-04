@@ -83,7 +83,7 @@ int get_ip(char *nodename, cluster_conf_t *conf)
 
 int get_num_nodes(cluster_conf_t *my_conf)
 {
-    int i, j, k;
+    int i, j;
     int total_nodes = 0;
     
     if (my_conf->num_islands < 1)
@@ -272,7 +272,6 @@ int get_default_tag_id(cluster_conf_t *conf)
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf, char *nodename)
 {
 	int i=0, j=0, range_found=0;
-    int num_spec_nodes = 0;
     int range_id = -1;
     int tag_id = -1, def_tag_id = -1;
 

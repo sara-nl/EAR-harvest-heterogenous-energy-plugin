@@ -884,7 +884,7 @@ void read_loops(char *user, int job_id, int limit, int step_id, char *job_ids)
     if (user != NULL)
         add_string_filter(query, "user", user);
 
-    if (limit > 0)
+    if (limit > 0 && job_id < 0)
     {
         sprintf(subquery, " ORDER BY job_id desc LIMIT %d", limit);
         strcat(query, subquery);
