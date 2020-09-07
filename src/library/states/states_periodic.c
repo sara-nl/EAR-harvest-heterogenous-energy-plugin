@@ -54,6 +54,9 @@ static ulong perf_accuracy_min_time = 1000000;
 static uint EAR_STATE ;
 static ulong global_f;
 static loop_id_t periodic_loop;
+static uint total_th;
+
+
 
 void states_periodic_end_job(int my_id, FILE *ear_fd, char *app_name)
 {
@@ -77,6 +80,7 @@ void states_periodic_begin_job(int my_id, FILE *ear_fd, char *app_name)
 	periodic_loop.event=1;
 	periodic_loop.size=1;
 	periodic_loop.level=1;
+	total_th =  get_total_resources();
 }
 
 void states_periodic_begin_period(int my_id, FILE *ear_fd, unsigned long event, unsigned int size)
@@ -175,7 +179,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 		case EVALUATING_SIGNATURE:
 				N_iter=1;
 				
-				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
+				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, total_th);	
 
 				if (result != EAR_NOT_READY)
 				{

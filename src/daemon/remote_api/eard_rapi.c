@@ -108,7 +108,7 @@ int eards_new_job(new_job_req_t *new_job)
     command.time_code = time(NULL);
 	memcpy(&command.my_req.new_job,new_job,sizeof(new_job_req_t));
 	debug("command %u job_id %lu,%lu",command.req,command.my_req.new_job.job.id,command.my_req.new_job.job.step_id);
-	return send_non_block_command(&command);
+	return send_command(&command);
 }
 
 int eards_end_job(job_id jid,job_id sid)
@@ -122,7 +122,7 @@ int eards_end_job(job_id jid,job_id sid)
 	command.my_req.end_job.jid=jid;
 	command.my_req.end_job.sid=sid;
 	debug("command %u job_id %lu step_id %lu ",command.req,command.my_req.end_job.jid,command.my_req.end_job.sid);
-	return send_non_block_command(&command);
+	return send_command(&command);
 }
 
 int eards_set_max_freq(unsigned long freq)
@@ -325,6 +325,19 @@ void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf
     command.my_req.ear_conf.p_id=p_id;
     send_command_all(command, my_cluster_conf);
 }
+
+#if NODE_PROP
+void increase_th_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf, int *ips, int num_ips)
+{
+    request_t command;
+    command.nodes = ips;
+    command.num_nodes = num_ips;
+    command.req=EAR_RC_INC_TH;
+    command.my_req.ear_conf.th=th;
+    command.my_req.ear_conf.p_id=p_id;
+    send_command_nodes(command, my_cluster_conf);
+}
+#endif
 
 void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)
 {

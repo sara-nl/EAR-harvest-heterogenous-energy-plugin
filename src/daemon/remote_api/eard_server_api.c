@@ -15,7 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,9 +44,12 @@
 #define DAEMON_EXTERNAL_CONNEXIONS 1
 
 int *ips = NULL;
+int *temp_ips = NULL;
 int total_ips = -1;
 int self_id = -1;
+int self_ip = -1;
 int init_ips_ready=0;
+
 
 // based on getaddrinfo man pages
 int create_server_socket(uint port)
@@ -156,12 +160,14 @@ int read_command(int s, request_t *command)
 #if NODE_PROP
     if (command->nodes > 0)
     {
+        command->nodes = calloc(command->num_nodes, sizeof(int)); //this will be freed in propagate_data since it's the last point where it is needed and the common point in all requests
         memcpy(command->nodes, &tmp_command[aux_size], command->num_nodes * sizeof(int));
         aux_size += command->num_nodes * sizeof(int);
     }
 #endif
 
-    if (head.size > sizeof(internal_request_t))
+    //there is still data pending to read
+    if (head.size > aux_size)
     {
         if (command->req == EAR_RC_SET_POWERCAP_OPT)
         {
@@ -182,7 +188,8 @@ int read_command(int s, request_t *command)
         else
         {
             debug("recieved command with additional data: %d", command->req);
-            memcpy(&command->my_req, &tmp_command[aux_size], head.size - sizeof(internal_request_t));
+            debug("head.size %u internal_req_t size %u current_size %u", head.size, sizeof(internal_request_t), aux_size); 
+            memcpy(&command->my_req, &tmp_command[aux_size], head.size - aux_size);
         }
     }
     free(tmp_command);
@@ -237,35 +244,38 @@ int init_ips(cluster_conf_t *my_conf)
     char buff[64];
     gethostname(buff, 64);
     strtok(buff,".");
+
     ret = get_range_ips(my_conf, buff, &ips);
     if (ret < 1) {
         ips = NULL;
         self_id = -1;
-				init_ips_ready=-1;
+        init_ips_ready=-1;
         return EAR_ERROR;
     }
+
     if (strlen(my_conf->net_ext) > 0)
     strcat(buff, my_conf->net_ext);
-    temp_ip = get_ip(buff, my_conf);
+    self_ip = get_ip(buff, my_conf);
     for (i = 0; i < ret; i++)
     {
-        if (ips[i] == temp_ip)
+        if (ips[i] == self_ip)
         {
             self_id = i;
             break;
         }
     }
+
     if (self_id < 0)
     {
         free(ips);
         ips = NULL;
         error("Couldn't find node in IP list.");
-				init_ips_ready=-1;
+        init_ips_ready=-1;
         return EAR_ERROR;
     }
     total_ips = ret;
-		verbose(0,"Init_ips_ready=1");	
-		init_ips_ready=1;	
+    verbose(0,"Init_ips_ready=1");	
+    init_ips_ready=1;	
     return EAR_SUCCESS;
   
 }
@@ -277,6 +287,7 @@ void close_ips()
         free(ips);
         total_ips = -1;
         self_id = -1;
+        self_ip = -1;
     }
     else
     {
@@ -284,17 +295,134 @@ void close_ips()
     }
 }
 
+#if NODE_PROP
+char can_propagate(request_t *command)
+{
+
+    // if there is less than 2 nodes (one could mean there is our own ip) we don't need to propagate
+    // but we still check when there's one just in case we don't receive our own ip and the one
+    // received has to be propagated to
+    if (command->num_nodes < 1)
+    {
+        // the following are separate because they come from different ideas
+        // the first is that the node does not need to propagate, while the 
+        // second is that it cannot propagate due to lack of an IP list
+        if (command->node_dist > total_ips) return 0;
+        if (self_ip == -1 || ips == NULL || total_ips < 1) return 0;
+    }
+    //if there is only one node and it is the current one nothing needs to be done
+    else if (command->num_nodes == 1 && command->nodes[0] == self_ip) 
+    {
+        debug("can_propagate: only self node in the list to propagate, returning");
+        free(command->nodes); //since nodes will not be freed in propagate we free here 
+        return 0;
+    }
+
+    return 1;
+}
+#else
+char can_propagate(request_t *command)
+{
+    // the following are separate because they come from different ideas
+    // the first is that the node does not need to propagate, while the 
+    // second is that it cannot propagate due to lack of an IP list
+    if (command->node_dist > total_ips) return 0;
+    if (self_ip == -1 || ips == NULL || total_ips < 1) return 0;
+
+    return 1;
+}
+#endif
+
+#if NODE_PROP
 void propagate_req(request_t *command, uint port)
 {
      
-    if (command->node_dist > total_ips) return;
-    if (self_id == -1 || ips == NULL || total_ips < 1) return;
-
     struct sockaddr_in temp;
 
     int i, rc;
     unsigned int  current_dist;
-		char next_ip[50]; 
+    char next_ip[50]; 
+
+    //if the command can't be propagated we return early
+    if (!can_propagate(command)) return;
+   
+    //if we are propagating via specific nodes we need to remove ours from the list
+    if (command->num_nodes > 0)
+    {
+        debug("propagate_req with num_nodes > 0 (%d)", command->num_nodes);
+        for (i = 0; i < command->num_nodes; i++)
+        {
+            debug("propagate_req: node%d %d (self_ip=%d)", i, command->nodes[i], self_ip);
+            if (command->nodes[i] == self_ip)
+            {
+                command->num_nodes --;
+                command->nodes[i] = command->nodes[command->num_nodes];
+                command->nodes = realloc(command->nodes, sizeof(int) * command->num_nodes);
+            }
+        }
+    }
+
+    current_dist = command->node_dist;
+
+    if (command->num_nodes < 1)
+    {
+        for (i = 1; i <= NUM_PROPS; i++)
+        {
+            //check that the next ip exists within the range
+            if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+
+            //prepare next node data
+            temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+            strcpy(next_ip, inet_ntoa(temp.sin_addr));
+            //prepare next node distance
+            command->node_dist = current_dist + i*NUM_PROPS;
+
+            //connect and send data
+            rc = eards_remote_connect(next_ip, port);
+            if (rc < 0)
+            {
+                error("propagate_req:Error connecting to node: %s\n", next_ip);
+                correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+            }
+            else
+            {
+                if (!send_command(command)) 
+                {
+                    error("propagate_req: Error propagating command to node %s\n", next_ip);
+                    eards_remote_disconnect();
+                    correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+                }
+                else eards_remote_disconnect();
+            }
+        }
+    }
+    else
+    {
+        int base_distance = command->num_nodes/NUM_PROPS;
+        if (base_distance < 1) base_distance = 1; //in case there are less nodes than NUM_PROPS
+
+        internal_send_command_nodes(command, port, base_distance, NUM_PROPS);
+
+        // nodes are allocated on read_command and freed here since they won't be needed anymore
+        // we set num_nodes to 0 to prevent unknown errors
+        command->num_nodes = 0;
+        free(command->nodes);
+    } 
+
+    
+}
+#else
+void propagate_req(request_t *command, uint port)
+{
+     
+    struct sockaddr_in temp;
+
+    int i, rc;
+    unsigned int  current_dist;
+    char next_ip[50]; 
+
+    //if the command can't be propagated we return early
+    if (!can_propagate(command)) return;
 
     current_dist = command->node_dist;
 
@@ -328,7 +456,7 @@ void propagate_req(request_t *command, uint port)
         }
     }
 }
-
+#endif
 
 int get_self_ip()
 {
@@ -371,7 +499,138 @@ int get_self_ip()
 	return EAR_ERROR;
 }
 
+#if NODE_PROP
+request_header_t propagate_data(request_t *command, uint port, void **data)
+{
+    char *temp_data, *final_data = NULL;
+    int rc, i, final_size = 0, default_type = EAR_ERROR;
+    struct sockaddr_in temp;
+    unsigned int current_dist;
+    request_header_t head;
+    char next_ip[64];
 
+    current_dist = command->node_dist;
+
+    if (command->num_nodes < 1)
+    {
+        for (i = 1; i <= NUM_PROPS; i++)
+        {
+            //check that the next ip exists within the range
+            if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+
+            //prepare next node data
+            temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+            strcpy(next_ip, inet_ntoa(temp.sin_addr));
+            //prepare next node distance
+            command->node_dist = current_dist + i*NUM_PROPS;
+            verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
+
+            //connect and send data
+            rc = eards_remote_connect(next_ip, port);
+            if (rc < 0)
+            {
+                error("propagate_data: Error connecting to node: %s\n", next_ip);
+                head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+            }
+            else
+            {
+                send_command(command);
+                head = receive_data(rc, (void **)&temp_data);
+                if (head.size < 1 || head.type == EAR_ERROR) 
+                {
+                    error("propagate_data: Error propagating command to node %s\n", next_ip);
+                    eards_remote_disconnect();
+                    head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+                }
+                else eards_remote_disconnect();
+            }
+
+            if (head.size > 0 && head.type != EAR_ERROR)
+            {
+                head = process_data(head, &temp_data, &final_data, final_size);
+                free(temp_data);
+                default_type = head.type;
+                final_size = head.size;
+            }
+        }
+    }
+    else
+    {
+        request_t tmp_command;
+        memcpy(&tmp_command, command, sizeof(request_t));
+        int base_distance = command->num_nodes/NUM_PROPS;
+        if (base_distance < 1) base_distance = 1; //in case there are only 2 nodes
+        for (i = 0; i < NUM_PROPS; i++)
+        {
+            if (base_distance * i >= command->num_nodes) break;
+
+            //prepare next node data
+            temp.sin_addr.s_addr = command->nodes[base_distance * i];
+            strcpy(next_ip, inet_ntoa(temp.sin_addr));
+
+            // node distance is not needed
+            // we calculate how many ips will be sent to this node by getting the max possible ip index and subtracting the starting one
+            int max_ips = (base_distance * (1 + i) < command->num_nodes) ? base_distance * (1 + i) : command->num_nodes;
+            max_ips -= base_distance * i;
+
+            tmp_command.nodes = calloc(max_ips, sizeof(int));
+            tmp_command.num_nodes = max_ips;
+
+            memcpy(tmp_command.nodes, &command->nodes[base_distance*i], max_ips*sizeof(int));
+
+            //connect and send data
+            rc = eards_remote_connect(next_ip, port);
+            if (rc < 0)
+            {
+                error("propagate_data: Error connecting to node: %s\n", next_ip);
+                head = correct_data_prop_nodes(&tmp_command, self_ip, port, (void **)&temp_data);
+            }
+            else
+            {
+                send_command(&tmp_command);
+                head = receive_data(rc, (void **)&temp_data);
+                if (head.size < 1 || head.type == EAR_ERROR) 
+                {
+                    error("propagate_data: Error propagating command to node %s\n", next_ip);
+                    eards_remote_disconnect();
+                    head = correct_data_prop_nodes(&tmp_command, self_ip, port, (void **)&temp_data);
+                }
+                else eards_remote_disconnect();
+            }
+
+            if (head.size > 0 && head.type != EAR_ERROR)
+            {
+                head = process_data(head, &temp_data, &final_data, final_size);
+                free(temp_data);
+                default_type = head.type;
+                final_size = head.size;
+            }
+
+            free(tmp_command.nodes);
+
+        }
+
+        // nodes are allocated on read_command and freed here since they won't be needed anymore
+        // we set num_nodes to 0 to prevent unknown errors
+        command->num_nodes = 0;
+        free(command->nodes);
+    }
+
+    head.size = final_size;
+    head.type = default_type;
+    *data = final_data;
+
+    if (default_type == EAR_ERROR && final_size > 0)
+    {
+        free(final_data);
+        head.size = 0;
+    }
+    else if (final_size < 1 && default_type != EAR_ERROR) head.type = EAR_ERROR;
+
+    return head;
+	
+}
+#else
 request_header_t propagate_data(request_t *command, uint port, void **data)
 {
     char *temp_data, *final_data = NULL;
@@ -392,7 +651,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
         //prepare next node distance
         command->node_dist = current_dist + i*NUM_PROPS;
-			verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
+        verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
 
         //connect and send data
         rc = eards_remote_connect(next_ip, port);
@@ -413,8 +672,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
             }
             else eards_remote_disconnect();
         }
-        //TODO: Process data (ex. when it's a powercap_status the memory won't be an exact map of power_cap_statuses
-        //temporary workaround for status_t:
+
         if (head.size > 0 && head.type != EAR_ERROR)
         {
             head = process_data(head, &temp_data, &final_data, final_size);
@@ -438,6 +696,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
     return head;
 	
 }
+#endif
 
 int propagate_powercap_status(request_t *command, uint port, powercap_status_t **status)
 {
@@ -522,7 +781,7 @@ int propagate_and_cat_data(request_t *command, uint port, void **status, size_t 
     if (head.type != type || head.size < size)
     {
         final_status = (char *)calloc(1, size);
-				ip=(int *)final_status;
+        ip=(int *)final_status;
         *ip = ips[self_id];
         if (head.size > 0) free(temp_status);
         *status = final_status;

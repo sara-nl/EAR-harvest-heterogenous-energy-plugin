@@ -104,7 +104,9 @@ state_t bwidth_amd49_init(ctx_t *c, topology_t *tp)
 
 	bw = (bwidth_amd49_t *) c->context;
 	uint ccx_count = tp->l3_count;
+	#if 0
 	uint ccd_count = ccx_count / 2;
+	#endif
 
 	bw->fd_count = ccx_count;
 	bw->cas_prev = calloc(2, sizeof(ulong));
@@ -150,6 +152,9 @@ state_t bwidth_amd49_dispose(ctx_t *c)
 	topology_close(&bw->tp);
 	free(bw->cas_curr);
 
+	// Remove warning
+	(void) (s);
+
 	return EAR_SUCCESS;
 }
 
@@ -181,14 +186,19 @@ state_t bwidth_amd49_stop(ctx_t *c, ullong *cas)
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
 
+	#if 0
 	// Two channels per CCD
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctl0);
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctl1);
+	#endif
 
 	// One chunk of L3 per CCX	
 	for (i = 0; i < bw->fd_count; ++i) {
 		s = msr_write(bw->tp.cpus[i].id, &cmd_off, sizeof(ulong), ctl_l3);
 	}
+	
+	// Remove warning
+	(void) (s);
 
 	return bwidth_amd49_read(c, cas);
 }
@@ -203,18 +213,23 @@ state_t bwidth_amd49_reset(ctx_t *c)
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
 
+	#if 0
 	// Two channels per CCD (more or less)
 	s = msr_write(bw->tp.cpus[0].id, &df_cmd0, sizeof(ulong), df_ctl0);
 	s = msr_write(bw->tp.cpus[0].id, &df_cmd1, sizeof(ulong), df_ctl1);
 	
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctr0);
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctr1);
+	#endif
 
 	// One chunk of L3 per CCX	
 	for (i = 0; i < bw->fd_count; ++i) {
 		s = msr_write(bw->tp.cpus[i].id, &cmd_off, sizeof(ulong), ctr_l3);
 		s = msr_write(bw->tp.cpus[i].id, &cmd_l3 , sizeof(ulong), ctl_l3);
 	}
+
+	// Remove warning
+	(void) (s);
 
 	return EAR_SUCCESS;
 }
@@ -319,7 +334,7 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 	for (i = 0; i < bw->fd_count; ++i)
 	{
 		// Reading each L3 miss counters
-		msr_read(bw->tp.cpus[i].id, &cas[i], sizeof(ulong), ctr_l3);
+		s = msr_read(bw->tp.cpus[i].id, &cas[i], sizeof(ulong), ctr_l3);
 		#if 0
 		ulong readed = cas[i];
 
@@ -334,6 +349,9 @@ state_t bwidth_amd49_read(ctx_t *c, ullong *cas)
 		debug("CCX%d, read L3 %llu, estimated %llu CAS", i, readed, cas[i]);
 		#endif
 	}
+	
+	// Remove warning
+	(void) (s);
 
 	return EAR_SUCCESS;
 }

@@ -37,14 +37,22 @@ state_t cpi_intel63_status(topology_t *tp)
 
 state_t cpi_intel63_init(ctx_t *c)
 {
+	debug("function");
 	state_t s;
+	
+	if (initialized) {
+		return EAR_SUCCESS;
+	}
 	if (xtate_fail(s, perf_open(&perf_ins, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_INSTRUCTIONS))) {
+		debug("perf_open returned %d (%s)", s, state_msg);
 		return s;
 	}
 	if (xtate_fail(s, perf_open(&perf_cyc, &perf_ins, 0, PERF_TYPE_HARDWARE, PERF_COUNT_HW_CPU_CYCLES))) {
+		debug("perf_open returned %d (%s)", s, state_msg);
 		perf_close(&perf_ins);
 		return s;
 	}
+
 	initialized = 1;
 	
 	return EAR_SUCCESS;
@@ -52,6 +60,16 @@ state_t cpi_intel63_init(ctx_t *c)
 
 state_t cpi_intel63_dispose(ctx_t *c)
 {
+	return EAR_SUCCESS;
+
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	
+	cpi_intel63_stop(c, NULL, NULL);
+	perf_close(&perf_cyc);
+	perf_close(&perf_ins);
+
 	return EAR_SUCCESS;
 }
 
@@ -92,8 +110,8 @@ state_t cpi_intel63_read(ctx_t *c, llong *cycles, llong *insts)
 {
 	state_t s;
 
-	*insts  = 0;
-	*cycles = 0;
+	if (insts  != NULL) *insts  = 0;
+	if (cycles != NULL) *cycles = 0;
 
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
@@ -102,11 +120,11 @@ state_t cpi_intel63_read(ctx_t *c, llong *cycles, llong *insts)
 		return s;
 	}
 
-	*insts  = values[0];
-	*cycles = values[1];
+	if (insts  != NULL) *insts  = values[0];
+	if (cycles != NULL) *cycles = values[1];
 
-	debug("total ins %lld", *insts);
-	debug("total cyc %lld", *cycles);
+	debug("total ins %lld", values[0]);
+	debug("total cyc %lld", values[1]);
 
 	return EAR_SUCCESS;
 }

@@ -16,20 +16,26 @@
 */
 
 //#define SHOW_DEBUGS 1
+
+#include <math.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include <unistd.h>
+
 #include <netdb.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/ip.h>
+
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
+
 #include <daemon/remote_api/eard_rapi.h>
 #include <daemon/remote_api/eard_conf_rapi.h>
 #include <daemon/remote_api/eard_server_api.h>
@@ -75,7 +81,12 @@ size_t get_command_size(request_t *command, char **data_to_send)
         case EAR_RC_SET_POLICY:
             size += sizeof(new_policy_cont_t); //new policy_conf
             break;
-
+        case EAR_RC_NEW_JOB:
+            size += sizeof(new_job_req_t);
+            break;
+        case EAR_RC_END_JOB:
+            size += sizeof(end_job_req_t);
+            break;
     }
  
 #if NODE_PROP
@@ -86,11 +97,19 @@ size_t get_command_size(request_t *command, char **data_to_send)
     }
 #endif
 
+    debug("allocating command with size %u", size);
     //copy the original command
     command_b = calloc(1, size);
+    debug("copying internal_request_t");
     memcpy(command_b, command, sizeof(internal_request_t)); //the first portion of request_t and internal_request_t align
 #if NODE_PROP
-    memcpy(command_b, command->nodes, aux_size); //copy the nodes to propagate to
+    debug("copying nodes (%d num_nodes)", command->num_nodes);
+    int i;
+    for (i = 0; i < command->num_nodes; i++)
+        debug("node%d %d", i, command->nodes[i]);
+    debug("total_size: %u nodes size %u starting size(internal_req_t size) %u", size, aux_size, sizeof(internal_request_t));
+    memcpy(&command_b[sizeof(internal_request_t)], command->nodes, aux_size); //copy the nodes to propagate to
+    debug("copied nodes");
 #endif
 
     aux_size += sizeof(internal_request_t); //aux_size holds the position we have to start writing from
@@ -107,6 +126,7 @@ size_t get_command_size(request_t *command, char **data_to_send)
             memcpy(&command_b[aux_size + offset], command->my_req.pc_opt.extra_power, offset);
             break;
         default:
+            debug("copying additional data, total_size: %u, already copied %u", size, aux_size);
             memcpy(&command_b[aux_size], &command->my_req, size-aux_size); 
             break;
     }
@@ -162,7 +182,7 @@ int send_command(request_t *command)
     debug("Command size: %u\t request_t size: %u", command_size, sizeof(request_t));
 
     
-    if (send_data(eards_sfd, command_size, command_b, EAR_TYPE_COMMAND) != EAR_SUCCESS)
+    if (send_non_block_data(eards_sfd, command_size, command_b, EAR_TYPE_COMMAND) != EAR_SUCCESS)
         error("Error sending command");
 
     free(command_b);
@@ -252,6 +272,63 @@ int send_non_block_command(request_t *command)
 	}
 	debug("send_non_block returns with %d",!to_recv);
     return (!to_recv); // Should we return ack ?
+}
+
+int send_non_block_data(int fd, size_t size, char *data, int type)
+{
+    ulong ack; 
+    int ret; 
+	int tries=0;
+	uint to_send,sent=0;
+	uint to_recv,received=0;
+	uint must_abort=0;
+
+    /* Prepare header */
+    request_header_t head;
+    head.type = type;
+    head.size = size;
+
+    /* Send header, blocking */
+    ret = write(eards_sfd, &head, sizeof(request_header_t));
+
+    if (ret < sizeof(request_header_t))
+    {
+        warning("error sending request_header in non_block command");
+        return 0;
+    }
+
+    debug("Sending data of size %u and type %d", head.size, head.type);
+
+	to_send=size;
+	do
+	{
+        ret=send(eards_sfd, (char *)data+sent, to_send, MSG_DONTWAIT);
+        if (ret>0){
+            sent+=ret;
+            to_send-=ret;
+        }
+        else if (ret<0)
+        {
+            if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
+            else{	
+                must_abort=1;
+                error("Error sending command to eard %s,%d",strerror(errno),errno);
+            }
+        }else if (ret==0){
+            warning("send returns 0 bytes");
+            must_abort=1;
+        }
+	} while ((tries<MAX_SOCKET_COMM_TRIES) && (to_send>0) && (must_abort==0));
+	if (tries>=MAX_SOCKET_COMM_TRIES) debug("tries reached in recv %d",tries);
+
+	/* If there are bytes left to send, we return a 0 */
+	if (to_send){ 
+		debug("return non blocking command with 0");
+		return EAR_ERROR;
+	}
+    /* We do not receive an ack since that is exclusive to commands, not general data */
+
+    return EAR_SUCCESS;
 }
 
 int send_data(int fd, size_t size, char *data, int type)
@@ -355,7 +432,7 @@ int eards_remote_connect(char *nodename,uint port)
 {
     struct addrinfo hints;
     struct addrinfo *result, *rp;
-		char port_number[50]; 	// that size needs to be validated
+    char port_number[50]; 	// that size needs to be validated
     int sfd, s;
     fd_set set;
 
@@ -556,7 +633,7 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
 
     int i, rc;
     unsigned int  current_dist;
-		char next_ip[50]; 
+    char next_ip[50]; 
 
     current_dist = command->node_dist;
 
@@ -591,6 +668,249 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
         }
     }
 }
+
+#if NODE_PROP
+void correct_error_nodes(request_t *command, int self_ip, uint port)
+{
+     
+    request_t tmp_command;
+    request_header_t head;
+    struct sockaddr_in temp;
+    int i, rc;
+    char next_ip[50]; 
+
+    if (command->num_nodes < 1) return;
+    else
+    {   //if there is only one node and it is the current one nothing needs to be done
+        if (command->num_nodes == 1 && command->nodes[0] == self_ip) return;
+        //if not, we remove the current node from the list
+        for (i = 0; i < command->num_nodes; i++)
+        {
+            if (command->nodes[i] == self_ip)
+            {
+                command->num_nodes --;
+                command->nodes[i] = command->nodes[command->num_nodes];
+                command->nodes = realloc(command->nodes, sizeof(int) * command->num_nodes);
+            }
+        }
+    }
+
+    memcpy(&tmp_command, command, sizeof(request_t));
+    int base_distance = command->num_nodes/NUM_PROPS;
+    if (base_distance < 1) base_distance = 1; //if there is only 1 or 2 nodes
+
+    internal_send_command_nodes(command, port, base_distance, NUM_PROPS);
+
+    // we set num_nodes to 0 to prevent unknown errors, but memory is freed in request_propagation
+    command->num_nodes = 0;
+    
+}
+
+request_header_t correct_data_prop_nodes(request_t *command, int self_ip, uint port, void **data)
+{
+    request_t tmp_command;
+    request_header_t head;
+    char *temp_data, *final_data = NULL;
+    int rc, i, final_size = 0, default_type = EAR_ERROR;
+    struct sockaddr_in temp;
+    char next_ip[64];
+
+    head.size = 0;
+    head.type = 0;
+
+    if (command->num_nodes < 1) return head;
+    else
+    {   //if there is only one node and it is the current one nothing needs to be done
+        if (command->num_nodes == 1 && command->nodes[0] == self_ip) return head;
+        //if not, we remove the current node from the list
+        for (i = 0; i < command->num_nodes; i++)
+        {
+            if (command->nodes[i] == self_ip)
+            {
+                command->num_nodes --;
+                command->nodes[i] = command->nodes[command->num_nodes];
+                command->nodes = realloc(command->nodes, sizeof(int) * command->num_nodes);
+            }
+        }
+    }
+
+    memcpy(&tmp_command, command, sizeof(request_t));
+    int base_distance = command->num_nodes/NUM_PROPS;
+    if (base_distance < 1) base_distance = 1; //if there is only 1 or 2 nodes
+    for (i = 0; i < NUM_PROPS; i++)
+    {
+        if (base_distance * i >= command->num_nodes) break;
+        //prepare next node data
+        temp.sin_addr.s_addr = command->nodes[base_distance * i];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+
+        // node distance is not needed
+        // we calculate how many ips will be sent to this node by getting the max possible ip index and subtracting the starting one
+        int max_ips = (base_distance * (1 + i) < command->num_nodes) ? base_distance * (1 + i) : command->num_nodes;
+        max_ips -= base_distance * i;
+
+        tmp_command.nodes = calloc(max_ips, sizeof(int));
+        tmp_command.num_nodes = max_ips;
+
+        memcpy(tmp_command.nodes, &command->nodes[base_distance*i], max_ips*sizeof(int));
+
+        //connect and send data
+        rc = eards_remote_connect(next_ip, port);
+        if (rc < 0)
+        {
+            error("propagate_req:Error connecting to node: %s\n", next_ip);
+            head = correct_data_prop_nodes(&tmp_command, self_ip, port, (void **)&temp_data);
+        }
+        else
+        {
+            send_command(&tmp_command);
+            head = receive_data(rc, (void **)&temp_data);
+            if ((head.size) < 1 || head.type == EAR_ERROR)
+            {
+                error("propagate_req: Error propagating command to node %s\n", next_ip);
+                eards_remote_disconnect();
+                head = correct_data_prop_nodes(&tmp_command, self_ip, port, (void **)&temp_data);
+            }
+            else eards_remote_disconnect();
+        }
+
+        if (head.size > 0 && head.type != EAR_ERROR)
+        {
+            default_type = head.type;
+            final_data = realloc(final_data, final_size + head.size);
+            memcpy(&final_data[final_size], temp_data, head.size);
+            final_size += head.size;
+            free(temp_data);
+        }
+
+        free(tmp_command.nodes);
+    }
+
+    head.size = final_size;
+    head.type = default_type;
+    *data = final_data;
+    
+    if (default_type == EAR_ERROR && final_size > 0)
+    {
+        free(final_data);
+        head.size = 0;
+    }
+    else if (final_size == 0 && default_type != EAR_ERROR) head.type = EAR_ERROR;
+
+    // we set num_nodes to 0 to prevent unknown errors, but memory is freed in request_propagation
+    command->num_nodes = 0;
+    return head;
+
+}
+
+#endif
+
+#if NODE_PROP
+
+#define MAX_PROP_DEPTH 3
+/* Calculates the "ideal" amount of nodes a node will comunicate to. See send_command_nodes for
+ * how the comunication works. We calculate it taking into account the total number of nodes 
+ * the message will be send to, the number of propagations a node will do and the maximum propagation
+ * depth we want to achieve (how many propagations can it take to get to leaf nodes). */
+int get_max_prop_group(int num_props, int max_depth, int num_nodes)
+{
+
+    int max_nodes, final_nodes;
+    /* If we the standard number of propagations is higher than the number of nodes, we
+     * set the distance to 1 so every node is contacted via the initial communication */
+    if (num_nodes < num_props) return 1;
+    max_nodes = powl(num_props, max_depth);
+
+    /* Once we have the max number of nodes one initial communication can propagate to, the idea is
+     * to optimise the number of initial communications. For now we optimise the lower bound, to guarantee
+     * that the initial communication will, at the very least communicate with num_props nodes. */
+    while (max_nodes > num_nodes / num_props)
+    {
+        max_nodes /= num_props;
+    }
+
+    /* The following is an idea to guarantee that each initial communication propagates to at least 
+     * a certain % of nodes. The example is for 10%. Not implemented yet, certain cases would have to
+     * be explored: the % makes a max_nodes > num_nodes / num_props; the % makes max_nodes = num_props. */
+    /*while (max_nodes < num_nodes * 0.10)
+    {
+        max_nodes *= num_props;
+    }*/
+
+    if (max_nodes > num_props) return max_nodes;
+
+    return num_props;
+
+}
+
+void internal_send_command_nodes(request_t *command, int port, int base_distance, int num_sends)
+{
+    int i, rc;
+    struct sockaddr_in temp;
+    char next_ip[256];
+    request_t tmp_command;
+
+    memcpy(&tmp_command, command, sizeof(request_t));
+    for (i = 0; i < num_sends; i++)
+    {
+
+        // if no more nodes to propagate to
+        debug("base distance %d i %d num_nodes %d", base_distance, i, command->num_nodes);
+        if (base_distance * i > command->num_nodes) break;
+
+        temp.sin_addr.s_addr = command->nodes[i*base_distance];
+        strcpy(next_ip, inet_ntoa(temp.sin_addr));
+
+        // node distance is not needed
+        int max_ips = (base_distance * (1 + i) < command->num_nodes) ? base_distance * (1 + i) : command->num_nodes;
+        max_ips -= base_distance * i;
+
+        tmp_command.nodes = calloc(max_ips, sizeof(int));
+        tmp_command.num_nodes = max_ips;
+
+        memcpy(tmp_command.nodes, &command->nodes[base_distance*i], max_ips*sizeof(int));
+
+        rc=eards_remote_connect(next_ip, port);
+        if (rc<0){
+            debug("Error connecting with node %s, trying to correct it", next_ip);
+            correct_error_nodes(&tmp_command, command->nodes[base_distance*i], port);
+        }
+        else{
+            debug("Node %s with %d num_nodes contacted!", next_ip, tmp_command.num_nodes);
+            if (!send_command(&tmp_command)) {
+                debug("Error sending command to node %s, trying to correct it", next_ip);
+                eards_remote_disconnect();
+                correct_error_nodes(&tmp_command, command->nodes[i*base_distance], port);
+            }
+            else eards_remote_disconnect();
+        }
+        free(tmp_command.nodes);
+        tmp_command.num_nodes = 0;
+    }
+}
+
+void send_command_nodes(request_t command, cluster_conf_t *my_cluster_conf)
+{
+    int i, j, rc, base_distance, num_sends;
+    struct sockaddr_in temp;
+    char next_ip[256];
+
+    time_t ctime = time(NULL);
+    command.time_code = ctime;
+
+    /* We get which nodes this function will comunicate with by sending a message
+     * every _base_distance_ nodes, and sending to that node the list of nodes between 
+     * themselves and the next node. IE: if we have nodes A B C D E F G and we get a 
+     * base_distance of 3, we will send the message to A, D and G. To A we will send A B C,
+     * D will receive D E F, and G will only receive themselves. */
+    base_distance = get_max_prop_group(NUM_PROPS, MAX_PROP_DEPTH, command.num_nodes);
+    num_sends = command.num_nodes / base_distance; //number of nodes this function will comunicate with
+    debug("sending command with %d nodes, %d base_distance and %d num_sends", command.num_nodes, base_distance, num_sends);
+
+    /* Inner functionality for initial communication has been moved to its own function to avoid code replication */
+    internal_send_command_nodes(&command, my_cluster_conf->eard.port, base_distance, num_sends);
+}
+#endif
 
 void send_command_all(request_t command, cluster_conf_t *my_cluster_conf)
 {
