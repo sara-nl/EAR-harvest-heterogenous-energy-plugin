@@ -76,6 +76,7 @@ static uint EAR_STATE = NO_PERIOD;
 static int current_loop_id;
 static int MAX_POLICY_TRIES;
 static state_t pst;
+static uint total_th;
 
 #define DYNAIS_CUTOFF	1
 
@@ -199,6 +200,9 @@ void states_begin_job(int my_id,  char *app_name)
 	policy_freq = EAR_default_frequency;
 	init_log();
 	pst=policy_max_tries(&MAX_POLICY_TRIES);
+  total_th =  get_total_resources();
+  debug("Using %u total_threads",total_th);
+
 	
 }
 
@@ -462,7 +466,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			#endif
 			if (((iterations - 1) % perf_count_period) || (iterations == 1)) return;
 			N_iter = iterations - begin_iter;
-			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);	
+			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, total_th);	
 			if (result == EAR_NOT_READY)
 			{
 			#if 0
@@ -547,7 +551,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (((iterations - 1) % perf_count_period) ) return;
 			/* We can compute the signature */
 			N_iter = iterations - begin_iter;
-			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);
+			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, total_th);
 			if (result == EAR_NOT_READY)
 			{
 				perf_count_period++;
@@ -649,7 +653,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
             if (((iterations - 1) % perf_count_period) ) return;
             /* We can compute the signature */
             N_iter = iterations - begin_iter;
-            result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, loop_signature.job.procs);
+            result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, total_th);
             if (result == EAR_NOT_READY)
             {
                 perf_count_period++;
