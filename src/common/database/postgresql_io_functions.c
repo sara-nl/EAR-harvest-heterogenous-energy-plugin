@@ -62,6 +62,15 @@
                                 "GlobEnergyConsumedT2, GlobEnergyLimit, GlobEnergyPeriodT1, GlobEnergyPeriodT2, GlobEnergyPolicy) "\
                                 "VALUES "
 
+#if USE_GPUS
+#define LEARNING_SIGNATURE_QUERY_SIMPLE "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+                                        "GBS, TPI, CPI, Gflops, time, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES"
+
+#define LEARNING_SIGNATURE_QUERY_FULL   "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+                                        "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                                        "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
+                                        "instructions, cycles, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "
+#else
 #define LEARNING_SIGNATURE_QUERY_SIMPLE "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
                                         "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES"
 
@@ -69,15 +78,14 @@
                                         "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                         "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
                                         "instructions, cycles, avg_f, def_f) VALUES "
+#endif
 
 #define POWER_SIGNATURE_PSQL_QUERY   "INSERT INTO Power_signatures (DC_power, DRAM_power, PCK_power, EDP, max_DC_power, min_DC_power, "\
                                 "time, avg_f, def_f) VALUES "
 
 #if USE_GPUS
 #define GPU_SIGNATURE_PSQL_QUERY    "INSERT INTO GPU_signatures (GPU_power, GPU_freq, GPU_mem_freq, GPU_util, GPU_mem_util) VALUES "
-#endif
 
-#if USE_GPUS
 #define PERIODIC_METRIC_QUERY_DETAIL    "INSERT INTO Periodic_metrics (start_time, end_time, DC_energy, node_id, job_id, step_id, avg_f, temp, DRAM_energy, "\
                                         "PCK_energy, GPU_energy) VALUES " 
 #else
@@ -92,6 +100,15 @@
 
 #define PERIODIC_AGGREGATION_PSQL_QUERY "INSERT INTO Periodic_aggregations (DC_energy, start_time, end_time, eardbd_host) VALUES "
 
+#if USE_GPUS
+#define SIGNATURE_QUERY_SIMPLE  "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power,  EDP,"\
+                                        "GBS, TPI, CPI, Gflops, time, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES"
+
+#define SIGNATURE_QUERY_FULL    "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power,  EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                                "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
+                                "instructions, cycles, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "
+#else
 #define SIGNATURE_QUERY_SIMPLE  "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power,  EDP,"\
                                         "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES"
 
@@ -99,6 +116,7 @@
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                 "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
                                 "instructions, cycles, avg_f, def_f) VALUES "
+#endif
 
 
 #define DB_SIMPLE 1
@@ -466,10 +484,60 @@ int postgresql_retrieve_power_signatures(PGconn *connection, char *query, power_
     return num_rows;
 }
 
+#if USE_GPUS
+int postgresql_retrieve_gpu_signatures(PGconn *connection, char *query, gpu_signature_t *gpu_sig)
+{
+    int i, num_rows;
+    gpu_app_t base_data;
+
+    PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) 
+    {
+        verbose(VMYSQL, "ERROR while reading gpu signature id: %s\n", PQresultErrorMessage(res));
+        PQclear(res);
+        return EAR_ERROR;
+    }
+
+    //for every row, we read the data and query the job, power_signature and signature, the latter only if the job has one
+
+    num_rows = PQntuples(res);
+    if (num_rows < 1 || num_rows > MAX_GPUS_SUPPORTED)
+    {
+        verbose(VMYSQL, "Query returned %d rows (minimum 1, maximum %d)\n", num_rows, MAX_GPUS_SUPPORTED);
+        PQclear(res);
+        return EAR_ERROR;
+    }
+
+    gpu_sig->num_gpus = num_rows; 
+
+    for (i = 0; i < num_rows; i++)
+    {
+        //we don't actually need to read the id in postgresql
+        //id = htonl( *((ulong *)PQgetvalue(res, i, 1))); 
+
+        base_data.GPU_power    = double_swap( *((double *)PQgetvalue(res, i, 2)));
+        base_data.GPU_freq     = htonl( *((ulong *)PQgetvalue(res, i, 3)));
+        base_data.GPU_mem_freq = htonl( *((ulong *)PQgetvalue(res, i, 4)));
+        base_data.GPU_util     = htonl( *((ulong *)PQgetvalue(res, i, 5)));
+        base_data.GPU_mem_util = htonl( *((ulong *)PQgetvalue(res, i, 6)));
+
+        memcpy(&gpu_sig->gpu_data[i], &base_data, sizeof(gpu_app_t));
+    }
+   
+    return num_rows;
+}
+#endif
+
 int postgresql_retrieve_signatures(PGconn *connection, char *query, signature_t **sigs)
 {
     int i, num_rows;
     signature_t *sig_aux;
+#if USE_GPUS
+    char gpu_sig_query[256];
+    long int min_gpu_sig_id = -1, max_gpu_sig_id = -1;
+    int num_gpus;
+#endif
 
     PGresult *res = PQexecParams(connection, query, 0, NULL, NULL, NULL, NULL, 1); //0 indicates text mode, 1 is binary
 
@@ -516,9 +584,27 @@ int postgresql_retrieve_signatures(PGconn *connection, char *query, signature_t 
             sig_aux[i].instructions = htonl( *((ulong *)PQgetvalue(res, i, 18)));
             sig_aux[i].avg_f = htonl( *((ulong *)PQgetvalue(res, i, 19)));
             sig_aux[i].def_f = htonl( *((ulong *)PQgetvalue(res, i, 20)));
+#if USE_GPUS
+            min_gpu_sig_id = htonl( *((ulong *)PQgetvalue(res, i, 21)));
+            max_gpu_sig_id = htonl( *((ulong *)PQgetvalue(res, i, 22)));
+#endif
         }
         sig_aux[i].avg_f = htonl( *((ulong *)PQgetvalue(res, i, 10)));
         sig_aux[i].def_f = htonl( *((ulong *)PQgetvalue(res, i, 11)));
+#if USE_GPUS
+        min_gpu_sig_id = htonl( *((ulong *)PQgetvalue(res, i, 12)));
+        max_gpu_sig_id = htonl( *((ulong *)PQgetvalue(res, i, 13)));
+#endif
+        if (min_gpu_sig_id >= 0 && max_gpu_sig_id >= 0)
+        {
+            sprintf(gpu_sig_query, "SELECT * FROM GPU_signatures WHERE id <= %ld AND id >= %ld", max_gpu_sig_id, min_gpu_sig_id);
+            num_gpus = postgresql_retrieve_gpu_signatures(connection, gpu_sig_query, &sig_aux[i].gpu_sig);
+            if (num_gpus < 1)
+                sig_aux[i].gpu_sig.num_gpus = 0;
+        }
+
+        min_gpu_sig_id = -1;
+        max_gpu_sig_id = -1;
 
     }
    
