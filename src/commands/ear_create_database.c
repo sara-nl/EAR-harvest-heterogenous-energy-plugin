@@ -26,7 +26,7 @@
 #include <common/database/db_helper.h>
 #include <common/types/configuration/cluster_conf.h>
 
-char print_out = 0;
+char print_out = 1;
 cluster_conf_t my_cluster;
 char signature_detail = !DB_SIMPLE;
 char db_node_detail = DEMO;
@@ -35,10 +35,12 @@ void usage(char *app)
 {
 	fprintf(stdout, "Usage:%s [options]\n", app);
     fprintf(stdout, "\t-p\t\tSpecify the password for MySQL's root user.\n");
-    fprintf(stdout, "\t-o\t\tOutputs the commands that would run.\n");
-    fprintf(stdout, "\t-r\t\tRuns the program. If '-o' this option will be override.\n");
+    fprintf(stdout, "\t-e\t\tSpecify ear.conf file location. [default: $EAR_ETC/ear/ear.conf].\n");
+    fprintf(stdout, "\t-o\t\tOutputs the queries that would run.\n");
+    fprintf(stdout, "\t-r\t\tRuns the the queries and creates the database.\n");
     fprintf(stdout, "\t-v\t\tShows current EAR version.\n");
     fprintf(stdout, "\t-h\t\tShows this message.\n");
+    fprintf(stdout, "\nIf neither -o or -r options are used it will default to -o. \n\n");
 	exit(0);
 }
 
@@ -747,6 +749,9 @@ int main(int argc,char *argv[])
 {
     int c;
     char passw[256], root_user[256];;
+    char ear_path[256];
+    char default_ear_path = 1;
+
     if (argc < 2) usage(argv[0]);
 #if DB_MYSQL
     strcpy(root_user, "root");
@@ -757,12 +762,16 @@ int main(int argc,char *argv[])
     strcpy(passw, "");
 
     struct termios t;
-    while ((c = getopt(argc, argv, "phrouv")) != -1)
+    while ((c = getopt(argc, argv, "phrouve:")) != -1)
     {
         switch(c)
         {
             case 'h':
                usage(argv[0]);
+               break;
+            case 'e':
+               strcpy(ear_path, optarg); 
+               default_ear_path = 0;
                break;
             case 'v':
                print_version();
@@ -782,6 +791,7 @@ int main(int argc,char *argv[])
                 fprintf(stdout, " ");
                 break;
             case 'r':
+                print_out = 0;
                 break;
             case 'u':
                 verbosen(0, "Introduce root's user: ");
@@ -798,12 +808,13 @@ int main(int argc,char *argv[])
 
 
     //cluster_conf_t my_cluster;
-    char ear_path[256];
-
-    if (get_ear_conf_path(ear_path) == EAR_ERROR)
+    if (default_ear_path)
     {
-        fprintf(stdout, "Error getting ear.conf path"); //error
-        exit(0);
+        if (get_ear_conf_path(ear_path) == EAR_ERROR)
+        {
+            fprintf(stdout, "Error getting ear.conf path"); //error
+            exit(0);
+        }
     }
 #if DB_MYSQL 
     MYSQL *connection = mysql_init(NULL); 
