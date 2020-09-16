@@ -15,27 +15,63 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-int init_cache_metrics()
+#include <metrics/frequency/cpu.h>
+#include <metrics/frequency/cpu/intel63.h>
+
+static struct cache_ops
 {
-	return 0;
+	state_t (*init)		(topology_t *tp);
+	state_t (*dispose)	();
+	state_t (*reset)	();
+	state_t (*start)	();
+	state_t (*stop)		(llong *L1_misses, llong *LL_misses);
+	state_t (*read)		(llong *L1_misses, llong *LL_misses);
+	state_t (*print)	(llong *L1_misses, llong *LL_misses);
+} ops;
+
+state_t cache_init(topology_t *tp)
+{
+	if (state_ok(cache_perf_status(tp)))
+	{
+		ops.init	= cache_perf_init;
+		ops.dispose	= cache_perf_dispose;
+		ops.reset	= cache_perf_reset;
+		ops.start	= cache_perf_start;
+		ops.stop	= cache_perf_stop;
+		ops.read	= cache_perf_read;
+		ops.print	= cache_perf_print;
+		return ops.init(tp);
+	} else {
+		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
+	}
 }
 
-void reset_cache_metrics()
+state_t cache_dispose()
 {
-
+	opreturn(ops.dispose,);
 }
 
-void start_cache_metrics()
+state_t cache_reset()
 {
-
+	opreturn(ops.reset,);
 }
 
-void stop_cache_metrics(long long *l1)
+state_t cache_start()
 {
-	*l1 = 0;
+	opreturn(ops.start,);
 }
 
-void print_cache_metrics(long long *L)
+state_t cache_stop(llong *L1_misses, llong *LL_misses)
 {
-	*L = 0;
+	opreturn(ops.stop, L1_misses, LL_misses);
+}
+
+state_t cache_read(llong *L1_misses, llong *LL_misses)
+{
+	opreturn(ops.read, L1_misses, LL_misses);
+}
+
+state_t cache_print()
+{
+	opreturn(ops.print, L1_misses, LL_misses);
 }
