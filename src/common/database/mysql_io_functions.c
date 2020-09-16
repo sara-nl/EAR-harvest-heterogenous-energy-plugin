@@ -1483,6 +1483,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             }
             else // if no gpu_signatures we set the values to null
             {
+                bind[21+offset].buffer_type = bind[22+offset].buffer_type = MYSQL_TYPE_NULL;
                 bind[21+offset].is_null = bind[22+offset].is_null = (my_bool *) 1;
                 bind[21+offset].buffer  = bind[22+offset].buffer  = NULL;
             }
@@ -1505,6 +1506,7 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
             }
             else // if no gpu_signatures we set the values to null
             {
+                bind[11+offset].buffer_type = bind[12+offset].buffer_type = MYSQL_TYPE_NULL;
                 bind[11+offset].is_null = bind[12+offset].is_null = (my_bool *) 1;
                 bind[11+offset].buffer  = bind[12+offset].buffer  = NULL;
             }
