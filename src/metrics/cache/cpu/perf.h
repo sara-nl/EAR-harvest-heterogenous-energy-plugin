@@ -15,21 +15,23 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_CACHE_H
-#define METRICS_CACHE_H
+#ifndef METRICS_CACHE_PERF
+#define METRICS_CACHE_PERF
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
+#include <metrics/cache/cache.h>
 
-int init_cache_metrics();
+state_t cache_perf_status(topology_t *tp);
 
-void reset_cache_metrics();
+state_t cache_perf_init(ctx_t *c);
 
-void start_cache_metrics();
+state_t cache_perf_dispose(ctx_t *c);
 
-void stop_cache_metrics(llong *L1_misses, llong *LL_misses);
+state_t cache_perf_reset(ctx_t *c);
 
-void print_cache_metrics(llong *L1_misses, llong *LL_misses);
+state_t cache_perf_start(ctx_t *c);
 
-#endif //METRICS_CACHE_H
+state_t cache_perf_stop(ctx_t *c, llong *L1_misses, llong *LL_misses);
+
+state_t cache_perf_read(ctx_t *c, llong *L1_misses, llong *LL_misses);
+
+#endif //METRICS_CPI_INTEL63
