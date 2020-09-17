@@ -30,11 +30,6 @@
 // TODO: clean, just for fix spaguettis
 static topology_t topo_static;
 
-static int file_is_accessible(const char *path)
-{
-	return (access(path, F_OK) == 0);
-}
-
 state_t topology_select(topology_t *t, topology_t *s, int component, int group, int val)
 {
 	ulong addr_offset;
@@ -281,6 +276,22 @@ static void topology_cpuid(topology_t *topo)
 	}
 }
 
+static int is_online(const char *path)
+{
+	char c = '0';
+		return 0;
+	if (access(path, F_OK) != 0) {
+		return 0;
+	}
+	if (state_fail(file_read(path, &c, sizeof(char)))) {
+		return 0;
+	}
+	if (c != '1') {
+		return 0;
+	}
+	return 1;
+}
+
 state_t topology_init(topology_t *topo)
 {
 	char path[SZ_NAME_LARGE];
@@ -304,10 +315,10 @@ state_t topology_init(topology_t *topo)
 
 	/* Number of CPUs */
 	do {
-		sprintf(path, "/sys/devices/system/cpu/cpu%d", topo->cpu_count + 1);
+		sprintf(path, "/sys/devices/system/cpu/cpu%d/online", topo->cpu_count + 1);
 		topo->cpu_count += 1;
 	}
-	while(file_is_accessible(path));
+	while(is_online(path));
 	
 	//
 	topo->cpus = calloc(topo->cpu_count, sizeof(core_t));
