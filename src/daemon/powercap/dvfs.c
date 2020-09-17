@@ -28,7 +28,7 @@
 #include <signal.h>
 #include <common/colors.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
 #include <metrics/energy/cpu.h>
@@ -43,11 +43,14 @@
 #define RAPL_VS_NODE_POWER_limit 0.85
 #define DEBUG_PERIOD 15
 
+#define DVFS_PERIOD 0.1
+
 static uint current_dvfs_pc=0,set_dvfs_pc=0;
 static uint dvfs_pc_enabled=0;
 static uint c_status=PC_STATUS_IDLE;
 static uint c_mode=PC_MODE_LIMIT;
 static ulong c_req_f;
+static ulong num_pstates;
 
 /* This  subscription will take care automatically of the power monitoring */
 static uint dvfs_pc_secs=0,num_packs;
@@ -94,6 +97,7 @@ state_t dvfs_pc_thread_init(void *p)
   node_size = node_desc.cpu_count;
   debug("DVFS:Initializing frequency in dvfs_pc %u cpus",node_size);
   frequency_init(node_size);
+	num_pstates = frequency_get_num_pstates();
 	return EAR_SUCCESS;
 }
 /************************ This function is called by the monitor in iterative part ************************/
@@ -112,7 +116,7 @@ state_t dvfs_pc_thread_main(void *p)
     rapl_msr_energy_to_str(rapl_energy_str,values_diff);
     /*debug(rapl_energy_str); */
     acum_energy=acum_rapl_energy(values_diff);
-    power_rapl=(float)acum_energy/(1*RAPL_MSR_UNITS);
+    power_rapl=(float)acum_energy/(DVFS_PERIOD*RAPL_MSR_UNITS);
 		my_limit=(float)current_dvfs_pc;
 		// debug("DVFS monitoring exectuted power_computed=%f limit %u",power_rapl,current_dvfs_pc);
     /*debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);*/
@@ -127,9 +131,9 @@ state_t dvfs_pc_thread_main(void *p)
       if (power_rapl > my_limit){ /* We are above the PC */
         c_freq=frequency_get_cpu_freq(0);
         c_pstate=frequency_freq_to_pstate(c_freq);
-        c_pstate=c_pstate+1;
+        c_pstate=ear_min(c_pstate+1,num_pstates-1);
         c_freq=frequency_pstate_to_freq(c_pstate);
-        debug("DVFS:%sReducing freq to %lu: power %f limit %f%s",COL_RED,c_freq,power_rapl,my_limit,COL_CLR);
+        debug("DVFS:%sReducing freq to %lu (pstate %u): power %f limit %f%s",COL_RED,c_freq,c_pstate,power_rapl,my_limit,COL_CLR);
         frequency_set_all_cpus(c_freq);
       }else{ /* We are below the PC */
         t_pstate=frequency_freq_to_pstate(c_req_f);
@@ -143,10 +147,17 @@ state_t dvfs_pc_thread_main(void *p)
             debug("DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u) estimated %f = %f + %u, limit %f%s",COL_RED,c_freq,t_pstate,c_pstate,power_rapl+extra,power_rapl,extra,my_limit,COL_CLR);
             frequency_set_all_cpus(c_freq);
           }else{
-            if (!dvfs_pc_secs) debug("DVFS:Not increasing becase not enough power");
+            if (!dvfs_pc_secs){ 
+							debug("DVFS:Not increasing becase not enough power");
+						}
           }
-        }else{
-          if (!dvfs_pc_secs) debug("DVFS: Not increasing because c_pstate %u == t_pstate %u",c_pstate,t_pstate);
+        }else if (c_pstate < t_pstate){
+					debug("c_pstate %u < t_pstate %u. Power %f limit %f",c_pstate,t_pstate,power_rapl,my_limit);
+					c_freq=frequency_pstate_to_freq(t_pstate);
+					debug("Setting freq to %.2f",(float)c_freq/1000000.0);
+					frequency_set_all_cpus(c_freq);
+				}else{
+          if (!dvfs_pc_secs) debug("DVFS: Not increasing because c_pstate %u == t_pstate %u. Power %f limit %f",c_pstate,t_pstate,power_rapl,my_limit);
         }
       }
 
@@ -173,8 +184,8 @@ state_t enable(suscription_t *sus)
 	}
 	sus->call_main = dvfs_pc_thread_main;
 	sus->call_init = dvfs_pc_thread_init;
-	sus->time_relax = 1000;
-	sus->time_burst = 1000;
+	sus->time_relax = DVFS_PERIOD*1000;
+	sus->time_burst = DVFS_PERIOD*1000;
 	sus->suscribe(sus);
 	debug("DVFS Subscription done");
 	/* Init data */

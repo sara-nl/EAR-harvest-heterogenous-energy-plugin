@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/system/symplug.h>
 
@@ -44,6 +44,7 @@ static state_t _symplug_open(char *path, void *calls[], const char *names[], uin
 {
 	void *handle = dlopen(path, flags);
 	if (handle == NULL) {
+		debug("%s",dlerror());
 		state_return_msg(EAR_ERROR, 0, dlerror());
 	}
 	return symplug_join(handle, calls, names, n);

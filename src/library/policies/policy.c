@@ -175,8 +175,8 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 			error("gpu_lib_init");
 		}
 	}
-	}
 	#endif
+	}
 	
 	return policy_init();
 }
