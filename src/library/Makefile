@@ -56,7 +56,6 @@ mpix_OBJS = \
 
 core_OBJS = \
     metrics/metrics.o \
-    metrics/gpu.o \
     models/models.o \
     policies/policy.o \
     policies/pc_suport.o \
@@ -65,6 +64,11 @@ core_OBJS = \
     tracer/tracer.o \
     dynais/dynais.a \
 		common/library_shared_data.o 
+
+ifdef CUDA_BASE
+core_OBJS += \
+    metrics/gpu.o
+endif
 
 ######## RULES
 

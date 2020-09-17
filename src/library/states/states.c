@@ -543,6 +543,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* VERBOSE */
 			VERBOSE_SIG();
 			REPORT_TRACES();
+			#if REPORT_NODE_SIGNATURES
+			/* This function prints all the node signatures */
+			print_ready_shared_signatures(masters_info.my_master_rank,lib_shared_region,sig_shared_region);
+			#endif
 			/* END VERBOSE */
 			break;
 		case SIGNATURE_STABLE:
@@ -569,6 +573,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* VERBOSE */
 			VERBOSE_SIG();
 			REPORT_TRACES();
+      #if REPORT_NODE_SIGNATURES
+      /* This function prints all the node signatures */
+			print_ready_shared_signatures(masters_info.my_master_rank,lib_shared_region,sig_shared_region);
+      #endif
+
 			/* END VERBOSE */
 
 			

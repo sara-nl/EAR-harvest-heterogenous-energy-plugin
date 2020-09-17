@@ -112,6 +112,7 @@ int are_signatures_ready(lib_shared_data_t *data,shsignature_t *sig);
 void clean_signatures(lib_shared_data_t *data,shsignature_t *sig);
 void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig);
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig);
+void print_ready_shared_signatures(int master_rank,lib_shared_data_t *data,shsignature_t *sig);
 void print_sh_signature(shsignature_t *sig);
 void clean_my_mpi_info(mpi_information_t *info);
 void print_local_mpi_info(mpi_information_t *info);

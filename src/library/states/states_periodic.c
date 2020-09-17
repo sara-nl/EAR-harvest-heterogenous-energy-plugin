@@ -244,6 +244,11 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 						#endif
 
 					}	
+		      #if REPORT_NODE_SIGNATURES
+      		/* This function prints all the node signatures */
+      		print_ready_shared_signatures(masters_info.my_master_rank,lib_shared_region,sig_shared_region);
+      		#endif
+
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);

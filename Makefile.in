@@ -28,6 +28,8 @@ DOCDIR       = @docdir@
 FEAT_AVX512  = @FEAT_AVX512@
 CHOWN_USR    = @USER@
 CHOWN_GRP    = @GROUP@
+## Define SYN_TEST for external synthetic tests compilation
+#CONSTANTS    = -DSEC_KEY=10001 -DSYN_TEST
 CONSTANTS    = -DSEC_KEY=10001
 REPLACE      =
 
