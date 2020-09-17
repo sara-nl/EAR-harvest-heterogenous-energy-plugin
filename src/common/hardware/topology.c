@@ -279,7 +279,6 @@ static void topology_cpuid(topology_t *topo)
 static int is_online(const char *path)
 {
 	char c = '0';
-		return 0;
 	if (access(path, F_OK) != 0) {
 		return 0;
 	}
