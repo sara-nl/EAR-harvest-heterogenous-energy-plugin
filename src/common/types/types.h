@@ -33,5 +33,4 @@
 #include <common/types/daemon_log.h>
 #include <common/types/pc_app_info.h>
 
-
 #endif //EAR_TYPES_H
