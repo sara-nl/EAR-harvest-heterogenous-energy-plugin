@@ -15,30 +15,25 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_CACHE_H
-#define METRICS_CACHE_H
+#ifndef METRICS_CACHE_PERF
+#define METRICS_CACHE_PERF
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
+#include <metrics/cache/cache.h>
 
-state_t cache_load(topology_t *tp);
+state_t cache_perf_status(topology_t *tp);
 
-state_t cache_init();
+state_t cache_perf_init(ctx_t *c);
 
-state_t cache_dispose();
+state_t cache_perf_dispose(ctx_t *c);
 
-state_t cache_reset();
+state_t cache_perf_reset(ctx_t *c);
 
-state_t cache_start();
+state_t cache_perf_start(ctx_t *c);
 
-state_t cache_stop(llong *L1_misses, llong *LL_misses);
+state_t cache_perf_stop(ctx_t *c, llong *L1_misses, llong *LL_misses);
 
-state_t cache_read(llong *L1_misses, llong *LL_misses);
+state_t cache_perf_read(ctx_t *c, llong *L1_misses, llong *LL_misses);
 
-state_t cache_data_print(llong L1_misses, llong LL_misses);
+state_t cache_perf_data_print(ctx_t *c, llong L1_misses, llong LL_misses);
 
-/* This is an obsolete function to make metrics.c compatible. */
-void get_cache_metrics(llong *L1_misses, llong *LL_misses);
-
-#endif //METRICS_CACHE_H
+#endif //METRICS_CPI_INTEL63
