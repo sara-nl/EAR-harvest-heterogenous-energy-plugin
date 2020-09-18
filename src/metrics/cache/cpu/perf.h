@@ -34,4 +34,6 @@ state_t cache_perf_stop(ctx_t *c, llong *L1_misses, llong *LL_misses);
 
 state_t cache_perf_read(ctx_t *c, llong *L1_misses, llong *LL_misses);
 
+state_t cache_perf_data_print(ctx_t *c, llong L1_misses, llong LL_misses);
+
 #endif //METRICS_CPI_INTEL63

@@ -75,6 +75,7 @@ void start_basic_metrics()
 	}
 }
 
+/* This is an obsolete function to make metrics.c compatible. */
 static long long accum_cycles;
 static long long accum_insts;
 
@@ -98,7 +99,7 @@ void read_basic_metrics(llong *cycles, llong *insts)
 
 void get_basic_metrics(llong *cycles, llong *insts)
 {
-	return read_basic_metrics(cycles, insts);
+	read_basic_metrics(cycles, insts);
 	*cycles = accum_cycles;
 	*insts  = accum_insts;
 }

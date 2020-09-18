@@ -24,7 +24,7 @@ static perf_t perf_llc;
 static perf_t perf_l1d;
 static uint initialized;
 
-state_t cache_intel63_status(topology_t *tp)
+state_t cache_perf_status(topology_t *tp)
 {
 	return EAR_SUCCESS;
 }
@@ -130,5 +130,10 @@ state_t cache_perf_read(ctx_t *c, llong *L1_misses, llong *LL_misses)
 	debug("total ins %lld", values[0]);
 	debug("total cyc %lld", values[1]);
 
+	return EAR_SUCCESS;
+}
+
+state_t cache_perf_data_print(ctx_t *c, llong L1_misses, llong LL_misses)
+{
 	return EAR_SUCCESS;
 }

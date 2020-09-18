@@ -13,9 +13,8 @@ all: all.components $(cach_OBJS)
 
 ######## SUBFOLDERS
 
-%.components: ;
-	
-#	@ $(MAKE) -C 'cpu' $* || exit
+%.components:
+	@ $(MAKE) -C 'cpu' $* || exit
 
 ######## OPTIONS
 
