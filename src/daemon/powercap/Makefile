@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC $(CONSTANTS)
 
 ######## FILES
 
@@ -27,6 +27,8 @@ gpu_dvfs_DEPS =
 
 dvfs_DEPS = 
 
+inm_DEPS = $(SRCDIR)/common/libcommon.a
+
 ######## RULES
 
 all:$(powercap_OBJS)  $(powercap_BINS)
@@ -41,6 +43,9 @@ gpu.so:gpu.o $(gpu_DEPS)
 
 gpu_dvfs.so:gpu_dvfs.o $(gpu_dvfs_DEPS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(gpu_dvfs_DEPS)
+
+inm.so:inm.o $(inm_DEPS)
+	$(CC) $(CC_FLAGS) $(CFLAGS) -shared $< -o $@ $(inm_DEPS)
 
 
 %.so: %.o 

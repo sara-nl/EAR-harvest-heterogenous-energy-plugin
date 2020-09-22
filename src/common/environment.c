@@ -490,13 +490,13 @@ int check_threads()
         my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
         if (my_omp_get_max_threads==NULL){
 							debug("mkl_get_num_threads symbol not found");
-                my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_num_threads");
+                my_omp_get_max_threads = (int(*)(void)) dlsym (RTLD_DEFAULT, "omp_get_max_threads");
                 if (my_omp_get_max_threads==NULL){ 
-									debug("omp_get_num_threads symbol not found");
+									debug("omp_get_max_threads symbol not found");
 									return 0;
 								}
                 else{ 
-									debug("omp_get_num_threads symbol found");
+									debug("omp_get_max_threads symbol found");
 									return 1;
 								}
         }else{

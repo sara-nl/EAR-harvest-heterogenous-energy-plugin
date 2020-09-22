@@ -813,7 +813,6 @@ request_header_t correct_data_prop_nodes(request_t *command, int self_ip, uint p
 int get_max_prop_group(int num_props, int max_depth, int num_nodes)
 {
 
-    return 2;
     int max_nodes, final_nodes;
     /* If we the standard number of propagations is higher than the number of nodes, we
      * set the distance to 1 so every node is contacted via the initial communication */

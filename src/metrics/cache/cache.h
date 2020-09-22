@@ -18,14 +18,27 @@
 #ifndef METRICS_CACHE_H
 #define METRICS_CACHE_H
 
-int init_cache_metrics();
+#include <common/states.h>
+#include <common/plugins.h>
+#include <common/hardware/topology.h>
 
-void reset_cache_metrics();
+state_t cache_load(topology_t *tp);
 
-void start_cache_metrics();
+state_t cache_init();
 
-void stop_cache_metrics(long long *l1);
+state_t cache_dispose();
 
-void print_cache_metrics(long long *L);
+state_t cache_reset();
+
+state_t cache_start();
+
+state_t cache_stop(llong *L1_misses, llong *LL_misses);
+
+state_t cache_read(llong *L1_misses, llong *LL_misses);
+
+state_t cache_data_print(llong L1_misses, llong LL_misses);
+
+/* This is an obsolete function to make metrics.c compatible. */
+void get_cache_metrics(llong *L1_misses, llong *LL_misses);
 
 #endif //METRICS_CACHE_H

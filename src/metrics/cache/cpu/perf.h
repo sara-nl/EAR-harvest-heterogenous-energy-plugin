@@ -15,22 +15,25 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef EAR_TYPES_H
-#define EAR_TYPES_H
+#ifndef METRICS_CACHE_PERF
+#define METRICS_CACHE_PERF
 
-#include <common/types/log.h>
-#include <common/types/loop.h>
-#include <common/types/generic.h>
-#include <common/types/daemon_log.h>
-#include <common/types/application.h>
-#include <common/types/periodic_metric.h>
-#include <common/types/periodic_aggregation.h>
-#include <common/types/configuration/cluster_conf.h>
+#include <metrics/cache/cache.h>
 
-#include <common/types/job.h>
-#include <common/types/loop.h>
-#include <common/types/services.h>
-#include <common/types/daemon_log.h>
-#include <common/types/pc_app_info.h>
+state_t cache_perf_status(topology_t *tp);
 
-#endif //EAR_TYPES_H
+state_t cache_perf_init(ctx_t *c);
+
+state_t cache_perf_dispose(ctx_t *c);
+
+state_t cache_perf_reset(ctx_t *c);
+
+state_t cache_perf_start(ctx_t *c);
+
+state_t cache_perf_stop(ctx_t *c, llong *L1_misses, llong *LL_misses);
+
+state_t cache_perf_read(ctx_t *c, llong *L1_misses, llong *LL_misses);
+
+state_t cache_perf_data_print(ctx_t *c, llong L1_misses, llong LL_misses);
+
+#endif //METRICS_CPI_INTEL63

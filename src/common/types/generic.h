@@ -46,4 +46,7 @@ typedef ulong			job_id;
 #define ID_SIZE				64
 #define USER			64
 
+#define ear_min(X, Y) (((X) < (Y)) ? (X) : (Y))
+#define ear_max(X, Y) (((X) > (Y)) ? (X) : (Y))
+
 #endif
