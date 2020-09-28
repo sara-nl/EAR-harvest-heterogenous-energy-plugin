@@ -558,31 +558,32 @@ int eards_remote_disconnect()
 request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, request_t *command, uint port, void **data)
 {
     char *temp_data, *final_data = NULL;
-    int rc, i, final_size = 0, default_type = EAR_ERROR;
+    int rc, i, current_dist, off_ip, current_idx, final_size = 0, default_type = EAR_ERROR;
     struct sockaddr_in temp;
-    unsigned int current_dist;
     request_header_t head;
     char next_ip[64];
 
-    current_dist = command->node_dist;
+    current_dist = target_idx - target_idx%NUM_PROPS;
+    off_ip = target_idx%NUM_PROPS;
 
     for ( i = 1; i <= NUM_PROPS; i++)
     {
+        current_idx = current_dist*NUM_PROPS + i*NUM_PROPS + off_ip;
         //check that the next ip exists within the range
-        if ((target_idx + current_dist + i*NUM_PROPS) >= total_ips) break;
+        if (current_idx >= total_ips) break;
 
         //prepare next node data
-        temp.sin_addr.s_addr = ips[target_idx + current_dist + i*NUM_PROPS];
+        temp.sin_addr.s_addr = ips[current_idx];
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
         //prepare next node distance
-        command->node_dist = current_dist + i*NUM_PROPS;
+        command->node_dist = current_idx - off_ip;
 
         //connect and send data
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
             debug("propagate_req:Error connecting to node: %s", next_ip);
-            head = correct_data_prop(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+            head = correct_data_prop(current_idx, total_ips, ips, command, port, (void **)&temp_data);
         }
         else
         {
@@ -592,7 +593,7 @@ request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, requ
             {
                 debug("propagate_req: Error propagating command to node %s", next_ip);
                 eards_remote_disconnect();
-                head = correct_data_prop(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+                head = correct_data_prop(current_idx, total_ips, ips, command, port, (void **)&temp_data);
             }
             else eards_remote_disconnect();
         }
@@ -629,30 +630,31 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
     if (command->node_dist > total_ips) return;
     struct sockaddr_in temp;
 
-    int i, rc;
-    unsigned int  current_dist;
+    int i, rc, current_dist, off_ip, current_idx;
     char next_ip[50]; 
 
-    current_dist = command->node_dist;
+    current_dist = target_idx - target_idx%NUM_PROPS;
+    off_ip = target_idx%NUM_PROPS;
 
     for (i = 1; i <= NUM_PROPS; i++)
     {
+        current_idx = current_dist*NUM_PROPS + i*NUM_PROPS + off_ip;
         //check that the next ip exists within the range
-        if ((target_idx + current_dist + i*NUM_PROPS) >= total_ips) break;
+        if (current_idx >= total_ips) break;
 
         //prepare next node data
-        temp.sin_addr.s_addr = ips[target_idx + current_dist + i*NUM_PROPS];
+        temp.sin_addr.s_addr = ips[current_idx];
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
 
         //prepare next node distance
-        command->node_dist = current_dist + i*NUM_PROPS;
+        command->node_dist = current_idx - off_ip;
 
         //connect and send data
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
             debug("propagate_req:Error connecting to node: %s", next_ip);
-            correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+            correct_error(current_idx, total_ips, ips, command, port);
         }
         else
         {
@@ -660,7 +662,7 @@ void correct_error(int target_idx, int total_ips, int *ips, request_t *command, 
             {
                 debug("propagate_req: Error propagating command to node %s", next_ip);
                 eards_remote_disconnect();
-                correct_error(target_idx + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+                correct_error(current_idx, total_ips, ips, command, port);
             }
             else eards_remote_disconnect();
         }

@@ -116,6 +116,7 @@ src/tests/functionals/signaures_avg
 src/tests/functionals/ips_check
 src/tests/functionals/temperature_check
 src/tests/functionals/postgres_test
+src/tests/functionals/propagation_test
 src/tools/coefficients_comparison
 src/tools/coeffs_compare
 src/tools/coeffs_comparison

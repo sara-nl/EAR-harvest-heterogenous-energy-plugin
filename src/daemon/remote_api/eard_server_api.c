@@ -339,8 +339,7 @@ void propagate_req(request_t *command, uint port)
      
     struct sockaddr_in temp;
 
-    int i, rc;
-    unsigned int  current_dist;
+    int i, rc, off_ip, current_dist, current_idx;
     char next_ip[50]; 
 
     //if the command can't be propagated we return early
@@ -362,27 +361,29 @@ void propagate_req(request_t *command, uint port)
         }
     }
 
-    current_dist = command->node_dist;
+    current_dist = self_id - self_id%NUM_PROPS;
+    off_ip = self_id%NUM_PROPS;
 
     if (command->num_nodes < 1)
     {
         for (i = 1; i <= NUM_PROPS; i++)
         {
+            current_idx = current_dist*NUM_PROPS + i*NUM_PROPS + off_ip;
             //check that the next ip exists within the range
-            if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+            if (current_idx >= total_ips) break;
 
             //prepare next node data
-            temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+            temp.sin_addr.s_addr = ips[current_idx];
             strcpy(next_ip, inet_ntoa(temp.sin_addr));
             //prepare next node distance
-            command->node_dist = current_dist + i*NUM_PROPS;
+            command->node_dist = current_idx - off_ip;
 
             //connect and send data
             rc = eards_remote_connect(next_ip, port);
             if (rc < 0)
             {
                 error("propagate_req:Error connecting to node: %s\n", next_ip);
-                correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+                correct_error(current_idx, total_ips, ips, command, port);
             }
             else
             {
@@ -390,7 +391,7 @@ void propagate_req(request_t *command, uint port)
                 {
                     error("propagate_req: Error propagating command to node %s\n", next_ip);
                     eards_remote_disconnect();
-                    correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+                    correct_error(current_idx, total_ips, ips, command, port);
                 }
                 else eards_remote_disconnect();
             }
@@ -417,32 +418,33 @@ void propagate_req(request_t *command, uint port)
      
     struct sockaddr_in temp;
 
-    int i, rc;
-    unsigned int  current_dist;
+    int i, rc, off_ip, current_dist, current_idx;
     char next_ip[50]; 
 
     //if the command can't be propagated we return early
     if (!can_propagate(command)) return;
 
-    current_dist = command->node_dist;
+    current_dist = self_id - self_id%NUM_PROPS;
+    off_ip = self_id%NUM_PROPS;
 
     for (i = 1; i <= NUM_PROPS; i++)
     {
+        current_idx = current_dist*NUM_PROPS + i*NUM_PROPS + off_ip;
         //check that the next ip exists within the range
-        if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+        if (current_idx >= total_ips) break;
 
         //prepare next node data
-        temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+        temp.sin_addr.s_addr = ips[current_idx];
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
         //prepare next node distance
-        command->node_dist = current_dist + i*NUM_PROPS;
+        command->node_dist = current_idx - off_ip;
 
         //connect and send data
         rc = eards_remote_connect(next_ip, port);
         if (rc < 0)
         {
             error("propagate_req:Error connecting to node: %s\n", next_ip);
-            correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+            correct_error(current_idx, total_ips, ips, command, port);
         }
         else
         {
@@ -450,7 +452,7 @@ void propagate_req(request_t *command, uint port)
             {
                 error("propagate_req: Error propagating command to node %s\n", next_ip);
                 eards_remote_disconnect();
-                correct_error(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port);
+                correct_error(current_idx, total_ips, ips, command, port);
             }
             else eards_remote_disconnect();
         }
@@ -502,34 +504,35 @@ int get_self_ip()
 request_header_t propagate_data(request_t *command, uint port, void **data)
 {
     char *temp_data, *final_data = NULL;
-    int rc, i, final_size = 0, default_type = EAR_ERROR;
+    int rc, i, current_dist, off_ip, current_idx, final_size = 0, default_type = EAR_ERROR;
     struct sockaddr_in temp;
-    unsigned int current_dist;
     request_header_t head;
     char next_ip[64];
 
-    current_dist = command->node_dist;
+    current_dist = self_id - self_id%NUM_PROPS;
+    off_ips = self_id%NUM_PROPS;
 
     if (command->num_nodes < 1)
     {
         for (i = 1; i <= NUM_PROPS; i++)
         {
+            current_idx = current_dist*NUM_PROPS + i*NUM_PROPS + off_ip;
             //check that the next ip exists within the range
-            if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+            if (current_idx >= total_ips) break;
 
             //prepare next node data
-            temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+            temp.sin_addr.s_addr = ips[current_idx];
             strcpy(next_ip, inet_ntoa(temp.sin_addr));
             //prepare next node distance
-            command->node_dist = current_dist + i*NUM_PROPS;
-            verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
+            command->node_dist = current_idx - off_ip;
+            debug("Propagating to %s with distance %d\n", next_ip, command->node_dist);
 
             //connect and send data
             rc = eards_remote_connect(next_ip, port);
             if (rc < 0)
             {
                 error("propagate_data: Error connecting to node: %s\n", next_ip);
-                head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+                head = correct_data_prop(current_idx, total_ips, ips, command, port, (void **)&temp_data);
             }
             else
             {
@@ -539,7 +542,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
                 {
                     error("propagate_data: Error propagating command to node %s\n", next_ip);
                     eards_remote_disconnect();
-                    head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+                    head = correct_data_prop(current_idx, total_ips, ips, command, port, (void **)&temp_data);
                 }
                 else eards_remote_disconnect();
             }
@@ -633,23 +636,24 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
 request_header_t propagate_data(request_t *command, uint port, void **data)
 {
     char *temp_data, *final_data = NULL;
-    int rc, i, final_size = 0, default_type = EAR_ERROR;
+    int rc, i, current_dist, off_ip, current_idx, final_size = 0, default_type = EAR_ERROR;
     struct sockaddr_in temp;
-    unsigned int current_dist;
     request_header_t head;
     char next_ip[64];
 
-    current_dist = command->node_dist;
+    current_dist = self_id - self_id%NUM_PROPS;
+    off_ip = self_id%NUM_PROPS;
     for (i = 1; i <= NUM_PROPS; i++)
     {
+        current_idx = current_dist*NUM_PROPS + i*NUM_PROPS + off_ip;
         //check that the next ip exists within the range
-        if ((self_id + current_dist + i*NUM_PROPS) >= total_ips) break;
+        if (current_idx >= total_ips) break;
 
         //prepare next node data
-        temp.sin_addr.s_addr = ips[self_id + current_dist + i*NUM_PROPS];
+        temp.sin_addr.s_addr = ips[current_idx];
         strcpy(next_ip, inet_ntoa(temp.sin_addr));
         //prepare next node distance
-        command->node_dist = current_dist + i*NUM_PROPS;
+        command->node_dist = current_idx - off_ip;
         verbose(VCONNECT+2, "Propagating to %s with distance %d\n", next_ip, command->node_dist);
 
         //connect and send data
@@ -657,7 +661,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
         if (rc < 0)
         {
             error("propagate_req: Error connecting to node: %s\n", next_ip);
-            head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+            head = correct_data_prop(current_idx, total_ips, ips, command, port, (void **)&temp_data);
         }
         else
         {
@@ -667,7 +671,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
             {
                 error("propagate_req: Error propagating command to node %s\n", next_ip);
                 eards_remote_disconnect();
-                head = correct_data_prop(self_id + current_dist + i*NUM_PROPS, total_ips, ips, command, port, (void **)&temp_data);
+                head = correct_data_prop(current_idx, total_ips, ips, command, port, (void **)&temp_data);
             }
             else eards_remote_disconnect();
         }
