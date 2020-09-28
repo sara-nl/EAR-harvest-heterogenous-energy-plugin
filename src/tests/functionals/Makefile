@@ -10,7 +10,8 @@ oths_BINS = \
     postgres_test \
     temperature_check
 
-test_BINS = ear_conf 
+test_BINS = ear_conf \
+			propagation_test
 test_PATH = $(DESTDIR)/bin/tests
 test_PERM = 0770
 
@@ -29,6 +30,9 @@ postgres_test: postgres_test.c $(oths_DEPS)
 
 temperature_check: temperature_check.c $(SRCDIR)/metrics/libmetrics.a $(oths_DEPS) 
 	$(CC) $(CFLAGS) -o temperature_check $^ $(LDFLAGS)
+
+propagation_test: propagation_test.c $(oths_DEPS)
+	$(CC) $(CFLAGS) -o propagation_test $^ $(LDFLAGS)
 
 ear_conf: ear_conf.c $(oths_DEPS)
 	$(CC) $(CFLAGS) -o ear_conf $^ $(LDFLAGS)
