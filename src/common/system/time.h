@@ -70,4 +70,6 @@ void print_timestamp(timestamp *ts);
 /* Converts a time to timestamp */
 void timestamp_revert(timestamp *ts, ullong *tr, ullong time_unit);
 
+void timestamp_to_str(timestamp *ts,char *txt,uint size);
+
 #endif //EAR_COMMON_TIME_H

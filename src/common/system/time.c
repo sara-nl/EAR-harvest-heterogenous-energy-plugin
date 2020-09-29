@@ -82,3 +82,9 @@ void print_timestamp(timestamp *ts)
 {
 	fprintf(stdout,"Secs %ld nsec %ld\n", ts->tv_sec,ts->tv_nsec);
 }
+
+void timestamp_to_str(timestamp *ts,char *txt,uint size)
+{
+	snprintf(txt,size,"Secs %ld nsec %ld", ts->tv_sec,ts->tv_nsec);
+}
+

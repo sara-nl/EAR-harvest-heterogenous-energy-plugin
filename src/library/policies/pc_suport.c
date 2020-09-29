@@ -35,12 +35,14 @@ static ulong **gpu_freq_list;
 static uint *gpu_freq_num;
 state_t pc_support_init(polctx_t *c)
 {
+	#if USE_GPUS
 	state_t ret;
 	if ((ret = gpu_lib_freq_list(&gpu_freq_list,&gpu_freq_num)) != EAR_SUCCESS){
 		debug("Error accessing gpu_freq list");
 		return ret;
 	}
 	pc_app_info_data->num_gpus_used=c->num_gpus;
+	#endif
 	return EAR_SUCCESS;
 }
 #if USE_GPUS

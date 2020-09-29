@@ -22,6 +22,20 @@
 
 typedef void * pwr_mgt_t;
 
+/* Initialization sequence
+ *
+ pmgt_init();
+ pmgt_handler_alloc(&pmgr);
+ pmgt_enable(pmgr);
+ pmgt_set_pc_mode(pmgr,PC_MODE_TARGET);
+ pmgt_set_powercap_value(pmgr,0,DOMAIN_NODE,powercap_init);
+ pmgt_idle_to_run(pmgr);
+ pmgt_new_job(pmgr);
+
+ - Requested frqeuency needs to be set -
+ 
+ pmgt_set_app_req_freq(pmgr,&finfo);
+ */
 
 
 state_t pmgt_init();
