@@ -857,11 +857,12 @@ int main(int argc,char *argv[])
         keys[1] = "user";
         keys[2] = "password";
         keys[3] = "host";
-        if (my_cluster.database.port > 0)
+        //setting port value makes the connector crash
+        /*if (my_cluster.database.port > 0)
         {
             keys[4] = "port";
             values[4] = temp;
-        }
+        }*/
 
         strtolow(my_cluster.database.database);
         strtolow(my_cluster.database.ip);
@@ -872,11 +873,13 @@ int main(int argc,char *argv[])
         values[2] = passw;
         values[3] = my_cluster.database.ip;
 
+        fprintf(stdout, "connecting to database\n");
         connection = PQconnectdbParams((const char * const *)keys, (const char * const *)values, 0);
+        fprintf(stdout, "connected to database\n");
 
         if (PQstatus(connection) != CONNECTION_OK)
         {
-            fprintf(stderr, "ERROR connecting to the database: %s\n", PQerrorMessage(connection));
+            fprintf(stdout, "ERROR connecting to the database: %s\n", PQerrorMessage(connection));
             free(keys);
             free(values);
             PQfinish(connection);

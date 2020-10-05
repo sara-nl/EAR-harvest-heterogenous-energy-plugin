@@ -295,6 +295,11 @@ void reverse_periodic_metric_bytes(periodic_metric_t *per_mets, int num_mets)
         per_mets[i].end_time = htonl(per_mets[i].end_time);
         per_mets[i].avg_f = htonl(per_mets[i].avg_f);
         per_mets[i].temp = htonl(per_mets[i].temp);
+        per_mets[i].PCK_energy = htonl(per_mets[i].PCK_energy);
+        per_mets[i].DRAM_energy = htonl(per_mets[i].DRAM_energy);
+#if USE_GPUS
+        per_mets[i].GPU_energy = htonl(per_mets[i].GPU_energy);
+#endif
     }
 }
 
