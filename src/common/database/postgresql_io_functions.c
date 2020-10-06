@@ -1569,7 +1569,7 @@ int postgresql_batch_insert_signatures(PGconn *connection, signature_t *sigs, ch
 
     if (PQresultStatus(res) != PGRES_COMMAND_OK) //-> command sense lectura
     {
-       verbose(VMYSQL, "ERROR while inserting signatures: %s\n", PQresultErrorMessage(res));
+        verbose(VMYSQL, "ERROR while inserting signatures: %s\n", PQresultErrorMessage(res));
         PQclear(res);
         return EAR_ERROR;
     }
@@ -1596,8 +1596,8 @@ int postgresql_batch_insert_jobs(PGconn *connection, application_t *apps, int nu
     param_values = calloc(JOB_ARGS*num_jobs, sizeof(char *));
     param_lengths = calloc(JOB_ARGS*num_jobs, sizeof(int));
     param_formats = calloc(JOB_ARGS*num_jobs, sizeof(int));
-    lock_query = calloc(strlen(LOCK_LEARNING_JOBS_PSQL_QUERY), sizeof(char));
-    insert_query = calloc(strlen(INSERT_NEW_LEARNING_JOBS), sizeof(char));
+    lock_query = calloc(strlen(LOCK_LEARNING_JOBS_PSQL_QUERY)+1, sizeof(char));
+    insert_query = calloc(strlen(INSERT_NEW_LEARNING_JOBS)+1, sizeof(char));
     query = calloc((strlen(JOB_PSQL_QUERY)+(num_jobs*JOB_ARGS*10)+strlen("ON CONFLICT DO NOTHING")), sizeof(char));
 
     strcpy(query, JOB_PSQL_QUERY);
@@ -1694,25 +1694,26 @@ int postgresql_batch_insert_jobs(PGconn *connection, application_t *apps, int nu
 
     /* Query execution */
     res = PQexecParams(connection, "BEGIN", 0, NULL, NULL, NULL, NULL, 1); //BEGIN transaction block
-    if (PQresultStatus(res) != PGRES_COMMAND_OK)verbose(VMYSQL, "ERROR while creating transaction block: %s\n", PQresultErrorMessage(res));
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) verbose(VMYSQL, "ERROR while creating transaction block: %s\n", PQresultErrorMessage(res));
     PQclear(res); //This free may not be correct, if it sigsegv's in this function all but the last PQclear should be suspects
 
     res = PQexecParams(connection, CREATE_TEMP_JOBS, 0, NULL, NULL, NULL, NULL, 1); //CREATE temp table to store all jobs
-    if (PQresultStatus(res) != PGRES_COMMAND_OK)verbose(VMYSQL, "ERROR while creating temp table: %s\n", PQresultErrorMessage(res));
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) verbose(VMYSQL, "ERROR while creating temp table: %s\n", PQresultErrorMessage(res));
     PQclear(res);
 
     res = PQexecParams(connection, lock_query, 0, NULL, NULL, NULL, NULL, 1); //LOCK main table
-    if (PQresultStatus(res) != PGRES_COMMAND_OK)verbose(VMYSQL, "ERROR while creating locking main table: %s\n", PQresultErrorMessage(res));
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) verbose(VMYSQL, "ERROR while creating locking main table: %s\n", PQresultErrorMessage(res));
     PQclear(res);
 
     res = PQexecParams(connection, query, num_jobs*JOB_ARGS, NULL, (const char * const *)param_values, param_lengths, param_formats, 1); //INSERT all jobs into temp table
-    if (PQresultStatus(res) != PGRES_COMMAND_OK)verbose(VMYSQL, "ERROR while inserting to temp table: %s\n", PQresultErrorMessage(res));
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) verbose(VMYSQL, "ERROR while inserting to temp table: %s\n", PQresultErrorMessage(res));
     PQclear(res);
 
     res = PQexecParams(connection, insert_query, 0, NULL, NULL, NULL, NULL, 1); //INSERT new jobs into Jobs, ignore the rest
-    if (PQresultStatus(res) != PGRES_COMMAND_OK)verbose(VMYSQL, "ERROR while merging with main table: %s\n", PQresultErrorMessage(res));
+    if (PQresultStatus(res) != PGRES_COMMAND_OK) verbose(VMYSQL, "ERROR while merging with main table: %s\n", PQresultErrorMessage(res));
     PQclear(res);
 
+    fprintf(stderr, "running query %s\n", "COMMIT");
     res = PQexecParams(connection, "COMMIT", 0, NULL, NULL, NULL, NULL, 1); //COMMIT and end transaction block, dropping the table
 
     //reverse_job_bytes(jobs, num_jobs);

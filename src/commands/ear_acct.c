@@ -32,6 +32,7 @@
 #include <common/states.h>
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
+#include <common/database/postgresql_io_functions.h>
 #include <common/types/configuration/cluster_conf.h>
 cluster_conf_t my_conf;
 #endif

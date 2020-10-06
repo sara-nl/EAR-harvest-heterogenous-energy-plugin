@@ -111,7 +111,7 @@ void create_users(void *connection, char *db_name, char *db_user, char *db_user_
 #elif DB_PSQL
     sprintf(query, "GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO %s", db_user);
     run_query(connection, query);
-    sprintf(query, "GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO %s", db_user);
+    sprintf(query, "GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO %s", db_user);
 #endif
     run_query(connection, query);
     
