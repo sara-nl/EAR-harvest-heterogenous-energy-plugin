@@ -480,7 +480,6 @@ request_header_t send_powercap_status(request_t *command, powercap_status_t **st
 
 int eards_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status) 
 {
-    int num_temp_status;
     powercap_status_t *temp_status;
     request_t command;
 

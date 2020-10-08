@@ -257,7 +257,6 @@ int dyncon_restore_conf() {
 
 int dynconf_set_def_pstate(uint p_states,uint p_id)
 {
-	ulong new_freq;
 	if (p_states>frequency_get_num_pstates()) return EAR_ERROR;
 	if (p_id>my_cluster_conf.num_policies) return EAR_ERROR;
 	my_node_conf->policies[p_id].p_state=p_states;
@@ -408,7 +407,6 @@ void dyncon_power_management(int fd, request_t *command)
 	unsigned long limit;
 	status_t status;
 	unsigned long cpower;
-    long int ack;
 	switch (command->req){
     case EAR_RC_RED_POWER:
 			if (command->my_req.pc.type==ABSOLUTE){
@@ -487,9 +485,6 @@ void dyncon_release_idle_power(int fd, request_t *command)
 
 void dyncon_set_default_powercap(int fd, request_t *command)
 {
-    int return_status;
-    long int ack;
-
     debug("setting default powercap");
 
     powercap_set_default();

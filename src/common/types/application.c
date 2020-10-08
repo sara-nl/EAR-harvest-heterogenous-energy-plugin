@@ -41,8 +41,6 @@ void copy_application(application_t *destiny, application_t *source)
 	memcpy(destiny, source, sizeof(application_t));
 }
 
-
-
 void application_print_channel(FILE *file, application_t *app)
 {
 	fprintf(file, "application_t: id '%s', job id '%lu.%lu', node id '%s'\n",
@@ -373,7 +371,6 @@ uint is_already_connected(int jid,int sid,int pid)
 void mark_as_eard_disconnected(int jid,int sid,int pid)
 {
 	int my_id;
-	int fd;
 	char *tmp,con_file[128];
 	tmp=getenv("EAR_TMP");
 	if (tmp == NULL){ 
