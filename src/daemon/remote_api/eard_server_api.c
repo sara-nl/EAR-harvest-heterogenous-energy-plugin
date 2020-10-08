@@ -240,7 +240,7 @@ void send_answer(int s,long *ack)
 
 int init_ips(cluster_conf_t *my_conf)
 {
-    int ret, i, temp_ip;
+    int ret, i;
     char buff[64];
     gethostname(buff, 64);
     strtok(buff,".");
@@ -493,7 +493,6 @@ int get_self_ip()
         if (rp->ai_addr->sa_family == AF_INET)
         {
             struct sockaddr_in *saddr = (struct sockaddr_in*) (rp->ai_addr);
-            struct sockaddr_in temp;
 
             return saddr->sin_addr.s_addr;
         }

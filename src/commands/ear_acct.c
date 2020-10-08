@@ -32,6 +32,7 @@
 #include <common/states.h>
 #include <common/database/db_helper.h>
 #include <common/database/mysql_io_functions.h>
+#include <common/database/postgresql_io_functions.h>
 #include <common/types/configuration/cluster_conf.h>
 cluster_conf_t my_conf;
 #endif
@@ -884,7 +885,7 @@ void read_loops(char *user, int job_id, int limit, int step_id, char *job_ids)
     if (user != NULL)
         add_string_filter(query, "user", user);
 
-    if (limit > 0)
+    if (limit > 0 && job_id < 0)
     {
         sprintf(subquery, " ORDER BY job_id desc LIMIT %d", limit);
         strcat(query, subquery);
