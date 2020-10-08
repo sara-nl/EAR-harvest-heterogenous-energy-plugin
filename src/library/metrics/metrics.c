@@ -15,20 +15,18 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#define CACHE_METRICS 1
+//#define SHOW_DEBUGS 1
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-// #define CACHE_METRICS 1
 #include <common/config.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
-#ifdef CACHE_METRICS
-#include <metrics/cache/cache.h>
-#endif
 #include <common/hardware/hardware_info.h>
 #include <library/common/externs.h>
 #include <library/metrics/metrics.h>
@@ -36,6 +34,9 @@
 #include <metrics/cpi/cpi.h>
 #include <metrics/flops/flops.h>
 #include <metrics/energy/energy_node_lib.h>
+#ifdef CACHE_METRICS
+#include <metrics/cache/cache.h>
+#endif
 #include <daemon/local_api/eard_api.h>
 #include <common/system/time.h>
 #if USE_GPU_LIB
@@ -223,7 +224,7 @@ static void metrics_global_stop()
 
 	// Accum calls
 	#if CACHE_METRICS
-	get_cache_metrics(&metrics_l1[APP], &metrics_l2[APP], &metrics_l3[APP]);
+	get_cache_metrics(&metrics_l1[APP], &metrics_l3[APP]);
 	#endif
 	get_basic_metrics(&metrics_cycles[APP], &metrics_instructions[APP]);
 
@@ -245,14 +246,15 @@ static void metrics_global_stop()
 		set_null_uncores(metrics_bandwith_end[APP]);
 	}
 	//eards_start_uncore();
+
 	diff_uncores(metrics_bandwith[APP],metrics_bandwith_end[APP],metrics_bandwith_init[APP],bandwith_elements);
 	timestamp_getfast(&end_mpi_time);
-  unsigned long long extime;
-  extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);
-  sig_shared_region[my_node_id].mpi_info.exec_time=extime;
-	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 
-	
+	unsigned long long extime;
+	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);
+
+	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
+	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 }
 
 /*           | Glob | Part || Start | Stop | Read | Get accum | Reset | Size
@@ -294,7 +296,7 @@ static void metrics_partial_start()
 
 	start_basic_metrics();
 	#if CACHE_METRICS
-	start_cache_metrics();
+	cache_start();
 	#endif
 	start_flops_metrics();
 
@@ -434,12 +436,12 @@ static int metrics_partial_stop(uint where)
 
 
 	// Local metrics
-	#if CACHE_METRICS
-	stop_cache_metrics(&metrics_l1[LOO], &metrics_l2[LOO], &metrics_l3[LOO]);
-	#endif
 	stop_basic_metrics(&metrics_cycles[LOO], &metrics_instructions[LOO]);
 	stop_flops_metrics(&aux_flops, metrics_flops[LOO]);
 
+	#if CACHE_METRICS
+	cache_stop(&metrics_l1[LOO], &metrics_l3[LOO]);
+	#endif
 
 	return EAR_SUCCESS;
 }
@@ -451,8 +453,9 @@ static void metrics_reset()
 
 	reset_basic_metrics();
 	reset_flops_metrics();
+	
 	#if CACHE_METRICS
-	reset_cache_metrics();
+	cache_reset();
 	#endif
 }
 
@@ -500,7 +503,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 
 	#if CACHE_METRICS
 	metrics->L1_misses = metrics_l1[s];
-	metrics->L2_misses = metrics_l2[s];
+	metrics->L2_misses = 0;
 	metrics->L3_misses = metrics_l3[s];
 	#endif
 
@@ -571,12 +574,14 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		copy_node_data(metrics,&sig_shared_region[0].sig);
 	}
 	metrics->EDP = time_s * time_s * metrics->DC_power;
+	
 	/* This part is new to share with other processes */
 	timestamp_getfast(&end_mpi_time);
 	unsigned long long extime;
 	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);	
+	
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
-  sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
+	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
 	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
 }
 
@@ -613,8 +618,11 @@ int metrics_init(topology_t *topo)
 	if (init_basic_metrics()!=EAR_SUCCESS) return EAR_ERROR;
 	
 	#if CACHE_METRICS
-	init_cache_metrics();
+	if (state_ok(cache_load(topo))) {
+		cache_init();
+	}
 	#endif
+
 	papi_flops_supported = init_flops_metrics();
 
 	if (papi_flops_supported==1)

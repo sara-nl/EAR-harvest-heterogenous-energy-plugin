@@ -56,14 +56,14 @@ state_t flops_intel63_init(ctx_t *c)
 	state_t s;
 
 	// Intel's Manual Volume 3 (FULL), look for 'FP_ARITH_INST'.
-	s = perf_open(&perf_064f, &perf_064f, 0, PERF_TYPE_RAW, 0x02c7);
-	s = perf_open(&perf_064d, &perf_064f, 0, PERF_TYPE_RAW, 0x01c7);
-	s = perf_open(&perf_128f, &perf_064f, 0, PERF_TYPE_RAW, 0x08c7);
-	s = perf_open(&perf_128d, &perf_064f, 0, PERF_TYPE_RAW, 0x04c7);
-	s = perf_open(&perf_256f, &perf_256f, 0, PERF_TYPE_RAW, 0x20c7);
-	s = perf_open(&perf_256d, &perf_256f, 0, PERF_TYPE_RAW, 0x10c7);
-	s = perf_open(&perf_512f, &perf_256f, 0, PERF_TYPE_RAW, 0x80c7);
-	s = perf_open(&perf_512d, &perf_256f, 0, PERF_TYPE_RAW, 0x40c7);
+	s = perf_open(&perf_064f, NULL, 0, PERF_TYPE_RAW, 0x02c7);
+	s = perf_open(&perf_064d, NULL, 0, PERF_TYPE_RAW, 0x01c7);
+	s = perf_open(&perf_128f, NULL, 0, PERF_TYPE_RAW, 0x08c7);
+	s = perf_open(&perf_128d, NULL, 0, PERF_TYPE_RAW, 0x04c7);
+	s = perf_open(&perf_256f, NULL, 0, PERF_TYPE_RAW, 0x20c7);
+	s = perf_open(&perf_256d, NULL, 0, PERF_TYPE_RAW, 0x10c7);
+	s = perf_open(&perf_512f, NULL, 0, PERF_TYPE_RAW, 0x80c7);
+	s = perf_open(&perf_512d, NULL, 0, PERF_TYPE_RAW, 0x40c7);
 	
 	// Remove warning
 	(void) (s);
@@ -84,7 +84,13 @@ state_t flops_intel63_reset(ctx_t *c)
 	state_t s;
 
 	s = perf_reset(&perf_064f);
+	s = perf_reset(&perf_064d);
+	s = perf_reset(&perf_128f);
+	s = perf_reset(&perf_128d);
 	s = perf_reset(&perf_256f);
+	s = perf_reset(&perf_256d);
+	s = perf_reset(&perf_512f);
+	s = perf_reset(&perf_512d);
 	
 	// Remove warning
 	(void) (s);
@@ -97,7 +103,13 @@ state_t flops_intel63_start(ctx_t *c)
 	state_t s;
 
 	s = perf_start(&perf_064f);
+	s = perf_start(&perf_064d);
+	s = perf_start(&perf_128f);
+	s = perf_start(&perf_128d);
 	s = perf_start(&perf_256f);
+	s = perf_start(&perf_256d);
+	s = perf_start(&perf_512f);
+	s = perf_start(&perf_512d);
 	
 	// Remove warning
 	(void) (s);
@@ -109,8 +121,14 @@ state_t flops_intel63_read(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
-	s = perf_read(&perf_064f, values_064);
-	s = perf_read(&perf_256f, values_256);
+	s = perf_read(&perf_064f, &values_064[0]);
+	s = perf_read(&perf_064d, &values_064[1]);
+	s = perf_read(&perf_128f, &values_064[2]);
+	s = perf_read(&perf_128d, &values_064[3]);
+	s = perf_read(&perf_256f, &values_256[0]);
+	s = perf_read(&perf_256d, &values_256[1]);
+	s = perf_read(&perf_512f, &values_256[2]);
+	s = perf_read(&perf_512d, &values_256[3]);
 	
 	// Remove warning
 	(void) (s);
@@ -162,7 +180,13 @@ state_t flops_intel63_stop(ctx_t *c, llong *flops, llong *ops)
 	state_t s;
 
 	s = perf_stop(&perf_064f);
+	s = perf_stop(&perf_064d);
+	s = perf_stop(&perf_128f);
+	s = perf_stop(&perf_128d);
 	s = perf_stop(&perf_256f);
+	s = perf_stop(&perf_256d);
+	s = perf_stop(&perf_512f);
+	s = perf_stop(&perf_512d);
 	
 	// Remove warning
 	(void) (s);
