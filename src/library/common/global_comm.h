@@ -18,11 +18,11 @@
 #ifndef _GLOBAL_COMM_H
 #define _GLOBAL_COMM_H
 
-#if MPI
-#include <mpi.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <library/common/library_shared_data.h>
+
+#if MPI
+
+#include <mpi.h>
 
 typedef struct masters_info{
 	MPI_Comm masters_comm;
@@ -51,7 +51,9 @@ void print_mpi_info(masters_info_t *mi);
 void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig);
 int load_unbalance(masters_info_t *mi);
 void print_global_signatures(masters_info_t *mi);
+
 #else
+
 typedef struct masters_info{
   int my_master_rank;
   int my_master_size;
@@ -61,6 +63,7 @@ typedef struct masters_info{
   shsignature_t *nodes_info;
   int node_info_pending;
 }masters_info_t;
+
 #define check_mpi_info(a,b,c,d) (*b=0;*c=0)
 #define print_mpi_info(a)
 #define check_node_signatures(a,b,c,d)

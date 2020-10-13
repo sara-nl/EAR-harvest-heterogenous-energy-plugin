@@ -1,4 +1,4 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -O3 -fPIC
+CFLAGS = -fPIC -O3 -I$(SRCDIR)
 
 ######## FILES
 
@@ -21,11 +21,11 @@ DEPS = $(FOLD)/dynais.o \
 all: dynais.a
 
 $(FOLD)/dynais_core.o: $(FOLD)/dynais_core.c $(FOLD)/dynais_core.h
-	$(CC) $(CFLAGS) $(DEFI) -DDYN_CORE_N -o $(FOLD)/dynais_core_n.o -c $<
-	$(CC) $(CFLAGS) $(DEFI) -DDYN_CORE_0 -o $(FOLD)/dynais_core_0.o -c $<
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFI) -DDYN_CORE_N -o $(FOLD)/dynais_core_n.o -c $<
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFI) -DDYN_CORE_0 -o $(FOLD)/dynais_core_0.o -c $<
 
 $(FOLD)/dynais.o: $(FOLD)/dynais.c
-	$(CC) $(CFLAGS) $(DEFI) -o $(FOLD)/dynais.o -c $< 
+	$(CC) $(CC_FLAGS) $(CFLAGS) $(DEFI) -o $(FOLD)/dynais.o -c $< 
 
 dynais.a: $(DEPS)
 	$(AR) rvs $@ $(OBJS)
@@ -35,7 +35,7 @@ dynais.a: $(DEPS)
 install: ;
 
 clean: rclean
-	rm -f $(OBJS)
+	rm -f ./avx2/*.o ./avx512/*.o
 
 depend: ;
 

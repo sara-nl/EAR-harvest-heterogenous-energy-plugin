@@ -79,6 +79,7 @@ state_t flops_amd49_init(ctx_t *c)
 	#if 0
 	s = perf_opex(&perf_evn0, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_flops, pf_exc);
 	s = perf_open(&perf_mer1, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
+
 	s = perf_open(&perf_mer2, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
 	s = perf_open(&perf_evn3, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_flops);
 	s = perf_open(&perf_mer4, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);

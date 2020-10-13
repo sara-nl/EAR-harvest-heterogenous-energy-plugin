@@ -68,8 +68,9 @@ void  __attribute__ ((constructor)) loader()
 	
 	// Module MPI
 	_loaded_mpi = module_mpi();
+
 	// Module default
-	if (!_loaded_mpi && strcmp(program_invocation_name,"/bin/bash")) {
+	if (!_loaded_mpi && strcmp(program_invocation_name, "/bin/bash")) {
 		_loaded_con = module_constructor();
 	}
 	// New modules here...

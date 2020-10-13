@@ -24,9 +24,10 @@
 #ifndef _LIB_SHARED_DATA_H
 #define _LIB_SHARED_DATA_H
 
-#include <common/system/shared_areas.h>
 #include <common/config.h>
+#include <common/types.h>
 #include <common/types/signature.h>
+#include <common/system/shared_areas.h>
 
 typedef struct lib_shared_data{
 	int num_processes;

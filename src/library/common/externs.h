@@ -19,11 +19,11 @@
 #define _EAR_GLOBAL_H
 
 #include <linux/limits.h>
-#include <common/types/application.h>
 #include <common/types/loop.h>
-#include <daemon/shared_configuration.h>
-#include <library/common/library_shared_data.h>
+#include <common/types/application.h>
 #include <library/common/global_comm.h>
+#include <library/common/library_shared_data.h>
+#include <daemon/shared_configuration.h>
 
 extern loop_t loop;
 extern application_t loop_signature;

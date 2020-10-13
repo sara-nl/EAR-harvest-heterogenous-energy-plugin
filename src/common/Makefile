@@ -1,24 +1,22 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC $(CONSTANTS) -O2 -Wall
+CFLAGS = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS)
 
-######## INSTALLATION
+######## FILES
 
+# The list of libc_OBJS is in Makefile.files
 libc_BINS = libcommon.a
-libc_OBJS = $(shell find ./ -type f -name '*.o')
 comm_OBJS = $(patsubst %.c, %.o, $(shell find -maxdepth 1 -type f -name '*.c'))
 incl_BINS = states.h
 incl_PATH = $(DESTDIR)/include
 incl_PERM = 0660
 
-######## FILES
-
 ######## RULES
 
-all: all.components $(libc_BINS)
+all: all.components $(comm_OBJS) $(libc_BINS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(CFLAGS) -c $<
 
-libcommon.a: $(comm_OBJS)
+libcommon.a: $(libc_OBJS)
 	$(AR) rvs $@ $(libc_OBJS)
 
 ######## OPTIONS
@@ -29,7 +27,7 @@ devel.install: devel.install.components incl.ginstall;
 
 %.install: %.install.components;
 
-clean: clean.components libc.gclean rclean;
+clean: clean.components comm.gclean rclean;
 
 ######## SUBFOLDERS
 
@@ -47,3 +45,4 @@ depend-clean: depend-clean.components
 
 include $(SRCDIR)/Makefile.depend
 include $(SRCDIR)/Makefile.extra
+include ./Makefile.files

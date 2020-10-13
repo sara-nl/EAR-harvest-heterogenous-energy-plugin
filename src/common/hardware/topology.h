@@ -108,4 +108,6 @@ state_t topology_close(topology_t *topo);
 
 state_t topology_print(topology_t *topo, int fd);
 
+state_t topology_tostr(topology_t *topo, char *buffer, size_t n);
+
 #endif
