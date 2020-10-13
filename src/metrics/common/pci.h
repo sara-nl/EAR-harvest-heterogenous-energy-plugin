@@ -18,12 +18,16 @@
 #ifndef EAR_PCI_H
 #define EAR_PCI_H
 
+#include <unistd.h>
+#include <common/types.h>
+#include <common/states.h>
+
 typedef struct pci_s {
 	uint bus;
 	uint device;
 	uint function;
-	uint fd;
 	uint init;
+	int fd;
 } pci_t;
 
 /* Find a PCI ID in all PCI devices in the system and open it. */

@@ -66,6 +66,7 @@ struct generr_s {
 	char *api_undefined;
 	char *api_incompatible;
 	char *api_uninitialized;
+	char *api_initialized;
 	char *alloc_error;
 	char *input_null;
 	char *input_uninitialized;
@@ -75,7 +76,7 @@ struct generr_s {
 	.api_undefined = "the API is undefined",
 	.api_incompatible = "the current hardware is not supported by the API",
 	.api_uninitialized = "the API is not initialized",
-	.api_initialized = "the API is already initialized"
+	.api_initialized = "the API is already initialized",
 	.alloc_error = "error ocurred during allocation",
 	.input_null = "an argument of the input is NULL",
 	.input_uninitialized = "an argument is not initialized",
