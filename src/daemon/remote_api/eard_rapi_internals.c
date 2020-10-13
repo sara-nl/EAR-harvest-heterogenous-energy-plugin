@@ -434,21 +434,21 @@ int eards_remote_connect(char *nodename,uint port)
     int sfd, s;
     fd_set set;
 
-		if (eards_remote_connected){ 
-			debug("Connection already done!");
-			return eards_sfd;
-		}
+    /*if (eards_remote_connected){ 
+        debug("Connection already done!");
+        return eards_sfd;
+    }*/
    	memset(&hints, 0, sizeof(struct addrinfo));
     hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
     hints.ai_flags = 0;
     hints.ai_protocol = 0;          /* Any protocol */
 
-		sprintf(port_number,"%d",port);
+    sprintf(port_number,"%d",port);
    	s = getaddrinfo(nodename, port_number, &hints, &result);
     if (s != 0) {
-			debug("getaddrinfo fail for %s and %s",nodename,port_number);
-			return EAR_ERROR;
+        debug("getaddrinfo fail for %s and %s",nodename,port_number);
+        return EAR_ERROR;
     }
 
     struct timeval timeout;
@@ -456,7 +456,7 @@ int eards_remote_connect(char *nodename,uint port)
     timeout.tv_sec = 0;
     timeout.tv_usec = 5000;
     socklen_t  optlen;
-		int valopt, sysret;
+    int valopt, sysret;
 
    	for (rp = result; rp != NULL; rp = rp->ai_next) {
         sfd = socket(rp->ai_family, rp->ai_socktype,
@@ -516,6 +516,8 @@ int eards_remote_connect(char *nodename,uint port)
         }
     }
 
+   	freeaddrinfo(result);           /* No longer needed */
+
    	if (rp == NULL) {               /* No address succeeded */
 		debug("Failing in connecting to remote eards");
 		return EAR_ERROR;
@@ -541,7 +543,6 @@ int eards_remote_connect(char *nodename,uint port)
     memset(&timeout, 0, sizeof(struct timeval));
     setsockopt(sfd, SOL_SOCKET, SO_RCVTIMEO, (void *)(&timeout), sizeof(timeout));
 
-   	freeaddrinfo(result);           /* No longer needed */
 	eards_remote_connected=1;
 	eards_sfd=sfd;
 	return sfd;
@@ -553,6 +554,12 @@ int eards_remote_disconnect()
 	eards_remote_connected=0;
 	close(eards_sfd);
 	return EAR_SUCCESS;
+}
+
+int eards_remote_disconnect_fd(int sfd)
+{
+    close(sfd);
+    return EAR_SUCCESS;
 }
 
 request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, request_t *command, uint port, void **data)
@@ -955,17 +962,23 @@ void send_command_all(request_t command, cluster_conf_t *my_cluster_conf)
 
 request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_conf, void **data)
 {
-    int i, j, rc, total_ranges, final_size = 0, default_type = EAR_ERROR;
-    int **ips, *ip_counts;
+    int i, j, rc, total_ranges, final_size = 0, default_type = EAR_ERROR, num_sfds = 0, offset = 0;
+    int **ips, *ip_counts, *sfds;
     struct sockaddr_in temp;
     request_header_t head;
     char *temp_data, *all_data = NULL;
     char next_ip[64];
     
     total_ranges = get_ip_ranges(my_cluster_conf, &ip_counts, &ips);
+
+    for (i = 0; i < total_ranges; i++)
+        num_sfds += (ip_counts[i] < NUM_PROPS) ? ip_counts[i] : NUM_PROPS;
+
+    sfds = calloc(num_sfds, sizeof(int));
+
     for (i = 0; i < total_ranges; i++)
     {
-        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++)
+        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++, offset++)
         {
             temp.sin_addr.s_addr = ips[i][j];
             strcpy(next_ip, inet_ntoa(temp.sin_addr));
@@ -974,18 +987,37 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
             if (rc<0){
                 debug("Error connecting with node %s, trying to correct it", next_ip);
                 head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
+                if (head.size > 0 && head.type != EAR_ERROR)
+                {
+                    head = process_data(head, (char **)&temp_data, (char **)&all_data, final_size);
+                    free(temp_data);
+                    final_size = head.size;
+                    default_type = head.type;
+                }
             }
             else{
                 debug("Node %s with distance %d contacted!", next_ip, command->node_dist);
+                sfds[offset] = rc;
                 send_command(command);
-                head = receive_data(rc, (void **)&temp_data);
-                if (head.size < 1 || head.type == EAR_ERROR) {
-                    debug("Error sending command to node %s, trying to correct it", next_ip);
-                    eards_remote_disconnect();
-                    head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
-                }
-                else eards_remote_disconnect();
             }
+        }
+    }
+
+    // reset offset to iterate through all the fds again
+    offset = 0;
+    for (i = 0; i < total_ranges; i++)
+    {
+        for (j = 0; i < ip_counts[i] && j < NUM_PROPS; j++, offset++)
+        {
+            if (sfds[offset] == 0) continue; // if the connection had failed we should have already corrected that in the previous loop 
+
+            head = receive_data(sfds[offset], (void **)&temp_data);
+            if (head.size < 1 || head.type == EAR_ERROR) {
+                debug("Error sending command to node %s, trying to correct it", next_ip);
+                eards_remote_disconnect_fd(sfds[offset]);
+                head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
+            }
+            else eards_remote_disconnect_fd(sfds[offset]);
         
             if (head.size > 0 && head.type != EAR_ERROR)
             {
@@ -1014,6 +1046,7 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
             free(ips[i]);
         free(ip_counts);
         free(ips);
+        free(sfds);
     }
 
     return head;
