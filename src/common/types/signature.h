@@ -34,17 +34,6 @@
 // 7: 512 double
 #define FLOPS_EVENTS 8
 
-typedef struct mini_sig
-{
-  float DC_power;
-  float GBS;
-  float CPI;
-  float Gflops;
-  float time;
-  ulong avg_f;
-  ulong def_f;
-}ssig_t;
-
 typedef struct gpu_app{
     double GPU_power;
     ulong  GPU_freq;
@@ -57,6 +46,22 @@ typedef struct gpu_signature{
   int num_gpus;
   gpu_app_t gpu_data[MAX_GPUS_SUPPORTED];
 }gpu_signature_t;
+
+typedef struct mini_sig
+{
+  float DC_power;
+  float GBS;
+	float TPI;
+  float CPI;
+  float Gflops;
+  float time;
+  ulong avg_f;
+  ulong def_f;
+  #if USE_GPUS
+  gpu_signature_t gpu_sig;
+  #endif
+}ssig_t;
+
 
 
 typedef struct signature

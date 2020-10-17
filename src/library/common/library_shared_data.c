@@ -28,6 +28,7 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
+#include <library/common/externs.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <library/common/library_shared_data.h>
 #include <library/common/global_comm.h>
@@ -217,7 +218,7 @@ void print_sh_signature(shsignature_t *sig)
 	 	float t;
     t = (float) sig->mpi_info.exec_time/1000000.0;
 
-	  fprintf(stderr," RANK %d mpi_data={total_mpi_calls %u mpi_time %llu exec_time %llu PercTime %lf }\n",
+	  fprintf(stderr," RANK %d mpi_data={total_mpi_calls %u mpi_time %llu exec_time %.3f PercTime %lf }\n",
     sig->mpi_info.rank,sig->mpi_info.total_mpi_calls,sig->mpi_info.mpi_time,t,sig->mpi_info.perc_mpi);
     fprintf(stderr,"RANK %d signature={cpi %.3lf tpi %.3lf time %.3lf dc_power %.3lf} state %d new_freq %lu\n",sig->mpi_info.rank,sig->sig.CPI,sig->sig.TPI, sig->sig.time,sig->sig.DC_power,sig->app_state,sig->new_freq);
 }
@@ -252,7 +253,7 @@ void compute_per_node_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_in
 }
 
 
-void compute_node_sig(signature_t *avg_sig,int n)
+void compute_node_sig(ssig_t *avg_sig,int n)
 {
 	double t,cpi,gflops;
 	unsigned long avg_f,def_f;
@@ -266,7 +267,7 @@ void compute_node_sig(signature_t *avg_sig,int n)
 	avg_sig->def_f=def_f;
 }
 
-void acum_signature_metrics(signature_t *avg_sig,signature_t *s)
+void acum_signature_metrics(ssig_t *avg_sig,ssig_t *s)
 {
 	avg_sig->time+=s->time;
 	avg_sig->CPI+=s->CPI;
@@ -274,7 +275,7 @@ void acum_signature_metrics(signature_t *avg_sig,signature_t *s)
 	avg_sig->def_f+=s->def_f;
 	avg_sig->Gflops+=s->Gflops;
 }
-void set_global_metrics(signature_t *avg_sig,signature_t *s)
+void set_global_metrics(ssig_t *avg_sig,ssig_t *s)
 {
 	avg_sig->GBS=s->GBS;
 	avg_sig->TPI=s->TPI;
@@ -290,17 +291,33 @@ void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsign
 {
 	int i;
 	compute_per_node_mpi_info(data,sig,&my_node_sig->mpi_info);
-	signature_t avg_node;
+	ssig_t avg_node;
 	set_global_metrics(&avg_node,&my_node_sig[0].sig);
 	for (i=0;i<data->num_processes;i++){
 		acum_signature_metrics(&avg_node,&my_node_sig[i].sig);
 	}
 	compute_node_sig(&avg_node,data->num_processes);
-	signature_copy(&my_node_sig->sig,&avg_node);
+	copy_mini_sig(&my_node_sig->sig,&avg_node);
 	fprintf(stderr,"AVG per node sig (using rank %d) \n",my_node_sig->mpi_info.rank);
 	print_sh_signature(my_node_sig);	
 }
 
 
+void load_app_mgr_env()
+{
+	char *cshow_sig=getenv(SCHED_EAR_SHOW_SIGNATURES);
+	char *csh_sig_per_process=getenv(SHARE_INFO_PER_PROCESS);
+	char *csh_sig_per_node=getenv(SHARE_INFO_PER_NODE);
+	char *creport_node_sig=getenv(REPORT_NODE_SIGNATURES);
+	char *creport_all_sig=getenv(REPORT_ALL_SIGNATURES);
 
+	if (cshow_sig != NULL) show_signatures = atoi(cshow_sig);
+	if (csh_sig_per_process != NULL) sh_sig_per_process = atoi(csh_sig_per_process);
+	if (csh_sig_per_node != NULL) sh_sig_per_node = atoi(csh_sig_per_node);
+	if (creport_node_sig != NULL) report_node_sig = atoi(creport_node_sig);	
+	if (creport_all_sig != NULL) report_all_sig = atoi(creport_all_sig);
+
+	debug("Show_signatures %u share_sig_per_process %u share_sig_per_node %u report_node_sig %u report_all_sig %u",
+	show_signatures,sh_sig_per_process,sh_sig_per_node,report_node_sig,report_all_sig);
+}
 

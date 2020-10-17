@@ -129,7 +129,7 @@ extern uint check_periodic_mode;
 
 #if USE_GPU_LIB
 #define VERBOSE_SIG() \
-			if (masters_info.my_master_rank>=0){\
+			if (masters_info.my_master_rank>=0 || show_signatures){\
         float AVGFF,prev_ff,policy_freqf,GPU_f; \
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
@@ -140,7 +140,7 @@ extern uint check_periodic_mode;
 			}
 #else
 #define VERBOSE_SIG() \
-			if (masters_info.my_master_rank>=0){\
+			if (masters_info.my_master_rank>=0 || show_signatures){\
         float AVGFF,prev_ff,policy_freqf; \
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \

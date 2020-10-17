@@ -98,6 +98,7 @@ void from_sig_to_mini(ssig_t *minis,signature_t *s)
 {
 	minis->DC_power=(float)s->DC_power;
 	minis->GBS=(float)s->GBS;
+	minis->TPI=(float)s->TPI;
 	minis->CPI=(float)s->CPI;
 	minis->Gflops=(float)s->Gflops;
 	minis->time=(float)s->time;

@@ -216,7 +216,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
 					}
 
-					if (masters_info.my_master_rank>=0){
+					if (masters_info.my_master_rank>=0 || show_signatures){
 						#if USE_GPU_LIB
 						GPU_POWER=0;GPU_FREQ=0;GPU_UTIL=0;
 						if (loop_signature.signature.gpu_sig.num_gpus>0){

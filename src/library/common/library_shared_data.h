@@ -30,9 +30,10 @@
 #include <common/system/shared_areas.h>
 
 typedef struct lib_shared_data{
-	int num_processes;
-	unsigned int num_signatures;
-	double cas_counters;
+	int 					num_processes;
+	unsigned int 	num_signatures;
+	double 				cas_counters;
+	signature_t 	master_signature;
 }lib_shared_data_t;
 
 typedef struct mpi_information{
@@ -47,7 +48,8 @@ typedef struct shsignature{
 	uint master;
 	uint ready;
 	mpi_information_t mpi_info;
-	signature_t sig;
+	/* sig was originally a signature_t */
+	ssig_t sig;
 	int 				  app_state;
 	unsigned long new_freq;
 }shsignature_t;
@@ -123,5 +125,8 @@ double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig);
 
 void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info);
 void copy_my_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *rem_sig);
+
+void load_app_mgr_env();
+
 
 #endif

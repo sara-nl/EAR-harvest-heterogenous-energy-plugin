@@ -73,12 +73,10 @@ state_t wait_for_data(MPI_Request *req)
 /**************************************************************************************************/
 void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig)
 {
-    #if SHARE_INFO_PER_PROCESS
-    int max_ppn=mi->max_ppn;
-    #endif
-    #if SHARE_INFO_PER_NODE
-    int max_ppn=1;
-    #endif
+    int max_ppn;
+
+		if (sh_sig_per_node) max_ppn = 1;
+		else 								 max_ppn=mi->max_ppn;
 
     /* If the master signature is ready we check the others */
   if ((mi->my_master_rank>=0) && sig[0].ready){
@@ -87,12 +85,11 @@ void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignatur
       if (show_sig) print_shared_signatures(data,sig);
       clean_signatures(data,sig);
       if (!mi->node_info_pending){
-        #if SHARE_INFO_PER_PROCESS
-        copy_my_sig_info(data,sig,mi->my_mpi_info);
-        #endif
-        #if SHARE_INFO_PER_NODE
-        compute_per_node_sig(data,sig,mi->my_mpi_info);
-        #endif
+				if (sh_sig_per_proces){
+        	copy_my_sig_info(data,sig,mi->my_mpi_info);
+				}else{
+        	compute_per_node_sig(data,sig,mi->my_mpi_info);
+				}
         if (ishare_global_info(mi->masters_comm,(char *)mi->my_mpi_info,
           sizeof(shsignature_t)*max_ppn,
           (char *)mi->nodes_info,sizeof(shsignature_t)*max_ppn,&mi->req)!=EAR_SUCCESS){
@@ -134,15 +131,15 @@ void print_global_signatures(masters_info_t *mi)
 
 void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
 {
+	int max_ppn;
   *node_cp=-1;
   *rank_cp=-1;
   if ((mi->my_master_rank>=0) && mi->node_info_pending && (is_info_ready(&mi->req)==EAR_SUCCESS)){
-    #if SHARE_INFO_PER_PROCESS
-    int max_ppn=mi->max_ppn;
-    #endif
-    #if SHARE_INFO_PER_NODE
-    int max_ppn=1;
-    #endif
+		if (sh_sig_per_proces){
+    	max_ppn=mi->max_ppn;
+		}else{
+    	max_ppn=1;
+		}
 
 		if (show_sig && mi->my_master_rank==0) print_global_signatures(mi);
 

@@ -212,6 +212,10 @@ void create_shared_regions()
 {
 	char *tmp=get_ear_tmp();
 	int bfd=-1;
+  int total_size;
+  int total_elements;
+  int per_node_elements;
+
 
 	/* This section allocates shared memory for processes in same node */
 	debug("Master creating shared regions for node synchro");
@@ -283,19 +287,24 @@ void create_shared_regions()
 	}
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
 	/* For scalability concerns, we can compile the system sharing all the processes information (SHARE_INFO_PER_PROCESS) or only 1 per node (SHARE_INFO_PER_NODE)*/
-	#if SHARE_INFO_PER_PROCESS
-	debug("Sharing info at process level, reporting N per node");
-	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
-	int total_elements=masters_info.max_ppn*masters_info.my_master_size;
-	int per_node_elements=masters_info.max_ppn;
-	ratio_PPN=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
-	#endif
-	#if SHARE_INFO_PER_NODE
-	debug("Sharing info at node level, reporting 1 per node");
-	int total_size=masters_info.my_master_size*sizeof(shsignature_t);
-	int total_elements=masters_info.my_master_size;
-	int per_node_elements=1;
-	#endif
+	if (sh_sig_per_node && sh_sig_per_proces){
+		error("Signatures can only be shared with node OR process granularity,not both, default node");
+		sh_sig_per_node = 1;
+		sh_sig_per_proces = 0;
+	}
+	if (sh_sig_per_proces){
+		debug("Sharing info at process level, reporting N per node");
+		total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
+		total_elements=masters_info.max_ppn*masters_info.my_master_size;
+		per_node_elements=masters_info.max_ppn;
+		ratio_PPN=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
+	}
+	if (sh_sig_per_node){
+		debug("Sharing info at node level, reporting 1 per node");
+		total_size=masters_info.my_master_size*sizeof(shsignature_t);
+		total_elements=masters_info.my_master_size;
+		per_node_elements=1;
+	}
 	masters_info.nodes_info=(shsignature_t *)calloc(total_elements,sizeof(shsignature_t));
 	if (masters_info.nodes_info==NULL){ 
 		error("Allocating memory for node_info");
@@ -610,6 +619,7 @@ void ear_init()
 	my_size=1;
 	#endif
 
+	load_app_mgr_env();
 
 	//debug("Reading the environment");
 
