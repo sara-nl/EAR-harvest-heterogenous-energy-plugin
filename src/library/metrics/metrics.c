@@ -251,7 +251,7 @@ static void metrics_global_stop()
 	timestamp_getfast(&end_mpi_time);
 
 	unsigned long long extime;
-	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);
+	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,TIME_USECS);
 
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
 	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
@@ -578,7 +578,7 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	/* This part is new to share with other processes */
 	timestamp_getfast(&end_mpi_time);
 	unsigned long long extime;
-	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);	
+	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,TIME_USECS);	
 	
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
 	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;

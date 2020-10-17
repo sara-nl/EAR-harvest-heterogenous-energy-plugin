@@ -78,6 +78,7 @@ state_t cache_stop(llong *L1_misses, llong *LL_misses)
 	}
 	accum_L1_misses += *L1_misses;
     accum_LL_misses += *LL_misses;
+	return EAR_SUCCESS;
 }
 
 state_t cache_read(llong *L1_misses, llong *LL_misses)
@@ -86,7 +87,8 @@ state_t cache_read(llong *L1_misses, llong *LL_misses)
 		ops.read(NULL, L1_misses, LL_misses);
 	}
 	accum_L1_misses += *L1_misses;
-    accum_LL_misses += *LL_misses;
+  accum_LL_misses += *LL_misses;
+	return EAR_SUCCESS;
 }
 
 state_t cache_data_print(llong L1_misses, llong LL_misses)

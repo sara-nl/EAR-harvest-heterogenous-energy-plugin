@@ -214,8 +214,11 @@ void print_local_mpi_info(mpi_information_t *info)
 
 void print_sh_signature(shsignature_t *sig)
 {
+	 	float t;
+    t = (float) sig->mpi_info.exec_time/1000000.0;
+
 	  fprintf(stderr," RANK %d mpi_data={total_mpi_calls %u mpi_time %llu exec_time %llu PercTime %lf }\n",
-    sig->mpi_info.rank,sig->mpi_info.total_mpi_calls,sig->mpi_info.mpi_time,sig->mpi_info.exec_time,sig->mpi_info.perc_mpi);
+    sig->mpi_info.rank,sig->mpi_info.total_mpi_calls,sig->mpi_info.mpi_time,t,sig->mpi_info.perc_mpi);
     fprintf(stderr,"RANK %d signature={cpi %.3lf tpi %.3lf time %.3lf dc_power %.3lf} state %d new_freq %lu\n",sig->mpi_info.rank,sig->sig.CPI,sig->sig.TPI, sig->sig.time,sig->sig.DC_power,sig->app_state,sig->new_freq);
 }
 
