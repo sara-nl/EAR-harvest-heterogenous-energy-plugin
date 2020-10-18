@@ -855,7 +855,7 @@ void ear_init()
 	}
 
 	ear_affinity_is_set=1;
-	print_affinity_mask(&arch_desc.top);
+	if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
 	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif

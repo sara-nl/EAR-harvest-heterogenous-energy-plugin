@@ -401,7 +401,7 @@ void dyncon_get_status(int fd, request_t *command) {
 	free(status);
 	debug("status released");
 }
-
+#if POWERCAP
 void dyncon_power_management(int fd, request_t *command)
 {
 	unsigned long limit;
@@ -451,6 +451,7 @@ void dyncon_power_management(int fd, request_t *command)
 	verbose(1,"New power limit %lu",limit);
 	energy_set_power_limit(&my_eh_rapi,limit,command->my_req.pc.type);
 }
+#endif
 
 void update_current_settings(policy_conf_t *cpolicy_settings)
 {
@@ -462,6 +463,7 @@ void update_current_settings(policy_conf_t *cpolicy_settings)
 	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
 }
 
+#if POWERCAP
 void dyncon_release_idle_power(int fd, request_t *command)
 {
     pc_release_data_t rel_data;
@@ -521,6 +523,7 @@ void dyncon_get_powerstatus(int fd, request_t *command)
 	free(status);
 	debug("powerstatus released");
 }
+#endif
 
 void dyncon_set_risk(int fd, request_t *command)
 {
@@ -652,6 +655,7 @@ state_t process_remote_requests(int clientfd) {
 			dyncon_get_app_status(clientfd, &command);
       return EAR_SUCCESS;
       break;
+		#if POWERCAP
 		case EAR_RC_RED_POWER:
 		case EAR_RC_GET_POWER:
 		case EAR_RC_SET_POWER:
@@ -659,11 +663,13 @@ state_t process_remote_requests(int clientfd) {
 		case EAR_RC_SET_POWERCAP_OPT:
 			dyncon_power_management(clientfd, &command);
 			break;
+		#endif
 		case EAR_RC_SET_RISK:
 			verbose(1,"set risk command received");
 			dyncon_set_risk(clientfd, &command);
 			return EAR_SUCCESS;
 			break;
+	 #if POWERCAP
    case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd, &command);
             return EAR_SUCCESS;
@@ -673,6 +679,7 @@ state_t process_remote_requests(int clientfd) {
 		case EAR_RC_DEF_POWERCAP:
 						dyncon_set_default_powercap(clientfd, &command);
 						break;
+	  #endif
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;

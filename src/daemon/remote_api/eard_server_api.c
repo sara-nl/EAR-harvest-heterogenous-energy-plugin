@@ -214,6 +214,7 @@ int read_command(int s, request_t *command)
         return command->req;
     }
     memcpy(command, tmp_command, sizeof(request_t));
+		#if POWERCAP
     if (head.size > sizeof(request_t))
     {
         if (command->req == EAR_RC_SET_POWERCAP_OPT)
@@ -226,6 +227,7 @@ int read_command(int s, request_t *command)
             memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
         }
     }
+		#endif
     free(tmp_command);
     return command->req;
 }

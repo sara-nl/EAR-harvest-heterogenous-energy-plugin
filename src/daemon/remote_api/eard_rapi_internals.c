@@ -143,6 +143,7 @@ size_t get_command_size(request_t *command, char **data_to_send)
     char *command_b;
 
 
+		#if POWERCAP
     switch(command->req)
     {
         case EAR_RC_SET_POWERCAP_OPT:
@@ -150,11 +151,12 @@ size_t get_command_size(request_t *command, char **data_to_send)
             offset = command->my_req.pc_opt.num_greedy * sizeof(int);
             break;
     }
+		#endif
 
     //copy the original command
     command_b = calloc(1, size);
     memcpy(command_b, command, sizeof(request_t));
-
+		#if POWERCAP
     switch(command->req)
     {
         case EAR_RC_SET_POWERCAP_OPT:
@@ -162,6 +164,7 @@ size_t get_command_size(request_t *command, char **data_to_send)
             memcpy(&command_b[sizeof(request_t) + offset], command->my_req.pc_opt.extra_power, offset);
             break;
     }
+		#endif
 
     *data_to_send = command_b; 
     return size;

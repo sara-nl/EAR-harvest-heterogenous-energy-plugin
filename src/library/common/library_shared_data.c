@@ -312,7 +312,7 @@ void load_app_mgr_env()
 	char *creport_all_sig=getenv(REPORT_ALL_SIGNATURES);
 
 	if (cshow_sig != NULL) show_signatures = atoi(cshow_sig);
-	if (csh_sig_per_process != NULL) sh_sig_per_process = atoi(csh_sig_per_process);
+	if (csh_sig_per_process != NULL) sh_sig_per_proces = atoi(csh_sig_per_process);
 	if (csh_sig_per_node != NULL) sh_sig_per_node = atoi(csh_sig_per_node);
 	if (creport_node_sig != NULL) report_node_sig = atoi(creport_node_sig);	
 	if (creport_all_sig != NULL) report_all_sig = atoi(creport_all_sig);

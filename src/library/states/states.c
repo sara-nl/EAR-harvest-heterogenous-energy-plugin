@@ -443,37 +443,17 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		case EVALUATING_SIGNATURE: /********* EVALUATING_SIGNATURE **********/
 			/* We check from time to time if if the signature is ready */
 			/* Included to accelerate the signature computation */
-			#if 0
-			if (masters_info.my_master_rank>=0){
-				verbose(1,"EVALUATING_SIGNATURE");
-			}
-			#endif
 			if ((iterations%perf_count_period_10p)==0){
 				if (time_ready_signature(perf_accuracy_min_time)){	
-					#if 0
-					if (masters_info.my_master_rank>=0){
-						verbose(1,"period update fom %u to %u",perf_count_period,iterations - 1);
-					}
-					#endif
 					perf_count_period=iterations - 1;
 					if (perf_count_period==0) perf_count_period=1;
 				}
 			}
-			#if 0
-			if (masters_info.my_master_rank>=0){ 
-				verbose(1,"iterations %u perf_count_period %u",iterations,perf_count_period);
-			}
-			#endif
 			if (((iterations - 1) % perf_count_period) || (iterations == 1)) return;
 			N_iter = iterations - begin_iter;
 			result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, total_th);	
 			if (result == EAR_NOT_READY)
 			{
-			#if 0
-				if (masters_info.my_master_rank>=0){ 
-					verbose(1,"EAR_NOT_READY N_iter %u",N_iter);
-				}
-			#endif
 				perf_count_period++;
 				return;
 			}

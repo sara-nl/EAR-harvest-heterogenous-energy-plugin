@@ -26,6 +26,7 @@
 
 #include <common/config.h>
 #include <common/types.h>
+#include <common/states.h>
 #include <common/types/signature.h>
 #include <common/system/shared_areas.h>
 
@@ -122,6 +123,8 @@ void print_local_mpi_info(mpi_information_t *info);
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);
 int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *node_cp,int *rank_cp);
 double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig);
+void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig);
+
 
 void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info);
 void copy_my_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *rem_sig);

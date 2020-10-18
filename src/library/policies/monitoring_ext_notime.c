@@ -37,14 +37,11 @@ extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) f
 #endif
 
-static int show_sig=0;
 static timestamp pol_time_init;
 
 
 state_t policy_init(polctx_t *c)
 {
-  char *show_sig_c=getenv("SLURM_EAR_SHOW_SIGNATURES");
-  if (show_sig_c!=NULL) show_sig=atoi(show_sig_c);
   
   if (c!=NULL){ 
     sig_shared_region[my_node_id].mpi_info.mpi_time=0;
@@ -107,7 +104,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
   int node_cp,rank_cp;
   if (masters_info.my_master_rank>=0){
-    check_mpi_info(&masters_info,&node_cp,&rank_cp,show_sig);
+    check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
     if (rank_cp>=0){
       verbose(1,"Shared data ready");
       verbose(1,"Node cp %d and rank cp %d",node_cp,rank_cp);
@@ -118,7 +115,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
         verbose(1,"I'm in the node CP");
       }
     }
-    check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,show_sig);
+    check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
   }
   return EAR_SUCCESS;
 }

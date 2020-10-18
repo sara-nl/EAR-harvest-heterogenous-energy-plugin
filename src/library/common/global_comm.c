@@ -21,7 +21,9 @@
 #include <common/states.h> 
 #include <common/config.h>
 #include <common/output/verbose.h>
+#include <library/common/externs.h>
 #include <library/common/global_comm.h>
+
 /**************************************************************************************************/
 /******************************* ASYNC comunication between masters *******************************/
 /**************************************************************************************************/
@@ -88,7 +90,7 @@ void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignatur
 				if (sh_sig_per_proces){
         	copy_my_sig_info(data,sig,mi->my_mpi_info);
 				}else{
-        	compute_per_node_sig(data,sig,mi->my_mpi_info);
+        	compute_per_node_sig_info(data,sig,mi->my_mpi_info);
 				}
         if (ishare_global_info(mi->masters_comm,(char *)mi->my_mpi_info,
           sizeof(shsignature_t)*max_ppn,
