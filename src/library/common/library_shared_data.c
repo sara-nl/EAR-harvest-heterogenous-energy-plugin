@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/common/externs.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -190,8 +191,10 @@ int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *nod
 	unsigned long long total_mpi_time=0, total_exec_time=0;
 	/* Node loop */
 	for (i=0;i<size;i++){
+	  debug("Node %d",i);
 		/* Inside node */
 		for (j=0;j<ppn[i];j++){
+	//		debug("local process %d: mpi_time %llu exec_time %llu perc_mpi %f",j,my_sh_sig[i*max+j].mpi_info.mpi_time,my_sh_sig[i*max+j].mpi_info.exec_time,my_sh_sig[i*max+j].mpi_info.perc_mpi);
 			total_mpi+=my_sh_sig[i*max+j].mpi_info.total_mpi_calls;
 			total_mpi_time+=my_sh_sig[i*max+j].mpi_info.mpi_time;
 			total_exec_time+=my_sh_sig[i*max+j].mpi_info.exec_time;
@@ -204,7 +207,7 @@ int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *nod
 		}
 	}
 	*rank_cp=rank;
-	fprintf(stderr,"The (MIN MPI %lf, MAX MPI %lf) (MPI_CALLS %u MPI_TIME %llu USER_TIME=%llu)\n",minp*100.0,maxp*100.0,total_mpi,total_mpi_time/1000000000,total_exec_time/1000000000);
+	fprintf(stderr,"The (MIN PERC MPI %.1lf, MAX PERC MPI %.1lf) (MPI_CALLS %u MPI_TIME %.3fsec USER_TIME=%.3fsec)\n",minp*100.0,maxp*100.0,total_mpi,(float)total_mpi_time/1000000.0,(float)total_exec_time/1000000.0);
 	return rank;
 }
 
@@ -318,6 +321,6 @@ void load_app_mgr_env()
 	if (creport_all_sig != NULL) report_all_sig = atoi(creport_all_sig);
 
 	debug("Show_signatures %u share_sig_per_process %u share_sig_per_node %u report_node_sig %u report_all_sig %u",
-	show_signatures,sh_sig_per_process,sh_sig_per_node,report_node_sig,report_all_sig);
+	show_signatures,sh_sig_per_proces,sh_sig_per_node,report_node_sig,report_all_sig);
 }
 

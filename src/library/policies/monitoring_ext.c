@@ -89,7 +89,7 @@ state_t policy_mpi_end(polctx_t *c)
   timestamp end;
   ullong elap;
   timestamp_getfast(&end);
-  elap=timestamp_diff(&end,&pol_time_init,(ullong)1);
+  elap=timestamp_diff(&end,&pol_time_init,TIME_USECS);
   sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
   sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
   return EAR_SUCCESS;

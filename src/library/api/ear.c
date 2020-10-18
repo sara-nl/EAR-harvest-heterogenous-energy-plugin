@@ -647,7 +647,6 @@ void ear_init()
 	#else
 	verb_level=1;
 	#endif
-	verb_level=1;
 	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
