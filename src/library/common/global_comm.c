@@ -78,6 +78,7 @@ void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignatur
 {
     int max_ppn;
 
+		//debug("check_node_signatures");
 		if (sh_sig_per_node) max_ppn = 1;
 		else 								 max_ppn=mi->max_ppn;
 
@@ -93,6 +94,7 @@ void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignatur
 				}else{
         	compute_per_node_sig_info(data,sig,mi->my_mpi_info);
 				}
+				verbose(1,"Sending %d elements per node, Total elements %d",max_ppn,max_ppn*mi->my_master_size);
         if (ishare_global_info(mi->masters_comm,(char *)mi->my_mpi_info,
           sizeof(shsignature_t)*max_ppn,
           (char *)mi->nodes_info,sizeof(shsignature_t)*max_ppn,&mi->req)!=EAR_SUCCESS){
@@ -137,6 +139,7 @@ void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig)
 	int max_ppn;
   *node_cp=-1;
   *rank_cp=-1;
+	//debug("check_mpi_info");
   if ((mi->my_master_rank>=0) && mi->node_info_pending && (is_info_ready(&mi->req)==EAR_SUCCESS)){
 		if (sh_sig_per_proces){
     	max_ppn=mi->max_ppn;

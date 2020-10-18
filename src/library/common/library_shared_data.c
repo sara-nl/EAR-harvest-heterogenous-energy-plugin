@@ -191,7 +191,7 @@ int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *nod
 	unsigned long long total_mpi_time=0, total_exec_time=0;
 	/* Node loop */
 	for (i=0;i<size;i++){
-	  debug("Node %d",i);
+	  debug("Node %d ppn %d",i,ppn[i]);
 		/* Inside node */
 		for (j=0;j<ppn[i];j++){
 	//		debug("local process %d: mpi_time %llu exec_time %llu perc_mpi %f",j,my_sh_sig[i*max+j].mpi_info.mpi_time,my_sh_sig[i*max+j].mpi_info.exec_time,my_sh_sig[i*max+j].mpi_info.perc_mpi);
@@ -244,15 +244,26 @@ void copy_my_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *
 
 void compute_per_node_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info)
 {
+	mpi_information_t avg_mpi;
+	avg_mpi.total_mpi_calls = sig[0].mpi_info.total_mpi_calls;
+	avg_mpi.exec_time = sig[0].mpi_info.exec_time;
+	avg_mpi.mpi_time = sig[0].mpi_info.mpi_time;
+	avg_mpi.rank = sig[0].mpi_info.rank;
+	avg_mpi.perc_mpi = sig[0].mpi_info.perc_mpi;
   int i,min_i=0;
-	double min_perc=sig[0].mpi_info.perc_mpi;
+	debug("compute_per_node_mpi_info, num_procs %d",data->num_processes);
   for (i=1;i<data->num_processes;i++){
-		if (sig[i].mpi_info.perc_mpi<min_perc){
-			min_i=i;
-			min_perc=sig[i].mpi_info.perc_mpi;
-		}
+		avg_mpi.total_mpi_calls += sig[i].mpi_info.total_mpi_calls;
+		avg_mpi.exec_time += sig[i].mpi_info.exec_time;
+		avg_mpi.mpi_time += sig[i].mpi_info.mpi_time;
+		avg_mpi.perc_mpi += sig[i].mpi_info.perc_mpi;
   }
-  memcpy(&my_mpi_info,&sig[min_i].mpi_info,sizeof(mpi_information_t));
+	my_mpi_info->rank = 0;
+	my_mpi_info->total_mpi_calls = avg_mpi.total_mpi_calls/data->num_processes;
+	my_mpi_info->exec_time = avg_mpi.exec_time/data->num_processes;
+	my_mpi_info->mpi_time = avg_mpi.mpi_time/data->num_processes;
+	/* Should we use the minimum? */
+	my_mpi_info->perc_mpi = avg_mpi.perc_mpi/data->num_processes;
 }
 
 
@@ -293,11 +304,13 @@ void set_global_metrics(ssig_t *avg_sig,ssig_t *s)
 void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig)
 {
 	int i;
+	debug("compute_per_node_sig_info");
 	compute_per_node_mpi_info(data,sig,&my_node_sig->mpi_info);
 	ssig_t avg_node;
-	set_global_metrics(&avg_node,&my_node_sig[0].sig);
+	//print_shared_signatures(data,sig);
+	set_global_metrics(&avg_node,&sig[0].sig);
 	for (i=0;i<data->num_processes;i++){
-		acum_signature_metrics(&avg_node,&my_node_sig[i].sig);
+		acum_signature_metrics(&avg_node,&sig[i].sig);
 	}
 	compute_node_sig(&avg_node,data->num_processes);
 	copy_mini_sig(&my_node_sig->sig,&avg_node);
