@@ -61,6 +61,10 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				// Library == whatever: enable (bug protection)
 				if (!isenv_agnostic(sp, Var.comp_libr.cmp, "0")) {
 					plug_component_setenabled(sp, Component.library, 1);
+					// CAUTION!!
+					// Enabling also the variable to reactivate Component.library
+					// in remote environments. It may produce unexpected problems.
+					setenv_agnostic(sp, Var.comp_libr.cmp, "1", 1);
 				}
 			// If disabled by default or de administrator have misswritten
 			} else {
