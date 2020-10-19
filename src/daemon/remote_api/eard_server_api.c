@@ -17,6 +17,7 @@
 
 //#define SHOW_DEBUGS 1
 
+#include <netdb.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,24 +25,23 @@
 #include <string.h>
 #include <signal.h>
 #include <pthread.h>
-#include <netdb.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
-#include <arpa/inet.h>
 #include <linux/limits.h>
+
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
+#include <common/messaging/msg_conf.h>
+
 #include <daemon/remote_api/eard_rapi.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
 #include <daemon/remote_api/eard_server_api.h>
 
-// 2000 and 65535
-#define DAEMON_EXTERNAL_CONNEXIONS 1
 
 int *ips = NULL;
 int *temp_ips = NULL;
@@ -50,193 +50,6 @@ int self_id = -1;
 int self_ip = -1;
 int init_ips_ready=0;
 
-
-// based on getaddrinfo man pages
-int create_server_socket(uint port)
-{
-    struct addrinfo hints;
-    struct addrinfo *result, *rp;
-    int sfd, s;
-		char buff[50]; // This must be checked
-
-    memset(&hints, 0, sizeof(struct addrinfo));
-    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
-    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
-    hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
-    hints.ai_protocol = 0;          /* Any protocol */
-    hints.ai_canonname = NULL;
-    hints.ai_addr = NULL;
-    hints.ai_next = NULL;
-
-		sprintf(buff,"%d",port);
-
-   	s = getaddrinfo(NULL, buff, &hints, &result);
-    if (s != 0) {
-		error("getaddrinfo fails for port %s (%s)",buff,strerror(errno));
-		return EAR_ERROR;
-    }
-
-
-   	for (rp = result; rp != NULL; rp = rp->ai_next) {
-        sfd = socket(rp->ai_family, rp->ai_socktype,
-                rp->ai_protocol);
-        if (sfd == -1)
-            continue;
-
-
-
-        while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0){ 
-			verbose(VAPI,"Waiting for connection");
-			sleep(10);
-	    }
-            break;                  /* Success */
-
-    }
-
-   	if (rp == NULL) {               /* No address succeeded */
-		error("bind fails for eards server (%s) ",strerror(errno));
-		return EAR_ERROR;
-    }else{
-		verbose(VAPI+1,"socket and bind for erads socket success");
-	}
-
-   	freeaddrinfo(result);           /* No longer needed */
-
-   	if (listen(sfd,DAEMON_EXTERNAL_CONNEXIONS)< 0){
-		error("listen eards socket fails (%s)",strerror(errno));
-		close(sfd);
- 		return EAR_ERROR;
-	}
-	verbose(VAPI,"socket listen ready!");
- 	return sfd;
-}
-
-int wait_for_client(int s,struct sockaddr_in *client)
-{
-	int new_sock;
-	socklen_t client_addr_size;
-
-
-    client_addr_size = sizeof(struct sockaddr_in);
-    new_sock = accept(s, (struct sockaddr *) client, &client_addr_size);
-    if (new_sock < 0){ 
-		error("accept for eards socket fails %s\n",strerror(errno));
-		return EAR_ERROR;
-	}
-    char conection_ok = 1;
-    write(new_sock, &conection_ok, sizeof(char));
-    verbose(VCONNECT, "Sending handshake byte to client.");
-	verbose(VCONNECT, "new connection ");
-	return new_sock;
-}
-
-void close_server_socket(int sock)
-{
-	close(sock);
-}
-
-#if DYNAMIC_COMMANDS
-int read_command(int s, request_t *command)
-{
-    request_header_t head;
-    char *tmp_command;
-    size_t aux_size = 0;
-    head = receive_data(s, (void **)&tmp_command);
-    debug("received command type %d\t size: %u \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
-
-    if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(internal_request_t))
-    {
-        debug("NO_COMMAND");
-        command->req = NO_COMMAND;
-        if (head.size > 0) free(tmp_command);
-#if DYN_PAR
-        return EAR_SOCK_DISCONNECTED;
-#endif
-        return command->req;
-    }
-    memcpy(command, tmp_command, sizeof(internal_request_t));
-    aux_size += sizeof(internal_request_t);
-
-#if NODE_PROP
-    if (command->nodes > 0)
-    {
-        command->nodes = calloc(command->num_nodes, sizeof(int)); //this will be freed in propagate_data since it's the last point where it is needed and the common point in all requests
-        memcpy(command->nodes, &tmp_command[aux_size], command->num_nodes * sizeof(int));
-        aux_size += command->num_nodes * sizeof(int);
-    }
-#endif
-
-    //there is still data pending to read
-    if (head.size > aux_size)
-    {
-        if (command->req == EAR_RC_SET_POWERCAP_OPT)
-        {
-            debug("received powercap_opt");
-            memcpy(&command->my_req, &tmp_command[aux_size], sizeof(powercap_opt_t)); //first we copy the base powercap_opt_t
-            //auxiliar variables
-            size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
-            aux_size += sizeof(powercap_opt_t);
-
-            //allocation
-            command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
-            command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
-
-            //copy
-            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[aux_size], offset);
-            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[aux_size + offset], offset);
-        }
-        else
-        {
-            debug("recieved command with additional data: %d", command->req);
-            debug("head.size %u internal_req_t size %u current_size %u", head.size, sizeof(internal_request_t), aux_size); 
-            memcpy(&command->my_req, &tmp_command[aux_size], head.size - aux_size);
-        }
-    }
-    free(tmp_command);
-    return command->req;
-}
-#else
-int read_command(int s, request_t *command)
-{
-    request_header_t head;
-    char *tmp_command;
-    head = receive_data(s, (void **)&tmp_command);
-    debug("received command type %d\t size: %lu \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
-
-    if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(request_t))
-    {
-        debug("NO_COMMAND");
-        command->req = NO_COMMAND;
-        if (head.size > 0) free(tmp_command);
-#if DYN_PAR
-        return EAR_SOCK_DISCONNECTED;
-#endif
-        return command->req;
-    }
-    memcpy(command, tmp_command, sizeof(request_t));
-    if (head.size > sizeof(request_t))
-    {
-        if (command->req == EAR_RC_SET_POWERCAP_OPT)
-        {
-            debug("received powercap_opt");
-            size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
-            command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
-            command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
-            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[sizeof(request_t)], offset);
-            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
-        }
-    }
-    free(tmp_command);
-    return command->req;
-}
-#endif
-
-void send_answer(int s,long *ack)
-{
-	int ret;
-	if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) error("Error sending the answer");
-	if (ret<0) error("(%s)",strerror(errno));
-}
 
 int init_ips(cluster_conf_t *my_conf)
 {
