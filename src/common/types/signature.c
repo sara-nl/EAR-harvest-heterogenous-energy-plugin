@@ -58,6 +58,11 @@ void signature_print_simple_fd(int fd, signature_t *sig)
 	dprintf(fd, "[AVGF=%lu DEFF=%lu TIME=%.3lf CPI=%.3lf GBS=%.2lf POWER=%.2lf]",sig->avg_f, sig->def_f,sig->time, sig->CPI,sig->GBS,sig->DC_power);
 }
 
+void signature_to_str(signature_t *sig,char *msg,size_t limit)
+{
+	snprintf(msg,limit, "[AVGF=%lu DEFF=%lu TIME=%.3lf CPI=%.3lf GBS=%.2lf POWER=%.2lf]",sig->avg_f, sig->def_f,sig->time, sig->CPI,sig->GBS,sig->DC_power);
+}
+
 
 void compute_vpi(double *vpi,signature_t *sig)
 {
@@ -92,6 +97,87 @@ void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN)
 	dest->TPI=new_TPI;
 	dest->DC_power=new_DC_power;
 }
+void acum_sig(signature_t *dst,signature_t *src)
+{
+		int i;
+    dst->DC_power += src->DC_power;
+    dst->DRAM_power += src->DRAM_power;
+    dst->PCK_power += src->PCK_power;
+    dst->EDP += src->EDP;
+    dst->GBS += src->GBS;
+    dst->TPI += src->TPI;
+    dst->CPI += src->CPI;
+    dst->Gflops += src->Gflops;
+    dst->time += src->time;
+		for (i=0;i<FLOPS_EVENTS;i++) dst->FLOPS[i] += src->FLOPS[i];
+    dst->L1_misses += src->L1_misses;
+    dst->L2_misses += src->L2_misses;
+    dst->L3_misses += src->L3_misses;
+    dst->instructions += src->instructions;
+    dst->cycles += src->cycles;
+    dst->avg_f += src->avg_f;
+    dst->def_f += src->def_f;
+    #if USE_GPUS
+		dst->gpu_sig.num_gpus = src->gpu_sig.num_gpus;
+		for (i=0;i<MAX_GPUS_SUPPORTED;i++){
+			dst->gpu_sig.gpu_data[i].GPU_power += src->gpu_sig.gpu_data[i].GPU_power;
+			dst->gpu_sig.gpu_data[i].GPU_freq += src->gpu_sig.gpu_data[i].GPU_freq;
+			dst->gpu_sig.gpu_data[i].GPU_mem_freq += src->gpu_sig.gpu_data[i].GPU_mem_freq;
+			dst->gpu_sig.gpu_data[i].GPU_util += src->gpu_sig.gpu_data[i].GPU_util;
+			dst->gpu_sig.gpu_data[i].GPU_mem_util += src->gpu_sig.gpu_data[i].GPU_mem_util;
+		}
+		#endif
+	
+}
+void compute_avg_sig(signature_t *dst,signature_t *src,int nums)
+{
+    int i;
+    dst->DC_power = src->DC_power/nums;
+    dst->DRAM_power = src->DRAM_power/nums;
+    dst->PCK_power = src->PCK_power/nums;
+    dst->EDP = src->EDP/nums;
+    dst->GBS = src->GBS/nums;
+    dst->TPI = src->TPI/nums;
+    dst->CPI = src->CPI/nums;
+    dst->Gflops = src->Gflops/nums;
+    dst->time = src->time/nums;
+    for (i=0;i<FLOPS_EVENTS;i++) dst->FLOPS[i] = src->FLOPS[i]/nums;
+    dst->L1_misses = src->L1_misses/nums;
+    dst->L2_misses = src->L2_misses/nums;
+    dst->L3_misses = src->L3_misses/nums;
+    dst->instructions = src->instructions/nums;
+    dst->cycles = src->cycles/nums;
+    dst->avg_f = src->avg_f/nums;
+    dst->def_f = src->def_f/nums;
+    #if USE_GPUS
+    dst->gpu_sig.num_gpus = src->gpu_sig.num_gpus;
+    for (i=0;i<MAX_GPUS_SUPPORTED;i++){
+      dst->gpu_sig.gpu_data[i].GPU_power = src->gpu_sig.gpu_data[i].GPU_power/nums;
+      dst->gpu_sig.gpu_data[i].GPU_freq = src->gpu_sig.gpu_data[i].GPU_freq/nums;
+      dst->gpu_sig.gpu_data[i].GPU_mem_freq = src->gpu_sig.gpu_data[i].GPU_mem_freq/nums;
+      dst->gpu_sig.gpu_data[i].GPU_util = src->gpu_sig.gpu_data[i].GPU_util/nums;
+      dst->gpu_sig.gpu_data[i].GPU_mem_util = src->gpu_sig.gpu_data[i].GPU_mem_util/nums;
+    }
+    #endif
+}
+
+void from_minis_to_sig(signature_t *s,ssig_t *minis)
+{
+	signature_init(s);
+	s->DC_power=(double)minis->DC_power;
+	s->GBS=(double)minis->GBS;
+	s->TPI=(double)minis->TPI;
+	s->CPI=(double)minis->CPI;
+	s->Gflops=(double)minis->Gflops;
+	s->time=(double)minis->time;
+	memcpy(s->FLOPS,minis->FLOPS,sizeof(ull)*FLOPS_EVENTS);
+	s->avg_f=minis->avg_f;
+	s->def_f=minis->def_f;
+	#if USE_GPUS
+	memcpy(&s->gpu_sig,&minis->gpu_sig,sizeof(gpu_signature_t));
+	#endif
+		
+}
 
 
 void from_sig_to_mini(ssig_t *minis,signature_t *s)
@@ -102,8 +188,12 @@ void from_sig_to_mini(ssig_t *minis,signature_t *s)
 	minis->CPI=(float)s->CPI;
 	minis->Gflops=(float)s->Gflops;
 	minis->time=(float)s->time;
+	memcpy(minis->FLOPS,s->FLOPS,sizeof(ull)*FLOPS_EVENTS);
 	minis->avg_f=s->avg_f;
 	minis->def_f=s->def_f;
+	#if USE_GPUS
+	memcpy(&minis->gpu_sig,&s->gpu_sig,sizeof(gpu_signature_t));
+	#endif
 }
 void copy_mini_sig(ssig_t *dst,ssig_t *src)
 {

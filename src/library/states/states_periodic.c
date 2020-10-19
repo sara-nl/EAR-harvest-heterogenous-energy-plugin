@@ -38,6 +38,8 @@
 #include <library/metrics/metrics.h>
 #include <common/hardware/frequency.h>
 #include <daemon/local_api/eard_api.h>
+#include <library/policies/policy_state.h>
+
 
 extern uint mpi_calls_in_period;
 extern masters_info_t masters_info;

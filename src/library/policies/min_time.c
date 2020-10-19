@@ -33,6 +33,8 @@
 #include <library/common/externs.h>
 #include <common/system/time.h>
 #include <daemon/powercap/powercap_status.h>
+#include <library/policies/policy_state.h>
+
 
 
 static timestamp pol_time_init;
@@ -97,7 +99,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		state_t st;
     my_app=sig;
 
-		*ready=1;
+		*ready=EAR_POLICY_READY;
 
 
 		if (c==NULL) return EAR_ERROR;

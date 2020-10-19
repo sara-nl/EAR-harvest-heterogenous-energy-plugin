@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
@@ -52,7 +52,7 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
   int begin_pstate, end_pstate;
   int i, ref;
 
-	debug("Using basic_model\n");
+	debug("Using avx512_model\n");
 	num_pstates=myarch->pstates;
 	copy_arch_desc(&arch,myarch);
 	print_arch_desc(&arch);

@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/hardware/frequency.h>
@@ -36,8 +36,12 @@
 #include <library/policies/policy_api.h>
 #include <library/common/externs.h>
 #include <library/common/library_shared_data.h>
+#include <library/policies/policy_state.h>
+
 
 static timestamp pol_time_init;
+static uint global_sig_ready=0;
+static signature_t gsig;
 
 typedef unsigned long ulong;
 
@@ -48,34 +52,14 @@ extern unsigned long ext_def_freq;
 #define FREQ_DEF(f) f
 #endif
 
-static float min_perc;
-static int check_reduce_mpi=0;
-static int reduce_freq_in_mpi=0;
-static unsigned long saved_freq,mpi_freq;
-static int mpi_reduction=0;
-
-
 state_t policy_init(polctx_t *c)
 {
-  char *min_perc_val=getenv("SLURM_EAR_MIN_PERC_MPI");
-	char *red_in_mpi_c=getenv("SLURM_EAR_RED_FREQ_IN_MPI");
-  if (min_perc_val!=NULL){ 
-		min_perc=(float)atoi(min_perc_val)/(float)100;
-	}else{
-		min_perc=(float)MIN_MPI_FOR_LOW_FREQ/(float)100;
-	}
-	if (red_in_mpi_c!=NULL) mpi_reduction=atoi(red_in_mpi_c);
-	
 
 	if (c!=NULL){ 
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
   	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
 		sig_shared_region[my_node_id].mpi_info.exec_time=0;
 		sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
-		if (masters_info.my_master_rank==0){
-			verbose(1,"Using %f as min perc mpi2 show_sig_node=%d show_all_sig=%d",min_perc,report_node_sig,report_all_sig);
-			verbose(1,"mpi_reduction feature set to %d",mpi_reduction);
-		}
 
 
 		return EAR_SUCCESS;
@@ -118,9 +102,16 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		ulong curr_pstate,def_pstate,def_freq;
 		state_t st;
 
-    my_app=sig;
+    my_app=&gsig;
 
-		*ready=1;
+		if (global_sig_ready){ 
+			*ready=EAR_POLICY_READY;
+			global_sig_ready=0;
+		}else{
+			*new_freq=*(c->ear_frequency);
+			*ready=EAR_POLICY_TRY_AGAIN;
+			return EAR_SUCCESS;
+		}
 
 
 		if (c==NULL) return EAR_ERROR;
@@ -210,7 +201,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		/* we share what is the next frequency for the application */
 		sig_shared_region[my_node_id].new_freq=best_freq;
 		
-		if (reduce_freq_in_mpi) reduce_freq_in_mpi=0;
 		return EAR_SUCCESS;
 }
 
@@ -274,37 +264,27 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
 	int node_cp,rank_cp;
 	state_t ret;
+	char buff[512];
 	if (masters_info.my_master_rank>=0){
   	ret = check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
 		if (ret == EAR_SUCCESS){
-			verbose(1,"Shared data ready");
-			verbose(1,"Node cp %d and rank cp %d",node_cp,rank_cp);
+			global_sig_ready = 1;
+			compute_avg_app_signature(&masters_info,&gsig);
+			signature_to_str(&gsig,buff,sizeof(buff));
+			debug("Global_sig: %s",buff);
+			debug("Node cp %d and rank cp %d",node_cp,rank_cp);
 			if (rank_cp==ear_my_rank){
-				//verbose(1,"I'm the CP!");
+				debug("I'm the CP!");
 			}
 			if (node_cp==masters_info.my_master_rank){
-				verbose(1,"I'm in the node CP");
-				check_reduce_mpi=0;
-				reduce_freq_in_mpi=0;
+				debug("I'm in the node CP");
 			}else{ 
-				check_reduce_mpi=1;
+				debug("I'm not in the node CP");
 			}
 		}
   	ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
 		if (ret == EAR_SUCCESS){
 			debug("Node signatures ready");
-		}
-	}
-	if (mpi_reduction && !reduce_freq_in_mpi && check_reduce_mpi){
-		if (min_perc_mpi_in_node(lib_shared_region,sig_shared_region)>=(double)min_perc && load_unbalance(&masters_info)){	
-			saved_freq=*(c->ear_frequency);
-			int c_pstate=frequency_freq_to_pstate(saved_freq);
-			c_pstate++;
-			*(c->ear_frequency)=frequency_pstate_to_freq(c_pstate);
-			verbose(1,"Node %d setting freq to %lu",masters_info.my_master_rank,*(c->ear_frequency));
-			eards_change_freq(*(c->ear_frequency));
-			reduce_freq_in_mpi=1;
-			check_reduce_mpi=0;
 		}
 	}
 	return EAR_SUCCESS;

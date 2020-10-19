@@ -1,3 +1,4 @@
+include ./Makefile.files
 CFLAGS = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
@@ -45,4 +46,3 @@ depend-clean: depend-clean.components
 
 include $(SRCDIR)/Makefile.depend
 include $(SRCDIR)/Makefile.extra
-include ./Makefile.files

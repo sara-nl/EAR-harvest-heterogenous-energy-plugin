@@ -23,12 +23,15 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <common/system/time.h>
 #include <library/common/library_shared_data.h>
 #include <library/common/externs.h>
+#include <library/policies/policy_state.h>
+
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
@@ -56,8 +59,9 @@ state_t policy_init(polctx_t *c)
 }
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
-	*ready=1;
+	*ready=EAR_POLICY_READY;
 	*new_freq=DEF_FREQ(c->app->def_freq);
+	sig_shared_region[my_node_id].new_freq=*new_freq;
 	return EAR_SUCCESS;
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
@@ -99,20 +103,32 @@ state_t policy_mpi_end(polctx_t *c)
 state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
   int node_cp,rank_cp;
+	state_t ret;
+	signature_t gsig;
+	char buff[512];
   if (masters_info.my_master_rank>=0){
-    check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
-    if (rank_cp>=0){
-      verbose(1,"Shared data ready");
-      verbose(1,"Node cp %d and rank cp %d",node_cp,rank_cp);
+    ret = check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
+    if (ret == EAR_SUCCESS){
+      compute_avg_app_signature(&masters_info,&gsig);
+      signature_to_str(&gsig,buff,sizeof(buff));
+      debug("AVGS: %s",buff);
+
+      debug("Node cp %d and rank cp %d",node_cp,rank_cp);
       if (rank_cp==ear_my_rank){
-				verbose(1,"I'm the critical path");
+        debug("I'm the CP!");
       }
       if (node_cp==masters_info.my_master_rank){
-        verbose(1,"I'm in the node CP");
+        debug("I'm in the node CP");
+      }else{ 
+        debug("I'm not in the node CP");
       }
     }
-    check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+    ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+    if (ret == EAR_SUCCESS){
+      debug("Node signatures ready");
+    }
   }
+
   return EAR_SUCCESS;
 }
 

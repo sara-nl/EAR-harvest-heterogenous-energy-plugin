@@ -19,7 +19,7 @@
 #include <mpi.h>
 #endif
 #include <dlfcn.h>
-#define SHOW_DEBUGS 1
+// #define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/config/config_env.h>
 #include <common/system/symplug.h>
@@ -34,6 +34,7 @@
 #include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/pc_app_info.h>
 #include <library/policies/pc_suport.h>
+#include <library/policies/policy_state.h>
 #endif
 
 extern masters_info_t masters_info;
@@ -103,6 +104,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	state_t ret;
 
   char *obj_path = getenv(SCHED_EAR_POWER_POLICY);
+	char *app_mgr_policy = getenv(USE_APP_MGR_POLICIES);
 	#if SHOW_DEBUGS
 	if (obj_path!=NULL){ 
 		debug("%s = %s",SCHED_EAR_POWER_POLICY,obj_path);
@@ -111,7 +113,11 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	}
 	#endif
   if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
-    	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
+			if (app_mgr_policy == NULL){
+    		sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
+			}else{
+    		sprintf(basic_path,"%s/policies/app_%s.so",data->dir_plug,app_settings->policy_name);
+			}
     	obj_path=basic_path;
 	}
   if (masters_info.my_master_rank>=0) debug("loading policy %s",obj_path);
@@ -223,6 +229,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 	state_t st=EAR_ERROR,stg=EAR_SUCCESS;
 	*ready=1;
 	if (polsyms_fun.apply!=NULL){
+		
 		if (!eards_connected() || (masters_info.my_master_rank<0)){
 			*ready=0;
 			return EAR_SUCCESS;
@@ -231,6 +238,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 		node_sig.DC_power=sig_node_power(my_sig);
 
 		st=polsyms_fun.apply(c, &node_sig,freq_set,ready);
+		if (*ready == 1){
 #if POWERCAP
 		if (pc_app_info_data->mode==PC_DVFS){
 			ulong f;
@@ -252,6 +260,7 @@ state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 				/* How to manage cores vs CPUS */
     		*(c->ear_frequency) =  eards_change_freq_with_mask(*freq_set,&ear_process_mask);
 			}
+		}
 		}
   } else{
 		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
