@@ -1,7 +1,14 @@
+# Features
+FEAT_MPI_API = 1
+FEAT_AVX512  = @FEAT_AVX512@
+
+# Compilers
 CC           = @CC@
 CC_FLAGS     = @CC_FLAGS@
 MPICC        = @MPICC@
 MPICC_FLAGS  = @MPICC_FLAGS@
+
+# Includes
 MPI_BASE     = @MPI_DIR@
 MPI_CFLAGS   = @MPI_CPPFLAGS@
 MPI_VERSION  = @MPI_VERSION@
@@ -14,10 +21,12 @@ DB_BASE      = @DB_DIR@
 DB_CFLAGS    = @DB_CPPFLAGS@
 DB_LDFLAGS   = @DB_LDFLAGS@ @DB_LIBS@
 CUDA_BASE    = @CUDA_DIR@
-PAPI_BASE    = @PAPI_DIR@
-PAPI_CFLAGS  = @PAPI_CPPFLAGS@
-PAPI_LDFLAGS = @PAPI_LDFLAGS@ @PAPI_LIBS@
+# Papi is disabled by default.
+#PAPI_BASE    = @PAPI_DIR@
+#PAPI_CFLAGS  = @PAPI_CPPFLAGS@
+#PAPI_LDFLAGS = @PAPI_LDFLAGS@ @PAPI_LIBS@
 
+# Directories
 ROOTDIR      = $(shell pwd)
 SRCDIR       = $(ROOTDIR)/src
 DESTDIR      = @prefix@
@@ -25,7 +34,7 @@ ETCDIR       = @sysconfdir@
 TMPDIR       = @localstatedir@
 DOCDIR       = @docdir@
 
-FEAT_AVX512  = @FEAT_AVX512@
+# Installation
 CHOWN_USR    = @USER@
 CHOWN_GRP    = @GROUP@
 CONSTANTS    = -DSEC_KEY=10001
@@ -54,7 +63,7 @@ install:
 clean:
 	@ $(MAKE) -C 'src' clean || exit
 
-########
+######## ADDITIONAL RULES
 
 devel.install: install;
 	@ $(MAKE) -C 'etc' devel.install || exit
