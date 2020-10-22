@@ -39,6 +39,8 @@
 #include <library/states/states.h>
 #include <library/metrics/metrics.h>
 #include <library/policies/policy.h>
+#include <library/policies/policy_state.h>
+
 #include <common/hardware/frequency.h>
 #include <daemon/local_api/eard_api.h>
 #include <common/environment.h>
@@ -58,6 +60,7 @@ extern float ratio_PPN;
 #define RECOMPUTING_N			5
 #define SIGNATURE_HAS_CHANGED	6
 #define TEST_LOOP		7
+#define EVALUATING_AGAIN_SIGNATURE	8
 
 application_t *signatures;
 uint *sig_ready;
@@ -73,6 +76,7 @@ static uint tries_current_loop_same_freq=0;
 static ulong perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period,perf_count_period_10p;
 static uint EAR_STATE = NO_PERIOD;
+static uint EAR_POLICY_STATE = EAR_POLICY_NO_STATE;
 static int current_loop_id;
 static int MAX_POLICY_TRIES;
 static state_t pst;
@@ -127,26 +131,32 @@ extern uint check_periodic_mode;
 			}
       // traces_PP(ear_my_rank, my_id, PP->Time, PP->Power);
 
+#define NEW_FREQ_REPORT() \
+    if (masters_info.my_master_rank>=0 || show_signatures){\
+      float policy_freqf;\
+      policy_freqf=(float)policy_freq/1000000.0; \
+      verbose(1,"\tNew freq %.1fGHz",policy_freqf);\
+    }
+
 #if USE_GPU_LIB
 #define VERBOSE_SIG() \
 			if (masters_info.my_master_rank>=0 || show_signatures){\
-        float AVGFF,prev_ff,policy_freqf,GPU_f; \
+        float AVGFF,prev_ff,GPU_f; \
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
-        policy_freqf=(float)policy_freq/1000000.0; \
 				GPU_f=(float)GPU_FREQ/1000000.0; \
         verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
-        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu) :Next freq %.1fGHz", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL,policy_freqf);\
+        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL);\
 			}
+
 #else
 #define VERBOSE_SIG() \
 			if (masters_info.my_master_rank>=0 || show_signatures){\
-        float AVGFF,prev_ff,policy_freqf; \
+        float AVGFF,prev_ff; \
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
-        policy_freqf=(float)policy_freq/1000000.0; \
         verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
-        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec. Energy=%.1lfJ AVGF=%.2fGHz:Next freq %.1fGHz", CPI, GBS, POWER, TIME, ENERGY, AVGFF,policy_freqf);\
+        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec. Energy=%.1lfJ AVGF=%.2fGHz", CPI, GBS, POWER, TIME, ENERGY, AVGFF);\
 			}
 #endif
 
@@ -326,6 +336,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	int curr_pstate,def_pstate;
 	signature_t *l_sig;
 	ulong policy_def_freq;
+	signature_t app_signature;	
+	uint new_signature;
 
 	/***************************************************************************************************/
 	/**** This function can potentially include data sharing between masters, depends on the policy ****/
@@ -443,6 +455,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		case EVALUATING_SIGNATURE: /********* EVALUATING_SIGNATURE **********/
 			/* We check from time to time if if the signature is ready */
 			/* Included to accelerate the signature computation */
+			if (EAR_POLICY_STATE != EAR_POLICY_TRY_AGAIN){
 			if ((iterations%perf_count_period_10p)==0){
 				if (time_ready_signature(perf_accuracy_min_time)){	
 					perf_count_period=iterations - 1;
@@ -459,15 +472,15 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			//verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
 			//print_loop_signature("signature computed", &loop_signature.signature);
-            /* Included for dynais test */
-            if (loop_with_signature==0){
+      /* Included for dynais test */
+      if (loop_with_signature==0){
                 time_t curr_time;
                 double time_from_mpi_init;
                 time(&curr_time);    
                 time_from_mpi_init=difftime(curr_time,application.job.start_time);
                 debug("Number of seconds since the application start_time at which signature is computed %lf",time_from_mpi_init);
-            }
-            /* END */
+      }
+      /* END */
 
 			loop_with_signature = 1;
 			#if EAR_OVERHEAD_CONTROL
@@ -490,15 +503,20 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			sig_ready[curr_pstate]=1;
 
 			/* This function executes the energy policy */
-			signature_t app_signature;	
 			adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
+			new_signature = 1;
+			}else{
+				new_signature = 0;
+			}
 			pst=policy_apply(&app_signature,&policy_freq,&ready);
 			/****** We mark our local signature as ready ************/
-			signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
+			if (new_signature) signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 			/* For no masters, ready will be 0, pending */
+			EAR_POLICY_STATE = ready;
 
 			/* When the policy is ready to be evaluated, we go to the next state */
-			if (ready){
+			if (ready == EAR_POLICY_READY){
+				NEW_FREQ_REPORT();
 				if (policy_freq != policy_def_freq)
 				{
 					debug("policy_freq %lu != policy_def_freq %lu",policy_freq,policy_def_freq);
@@ -513,16 +531,17 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					EAR_STATE = SIGNATURE_STABLE;
 					if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 				}
-			}else{
-				debug("Not ready");
+			}else if (ready == EAR_POLICY_CONTINUE){
 				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
+			}else if (ready == EAR_POLICY_TRY_AGAIN){
 			}
-			debug("signature_copy");
-			signature_copy(&loop.signature, &loop_signature.signature);
-		  report_loop_signature(iterations,&loop,&loop_signature.job);
-			/* VERBOSE */
-			VERBOSE_SIG();
-			REPORT_TRACES();
+			if (new_signature){
+				signature_copy(&loop.signature, &loop_signature.signature);
+		  	report_loop_signature(iterations,&loop,&loop_signature.job);
+				/* VERBOSE */
+				VERBOSE_SIG();
+				REPORT_TRACES();
+			}
 			/* END VERBOSE */
 			break;
 		case SIGNATURE_STABLE:

@@ -55,6 +55,7 @@ typedef struct mini_sig
   float CPI;
   float Gflops;
   float time;
+  ull FLOPS[FLOPS_EVENTS];
   ulong avg_f;
   ulong def_f;
   #if USE_GPUS
@@ -104,11 +105,16 @@ void compute_vpi(double *vpi,signature_t *sig);
 
 void print_signature_fd_binary(int fd, signature_t *sig);
 void read_signature_fd_binary(int fd, signature_t *sig);
+void signature_to_str(signature_t *sig,char *msg,size_t limit);
 
+
+void acum_sig(signature_t *dst,signature_t *src);
+void compute_avg_sig(signature_t *dst,signature_t *src,int nums);
 void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN);
 void signature_print_simple_fd(int fd, signature_t *sig);
 
 void from_sig_to_mini(ssig_t *minis,signature_t *s);
+void from_minis_to_sig(signature_t *s,ssig_t *minis);
 void copy_mini_sig(ssig_t *dst,ssig_t *src);
 void minis_to_str(ssig_t *s,char *b);
 

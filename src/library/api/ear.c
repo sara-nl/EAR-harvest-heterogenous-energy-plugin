@@ -297,7 +297,6 @@ void create_shared_regions()
 		total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
 		total_elements=masters_info.max_ppn*masters_info.my_master_size;
 		per_node_elements=masters_info.max_ppn;
-		ratio_PPN=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
 	}
 	if (sh_sig_per_node){
 		debug("Sharing info at node level, reporting 1 per node");
@@ -305,6 +304,7 @@ void create_shared_regions()
 		total_elements=masters_info.my_master_size;
 		per_node_elements=1;
 	}
+	ratio_PPN=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
 	masters_info.nodes_info=(shsignature_t *)calloc(total_elements,sizeof(shsignature_t));
 	if (masters_info.nodes_info==NULL){ 
 		error("Allocating memory for node_info");
@@ -647,7 +647,6 @@ void ear_init()
 	#else
 	verb_level=1;
 	#endif
-	verb_level=1;
 	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();

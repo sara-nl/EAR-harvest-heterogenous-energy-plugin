@@ -80,11 +80,15 @@
 #define NULL_ACCOUNT "NO_SLURM_ACCOUNT"
 
 // These variables controls the behaviour for new infrastructure
+// These three affects to verbose effects: Prints all the signatures in state.c, and print per node or all shared signatures
 #define SCHED_EAR_SHOW_SIGNATURES "SLURM_EAR_SHOW_SIGNATURES"
-#define SHARE_INFO_PER_PROCESS "SLURM_SHARE_INFO_PER_PROCESS"
-#define SHARE_INFO_PER_NODE "SLURM_SHARE_INFO_PER_NODE"
 #define REPORT_NODE_SIGNATURES "SLURM_REPORT_NODE_SIGNATURES"
 #define REPORT_ALL_SIGNATURES "SLURM_REPORT_ALL_SIGNATURES"
+/* Force to shares all the signatures */
+#define SHARE_INFO_PER_PROCESS "SLURM_SHARE_INFO_PER_PROCESS"
+/* Force to share only the average signature per node */
+#define SHARE_INFO_PER_NODE "SLURM_SHARE_INFO_PER_NODE"
+#define USE_APP_MGR_POLICIES	"SLURM_APP_MGR_POLICIES"
 
 #endif //SCHED_SLURM
 

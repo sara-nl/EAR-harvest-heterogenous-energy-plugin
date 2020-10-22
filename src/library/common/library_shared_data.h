@@ -122,6 +122,8 @@ void print_local_mpi_info(mpi_information_t *info);
 
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);
 int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *node_cp,int *rank_cp);
+void compute_avg_sh_signatures(int size,int max,int *ppn,shsignature_t *my_sh_sig,signature_t *sig);
+
 double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig);
 void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig);
 

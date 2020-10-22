@@ -22,13 +22,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 0
+#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/local_api/eard_api.h>
+#include <library/common/externs.h>
 #include <daemon/powercap/powercap_status.h>
 #include <library/policies/policy_state.h>
 
@@ -42,11 +43,21 @@ extern unsigned long ext_def_freq;
 #endif
 
 static ulong req_f;
+static timestamp pol_time_init;
+static uint global_sig_ready=0;
+static signature_t gsig;
+
 
 state_t policy_init(polctx_t *c)
 {
-	if (c!=NULL) return EAR_SUCCESS;
-	else return EAR_ERROR;
+	if (c!=NULL){ 
+	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
+    sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
+    sig_shared_region[my_node_id].mpi_info.exec_time=0;
+    sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
+
+		return EAR_SUCCESS;
+	}else return EAR_ERROR;
 }
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *l)
@@ -71,11 +82,12 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *l)
 
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
-	signature_t *my_app = sig;
+	signature_t *my_app;
 	int i,min_pstate;
 	unsigned int ref;
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
 	double power_ref,time_ref,max_penalty,time_max;
+	char buff[512];
 
   ulong best_freq,best_pstate,freq_ref,eff_f;
 	ulong curr_freq,nominal;
@@ -83,8 +95,8 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	state_t st;
 	uint power_status;
 
-
 	if ((c!=NULL) && (c->app!=NULL)){
+
 
 
 
@@ -92,6 +104,18 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
     else min_pstate=frequency_closest_pstate(c->app->max_freq);
 
 		nominal=frequency_pstate_to_freq(min_pstate);
+
+    if (global_sig_ready){
+      *ready=EAR_POLICY_READY;
+      global_sig_ready=0;
+      my_app=&gsig;
+    }else{
+      *new_freq=*(c->ear_frequency);
+      *ready=EAR_POLICY_TRY_AGAIN;
+      return EAR_SUCCESS;
+    }
+    signature_to_str(my_app,buff,sizeof(buff));
+		debug("POLICY_SIG %s",buff);
 
 
 	// Default values
@@ -112,7 +136,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		eff_f=frequency_closest_high_freq(my_app->avg_f,1);
 
 
-		*ready=EAR_POLICY_READY;
 
 		// If is not the default P_STATE selected in the environment, a projection
 		// is made for the reference P_STATE in case the coefficents were available.
@@ -196,6 +219,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	}
 
 	*new_freq=best_freq;
+	sig_shared_region[my_node_id].new_freq=best_freq;
 	return EAR_SUCCESS;
 }
 
@@ -233,4 +257,53 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   *intents=1;
   return EAR_SUCCESS;
 }
+
+
+state_t policy_mpi_init(polctx_t *c)
+{
+  timestamp_getfast(&pol_time_init);
+  return EAR_SUCCESS;
+}
+state_t policy_mpi_end(polctx_t *c)
+{
+  timestamp end;
+  ullong elap;
+  timestamp_getfast(&end);
+  elap=timestamp_diff(&end,&pol_time_init,TIME_USECS);
+  sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
+  sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
+  return EAR_SUCCESS;
+}
+state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
+{
+  int node_cp,rank_cp;
+  state_t ret;
+	char buff[512];
+  if (masters_info.my_master_rank>=0){
+    ret = check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
+    if (ret == EAR_SUCCESS){
+			global_sig_ready=1;
+      compute_avg_app_signature(&masters_info,&gsig);
+      signature_to_str(&gsig,buff,sizeof(buff));
+      debug("Global_sig: %s",buff);
+
+      //debug("Node cp %d and rank cp %d",node_cp,rank_cp);
+      if (rank_cp==ear_my_rank){
+        //debug("I'm the CP!");
+      }
+      if (node_cp==masters_info.my_master_rank){
+        //debug("I'm in the node CP");
+      }else{
+        //debug("I'm not in the node CP");
+      }
+    }
+    ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+    if (ret == EAR_SUCCESS){
+      //debug("Node signatures ready");
+    }
+  }
+
+  return EAR_SUCCESS;
+}
+
 
