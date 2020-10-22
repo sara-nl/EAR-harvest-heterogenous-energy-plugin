@@ -17,6 +17,7 @@
 
 #include <fcntl.h>
 #include <common/sizes.h>
+#include <common/output/debug.h>
 #include <metrics/common/pci.h>
 
 state_t pci_find(uint id, pci_t *pci)
@@ -36,7 +37,8 @@ state_t pci_open(pci_t *pci, uint bus, uint device, uint function)
 		return_msg(EAR_INITIALIZED, Generr.api_initialized);
 	}
 	//
-	sprintf(path, "/proc/bus/pci/%x/%.2x.%x", bus, device, function);
+	sprintf(path, "/proc/bus/pci/%.2x/%.2x.%x", bus, device, function);
+	debug("path is '%s'", path);
 	//
 	pci->bus      = bus;
 	pci->device   = device;
