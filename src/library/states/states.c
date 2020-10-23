@@ -160,7 +160,16 @@ extern uint check_periodic_mode;
 			}
 #endif
 
-
+void report_policy_state(int st)
+{
+	if (masters_info.my_master_rank >= 0){
+	switch(st){
+		case EAR_POLICY_READY:verbose(1,"Policy new state EAR_POLICY_READY");break;
+		case EAR_POLICY_CONTINUE:verbose(1,"Policy new state EAR_POLICY_CONTINUE");break;
+		case EAR_POLICY_TRY_AGAIN:verbose(1,"Policy new state EAR_POLICY_TRY_AGAIN");break;
+	}
+	}
+}
 
 
 /** This funcion must be policy dependent */
@@ -508,7 +517,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}else{
 				new_signature = 0;
 			}
-			pst=policy_apply(&app_signature,&policy_freq,&ready);
+			pst=policy_node_apply(&app_signature,&policy_freq,&ready);
+			report_policy_state(ready);
 			/****** We mark our local signature as ready ************/
 			if (new_signature) signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 			/* For no masters, ready will be 0, pending */

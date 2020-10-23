@@ -56,6 +56,7 @@ typedef struct mini_sig
   float Gflops;
   float time;
   ull FLOPS[FLOPS_EVENTS];
+	ull instructions;
   ulong avg_f;
   ulong def_f;
   #if USE_GPUS
@@ -108,8 +109,10 @@ void read_signature_fd_binary(int fd, signature_t *sig);
 void signature_to_str(signature_t *sig,char *msg,size_t limit);
 
 
-void acum_sig(signature_t *dst,signature_t *src);
+void acum_sig_metrics(signature_t *dst,signature_t *src);
+void acum_ssig_metrics(ssig_t *avg_sig,ssig_t *s);
 void compute_avg_sig(signature_t *dst,signature_t *src,int nums);
+void compute_node_sig(ssig_t *avg_sig,int n);
 void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN);
 void signature_print_simple_fd(int fd, signature_t *sig);
 
@@ -122,6 +125,10 @@ void minis_to_str(ssig_t *s,char *b);
 double sig_total_gpu_power(signature_t *s);
 double sig_node_power(signature_t *s);
 int sig_gpus_used(signature_t *s);
+
+void set_global_metrics(ssig_t *avg_sig,ssig_t *s);
+
+
 
 
 #endif

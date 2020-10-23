@@ -196,7 +196,7 @@ void compute_avg_sh_signatures(int size,int max,int *ppn,shsignature_t *my_sh_si
 			/*
       signature_to_str(&avgs,csig,sizeof(csig));
 			debug("Current[%d,%d]=%s",i,j,csig);*/
-			acum_sig(&totals,&avgs);
+			acum_sig_metrics(&totals,&avgs);
 			nums++;
    	}
 	} 
@@ -295,48 +295,7 @@ void compute_per_node_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_in
 }
 
 
-void compute_node_sig(ssig_t *avg_sig,int n)
-{
-	double t,cpi,gflops;
-	unsigned long avg_f,def_f;
-	int i;
-	ull my_flops[FLOPS_EVENTS];
-	t=avg_sig->time/n;
-	cpi=avg_sig->CPI/n;
-	avg_f=avg_sig->avg_f/n;
-	def_f=avg_sig->def_f/n;
-	avg_sig->time=t;
-	avg_sig->CPI=cpi;
-	avg_sig->avg_f=avg_f;
-	avg_sig->def_f=def_f;
-	for (i=0;i<FLOPS_EVENTS;i++){ 	
-		my_flops[i] = avg_sig->FLOPS[i]/n;
-		avg_sig->FLOPS[i] = my_flops[i];
-	}	
-}
 
-void acum_signature_metrics(ssig_t *avg_sig,ssig_t *s)
-{
-	int i;
-	avg_sig->time+=s->time;
-	avg_sig->CPI+=s->CPI;
-	avg_sig->avg_f+=s->avg_f;
-	avg_sig->def_f+=s->def_f;
-	avg_sig->Gflops+=s->Gflops;
-	for (i=0;i<FLOPS_EVENTS;i++) avg_sig->FLOPS[i] += s->FLOPS[i];
-}
-void set_global_metrics(ssig_t *avg_sig,ssig_t *s)
-{
-	avg_sig->GBS=s->GBS;
-	avg_sig->TPI=s->TPI;
-	avg_sig->DC_power=s->DC_power;
-	avg_sig->time=0;
-	avg_sig->CPI=0;
-	avg_sig->avg_f=0;
-	avg_sig->def_f=0;
-	avg_sig->Gflops=0;
-	memset(avg_sig->FLOPS,0,sizeof(ull)*FLOPS_EVENTS);
-}
 
 void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig)
 {
@@ -347,7 +306,7 @@ void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsign
 	//print_shared_signatures(data,sig);
 	set_global_metrics(&avg_node,&sig[0].sig);
 	for (i=0;i<data->num_processes;i++){
-		acum_signature_metrics(&avg_node,&sig[i].sig);
+		acum_ssig_metrics(&avg_node,&sig[i].sig);
 	}
 	compute_node_sig(&avg_node,data->num_processes);
 	copy_mini_sig(&my_node_sig->sig,&avg_node);

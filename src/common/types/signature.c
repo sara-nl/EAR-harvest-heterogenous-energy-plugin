@@ -97,7 +97,7 @@ void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN)
 	dest->TPI=new_TPI;
 	dest->DC_power=new_DC_power;
 }
-void acum_sig(signature_t *dst,signature_t *src)
+void acum_sig_metrics(signature_t *dst,signature_t *src)
 {
 		int i;
     dst->DC_power += src->DC_power;
@@ -129,6 +129,62 @@ void acum_sig(signature_t *dst,signature_t *src)
 		#endif
 	
 }
+
+void acum_ssig_metrics(ssig_t *avg_sig,ssig_t *s)
+{
+  int i;
+  avg_sig->time+=s->time;
+  avg_sig->CPI+=s->CPI;
+  avg_sig->avg_f+=s->avg_f;
+  avg_sig->def_f+=s->def_f;
+  avg_sig->Gflops+=s->Gflops;
+  for (i=0;i<FLOPS_EVENTS;i++) avg_sig->FLOPS[i] += s->FLOPS[i];
+    #if USE_GPUS
+    avg_sig->gpu_sig.num_gpus = s->gpu_sig.num_gpus;
+    for (i=0;i<MAX_GPUS_SUPPORTED;i++){
+      avg_sig->gpu_sig.gpu_data[i].GPU_power += s->gpu_sig.gpu_data[i].GPU_power;
+      avg_sig->gpu_sig.gpu_data[i].GPU_freq += s->gpu_sig.gpu_data[i].GPU_freq;
+      avg_sig->gpu_sig.gpu_data[i].GPU_mem_freq += s->gpu_sig.gpu_data[i].GPU_mem_freq;
+      avg_sig->gpu_sig.gpu_data[i].GPU_util += s->gpu_sig.gpu_data[i].GPU_util;
+      avg_sig->gpu_sig.gpu_data[i].GPU_mem_util += s->gpu_sig.gpu_data[i].GPU_mem_util;
+    }
+    #endif
+}
+void set_global_metrics(ssig_t *avg_sig,ssig_t *s)
+{
+  avg_sig->GBS=s->GBS;
+  avg_sig->TPI=s->TPI;
+  avg_sig->DC_power=s->DC_power;
+  avg_sig->time=0;
+  avg_sig->CPI=0;
+  avg_sig->avg_f=0;
+  avg_sig->def_f=0;
+  avg_sig->Gflops=0;
+  memset(avg_sig->FLOPS,0,sizeof(ull)*FLOPS_EVENTS);
+}
+
+void compute_node_sig(ssig_t *avg_sig,int n)
+{ 
+  double t,cpi,gflops;
+  unsigned long avg_f,def_f;
+  int i;
+  ull my_flops[FLOPS_EVENTS];
+  t=avg_sig->time/n;
+  cpi=avg_sig->CPI/n;
+  avg_f=avg_sig->avg_f/n;
+  def_f=avg_sig->def_f/n;
+  avg_sig->time=t;
+  avg_sig->CPI=cpi;
+  avg_sig->avg_f=avg_f;
+  avg_sig->def_f=def_f;
+  for (i=0;i<FLOPS_EVENTS;i++){   
+    my_flops[i] = avg_sig->FLOPS[i]/n;
+    avg_sig->FLOPS[i] = my_flops[i];
+  }
+}
+
+
+
 void compute_avg_sig(signature_t *dst,signature_t *src,int nums)
 {
     int i;
@@ -171,6 +227,7 @@ void from_minis_to_sig(signature_t *s,ssig_t *minis)
 	s->Gflops=(double)minis->Gflops;
 	s->time=(double)minis->time;
 	memcpy(s->FLOPS,minis->FLOPS,sizeof(ull)*FLOPS_EVENTS);
+	s->instructions = minis->instructions;
 	s->avg_f=minis->avg_f;
 	s->def_f=minis->def_f;
 	#if USE_GPUS
@@ -189,6 +246,7 @@ void from_sig_to_mini(ssig_t *minis,signature_t *s)
 	minis->Gflops=(float)s->Gflops;
 	minis->time=(float)s->time;
 	memcpy(minis->FLOPS,s->FLOPS,sizeof(ull)*FLOPS_EVENTS);
+	minis->instructions = s->instructions;
 	minis->avg_f=s->avg_f;
 	minis->def_f=s->def_f;
 	#if USE_GPUS

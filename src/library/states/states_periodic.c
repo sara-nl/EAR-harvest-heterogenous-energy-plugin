@@ -205,7 +205,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 		      signature_t app_signature;
       		adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
-					st=policy_apply(&app_signature,&policy_freq,&ready);
+					st=policy_node_apply(&app_signature,&policy_freq,&ready);
 					signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){

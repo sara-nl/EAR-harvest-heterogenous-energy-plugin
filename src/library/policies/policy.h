@@ -25,7 +25,7 @@
 
 state_t init_power_policy(settings_conf_t *app_settings,resched_t *res);
 state_t policy_init();
-state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready);
+state_t policy_node_apply(signature_t *my_sig,ulong *freq_set, int *ready);
 state_t policy_get_default_freq(ulong *freq_set);
 state_t policy_set_default_freq();
 state_t policy_ok(signature_t *c_sig,signature_t *l_sig,int *ok);
