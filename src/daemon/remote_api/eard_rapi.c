@@ -26,12 +26,14 @@
 #include <netinet/ip.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
+#include <common/messaging/msg_conf.h>
+
 #include <daemon/remote_api/eard_rapi.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
 #include <daemon/remote_api/eard_server_api.h>
 
 extern int eards_sfd;

@@ -32,24 +32,25 @@
 #include <linux/limits.h>
 
 #include <common/config.h>
+#include <common/states.h>
 #include <common/types/job.h>
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/system/symplug.h>
+#include <common/hardware/frequency.h>
+#include <common/messaging/msg_conf.h>
 
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/states.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
-#include <daemon/remote_api/eard_server_api.h>
+
 #include <daemon/remote_api/eard_rapi.h>
+#include <daemon/remote_api/eard_server_api.h>
 #if DYN_PAR
 #include <daemon/remote_api/dyn_conf_theading.h>
 #endif
-#include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
-#include <common/hardware/frequency.h>
 #include <daemon/powercap/powercap.h>
+#include <daemon/shared_configuration.h>
 
 
 extern int eard_must_exit;

@@ -51,6 +51,10 @@ typedef struct new_conf{
 	uint    p_id;
 }new_conf_t;
 
+typedef struct eargm_req{
+    uint num_nodes;
+}eargm_req_t;
+
 typedef struct new_policy_cont{
 	char    name[POLICY_NAME_SIZE];
 	ulong   def_freq;
@@ -63,8 +67,8 @@ typedef struct power_limit{
 }power_limit_t;
 
 typedef struct risk_dec{
-	unsigned long target;
-	risk_t level;
+	unsigned long   target;
+	risk_t          level;
 }risk_dec_t;
 
 typedef union req_data{
@@ -77,6 +81,7 @@ typedef union req_data{
     power_limit_t       pc;
     powercap_opt_t      pc_opt;
 #endif
+    eargm_req_t         eargm_data;
 }req_data_t;
 
 typedef struct request{
@@ -115,28 +120,28 @@ typedef struct app_info{
 }app_info_t;
 
 typedef struct request_header {
-    int type;
-    uint size;
+    int     type;
+    uint    size;
 } request_header_t;
 
 typedef struct eard_policy_info{
-    ulong freq; /* default freq in KH, divide by 1000000 to show Ghz */
-    uint th;     /* th x 100, divide by 100 */
+    ulong   freq; /* default freq in KH, divide by 1000000 to show Ghz */
+    uint    th;     /* th x 100, divide by 100 */
 }eard_policy_info_t;
 
 typedef struct status{
-    unsigned int     ip;
-    char    ok;
+    unsigned int        ip;
+    char                ok;
     status_node_info_t  node;
-    app_info_t  app;
-	unsigned int num_policies;
-    eard_policy_info_t    policy_conf[TOTAL_POLICIES];
+    app_info_t          app;
+	unsigned int        num_policies;
+    eard_policy_info_t  policy_conf[TOTAL_POLICIES];
 } status_t;
 
 typedef struct app_status{
 	unsigned int ip;
-	long job_id,step_id; //need to be signed so we can set an invalid job_id (-1) to know when there is no job
-    uint nodes, master_rank;
+	long job_id, step_id; //need to be signed so we can set an invalid job_id (-1) to know when there is no job
+    unsigned int nodes, master_rank;
 	signature_t signature;
 }app_status_t;
 
@@ -176,6 +181,10 @@ typedef struct performance{
 #define EAR_RC_RELEASE_IDLE	        707	
 #define EAR_RC_DEF_POWERCAP         708 
 
+
+/* EARGM commands*/
+#define EARGM_NEW_JOB   801
+#define EARGM_END_JOB   802
 
 
 /******************* IMPORTANT ***********************/

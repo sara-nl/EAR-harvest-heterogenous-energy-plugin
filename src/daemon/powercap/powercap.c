@@ -29,14 +29,15 @@
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/system/execute.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
+#include <common/system/monitor.h>
+#include <common/messaging/msg_conf.h>
+#include <common/types/configuration/cluster_conf.h>
+
 #include <daemon/power_monitor.h>
 #include <daemon/powercap/powercap.h>
 #include <daemon/powercap/powercap_status.h>
 #include <daemon/powercap/powercap_mgt.h>
 #include <daemon/shared_configuration.h>
-#include <common/types/configuration/cluster_conf.h>
-#include <common/system/monitor.h>
 
 #define POWERCAP_MON 1
 

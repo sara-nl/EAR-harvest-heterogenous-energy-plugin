@@ -28,8 +28,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <daemon/remote_api/eard_rapi.h>
-#include <daemon/remote_api/eard_rapi_internals.h>
 
 #include <common/config.h>
 #include <common/states.h>
@@ -39,6 +37,8 @@
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/messaging/msg_internals.h>
+#include <daemon/remote_api/eard_rapi.h>
                    
 #define NUM_LEVELS  4
 #define MAX_PSTATE  16

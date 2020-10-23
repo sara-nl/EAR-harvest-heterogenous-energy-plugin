@@ -36,12 +36,215 @@
 #include <common/types/job.h>
 #include <common/output/verbose.h>
 
-#include <daemon/remote_api/eard_rapi.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
-#include <daemon/remote_api/eard_server_api.h>
+#include <common/messaging/msg_conf.h>
+#include <common/messaging/msg_internals.h>
 
 int eards_remote_connected=0;
 int eards_sfd=-1;
+
+// 2000 and 65535
+#define DAEMON_EXTERNAL_CONNEXIONS 1
+
+// based on getaddrinfo man pages
+int create_server_socket(uint port)
+{
+    struct addrinfo hints;
+    struct addrinfo *result, *rp;
+    int sfd, s;
+    char buff[50]; // This must be checked
+
+    memset(&hints, 0, sizeof(struct addrinfo));
+    hints.ai_family = AF_UNSPEC;    /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM; /* STREAM socket */
+    hints.ai_flags = AI_PASSIVE;    /* For wildcard IP address */
+    hints.ai_protocol = 0;          /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+    sprintf(buff,"%d",port);
+
+   	s = getaddrinfo(NULL, buff, &hints, &result);
+    if (s != 0) {
+        error("getaddrinfo fails for port %s (%s)",buff,strerror(errno));
+        return EAR_ERROR;
+    }
+
+   	for (rp = result; rp != NULL; rp = rp->ai_next) {
+        sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+
+        if (sfd == -1)
+            continue;
+
+        while (bind(sfd, rp->ai_addr, rp->ai_addrlen) != 0)
+        { 
+            verbose(VAPI,"Waiting for connection");
+            sleep(10);
+	    }
+        break;   /* Success */
+
+    }
+
+   	if (rp == NULL) {   /* No address succeeded */
+        error("bind fails for eards server (%s) ",strerror(errno));
+        return EAR_ERROR;
+    } else {
+        verbose(VAPI+1,"socket and bind for erads socket success");
+    }
+
+   	freeaddrinfo(result);   /* No longer needed */
+
+   	if (listen(sfd, DAEMON_EXTERNAL_CONNEXIONS) < 0)
+    {
+        error("listen eards socket fails (%s)",strerror(errno));
+        close(sfd);
+        return EAR_ERROR;
+    }
+    verbose(VAPI,"socket listen ready!");
+
+    return sfd;
+}
+
+int wait_for_client(int s,struct sockaddr_in *client)
+{
+	int new_sock;
+	socklen_t client_addr_size;
+
+
+    client_addr_size = sizeof(struct sockaddr_in);
+    new_sock = accept(s, (struct sockaddr *) client, &client_addr_size);
+    if (new_sock < 0)
+    { 
+		error("accept for eards socket fails %s\n",strerror(errno));
+		return EAR_ERROR;
+	}
+
+    char conection_ok = 1;
+    write(new_sock, &conection_ok, sizeof(char));
+
+    verbose(VCONNECT, "Sending handshake byte to client.");
+	verbose(VCONNECT, "new connection ");
+
+	return new_sock;
+}
+
+void close_server_socket(int sock)
+{
+	close(sock);
+}
+
+#if DYNAMIC_COMMANDS
+int read_command(int s, request_t *command)
+{
+    request_header_t head;
+    char *tmp_command;
+    size_t aux_size = 0;
+
+
+    head = receive_data(s, (void **)&tmp_command);
+    debug("received command type %d\t size: %u \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
+
+    if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(internal_request_t))
+    {
+        debug("NO_COMMAND");
+        command->req = NO_COMMAND;
+        if (head.size > 0) free(tmp_command);
+#if DYN_PAR
+        return EAR_SOCK_DISCONNECTED;
+#endif
+        return command->req;
+    }
+    memcpy(command, tmp_command, sizeof(internal_request_t));
+    aux_size += sizeof(internal_request_t);
+
+#if NODE_PROP
+    if (command->nodes > 0)
+    {
+        command->nodes = calloc(command->num_nodes, sizeof(int)); //this will be freed in propagate_data since it's the last point where it is needed and the common point in all requests
+        memcpy(command->nodes, &tmp_command[aux_size], command->num_nodes * sizeof(int));
+        aux_size += command->num_nodes * sizeof(int);
+    }
+#endif
+
+    //there is still data pending to read
+    if (head.size > aux_size)
+    {
+        if (command->req == EAR_RC_SET_POWERCAP_OPT)
+        {
+            debug("received powercap_opt");
+            memcpy(&command->my_req, &tmp_command[aux_size], sizeof(powercap_opt_t)); //first we copy the base powercap_opt_t
+            //auxiliar variables
+            size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            aux_size += sizeof(powercap_opt_t);
+
+            //allocation
+            command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+
+            //copy
+            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[aux_size], offset);
+            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[aux_size + offset], offset);
+        }
+        else
+        {
+            debug("recieved command with additional data: %d", command->req);
+            debug("head.size %u internal_req_t size %u current_size %u", head.size, sizeof(internal_request_t), aux_size); 
+            memcpy(&command->my_req, &tmp_command[aux_size], head.size - aux_size);
+        }
+    }
+
+    free(tmp_command);
+    return command->req;
+}
+
+#else
+
+int read_command(int s, request_t *command)
+{
+    request_header_t head;
+    char *tmp_command;
+
+
+    head = receive_data(s, (void **)&tmp_command);
+    debug("received command type %d\t size: %lu \t sizeof req: %lu", head.type, head.size, sizeof(request_t));
+
+    if (head.type != EAR_TYPE_COMMAND || head.size < sizeof(request_t))
+    {
+        debug("NO_COMMAND");
+        command->req = NO_COMMAND;
+        if (head.size > 0) free(tmp_command);
+#if DYN_PAR
+        return EAR_SOCK_DISCONNECTED;
+#endif
+        return command->req;
+    }
+    memcpy(command, tmp_command, sizeof(request_t));
+
+    if (head.size > sizeof(request_t))
+    {
+        if (command->req == EAR_RC_SET_POWERCAP_OPT)
+        {
+            debug("received powercap_opt");
+            size_t offset = command->my_req.pc_opt.num_greedy * sizeof(int);
+            command->my_req.pc_opt.greedy_nodes = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            command->my_req.pc_opt.extra_power = calloc(command->my_req.pc_opt.num_greedy, sizeof(int));
+            memcpy(command->my_req.pc_opt.greedy_nodes, &tmp_command[sizeof(request_t)], offset);
+            memcpy(command->my_req.pc_opt.extra_power, &tmp_command[sizeof(request_t) + offset], offset);
+        }
+    }
+
+    free(tmp_command);
+
+    return command->req;
+}
+#endif
+
+void send_answer(int s,long *ack)
+{
+    int ret;
+    if ((ret=write(s,ack,sizeof(ulong)))!=sizeof(ulong)) error("Error sending the answer");
+    if (ret<0) error("(%s)",strerror(errno));
+}
 
 #if DYNAMIC_COMMANDS
 size_t get_command_size(request_t *command, char **data_to_send)
@@ -87,6 +290,10 @@ size_t get_command_size(request_t *command, char **data_to_send)
         case EAR_RC_END_JOB:
             size += sizeof(end_job_req_t);
             break;
+        case EARGM_NEW_JOB:
+        case EARGM_END_JOB:
+            size += sizeof(eargm_req_t);
+            break;
     }
  
 #if NODE_PROP
@@ -97,19 +304,12 @@ size_t get_command_size(request_t *command, char **data_to_send)
     }
 #endif
 
-    debug("allocating command with size %u", size);
     //copy the original command
     command_b = calloc(1, size);
-    debug("copying internal_request_t");
     memcpy(command_b, command, sizeof(internal_request_t)); //the first portion of request_t and internal_request_t align
 #if NODE_PROP
     debug("copying nodes (%d num_nodes)", command->num_nodes);
-    int i;
-    for (i = 0; i < command->num_nodes; i++)
-        debug("node%d %d", i, command->nodes[i]);
-    debug("total_size: %u nodes size %u starting size(internal_req_t size) %u", size, aux_size, sizeof(internal_request_t));
     memcpy(&command_b[sizeof(internal_request_t)], command->nodes, aux_size); //copy the nodes to propagate to
-    debug("copied nodes");
 #endif
 
     aux_size += sizeof(internal_request_t); //aux_size holds the position we have to start writing from
@@ -190,91 +390,15 @@ int send_command(request_t *command)
 
     free(command_b);
 
-	ret=read(eards_sfd,&ack,sizeof(ulong));
+	ret=read(eards_sfd,&ack,sizeof(ulong)); //read ack
 	if (ret<0){
 		printf("ERRO: %d", errno);
 		error("Error receiving ack %s",strerror(errno));
 	}
-	else if (ret!=sizeof(ulong)){
+	else if (ret!=sizeof(ulong)) {
 		debug("Error receiving ack: expected %lu ret %d",sizeof(ulong),ret);
 	}
 	return (ret==sizeof(ulong)); // Should we return ack ?
-}
-
-/*
-There is at least one byte available in the send buffer →send succeeds and returns the number of bytes accepted (possibly fewer than you asked for).
-The send buffer is completely full at the time you call send.
-→if the socket is blocking, send blocks
-→if the socket is non-blocking, send fails with EWOULDBLOCK/EAGAIN
-An error occurred (e.g. user pulled network cable, connection reset by peer) →send fails with another error
-*/
-int send_non_block_command(request_t *command)
-{
-    ulong ack; 
-    int ret; 
-	int tries=0;
-	uint to_send,sended=0;
-	uint to_recv,received=0;
-	uint must_abort=0;
-    request_header_t head;
-    head.type = EAR_TYPE_COMMAND;
-    head.size = sizeof(request_t);
-    ret = write(eards_sfd, &head, sizeof(request_header_t));
-    if (ret < sizeof(request_header_t))
-    {
-        warning("error sending request_header in non_block command");
-        return 0;
-    }
-    debug("Sending command %u",command->req);
-	to_send=sizeof(request_t);
-	do
-	{
-		ret=send(eards_sfd, (char *)command+sended,to_send, MSG_DONTWAIT);
-		if (ret>0){
-			sended+=ret;
-			to_send-=ret;
-		}else if (ret<0){
-			if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
-			else{	
-				must_abort=1;
-      	error("Error sending command to eard %s,%d",strerror(errno),errno);
-    	}
-  	}else if (ret==0){
-			warning("send returns 0 bytes");
-			must_abort=1;
-		}
-	}while((tries<MAX_SOCKET_COMM_TRIES) && (to_send>0) && (must_abort==0));
-	if (tries>=MAX_SOCKET_COMM_TRIES) debug("tries reached in recv %d",tries);
-	/* If there are bytes left to send, we return a 0 */
-	if (to_send){ 
-		debug("return non blocking command with 0");
-		return 0;
-	}
-	tries=0;
-	to_recv=sizeof(ulong);
-	do
-	{
-		ret=recv(eards_sfd, (char *)&ack+received,to_recv, MSG_DONTWAIT);
-		if (ret>0){
-			received+=ret;
-			to_recv-=ret;
-		}else if (ret<0){
-			if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
-			else{
-				must_abort=1;
-				error("Error receiving ack from eard %s,%d",strerror(errno),errno);
-  		}
-		}else if (ret==0){
-			debug("recv returns 0 bytes");
-			must_abort=1;
-		}
-	}while((tries<MAX_SOCKET_COMM_TRIES) && (to_recv>0) && (must_abort==0));
-
-	if (tries>=MAX_SOCKET_COMM_TRIES){
-		debug("Max tries reached in recv");
-	}
-	debug("send_non_block returns with %d",!to_recv);
-    return (!to_recv); // Should we return ack ?
 }
 
 int send_non_block_data(int fd, size_t size, char *data, int type)
@@ -292,38 +416,38 @@ int send_non_block_data(int fd, size_t size, char *data, int type)
     /* Send header, blocking */
     ret = write(eards_sfd, &head, sizeof(request_header_t));
 
-    if (ret < sizeof(request_header_t))
-    {
-        warning("error sending request_header in non_block command");
+    if (ret < sizeof(request_header_t)) {
+        error("error sending request_header in non_block command");
         return 0;
     }
 
     debug("Sending data of size %u and type %d", head.size, head.type);
-
 	to_send=size;
 	do
 	{
-        ret=send(eards_sfd, (char *)data+sent, to_send, MSG_DONTWAIT);
-        if (ret>0){
-            sent+=ret;
-            to_send-=ret;
-        }
-        else if (ret<0)
+        ret = send(eards_sfd, (char *)data+sent, to_send, MSG_DONTWAIT);
+        if (ret > 0) 
         {
-            if ((errno==EWOULDBLOCK) || (errno==EAGAIN)) tries++;
-            else{	
-                must_abort=1;
-                error("Error sending command to eard %s,%d",strerror(errno),errno);
-            }
-        }else if (ret==0){
-            warning("send returns 0 bytes");
-            must_abort=1;
+            sent += ret;
+            to_send -= ret;
         }
-	} while ((tries<MAX_SOCKET_COMM_TRIES) && (to_send>0) && (must_abort==0));
-	if (tries>=MAX_SOCKET_COMM_TRIES) debug("tries reached in recv %d",tries);
+        else if (ret < 0)
+        {
+            if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) tries++;
+            else {	
+                must_abort = 1;
+                error("Error sending command to eard %s,%d", strerror(errno), errno);
+            }
+        }else if (ret == 0){
+            warning("send returns 0 bytes");
+            must_abort = 1;
+        }
+	} while ((tries < MAX_SOCKET_COMM_TRIES) && (to_send > 0) && (must_abort == 0)); //still pending to send and hasn't tried more than MAX_TRIES
+
+	if (tries >= MAX_SOCKET_COMM_TRIES) debug("tries reached in recv %d", tries);
 
 	/* If there are bytes left to send, we return a 0 */
-	if (to_send){ 
+	if (to_send) { 
 		debug("return non blocking command with 0");
 		return EAR_ERROR;
 	}
@@ -364,6 +488,7 @@ request_header_t receive_data(int fd, void **data)
     head.type = 0;
     head.size = 0;
 
+    /* Read header */
     ret = read(fd, &head, sizeof(request_header_t));
     debug("values read: type %d size %u", head.type, head.size);
     if (ret < 0) {
@@ -373,8 +498,11 @@ request_header_t receive_data(int fd, void **data)
         return head;
     }
 
+    /* Check header */
     if (head.size < 1 || !is_valid_type(head.type)) {
-        if (!((head.size == 0) && (head.type == 0))) debug("Error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
+        if (!((head.size == 0) && (head.type == 0))) 
+            debug("Error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
+
         if (head.type != EAR_TYPE_APP_STATUS)
         {
             head.type = EAR_ERROR;
@@ -387,32 +515,39 @@ request_header_t receive_data(int fd, void **data)
     total = 0;
     pending = head.size;
 
+    /* Read the data indicated by the header */
     ret = read(fd, read_data+total, pending);
-	if (ret<0){
+	if (ret < 0) 
+    {
 		error("Error by receive data (%s)",strerror(errno));
         free(read_data);
         head.type = EAR_ERROR;
         head.size = 0;
 		return head;
 	}
-	total+=ret;
-	pending-=ret;
-	while ((ret>0) && (pending>0)){
+	total += ret;
+	pending -= ret;
+
+    /* Read any data pending */
+	while ((ret > 0) && (pending > 0))
+    {
     	ret = read(fd, read_data+total, pending);
     	//ret = recv(eards_sfd, (char *)return_status+total, pending, MSG_DONTWAIT);
-		if (ret<0){
+		if (ret < 0)
+        {
 		    error("Error by receive data (%s)",strerror(errno));
             free(read_data);
             head.type = EAR_ERROR;
             head.size = 0;
 			return head;
 		}
-		total+=ret;
-		pending-=ret;
+		total += ret;
+		pending -= ret;
 	}
     *data = read_data;
+
     debug("returning from receive_data with type %d and size %u", head.type, head.size);
-	return head;
+    return head;
 
 }
 

@@ -233,12 +233,10 @@ int plug_print_variables(spank_t sp)
 
 	printenv_agnostic(sp, Component.plugin);
 	printenv_agnostic(sp, Component.library);
-	printenv_agnostic(sp, Component.monitor);
 	printenv_agnostic(sp, Component.test);
-	printenv_agnostic(sp, Component.verbose);
+
 	printenv_agnostic(sp, Var.comp_libr.cmp);
 	printenv_agnostic(sp, Var.comp_plug.cmp);
-	printenv_agnostic(sp, Var.comp_moni.cmp);
 	printenv_agnostic(sp, Var.comp_test.cmp);
 	printenv_agnostic(sp, Var.comp_verb.cmp);
 	printenv_agnostic(sp, Var.hack_load.hck);
@@ -297,7 +295,6 @@ int plug_deserialize_components(spank_t sp)
 
 	plug_component_setenabled(sp, Component.plugin, 0);
 	plug_component_setenabled(sp, Component.library, 0);
-	plug_component_setenabled(sp, Component.monitor, 0);
 	plug_component_setenabled(sp, Component.test, 0);
 
 	/*
@@ -311,9 +308,6 @@ int plug_deserialize_components(spank_t sp)
 	}
 	if (test || isenv_agnostic(sp, Var.comp_libr.cmp, "1")) {
 		plug_component_setenabled(sp, Component.library, 1);
-	}
-	if (isenv_agnostic(sp, Var.comp_moni.cmp, "1")) {
-		plug_component_setenabled(sp, Component.monitor, 1);
 	}
 
 	// Return

@@ -6,7 +6,6 @@ CFLAGS  = $(CC_FLAGS) -I$(SRCDIR) $(CONSTANTS)
 ######## FILES
 
 remote_api_OBJS = \
-	eard_rapi_internals.o \
     eard_rapi.o \
     eard_server_api.o \
     dynamic_configuration.o \
