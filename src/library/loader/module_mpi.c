@@ -30,6 +30,10 @@ static mpif_t next_mpif;
 mpic_t ear_mpic;
 mpif_t ear_mpif;
 
+void (*func_con) (void);
+void (*func_des) (void);
+
+
 static int module_file_exists(char *path)
 {
 	return (access(path, X_OK) == 0);
@@ -196,6 +200,13 @@ static int module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 	
 	if (ear_mpic_setnext != NULL) ear_mpic_setnext(&next_mpic);
 	if (ear_mpif_setnext != NULL) ear_mpif_setnext(&next_mpif);
+
+  func_con = dlsym(libear, "ear_constructor");
+  func_des = dlsym(libear, "ear_destructor");
+
+  verbose(3, "LOADER: function constructor %p", func_con);
+  verbose(3, "LOADER: function destructor %p", func_des);
+
 	
 	return 1;
 }
@@ -221,5 +232,26 @@ int module_mpi()
 	//
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
 	//
-	return module_mpi_dlsym(path_so, lang_c, lang_f);
+	if (!module_mpi_dlsym(path_so, lang_c, lang_f)){
+		return 0;
+	}
+	if (atexit(module_mpi_destructor) != 0) {
+    verbose(0, "LOADER: cannot set exit function");
+  }
+  if (func_con != NULL) {
+    func_con();
+  }
+
+	return 1;
+	
 }
+
+void module_mpi_destructor()
+{
+  verbose(3, "LOADER: loading module default (destructor)");
+
+  if (func_des != NULL) {
+    func_des();
+  }
+}
+
