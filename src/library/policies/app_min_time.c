@@ -43,6 +43,8 @@ static timestamp pol_time_init;
 static uint global_sig_ready=0;
 static signature_t gsig;
 
+extern signature_t policy_last_global_signature;
+
 typedef unsigned long ulong;
 
 #ifdef EARL_RESEARCH
@@ -87,9 +89,19 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 	return EAR_SUCCESS;
 }
 
+state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
+{    
+	if (c==NULL) return EAR_ERROR;
+  if (c->app==NULL) return EAR_ERROR;
+	*ready = EAR_POLICY_GLOBAL_EV;
+	return EAR_SUCCESS;
+}
+
+
+
 
 // This is the main function in this file, it implements power policy
-state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
+state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
     signature_t *my_app;
     int i,min_pstate;
@@ -102,14 +114,14 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		ulong curr_pstate,def_pstate,def_freq;
 		state_t st;
 
-    my_app=&gsig;
+    my_app=&sig;
 
 		if (global_sig_ready){ 
 			*ready=EAR_POLICY_READY;
 			global_sig_ready=0;
 		}else{
 			*new_freq=*(c->ear_frequency);
-			*ready=EAR_POLICY_TRY_AGAIN;
+			*ready=EAR_POLICY_CONTINUE;
 			return EAR_SUCCESS;
 		}
 
@@ -117,7 +129,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		if (c==NULL) return EAR_ERROR;
 		if (c->app==NULL) return EAR_ERROR;
 
-		if (lib_shared_region->num_processes)
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
 
@@ -270,6 +281,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 		if (ret == EAR_SUCCESS){
 			global_sig_ready = 1;
 			compute_avg_app_signature(&masters_info,&gsig);
+			signature_copy(&policy_last_global_signature,&gsig);
 			signature_to_str(&gsig,buff,sizeof(buff));
 			debug("Global_sig: %s",buff);
 			debug("Node cp %d and rank cp %d",node_cp,rank_cp);

@@ -46,7 +46,7 @@ static ulong req_f;
 static timestamp pol_time_init;
 static uint global_sig_ready=0;
 static signature_t gsig;
-
+extern signature_t policy_last_global_signature;
 
 state_t policy_init(polctx_t *c)
 {
@@ -79,8 +79,16 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *l)
 	return EAR_SUCCESS;
 }
 
-
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
+{
+  *ready = EAR_POLICY_GLOBAL_EV;
+  if (c==NULL) return EAR_ERROR;
+  if (c->app==NULL) return EAR_ERROR;
+  return EAR_SUCCESS;
+}
+
+
+state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
 	signature_t *my_app;
 	int i,min_pstate;
@@ -98,20 +106,18 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	if ((c!=NULL) && (c->app!=NULL)){
 
 
-
-
     if (c->use_turbo) min_pstate=0;
     else min_pstate=frequency_closest_pstate(c->app->max_freq);
 
 		nominal=frequency_pstate_to_freq(min_pstate);
 
+    my_app=&sig;
     if (global_sig_ready){
       *ready=EAR_POLICY_READY;
       global_sig_ready=0;
-      my_app=&gsig;
     }else{
       *new_freq=*(c->ear_frequency);
-      *ready=EAR_POLICY_TRY_AGAIN;
+      *ready=EAR_POLICY_CONTINUE;
       return EAR_SUCCESS;
     }
     signature_to_str(my_app,buff,sizeof(buff));
@@ -284,6 +290,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
     if (ret == EAR_SUCCESS){
 			global_sig_ready=1;
       compute_avg_app_signature(&masters_info,&gsig);
+			signature_copy(&policy_last_global_signature,&gsig);
       signature_to_str(&gsig,buff,sizeof(buff));
       debug("Global_sig: %s",buff);
 
