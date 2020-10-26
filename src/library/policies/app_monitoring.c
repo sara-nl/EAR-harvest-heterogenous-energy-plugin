@@ -41,6 +41,7 @@ extern unsigned long ext_def_freq;
 #endif
 
 static timestamp pol_time_init;
+extern signature_t policy_last_global_signature;
 
 
 state_t policy_init(polctx_t *c)
@@ -57,9 +58,16 @@ state_t policy_init(polctx_t *c)
   }else return EAR_ERROR;
 
 }
-state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
+
+state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
 	*ready=EAR_POLICY_READY;
+	*new_freq=DEF_FREQ(c->app->def_freq);
+	return EAR_SUCCESS;
+}
+state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
+{
+	*ready=EAR_POLICY_GLOBAL_EV;
 	*new_freq=DEF_FREQ(c->app->def_freq);
 	sig_shared_region[my_node_id].new_freq=*new_freq;
 	return EAR_SUCCESS;
@@ -110,9 +118,10 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
     ret = check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
     if (ret == EAR_SUCCESS){
       compute_avg_app_signature(&masters_info,&gsig);
+			signature_copy(&policy_last_global_signature,&gsig);
       signature_to_str(&gsig,buff,sizeof(buff));
       debug("AVGS: %s",buff);
-
+			#if 0
       debug("Node cp %d and rank cp %d",node_cp,rank_cp);
       if (rank_cp==ear_my_rank){
         debug("I'm the CP!");
@@ -122,6 +131,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
       }else{ 
         debug("I'm not in the node CP");
       }
+			#endif
     }
     ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
     if (ret == EAR_SUCCESS){

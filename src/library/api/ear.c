@@ -34,6 +34,7 @@
 #include <common/config/config_env.h>
 #include <common/colors.h>
 #include <common/environment.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <common/types/version.h>

@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -111,7 +111,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 
 		nominal=frequency_pstate_to_freq(min_pstate);
 
-    my_app=&sig;
+    my_app=sig;
     if (global_sig_ready){
       *ready=EAR_POLICY_READY;
       global_sig_ready=0;
@@ -120,6 +120,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
       *ready=EAR_POLICY_CONTINUE;
       return EAR_SUCCESS;
     }
+
     signature_to_str(my_app,buff,sizeof(buff));
 		debug("POLICY_SIG %s",buff);
 
@@ -293,7 +294,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 			signature_copy(&policy_last_global_signature,&gsig);
       signature_to_str(&gsig,buff,sizeof(buff));
       debug("Global_sig: %s",buff);
-
+			#if 0
       //debug("Node cp %d and rank cp %d",node_cp,rank_cp);
       if (rank_cp==ear_my_rank){
         //debug("I'm the CP!");
@@ -303,6 +304,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
       }else{
         //debug("I'm not in the node CP");
       }
+			#endif
     }
     ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
     if (ret == EAR_SUCCESS){

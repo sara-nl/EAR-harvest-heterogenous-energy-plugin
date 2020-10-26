@@ -294,7 +294,7 @@ state_t policy_node_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 		signature_copy(&node_sig,my_sig);
 		node_sig.DC_power=sig_node_power(my_sig);
 
-		sinature_copy(&policy_last_local_signature,&node_sig);
+		signature_copy(&policy_last_local_signature,&node_sig);
 
 		st=polsyms_fun.node_policy_apply(c, &node_sig,freq_set,ready);
 		if (*ready == EAR_POLICY_READY){

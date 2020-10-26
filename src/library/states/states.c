@@ -28,7 +28,7 @@
 
 #include <common/config.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 0
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/math_operations.h>
 #include <common/types/log.h>
@@ -350,6 +350,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	ulong policy_def_freq;
 	signature_t app_signature;	
 	uint new_signature;
+	state_t st;
 
 	/***************************************************************************************************/
 	/**** This function can potentially include data sharing between masters, depends on the policy ****/
@@ -514,6 +515,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			/* This function executes the energy policy */
 			adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
+			if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_LOCAL_SIGNATURE");
 			pst=policy_node_apply(&app_signature,&policy_freq,&ready);
 			report_policy_state(ready);
 			/****** We mark our local signature as ready ************/
@@ -553,6 +555,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* END VERBOSE */
 			break;
 		case EVALUATING_GLOBAL_SIGNATURE:
+			if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_GLOBAL_SIGNATURE");
 			st = policy_app_apply(&policy_freq,&ready);
 			if (ready == EAR_POLICY_READY){
 			NEW_FREQ_REPORT();

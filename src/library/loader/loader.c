@@ -60,8 +60,7 @@ static int init()
 int must_load()
 {
 	if ((strstr(program_invocation_name, "bash") == NULL) &&
-	(strstr(program_invocation_name, "hydra") == NULL) &&
-	(strstr(program_invocation_name, "sh") == NULL)){
+	(strstr(program_invocation_name, "hydra") == NULL)){
 		verbose(3,"LOADER: Program %s loaded with EAR",program_invocation_name);
 		return 1;
 	}
