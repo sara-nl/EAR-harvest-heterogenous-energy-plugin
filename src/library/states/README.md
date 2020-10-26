@@ -6,7 +6,7 @@ When EAR is driven by DynAIS, it applies a state diagram. The following states a
 	* NO_PERIOD: This is the initial state and stands for no iteration detected. Once we enter 				
 * Loop detected
 	* FIRST_ITERATION: This state starts computing the signature			
-	* *EVALUATING_LOCAL_SIGNATURE* : This state computes the local signature and executes the per-node policy. Depending on the policy readiness, the new state will be the following one:
+	* **EVALUATING_LOCAL_SIGNATURE** : This state computes the local signature and executes the per-node policy. Depending on the policy readiness, the new state will be the following one:
 		* If EAR_POLICY_READY && Frequency changed --> new_state = RECOMPUTING_N
 		* If EAR_POLICY_READY && !Frequency changed --> new_state = SIGNATURE_STABLE
 		* If EAR_POLICY_CONTINUE --> new_state = EVALUATING_LOCAL_SIGNATURE
