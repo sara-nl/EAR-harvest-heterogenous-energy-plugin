@@ -154,21 +154,22 @@ typedef struct performance{
 
 
 
-#define EAR_RC_NEW_JOB          0
-#define EAR_RC_END_JOB          1
-#define EAR_RC_MAX_FREQ         100
-#define EAR_RC_NEW_TH           101
-#define EAR_RC_INC_TH           102
-#define EAR_RC_RED_PSTATE       103
-#define EAR_RC_SET_FREQ         104
-#define EAR_RC_DEF_FREQ         105
-#define EAR_RC_REST_CONF        106
-#define EAR_RC_SET_POLICY       108
-#define EAR_RC_SET_DEF_PSTATE   109
-#define EAR_RC_SET_MAX_PSTATE   110
-#define EAR_RC_PING	            500
-#define EAR_RC_STATUS           600
-#define EAR_RC_APP_STATUS       601
+#define EAR_RC_NEW_JOB              0
+#define EAR_RC_END_JOB              1
+#define EAR_RC_MAX_FREQ             100
+#define EAR_RC_NEW_TH               101
+#define EAR_RC_INC_TH               102
+#define EAR_RC_RED_PSTATE           103
+#define EAR_RC_SET_FREQ             104
+#define EAR_RC_DEF_FREQ             105
+#define EAR_RC_REST_CONF            106
+#define EAR_RC_SET_POLICY           108
+#define EAR_RC_SET_DEF_PSTATE       109
+#define EAR_RC_SET_MAX_PSTATE       110
+#define EAR_RC_PING	                500
+#define EAR_RC_STATUS               600
+#define EAR_RC_APP_NODE_STATUS      601
+#define EAR_RC_APP_MASTER_STATUS    602
 
 /* New functions for power limits */
 #define EAR_RC_RED_POWER            700

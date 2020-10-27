@@ -1,4 +1,4 @@
-CFLAGS = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS)
+CFLAGS = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS) -Wall
 
 ######## FILES
 
