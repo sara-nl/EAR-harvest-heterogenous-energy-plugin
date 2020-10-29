@@ -112,7 +112,7 @@ void signature_to_str(signature_t *sig,char *msg,size_t limit);
 void acum_sig_metrics(signature_t *dst,signature_t *src);
 void acum_ssig_metrics(ssig_t *avg_sig,ssig_t *s);
 void compute_avg_sig(signature_t *dst,signature_t *src,int nums);
-void compute_node_sig(ssig_t *avg_sig,int n);
+void compute_avg_node_sig(ssig_t *avg_sig,int n);
 void adapt_signature_to_node(signature_t *dest,signature_t *src,float ratio_PPN);
 void signature_print_simple_fd(int fd, signature_t *sig);
 

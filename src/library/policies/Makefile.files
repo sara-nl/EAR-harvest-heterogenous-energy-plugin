@@ -7,7 +7,8 @@ poli_BINS = \
     min_energy.so \
     min_time_no_models.so \
     min_energy_no_models.so \
-    monitoring.so
+    monitoring.so \
+		load_balance.so
 
 ifeq ($(FEAT_MPI_API), 1)
 poli_BINS += \

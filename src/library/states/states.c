@@ -524,9 +524,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			EAR_POLICY_STATE = ready;
 
 			/* When the policy is ready to be evaluated, we go to the next state */
-			if (EAR_POLICY_READY == EAR_POLICY_READY){
+			if (EAR_POLICY_STATE == EAR_POLICY_READY){
 			NEW_FREQ_REPORT();
-			if (policy_freq != policy_def_freq)
+			/*if (policy_freq != policy_def_freq)*/
+			if (policy_freq != prev_f)
 			{
 					tries_current_loop++;
 					comp_N_begin = metrics_time();
@@ -543,7 +544,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				/* Should we check if N needs to be recomputed ?*/
 				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
 			}
-			if (ready == EAR_POLICY_GLOBAL_EV){
+			if (EAR_POLICY_STATE == EAR_POLICY_GLOBAL_EV){
 				EAR_STATE = EVALUATING_GLOBAL_SIGNATURE;
 				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_GLOBAL_SIGNATURE);
 			}
@@ -557,10 +558,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		case EVALUATING_GLOBAL_SIGNATURE:
 			if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_GLOBAL_SIGNATURE");
 			st = policy_app_apply(&policy_freq,&ready);
-			if (ready == EAR_POLICY_READY){
+			EAR_POLICY_STATE = ready;
+			if (EAR_POLICY_STATE == EAR_POLICY_READY){
 			NEW_FREQ_REPORT();
 			/* New scenario */
-      if (policy_freq != policy_def_freq)
+      /*if (policy_freq != policy_def_freq)*/
+      if (policy_freq != prev_f)
       {   
           tries_current_loop++;
           comp_N_begin = metrics_time();

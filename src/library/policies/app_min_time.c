@@ -276,6 +276,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 	int node_cp,rank_cp;
 	state_t ret;
 	char buff[512];
+	shsignature_t per_node_shsig;
 	if (masters_info.my_master_rank>=0){
   	ret = check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
 		if (ret == EAR_SUCCESS){
@@ -296,9 +297,15 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 			}
 			#endif
 		}
-  	ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+  	ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
 		if (ret == EAR_SUCCESS){
 			debug("Node signatures ready");
+			if (sh_sig_per_proces){
+				ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+			}else{
+				compute_per_node_avg_sig_info(lib_shared_region,sig_shared_region,&per_node_shsig);
+				ret = send_node_signatures(&masters_info,lib_shared_region,&per_node_shsig,report_node_sig);
+			}
 		}
 	}
 	return EAR_SUCCESS;

@@ -163,7 +163,7 @@ void set_global_metrics(ssig_t *avg_sig,ssig_t *s)
   memset(avg_sig->FLOPS,0,sizeof(ull)*FLOPS_EVENTS);
 }
 
-void compute_node_sig(ssig_t *avg_sig,int n)
+void compute_avg_node_sig(ssig_t *avg_sig,int n)
 { 
   double t,cpi,gflops;
   unsigned long avg_f,def_f;

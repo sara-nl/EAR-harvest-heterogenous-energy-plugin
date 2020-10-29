@@ -125,13 +125,19 @@ int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *nod
 void compute_avg_sh_signatures(int size,int max,int *ppn,shsignature_t *my_sh_sig,signature_t *sig);
 
 double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig);
-void compute_per_node_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig);
+void compute_per_node_avg_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig);
 
 
 void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info);
 void copy_my_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *rem_sig);
+void shsignature_copy(shsignature_t *dst,shsignature_t *src);
+
+int compute_per_node_most_loaded_process(lib_shared_data_t *data,shsignature_t *sig);
+
 
 void load_app_mgr_env();
+int my_shsig_id();
+int shsig_id(int node,int rank);
 
 
 #endif

@@ -821,9 +821,10 @@ void print_loops(loop_t *loops, int num_loops)
     double gpup = 0, gpupu = 0;
     ulong  gpuf = 0, gpuu = 0, gpuused = 0;
     char line[256];
+		signature_t sig;
     strcpy(line, "%6s-%-4s\t %-10s %-6s %-8s %-8s %-8s %-8s %-8s %-8s ");
     printf(line, "JOB", "STEP", "NODE ID", "ITER.", "POWER", "GBS", "CPI", "GFLOPS/W", "TIME", "AVG_F");
-#if US_GPUS
+#if USE_GPUS
     strcpy(line, "%-12s %-8s %-8s");
     printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL");
 #endif
@@ -832,7 +833,7 @@ void print_loops(loop_t *loops, int num_loops)
     strcpy(line, "%6u-%-4u\t %-10s %-6u %-8.1lf %-8.1lf %-8.3lf %-8.3lf %-8.3lf %-8.2lf");
     for (i = 0; i < num_loops; i++)
     {
-        signature_t sig = loops[i].signature;
+        signature_copy(&sig, &loops[i].signature);
 #if USE_GPUS
         for (s=0;s<sig.gpu_sig.num_gpus;s++){
             gpup += sig.gpu_sig.gpu_data[s].GPU_power;
