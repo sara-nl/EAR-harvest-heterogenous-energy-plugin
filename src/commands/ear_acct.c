@@ -823,11 +823,11 @@ void print_loops(loop_t *loops, int num_loops)
     char line[256], gpu_line[256];
     strcpy(line, "%6s-%-4s\t %-10s %-6s %-8s %-8s %-8s %-8s %-8s %-8s ");
     printf(line, "JOB", "STEP", "NODE ID", "ITER.", "POWER", "GBS", "CPI", "GFLOPS/W", "TIME", "AVG_F");
-#if US_GPUS
+#if USE_GPUS
     strcpy(line, "%-12s %-8s %-8s");
     printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL");
     //prepare gpu_line format
-    strcpy(gpu_line, "%-5.1lf/%5.1lf  %-8.2lf %-8lu");
+    strcpy(gpu_line, "%-6.1lf/%6.1lf  %-8.2lf %-8lu");
 #endif
     printf("\n");
 
