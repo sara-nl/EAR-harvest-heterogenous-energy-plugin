@@ -820,12 +820,14 @@ void print_loops(loop_t *loops, int num_loops)
     int s;
     double gpup = 0, gpupu = 0;
     ulong  gpuf = 0, gpuu = 0, gpuused = 0;
-    char line[256];
+    char line[256], gpu_line[256];
     strcpy(line, "%6s-%-4s\t %-10s %-6s %-8s %-8s %-8s %-8s %-8s %-8s ");
     printf(line, "JOB", "STEP", "NODE ID", "ITER.", "POWER", "GBS", "CPI", "GFLOPS/W", "TIME", "AVG_F");
 #if US_GPUS
     strcpy(line, "%-12s %-8s %-8s");
     printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL");
+    //prepare gpu_line format
+    strcpy(gpu_line, "%-5.1lf/%5.1lf  %-8.2lf %-8lu");
 #endif
     printf("\n");
 
@@ -843,14 +845,17 @@ void print_loops(loop_t *loops, int num_loops)
                 gpuused++;
             }
         }
-        gpuf /= gpuused;
-        gpuu /= gpuused;
+        if (gpuused > 0)
+        {
+            gpuf /= gpuused;
+            gpuu /= gpuused;
+        } 
 #endif
         printf(line, loops[i].jid, loops[i].step_id, loops[i].node_id, loops[i].total_iterations,
                      sig.DC_power, sig.GBS, sig.CPI, sig.Gflops/sig.DC_power, sig.time, (double)(sig.avg_f)/1000000);
 #if USE_GPUS
-        strcpy(line, "%-5.1lf/%5.1lf  %-8.2lf %-8lu");
-        printf(line, gpup,gpupu,(double)gpuf/1000000.0,gpuu);
+        printf(gpu_line, gpup,gpupu,(double)gpuf/1000000.0,gpuu);
+        gpuused = 0;
 #endif
         printf("\n");
     }
@@ -905,6 +910,7 @@ void read_loops(char *user, int job_id, int limit, int step_id, char *job_ids)
         return;
     }
 
+    if (verbose) printf("retrieved %d loops\n", num_loops);
     print_loops(loops, num_loops);
 
 }
