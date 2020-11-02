@@ -15,16 +15,14 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef LIBRARY_LOADER_MPI_H
-#define LIBRARY_LOADER_MPI_H
+#ifndef EAR_POLICIES_STATES_H
+#define EAR_POLICIES_STATES_H
 
-#include <library/api/mpic.h>
-#include <library/api/mpif.h>
-#include <library/loader/module_mpic.h>
-#include <library/loader/module_mpif.h>
+#define EAR_POLICY_READY 		0
+#define EAR_POLICY_CONTINUE 1
+#define EAR_POLICY_GLOBAL_EV 2
+#define EAR_POLICY_GLOBAL_READY 3
+#define EAR_POLICY_LOCAL_EV			4
 
-int module_mpi();
-
-void module_mpi_destructor();
-
-#endif //LIBRARY_LOADER_MPI_H
+#define EAR_POLICY_NO_STATE 1000
+#endif //EAR_POLICIES_H

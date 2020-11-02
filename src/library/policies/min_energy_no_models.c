@@ -31,6 +31,8 @@
 #include <library/policies/policy_ctx.h> //clean
 #include <common/hardware/frequency.h>
 #include <daemon/local_api/eard_api.h> //?
+#include <library/policies/policy_state.h>
+
 
 typedef unsigned long ulong;
 static signature_t *sig_list;
@@ -121,7 +123,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		state_t st;
     my_app=sig;
 
-		*ready=0;
+		*ready=EAR_POLICY_CONTINUE;
 
 		if (c==NULL) return EAR_ERROR;
 		if (c->app==NULL) return EAR_ERROR;

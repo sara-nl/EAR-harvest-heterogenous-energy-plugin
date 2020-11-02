@@ -56,7 +56,7 @@ void process_remote_requests(int clientfd)
 {
     request_t command;
     uint req;
-    ulong ack=EAR_SUCCESS;
+    long ack=EAR_SUCCESS;
     debug("connection received");
     req=read_command(clientfd,&command);
     switch (req){

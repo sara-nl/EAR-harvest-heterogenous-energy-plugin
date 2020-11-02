@@ -230,6 +230,7 @@ int eards_ping()
     return send_command(&command);
 }
 
+#if POWERCAP
 /* Power management */
 int eards_set_powerlimit(unsigned long limit)
 {
@@ -237,7 +238,7 @@ int eards_set_powerlimit(unsigned long limit)
   	command.node_dist = INT_MAX;
     command.req=EAR_RC_SET_POWER;
     command.time_code = time(NULL);
-	command.my_req.pc.limit=limit;
+		command.my_req.pc.limit=limit;
     return send_command(&command);
 }
 
@@ -262,6 +263,7 @@ int eards_inc_powerlimit(unsigned int type, unsigned long limit)
     command.my_req.pc.type=type;
     return send_command(&command);
 }   
+#endif
 
 int eards_set_risk(risk_t risk,unsigned long target)
 {
@@ -517,6 +519,7 @@ int status_all_nodes(cluster_conf_t *my_cluster_conf, status_t **status)
 
 }
 
+#if POWERCAP
 request_header_t send_powercap_status(request_t *command, powercap_status_t **status)
 {
     request_header_t head;
@@ -620,6 +623,7 @@ int cluster_set_powercap_opt(cluster_conf_t *my_cluster_conf, powercap_opt_t *pc
     send_command_all(command, my_cluster_conf);
 	return EAR_SUCCESS;
 }
+#endif
 
 /* pings all nodes */
 void ping_all_nodes(cluster_conf_t *my_cluster_conf)

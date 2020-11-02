@@ -828,7 +828,6 @@ void print_loops(loop_t *loops, int num_loops)
     int s;
     double gpup = 0, gpupu = 0;
     ulong  gpuf = 0, gpuu = 0, gpuused = 0;
-
     strcpy(line, "%-12s %-8s %-8s");
     printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL");
     //prepare gpu_line format

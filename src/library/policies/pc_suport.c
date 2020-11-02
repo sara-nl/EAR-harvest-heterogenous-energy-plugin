@@ -187,7 +187,7 @@ void pc_support_compute_next_state(polctx_t *c,node_powercap_opt_t *pc,signature
 				if (power_status == PC_STATUS_RELEASE) pc_app_info_data->pc_status=power_status;
 			}
     }else{
-      verbose(1,"Powercap is not set");
+      debug("Powercap is not set");
       power_status=PC_STATUS_ERROR;
     }
 }

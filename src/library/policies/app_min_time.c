@@ -22,23 +22,28 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-#include <common/states.h>
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
+#include <common/states.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
+#include <common/types/risk.h>
+#include <common/hardware/hardware_info.h>
+#include <common/environment.h>
+#include <common/math_operations.h>
+#include <common/system/time.h>
 #include <daemon/local_api/eard_api.h>
 #include <library/policies/policy_api.h>
-#include <common/math_operations.h>
 #include <library/common/externs.h>
-#include <common/system/time.h>
-#include <daemon/powercap/powercap_status.h>
+#include <library/common/library_shared_data.h>
 #include <library/policies/policy_state.h>
 
 
-
 static timestamp pol_time_init;
-static ulong req_f;
+static uint global_sig_ready=0;
+static signature_t gsig;
+
+extern signature_t policy_last_global_signature;
 
 typedef unsigned long ulong;
 
@@ -51,11 +56,13 @@ extern unsigned long ext_def_freq;
 
 state_t policy_init(polctx_t *c)
 {
+
 	if (c!=NULL){ 
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
   	sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
 		sig_shared_region[my_node_id].mpi_info.exec_time=0;
 		sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
+
 
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
@@ -82,10 +89,19 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *loop_id)
 	return EAR_SUCCESS;
 }
 
+state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
+{    
+	if (c==NULL) return EAR_ERROR;
+  if (c->app==NULL) return EAR_ERROR;
+	*ready = EAR_POLICY_GLOBAL_EV;
+	return EAR_SUCCESS;
+}
+
+
 
 
 // This is the main function in this file, it implements power policy
-state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
+state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
     signature_t *my_app;
     int i,min_pstate;
@@ -97,39 +113,34 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		ulong curr_freq;
 		ulong curr_pstate,def_pstate,def_freq;
 		state_t st;
+
     my_app=sig;
 
-		*ready=EAR_POLICY_READY;
+		if (global_sig_ready){ 
+			*ready=EAR_POLICY_READY;
+			global_sig_ready=0;
+		}else{
+			*new_freq=*(c->ear_frequency);
+			*ready=EAR_POLICY_CONTINUE;
+			return EAR_SUCCESS;
+		}
 
 
 		if (c==NULL) return EAR_ERROR;
 		if (c->app==NULL) return EAR_ERROR;
 
-#if POWERCAP
-  	if (is_powercap_set(&c->app->pc_opt)){ 
-			verbose(1,"Powercap is set to %uWatts",get_powercapopt_value(&c->app->pc_opt));
-		}else{ 
-			verbose(1,"Powercap is not set");
-		}
-#endif
-
-
     if (c->use_turbo) min_pstate=0;
-    else min_pstate=frequency_closest_pstate(c->app->max_freq);
+    else min_pstate=frequency_freq_to_pstate(c->app->max_freq);
 
 		// Default values
 		
 		min_eff_gain=c->app->settings[0];
 		def_freq=FREQ_DEF(c->app->def_freq);
-		def_pstate=frequency_closest_pstate(def_freq);
+		def_pstate=frequency_freq_to_pstate(def_freq);
 
     // This is the frequency at which we were running
-    #ifdef POWERCAP
-		curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
-		#else
     curr_freq=*(c->ear_frequency);
-		#endif
-    curr_pstate = frequency_closest_pstate(curr_freq);
+    curr_pstate = frequency_freq_to_pstate(curr_freq);
 		
 
 
@@ -166,14 +177,13 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		try_next=1;
 		i=best_pstate-1;
 		time_current=time_ref;
+
 		debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
-		debug("Starting at pstate %d, curr_freq %lu def_freq %lu min_pstate %d",i,curr_freq,def_freq,min_pstate);
 
 		while(try_next && (i >= min_pstate))
 		{
 			if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 			{
-				//debug("Looking for pstate %d",i);
 				st=project_power(my_app,curr_pstate,i,&power_proj);
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
@@ -185,7 +195,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				if (perf_gain>=freq_gain)
 				{
 					best_freq=freq_ref;
-					best_pstate=i;
 					time_current = time_proj;
 					i--;
 				}
@@ -198,24 +207,21 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				try_next=0;
 			}
 		}	
-		/* Controlar la freq por power cap , si capado poner GREEDY, gestionar req-f */	
-		if (best_freq<def_freq) best_freq=def_freq;
 		*new_freq=best_freq;
+
+		/* we share what is the next frequency for the application */
+		sig_shared_region[my_node_id].new_freq=best_freq;
+		
 		return EAR_SUCCESS;
 }
 
 
 state_t policy_ok(polctx_t *c,signature_t *curr_sig,signature_t *last_sig,int *ok)
 {
+
 	state_t st=EAR_SUCCESS;
-	ulong eff_f;
-	uint power_status;
-	uint next_status;
 
 	if ((c==NULL) || (curr_sig==NULL) || (last_sig==NULL)) return EAR_ERROR;
-
-
-
 	
 	if (curr_sig->def_f==last_sig->def_f) *ok=1;
 
@@ -248,4 +254,60 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   return EAR_SUCCESS;
 }
 
+state_t policy_mpi_init(polctx_t *c)
+{
+	timestamp_getfast(&pol_time_init);	
+	return EAR_SUCCESS;
+}
+state_t policy_mpi_end(polctx_t *c)
+{
+	timestamp end;
+	ullong elap;
+	timestamp_getfast(&end);
+	elap=timestamp_diff(&end,&pol_time_init,TIME_USECS);
+	sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
+	sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
+	return EAR_SUCCESS;
+}
+
+
+state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
+{
+	int node_cp,rank_cp;
+	state_t ret;
+	char buff[512];
+	shsignature_t per_node_shsig;
+	if (masters_info.my_master_rank>=0){
+  	ret = check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
+		if (ret == EAR_SUCCESS){
+			global_sig_ready = 1;
+			compute_avg_app_signature(&masters_info,&gsig);
+			signature_copy(&policy_last_global_signature,&gsig);
+			signature_to_str(&gsig,buff,sizeof(buff));
+			debug("Global_sig: %s",buff);
+			#if 0
+			debug("Node cp %d and rank cp %d",node_cp,rank_cp);
+			if (rank_cp==ear_my_rank){
+				debug("I'm the CP!");
+			}
+			if (node_cp==masters_info.my_master_rank){
+				debug("I'm in the node CP");
+			}else{ 
+				debug("I'm not in the node CP");
+			}
+			#endif
+		}
+  	ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
+		if (ret == EAR_SUCCESS){
+			debug("Node signatures ready");
+			if (sh_sig_per_proces){
+				ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+			}else{
+				compute_per_node_avg_sig_info(lib_shared_region,sig_shared_region,&per_node_shsig);
+				ret = send_node_signatures(&masters_info,lib_shared_region,&per_node_shsig,report_node_sig);
+			}
+		}
+	}
+	return EAR_SUCCESS;
+}
 

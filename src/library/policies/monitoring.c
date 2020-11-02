@@ -23,11 +23,14 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/powercap/powercap_status.h>
+#include <library/policies/policy_state.h>
+
 
 static uint last_pc=0;
 
@@ -48,7 +51,7 @@ state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready
 {
 	ulong eff_f,f;
 	
-	*ready=1;
+	*ready=EAR_POLICY_READY;
 	f=DEF_FREQ(c->app->def_freq);
 	*new_freq=f;
 	

@@ -52,7 +52,7 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
   int begin_pstate, end_pstate;
   int i, ref;
 
-	debug("Using basic_model\n");
+	debug("Using avx512_model\n");
 	num_pstates=myarch->pstates;
 	copy_arch_desc(&arch,myarch);
 	print_arch_desc(&arch);

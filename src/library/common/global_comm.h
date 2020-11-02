@@ -46,11 +46,13 @@ state_t is_info_ready(MPI_Request *req);
 state_t wait_for_data(MPI_Request *req);
 
 
-void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig);
+state_t check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig);
 void print_mpi_info(masters_info_t *mi);
-void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig);
+state_t check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig);
+state_t send_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig);
 int load_unbalance(masters_info_t *mi);
 void print_global_signatures(masters_info_t *mi);
+state_t compute_avg_app_signature(masters_info_t *mi,signature_t *gsig);
 
 #else
 
@@ -69,6 +71,7 @@ typedef struct masters_info{
 #define check_node_signatures(a,b,c,d)
 #define load_unbalance(a) 0
 #define print_global_signatures(a)
+#define compute_avg_app_signature(a,b) EAR_SUCCESS
 
 #endif
 #endif

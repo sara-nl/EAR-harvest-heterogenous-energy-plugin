@@ -23,12 +23,15 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <common/system/time.h>
 #include <library/common/library_shared_data.h>
 #include <library/common/externs.h>
+#include <library/policies/policy_state.h>
+
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
@@ -37,14 +40,12 @@ extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) f
 #endif
 
-static int show_sig=0;
 static timestamp pol_time_init;
+extern signature_t policy_last_global_signature;
 
 
 state_t policy_init(polctx_t *c)
 {
-  char *show_sig_c=getenv("SLURM_EAR_SHOW_SIGNATURES");
-  if (show_sig_c!=NULL) show_sig=atoi(show_sig_c);
   
   if (c!=NULL){ 
     sig_shared_region[my_node_id].mpi_info.mpi_time=0;
@@ -57,10 +58,18 @@ state_t policy_init(polctx_t *c)
   }else return EAR_ERROR;
 
 }
+
+state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
+{
+	*ready=EAR_POLICY_READY;
+	*new_freq=DEF_FREQ(c->app->def_freq);
+	return EAR_SUCCESS;
+}
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)
 {
-	*ready=1;
+	*ready=EAR_POLICY_GLOBAL_EV;
 	*new_freq=DEF_FREQ(c->app->def_freq);
+	sig_shared_region[my_node_id].new_freq=*new_freq;
 	return EAR_SUCCESS;
 }
 state_t policy_ok(polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok)
@@ -92,7 +101,7 @@ state_t policy_mpi_end(polctx_t *c)
   timestamp end;
   ullong elap;
   timestamp_getfast(&end);
-  elap=timestamp_diff(&end,&pol_time_init,(ullong)1);
+  elap=timestamp_diff(&end,&pol_time_init,TIME_USECS);
   sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
   sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
   return EAR_SUCCESS;
@@ -102,20 +111,42 @@ state_t policy_mpi_end(polctx_t *c)
 state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 {
   int node_cp,rank_cp;
+	state_t ret;
+	signature_t gsig;
+	shsignature_t per_node_shsig;
+	char buff[512];
   if (masters_info.my_master_rank>=0){
-    check_mpi_info(&masters_info,&node_cp,&rank_cp,show_sig);
-    if (rank_cp>=0){
-      verbose(1,"Shared data ready");
-      verbose(1,"Node cp %d and rank cp %d",node_cp,rank_cp);
+    ret = check_mpi_info(&masters_info,&node_cp,&rank_cp,report_all_sig);
+    if (ret == EAR_SUCCESS){
+      compute_avg_app_signature(&masters_info,&gsig);
+			signature_copy(&policy_last_global_signature,&gsig);
+      signature_to_str(&gsig,buff,sizeof(buff));
+      debug("AVGS: %s",buff);
+			#if 0
+      debug("Node cp %d and rank cp %d",node_cp,rank_cp);
       if (rank_cp==ear_my_rank){
-				verbose(1,"I'm the critical path");
+        debug("I'm the CP!");
       }
       if (node_cp==masters_info.my_master_rank){
-        verbose(1,"I'm in the node CP");
+        debug("I'm in the node CP");
+      }else{ 
+        debug("I'm not in the node CP");
+      }
+			#endif
+    }
+    ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
+    if (ret == EAR_SUCCESS){
+      debug("Node signatures ready");
+      if (sh_sig_per_proces){
+        ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+      }else{
+        compute_per_node_avg_sig_info(lib_shared_region,sig_shared_region,&per_node_shsig);
+        ret = send_node_signatures(&masters_info,lib_shared_region,&per_node_shsig,report_node_sig);
       }
     }
-    check_node_signatures(&masters_info,lib_shared_region,sig_shared_region,show_sig);
+
   }
+
   return EAR_SUCCESS;
 }
 

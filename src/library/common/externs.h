@@ -68,5 +68,11 @@ extern shsignature_t *sig_shared_region;
 extern int my_node_id;
 extern masters_info_t masters_info;
 
+extern uint sh_sig_per_node;
+extern uint sh_sig_per_proces;
+extern uint show_signatures;
+extern uint report_node_sig;
+extern uint report_all_sig;
+
 
 #endif
