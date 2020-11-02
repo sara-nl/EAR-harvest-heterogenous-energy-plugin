@@ -12,10 +12,10 @@ endif
 all: $(OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS) -c $<
 
 global_comm.o: global_comm.c global_comm.h 
-	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 

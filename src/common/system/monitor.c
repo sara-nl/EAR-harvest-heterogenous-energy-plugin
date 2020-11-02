@@ -17,6 +17,7 @@
 
 //#define SHOW_DEBUGS 1
 #include <error.h>
+#include <signal.h>
 #include <string.h>
 #include <pthread.h>
 #include <common/output/debug.h>
@@ -24,11 +25,11 @@
 
 #define N_QUEUE 128
 
-static pthread_t		thread;
-static pthread_mutex_t	lock_gen = PTHREAD_MUTEX_INITIALIZER;
-static pthread_mutex_t	lock[N_QUEUE];
-static uint				enabled;
-static uint				locked;
+static pthread_t        thread;
+static pthread_mutex_t  lock_gen = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t  lock[N_QUEUE];
+static uint             enabled;
+static uint             locked;
 
 typedef struct wait_s {
 	int relax;
@@ -48,8 +49,8 @@ typedef struct register_s
 	int	ok_main;
 } register_t;
 
-static register_t		queue[N_QUEUE];
-static uint				queue_last;
+static register_t queue[N_QUEUE];
+static uint       queue_last;
 
 static void monitor_sleep(int wait_units, int *pass_units, int *alignment)
 {
@@ -124,6 +125,15 @@ static void monitor_time_calc(register_t *reg, int *wait_units, int pass_units, 
 	}
 }
 
+static void _monitor_init()
+{
+        struct sigaction sa;
+        sigset_t set;
+        sigfillset(&set);
+        sigdelset(&set, SIGALRM);
+	pthread_sigmask(SIG_SETMASK, &set, NULL);
+}
+
 static void *monitor(void *p)
 {
 	register_t *reg;
@@ -132,6 +142,9 @@ static void *monitor(void *p)
 	int pass_units = 0;
 	int alignment = 0;
 	int i;
+
+	// Initializing
+	_monitor_init();
 
 	while (enabled)
 	{
