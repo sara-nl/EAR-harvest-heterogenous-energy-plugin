@@ -42,6 +42,7 @@ clean: remote_api.gclean rclean;
 
 ######## DEPENDENCIES
 install:
+%.install: ;
 
 depend: depend.others
 

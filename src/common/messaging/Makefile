@@ -19,13 +19,15 @@ msg_internals.o: msg_internals.c msg_internals.h
 ######## OPTIONS
 
 clean: messaging.gclean rclean;
+install: ;
 
 ######## SUBFOLDERS
 
 %.others: ;
+%.install: ;
+
 
 ######## DEPENDENCIES
-install:
 
 depend: depend.others
 
