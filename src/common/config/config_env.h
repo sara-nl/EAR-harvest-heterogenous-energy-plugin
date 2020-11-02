@@ -59,7 +59,6 @@
 #define FLAG_LOAD_VERB "SLURM_LOADER_VERBOSE"
 
 #define SCHED_LOADER_VERBOSE "SLURM_LOADER_VERBOSE"
-#define SCHED_EAR_SHOW_SIGNATURES "SLURM_EAR_SHOW_SIGNATURES"
 #define SCHED_EAR_POWER_POLICY "SLURM_EAR_POWER_POLICY"
 #define SCHED_EAR_GPU_POWER_POLICY "SLURM_EAR_GPU_POWER_POLICY"
 #define SCHED_EAR_POWER_MODEL "SLURM_EAR_POWER_MODEL"
@@ -79,6 +78,17 @@
 #define NULL_JOB_ID getpid()
 #define NULL_STEPID (0xfffffffe)
 #define NULL_ACCOUNT "NO_SLURM_ACCOUNT"
+
+// These variables controls the behaviour for new infrastructure
+// These three affects to verbose effects: Prints all the signatures in state.c, and print per node or all shared signatures
+#define SCHED_EAR_SHOW_SIGNATURES "SLURM_EAR_SHOW_SIGNATURES"
+#define REPORT_NODE_SIGNATURES "SLURM_REPORT_NODE_SIGNATURES"
+#define REPORT_ALL_SIGNATURES "SLURM_REPORT_ALL_SIGNATURES"
+/* Force to shares all the signatures */
+#define SHARE_INFO_PER_PROCESS "SLURM_SHARE_INFO_PER_PROCESS"
+/* Force to share only the average signature per node */
+#define SHARE_INFO_PER_NODE "SLURM_SHARE_INFO_PER_NODE"
+#define USE_APP_MGR_POLICIES	"SLURM_APP_MGR_POLICIES"
 
 #endif //SCHED_SLURM
 

@@ -1,3 +1,4 @@
+include ./Makefile.files
 CFLAGS = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES
@@ -32,10 +33,11 @@ clean: clean.components comm.gclean rclean;
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'types'    $* || exit
-	@ $(MAKE) -C 'system'   $* || exit
-	@ $(MAKE) -C 'hardware' $* || exit
-	@ $(MAKE) -C 'database' $* || exit
+	@ $(MAKE) -C 'types'    	$* || exit
+	@ $(MAKE) -C 'system'   	$* || exit
+	@ $(MAKE) -C 'hardware' 	$* || exit
+	@ $(MAKE) -C 'database' 	$* || exit
+	@ $(MAKE) -C 'messaging' 	$* || exit
 
 ######## DEPENDENCIES
 
@@ -45,4 +47,3 @@ depend-clean: depend-clean.components
 
 include $(SRCDIR)/Makefile.depend
 include $(SRCDIR)/Makefile.extra
-include ./Makefile.files

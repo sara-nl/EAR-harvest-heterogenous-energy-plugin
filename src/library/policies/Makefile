@@ -9,7 +9,9 @@ poli_DEPS = \
     $(SRCDIR)/daemon/powercap/powercap_status.o
 poli_PATH = $(DESTDIR)/lib/plugins/policies
 poli_PERM = 0775
+
 pmpi_DEPS = $(SRCDIR)/common/system/time.o
+
 eard_DEPS = $(SRCDIR)/common/libcommon.a
 eard_PATH = $(DESTDIR)/lib/plugins/eard_policies
 eard_PERM = $(poli_PERM)

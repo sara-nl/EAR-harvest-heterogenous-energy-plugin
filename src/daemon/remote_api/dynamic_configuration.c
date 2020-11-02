@@ -32,24 +32,25 @@
 #include <linux/limits.h>
 
 #include <common/config.h>
+#include <common/states.h>
 #include <common/types/job.h>
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/system/symplug.h>
+#include <common/hardware/frequency.h>
+#include <common/messaging/msg_conf.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/states.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
-#include <daemon/remote_api/eard_server_api.h>
+
 #include <daemon/remote_api/eard_rapi.h>
+#include <daemon/remote_api/eard_server_api.h>
 #if DYN_PAR
 #include <daemon/remote_api/dyn_conf_theading.h>
 #endif
-#include <daemon/shared_configuration.h>
 #include <daemon/power_monitor.h>
-#include <common/hardware/frequency.h>
 #include <daemon/powercap/powercap.h>
+#include <daemon/shared_configuration.h>
 
 
 extern int eard_must_exit;
@@ -353,32 +354,31 @@ int dyncon_set_policy(new_policy_cont_t *p)
 /** This function returns the current application status */
 void dyncon_get_app_status(int fd, request_t *command) 
 {
-  app_status_t *status;
-  long int ack;
-  send_answer(fd, &ack); //send ack before propagating
-  int num_status = propagate_app_status(command, my_cluster_conf.eard.port, &status);
-  unsigned long return_status = num_status;
-  debug("return_app_tatus %lu status=%p",return_status,status);
-  if (num_status < 1) {
-    error("Panic propagate_app_status returns less than 1 status");
-    return_status = 0;
-    write(fd, &return_status, sizeof(return_status));
-    return;
-  }
-  powermon_get_app_status(&status[num_status - 1]);
+    app_status_t *status;
+    long int ack;
+    send_answer(fd, &ack); //send ack before propagating
+    int num_status = propagate_app_status(command, my_cluster_conf.eard.port, &status);
+    unsigned long return_status = num_status;
+    debug("return_app_tatus %lu status=%p",return_status,status);
+    if (num_status < 1) {
+        error("Panic propagate_app_status returns less than 1 status");
+        return_status = 0;
+        write(fd, &return_status, sizeof(return_status));
+        return;
+    }
+    powermon_get_app_status(&status[num_status - 1]);
 
-  //if no job is present on the current node, we free its data
-  if (status[num_status - 1].job_id < 0)
-  {
-    num_status--;
-    status = realloc(status, sizeof(app_status_t)*num_status);
-  }
+    //if no job is present on the current node or we requested the master node and this one isn't, we free its data
+    if (status[num_status - 1].job_id < 0 || (command->req == EAR_RC_APP_MASTER_STATUS && status[num_status - 1].master_rank != 0))
+    {
+        num_status--;
+        status = realloc(status, sizeof(app_status_t)*num_status);
+    }
                   
-  send_data(fd, sizeof(app_status_t) * num_status, (char *)status, EAR_TYPE_APP_STATUS);
-  debug("Returning from dyncon_get_app_status");
-  free(status);
-  debug("app_status released");
-
+    send_data(fd, sizeof(app_status_t) * num_status, (char *)status, EAR_TYPE_APP_STATUS);
+    debug("Returning from dyncon_get_app_status");
+    free(status);
+    debug("app_status released");
 }
 
 /* This function will propagate the status command and will return the list of node failures */
@@ -401,7 +401,7 @@ void dyncon_get_status(int fd, request_t *command) {
 	free(status);
 	debug("status released");
 }
-
+#if POWERCAP
 void dyncon_power_management(int fd, request_t *command)
 {
 	unsigned long limit;
@@ -451,6 +451,7 @@ void dyncon_power_management(int fd, request_t *command)
 	verbose(1,"New power limit %lu",limit);
 	energy_set_power_limit(&my_eh_rapi,limit,command->my_req.pc.type);
 }
+#endif
 
 void update_current_settings(policy_conf_t *cpolicy_settings)
 {
@@ -462,6 +463,7 @@ void update_current_settings(policy_conf_t *cpolicy_settings)
 	verbose(1,"new policy options: def freq %lu setting[0]=%.2lf def_pstate %u",dyn_conf->def_freq,dyn_conf->settings[0],dyn_conf->def_p_state);
 }
 
+#if POWERCAP
 void dyncon_release_idle_power(int fd, request_t *command)
 {
     pc_release_data_t rel_data;
@@ -521,6 +523,7 @@ void dyncon_get_powerstatus(int fd, request_t *command)
 	free(status);
 	debug("powerstatus released");
 }
+#endif
 
 void dyncon_set_risk(int fd, request_t *command)
 {
@@ -647,11 +650,13 @@ state_t process_remote_requests(int clientfd) {
 			dyncon_get_status(clientfd, &command);
 			return EAR_SUCCESS;
 			break;
-		case EAR_RC_APP_STATUS:
-			verbose(VRAPI + 1, "App status received");
-			dyncon_get_app_status(clientfd, &command);
-      return EAR_SUCCESS;
-      break;
+		case EAR_RC_APP_NODE_STATUS:
+    case EAR_RC_APP_MASTER_STATUS:
+            verbose(VRAPI + 1, "App status received");
+            dyncon_get_app_status(clientfd, &command);
+            return EAR_SUCCESS;
+            break;
+		#if POWERCAP
 		case EAR_RC_RED_POWER:
 		case EAR_RC_GET_POWER:
 		case EAR_RC_SET_POWER:
@@ -659,11 +664,13 @@ state_t process_remote_requests(int clientfd) {
 		case EAR_RC_SET_POWERCAP_OPT:
 			dyncon_power_management(clientfd, &command);
 			break;
+		#endif
 		case EAR_RC_SET_RISK:
 			verbose(1,"set risk command received");
 			dyncon_set_risk(clientfd, &command);
 			return EAR_SUCCESS;
 			break;
+	 #if POWERCAP
    case EAR_RC_GET_POWERCAP_STATUS:
             dyncon_get_powerstatus(clientfd, &command);
             return EAR_SUCCESS;
@@ -673,6 +680,7 @@ state_t process_remote_requests(int clientfd) {
 		case EAR_RC_DEF_POWERCAP:
 						dyncon_set_default_powercap(clientfd, &command);
 						break;
+	  #endif
 		default:
 			error("Invalid remote command\n");
 			req = NO_COMMAND;

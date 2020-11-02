@@ -88,9 +88,7 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'policies'   $* || exit
 	@ $(MAKE) -C 'states'     $* || exit
 	@ $(MAKE) -C 'tracer'     $* || exit
-ifeq ($(FEAT_MPI_API), 1)
 	@ $(MAKE) -C 'loader'     $* || exit
-endif
 
 ######## DEPENDENCIES
 

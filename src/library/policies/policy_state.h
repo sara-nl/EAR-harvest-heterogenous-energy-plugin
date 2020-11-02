@@ -15,22 +15,14 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef _EARGM_SERVER_API_H
-#define _EARGM_SERVER_API_H
+#ifndef EAR_POLICIES_STATES_H
+#define EAR_POLICIES_STATES_H
 
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/ip.h>
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <global_manager/eargm_conf_api.h>
+#define EAR_POLICY_READY 		0
+#define EAR_POLICY_CONTINUE 1
+#define EAR_POLICY_GLOBAL_EV 2
+#define EAR_POLICY_GLOBAL_READY 3
+#define EAR_POLICY_LOCAL_EV			4
 
-int create_server_socket(uint use_port);
-int wait_for_client(int sockfd,struct sockaddr_in *client);
-void close_server_socket(int sock);
-
-int read_command(int s,eargm_request_t *command);
-void send_answer(int s,ulong *ack);
-
-#endif
-
+#define EAR_POLICY_NO_STATE 1000
+#endif //EAR_POLICIES_H

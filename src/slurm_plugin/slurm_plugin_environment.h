@@ -57,13 +57,12 @@ struct component_s {
 	plug_component_t library;
 	plug_component_t monitor;
 	plug_component_t test;
+	// Component verbose missing
 	plug_component_t verbose;
 } Component __attribute__((weak)) = {
 	.plugin  = "SLURM_ECPLUG",
 	.library = "SLURM_ECLIBR",
-	.monitor = "SLURM_ECMONI",
 	.test    = "SLURM_ECTEST",
-	.verbose = "SLURM_ECVERB"
 };
 
 struct context_s {
@@ -101,7 +100,6 @@ typedef struct varname_s {
 struct variables_s {
 	varnames_t comp_libr;
 	varnames_t comp_plug;
-	varnames_t comp_moni;
 	varnames_t comp_test;
 	varnames_t comp_verb;
 	varnames_t hack_load;
@@ -142,7 +140,6 @@ struct variables_s {
 {
 .comp_libr = { .cmp = "SLURM_COMP_LIBRARY" },
 .comp_plug = { .cmp = "SLURM_COMP_PLUGIN"  },
-.comp_moni = { .cmp = "SLURM_COMP_MONITOR" },
 .comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
 .hack_load = { .hck =  HACK_FILE_LOAD      },

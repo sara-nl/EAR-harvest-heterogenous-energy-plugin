@@ -63,6 +63,7 @@ powercap_mgt.o:powercap_mgt.c powercap_mgt.h
 ######## OPTIONS
 
 install: powercap.ginstall;
+%.install: ;
 
 clean: rclean;
 

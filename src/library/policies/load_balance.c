@@ -22,13 +22,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/local_api/eard_api.h>
+#include <library/common/externs.h>
 #include <daemon/powercap/powercap_status.h>
 #include <library/policies/policy_state.h>
 
@@ -42,11 +43,23 @@ extern unsigned long ext_def_freq;
 #endif
 
 static ulong req_f;
+static timestamp pol_time_init;
+static volatile uint global_sig_ready=0;
+static signature_t gsig;
+extern signature_t policy_last_global_signature;
+static int LB_node_cp,LB_rank_cp;
 
 state_t policy_init(polctx_t *c)
 {
-	if (c!=NULL) return EAR_SUCCESS;
-	else return EAR_ERROR;
+	debug("LOAD BALANCE");
+	if (c!=NULL){ 
+	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
+    sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
+    sig_shared_region[my_node_id].mpi_info.exec_time=0;
+    sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
+
+		return EAR_SUCCESS;
+	}else return EAR_ERROR;
 }
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *l)
@@ -68,24 +81,33 @@ state_t policy_loop_end(polctx_t *c,loop_id_t *l)
 	return EAR_SUCCESS;
 }
 
-
 state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 {
-	signature_t *my_app = sig;
+  *ready = EAR_POLICY_GLOBAL_EV;
+  if (c==NULL) return EAR_ERROR;
+  if (c->app==NULL) return EAR_ERROR;
+  return EAR_SUCCESS;
+}
+
+
+state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
+{
+	signature_t *my_app;
 	int i,min_pstate;
 	unsigned int ref;
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
 	double power_ref,time_ref,max_penalty,time_max;
+	char buff[512];
 
   ulong best_freq,best_pstate,freq_ref,eff_f;
 	ulong curr_freq,nominal;
 	ulong curr_pstate,def_pstate,def_freq;
 	state_t st;
+	unsigned long long my_useful_time,cp_useful_time;
 	uint power_status;
-
+	int my_shid,cp_shid;
 
 	if ((c!=NULL) && (c->app!=NULL)){
-
 
 
     if (c->use_turbo) min_pstate=0;
@@ -93,10 +115,42 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		nominal=frequency_pstate_to_freq(min_pstate);
 
+    my_app=sig;
+    if (global_sig_ready){
+      *ready=EAR_POLICY_READY;
+      global_sig_ready=0;
+    }else{
+      *new_freq=*(c->ear_frequency);
+      *ready=EAR_POLICY_CONTINUE;
+      return EAR_SUCCESS;
+    }
 
-	// Default values
+    signature_to_str(my_app,buff,sizeof(buff));
+		debug("POLICY_SIG %s",buff);
 
-		max_penalty=c->app->settings[0];
+		if (LB_node_cp == masters_info.my_master_rank){
+			*new_freq=*(c->ear_frequency);
+			debug("My Node is the CP, I will not change the frequency %lu",*new_freq);
+			return EAR_SUCCESS;
+		}
+
+
+		// Default values
+		my_shid = my_shsig_id();
+		cp_shid = shsig_id(LB_node_cp,LB_rank_cp);
+		debug("Node_CP=%d , Rank_CP=%d. My shid is %d CP_shid is %d",LB_node_cp,LB_rank_cp,my_shid,cp_shid);
+		my_useful_time = masters_info.nodes_info[my_shid].mpi_info.exec_time-masters_info.nodes_info[my_shid].mpi_info.mpi_time;
+		cp_useful_time = masters_info.nodes_info[cp_shid].mpi_info.exec_time-masters_info.nodes_info[cp_shid].mpi_info.mpi_time;
+		max_penalty=1.0-(float)my_useful_time/(float)cp_useful_time;
+		verbose(1,"Process[%d] useful time is %llu, and Process_CP[%d] useful time is %llu max_penalty %.3f",my_shid,my_useful_time,cp_shid,cp_useful_time,max_penalty);
+
+		if (max_penalty < 0){
+			*new_freq=*(c->ear_frequency);
+      *ready=EAR_POLICY_READY;
+			verbose(1,"Warning CPU time process %d is greather than CP %d, I will not change the frequency %lu",my_shid,cp_shid,*new_freq);
+			return EAR_SUCCESS;
+		}
+
 		def_freq=FREQ_DEF(c->app->def_freq);
 		def_pstate=frequency_closest_pstate(def_freq);
 
@@ -112,7 +166,6 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		eff_f=frequency_closest_high_freq(my_app->avg_f,1);
 
 
-		*ready=EAR_POLICY_READY;
 
 		// If is not the default P_STATE selected in the environment, a projection
 		// is made for the reference P_STATE in case the coefficents were available.
@@ -124,7 +177,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				st=project_power(my_app,curr_pstate,def_pstate,&power_ref);
 				st=project_time(my_app,curr_pstate,def_pstate,&time_ref);
 				best_freq=def_freq;
-        debug("projecting from %lu to %lu\t time: %.2lf\t power: %.2lf", curr_pstate, def_pstate, time_ref, power_ref);
+        //debug("projecting from %lu to %lu\t time: %.2lf\t power: %.2lf", curr_pstate, def_pstate, time_ref, power_ref);
 		}
 		else
 		{
@@ -150,7 +203,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 					project_power(my_app,curr_pstate,min_pstate,&power_ref);
 					project_time(my_app,curr_pstate,min_pstate,&time_ref);
 					best_freq=nominal;
-          debug("projecting to nominal\t time: %.2lf\t power: %.2lf", time_ref, power_ref);
+          //debug("projecting to nominal\t time: %.2lf\t power: %.2lf", time_ref, power_ref);
 				}else{
         	time_ref=my_app->time;
         	power_ref=my_app->DC_power;
@@ -179,10 +232,10 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
-        debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
+        //debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
-          debug("new best solution found");
+          //debug("new best solution found");
 					best_freq = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
 					best_pstate=i;
@@ -196,6 +249,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	}
 
 	*new_freq=best_freq;
+	sig_shared_region[my_node_id].new_freq=best_freq;
 	return EAR_SUCCESS;
 }
 
@@ -233,4 +287,56 @@ state_t policy_max_tries(polctx_t *c,int *intents)
   *intents=1;
   return EAR_SUCCESS;
 }
+
+
+state_t policy_mpi_init(polctx_t *c)
+{
+  timestamp_getfast(&pol_time_init);
+  return EAR_SUCCESS;
+}
+state_t policy_mpi_end(polctx_t *c)
+{
+  timestamp end;
+  ullong elap;
+  timestamp_getfast(&end);
+  elap=timestamp_diff(&end,&pol_time_init,TIME_USECS);
+  sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
+  sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
+  return EAR_SUCCESS;
+}
+state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
+{
+  state_t ret;
+	char buff[512];
+	int ml;
+	shsignature_t *per_node_shsig; 
+  if (masters_info.my_master_rank>=0){
+		/* We will only check th mpi info when we have already used it */
+		if (!global_sig_ready){
+    ret = check_mpi_info(&masters_info,&LB_node_cp,&LB_rank_cp,report_all_sig);
+    if (ret == EAR_SUCCESS){
+			global_sig_ready=1;
+			verbose(1,"policy_new_iteration Node_CP %d Rank_CP %d",LB_node_cp,LB_rank_cp);
+      compute_avg_app_signature(&masters_info,&gsig);
+			signature_copy(&policy_last_global_signature,&gsig);
+    }
+		}
+    ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
+    if (ret == EAR_SUCCESS){
+      debug("Node signatures ready");
+      if (sh_sig_per_proces){
+        ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+      }else{
+				ml=compute_per_node_most_loaded_process(lib_shared_region,sig_shared_region);
+				verbose(1,"Process %d selected as the most loaded",ml);
+				per_node_shsig = &sig_shared_region[ml];
+        ret = send_node_signatures(&masters_info,lib_shared_region,per_node_shsig,report_node_sig);
+      }
+    }
+
+  }
+
+  return EAR_SUCCESS;
+}
+
 

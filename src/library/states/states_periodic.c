@@ -38,6 +38,8 @@
 #include <library/metrics/metrics.h>
 #include <common/hardware/frequency.h>
 #include <daemon/local_api/eard_api.h>
+#include <library/policies/policy_state.h>
+
 
 extern uint mpi_calls_in_period;
 extern masters_info_t masters_info;
@@ -45,7 +47,8 @@ extern float ratio_PPN;
 
 // static defines
 #define FIRST_ITERATION			1
-#define EVALUATING_SIGNATURE	2
+#define EVALUATING_LOCAL_SIGNATURE	2
+#define EVALUATING_GLOBAL_SIGNATURE 3
 
 static projection_t *PP;
 static ulong policy_freq;
@@ -168,15 +171,15 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 	switch (EAR_STATE)
 	{
 		case FIRST_ITERATION:
-				EAR_STATE = EVALUATING_SIGNATURE;
-				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
+				EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
+				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
 				metrics_compute_signature_begin();
 				// Loop printing algorithm
 				loop.id.event = event;
 				loop.id.level = level;
 				loop.id.size = period;
 				break;
-		case EVALUATING_SIGNATURE:
+		case EVALUATING_LOCAL_SIGNATURE:
 				N_iter=1;
 				
 				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, total_th);	
@@ -203,8 +206,8 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 		      signature_t app_signature;
       		adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
-					st=policy_apply(&app_signature,&policy_freq,&ready);
-					signature_ready(&sig_shared_region[my_node_id],EVALUATING_SIGNATURE);
+					st=policy_node_apply(&app_signature,&policy_freq,&ready);
+					signature_ready(&sig_shared_region[my_node_id],EVALUATING_LOCAL_SIGNATURE);
 					loop_signature.signature.def_f=prev_f;
 					if (policy_freq != prev_f){
 						if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
@@ -213,10 +216,10 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 					if (masters_info.my_master_rank>=0){
 					traces_new_signature(ear_my_rank, my_id,&loop_signature.signature);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
-					traces_policy_state(ear_my_rank, my_id,EVALUATING_SIGNATURE);
+					traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
 					}
 
-					if (masters_info.my_master_rank>=0){
+					if (masters_info.my_master_rank>=0 || show_signatures){
 						#if USE_GPU_LIB
 						GPU_POWER=0;GPU_FREQ=0;GPU_UTIL=0;
 						if (loop_signature.signature.gpu_sig.num_gpus>0){

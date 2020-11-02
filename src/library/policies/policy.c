@@ -19,7 +19,7 @@
 #include <mpi.h>
 #endif
 #include <dlfcn.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/config/config_env.h>
 #include <common/system/symplug.h>
@@ -34,11 +34,14 @@
 #include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/pc_app_info.h>
 #include <library/policies/pc_suport.h>
+#include <library/policies/policy_state.h>
 #endif
 
 extern masters_info_t masters_info;
 extern cpu_set_t ear_process_mask;
 extern int ear_affinity_is_set;
+
+signature_t policy_last_local_signature,policy_last_global_signature;
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
@@ -53,7 +56,8 @@ extern pc_app_info_t *pc_app_info_data;
 
 typedef struct policy_symbols {
 	state_t (*init)        (polctx_t *c);
-	state_t (*apply)       (polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready);
+	state_t (*node_policy_apply)       (polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready);
+	state_t (*app_policy_apply)       (polctx_t *c, signature_t *my_sig, ulong *new_freq,int *ready);
 	state_t (*get_default_freq)   (polctx_t *c, ulong *freq_set);
 	state_t (*ok)          (polctx_t *c, signature_t *curr_sig,signature_t *prev_sig,int *ok);
 	state_t (*max_tries)   (polctx_t *c,int *intents);
@@ -69,10 +73,11 @@ typedef struct policy_symbols {
 // Static data
 static polsym_t polsyms_fun,gpu_polsyms_fun;
 static void    *polsyms_obj = NULL;
-const int       polsyms_n = 12;
+const int       polsyms_n = 13;
 const char     *polsyms_nam[] = {
 	"policy_init",
 	"policy_apply",
+  "policy_app_apply",
 	"policy_get_default_freq",
 	"policy_ok",
 	"policy_max_tries",
@@ -103,6 +108,9 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	state_t ret;
 
   char *obj_path = getenv(SCHED_EAR_POWER_POLICY);
+	char *app_mgr_policy = getenv(USE_APP_MGR_POLICIES);
+	int app_mgr=0;
+	if (app_mgr_policy != NULL) app_mgr = atoi(app_mgr_policy);
 	#if SHOW_DEBUGS
 	if (obj_path!=NULL){ 
 		debug("%s = %s",SCHED_EAR_POWER_POLICY,obj_path);
@@ -111,7 +119,11 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	}
 	#endif
   if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
-    	sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
+			if (!app_mgr){
+    		sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
+			}else{
+    		sprintf(basic_path,"%s/policies/app_%s.so",data->dir_plug,app_settings->policy_name);
+			}
     	obj_path=basic_path;
 	}
   if (masters_info.my_master_rank>=0) debug("loading policy %s",obj_path);
@@ -198,6 +210,9 @@ state_t policy_init()
 	if (polsyms_fun.init != NULL){
 		ret=polsyms_fun.init(c);
 	}
+	signature_init(&policy_last_local_signature);
+	signature_init(&policy_last_global_signature);
+
 	#if USE_GPUS
 	if (masters_info.my_master_rank>=0){
 	if (gpu_polsyms_fun.init != NULL){
@@ -215,55 +230,91 @@ state_t policy_init()
 	else return EAR_ERROR;
 }
 
-state_t policy_apply(signature_t *my_sig,ulong *freq_set, int *ready)
+static void policy_cpu_freq_selection(signature_t *my_sig,ulong *freq_set)
+{
+	polctx_t *c=&my_pol_ctx;
+#if POWERCAP
+  if (pc_app_info_data->mode==PC_DVFS){
+      ulong f;
+      pcapp_info_set_req_f(pc_app_info_data,*freq_set);
+      f=pc_support_adapt_freq(c,&my_pol_ctx.app->pc_opt,*freq_set,my_sig);
+      debug("Adapting frequency because pc: selected %lu new %lu",*freq_set,f);
+      *freq_set=f;
+  }else{
+      debug("PC mode %u (should be PC_POWER)",pc_app_info_data->mode);
+      pcapp_info_set_req_f(pc_app_info_data,*freq_set);
+  }
+#endif
+  if (*freq_set != *(c->ear_frequency))
+  {
+      if(ear_affinity_is_set == 0){
+        debug("Setting frequency to %lu",*freq_set);
+        *(c->ear_frequency) =  eards_change_freq(*freq_set);
+      }else{
+        debug("We ARE using affinity mask");
+        /* How to manage cores vs CPUS */
+        *(c->ear_frequency) =  eards_change_freq_with_mask(*freq_set,&ear_process_mask);
+      }
+  }
+}
+
+state_t policy_app_apply(ulong *freq_set, int *ready)
+{
+	polctx_t *c=&my_pol_ctx;
+	state_t st = EAR_SUCCESS;
+	*ready=1;
+	if (polsyms_fun.app_policy_apply == NULL){
+		*ready = EAR_POLICY_LOCAL_EV;
+		return st;
+	}
+	if (!eards_connected() || (masters_info.my_master_rank<0)){
+			*ready=EAR_POLICY_CONTINUE;
+			return st;
+	}
+	st=polsyms_fun.app_policy_apply(c, &policy_last_global_signature, freq_set,ready);
+  if (*ready == EAR_POLICY_READY){
+			policy_cpu_freq_selection(&policy_last_global_signature,freq_set);
+	}
+	return st;
+}
+
+state_t policy_node_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 {
 	polctx_t *c=&my_pol_ctx;
 	signature_t node_sig;
 	int i;
 	state_t st=EAR_ERROR,stg=EAR_SUCCESS;
 	*ready=1;
-	if (polsyms_fun.apply!=NULL){
+	if (polsyms_fun.node_policy_apply!=NULL){
+		
 		if (!eards_connected() || (masters_info.my_master_rank<0)){
-			*ready=0;
+			*ready=EAR_POLICY_CONTINUE;
 			return EAR_SUCCESS;
 		}
 		signature_copy(&node_sig,my_sig);
 		node_sig.DC_power=sig_node_power(my_sig);
 
-		st=polsyms_fun.apply(c, &node_sig,freq_set,ready);
-#if POWERCAP
-		if (pc_app_info_data->mode==PC_DVFS){
-			ulong f;
-			pcapp_info_set_req_f(pc_app_info_data,*freq_set);
-			f=pc_support_adapt_freq(c,&my_pol_ctx.app->pc_opt,*freq_set,my_sig);
-			debug("Adapting frequency because pc: selected %lu new %lu",*freq_set,f);
-			*freq_set=f;
-		}else{
-			debug("PC mode %u (should be PC_POWER)",pc_app_info_data->mode);
-			pcapp_info_set_req_f(pc_app_info_data,*freq_set);		
-		}	
-#endif
-  	if (*freq_set != *(c->ear_frequency))
-  	{
-			if(ear_affinity_is_set == 0){
-    		*(c->ear_frequency) =  eards_change_freq(*freq_set);
-			}else{
-				debug("We ARE using affinity mask");
-				/* How to manage cores vs CPUS */
-    		*(c->ear_frequency) =  eards_change_freq_with_mask(*freq_set,&ear_process_mask);
-			}
-		}
+		signature_copy(&policy_last_local_signature,&node_sig);
+
+		st=polsyms_fun.node_policy_apply(c, &node_sig,freq_set,ready);
+		if (*ready == EAR_POLICY_READY){
+			policy_cpu_freq_selection(my_sig,freq_set);
+		} /* Stop*/
   } else{
-		if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
+		if (polsyms_fun.app_policy_apply != NULL ){
+			*ready = EAR_POLICY_GLOBAL_EV;
+		}else{
+			if (c!=NULL) *freq_set=DEF_FREQ(c->app->def_freq);
+		}
 	}
 	#if USE_GPUS
 	/* At this point we are the master */
 	/* GPU frequency must be integrated in arguments, hardcoded for now */
-	if ((gpu_polsyms_fun.apply!=NULL) && (my_pol_ctx.num_gpus)) {
+	if ((gpu_polsyms_fun.node_policy_apply!=NULL) && (my_pol_ctx.num_gpus)) {
 		ulong *gpu_f=calloc(my_pol_ctx.num_gpus,sizeof(ulong));
-		stg=gpu_polsyms_fun.apply(c, my_sig,gpu_f,ready);
+		stg=gpu_polsyms_fun.node_policy_apply(c, my_sig,gpu_f,ready);
 		/* We must apply a gpu_freq change */
-		if (*ready == 1 ){
+		if (*ready == EAR_POLICY_READY ){
 		#if POWERCAP
 			for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
 				debug("GPU[%d] freq requested %lu",i,gpu_f[i]);

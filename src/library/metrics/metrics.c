@@ -251,7 +251,7 @@ static void metrics_global_stop()
 	timestamp_getfast(&end_mpi_time);
 
 	unsigned long long extime;
-	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);
+	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,TIME_USECS);
 
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
 	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
@@ -571,18 +571,23 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 		}
 		#endif
 	}else{
-		copy_node_data(metrics,&sig_shared_region[0].sig);
+		copy_node_data(metrics,&lib_shared_region->master_signature);
 	}
 	metrics->EDP = time_s * time_s * metrics->DC_power;
 	
 	/* This part is new to share with other processes */
 	timestamp_getfast(&end_mpi_time);
 	unsigned long long extime;
-	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,(unsigned long long)1);	
+	extime=timestamp_diff(&end_mpi_time,&init_mpi_time,TIME_USECS);	
 	
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
 	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
-	signature_copy(&sig_shared_region[my_node_id].sig,metrics);
+	/* Copying my info in the shared signature */
+	from_sig_to_mini(&sig_shared_region[my_node_id].sig,metrics);
+	/* If I'm the master, I have to copy in the special section */
+	if (masters_info.my_master_rank>=0){
+		signature_copy(&lib_shared_region->master_signature,metrics);
+	}
 }
 
 /**************************** Init function used in ear_init ******************/
