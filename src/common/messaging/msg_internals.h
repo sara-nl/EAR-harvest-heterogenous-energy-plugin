@@ -27,11 +27,18 @@
 #ifndef _REMOTE_CLIENT_API_INTERNALS_H
 #define _REMOTE_CLIENT_API_INTERNALS_H
 
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+
 #include <common/config.h>
+#include <common/types/risk.h>
 #include <common/types/application.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
-#include <common/types/risk.h>
+#include <common/messaging/msg_conf.h>
 
 /** Connects with the EARD running in the given nodename. The current implementation supports a single command per connection
 *	The sequence must be : connect +  command + disconnect
@@ -45,9 +52,6 @@ int eards_remote_disconnect();
 
 /** Sends the command to the currently connected fd */
 int send_command(request_t *command);
-
-/** Sends the command to the currently connected fd but returns an error if it would block the daemon */
-int send_non_block_command(request_t *command);
 
 /** Sends data of size size through the open fd*/
 int send_data(int fd, size_t size, char *data, int type);
@@ -81,4 +85,11 @@ request_header_t process_data(request_header_t data_head, char **temp_data_ptr, 
 request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_conf, void **data);
 
 
+/* Server API internals */
+int create_server_socket(uint port);
+int wait_for_client(int sockfd,struct sockaddr_in *client);
+void close_server_socket(int sock);
+
+int read_command(int s,request_t *command);
+void send_answer(int s,long *ack);
 #endif

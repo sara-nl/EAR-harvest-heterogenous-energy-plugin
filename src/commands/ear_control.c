@@ -28,8 +28,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <daemon/remote_api/eard_rapi.h>
-#include <daemon/remote_api/eard_rapi_internals.h>
 
 #include <common/config.h>
 #include <common/states.h>
@@ -39,10 +37,24 @@
 #include <common/types/application.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <common/messaging/msg_internals.h>
+#include <daemon/remote_api/eard_rapi.h>
                    
 #define NUM_LEVELS  4
 #define MAX_PSTATE  16
 #define IP_LENGTH   24
+
+#define EAR_TYPE_POLICY             25 //it should be 2005, but we don't want to interfere with the messaging api
+#define EAR_TYPE_FULL_STATUS        26 //it should be 2006, but we don't want to interfere with the messaging api
+#define EAR_TYPE_APP_STATUS_MASTER  27 //EAR_TYPES refer to data specifically, but since both APP_STATUS rc codes use the type
+                                       //APP_STATUS, we need subspecific types for this case
+#define EAR_TYPE_APP_STATUS_NODE    28 //same as above
+
+/* Status modes */
+#define ERR_ONLY    1
+#define FULL_STATUS 2
+#define POLICY_ONLY 3
+#define NODE_ONLY   4
 
 typedef struct ip_table
 {
@@ -142,13 +154,17 @@ int generate_node_names(cluster_conf_t my_cluster_conf, ip_table_t **ips)
     return num_ips;
 }
 
-void print_ips(ip_table_t *ips, int num_ips, char error_only)
+void print_ips(ip_table_t *ips, int num_ips, char mode)
 {
     int i, j, counter = 0;
-    if (!error_only)
+    if (mode != ERR_ONLY)
     {
-        printf("%10s\t%5s\t%4s\t%4s\t%6s\t%6s", "hostname", "power", "temp", "freq", "job_id", "stepid");
-        printf("  %6s  %5s  %2s\n", "policy", "pfreq", "th");
+        printf("%10s\t", "hostname");
+        if (mode == NODE_ONLY || mode == FULL_STATUS)
+            printf("%5s\t%4s\t%4s\t%6s\t%6s", "power", "temp", "freq", "job_id", "stepid");
+        if (mode == FULL_STATUS || mode == POLICY_ONLY)
+            printf("  %6s  %5s  %2s", "policy", "pfreq", "th");
+        printf("\n");
     }
 	char temp[GENERIC_NAME];
     char final[GENERIC_NAME];
@@ -156,15 +172,24 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
 	{
         if (ips[i].counter && ips[i].power != 0 )
         {
-            if (!error_only) {
-                    printf("%10s\t%5d\t%3dC\t%.2lf\t%6d\t%6d", ips[i].name, ips[i].power, ips[i].temp, 
+            if (mode != ERR_ONLY) 
+            {
+                printf("%10s\t", ips[i].name);
+                if (mode == NODE_ONLY || mode == FULL_STATUS)
+                {
+                    printf("%5d\t%3dC\t%.2lf\t%6d\t%6d", ips[i].power, ips[i].temp, 
                             (double)ips[i].current_freq/1000000.0, ips[i].job_id, ips[i].step_id);
-	    	    for (j = 0; j < TOTAL_POLICIES; j++)
-    		    {
-			        policy_id_to_name(j, temp, &my_cluster_conf);
-                    get_short_policy(final, temp, &my_cluster_conf);
-		    	    printf("  %6s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
-	    	    }
+                }
+
+                if (mode == FULL_STATUS || mode == POLICY_ONLY)
+                {
+	    	        for (j = 0; j < TOTAL_POLICIES; j++)
+        		    {
+	    		        policy_id_to_name(j, temp, &my_cluster_conf);
+                        get_short_policy(final, temp, &my_cluster_conf);
+		        	    printf("  %6s  %.2lf  %3u", final, (double)ips[i].policies[j].freq/1000000.0, ips[i].policies[j].th);
+	    	        }
+                }
                 printf("\n");
             }
             if (ips[i].power < ips[i].max_power)
@@ -175,11 +200,11 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
 	}
     if (counter < num_ips)
     {
-        if (!error_only) printf("\n\nINACTIVE NODES\n");
+        if (mode != ERR_ONLY) printf("\n\nINACTIVE NODES\n");
         char first_node = 1;
         for (i = 0; i <num_ips; i++)
         {
-            if (error_only)
+            if (mode == ERR_ONLY)
             {
                 if (!ips[i].counter || !ips[i].power || ips[i].power > ips[i].max_power)
                 {
@@ -204,17 +229,19 @@ void print_ips(ip_table_t *ips, int num_ips, char error_only)
 void usage(char *app)
 {
 	printf("Usage: %s [options]"\
-            "\n\t--set-freq \tnewfreq\t\t\t->sets the frequency of all nodes to the requested one"\
-            "\n\t--set-def-freq \tnewfreq\tpolicy_name\t->sets the default frequency for the selected policy "\
-            "\n\t--set-max-freq \tnewfreq\t\t\t->sets the maximum frequency"\
-            "\n\t--inc-th \tnew_th\tpolicy_name\t->increases the threshold for all nodes"\
-            "\n\t--set-th \tnew_th\tpolicy_name\t->sets the threshold for all nodes"\
-            "\n\t--red-def-freq \tn_pstates\t\t->reduces the default and max frequency by n pstates"\
+            "\n\t--set-freq \t[newfreq]\t\t->sets the frequency of all nodes to the requested one"\
+            "\n\t--set-def-freq \t[newfreq]  [pol_name]\t->sets the default frequency for the selected policy "\
+            "\n\t--set-max-freq \t[newfreq]\t\t->sets the maximum frequency"\
+            "\n\t--inc-th \t[new_th]   [pol_name]\t->increases the threshold for all nodes"\
+            "\n\t--set-th \t[new_th]   [pol_name]\t->sets the threshold for all nodes"\
+            "\n\t--red-def-freq \t[n_pstates]\t\t->reduces the default and max frequency by n pstates"\
             "\n\t--restore-conf \t\t\t\t->restores the configuration to all node"\
             "\n\t--status \t\t\t\t->requests the current status for all nodes. The ones responding show the current "\
             "\n\t\t\t\t\t\t\tpower, IP address and policy configuration. A list with the ones not"\
             "\n\t\t\t\t\t\t\tresponding is provided with their hostnames and IP address."\
             "\n\t\t\t\t\t\t\t--status=node_name retrieves the status of that node individually."\
+            "\n\t--type \t\t[status_type]\t\t->Specifies what type of status will be requested: hardware,"\
+            "\n\t\t\t\t\t\t\tpolicy, full (hardware+policy), app_node, app_master or power. [default:hardware]"\
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
             "\n\t--version \t\t\t\t->displays current EAR version."\
@@ -245,7 +272,7 @@ void check_ip(status_t status, ip_table_t *ips, int num_ips)
 		}
 }
 
-void check_app_status(app_status_t status, ip_table_t *ips, int num_ips)
+void check_app_status(app_status_t status, ip_table_t *ips, int num_ips, char is_master)
 {
     int i;
     int gpusi;
@@ -254,8 +281,14 @@ void check_app_status(app_status_t status, ip_table_t *ips, int num_ips)
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
         {
-            printf("%15s %7lu-%-4lu %6d %6d %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf", 
-                        ips[i].name, status.job_id, status.step_id, status.nodes, status.master_rank,
+            if (is_master)
+                printf("%7lu-%-4lu %6d %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf", 
+                        status.job_id, status.step_id, status.nodes,
+                        status.signature.DC_power, status.signature.CPI, status.signature.GBS, 
+                        status.signature.Gflops, status.signature.time, (double)status.signature.avg_f/1000000);
+            else
+                printf("%15s %7lu-%-4lu %6d %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf", 
+                        ips[i].name, status.job_id, status.step_id, status.master_rank,
                         status.signature.DC_power, status.signature.CPI, status.signature.GBS, 
                         status.signature.Gflops, status.signature.time, (double)status.signature.avg_f/1000000);
 #if USE_GPU_LIB
@@ -267,7 +300,7 @@ void check_app_status(app_status_t status, ip_table_t *ips, int num_ips)
                 }
                 GPU_freq = GPU_freq/status.signature.gpu_sig.num_gpus;
             }
-            printf("%8.2lf %8.2lf", GPU_power, (double)GPU_freq/1000000);
+            printf(" %9.2lf %9.2lf", GPU_power, (double)GPU_freq/1000000);
 #endif
             printf("\n");
         }
@@ -297,22 +330,27 @@ void process_status(int num_status, status_t *status, char error_only)
     else printf("An error retrieving status has occurred.\n");
 }
 
-void process_app_status(int num_status, app_status_t *status)
+void process_app_status(int num_status, app_status_t *status, char is_master)
 {
     if (num_status > 0)
     {
         int i, num_ips;
-        printf("%15s %7s-%-4s %6s %6s %10s %8s %8s %8s %8s %8s", 
-                    "Node id", "Job", "Step", "Nodes", "M-Rank", "DC power", "CPI", "GBS", "Gflops", "Time", "Avg Freq");
+
+        if (is_master)
+            printf("%7s-%-4s %6s %10s %8s %8s %8s %8s %8s", 
+                    "Job", "Step", "Nodes", "DC power", "CPI", "GBS", "Gflops", "Time", "Avg Freq");
+        else
+            printf("%15s %7s-%-4s %6s %10s %8s %8s %8s %8s %8s", 
+                    "Node id", "Job", "Step", "M-Rank", "DC power", "CPI", "GBS", "Gflops", "Time", "Avg Freq");
 #if USE_GPU_LIB
-        printf("%8s %8s", "GPU power", "GPU freq");
+        printf(" %9s %9s", "GPU power", "GPU freq");
 #endif
         printf("\n");
         ip_table_t *ips = NULL;
         num_ips = generate_node_names(my_cluster_conf, &ips);
         clean_ips(ips, num_ips);
         for (i = 0; i < num_status; i++)
-            check_app_status(status[i], ips, num_ips);
+            check_app_status(status[i], ips, num_ips, is_master);
         free(ips);
         free(status);
     }
@@ -358,12 +396,12 @@ int main(int argc, char *argv[])
     char path_name[128];
     char node_name[256];
 
-		strcpy(node_name,"");
+    strcpy(node_name,"");
 
     status_t *status;
 
-    verb_level = -1;
-    verb_enabled = 0;
+    verb_level = 0;
+    //verb_enabled = 0;
     if (argc < 2) usage(argv[0]);
 
     if (get_ear_conf_path(path_name)==EAR_ERROR){
@@ -444,19 +482,7 @@ int main(int argc, char *argv[])
                     printf("Indicated threshold increase above theoretical maximum (100%%)\n");
                     break;
                 }
-#define TEST_NODE_PROP 0
-#if TEST_NODE_PROP
-                int *ips;
-                ips = calloc(2, sizeof(int));
-                ips[0] = get_ip("cmp2545", &my_cluster_conf);
-                ips[1] = get_ip("cmp2546", &my_cluster_conf);
-                printf("ip0 %d ip1 %d\n", ips[0], ips[1]);
-                increase_th_nodes(arg, arg2, &my_cluster_conf, ips, 2);
-                free(ips);
-
-#else
                 increase_th_all_nodes(arg, arg2, &my_cluster_conf);
-#endif
                 break;
             case 4:
                 arg = atoi(optarg);
@@ -557,10 +583,18 @@ int main(int argc, char *argv[])
             case 't':
                 if (!strcasecmp(optarg, "HARDWARE"))
                     status_type = EAR_TYPE_STATUS;
-                else if (!strcasecmp(optarg, "APP"))
-                    status_type = EAR_TYPE_APP_STATUS;
+                else if (!strcasecmp(optarg, "APP_NODE"))
+                    status_type = EAR_TYPE_APP_STATUS_NODE;
+                else if (!strcasecmp(optarg, "APP_MASTER"))
+                    status_type = EAR_TYPE_APP_STATUS_MASTER;
                 else if (!strcasecmp(optarg, "POWER"))
                     status_type = EAR_TYPE_POWER_STATUS;
+                else if (!strcasecmp(optarg, "FULL"))
+                    status_type = EAR_TYPE_FULL_STATUS;
+                else if (!strcasecmp(optarg, "POLICY"))
+                    status_type = EAR_TYPE_POLICY;
+                else
+                    printf("Warning: specified type is invalid (%s)\n", optarg);
                 break;
             case 'r':
                 if (optarg)
@@ -683,9 +717,13 @@ int main(int argc, char *argv[])
                         free(powerstatus);
                     }
                     break;
-                case EAR_TYPE_APP_STATUS:
-                    num_status = eards_get_app_status(&my_cluster_conf, &appstatus);
-                    process_app_status(num_status, appstatus);
+                case EAR_TYPE_APP_STATUS_MASTER:
+                    num_status = eards_get_app_master_status(&my_cluster_conf, &appstatus);
+                    process_app_status(num_status, appstatus, 1);
+                    break;
+                case EAR_TYPE_APP_STATUS_NODE:
+                    num_status = eards_get_app_node_status(&my_cluster_conf, &appstatus);
+                    process_app_status(num_status, appstatus, 0);
                     break;
             }
 
@@ -700,7 +738,15 @@ int main(int argc, char *argv[])
             app_status_t *appstatus;
             case EAR_TYPE_STATUS:
                 num_status = status_all_nodes(&my_cluster_conf, &status);
-                process_status(num_status, status, 0);
+                process_status(num_status, status, NODE_ONLY);
+                break;
+            case EAR_TYPE_POLICY:
+                num_status = status_all_nodes(&my_cluster_conf, &status);
+                process_status(num_status, status, POLICY_ONLY);
+                break;
+            case EAR_TYPE_FULL_STATUS:
+                num_status = status_all_nodes(&my_cluster_conf, &status);
+                process_status(num_status, status, FULL_STATUS);
                 break;
             case EAR_TYPE_POWER_STATUS:
                 num_status = cluster_get_powercap_status(&my_cluster_conf, &powerstatus);
@@ -717,9 +763,13 @@ int main(int argc, char *argv[])
                 }
                 else printf("powercap_status returned with invalid (%d) num_powerstatus\n", num_status);
                 break;
-            case EAR_TYPE_APP_STATUS:
-                num_status = get_app_status_all_nodes(&my_cluster_conf, &appstatus);
-                process_app_status(num_status, appstatus);
+            case EAR_TYPE_APP_STATUS_MASTER:
+                num_status = get_app_master_status_all_nodes(&my_cluster_conf, &appstatus);
+                process_app_status(num_status, appstatus, 1);
+                break;
+            case EAR_TYPE_APP_STATUS_NODE:
+                num_status = get_app_node_status_all_nodes(&my_cluster_conf, &appstatus);
+                process_app_status(num_status, appstatus, 0);
                 break;
         }
     }

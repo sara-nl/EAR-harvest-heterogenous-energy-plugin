@@ -39,7 +39,7 @@ struct spank_option spank_options_manual[SRUN_OPTIONS] =
 	{ "ear-cpufreq", "frequency", "Specifies the start frequency to be used by EAR policy (in KHz)",
 	  1, 0, (spank_opt_cb_f) _opt_ear_frequency
 	},
-	{ "ear-policy-th", "value", "Specifies the threshold to be used by EAR policy" \
+	{ "ear-policy-th", "value", "Specifies the threshold to be used by EAR policy (max 2 decimals)" \
 	  " {value=[0..1]}",
 	  1, 0, (spank_opt_cb_f) _opt_ear_threshold
 	},

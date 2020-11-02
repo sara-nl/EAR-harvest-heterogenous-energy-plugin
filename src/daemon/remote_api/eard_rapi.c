@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-// #define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <errno.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -26,24 +26,50 @@
 #include <netinet/ip.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/job.h>
 #include <common/output/verbose.h>
+#include <common/messaging/msg_conf.h>
+
 #include <daemon/remote_api/eard_rapi.h>
-#include <daemon/remote_api/eard_conf_rapi.h>
 #include <daemon/remote_api/eard_server_api.h>
 
 extern int eards_sfd;
 
 /** Asks application status for a single node */
-int eards_get_app_status(cluster_conf_t *my_cluster_conf,app_status_t **status)
+int eards_get_app_master_status(cluster_conf_t *my_cluster_conf, app_status_t **status)
 {
 	request_t command;
     request_header_t head;
 
     debug("eards_status");
-	command.req=EAR_RC_APP_STATUS;
+	command.req = EAR_RC_APP_MASTER_STATUS;
+    command.node_dist = INT_MAX;
+    command.time_code = time(NULL);
+
+    send_command(&command);
+
+    head = receive_data(eards_sfd, (void **)status);
+    //we don't need to check if size is bigger than app_status since an empty message can be returned (no apps running)
+    if (head.type != EAR_TYPE_APP_STATUS) {
+        debug("Error sending command to node");
+        if (head.size > 0 && head.type != EAR_ERROR) free(status);
+        return 0;
+    }
+
+    return head.size >= sizeof(app_status_t);
+}
+
+/** Asks application status for a single node */
+int eards_get_app_node_status(cluster_conf_t *my_cluster_conf, app_status_t **status)
+{
+	request_t command;
+    request_header_t head;
+
+    debug("eards_status");
+	command.req = EAR_RC_APP_NODE_STATUS;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
 
@@ -277,10 +303,9 @@ int eards_set_default_powercap()
 /*
 *	SAME FUNCTIONALLITY BUT SENT TO ALL NODES
 */
-/** Asks application status for all single nodes */
-int get_app_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **status)
+/** Asks application status for master nodes */
+int get_app_master_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **status)
 {
-		/** LLUIS REPASA */
     request_t command;
     app_status_t *temp_status;
     request_header_t head;
@@ -288,11 +313,44 @@ int get_app_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **sta
     int num_status = 0;
 
     command.time_code = ctime;
-    command.req = EAR_RC_APP_STATUS;
+    command.req = EAR_RC_APP_MASTER_STATUS;
     command.node_dist = 0;
 
     head = data_all_nodes(&command, my_cluster_conf, (void **)&temp_status);
     num_status = head.size / sizeof(app_status_t);
+
+    debug("appstatus: received %d size of %d type", head.size, head.type);
+
+    if (head.type != EAR_TYPE_APP_STATUS || head.size < sizeof(app_status_t))
+    {
+        if (head.size > 0) free (temp_status);
+        *status = temp_status;
+        return 0;
+    }
+
+    *status = temp_status;
+
+    return num_status;
+
+}
+
+/** Asks application status for all single nodes */
+int get_app_node_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **status)
+{
+    request_t command;
+    app_status_t *temp_status;
+    request_header_t head;
+    time_t ctime = time(NULL);
+    int num_status = 0;
+
+    command.time_code = ctime;
+    command.req = EAR_RC_APP_NODE_STATUS;
+    command.node_dist = 0;
+
+    head = data_all_nodes(&command, my_cluster_conf, (void **)&temp_status);
+    num_status = head.size / sizeof(app_status_t);
+
+    debug("appstatus: received %d size of %d type", head.size, head.type);
 
     if (head.type != EAR_TYPE_APP_STATUS || head.size < sizeof(app_status_t))
     {
