@@ -1386,6 +1386,13 @@ void ear_destructor()
 	debug("Calling ear_finalize in ear_destructor %d",getpid());
 	ear_finalize();
 }
+#else
+void ear_constructor()
+{
+}
+void ear_destructor()
+{
+}
 #endif
 
 

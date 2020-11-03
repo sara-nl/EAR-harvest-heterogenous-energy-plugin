@@ -112,10 +112,12 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	int app_mgr=0;
 	if (app_mgr_policy != NULL) app_mgr = atoi(app_mgr_policy);
 	#if SHOW_DEBUGS
+	if (masters_info.my_master_rank >=0){
 	if (obj_path!=NULL){ 
 		debug("%s = %s",SCHED_EAR_POWER_POLICY,obj_path);
 	}else{
 		debug("%s undefined",SCHED_EAR_POWER_POLICY);
+	}
 	}
 	#endif
   if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){

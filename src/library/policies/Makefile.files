@@ -27,5 +27,11 @@ endif
 eard_BINS = \
     min_time_eard.so \
     min_energy_eard.so \
-    monitoring_eard.so
+    monitoring_eard.so 
+
+ifeq ($(FEAT_MPI_API), 1)
+eard_BINS += \
+    load_balance_eard.so
+endif
+
 

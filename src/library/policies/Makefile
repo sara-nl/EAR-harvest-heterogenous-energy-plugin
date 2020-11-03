@@ -29,6 +29,9 @@ min_time_eard_eard.o: min_time_eard.c
 min_energy_eard.o: min_energy_eard.c
 	$(CC) $(PCFLAGS) -c $<
 
+load_balance_eard.o: load_balance_eard.c
+	$(CC) $(PCFLAGS) -c $<
+
 monitoring_eard.o: monitoring_eard.c
 	$(CC) $(PCFLAGS) -c $<
 
@@ -36,6 +39,9 @@ monitoring_eard.o: monitoring_eard.c
 	$(CC) $(CC_FLAGS) -shared -o $@ $^ 
 
 min_energy_eard.so: min_energy_eard.o $(eard_DEPS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^
+
+load_balance_eard.so: load_balance_eard.o $(eard_DEPS)
 	$(CC) $(CC_FLAGS) -shared -o $@ $^
 
 min_time_eard.so: min_time_eard.o $(eard_DEPS)

@@ -1097,7 +1097,7 @@ void send_command_all(request_t command, cluster_conf_t *my_cluster_conf)
             
             rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
             if (rc<0){
-                verbose(0, "Error connecting with node %s, trying to correct it", next_ip);
+                debug("Error connecting with node %s, trying to correct it", next_ip);
                 correct_error(j, ip_counts[i], ips[i], &command, my_cluster_conf->eard.port);
             }
             else{
@@ -1144,7 +1144,7 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
             
             rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
             if (rc<0){
-                verbose(0, "data_all_nodes: Error connecting with node %s, trying to correct it", next_ip);
+                debug("data_all_nodes: Error connecting with node %s, trying to correct it", next_ip);
                 debug("data_all_nodes: (node %s was %d in the current list of ips", next_ip, j);
                 head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
 
@@ -1182,7 +1182,7 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
             }
             if (head.type == EAR_ERROR)
             {
-                verbose(0, "data_all_nodes:Error reading data from node %d in the list, trying to correct it", j);
+                debug("data_all_nodes:Error reading data from node %d in the list, trying to correct it", j);
                 eards_remote_disconnect_fd(sfds[offset]);
                 head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
             }
