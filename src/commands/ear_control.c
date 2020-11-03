@@ -72,6 +72,7 @@ typedef struct ip_table
 } ip_table_t;
 
 cluster_conf_t my_cluster_conf;
+int no_error = 0;
 
 void fill_ip(char *buff, ip_table_t *table)
 {
@@ -198,7 +199,7 @@ void print_ips(ip_table_t *ips, int num_ips, char mode)
                 counter++;
         }
 	}
-    if (counter < num_ips)
+    if (counter < num_ips && !no_error)
     {
         if (mode != ERR_ONLY) printf("\n\nINACTIVE NODES\n");
         char first_node = 1;
@@ -374,14 +375,14 @@ void generate_ip(ip_table_t *ips, char *node_name)
 
 }
 
-void process_single_status(int num_status, status_t *status, char *node_name)
+void process_single_status(int num_status, status_t *status, char *node_name, char error_only)
 {
     if (num_status > 0)
     {
         ip_table_t ips;
         generate_ip(&ips, node_name);
         check_ip(*status, &ips, 1);
-        print_ips(&ips, 1, 0);
+        print_ips(&ips, 1, error_only);
     }
     else printf("An error retrieving status has occurred.\n");
 }
@@ -438,6 +439,7 @@ int main(int argc, char *argv[])
             {"type",            required_argument, 0, 't'},
             {"verbose",         optional_argument, 0, 'b'},
             {"error",           no_argument, 0, 'e'},
+            {"active-only",     no_argument, 0, 'i'},
             {"help",         	no_argument, 0, 'h'},
             {"version",         no_argument, 0, 'v'},
             {0, 0, 0, 0}
@@ -542,6 +544,9 @@ int main(int argc, char *argv[])
                 {
                     restore_conf_all_nodes(&my_cluster_conf);
                 }
+                break;
+            case 'i':
+                no_error = 1;
                 break;
             case 'p':
                 if (optarg)
@@ -701,7 +706,17 @@ int main(int argc, char *argv[])
                 case EAR_TYPE_STATUS:
                     if ((num_status = eards_get_status(&my_cluster_conf, &status)) != 1) 
                         printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
-                    process_single_status(num_status, status, node_name);
+                    process_single_status(num_status, status, node_name, NODE_ONLY);
+                    break;
+                case EAR_TYPE_POLICY:
+                    if ((num_status = eards_get_status(&my_cluster_conf, &status)) != 1) 
+                        printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
+                    process_single_status(num_status, status, node_name, POLICY_ONLY);
+                    break;
+                case EAR_TYPE_FULL_STATUS:
+                    if ((num_status = eards_get_status(&my_cluster_conf, &status)) != 1) 
+                        printf("Error doing status for node %s, returned (%d)\n", node_name, num_status);
+                    process_single_status(num_status, status, node_name, FULL_STATUS);
                     break;
                 case EAR_TYPE_POWER_STATUS:
                     printf("Reading power_status from node %s\n", node_name);
