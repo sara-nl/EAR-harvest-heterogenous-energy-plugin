@@ -72,6 +72,7 @@ typedef struct ip_table
 } ip_table_t;
 
 cluster_conf_t my_cluster_conf;
+int no_error = 0;
 
 void fill_ip(char *buff, ip_table_t *table)
 {
@@ -198,7 +199,7 @@ void print_ips(ip_table_t *ips, int num_ips, char mode)
                 counter++;
         }
 	}
-    if (counter < num_ips)
+    if (counter < num_ips && !no_error)
     {
         if (mode != ERR_ONLY) printf("\n\nINACTIVE NODES\n");
         char first_node = 1;
@@ -438,6 +439,7 @@ int main(int argc, char *argv[])
             {"type",            required_argument, 0, 't'},
             {"verbose",         optional_argument, 0, 'b'},
             {"error",           no_argument, 0, 'e'},
+            {"active-only",     no_argument, 0, 'i'},
             {"help",         	no_argument, 0, 'h'},
             {"version",         no_argument, 0, 'v'},
             {0, 0, 0, 0}
@@ -542,6 +544,9 @@ int main(int argc, char *argv[])
                 {
                     restore_conf_all_nodes(&my_cluster_conf);
                 }
+                break;
+            case 'i':
+                no_error = 1;
                 break;
             case 'p':
                 if (optarg)
