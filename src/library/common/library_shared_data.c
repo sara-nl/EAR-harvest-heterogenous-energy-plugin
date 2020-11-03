@@ -372,7 +372,7 @@ void load_app_mgr_env()
 	if (creport_node_sig != NULL) report_node_sig = atoi(creport_node_sig);	
 	if (creport_all_sig != NULL) report_all_sig = atoi(creport_all_sig);
 
-	//debug("Show_signatures %u share_sig_per_process %u share_sig_per_node %u report_node_sig %u report_all_sig %u",
-	//show_signatures,sh_sig_per_proces,sh_sig_per_node,report_node_sig,report_all_sig);
+	verbose(1,"Show_signatures %u share_sig_per_process %u share_sig_per_node %u report_node_sig %u report_all_sig %u",
+	show_signatures,sh_sig_per_proces,sh_sig_per_node,report_node_sig,report_all_sig);
 }
 

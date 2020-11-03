@@ -301,10 +301,10 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 		if (ret == EAR_SUCCESS){
 			debug("Node signatures ready");
 			if (sh_sig_per_proces){
-				ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+				ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,sig_shared_region,report_node_sig);
 			}else{
 				compute_per_node_avg_sig_info(lib_shared_region,sig_shared_region,&per_node_shsig);
-				ret = send_node_signatures(&masters_info,lib_shared_region,&per_node_shsig,report_node_sig);
+				ret = send_node_signatures(&masters_info,lib_shared_region,&per_node_shsig,sig_shared_region,report_node_sig);
 			}
 		}
 	}
