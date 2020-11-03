@@ -18,7 +18,7 @@ BINS = libear_seq.so
 all: $(OBJS) $(BINS)
 
 %.o: %.c %.h
-	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS) -c $<
 
 libear_seq.so: ear_seq.o
 	$(CC) $(CC_FLAGS) -shared -o $@ $^ -ldl

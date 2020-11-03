@@ -1,4 +1,4 @@
-PCFLAGS = $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS)
+PCFLAGS = $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS)
 
 ######## FILES
 
@@ -51,13 +51,13 @@ monitoring_eard.so: monitoring_eard.o $(eard_DEPS)
 	$(CC) $(CC_FLAGS) -shared -o $@ $^
 
 min_time_mpi_info.so: min_time_mpi_info.o $(pmpi_DEPS)
-	$(MPICC) $(MPICC_FLAGS) -shared -o $@ $^
+	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
 
 monitoring_ext.so: monitoring_ext.o $(pmpi_DEPS)
-	$(MPICC) $(MPICC_FLAGS) -shared -o $@ $^
+	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
 
 monitoring_ext_notime.so: monitoring_ext_notime.o $(pmpi_DEPS)
-	$(MPICC) $(MPICC_FLAGS) -shared -o $@ $^
+	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
 
 ######## OPTIONS 
 

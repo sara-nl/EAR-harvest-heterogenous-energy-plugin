@@ -2,20 +2,19 @@ CFLAGS  = -fPIC -O2 -I$(SRCDIR)
 LDFLAGS = -shared -ldl -lm -lpthread
 
 ifeq ($(FEAT_MPI_API), 0)
-MPICC       = $(CC)
-MPICC_FLAGS = $(CC_FLAGS)
+LIBCC       = $(CC)
+LIBCC_FLAGS = $(CC_FLAGS)
+LIB_CFLAGS  = -DMPI=0
 MPI_VERSION = seq
-endif
-
-ifeq ($(FEAT_MPI_API), 1)
-MPI_CFLAGS += -DMPI=1
 else
-MPI_CFLAGS  = -DMPI=0
+LIBCC       = $(MPICC)
+LIBCC_FLAGS = $(MPICC_FLAGS)
+LIB_CFLAGS  = $(MPI_CFLAGS) -DMPI=1
 endif
 
-export MPICC
-export MPICC_FLAGS
-export MPI_CFLAGS
+export LIBCC
+export LIBCC_FLAGS
+export LIB_CFLAGS
 export CFLAGS
 
 ########
@@ -67,7 +66,7 @@ endif
 all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
-	$(MPICC) $(MPICC_FLAGS) -o $*.$(ext) $^ $(LDFLAGS)
+	$(LIBCC) $(LIBCC_FLAGS) -o $*.$(ext) $^ $(LDFLAGS)
 
 ######## OPTIONS
 

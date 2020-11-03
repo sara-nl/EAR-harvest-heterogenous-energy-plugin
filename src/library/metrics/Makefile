@@ -7,7 +7,7 @@ OBJS = \
 all: $(OBJS)
 
 %.o: %.c %.h
-	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS) -c $<
 
 ######## OPTIONS 
 
