@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -138,7 +138,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 		// Default values
 		my_shid = my_shsig_id();
 		cp_shid = shsig_id(LB_node_cp,LB_rank_cp);
-		debug("Node_CP=%d , Rank_CP=%d. My shid is %d CP_shid is %d",LB_node_cp,LB_rank_cp,my_shid,cp_shid);
+		verbose(1,"Node_CP=%d , Rank_CP=%d. My shid is %d CP_shid is %d",LB_node_cp,LB_rank_cp,my_shid,cp_shid);
 		my_useful_time = masters_info.nodes_info[my_shid].mpi_info.exec_time-masters_info.nodes_info[my_shid].mpi_info.mpi_time;
 		cp_useful_time = masters_info.nodes_info[cp_shid].mpi_info.exec_time-masters_info.nodes_info[cp_shid].mpi_info.mpi_time;
 		max_penalty=1.0-(float)my_useful_time/(float)cp_useful_time;
@@ -148,6 +148,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 			*new_freq=*(c->ear_frequency);
       *ready=EAR_POLICY_READY;
 			verbose(1,"Warning CPU time process %d is greather than CP %d, I will not change the frequency %lu",my_shid,cp_shid,*new_freq);
+			verbose(1,"my_exec %llu my_mpi %llu cp_exec %llu cp_mpi %llu",masters_info.nodes_info[my_shid].mpi_info.exec_time,masters_info.nodes_info[my_shid].mpi_info.mpi_time,masters_info.nodes_info[cp_shid].mpi_info.exec_time,masters_info.nodes_info[cp_shid].mpi_info.mpi_time);
 			return EAR_SUCCESS;
 		}
 
@@ -330,6 +331,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 				ml=compute_per_node_most_loaded_process(lib_shared_region,sig_shared_region);
 				verbose(1,"Process %d selected as the most loaded",ml);
 				per_node_shsig = &sig_shared_region[ml];
+				print_sh_signature(per_node_shsig);
         ret = send_node_signatures(&masters_info,lib_shared_region,per_node_shsig,sig_shared_region,report_node_sig);
       }
     }

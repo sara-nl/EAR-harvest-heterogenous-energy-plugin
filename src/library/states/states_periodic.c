@@ -188,6 +188,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 				loop.id.size = period;
 				break;
 		case EVALUATING_LOCAL_SIGNATURE:
+			//if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_LOCAL_SIGNATURE");
 				N_iter=1;
 				
 				result = metrics_compute_signature_finish(&loop_signature.signature, N_iter, perf_accuracy_min_time, total_th);	
@@ -255,12 +256,12 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
             policy_freqf=(float)policy_freq/1000000.0;
 						#if USE_GPU_LIB
             verbose(1,
-                  "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz)\n\t              (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)--> New frequency selected %.2fGHz\n",
-                  ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, AVGFF,GPU_POWER,GPU_FREQ,GPU_UTIL, policy_freqf);
+                  "\n\nEAR+P(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz)\n\t              (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)--> New frequency selected %.2fGHz\n",
+                  ear_app_name, prev_ff, application.node_id,event, period, iterations, CPI, GBS, POWER, TIME, AVGFF,GPU_POWER,GPU_FREQ,GPU_UTIL, policy_freqf);
 						#else
             verbose(1,
-                  "\n\nEAR+P(%s) at %.2f: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz) --> New frequency selected %.2fGHz\n",
-                  ear_app_name, prev_ff, event, period, iterations, CPI, GBS, POWER, TIME, AVGFF, policy_freqf);
+                  "\n\nEAR+P(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz) --> New frequency selected %.2fGHz\n",
+                  ear_app_name, prev_ff, application.node_id,event, period, iterations, CPI, GBS, POWER, TIME, AVGFF, policy_freqf);
 						#endif
 
 					}	
@@ -276,7 +277,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 
 			break;
 		case EVALUATING_GLOBAL_SIGNATURE:
-			if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_GLOBAL_SIGNATURE");
+			//if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_GLOBAL_SIGNATURE");
       	st = policy_app_apply(&policy_freq,&ready);
       	EAR_POLICY_STATE = ready;
       	if (EAR_POLICY_STATE == EAR_POLICY_READY){

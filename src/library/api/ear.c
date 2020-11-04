@@ -34,7 +34,7 @@
 #include <common/config/config_env.h>
 #include <common/colors.h>
 #include <common/environment.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <common/types/version.h>
@@ -854,8 +854,8 @@ void ear_init()
 		}
 	}
 
-	ear_affinity_is_set=1;
-	if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
+	ear_affinity_is_set=0;
+	//if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
 	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
