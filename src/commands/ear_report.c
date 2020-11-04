@@ -869,7 +869,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
             }
 #endif
           
-            if (row[0] && all_nodes) { //when getting energy we compute the avg_power
+            if (row[0] && all_nodes && (atoll(row[2]) != atoll(row[1]))) { //when getting energy we compute the avg_power
                 printf("%15lld", (atoll(row[0]) /(atoll(row[2]) - atoll(row[1]))));
 #if USE_GPUS
                 printf("%15lld", (atoll(row[3]) /(atoll(row[2]) - atoll(row[1]))));
