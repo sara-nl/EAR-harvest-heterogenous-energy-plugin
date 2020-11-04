@@ -169,6 +169,7 @@ void print_ips(ip_table_t *ips, int num_ips, char mode)
     }
 	char temp[GENERIC_NAME];
     char final[GENERIC_NAME];
+    char step_id[12];
     for (i=0; i<num_ips; i++)
 	{
         if (ips[i].counter && ips[i].power != 0 )
@@ -176,10 +177,15 @@ void print_ips(ip_table_t *ips, int num_ips, char mode)
             if (mode != ERR_ONLY) 
             {
                 printf("%10s\t", ips[i].name);
+                if (ips[i].step_id < 0)
+                    sprintf(step_id, "%-6s", "sbatch");
+                else
+                    sprintf(step_id, "%-6d", ips[i].step_id);
+
                 if (mode == NODE_ONLY || mode == FULL_STATUS)
                 {
-                    printf("%5d\t%3dC\t%.2lf\t%6d\t%6d", ips[i].power, ips[i].temp, 
-                            (double)ips[i].current_freq/1000000.0, ips[i].job_id, ips[i].step_id);
+                    printf("%5d\t%3dC\t%.2lf\t%6d\t%6s", ips[i].power, ips[i].temp, 
+                            (double)ips[i].current_freq/1000000.0, ips[i].job_id, step_id);
                 }
 
                 if (mode == FULL_STATUS || mode == POLICY_ONLY)
@@ -243,6 +249,7 @@ void usage(char *app)
             "\n\t\t\t\t\t\t\t--status=node_name retrieves the status of that node individually."\
             "\n\t--type \t\t[status_type]\t\t->Specifies what type of status will be requested: hardware,"\
             "\n\t\t\t\t\t\t\tpolicy, full (hardware+policy), app_node, app_master or power. [default:hardware]"\
+            "\n\t--active-only \t\t\t\t->Supresses inactive nodes from the output in hardware status."\
             "\n\t--ping	\t\t\t\t->pings all nodes to check wether the nodes are up or not. Additionally,"\
             "\n\t\t\t\t\t\t\t--ping=node_name pings that node individually."\
             "\n\t--version \t\t\t\t->displays current EAR version."\
@@ -279,17 +286,22 @@ void check_app_status(app_status_t status, ip_table_t *ips, int num_ips, char is
     int gpusi;
     double GPU_power=0;
     ulong GPU_freq=0;
+    char step_id[12];
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
         {
+            if (status.step_id < 0)
+                sprintf(step_id, "%-6s", "sbatch");
+            else
+                sprintf(step_id, "%-6ld", status.step_id);
             if (is_master)
-                printf("%7lu-%-4lu %6d %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf", 
-                        status.job_id, status.step_id, status.nodes,
+                printf("%7lu-%-6s %6d %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf", 
+                        status.job_id, step_id, status.nodes,
                         status.signature.DC_power, status.signature.CPI, status.signature.GBS, 
                         status.signature.Gflops, status.signature.time, (double)status.signature.avg_f/1000000);
             else
-                printf("%15s %7lu-%-4lu %6d %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf", 
-                        ips[i].name, status.job_id, status.step_id, status.master_rank,
+                printf("%15s %7lu-%-6s %6d %10.2lf %8.2lf %8.2lf %8.2lf %8.2lf %8.2lf", 
+                        ips[i].name, status.job_id, step_id, status.master_rank,
                         status.signature.DC_power, status.signature.CPI, status.signature.GBS, 
                         status.signature.Gflops, status.signature.time, (double)status.signature.avg_f/1000000);
 #if USE_GPU_LIB
@@ -338,10 +350,10 @@ void process_app_status(int num_status, app_status_t *status, char is_master)
         int i, num_ips;
 
         if (is_master)
-            printf("%7s-%-4s %6s %10s %8s %8s %8s %8s %8s", 
+            printf("%7s-%-6s %6s %10s %8s %8s %8s %8s %8s", 
                     "Job", "Step", "Nodes", "DC power", "CPI", "GBS", "Gflops", "Time", "Avg Freq");
         else
-            printf("%15s %7s-%-4s %6s %10s %8s %8s %8s %8s %8s", 
+            printf("%15s %7s-%-6s %6s %10s %8s %8s %8s %8s %8s", 
                     "Node id", "Job", "Step", "M-Rank", "DC power", "CPI", "GBS", "Gflops", "Time", "Avg Freq");
 #if USE_GPU_LIB
         printf(" %9s %9s", "GPU power", "GPU freq");
