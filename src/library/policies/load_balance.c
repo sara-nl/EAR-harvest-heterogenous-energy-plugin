@@ -48,10 +48,11 @@ static volatile uint global_sig_ready=0;
 static signature_t gsig;
 extern signature_t policy_last_global_signature;
 static int LB_node_cp,LB_rank_cp;
+static int num_proj_found=0;
 
 state_t policy_init(polctx_t *c)
 {
-	debug("LOAD BALANCE");
+	//debug("LOAD BALANCE");
 	if (c!=NULL){ 
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
     sig_shared_region[my_node_id].mpi_info.total_mpi_calls=0;
@@ -98,6 +99,8 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 	double power_proj,time_proj,energy_proj,best_solution,energy_ref;
 	double power_ref,time_ref,max_penalty,time_max;
 	char buff[512];
+	double my_cpi, cp_cpi;
+	//debug("APP_POLICY");
 
   ulong best_freq,best_pstate,freq_ref,eff_f;
 	ulong curr_freq,nominal;
@@ -138,11 +141,17 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 		// Default values
 		my_shid = my_shsig_id();
 		cp_shid = shsig_id(LB_node_cp,LB_rank_cp);
-		verbose(1,"Node_CP=%d , Rank_CP=%d. My shid is %d CP_shid is %d",LB_node_cp,LB_rank_cp,my_shid,cp_shid);
+		debug("MR[%d] Node_CP=%d , Rank_CP=%d. My shid is %d CP_shid is %d",masters_info.my_master_rank,LB_node_cp,LB_rank_cp,my_shid,cp_shid);
+		my_cpi = masters_info.nodes_info[my_shid].sig.CPI;
+		cp_cpi = masters_info.nodes_info[cp_shid].sig.CPI;
+		max_penalty = 1 - my_cpi / cp_cpi;
+		debug("MR[%d] my CPI %.3lf CP_CPU %.3lf penalty %.3lf",masters_info.my_master_rank,my_cpi,cp_cpi,max_penalty);
+		#if 0
 		my_useful_time = masters_info.nodes_info[my_shid].mpi_info.exec_time-masters_info.nodes_info[my_shid].mpi_info.mpi_time;
 		cp_useful_time = masters_info.nodes_info[cp_shid].mpi_info.exec_time-masters_info.nodes_info[cp_shid].mpi_info.mpi_time;
 		max_penalty=1.0-(float)my_useful_time/(float)cp_useful_time;
 		verbose(1,"Process[%d] useful time is %llu, and Process_CP[%d] useful time is %llu max_penalty %.3f",my_shid,my_useful_time,cp_shid,cp_useful_time,max_penalty);
+		#endif
 
 		if (max_penalty < 0){
 			*new_freq=*(c->ear_frequency);
@@ -219,16 +228,18 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * max_penalty);
 
-   debug("Max_freq set to %lu min_pstate = %d nominal %lu curr_frequency %lu curr_pstate %lu time_max: %.2lf",c->app->max_freq,min_pstate,nominal,curr_freq,curr_pstate,time_max);
+   debug("MR[%d] Max_freq set to %lu min_pstate = %d nominal %lu curr_frequency %lu curr_pstate %lu time_max: %.2lf",masters_info.my_master_rank,c->app->max_freq,min_pstate,nominal,curr_freq,curr_pstate,time_max);
 
-	debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
+	debug("MR[%d] Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",masters_info.my_master_rank,my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
 
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	// Calcular el min_pstate que este dentro del limite
 	for (i = min_pstate; i < c->num_pstates;i++)
 	{
+		//debug("MR[%d] Checking pstate %d",masters_info.my_master_rank,i);
 		if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 		{
+				num_proj_found++;
 				st=project_power(my_app,curr_pstate,i,&power_proj);
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
@@ -242,12 +253,16 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 					best_pstate=i;
 			}
 		}
+		*ready=EAR_POLICY_READY;
 	}
 	/* Corregir frecuencia por powercap y activar greedy si es necesario */
 	}else{ 
 		*ready=EAR_POLICY_CONTINUE;
 		return EAR_ERROR;
 	}
+
+	debug("MR[%d] selected frequency %lu",masters_info.my_master_rank,best_freq);
+	if (num_proj_found == 0) debug("MR[%d] WARNING  NO PROJECTIONS FOUND",masters_info.my_master_rank);
 
 	*new_freq=best_freq;
 	sig_shared_region[my_node_id].new_freq=best_freq;

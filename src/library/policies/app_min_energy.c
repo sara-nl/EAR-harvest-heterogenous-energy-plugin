@@ -102,7 +102,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 	ulong curr_pstate,def_pstate,def_freq;
 	state_t st;
 	uint power_status;
-
+	debug("APP_MIN_ENERGY");
 	if ((c!=NULL) && (c->app!=NULL)){
 
 

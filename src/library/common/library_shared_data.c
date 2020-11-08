@@ -329,7 +329,7 @@ int compute_per_node_most_loaded_process(lib_shared_data_t *data,shsignature_t *
 	double mostloadp;
 	mostloadp = sig[0].mpi_info.perc_mpi;
 	for (i=1;i<data->num_processes;i++){
-		if (sig[i].mpi_info.perc_mpi > mostloadp){
+		if (sig[i].mpi_info.perc_mpi < mostloadp){
 			mostloadp = sig[i].mpi_info.perc_mpi;
 			mostload = i;
 		}
