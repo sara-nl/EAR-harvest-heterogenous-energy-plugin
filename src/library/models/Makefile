@@ -15,7 +15,7 @@ all: $(modl_OBJS) $(modl_BINS)
 	$(CC) $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS) -c $<
 
 %.so: %.o
-	$(CC) -shared -o $@ $^ 
+	$(CC) $(CC_FLAGS) -shared -o $@ $^ 
 
 ######## OPTIONS 
 

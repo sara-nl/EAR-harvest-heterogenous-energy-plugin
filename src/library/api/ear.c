@@ -127,6 +127,7 @@ char pc_app_info_path[GENERIC_NAME];
 #endif
 
 void *earl_periodic_actions(void *no_arg);
+static int end_periodic_th=0;
 //
 static void print_local_data()
 {
@@ -972,7 +973,7 @@ void ear_finalize()
 	// Writing application data
 	if (!my_id) 
 	{
-		debug("Reporting application data");
+		verbose(0,"Reporting application data");
 		eards_write_app_signature(&application);
 		append_application_text_file(app_summary_path, &application, 1);
 		report_mpi_application_data(&application);
@@ -1007,7 +1008,7 @@ void ear_finalize()
 
 	// C'est fini
 	if (!my_id){ 
-		debug("Disconnecting");
+		verbose(0,"Disconnecting");
 		eards_disconnect();
 	}
 }
@@ -1370,7 +1371,8 @@ void *earl_periodic_actions(void *no_arg)
 			sleep(lib_period);
       ear_iterations++;
       states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
-		}while(1);
+		}while(end_periodic_th == 0);
+		return NULL;
 }
 
 
@@ -1378,12 +1380,14 @@ void *earl_periodic_actions(void *no_arg)
 #if !MPI 
 void ear_constructor()
 {
-	debug("Calling ear_init in ear_constructor %d",getpid());
+	verbose(0,"Calling ear_init in ear_constructor %d",getpid());
 	ear_init();
 }
 void ear_destructor()
 {
-	debug("Calling ear_finalize in ear_destructor %d",getpid());
+	verbose(0,"Calling ear_finalize in ear_destructor %d",getpid());
+	end_periodic_th = 1;
+	pthread_join(earl_periodic_th,NULL);
 	ear_finalize();
 }
 #else
