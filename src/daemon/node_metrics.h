@@ -39,7 +39,8 @@ typedef struct node_metrics{
 	freq_imc_t freq_imc;
 	ulong avg_cpu_freq;
 	ulong avg_imc_freq;
-	ullong *temp;
+	llong avg_temp;
+	llong *temp;
 } nm_data_t;
 
 int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq);

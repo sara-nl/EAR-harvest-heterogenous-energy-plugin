@@ -29,7 +29,7 @@ postgres_test: postgres_test.c $(oths_DEPS)
 	$(CC) $(CFLAGS) -o postgres_test $(DB_LDFLAGS) $^ $(LDFLAGS)
 
 temperature_check: temperature_check.c $(SRCDIR)/metrics/libmetrics.a $(oths_DEPS) 
-	$(CC) $(CFLAGS) -o temperature_check $^ $(LDFLAGS)
+	$(CC) $(CFLAGS) -o temperature_check $^ $(LDFLAGS) -lpthread
 
 propagation_test: propagation_test.c $(oths_DEPS)
 	$(CC) $(CFLAGS) -o propagation_test $^ $(LDFLAGS)

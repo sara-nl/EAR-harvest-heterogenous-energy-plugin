@@ -3,9 +3,12 @@ LDFLAGS = -lm
 
 ######## INSTALLATION
 
-plug_BINS = erun 
+erun_BINS = erun 
+erun_PATH = $(DESTDIR)/bin
+erun_PERM = 0775
+
 ifdef SLURM_BASE
-plug_BINS += earplug.so
+plug_BINS = earplug.so
 endif
 plug_PATH = $(DESTDIR)/lib
 plug_PERM = 0775
@@ -43,7 +46,7 @@ plug_HDRS = \
 
 ######## RULES
 
-all: $(plug_BINS)
+all: $(erun_BINS) $(plug_BINS)
 
 earplug.so: $(plug_SRCS) $(plug_HDRS)
 	$(CC) $(CC_FLAGS) $(CFLAGS) -shared -o $@ $(plug_SRCS) $(plug_OBJS) $(LDFLAGS)
@@ -53,11 +56,11 @@ erun: $(erun_SRCS) $(plug_SRCS) $(plug_HDRS)
 
 ######## OPTIONS
 
-install: plug.ginstall;
+install: erun.ginstall plug.ginstall;
 
 %.install: ;
 
-clean: plug.gclean rclean;
+clean: erun.gclean plug.gclean rclean;
 
 ######## DEPENDENCIES
 

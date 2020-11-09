@@ -81,15 +81,16 @@ __m512i zmmx29; // Shifts
 static int dynais_alloc(ushort **c, size_t o)
 {
 	ushort *p;
+	size_t t;
 	int i;
 
-	o = sizeof(short) * (_window + o) * _levels;
+	t = sizeof(short) * (_window + o) * _levels;
 
-	if (posix_memalign((void *) &p, sizeof(__m512i), sizeof(short) * (_window + o) * _levels) != 0) {
+	if (posix_memalign((void *) &p, sizeof(__m512i), t) != 0) {
 		return -1;
 	}
 
-	memset((void *) p, 0, sizeof(short) * (_window + o) * _levels);
+	memset((void *) p, 0, t);
 
 	for (i = 0; i < _levels; ++i) {
 		c[i] = &p[i * (_window + o)];
@@ -107,6 +108,10 @@ int dynais_init(ushort window, ushort levels)
 
 	_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
 	_levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
+
+	if (levels == 0) {
+		levels = 1;
+	}
 
 	if (dynais_alloc(circ_samps, 00) != 0) return -1;
 	if (dynais_alloc(circ_sizes, 00) != 0) return -1;

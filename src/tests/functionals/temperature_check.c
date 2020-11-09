@@ -17,31 +17,33 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <common/config.h>
-#include <common/states.h>
-#include <metrics/common/omsr.h>
+#include <unistd.h>
+#include <common/hardware/topology.h>
 #include <metrics/temperature/temperature.h>
-#include <common/types/configuration/cluster_conf.h>
 
 int main(int argc,char *argv[])
 {
+	llong values[32];
+	topology_t topo;
+	state_t s;
+	ctx_t c;
+	int i;
 
-    int fd_map[MAX_PACKAGES];
-    unsigned long long values[NUM_SOCKETS];
-    int i;
+	state_assert(s, topology_init(&topo),);
 
-    init_temp_msr(fd_map);
+    state_assert(s, temp_load(&topo),);
+    
+    state_assert(s, temp_init(&c),);
 
     while (1)
     {
-        read_temp_limit_msr(fd_map, values);
-        for (i = 0; i < NUM_SOCKETS; i++)
-        {
-            printf("socket %d\t limit_reached: %llu\n", i, values[i]);
-        }
+		for (i = 0; i < topo.cpu_count; ++i) {
+			state_assert(s, temp_read(&c, values, NULL),);
+            printf("socket %d, temp: %llu\n", i, values[i]);
+		}
+		printf("--\n");
         sleep(3);
     }
-
 
 	return 0;
 }
