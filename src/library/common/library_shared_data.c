@@ -264,6 +264,11 @@ void print_local_mpi_info(mpi_information_t *info)
 	fprintf(stderr,"total_mpi_calls %u exec_time %llu mpi_time %llu rank %d perc_mpi %.3lf \n",info->total_mpi_calls,info->exec_time,info->mpi_time,info->rank,info->perc_mpi);
 }
 
+void mpi_info_to_str(mpi_information_t *info,char *msg,size_t max)
+{
+	snprintf(msg,max,"RANK[%d] total_mpi_calls %u exec_time %llu mpi_time %llu perc_mpi %.3lf ",info->rank,info->total_mpi_calls,info->exec_time,info->mpi_time,info->perc_mpi*100.0);
+}
+
 void print_sh_signature(shsignature_t *sig)
 {
 	 	float t;

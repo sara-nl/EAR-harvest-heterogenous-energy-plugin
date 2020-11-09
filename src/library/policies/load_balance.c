@@ -50,6 +50,11 @@ extern signature_t policy_last_global_signature;
 static int LB_node_cp,LB_rank_cp;
 static int num_proj_found=0;
 
+/* Global statistics */
+static timestamp app_init;
+static mpi_information_t mpi_stats;
+
+
 state_t policy_init(polctx_t *c)
 {
 	//debug("LOAD BALANCE");
@@ -59,9 +64,38 @@ state_t policy_init(polctx_t *c)
     sig_shared_region[my_node_id].mpi_info.exec_time=0;
     sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
 
+    /* Gobal mpi statistics */
+    mpi_stats.mpi_time = 0;
+    mpi_stats.total_mpi_calls = 0;
+    mpi_stats.exec_time = 0;
+    mpi_stats.perc_mpi = 0;
+    mpi_stats.rank = sig_shared_region[my_node_id].mpi_info.rank;
+    timestamp_getfast(&app_init);
+
+
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
+
+state_t policy_end(polctx_t *c)
+{
+  timestamp end;
+  ullong elap;
+  char buff[256];
+  char *stats=getenv(EAR_STATS);
+  /* Global statistics */
+  timestamp_getfast(&end);
+  elap=timestamp_diff(&end,&app_init,TIME_USECS);
+  mpi_stats.exec_time = elap;
+  mpi_stats.perc_mpi = (float) mpi_stats.mpi_time/(float)mpi_stats.exec_time;
+  if (stats != NULL){
+    mpi_info_to_str(&mpi_stats,buff,sizeof(buff));
+    verbose(0,buff);
+  }
+  return EAR_SUCCESS;
+}
+
+
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *l)
 {
@@ -144,7 +178,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 		debug("MR[%d] Node_CP=%d , Rank_CP=%d. My shid is %d CP_shid is %d",masters_info.my_master_rank,LB_node_cp,LB_rank_cp,my_shid,cp_shid);
 		my_cpi = masters_info.nodes_info[my_shid].sig.CPI;
 		cp_cpi = masters_info.nodes_info[cp_shid].sig.CPI;
-		max_penalty = 1 - my_cpi / cp_cpi;
+		max_penalty = (1 - my_cpi / cp_cpi)+ c->app->settings[0];
 		debug("MR[%d] my CPI %.3lf CP_CPU %.3lf penalty %.3lf",masters_info.my_master_rank,my_cpi,cp_cpi,max_penalty);
 		#if 0
 		my_useful_time = masters_info.nodes_info[my_shid].mpi_info.exec_time-masters_info.nodes_info[my_shid].mpi_info.mpi_time;
@@ -318,6 +352,11 @@ state_t policy_mpi_end(polctx_t *c)
   elap=timestamp_diff(&end,&pol_time_init,TIME_USECS);
   sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
   sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
+
+  /* Global statistics */
+  mpi_stats.mpi_time+=elap;
+  mpi_stats.total_mpi_calls++;
+
   return EAR_SUCCESS;
 }
 state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
