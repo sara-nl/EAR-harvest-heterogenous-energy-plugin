@@ -66,7 +66,7 @@ endif
 all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
-	$(LIBCC) $(LIBCC_FLAGS) -o $*.$(ext) $^ $(LDFLAGS)
+	$(LIBCC)  $(LIBCC_FLAGS) -o $*.$(ext) $^ $(LDFLAGS)
 
 ######## OPTIONS
 

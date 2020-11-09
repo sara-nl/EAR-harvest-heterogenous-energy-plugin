@@ -243,12 +243,13 @@ static void policy_cpu_freq_selection(signature_t *my_sig,ulong *freq_set)
       debug("Adapting frequency because pc: selected %lu new %lu",*freq_set,f);
       *freq_set=f;
   }else{
-      debug("PC mode %u (should be PC_POWER)",pc_app_info_data->mode);
+      //debug("PC mode %u (should be PC_POWER)",pc_app_info_data->mode);
       pcapp_info_set_req_f(pc_app_info_data,*freq_set);
   }
 #endif
   if (*freq_set != *(c->ear_frequency))
   {
+		verbose(1,"MR[%d] Setting frequency to %lu",masters_info.my_master_rank,*freq_set);
       if(ear_affinity_is_set == 0){
         debug("Setting frequency to %lu",*freq_set);
         *(c->ear_frequency) =  eards_change_freq(*freq_set);

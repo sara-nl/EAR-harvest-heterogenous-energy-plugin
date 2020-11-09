@@ -3,7 +3,7 @@ LDFLAGS = -lm
 
 ######## INSTALLATION
 
-erun_BINS = erun 
+erun_BINS = erun
 erun_PATH = $(DESTDIR)/bin
 erun_PERM = 0775
 

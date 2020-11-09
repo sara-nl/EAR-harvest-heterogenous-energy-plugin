@@ -142,6 +142,7 @@ int dynais_init(ushort window, ushort levels)
 
 void dynais_dispose()
 {
+	return;
 	free((void *) circ_samps[0]);
 	free((void *) circ_zeros[0]);
 	free((void *) circ_sizes[0]);

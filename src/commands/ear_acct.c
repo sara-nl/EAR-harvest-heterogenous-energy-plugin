@@ -860,6 +860,10 @@ void print_loops(loop_t *loops, int num_loops)
 #if USE_GPUS
         printf(gpu_line, gpup,gpupu,(double)gpuf/1000000.0,gpuu);
         gpuused = 0;
+				gpupu = 0;
+				gpuf = 0;
+				gpuu = 0;
+				gpup = 0;
 #endif
         printf("\n");
     }

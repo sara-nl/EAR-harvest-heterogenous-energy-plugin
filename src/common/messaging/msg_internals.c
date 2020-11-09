@@ -696,12 +696,14 @@ int eards_remote_connect(char *nodename,uint port)
 int eards_remote_disconnect()
 {
 	eards_remote_connected=0;
+    debug("normal disconnect, closing fd %d\n", eards_sfd);
 	close(eards_sfd);
 	return EAR_SUCCESS;
 }
 
 int eards_remote_disconnect_fd(int sfd)
 {
+    debug("targeted disconnect, closing fd %d\n", sfd);
     close(sfd);
     return EAR_SUCCESS;
 }
@@ -746,6 +748,7 @@ request_header_t correct_data_prop(int target_idx, int total_ips, int *ips, requ
         }
         else
         {
+            debug("correct_data_prop:connected with node: %s", next_ip);
             send_command(command);
             head = receive_data(rc, (void **)&temp_data);
             if (head.size < 1)
@@ -1144,8 +1147,8 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
             
             rc=eards_remote_connect(next_ip, my_cluster_conf->eard.port);
             if (rc<0){
-                debug("data_all_nodes: Error connecting with node %s, trying to correct it", next_ip);
-                debug("data_all_nodes: (node %s was %d in the current list of ips", next_ip, j);
+//               debug("data_all_nodes: Error connecting with node %s, trying to correct it", next_ip);
+//               debug("data_all_nodes: (node %s was %d in the current list of ips", next_ip, j);
                 head = correct_data_prop(j, ip_counts[i], ips[i], command, my_cluster_conf->eard.port, (void **)&temp_data);
 
                 if (head.size > 0 && head.type != EAR_ERROR)
@@ -1157,22 +1160,25 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
                 }
             }
             else{
-                debug("Node %s with distance %d contacted!", next_ip, command->node_dist);
+                debug("Node %s with distance %d contacted (fd %d)!", next_ip, command->node_dist, rc);
                 sfds[offset] = rc;
                 send_command(command);
             }
         }
     }
 
+    debug("Finished sending to eards, now reading data\n\n");
+
     // reset offset to iterate through all the fds again
     offset = 0;
     for (i = 0; i < total_ranges; i++)
     {
-        for (j = 0; i < ip_counts[i] && j < NUM_PROPS; j++, offset++)
+        for (j = 0; j < ip_counts[i] && j < NUM_PROPS; j++, offset++)
         {
             if (sfds[offset] == 0) continue; // if the connection had failed we should have already corrected that in the previous loop 
 
             head = receive_data(sfds[offset], (void **)&temp_data);
+            debug("received data from fd %d contacted with type %d and size %d", sfds[offset], head.type, head.size);
             if (head.size < 1) 
             {
                 if (head.type == EAR_TYPE_APP_STATUS)
@@ -1198,6 +1204,7 @@ request_header_t data_all_nodes(request_t *command, cluster_conf_t *my_cluster_c
             
         }
     }
+    debug("exiting data_all_nodes with %d num_sfds and %d offset\n", num_sfds, offset);
     head.size = final_size;
     head.type = default_type;
     *data = all_data;

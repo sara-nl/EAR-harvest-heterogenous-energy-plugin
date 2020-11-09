@@ -23,7 +23,7 @@ all: $(load_BINS)
 	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
 
 libearld.so: $(load_OBJS) $(load_DEPS)
-	$(CC) -shared -o $@ $^ $(LDFLAGS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 ######## OPTIONS 
 

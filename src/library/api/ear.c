@@ -127,6 +127,7 @@ char pc_app_info_path[GENERIC_NAME];
 #endif
 
 void *earl_periodic_actions(void *no_arg);
+static int end_periodic_th=0;
 //
 static void print_local_data()
 {
@@ -854,8 +855,8 @@ void ear_init()
 		}
 	}
 
-	ear_affinity_is_set=1;
-	if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
+	ear_affinity_is_set=0;
+	//if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
 	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
@@ -864,7 +865,7 @@ void ear_init()
 	init_power_policy(system_conf,resched_conf);
 	debug("init_power_models");
 	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
-	if (masters_info.my_master_rank>=0) verbose(1,"Policies and models initialized");	
+	if (masters_info.my_master_rank>=0) verbose(2,"Policies and models initialized");	
 
 	if (ext_def_freq==0){
 		EAR_default_frequency=system_conf->def_freq;
@@ -972,7 +973,7 @@ void ear_finalize()
 	// Writing application data
 	if (!my_id) 
 	{
-		debug("Reporting application data");
+		verbose(0,"Reporting application data");
 		eards_write_app_signature(&application);
 		append_application_text_file(app_summary_path, &application, 1);
 		report_mpi_application_data(&application);
@@ -1007,7 +1008,7 @@ void ear_finalize()
 
 	// C'est fini
 	if (!my_id){ 
-		debug("Disconnecting");
+		verbose(0,"Disconnecting");
 		eards_disconnect();
 	}
 }
@@ -1370,7 +1371,8 @@ void *earl_periodic_actions(void *no_arg)
 			sleep(lib_period);
       ear_iterations++;
       states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
-		}while(1);
+		}while(end_periodic_th == 0);
+		return NULL;
 }
 
 
@@ -1378,12 +1380,14 @@ void *earl_periodic_actions(void *no_arg)
 #if !MPI 
 void ear_constructor()
 {
-	debug("Calling ear_init in ear_constructor %d",getpid());
+	verbose(0,"Calling ear_init in ear_constructor %d",getpid());
 	ear_init();
 }
 void ear_destructor()
 {
-	debug("Calling ear_finalize in ear_destructor %d",getpid());
+	verbose(0,"Calling ear_finalize in ear_destructor %d",getpid());
+	end_periodic_th = 1;
+	pthread_join(earl_periodic_th,NULL);
 	ear_finalize();
 }
 #else

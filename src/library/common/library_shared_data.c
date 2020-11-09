@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/common/externs.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -264,6 +264,11 @@ void print_local_mpi_info(mpi_information_t *info)
 	fprintf(stderr,"total_mpi_calls %u exec_time %llu mpi_time %llu rank %d perc_mpi %.3lf \n",info->total_mpi_calls,info->exec_time,info->mpi_time,info->rank,info->perc_mpi);
 }
 
+void mpi_info_to_str(mpi_information_t *info,char *msg,size_t max)
+{
+	snprintf(msg,max,"RANK[%d] total_mpi_calls %u exec_time %llu mpi_time %llu perc_mpi %.3lf ",info->rank,info->total_mpi_calls,info->exec_time,info->mpi_time,info->perc_mpi*100.0);
+}
+
 void print_sh_signature(shsignature_t *sig)
 {
 	 	float t;
@@ -329,7 +334,7 @@ int compute_per_node_most_loaded_process(lib_shared_data_t *data,shsignature_t *
 	double mostloadp;
 	mostloadp = sig[0].mpi_info.perc_mpi;
 	for (i=1;i<data->num_processes;i++){
-		if (sig[i].mpi_info.perc_mpi > mostloadp){
+		if (sig[i].mpi_info.perc_mpi < mostloadp){
 			mostloadp = sig[i].mpi_info.perc_mpi;
 			mostload = i;
 		}
@@ -372,7 +377,7 @@ void load_app_mgr_env()
 	if (creport_node_sig != NULL) report_node_sig = atoi(creport_node_sig);	
 	if (creport_all_sig != NULL) report_all_sig = atoi(creport_all_sig);
 
-	//debug("Show_signatures %u share_sig_per_process %u share_sig_per_node %u report_node_sig %u report_all_sig %u",
-	//show_signatures,sh_sig_per_proces,sh_sig_per_node,report_node_sig,report_all_sig);
+	verbose(1,"Show_signatures %u share_sig_per_process %u share_sig_per_node %u report_node_sig %u report_all_sig %u",
+	show_signatures,sh_sig_per_proces,sh_sig_per_node,report_node_sig,report_all_sig);
 }
 
