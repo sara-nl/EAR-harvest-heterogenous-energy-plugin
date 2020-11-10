@@ -114,6 +114,7 @@ state_t gpu_mgr_set_freq(uint num_dev_req,ulong *freqs)
 	}
 	for (i=0;i<num_dev_req;i++){
 		freqs[i]=freqs[i];
+    verbose(0,"GPU_LIB_FREQ[%d]=%lu",i,freqs[i]);
 		/* debug("gpu_mgr_set_freq gpu[%d]=%lu",i,freqs[i]);*/
 	}
 	return mgt_gpu_freq_limit_set(&gpu_node_mgr,freqs);
