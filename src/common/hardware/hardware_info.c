@@ -32,6 +32,7 @@ void print_affinity_mask(topology_t *topo)
 {
     cpu_set_t mask;
 		int i;
+		CPU_ZERO(&mask);
     if (sched_getaffinity(0, sizeof(cpu_set_t), &mask) == -1) return;
     fprintf(stderr,"sched_getaffinity = ");
     for (i = 0; i < topo->cpu_count; i++) {
@@ -44,11 +45,13 @@ state_t is_affinity_set(topology_t *topo,int pid,int *is_set,cpu_set_t *my_mask)
 {
 	cpu_set_t mask;
 	*is_set=0;
+	CPU_ZERO(&mask);
+	CPU_ZERO(my_mask);
 	if (sched_getaffinity(pid,sizeof(cpu_set_t), &mask) == -1) return EAR_ERROR;
 	memcpy(my_mask,&mask,sizeof(cpu_set_t));
 	int i;
 	for (i = 0; i < topo->cpu_count; i++) {
-		if (!CPU_ISSET(i, &mask)) {
+		if (CPU_ISSET(i, &mask)) {
 			*is_set=1;
 			return EAR_SUCCESS;	
 		}

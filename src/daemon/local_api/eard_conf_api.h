@@ -72,6 +72,7 @@ struct daemon_req {
 #define START_APP_COMP_FREQ 	6
 #define END_APP_COMP_FREQ 		7
 #define SET_FREQ_WITH_MASK 8
+#define SET_NODE_FREQ_WITH MASK 9
 
 #define END_COMM 				1000
 

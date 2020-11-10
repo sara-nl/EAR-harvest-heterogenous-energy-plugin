@@ -849,14 +849,14 @@ void ear_init()
 		}else{
 			if (ear_affinity_is_set){	
 				verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
+				//ear_affinity_is_set=1;
+				if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
 			}else{ 
 				verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);
 			}
 		}
 	}
 
-	ear_affinity_is_set=0;
-	//if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
 	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif

@@ -43,7 +43,7 @@
  * be necessary if you want to test big single level
  * windows.
  */
-
+#include <common/output/verbose.h>
 #include <library/dynais/dynais.h>
 #include <library/dynais/avx512/dynais_core.h>
 
@@ -104,6 +104,8 @@ int dynais_init(ushort window, ushort levels)
 
 	unsigned int multiple = window / 32;
 	window = 32 * (multiple + 1);
+
+	verbose(0,"%u window size levels %u",window,levels);
 
 	_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
 	_levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
