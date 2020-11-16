@@ -1384,9 +1384,9 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
         for (i = 0; i < num_sigs; i++)
         {
             if (cont.type == EAR_TYPE_APPLICATION)
-                gpu_sig = &cont.app->signature.gpu_sig;
+                gpu_sig = &cont.app[i].signature.gpu_sig;
             else if (cont.type == EAR_TYPE_LOOP)
-                gpu_sig = &cont.loop->signature.gpu_sig;
+                gpu_sig = &cont.loop[i].signature.gpu_sig;
     
             current_gpu_sig_id += gpu_sig->num_gpus;
         }
@@ -1825,9 +1825,9 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     for (i = 0; i < num_sigs; i++)
     {
         if (cont.type == EAR_TYPE_APPLICATION)
-            gpu_sig = &cont.app->signature.gpu_sig;
+            gpu_sig = &cont.app[i].signature.gpu_sig;
         else if (cont.type == EAR_TYPE_LOOP)
-            gpu_sig = &cont.loop->signature.gpu_sig;
+            gpu_sig = &cont.loop[i].signature.gpu_sig;
 
         num_gpu_sigs += gpu_sig->num_gpus;
     }
@@ -1854,9 +1854,9 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     for (i = 0; i < num_sigs;  i++)
     {
         if (cont.type == EAR_TYPE_APPLICATION)
-            gpu_sig = &cont.app->signature.gpu_sig;
+            gpu_sig = &cont.app[i].signature.gpu_sig;
         else if (cont.type == EAR_TYPE_LOOP)
-            gpu_sig = &cont.loop->signature.gpu_sig;
+            gpu_sig = &cont.loop[i].signature.gpu_sig;
 
         for (j = 0; j < gpu_sig->num_gpus; j++)
         {

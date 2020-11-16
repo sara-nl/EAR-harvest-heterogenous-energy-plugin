@@ -215,13 +215,13 @@ ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq)
 {
   int result, i = 0;
   
-  debug("setting all cpus to %lu KHz", freq);
   if (is_valid_frequency(freq))
   { 
     
     for (i = 0; i < num_cpus; i++)
     { 
 			if (CPU_ISSET(i,mask)){
+				verbose(0,"setting cpu %d to freq %lu",i,freq);
       	freq_list_cpu[i] = freq;
       	// This is a privileged function
       	result=CPUfreq_set_frequency(i,freq);

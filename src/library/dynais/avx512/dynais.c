@@ -43,7 +43,7 @@
  * be necessary if you want to test big single level
  * windows.
  */
-
+#include <common/output/verbose.h>
 #include <library/dynais/dynais.h>
 #include <library/dynais/avx512/dynais_core.h>
 
@@ -84,12 +84,15 @@ static int dynais_alloc(ushort **c, size_t o)
 	size_t t;
 	int i;
 
+	//o = sizeof(short) * (_window + o) * _levels;
 	t = sizeof(short) * (_window + o) * _levels;
 
+	// if (posix_memalign((void *) &p, sizeof(__m512i), sizeof(short) * (_window + o) * _levels) != 0) {
 	if (posix_memalign((void *) &p, sizeof(__m512i), t) != 0) {
 		return -1;
 	}
 
+	//memset((void *) p, 0, sizeof(short) * (_window + o) * _levels);
 	memset((void *) p, 0, t);
 
 	for (i = 0; i < _levels; ++i) {
@@ -105,6 +108,8 @@ int dynais_init(ushort window, ushort levels)
 
 	unsigned int multiple = window / 32;
 	window = 32 * (multiple + 1);
+
+	verbose(0,"%u window size levels %u",window,levels);
 
 	_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
 	_levels = (levels < MAX_LEVELS) ? levels : MAX_LEVELS;
