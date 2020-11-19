@@ -215,7 +215,7 @@ void read_from_files2(int job_id, int step_id, char verbose, char *file_path)
 
 void print_full_apps(application_t *apps, int num_apps)
 {
-    int i, j;
+    int i;
     double avg_f, vpi;
 
     printf("%-6s-%-7s\t %-10s %-15s %-20s %-10s %-10s %-10s %-10s %-10s %-10s %-20s %-7s %-10s",
@@ -223,6 +223,7 @@ void print_full_apps(application_t *apps, int num_apps)
             "POWER", "GBS", "CPI", "ENERGY", "START TIME", "VPI(%)", "MAX POWER");
 
 #if USE_GPUS
+    int j;
     double gpu_power;
     unsigned long gpu_freq, gpu_util;
     char tmp[64];
@@ -936,7 +937,7 @@ void read_events(char *user, int job_id, int limit, int step_id, char *job_ids)
 void print_loops(loop_t *loops, int num_loops)
 {
     int i;
-    char line[256], gpu_line[256];
+    char line[256];
     signature_t sig;
 
 
@@ -945,6 +946,7 @@ void print_loops(loop_t *loops, int num_loops)
 #if USE_GPUS
     //GPU variable declaration
     int s;
+    char gpu_line[256];
     double gpup = 0, gpupu = 0;
     ulong  gpuf = 0, gpuu = 0, gpuused = 0;
     strcpy(line, "%-12s %-8s %-8s");

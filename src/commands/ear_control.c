@@ -283,9 +283,11 @@ void check_ip(status_t status, ip_table_t *ips, int num_ips)
 void check_app_status(app_status_t status, ip_table_t *ips, int num_ips, char is_master)
 {
     int i;
+#if USE_GPUS
     int gpusi;
     double GPU_power=0;
     ulong GPU_freq=0;
+#endif
     char step_id[12];
     for (i = 0; i < num_ips; i++)
         if (htonl(status.ip) == htonl(ips[i].ip_int))
