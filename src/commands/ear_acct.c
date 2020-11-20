@@ -444,7 +444,6 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                             num_gpus++;
                         }
                     }
-                    gpu_power /= num_gpus;
                     gpu_freq  /= num_gpus;
                     gpu_util  /= num_gpus;
                 }
@@ -597,6 +596,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 gpu_freq = 0;
                 gpu_util = 0;
                 gpu_power = 0;
+								gpu_total_power = 0;
 #endif
                 i--; //go back to current app
                 is_sbatch = (current_step_id == 4294967294) ? 1 : 0;
@@ -619,6 +619,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             avg_CPI /= current_apps;
             avg_VPI /= current_apps;
 #if USE_GPUS
+						gpu_total_power /= current_apps;
             gpu_power /= current_apps;
             gpu_freq  /= current_apps;
             gpu_util  /= current_apps;

@@ -56,7 +56,7 @@ static int last_node_cp;
 static timestamp app_init;
 static mpi_information_t mpi_stats;
 static int force_granularity=0;
-static int policy_granularity;
+static int my_policy_granularity;
 
 
 state_t policy_init(polctx_t *c)
@@ -82,9 +82,9 @@ state_t policy_init(polctx_t *c)
 		if (polg != NULL){
 			force_granularity = 1;
 			if (!strcmp(polg,"CORE")){
-				policy_granularity = POL_GRAIN_CORE;
+				my_policy_granularity = POL_GRAIN_CORE;
 			}else{
-				policy_granularity = POL_GRAIN_NODE;
+				my_policy_granularity = POL_GRAIN_NODE;
 			}
 		}
 
@@ -351,7 +351,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 			debug("my_exec %llu my_mpi %llu cp_exec %llu cp_mpi %llu",masters_info.nodes_info[my_shid].mpi_info.exec_time,masters_info.nodes_info[my_shid].mpi_info.mpi_time,masters_info.nodes_info[cp_shid].mpi_info.exec_time,masters_info.nodes_info[cp_shid].mpi_info.mpi_time);
 			return EAR_SUCCESS;
 		}
-		if ((c->affinity == 0) || (force_granularity && (policy_granularity == POL_GRAIN_NODE))){
+		if ((c->affinity == 0) || (force_granularity && (my_policy_granularity == POL_GRAIN_NODE))){
 		debug("MR[%d] affinity is not set, selecting a single frequency",masters_info.my_master_rank);
 		best_freq = load_balance_for_process(c,max_penalty,last_node_cp);
 		*new_freq=best_freq;
