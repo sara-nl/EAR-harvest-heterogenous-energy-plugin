@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -55,10 +55,13 @@ static int last_node_cp;
 /* Global statistics */
 static timestamp app_init;
 static mpi_information_t mpi_stats;
+static int force_granularity=0;
+static int policy_granularity;
 
 
 state_t policy_init(polctx_t *c)
 {
+	char *polg;
 	//debug("LOAD BALANCE");
 	if (c!=NULL){ 
 	  sig_shared_region[my_node_id].mpi_info.mpi_time=0;
@@ -74,6 +77,16 @@ state_t policy_init(polctx_t *c)
     mpi_stats.rank = sig_shared_region[my_node_id].mpi_info.rank;
     timestamp_getfast(&app_init);
 		lb_local_signatures = calloc(lib_shared_region->num_processes,sizeof(shsignature_t));
+
+		polg = getenv(EAR_POLICY_GRAIN);
+		if (polg != NULL){
+			force_granularity = 1;
+			if (!strcmp(polg,"CORE")){
+				policy_granularity = POL_GRAIN_CORE;
+			}else{
+				policy_granularity = POL_GRAIN_NODE;
+			}
+		}
 
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
@@ -254,19 +267,17 @@ ulong load_balance_for_process(polctx_t *c,float max_node_penalty,uint local_id)
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
-        /*debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);*/
+        debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
-          /*debug("new best solution found");*/
+          debug("new best solution found");
 					best_freq = frequency_pstate_to_freq(i);
 					best_solution = energy_proj;
 					best_pstate=i;
 			}
 		}
 	}
-	#if 0
 	debug("LOCAL_SIG[%d][%d] selected frequency %lu projections %d",masters_info.my_master_rank,local_id,best_freq,num_proj_found);
-	#endif
 	return best_freq;
 
 }
@@ -340,7 +351,7 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 			debug("my_exec %llu my_mpi %llu cp_exec %llu cp_mpi %llu",masters_info.nodes_info[my_shid].mpi_info.exec_time,masters_info.nodes_info[my_shid].mpi_info.mpi_time,masters_info.nodes_info[cp_shid].mpi_info.exec_time,masters_info.nodes_info[cp_shid].mpi_info.mpi_time);
 			return EAR_SUCCESS;
 		}
-		if (c->affinity == 0){
+		if ((c->affinity == 0) || (force_granularity && (policy_granularity == POL_GRAIN_NODE))){
 		debug("MR[%d] affinity is not set, selecting a single frequency",masters_info.my_master_rank);
 		best_freq = load_balance_for_process(c,max_penalty,last_node_cp);
 		*new_freq=best_freq;

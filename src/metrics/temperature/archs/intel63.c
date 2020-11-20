@@ -57,6 +57,7 @@ state_t temp_intel63_init(ctx_t *c)
         return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
     }
 	if ((c->context = calloc(tp.cpu_count, sizeof(ullong))) == NULL) {
+				s = EAR_ERROR; /* Jordi */
         return_msg(s, strerror(errno));
     }
 

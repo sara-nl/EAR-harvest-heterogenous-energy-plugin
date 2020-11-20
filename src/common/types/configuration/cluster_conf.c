@@ -740,6 +740,11 @@ void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
         strcpy(buf, "MO");
         return;
     }
+		else if (!strncmp(policy, "load_balance",strlen("load_balance")))
+		{
+			strcpy(buf, "LB");
+			return;
+		}
     else if (pol == EAR_ERROR)
     {
         strcpy(buf, "NP");

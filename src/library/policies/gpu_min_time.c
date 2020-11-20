@@ -34,11 +34,13 @@ extern unsigned long ext_def_freq;
 #define DEF_FREQ(f) f
 #endif
 
+#if 0
 #define debug(...) \
 { \
         dprintf(2, __VA_ARGS__); \
         dprintf(2, "\n"); \
 }
+#endif
 
 #define LOW_UTIL_GPU_TH 25
 #define MED_UTIL_GPU_TH 50
