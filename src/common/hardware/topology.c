@@ -81,6 +81,10 @@ state_t topology_select(topology_t *t, topology_t *s, int component, int group, 
 
 	s->socket_count = t->socket_count;
 	s->cpu_count = c;
+
+	if (s->cpu_count <= 0) {
+		return_msg(EAR_ERROR, "invalid topology");
+	}
 	
 	return EAR_SUCCESS;
 }

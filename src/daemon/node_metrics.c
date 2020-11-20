@@ -28,7 +28,7 @@
 
 #define NM_CONNECTED	100
 
-static int nm_temp_fd[MAX_PACKAGES];
+static ctx_t temp_ctx;
 
 unsigned long long get_nm_temp(nm_t *id,nm_data_t *nm)
 {
@@ -67,7 +67,8 @@ int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq)
 	id->def_f=def_freq;
 
 	// CPU Temperature
-	init_temp_msr(nm_temp_fd);
+	state_assert(s, temp_load(topo),);
+	state_assert(s, temp_init(&temp_ctx),);
 
 	// CPU/IMC Frequency	
 	state_assert(s, freq_cpu_init(topo),);
@@ -88,13 +89,8 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
 	}
 
 	// CPU Temperature
-	nm->temp=(unsigned long long *)malloc(sizeof(uint64_t)*id->nsockets);
-
-	if (nm->temp==NULL){
-        	debug("init_node_metrics_data not enough memory\n");
-        	return EAR_ERROR;
-    	}
-
+	state_assert(s, temp_data_alloc(&nm->temp),);
+	
 	// CPU/IMC Frequency
 	state_assert(s, freq_cpu_data_alloc(&nm->freq_cpu, NULL, NULL),);
 	state_assert(s, freq_imc_data_alloc(&nm->freq_imc, NULL, NULL),);
@@ -131,8 +127,7 @@ int end_compute_node_metrics(nm_t *id,nm_data_t *nm)
 	}
 
 	// CPU Temperature
-	for (i=0;i<id->nsockets;i++) nm->temp[i]=0;
-	if (read_temp_msr(nm_temp_fd,nm->temp)!=EAR_SUCCESS) return EAR_ERROR;
+	state_assert(s, temp_read(&temp_ctx, nm->temp, &nm->avg_temp),);
 
 	// CPU/IMC Frequency
 	state_assert(s, freq_cpu_read(&nm->freq_cpu),);
@@ -151,12 +146,9 @@ int diff_node_metrics(nm_t *id,nm_data_t *init,nm_data_t *end,nm_data_t *diff_nm
 		return EAR_ERROR;
 	}
 
-	// ????????????
-	// memcpy(diff_nm, end, sizeof(nm_data_t));
-	
-	for (i=0;i<id->nsockets;i++){
-		diff_nm->temp[i]=end->temp[i];
-	}
+	// Temperature
+	state_assert(s, temp_data_copy(diff_nm->temp, end->temp),);
+	diff_nm->avg_temp = end->avg_temp;
 
 	// CPU & IMC Frequency
 	state_assert(s, freq_cpu_data_diff(&end->freq_cpu, &init->freq_cpu, NULL, &diff_nm->avg_cpu_freq),);
@@ -173,6 +165,9 @@ int dispose_node_metrics(nm_t *id)
 		debug("dispose_node_metrics invalid id");
 		return EAR_ERROR;
 	}
+
+	// Temperature
+	state_assert(s, temp_dispose(&temp_ctx),);
 
 	// Alomejor podemos implementar un sistema de contadores aquí para poder
 	// cerrar también el de la CPU?
@@ -191,13 +186,11 @@ int copy_node_metrics(nm_t *id, nm_data_t *dest, nm_data_t *src)
 		return EAR_ERROR;
 	}
 
-	// ??????????
-	// memcpy(dest,src,sizeof(nm_data_t));
+	// Temperature
+	state_assert(s, temp_data_copy(dest->temp, src->temp),);
+	dest->avg_temp = src->avg_temp;
 
-	for (i=0;i<id->nsockets;i++){
-		dest->temp[i]=src->temp[i];
-	}
-
+	// Frequencies
 	state_assert(s, freq_cpu_data_copy(&dest->freq_cpu, &src->freq_cpu),);
 	state_assert(s, freq_imc_data_copy(&dest->freq_imc, &src->freq_imc),);
 	dest->avg_cpu_freq = src->avg_cpu_freq;
@@ -232,15 +225,10 @@ int verbose_node_metrics(nm_t *id,nm_data_t *nm)
 		return EAR_ERROR;
 	}
 
-	for (i=0;i<id->nsockets;i++){
-		temp_total+=nm->temp[i];
-	}
-	temp_total=temp_total/id->nsockets;
-
-	sprintf(msg," avg_cpu_freq=%.2lf, avg_imc_freq=%.2lf, temp=%llu",
+	sprintf(msg," avg_cpu_freq=%.2lf, avg_imc_freq=%.2lf, temp=%lld",
 		(double)nm->avg_cpu_freq/(double)1000000,
 		(double)nm->avg_imc_freq/(double)1000000,
-		temp_total);
+		nm->avg_temp);
 
 	verbose(VNODEPMON,msg);
 	return EAR_SUCCESS;

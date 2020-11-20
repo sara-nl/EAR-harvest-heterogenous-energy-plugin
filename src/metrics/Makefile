@@ -8,6 +8,7 @@ dyna_BINS = libmetrics.so
 ######## FILES
 
 mets_OBJS = \
+    $(SRCDIR)/metrics/common/hwmon.o \
     $(SRCDIR)/metrics/common/pci.o \
     $(SRCDIR)/metrics/common/msr.o \
     $(SRCDIR)/metrics/common/omsr.o \
@@ -40,7 +41,9 @@ mets_OBJS = \
     $(SRCDIR)/metrics/frequency/imc/intel63.o \
     $(SRCDIR)/metrics/stalls/stalls.o \
     $(SRCDIR)/metrics/temperature/temperature.o \
-    $(SRCDIR)/metrics/temperature/cpu/intel63.o
+    $(SRCDIR)/metrics/temperature/archs/amd17.o \
+    $(SRCDIR)/metrics/temperature/archs/intel63.o \
+    $(SRCDIR)/metrics/temperature/archs/dummy.o
 
 ######## RULES
 

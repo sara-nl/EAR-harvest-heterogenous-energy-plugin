@@ -15,21 +15,17 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef METRICS_TEMPERATURE_INTEL63_H
-#define METRICS_TEMPERATURE_INTEL63_H
+#ifndef METRICS_TEMPERATURE_ARCHS_AMD17
+#define METRICS_TEMPERATURE_ARCHS_AMD17
 
-#include <common/states.h>
-#include <common/plugins.h>
-#include <common/hardware/topology.h>
+#include <metrics/temperature/temperature.h>
 
-#define RAPL_TEMP_EVS 1
+state_t temp_amd17_status(topology_t *topo);
 
-int init_temp_msr(int *fd);
+state_t temp_amd17_init(ctx_t *c);
 
-int read_temp_msr(int *fd, ullong *_values);
+state_t temp_amd17_dispose(ctx_t *c);
 
-int read_temp_limit_msr(int *fds, ullong *_values);
+state_t temp_amd17_read(ctx_t *c, llong *temp, llong *average);
 
-int reset_temp_limit_msr(int *fds);
-
-#endif //METRICS_TEMPERATURE_H
+#endif //METRICS_TEMPERATURE_ARCHS_AMD17

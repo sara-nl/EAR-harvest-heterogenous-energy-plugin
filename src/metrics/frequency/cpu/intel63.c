@@ -27,9 +27,6 @@
 #define MSR_IA32_APERF 0x000000E8
 #define MSR_IA32_MPERF 0x000000E7
 
-#define debug(...) \
-	fprintf(stderr, __VA_ARGS__);
-
 static uint cpu_count;
 static topology_t tp;
 
