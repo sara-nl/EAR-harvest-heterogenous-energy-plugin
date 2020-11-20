@@ -343,6 +343,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     char gpu_format[256];
     char gpu_header[256];
     double gpu_power = 0;
+    double gpu_total_power = 0;
     unsigned long gpu_freq = 0;
     unsigned long gpu_util = 0;
     int num_gpus = 0;
@@ -368,8 +369,8 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             strcpy(mpi_sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s %-12.2lf");
         }
 #if USE_GPUS
-            strcpy(gpu_header, " %-7s %-8s %-8s ");
-            strcpy(gpu_format, " %-7.2lf %-8lu %-8s ");
+            strcpy(gpu_header, " %-11s %-7s %-6s");
+            strcpy(gpu_format, " %-5.2lf/%-5.2lf %-7.3lf %-6s ");
 #endif
     }
     else
@@ -391,8 +392,8 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             strcpy(mpi_sbatch_line_format, "%u-%s;%s;%s;%s;%u;%lf;%lf;%lf;%s;%s;%lf;%s;%lf");
         }
 #if USE_GPUS
-            strcpy(gpu_header, ";%7s;%8s;%8s");
-            strcpy(gpu_format, ";%7.2lf;%8lu;%8s");
+            strcpy(gpu_header, ";%11s;%7s;%6s");
+            strcpy(gpu_format, ";%5.2lf/%5.2lf;%7.3lf;%6s");
 #endif
     }
     if (avx)
@@ -406,7 +407,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "GFLOPS/WATT", "MAX POWER(W)");
 
 #if USE_GPUS
-    dprintf(fd, gpu_header, "GPU POW", "GPU FREQ", "GPU UTIL");
+    dprintf(fd, gpu_header, "G-POW (T/U)", "G-FREQ", "G-UTIL");
 #endif
     dprintf(fd, "\n");
 
@@ -431,12 +432,17 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
 #if USE_GPUS
                 if (apps[i].signature.gpu_sig.num_gpus > 0)
                 {
-                    num_gpus = apps[i].signature.gpu_sig.num_gpus;
-                    for (j = 0; j < num_gpus; j++)
+                    num_gpus = 0;
+                    for (j = 0; j < apps[i].signature.gpu_sig.num_gpus; j++)
                     {
-                        gpu_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
-                        gpu_freq  += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
-                        gpu_util  += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                        gpu_total_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                        if (apps[i].signature.gpu_sig.gpu_data[j].GPU_util)
+                        {
+                            gpu_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                            gpu_freq  += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
+                            gpu_util  += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                            num_gpus++;
+                        }
                     }
                     gpu_power /= num_gpus;
                     gpu_freq  /= num_gpus;
@@ -482,6 +488,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_CPI /= current_apps;
                 avg_VPI /= current_apps;
 #if USE_GPUS
+                gpu_total_power /= current_apps;
                 gpu_power /= current_apps;
                 gpu_freq  /= current_apps;
                 gpu_util  /= current_apps;
@@ -522,7 +529,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                         if (num_gpus > 0)
                         {
                             sprintf(tmp, "%ld%%", gpu_util);
-                            dprintf(fd, gpu_format, gpu_power, gpu_freq, tmp);
+                            dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
                         }
                         else
                             dprintf(fd, gpu_header, "NO GPU", "NO GPU", "NO GPU");
@@ -648,7 +655,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                     if (num_gpus > 0)
                     {
                         sprintf(tmp, "%ld%%", gpu_util);
-                        dprintf(fd, gpu_format, gpu_power, gpu_freq, tmp);
+                        dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
                     }
                     else
                         dprintf(fd, gpu_header, "NO GPU", "NO GPU", "NO GPU");
