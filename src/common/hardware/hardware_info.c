@@ -44,18 +44,23 @@ void print_affinity_mask(topology_t *topo)
 state_t is_affinity_set(topology_t *topo,int pid,int *is_set,cpu_set_t *my_mask)
 {
 	cpu_set_t mask;
+	int cpus_on = 0;
 	*is_set=0;
 	CPU_ZERO(&mask);
 	CPU_ZERO(my_mask);
 	if (sched_getaffinity(pid,sizeof(cpu_set_t), &mask) == -1) return EAR_ERROR;
 	memcpy(my_mask,&mask,sizeof(cpu_set_t));
+	
 	int i;
 	for (i = 0; i < topo->cpu_count; i++) {
 		if (CPU_ISSET(i, &mask)) {
+			cpus_on++;
 			*is_set=1;
 			return EAR_SUCCESS;	
 		}
 	}
+	/* If all the bits are set, it means the process can run in any CPU */
+	if (cpus_on == topo->cpu_count) *is_set = 0;
 	return EAR_SUCCESS;
 }
 

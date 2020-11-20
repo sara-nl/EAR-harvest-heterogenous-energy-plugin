@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <library/policies/policy_api.h>
 
 static uint last_pc=0;
@@ -36,11 +38,6 @@ extern unsigned long ext_def_freq;
 static ulong *ext_gpu_def_freq;
 static ulong g_freq=0;
 
-#define debug(...) \
-{ \
-        dprintf(2, __VA_ARGS__); \
-        dprintf(2, "\n"); \
-}
 
 
 state_t policy_init(polctx_t *c)

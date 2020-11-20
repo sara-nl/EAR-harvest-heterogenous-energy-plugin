@@ -1,5 +1,5 @@
 CFLAGS  = -fPIC -O2 -I$(SRCDIR)
-LDFLAGS = -shared -ldl -lm -lpthread
+LDFLAGS = -shared -ldl -lm -lpthread 
 
 ifeq ($(FEAT_MPI_API), 0)
 LIBCC       = $(CC)

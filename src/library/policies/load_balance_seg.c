@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -237,10 +237,8 @@ ulong load_balance_for_process(polctx_t *c,float max_node_penalty,uint local_id)
 
 	/* We compute the maximum performance loss*/
 	time_max = time_ref + (time_ref * max_penalty);
-	#if 0
 	debug("LOCAL_SIG[%d][%d] CPIP %.3f MPIP %.3f my CPI %.3f CP_CPI %.3lf  my useful %.1f CP useful %.1f",masters_info.my_master_rank,local_id,cpi_p,useful_p,my_app->CPI,lb_local_signatures[last_node_cp].sig.CPI,useful_ratio/1000000.0,useful_cp_ratio/1000000.0);
 	debug("LOCAL_SIG[%d][%d] Penalty=%.1f (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf TLIMIT=%lf)",masters_info.my_master_rank,local_id,max_penalty*100.0,my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI,time_max);
-	#endif
 
 	/* MIN_ENERGY_TO_SOLUTION ALGORITHM
 	 Calcular el min_pstate que este dentro del limite*/
@@ -264,9 +262,8 @@ ulong load_balance_for_process(polctx_t *c,float max_node_penalty,uint local_id)
 			}
 		}
 	}
-	#if 0
+
 	debug("LOCAL_SIG[%d][%d] selected frequency %lu projections %d",masters_info.my_master_rank,local_id,best_freq,num_proj_found);
-	#endif
 	return best_freq;
 
 }
@@ -298,13 +295,6 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 
 		nominal=frequency_pstate_to_freq(min_pstate);
 
-		if (c->affinity == 0){
-			*new_freq=*(c->ear_frequency);
-		}else{
-			for (i=0;i<lib_shared_region->num_processes;i++){
-				new_freq[i]=*(c->ear_frequency);
-			}
-		}
     my_app=sig;
     if (global_sig_ready){
       *ready=EAR_POLICY_READY;
@@ -319,7 +309,8 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 		debug("POLICY_SIG %s",buff);
 
 		if (LB_node_cp == masters_info.my_master_rank){
-			verbose(1,"MR[%d] My Node is the CP, I will not change the frequency %lu",masters_info.my_master_rank,*new_freq);
+			*new_freq=*(c->ear_frequency);
+			debug("My Node is the CP, I will not change the frequency %lu",*new_freq);
 			return EAR_SUCCESS;
 		}
 
@@ -332,25 +323,130 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 		cp_cpi = masters_info.nodes_info[cp_shid].sig.CPI;
 		max_penalty = (1 - my_cpi / cp_cpi)+ c->app->settings[0];
 		debug("MR[%d] my CPI %.3lf CP_CPU %.3lf penalty %.3lf",masters_info.my_master_rank,my_cpi,cp_cpi,max_penalty);
+		#if 0
+		my_useful_time = masters_info.nodes_info[my_shid].mpi_info.exec_time-masters_info.nodes_info[my_shid].mpi_info.mpi_time;
+		cp_useful_time = masters_info.nodes_info[cp_shid].mpi_info.exec_time-masters_info.nodes_info[cp_shid].mpi_info.mpi_time;
+		max_penalty=1.0-(float)my_useful_time/(float)cp_useful_time;
+		verbose(1,"Process[%d] useful time is %llu, and Process_CP[%d] useful time is %llu max_penalty %.3f",my_shid,my_useful_time,cp_shid,cp_useful_time,max_penalty);
+		#endif
 
 		if (max_penalty < 0){
 			*new_freq=*(c->ear_frequency);
       *ready=EAR_POLICY_READY;
-			debug("Warning CPU time process %d is greather than CP %d, I will not change the frequency %lu",my_shid,cp_shid,*new_freq);
-			debug("my_exec %llu my_mpi %llu cp_exec %llu cp_mpi %llu",masters_info.nodes_info[my_shid].mpi_info.exec_time,masters_info.nodes_info[my_shid].mpi_info.mpi_time,masters_info.nodes_info[cp_shid].mpi_info.exec_time,masters_info.nodes_info[cp_shid].mpi_info.mpi_time);
+			verbose(1,"Warning CPU time process %d is greather than CP %d, I will not change the frequency %lu",my_shid,cp_shid,*new_freq);
+			verbose(1,"my_exec %llu my_mpi %llu cp_exec %llu cp_mpi %llu",masters_info.nodes_info[my_shid].mpi_info.exec_time,masters_info.nodes_info[my_shid].mpi_info.mpi_time,masters_info.nodes_info[cp_shid].mpi_info.exec_time,masters_info.nodes_info[cp_shid].mpi_info.mpi_time);
 			return EAR_SUCCESS;
 		}
 		if (c->affinity == 0){
-		debug("MR[%d] affinity is not set, selecting a single frequency",masters_info.my_master_rank);
+		verbose(1,"MR[%d] affinity is not set, selecting a single frequency",masters_info.my_master_rank);
+		#if 0
+		def_freq=FREQ_DEF(c->app->def_freq);
+		def_pstate=frequency_closest_pstate(def_freq);
+
+		/* This is the frequency at which we were running*/
+    #ifdef POWERCAP
+    curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+    #else
+    curr_freq=*(c->ear_frequency);
+    #endif
+
+		curr_pstate = frequency_closest_pstate(curr_freq);
+
+		eff_f=frequency_closest_high_freq(my_app->avg_f,1);
+
+
+		/* If is not the default P_STATE selected in the environment, a projection
+		 is made for the reference P_STATE in case the coefficents were available.*/
+		 
+		if (curr_freq != def_freq) /* Use configuration when available */
+		{
+		if (projection_available(curr_pstate,def_pstate)==EAR_SUCCESS)
+		{
+				st=project_power(my_app,curr_pstate,def_pstate,&power_ref);
+				st=project_time(my_app,curr_pstate,def_pstate,&time_ref);
+				best_freq=def_freq;
+        //debug("projecting from %lu to %lu\t time: %.2lf\t power: %.2lf", curr_pstate, def_pstate, time_ref, power_ref);
+		}
+		else
+		{
+				time_ref=my_app->time;
+				power_ref=my_app->DC_power;
+				best_freq=curr_freq;
+		}
+		}else
+		{ /* we are running at default frequency , signature is our reference*/
+	  /*
+		 If it is the default P_STATE selected in the environment, then a projection
+		 is not needed, so the signature will be enough as a reference. 
+		*/
+			if (curr_freq == nominal){
+				/* And we are the nominal freq */
+				time_ref=my_app->time;
+				power_ref=my_app->DC_power;
+				best_freq=curr_freq;
+			}else{
+				/* Nominal is the reference , if projections are ready, we project time and power */
+         debug("current_freq is not the nominal");
+
+				if (projection_available(curr_pstate,min_pstate) == EAR_SUCCESS){
+					project_power(my_app,curr_pstate,min_pstate,&power_ref);
+					project_time(my_app,curr_pstate,min_pstate,&time_ref);
+					best_freq=nominal;
+          /*debug("projecting to nominal\t time: %.2lf\t power: %.2lf", time_ref, power_ref);*/
+				}else{
+        	time_ref=my_app->time;
+        	power_ref=my_app->DC_power;
+        	best_freq=curr_freq;
+				}
+			}
+
+		}
+		energy_ref=power_ref*time_ref;
+		best_solution=energy_ref;
+
+	/* We compute the maximum performance loss*/
+	time_max = time_ref + (time_ref * max_penalty);
+
+   debug("MR[%d] Max_freq set to %lu min_pstate = %d nominal %lu curr_frequency %lu curr_pstate %lu time_max: %.2lf",masters_info.my_master_rank,c->app->max_freq,min_pstate,nominal,curr_freq,curr_pstate,time_max);
+
+	debug("MR[%d] Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",masters_info.my_master_rank,my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
+
+	/* MIN_ENERGY_TO_SOLUTION ALGORITHM
+	 Calcular el min_pstate que este dentro del limite*/
+	for (i = min_pstate; i < c->num_pstates;i++)
+	{
+		/*debug("MR[%d] Checking pstate %d",masters_info.my_master_rank,i);*/
+		if (projection_available(curr_pstate,i)==EAR_SUCCESS)
+		{
+				num_proj_found++;
+				st=project_power(my_app,curr_pstate,i,&power_proj);
+				st=project_time(my_app,curr_pstate,i,&time_proj);
+				projection_set(i,time_proj,power_proj);
+				energy_proj=power_proj*time_proj;
+        /*debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);*/
+			if ((energy_proj < best_solution) && (time_proj < time_max))
+			{
+          /*debug("new best solution found");*/
+					best_freq = frequency_pstate_to_freq(i);
+					best_solution = energy_proj;
+					best_pstate=i;
+			}
+		}
+		*ready=EAR_POLICY_READY;
+	}
+ 	 
+
+	debug("MR[%d] selected frequency %lu",masters_info.my_master_rank,best_freq);
+	if (num_proj_found == 0) debug("MR[%d] WARNING  NO PROJECTIONS FOUND",masters_info.my_master_rank);
+	#endif
 		best_freq = load_balance_for_process(c,max_penalty,last_node_cp);
 		*new_freq=best_freq;
 		sig_shared_region[my_node_id].new_freq=best_freq;
 	}else{
-		debug("MR[%d] affinity is set, selecting a list of frequencies",masters_info.my_master_rank);
+		verbose(1,"MR[%d] affinity is not set, selecting a single frequency",masters_info.my_master_rank);
 		for (i=0;i<lib_shared_region->num_processes;i++){
 			new_freq[i] = load_balance_for_process(c,max_penalty,i);
 		}
-		*ready=EAR_POLICY_READY;
 	}
 	}else{ 
 		*ready=EAR_POLICY_CONTINUE;
@@ -427,13 +523,11 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
     ret = check_mpi_info(&masters_info,&LB_node_cp,&LB_rank_cp,report_all_sig);
     if (ret == EAR_SUCCESS){
 			global_sig_ready=1;
-			debug("policy_new_iteration Node_CP %d Rank_CP %d",LB_node_cp,LB_rank_cp);
+			verbose(1,"policy_new_iteration Node_CP %d Rank_CP %d",LB_node_cp,LB_rank_cp);
       compute_avg_app_signature(&masters_info,&gsig);
 			signature_copy(&policy_last_global_signature,&gsig);
     }
 		}
-		/* If we are not waiting for global info we can send again */
-		if (masters_info.node_info_pending == 0){
     ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
     if (ret == EAR_SUCCESS){
       debug("Node signatures ready");
@@ -441,10 +535,10 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
         ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,sig_shared_region,report_node_sig);
       }else{
 				ml=compute_per_node_most_loaded_process(lib_shared_region,sig_shared_region);
-				debug("Process %d selected as the most loaded",ml);
+				verbose(1,"Process %d selected as the most loaded",ml);
 				last_node_cp = ml;
 				per_node_shsig = &sig_shared_region[ml];
-				// print_sh_signature(ml,per_node_shsig);
+				print_sh_signature(ml,per_node_shsig);
         ret = send_node_signatures(&masters_info,lib_shared_region,per_node_shsig,sig_shared_region,report_node_sig);
       }
 			/* We copy information sent to other processes to be used later */
@@ -453,7 +547,6 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 			clean_mpi_info(lib_shared_region,sig_shared_region);
 			#endif
     }
-		}
 
   }
 
@@ -463,7 +556,6 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 
 state_t policy_granularity(polctx_t *c,int *grain)
 {
-	*grain = POL_GRAIN_CORE;
-	return EAR_SUCCESS;
+	return POL_GRAIN_CORE;
 }
 

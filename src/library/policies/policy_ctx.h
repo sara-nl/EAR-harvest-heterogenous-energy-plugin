@@ -58,8 +58,12 @@ typedef struct policy_context {
 	uint			gpu_mgt_ctx_on;
 	uint      num_gpus;
 	#endif
+	int affinity;
 } polctx_t;
 
 void print_policy_ctx(polctx_t *p);
+
+#define POL_GRAIN_NODE 0
+#define POL_GRAIN_CORE 1
 
 #endif //EAR_POLICIES_H

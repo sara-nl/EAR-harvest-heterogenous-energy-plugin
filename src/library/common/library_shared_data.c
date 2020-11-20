@@ -27,7 +27,7 @@
 #include <sys/stat.h>
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/common/externs.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -269,7 +269,7 @@ void mpi_info_to_str(mpi_information_t *info,char *msg,size_t max)
 	snprintf(msg,max,"RANK[%d] total_mpi_calls %u exec_time %llu mpi_time %llu perc_mpi %.3lf ",info->rank,info->total_mpi_calls,info->exec_time,info->mpi_time,info->perc_mpi*100.0);
 }
 
-void print_sh_signature(shsignature_t *sig)
+void print_sh_signature(int localid,shsignature_t *sig)
 {
 	 	float t;
 		float avgf,deff,newf;
@@ -278,9 +278,9 @@ void print_sh_signature(shsignature_t *sig)
 		newf=(float)sig->new_freq/1000000.0;
     t = (float) sig->mpi_info.exec_time/1000000.0;
 
-	  fprintf(stderr,"RANK %d mpi_data={total_mpi_calls %u mpi_time %llu exec_time %.3f PercTime %lf }\n",
+	  fprintf(stderr,"RANK[%d]= %d mpi_data={total_mpi_calls %u mpi_time %llu exec_time %.3f PercTime %lf }\n",localid,
     sig->mpi_info.rank,sig->mpi_info.total_mpi_calls,sig->mpi_info.mpi_time,t,sig->mpi_info.perc_mpi);
-    fprintf(stderr,"RANK %d signature={cpi %.3lf tpi %.3lf time %.3lf Gflops %f dc_power %.3lf avgf %.1f deff %.1f} state %d new_freq %.1f\n",sig->mpi_info.rank,sig->sig.CPI,sig->sig.TPI, sig->sig.time,sig->sig.Gflops,sig->sig.DC_power,avgf,deff,sig->app_state,newf);
+    fprintf(stderr,"RANK[%d]= %d signature={cpi %.3lf tpi %.3lf time %.3lf Gflops %f dc_power %.3lf avgf %.1f deff %.1f} state %d new_freq %.1f\n",localid,sig->mpi_info.rank,sig->sig.CPI,sig->sig.TPI, sig->sig.time,sig->sig.Gflops,sig->sig.DC_power,avgf,deff,sig->app_state,newf);
 }
 
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
@@ -288,7 +288,7 @@ void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
 	int i;
 
 	for (i=0;i<data->num_processes;i++){
-		print_sh_signature(&sig[i]);
+		print_sh_signature(i,&sig[i]);
 	}
 }
 

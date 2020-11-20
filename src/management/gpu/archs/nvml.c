@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>

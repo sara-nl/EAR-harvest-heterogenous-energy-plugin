@@ -35,6 +35,7 @@ void eards_disconnect();
 *   been provided, and the final frequency value otherwise. */
 unsigned long eards_change_freq(unsigned long newfreq);
 unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t *mask);
+unsigned long eards_change_freq_with_list(unsigned int num_cpus,unsigned long *newfreq);
 /** Tries to set the frequency to the turbo value */
 void eards_set_turbo();
 

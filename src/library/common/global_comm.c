@@ -146,7 +146,7 @@ void print_global_signatures(masters_info_t *mi)
   for (nodei=0;nodei<mi->my_master_size;nodei++){
     fprintf(stderr,"Printing info for node %d\n",nodei);
     for (node_ppn=0;node_ppn<ear_min(max_ppn,mi->ppn[nodei]);node_ppn++){
-      print_sh_signature(&mi->nodes_info[nodei*ear_min(max_ppn,mi->max_ppn)+node_ppn]);
+      print_sh_signature(node_ppn,&mi->nodes_info[nodei*ear_min(max_ppn,mi->max_ppn)+node_ppn]);
     }
   }
 }

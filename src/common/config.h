@@ -35,4 +35,7 @@
 
 #define USE_DB  DB_MYSQL || DB_PSQL
 
+#define MAX_CPUS_SUPPORTED 128
+#define MAX_GPUS_SUPPORTED 4
+
 #endif
