@@ -20,7 +20,6 @@
 
 #include <errno.h>
 #include <common/output/error.h>
-#include <common/output/debug.h>
 
 /* error definitions */
 #define EAR_SUCCESS              0
@@ -49,7 +48,6 @@ char *state_msg;
 	state1 == state2
 
 #define return_msg(no, msg) { \
-	debug("errno: %d, strerror: '%s'", no, msg); \
 	state_msg = msg; \
 	return no; \
 	}

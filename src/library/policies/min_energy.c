@@ -102,7 +102,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// This is the frequency at which we were running
     #ifdef POWERCAP
-    curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+    if (c->pc_limit > 0){
+			curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+		}else{
+			curr_freq=*(c->ear_frequency);
+		}
     #else
     curr_freq=*(c->ear_frequency);
     #endif

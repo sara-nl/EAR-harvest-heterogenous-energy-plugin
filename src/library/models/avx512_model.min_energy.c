@@ -126,12 +126,14 @@ state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 		coeff=&coefficients[from][to];
 		if (coeff->available){
 			time_nosimd=proj_time(coeff,sign,coeff->pstate_ref,coeff->pstate);
+			/* In min_energy, we will consider we will go as fast as with nominal */
       if (to<=avx512_pstate){
 					unsigned long nominal=frequency_get_nominal_freq();
 					avx512_coeffs=&coefficients[from][1];
           perc_avx512=avx512_vpi(sign);
           time_avx512=proj_time(avx512_coeffs,sign,coeff->pstate_ref,nominal);
       }
+			debug("time projection from %lu to %lu time_nosimd %lf time avx512 %lf perc_avx512 %lf",from,to,time_nosimd,time_avx512,perc_avx512);
 			ctime=time_nosimd*(1-perc_avx512)+time_avx512*perc_avx512;
 			*ptime=ctime;
 		}else{
@@ -177,9 +179,9 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 		coeff=&coefficients[from][to];
 		if (coeff->available){
 				power_nosimd=proj_power(coeff,sign);
-				// Is this <= or >= ?? :(
+				/* For min_energy we assume the power is the same as the minimum for avx512 */
 				if (to<=avx512_pstate){
-					avx512_coeffs=&coefficients[from][1];
+					avx512_coeffs=&coefficients[from][avx512_pstate];
 					perc_avx512=avx512_vpi(sign);	
 					power_avx512=proj_power(avx512_coeffs,sign);
 				}

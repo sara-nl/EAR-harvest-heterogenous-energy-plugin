@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#include <common/output/debug.h>
 #include <library/policies/policy_api.h>
 
 static uint last_pc=0;

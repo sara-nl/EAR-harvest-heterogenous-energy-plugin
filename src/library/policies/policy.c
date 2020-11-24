@@ -138,15 +138,20 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	if (policy_load(obj_path,&polsyms_fun)!=EAR_SUCCESS){
 		error("Error loading policy %s",obj_path);
 	}
-	ear_frequency=DEF_FREQ(app_settings->def_freq);
-	my_pol_ctx.app=app_settings;
-	my_pol_ctx.reconfigure=res;
-	my_pol_ctx.user_selected_freq=DEF_FREQ(app_settings->def_freq);
-	my_pol_ctx.reset_freq_opt=get_ear_reset_freq();
-	my_pol_ctx.ear_frequency=&ear_frequency;
-	my_pol_ctx.num_pstates=frequency_get_num_pstates();
-	my_pol_ctx.use_turbo=ear_use_turbo;
-	my_pol_ctx.affinity=ear_affinity_is_set;
+	ear_frequency									= DEF_FREQ(app_settings->def_freq);
+	my_pol_ctx.app								= app_settings;
+	my_pol_ctx.reconfigure				= res;
+	my_pol_ctx.user_selected_freq	= DEF_FREQ(app_settings->def_freq);
+	my_pol_ctx.reset_freq_opt			= get_ear_reset_freq();
+	my_pol_ctx.ear_frequency			=	&ear_frequency;
+	my_pol_ctx.num_pstates				=	frequency_get_num_pstates();
+	my_pol_ctx.use_turbo 					= ear_use_turbo;
+	my_pol_ctx.affinity  					= ear_affinity_is_set;
+	#if POWERCAP
+	my_pol_ctx.pc_limit						= app_settings->pc_opt.current_pc;
+	#else
+	my_pol_ctx.pc_limit           = 0;
+	#endif
 	#if MPI
 	if (PMPI_Comm_dup(masters_info.new_world_comm,&my_pol_ctx.mpi.comm)!=MPI_SUCCESS){
 		error("Duplicating COMM_WORLD in policy");
@@ -246,7 +251,9 @@ state_t policy_init()
 	}	
 	#endif
 	#if POWERCAP
-	if (masters_info.my_master_rank>=0) pc_support_init(c);
+	if (masters_info.my_master_rank>=0){ 
+		pc_support_init(c);
+	}
 	#endif
 	if ((ret == EAR_SUCCESS) && (retg == EAR_SUCCESS)) return EAR_SUCCESS;
 	else return EAR_ERROR;
