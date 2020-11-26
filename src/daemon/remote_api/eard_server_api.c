@@ -323,7 +323,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
     char next_ip[64];
 
     current_dist = self_id - self_id%NUM_PROPS;
-    off_ips = self_id%NUM_PROPS;
+    off_ip = self_id%NUM_PROPS;
 
     if (command->num_nodes < 1)
     {
@@ -351,7 +351,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
             {
                 send_command(command);
                 head = receive_data(rc, (void **)&temp_data);
-                if (head.size < 1 || head.type == EAR_ERROR) 
+                if ((head.size < 1 && head.type != EAR_TYPE_APP_STATUS) || head.type == EAR_ERROR) 
                 {
                     error("propagate_data: Error propagating command to node %s\n", next_ip);
                     eards_remote_disconnect();
@@ -404,7 +404,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
             {
                 send_command(&tmp_command);
                 head = receive_data(rc, (void **)&temp_data);
-                if (head.size < 1 || head.type == EAR_ERROR) 
+                if ((head.size < 1 && head.type != EAR_TYPE_APP_STATUS) || head.type == EAR_ERROR) 
                 {
                     error("propagate_data: Error propagating command to node %s\n", next_ip);
                     eards_remote_disconnect();
@@ -413,7 +413,9 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
                 else eards_remote_disconnect();
             }
 
-            if (head.size > 0 && head.type != EAR_ERROR)
+            if (head.type == EAR_TYPE_APP_STATUS)
+                default_type = head.type;
+            if (head.size > 0  && head.type != EAR_ERROR)
             {
                 head = process_data(head, &temp_data, &final_data, final_size);
                 free(temp_data);
@@ -440,7 +442,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
         free(final_data);
         head.size = 0;
     }
-    else if (final_size < 1 && default_type != EAR_ERROR) head.type = EAR_ERROR;
+    else if (final_size < 1 && (default_type != EAR_TYPE_APP_STATUS || default_type != EAR_ERROR)) head.type = EAR_ERROR;
 
     return head;
 	
@@ -480,7 +482,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
         {
             send_command(command);
             head = receive_data(rc, (void **)&temp_data);
-            if (head.size < 1 || head.type == EAR_ERROR) 
+            if ((head.size < 1 && head.type != EAR_TYPE_APP_STATUS) || head.type == EAR_ERROR) 
             {
                 error("propagate_req: Error propagating command to node %s\n", next_ip);
                 eards_remote_disconnect();
@@ -488,6 +490,9 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
             }
             else eards_remote_disconnect();
         }
+
+        if (head.type == EAR_TYPE_APP_STATUS)
+            default_type = head.type;
 
         if (head.size > 0 && head.type != EAR_ERROR)
         {
@@ -507,7 +512,7 @@ request_header_t propagate_data(request_t *command, uint port, void **data)
         free(final_data);
         head.size = 0;
     }
-    else if (final_size < 1 && default_type != EAR_ERROR) head.type = EAR_ERROR;
+    else if (final_size < 1 && (default_type != EAR_TYPE_APP_STATUS || default_type != EAR_ERROR)) head.type = EAR_ERROR;
 
     return head;
 	
@@ -622,20 +627,21 @@ int propagate_and_cat_data(request_t *command, uint port, void **status, size_t 
 
 int propagate_status(request_t *command, uint port, status_t **status)
 {
-	int num_status;
-	status_t *temp_status;
-	num_status=propagate_and_cat_data(command,port,(void **)&temp_status,sizeof(status_t),EAR_TYPE_STATUS);
-	temp_status[num_status-1].ok = STATUS_OK;
-	*status=temp_status;
-	return num_status;
+    int num_status;
+    status_t *temp_status;
+    num_status = propagate_and_cat_data(command, port, (void **)&temp_status, sizeof(status_t), EAR_TYPE_STATUS);
+    temp_status[num_status-1].ok = STATUS_OK;
+    *status=temp_status;
+    return num_status;
 }
+
 int propagate_app_status(request_t *command, uint port, app_status_t **status)
 {
-	int num_status;
-	app_status_t *temp_status;
-	num_status=propagate_and_cat_data(command,port,(void **)&temp_status,sizeof(app_status_t),EAR_TYPE_APP_STATUS);
-	*status=temp_status;
-	return num_status;
+    int num_status;
+    app_status_t *temp_status;
+    num_status = propagate_and_cat_data(command, port, (void **)&temp_status, sizeof(app_status_t), EAR_TYPE_APP_STATUS);
+    *status=temp_status;
+    return num_status;
 }
 
 
