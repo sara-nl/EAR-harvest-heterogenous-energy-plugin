@@ -995,7 +995,7 @@ void ear_finalize()
 	// Writing application data
 	if (!my_id) 
 	{
-		verbose(0,"Reporting application data");
+		debug("Reporting application data");
 		eards_write_app_signature(&application);
 		append_application_text_file(app_summary_path, &application, 1);
 		report_mpi_application_data(&application);
@@ -1030,7 +1030,7 @@ void ear_finalize()
 
 	// C'est fini
 	if (!my_id){ 
-		verbose(0,"Disconnecting");
+		debug("Disconnecting");
 		eards_disconnect();
 	}
 }
