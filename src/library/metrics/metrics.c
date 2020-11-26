@@ -17,7 +17,7 @@
 
 #define CACHE_METRICS 1
 //#define SHOW_DEBUGS 1
-#define SHOW_ENERGY 1
+//#define SHOW_ENERGY 1
 
 #include <errno.h>
 #include <stdio.h>
