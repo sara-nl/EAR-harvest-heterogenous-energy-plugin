@@ -40,7 +40,7 @@ state_t topology_select(topology_t *t, topology_t *s, int component, int group, 
 	int i;
 	int j;
 	int c;
-;
+
 	just = (group == TPGroup.merge);
 
 	if (component == TPSelect.l3) {

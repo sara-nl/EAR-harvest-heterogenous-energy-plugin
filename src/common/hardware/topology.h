@@ -38,7 +38,7 @@
 #define FAMILY_BOBCAT				20
 #define FAMILY_BULLDOZER			21
 #define FAMILY_JAGUAR				22
-#define FAMILY_ZEN					23	//Arch tested
+#define FAMILY_ZEN					0x17 //Arch tested
 #define FAMILY_ZEN3					25
 // Supported vendors
 #define VENDOR_INTEL				0

@@ -35,7 +35,8 @@ depend-clean: depend-clean.components
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'gpu' $* || exit
+	@ $(MAKE) -C 'gpu'    $* || exit
+	@ $(MAKE) -C 'pstate' $* || exit
 
 ######## EXPORTS
 

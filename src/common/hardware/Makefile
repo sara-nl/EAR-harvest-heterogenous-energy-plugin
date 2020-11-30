@@ -4,6 +4,7 @@ CFLAGS = $(CC_FLAGS) -fPIC -I$(SRCDIR) $(CONSTANTS)
 
 libc_OBJS = \
 	architecture.o \
+	bithack.o \
 	cpuid.o \
 	cpupower.o \
 	frequency.o \
