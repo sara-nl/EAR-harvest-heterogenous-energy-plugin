@@ -64,9 +64,15 @@ static state_t read_word(int fd, char *word, int reset_position)
 	return EAR_SUCCESS;
 }
 
-static state_t dowrite(int fd, char *word, int s)
+static state_t write_word(int fd, char *word, int s, int line_break)
 {
 	int i, r, p;
+	// Adding a line break
+	if (line_break) {
+		s += 1;
+		word[s-1] = '\n';
+		word[s-0] = '\0';
+	}
 	for (i = 0, r = 1, p = s; i < s && r > 0;) {
 		r = pwrite(fd, (void*) &word[i], p, i);
 		i = i + r;
@@ -81,16 +87,16 @@ static state_t dowrite(int fd, char *word, int s)
 static state_t write_multi(int *fds, char *word, int line_break)
 {
 	state_t s = EAR_SUCCESS;
-	int len = strlen(word)+2;
+	int len = strlen(word)+1;
 	int cpu;
 	debug("writing a word '%s'", word);
 	// Adding a line break
 	if (line_break) {
-		word[len-2] = '\n';
-		word[len-1] = '\0';
+		word[len-1] = '\n';
+		word[len-0] = '\0';
 	}
 	for (cpu = 0; cpu < tp.cpu_count && state_ok(s); ++cpu) {
-		s = dowrite(fds[cpu], word, len);
+		s = write_word(fds[cpu], word, len, 0);
 	}
 	if (state_fail(s)) {
 		return s;
@@ -314,8 +320,8 @@ state_t pstate_cpufreq_set_current_list(ctx_t *c, uint *freqs_index)
 		if (freqs_index[cpu] > f->freqs_count) {
 			freqs_index[cpu] = f->freqs_count-1;
 		}
-		sprintf(data, "%llu\n", f->freqs_avail[freqs_index[cpu]]);
-		s1 = dowrite(f->fds_freq[cpu], data, strlen(data));
+		sprintf(data, "%llu", f->freqs_avail[freqs_index[cpu]]);
+		s1 = write_word(f->fds_freq[cpu], data, strlen(data), 1);
 		//debug("writing a word '%s' returned %d", data, s1);
 
 		if (state_fail(s1)) {
@@ -325,7 +331,7 @@ state_t pstate_cpufreq_set_current_list(ctx_t *c, uint *freqs_index)
 	return s2;
 }
 
-state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index)
+state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index, int cpu)
 {
 	char data[SZ_NAME_SHORT];
 	cpufreq_ctx_t *f;
@@ -340,9 +346,19 @@ state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index)
 	if (freq_index > f->freqs_count) {
 		freq_index = f->freqs_count;
 	}
-	// Converting frequency to text
-	sprintf(data, "%llu", f->freqs_avail[freq_index]);
-	return write_multi(f->fds_freq, data, 1);
+	// If is one P_STATE for all CPUs
+	if (cpu == all_cpus) {
+		// Converting frequency to text
+		sprintf(data, "%llu", f->freqs_avail[freq_index]);
+		return write_multi(f->fds_freq, data, 1);
+	}
+	// If it is for a specified CPU
+	if (cpu >= 0 && cpu < tp.cpu_count) {
+		sprintf(data, "%llu", f->freqs_avail[freqs_index[cpu]]);
+		debug("writing a word '%s'", data);
+		return write_word(f->fds_freq[cpu], data, strlen(data), 1);
+	}
+	return_msg(EAR_ERROR, Generr.cpu_invalid);
 }
 
 state_t pstate_cpufreq_set_governor(ctx_t *c, uint governor)

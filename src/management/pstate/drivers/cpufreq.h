@@ -36,8 +36,8 @@ state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor);
 /** Setters **/
 state_t pstate_cpufreq_set_current_list(ctx_t *c, uint *freq_index);
 
-/* Sets a frequency in all CPUs. */
-state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index);
+/* Sets a frequency in a specified CPU. Use all_cpus to set that P_STATE in all CPUs. */
+state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index, int cpu);
 
 /* You can recover the governor (and its frequency) by setting
  * Governor.last and Governor.init. */

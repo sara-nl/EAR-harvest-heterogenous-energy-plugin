@@ -166,9 +166,9 @@ state_t mgt_pstate_set_current_list(ctx_t *c, uint *pstate_index)
 	preturn (ops.set_current_list, c, pstate_index);
 }
 
-state_t mgt_pstate_set_current(ctx_t *c, uint pstate_index)
+state_t mgt_pstate_set_current(ctx_t *c, uint pstate_index, int cpu)
 {
-	preturn (ops.set_current, c, pstate_index);
+	preturn (ops.set_current, c, pstate_index, cpu);
 }
 
 state_t mgt_pstate_set_governor(ctx_t *c, uint governor)
@@ -213,85 +213,3 @@ state_t mgt_pstate_governor_toint(char *buffer, uint *governor)
 	}
 	return EAR_SUCCESS;
 }
-
-#ifdef MAINN
-char opt1[SZ_PATH];
-char cmnd[SZ_PATH];
-pstate_t pstate_list[128];
-uint pstate_count;
-uint governor;
-uint nominal;
-topology_t topo;
-state_t s;
-ctx_t c;
-int i;
-
-freq_cpu_t freq1;
-freq_cpu_t freq2;
-ulong *freqs;
-ulong freqs_count;
-
-int is(char *buf, char *string)
-{
-    return strcmp(buf, string) == 0;
-}
-
-int main(int argc, char *argv[])
-{
-	state_assert(s, topology_init(&topo),   return 0);
-	state_assert(s, mgt_pstate_load(&topo), return 0);
-
-	state_assert(s, freq_cpu_init(&topo),   return 0);
-	state_assert(s, freq_cpu_data_alloc(&freq1,   NULL,         NULL), return 0);
-	state_assert(s, freq_cpu_data_alloc(&freq2, &freqs, &freqs_count), return 0);
-
-    while (1)
-    {
-        debug("command: ");
-        scanf("%s", cmnd);
-
-        if (is(cmnd, "init")) {
-			debug("initializing...");
-			state_assert(s, mgt_pstate_init(&c),);
-		} else if (is(cmnd, "dispose")) {
-			debug("disposing...");
-			state_assert(s, mgt_pstate_dispose(&c),);
-		} else if (is(cmnd, "get_governor")) {
-			state_assert(s, mgt_pstate_get_governor(&c, &governor),);
-			debug("getting governor... %u", governor);
-		} else if (is(cmnd, "set_governor")) {
- 			scanf("%s", opt1);
-			state_assert(s, mgt_pstate_set_governor(&c, (uint) atoi(opt1)),);
-			debug("getting governor... %u", governor);
-		} else if (is(cmnd, "get_available_list")) {
-			state_assert(s, mgt_pstate_get_available_list(&c, pstate_list, &pstate_count),);
-			for (i = 0; i < pstate_count; ++i) {
-				debug("avail P%llu: %llu KHz, %llu MHz", pstate_list[i].idx, pstate_list[i].khz, pstate_list[i].mhz);
-			}
-		} else if (is(cmnd, "get_current_list")) {
-			state_assert(s, mgt_pstate_get_current_list(&c, pstate_list),);
-			for (i = 0; i < topo.cpu_count; ++i) {
-				debug("current CPU%d: P%llu, %llu KHz, %llu MHz", i, pstate_list[i].idx, pstate_list[i].khz, pstate_list[i].mhz);
-			}
-		} else if (is(cmnd, "set_current")) {
- 			scanf("%s", opt1);
-			state_assert(s, mgt_pstate_set_current(&c, (uint) atoi(opt1)),);
-		} else if (is(cmnd, "set_current_list")) {
-		} else if (is(cmnd, "get_nominal")) {
-			state_assert(s, mgt_pstate_get_nominal(&c, &nominal),);
-			debug("nominal P_STATE is %u", nominal);
-		} else if (is(cmnd, "test")) {
-			state_assert(s, freq_cpu_read(&freq1),);
-			sleep(2);
-			state_assert(s, freq_cpu_read_diff(&freq2, &freq1, freqs, NULL),);
-			for (i = 0; i < freqs_count; ++i) {
-				debug("aperf freqs CPU%d: %lu", i, freqs[i]);
-			}
-		} else {
-			debug("command not found");
-		}
-	}
-
-	return 0;
-}
-#endif

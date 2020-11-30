@@ -22,6 +22,8 @@
 #include <common/plugins.h>
 #include <common/hardware/topology.h>
 
+#define all_cpus -1
+
 typedef struct pstate_s {
 	uint   idx;
 	ullong khz;
@@ -36,7 +38,7 @@ typedef struct mgt_ps_driver_ops_s
 	state_t (*get_current_list)   (ctx_t *c, const ullong **freq_list);
 	state_t (*get_governor)       (ctx_t *c, uint *governor);
 	state_t (*set_current_list)   (ctx_t *c, uint *freq_index);
-	state_t (*set_current)        (ctx_t *c, uint freq_index);
+	state_t (*set_current)        (ctx_t *c, uint freq_index, int cpu);
 	state_t (*set_governor)       (ctx_t *c, uint governor);
 } mgt_ps_driver_ops_t;
 
@@ -51,7 +53,7 @@ typedef struct mgt_ps_ops_s
 	state_t (*get_governor)         (ctx_t *c, uint *governor);
 	state_t (*get_index)            (ctx_t *c, ullong freq_khz, uint *pstate_index, uint closest);
 	state_t (*set_current_list)     (ctx_t *c, uint *pstate_index);
-	state_t (*set_current)          (ctx_t *c, uint pstate_index);
+	state_t (*set_current)          (ctx_t *c, uint pstate_index, int cpu);
 	state_t (*set_governor)         (ctx_t *c, uint governor);
 } mgt_ps_ops_t;
 
@@ -120,8 +122,8 @@ state_t mgt_pstate_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uint
 //Sets a P_STATE and userspace governor per CPU. The allocated list depends on the user.
 state_t mgt_pstate_set_current_list(ctx_t *c, uint *pstate_index);
 
-// Set a P_STATE in all CPUs. The  allocated list depends on the user.
-state_t mgt_pstate_set_current(ctx_t *c, uint pstate_index);
+// Set a P_STATE in specified CPU. Use all_cpus to set that P_STATE in all CPUs.
+state_t mgt_pstate_set_current(ctx_t *c, uint pstate_index, int cpu);
 
 // Sets the governor (take a look to Governor global variable.
 state_t mgt_pstate_set_governor(ctx_t *c, uint governor);

@@ -435,6 +435,10 @@ static state_t set_frequency_step2(amd17_ctx_t *f, uint cpu, uint i)
 	ullong reg;
 	state_t s;
 
+	if (cpu >= tp.cpu_count) {
+		return_msg(EAR_ERROR, Generr.cpu_invalid);
+	}
+
 	reg = f->regs[0];
 	reg = setbits64(reg, f->psss[i].fid,  7,  0);
 	reg = setbits64(reg, f->psss[i].did, 13,  8);
@@ -476,7 +480,7 @@ static state_t set_frequency_step1(amd17_ctx_t *f)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index)
+state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index, int _cpu)
 {
 	state_t s2 = EAR_SUCCESS;
 	state_t s1 = EAR_SUCCESS;
@@ -488,6 +492,9 @@ state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index)
 	}
 	if (xtate_fail(s1, set_frequency_step1(f))) {
 		return s1;
+	}
+	if (cpu != all_cpus) {
+		return set_frequency_step2(f, (uint) _cpu, pstate_index[cpu]);
 	}
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		if (xtate_fail(s1, set_frequency_step2(f, cpu, pstate_index[cpu]))) {

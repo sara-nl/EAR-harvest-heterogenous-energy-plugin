@@ -164,7 +164,7 @@ ulong _frequency_set_all_cpus(ulong freq_khz)
 	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_set_current(&c, pstate_index))) {
+	if (state_fail(mgt_pstate_set_current(&c, pstate_index, all_cpus))) {
 		return 0LU;
 	}
 	// Returns written P_STATE.
@@ -179,24 +179,40 @@ ulong _frequency_set_with_mask(cpu_set_t *mask, ulong freq_khz)
 	if (!init) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_get_current_list(&c, current_list))) {
-		return available_list[pstate_nominal].khz;
-	}
 	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
   		return current_list[0].khz;
 	}
     for (i = 0; i < topo.cpu_count; i++)
     {
-		index_list[i] = current_list[i].idx;
     	if (CPU_ISSET(i, mask)) {
-			index_list[i] = pstate_index;
+			debug("setting CPU%d to P_STATE %u", i, pstate_index);
+			if (state_fail(mgt_pstate_set_current(&c, pstate_index, i))) {
+				error("while setting frequency of CPU%d to %lu", i, freq_khz);
+			}
 		}
-		debug("setting cpu %d to P_STATE %u", i, index_list[i]);
-	}
-	if (state_fail(mgt_pstate_set_current_list(&c, index_list))) {
-     	error("while setting frequency %lu", freq_khz);
 	}
   	return freq_khz;
+}
+
+ulong _frequency_set_with_list(uint x, ulong *list)
+{
+	uint pstate_index;
+	state_t s1, s2;
+	int cpu;
+
+	if (list == NULL) {
+		return 0LU;
+	}
+	for (cpu = 0; cpu < topo.cpu_count; ++cpu) {
+		if (xtate_ok(s1, mgt_pstate_get_index(&c, (ullong) list[cpu]), &pstate_index, 0)) {
+			if (state_ok(s2, mgt_pstate_set_current(&c, pstate_index, i))) {
+			}
+		}
+	}
+	if (state_fail(s1) || state_fail(s2)) {
+		return 0LU;
+	}
+	return list[topo.cpu_count-1];
 }
 
 ulong _frequency_pstate_to_freq(uint pstate_index)

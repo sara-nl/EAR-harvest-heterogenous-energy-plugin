@@ -42,7 +42,7 @@ state_t pstate_dummy_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, ui
 /** Setters */
 state_t pstate_dummy_set_current_list(ctx_t *c, uint *pstate_index);
 
-state_t pstate_dummy_set_current(ctx_t *c, uint pstate_index);
+state_t pstate_dummy_set_current(ctx_t *c, uint pstate_index, int cpu);
 
 state_t pstate_dummy_set_governor(ctx_t *c, uint governor);
 

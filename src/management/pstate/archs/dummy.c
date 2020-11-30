@@ -268,7 +268,7 @@ state_t pstate_dummy_set_current_list(ctx_t *c, uint *pstate_index)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_dummy_set_current(ctx_t *c, uint pstate_index)
+state_t pstate_dummy_set_current(ctx_t *c, uint pstate_index, int cpu)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -279,7 +279,7 @@ state_t pstate_dummy_set_current(ctx_t *c, uint pstate_index)
 	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s;
 	}
-	if (xtate_fail(s, f->driver->set_current(&f->driver_c, pstate_index))) {
+	if (xtate_fail(s, f->driver->set_current(&f->driver_c, pstate_index, cpu))) {
 		return s;
 	}
 

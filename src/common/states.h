@@ -75,6 +75,7 @@ struct generr_s {
 	char *lock;
 	char *context_null;
 	char *arg_outbounds;
+	char *cpu_invalid;
 } Generr __attribute__((weak)) = {
 	.api_undefined = "the API is undefined",
 	.api_incompatible = "the current hardware is not supported by the API",
@@ -86,6 +87,7 @@ struct generr_s {
 	.lock = "error while using mutex_lock",
 	.context_null = "context can not be null",
 	.arg_outbounds = "argument out of bounds",
+	.cpu_invalid = "invalid CPU",
 };
 
 /*
