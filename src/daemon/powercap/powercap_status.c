@@ -27,7 +27,7 @@
 #include <common/colors.h>
 //#define SHOW_DEBUGS 0
 #include <common/output/verbose.h>
-#include <common/hardware/frequency.h>
+#include <management/pstate/connector.h>
 #include <common/states.h>
 #include <daemon/powercap/powercap.h>
 #include <common/types/pc_app_info.h>

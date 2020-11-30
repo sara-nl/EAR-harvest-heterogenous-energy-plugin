@@ -25,7 +25,7 @@
 #include <common/states.h>
 #define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
-#include <common/hardware/frequency.h>
+#include <management/pstate/connector.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/powercap/powercap_status.h>

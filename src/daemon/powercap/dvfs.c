@@ -32,7 +32,7 @@
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
 #include <metrics/energy/cpu.h>
-#include <common/hardware/frequency.h>
+#include <management/pstate/connector.h>
 #include <common/hardware/hardware_info.h>
 #include <daemon/powercap/powercap_status_conf.h>
 #include <daemon/powercap/powercap_status.h>

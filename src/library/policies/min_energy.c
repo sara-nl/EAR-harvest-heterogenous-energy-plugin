@@ -25,7 +25,7 @@
 //#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <common/hardware/frequency.h>
+#include <management/pstate/connector.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/local_api/eard_api.h>

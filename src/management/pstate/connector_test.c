@@ -13,7 +13,7 @@
 #if CONNECTOR
 #include <management/pstate/connector.h>
 #else
-#include <common/hardware/frequency.h>
+#include <management/pstate/connector.h>
 #endif
 #include <common/output/debug.h>
 

@@ -34,7 +34,7 @@
 #include <daemon/power_monitor.h>
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/energy/energy_node.h>
-#include <common/hardware/frequency.h>
+#include <management/pstate/connector.h>
 
 #define close_app_connection()
 

@@ -47,10 +47,8 @@ libc_OBJS = \
     $(SRCDIR)/common/types/pc_app_info.o \
     $(SRCDIR)/common/string_enhanced.o \
     $(SRCDIR)/common/hardware/bithack.o \
-    $(SRCDIR)/common/hardware/frequency.o \
     $(SRCDIR)/common/hardware/hardware_info.o \
     $(SRCDIR)/common/hardware/cpuid.o \
-    $(SRCDIR)/common/hardware/cpupower.o \
     $(SRCDIR)/common/hardware/topology.o \
     $(SRCDIR)/common/hardware/topology_frequency.o \
     $(SRCDIR)/common/hardware/architecture.o \

@@ -33,7 +33,7 @@ static uint       pstate_count;
 static uint       pstate_nominal;
 static uint       init;
 
-state_t _frequency_init(uint x)
+state_t frequency_init(uint x)
 {
 	state_t s;
 	
@@ -74,7 +74,7 @@ state_t _frequency_init(uint x)
 	return EAR_SUCCESS;
 }
 
-state_t _frequency_dispose()
+state_t frequency_dispose()
 {
 	state_t s;
 
@@ -95,7 +95,7 @@ state_t _frequency_dispose()
 	return EAR_SUCCESS;
 }
 
-uint _frequency_get_num_pstates()
+uint frequency_get_num_pstates()
 {
 	if (!init) {
 		return 0;
@@ -104,7 +104,7 @@ uint _frequency_get_num_pstates()
 	return pstate_count;
 }
 
-ulong _frequency_get_cpu_freq(uint cpu)
+ulong frequency_get_cpu_freq(uint cpu)
 {
 	if (!init) {
 		return 0LU;
@@ -119,7 +119,7 @@ ulong _frequency_get_cpu_freq(uint cpu)
 	return (ulong) current_list[cpu].khz;
 }
 
-ulong _frequency_get_nominal_freq()
+ulong frequency_get_nominal_freq()
 {
 	if (!init) {
 		return 0LU;
@@ -128,7 +128,7 @@ ulong _frequency_get_nominal_freq()
 	return (ulong) available_list[pstate_nominal].khz;
 }
 
-ulong _frequency_get_nominal_pstate()
+ulong frequency_get_nominal_pstate()
 {
 	if (!init) {
 		return 0LU;
@@ -137,7 +137,7 @@ ulong _frequency_get_nominal_pstate()
 	return (ulong) pstate_nominal;
 }
 
-ulong *_frequency_get_freq_rank_list()
+ulong *frequency_get_freq_rank_list()
 {
 	static ulong *list_khz = NULL;
 	int i;
@@ -154,7 +154,7 @@ ulong *_frequency_get_freq_rank_list()
 	return list_khz;
 }
 
-ulong _frequency_set_all_cpus(ulong freq_khz)
+ulong frequency_set_all_cpus(ulong freq_khz)
 {
 	uint pstate_index;
 	// Sets a frequency in KHz in all CPUs.
@@ -171,7 +171,7 @@ ulong _frequency_set_all_cpus(ulong freq_khz)
 	return freq_khz;
 }
 
-ulong _frequency_set_with_mask(cpu_set_t *mask, ulong freq_khz)
+ulong frequency_set_with_mask(cpu_set_t *mask, ulong freq_khz)
 {
 	uint pstate_index;
 	int i = 0;
@@ -194,7 +194,7 @@ ulong _frequency_set_with_mask(cpu_set_t *mask, ulong freq_khz)
   	return freq_khz;
 }
 
-ulong _frequency_set_with_list(uint x, ulong *list)
+ulong frequency_set_with_list(uint x, ulong *list)
 {
 	uint pstate_index;
 	state_t s1, s2;
@@ -215,7 +215,7 @@ ulong _frequency_set_with_list(uint x, ulong *list)
 	return list[topo.cpu_count-1];
 }
 
-ulong _frequency_pstate_to_freq(uint pstate_index)
+ulong frequency_pstate_to_freq(uint pstate_index)
 {
 	// Converts index to frequency.
 	if (!init) {
@@ -228,7 +228,7 @@ ulong _frequency_pstate_to_freq(uint pstate_index)
 	return (ulong) available_list[pstate_index].khz;
 }
 
-uint _frequency_freq_to_pstate(ulong freq_khz)
+uint frequency_freq_to_pstate(ulong freq_khz)
 {
 	uint pstate_index;
 	if (!init) {
@@ -241,7 +241,7 @@ uint _frequency_freq_to_pstate(ulong freq_khz)
 	return pstate_index;
 }
 
-ulong _frequency_pstate_to_freq_list(uint pstate_index, ulong *list, uint pstate_count)
+ulong frequency_pstate_to_freq_list(uint pstate_index, ulong *list, uint pstate_count)
 {
 	// Given a frequency list and a P_STATE index, returns a frequency.
 	if (pstate_index >= pstate_count) {
@@ -250,7 +250,7 @@ ulong _frequency_pstate_to_freq_list(uint pstate_index, ulong *list, uint pstate
 	return list[pstate_index];
 }
 
-uint _frequency_freq_to_pstate_list(ulong freq_khz, ulong *list, uint pstate_count)
+uint frequency_freq_to_pstate_list(ulong freq_khz, ulong *list, uint pstate_count)
 {
 	int i = 0, found = 0;
 	for (i = found = 0; i < pstate_count && !found; ++i) {
@@ -259,17 +259,17 @@ uint _frequency_freq_to_pstate_list(ulong freq_khz, ulong *list, uint pstate_cou
 	return i-1;
 }
 
-void _frequency_set_performance_governor_all_cpus()
+void frequency_set_performance_governor_all_cpus()
 {
 	mgt_pstate_set_governor(&c, Governor.performance);
 }
 
-void _frequency_set_userspace_governor_all_cpus()
+void frequency_set_userspace_governor_all_cpus()
 {
 	mgt_pstate_set_governor(&c, Governor.userspace);
 }
 
-int _frequency_is_valid_frequency(ulong freq_khz)
+int frequency_is_valid_frequency(ulong freq_khz)
 {
 	uint pstate_index;
 	if (!init) {
@@ -281,7 +281,7 @@ int _frequency_is_valid_frequency(ulong freq_khz)
 	return 1;
 }
 
-int _frequency_is_valid_pstate(uint pstate)
+int frequency_is_valid_pstate(uint pstate)
 {
 	if (!init) {
 		return 0;
@@ -289,7 +289,7 @@ int _frequency_is_valid_pstate(uint pstate)
 	return pstate < pstate_count;
 }
 
-uint _frequency_closest_pstate(ulong freq_khz)
+uint frequency_closest_pstate(ulong freq_khz)
 {
 	uint pstate_index;
 	if (!init) {
@@ -304,7 +304,7 @@ uint _frequency_closest_pstate(ulong freq_khz)
 	return pstate_index;
 }
 
-ulong _frequency_closest_frequency(ulong freq_khz)
+ulong frequency_closest_frequency(ulong freq_khz)
 {
 	uint pstate_index;
 	if (!init) {
@@ -316,7 +316,7 @@ ulong _frequency_closest_frequency(ulong freq_khz)
 	return available_list[pstate_index].khz;
 }
 
-ulong _frequency_closest_high_freq(ulong freq_khz, int pstate_min)
+ulong frequency_closest_high_freq(ulong freq_khz, int pstate_min)
 {
 	ulong newf;
 	float ff;
@@ -326,10 +326,10 @@ ulong _frequency_closest_high_freq(ulong freq_khz, int pstate_min)
 
 	if (newf > (ulong) available_list[pstate_min].khz)
 		return (ulong) available_list[pstate_min].khz;
-	return _frequency_closest_frequency(newf);
+	return frequency_closest_frequency(newf);
 }
 
-void _get_governor(governor_t *_governor)
+void get_governor(governor_t *_governor)
 {
 	uint governor;
 	// Clear
@@ -350,7 +350,7 @@ void _get_governor(governor_t *_governor)
 	_governor->min_f = available_list[pstate_count-1].khz;
 }
 
-void _set_governor(governor_t *_governor)
+void set_governor(governor_t *_governor)
 {
 	uint governor;
 	//

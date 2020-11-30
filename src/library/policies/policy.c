@@ -25,7 +25,7 @@
 #include <common/includes.h>
 #include <common/config/config_env.h>
 #include <common/system/symplug.h>
-#include <common/hardware/frequency.h>
+#include <management/pstate/connector.h>
 #include <library/policies/policy_ctx.h>
 #include <library/policies/policy.h>
 #include <library/common/externs.h>
