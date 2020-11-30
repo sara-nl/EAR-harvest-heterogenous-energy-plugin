@@ -35,5 +35,8 @@ state_t energy_lib_accumulated(unsigned long *e,edata_t init,edata_t end);
 
 //
 state_t energy_lib_to_str(char *str,edata_t e);
+uint energy_lib_is_null(edata_t e);
+state_t energy_lib_copy(edata_t dst,edata_t src);
+
 
 #endif //EAR_ENERGY_H

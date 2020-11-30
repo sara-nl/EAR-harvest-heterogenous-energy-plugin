@@ -17,6 +17,7 @@
 
 #define CACHE_METRICS 1
 //#define SHOW_DEBUGS 1
+#define SHOW_ENERGY 1
 
 #include <errno.h>
 #include <stdio.h>
@@ -174,13 +175,17 @@ long long metrics_time()
 
 static void metrics_global_start()
 {
+	int ret;
 	aux_time = metrics_time();
 
 	if (masters_info.my_master_rank>=0)
 	{
 		eards_begin_app_compute_turbo_freq();
 		// New
-		eards_node_dc_energy(aux_energy,node_energy_datasize);
+		ret = eards_node_dc_energy(aux_energy,node_energy_datasize);
+		if ((ret == EAR_ERROR) || energy_lib_is_null(aux_energy)){
+			verbose(0,"MR[%d] Error reading Node energy at application start",masters_info.my_master_rank);
+		}
 		eards_read_rapl(aux_rapl);
 		eards_start_uncore();
 		eards_read_uncore(metrics_bandwith_init[APP]);
@@ -272,10 +277,12 @@ static void metrics_global_stop()
 static void metrics_partial_start()
 {
 	int i;
+	/* This must be replaced by a copy of energy */
 	memcpy(metrics_ipmi[LOO],aux_energy,node_energy_datasize);
 	metrics_usecs[LOO]=aux_time;
 	
 	if (masters_info.my_master_rank>=0){ 
+		verbose(0,"MR[%d] metrics_partial_start",masters_info.my_master_rank);
 		eards_begin_compute_turbo_freq();
 		#if USE_GPU_LIB
 		if (gpu_initialized){
@@ -310,7 +317,7 @@ static void metrics_partial_start()
 static int metrics_partial_stop(uint where)
 {
 	long long aux_flops;
-	int i;
+	int i,ret;
 	ulong c_energy;
 	long long c_time;
 	float c_power;
@@ -326,7 +333,11 @@ static int metrics_partial_stop(uint where)
 
 	// Manual IPMI accumulation
 	if (masters_info.my_master_rank>=0){
-		eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
+		ret = eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
+		if (energy_lib_is_null(aux_energy_stop) || (ret == EAR_ERROR)){ 
+			verbose(0,"MR[%d] eards_node_dc_energy fails",masters_info.my_master_rank);
+			return EAR_NOT_READY;
+		}
 		energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
 		energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
 		energy_lib_to_str(stop_energy_str,aux_energy_stop);	
@@ -355,6 +366,12 @@ static int metrics_partial_stop(uint where)
 		debug("EAR_NOT_READY because of power %f\n",c_power);
 		return EAR_NOT_READY;
 	}
+	#if SHOW_ENERGY
+	if (masters_info.my_master_rank >= 0){
+		verbose(0,"MR[%d] Signature power %lf energy init %lu energy end %lu loop accumulated %lu accum_loop %lu accum_app %lu",masters_info.my_master_rank,
+		c_power,*((ulong *)aux_energy_stop), *((ulong *)metrics_ipmi[LOO]),c_energy,acum_ipmi[LOO],acum_ipmi[APP]);
+	}
+	#endif
 
 
 	/* This is new to avoid cases where uncore gets frozen */
@@ -382,7 +399,13 @@ static int metrics_partial_stop(uint where)
 		#endif
 	}
 	/* End new section to check frozen uncore counters */
+	if (masters_info.my_master_rank>=0){
+		verbose(0,"MR[%d] metrics_partial_stop",masters_info.my_master_rank);
+	}
+	energy_lib_copy(aux_energy,aux_energy_stop);
+	#if 0
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
+	#endif
 	aux_time=aux_time_stop;
 
 	if (masters_info.my_master_rank>=0){
@@ -394,11 +417,16 @@ static int metrics_partial_stop(uint where)
 		}
 		acum_ipmi[APP] += acum_ipmi[LOO];
 	}
-	ulong *ei,*ee;
-	ei=(ulong *)metrics_ipmi[LOO];
-	ee=(ulong *)aux_energy_stop;
-	//debug("loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
-	// Manual time accumulation
+	#if SHOW_ENERGY 
+	if (masters_info.my_master_rank >= 0){
+		/* Assume energy data is ulong, that will not work for RAPL */
+		ulong *ei,*ee;
+		ei=(ulong *)metrics_ipmi[LOO];
+		ee=(ulong *)aux_energy_stop;
+		verbose(0,"loop energy %lu app acum energy %lu ",acum_ipmi[LOO],acum_ipmi[APP]);
+	}
+	#endif
+	//  Manual time accumulation
 	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
 	
@@ -543,9 +571,11 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	if (masters_info.my_master_rank>=0){
 	// Energy node
 		metrics->DC_power = (double) acum_ipmi[s] / (time_s * node_energy_units);
+		#if SHOW_ENERGY
 		if ((metrics->DC_power > system_conf->max_sig_power) || (metrics->DC_power < system_conf->min_sig_power)){
-			debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
+			verbose(0,"Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
 		}
+		#endif
 
 		int p;
 		metrics->PCK_power=0;
@@ -667,6 +697,7 @@ int metrics_init(topology_t *topo)
 	// node_energy_datasize=eards_node_energy_data_size();
 	energy_lib_datasize(&node_energy_datasize);
 	energy_lib_units(&node_energy_units);
+	/* We should create a data_alloc for enerrgy and a set_null */
 	aux_energy=(edata_t)malloc(node_energy_datasize);
 	aux_energy_stop=(edata_t)malloc(node_energy_datasize);
 	metrics_ipmi[0]=(edata_t)malloc(node_energy_datasize);

@@ -445,8 +445,11 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                             num_gpus++;
                         }
                     }
-                    gpu_freq_aux /= num_gpus;
-                    gpu_util_aux /= num_gpus;
+                    if (num_gpus > 0)
+                    {
+                        gpu_freq_aux /= num_gpus;
+                        gpu_util_aux /= num_gpus;
+                    }
                     gpu_freq += gpu_freq_aux;
                     gpu_util += gpu_util_aux;
                 }

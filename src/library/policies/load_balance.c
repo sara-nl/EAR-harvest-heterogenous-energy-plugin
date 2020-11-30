@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -178,7 +178,11 @@ ulong load_balance_for_process(polctx_t *c,float max_node_penalty,uint local_id)
 		def_freq=FREQ_DEF(c->app->def_freq);
 		def_pstate=frequency_closest_pstate(def_freq);
     #ifdef POWERCAP
-    curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+    if (c->pc_limit > 0){
+			curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+		}else{
+    	curr_freq=*(c->ear_frequency);
+		}
     #else
     curr_freq=*(c->ear_frequency);
     #endif

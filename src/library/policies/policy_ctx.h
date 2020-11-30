@@ -59,6 +59,7 @@ typedef struct policy_context {
 	uint      num_gpus;
 	#endif
 	int affinity;
+	int pc_limit;	
 } polctx_t;
 
 void print_policy_ctx(polctx_t *p);
