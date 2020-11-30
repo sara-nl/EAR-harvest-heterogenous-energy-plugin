@@ -354,7 +354,7 @@ state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index, int cpu)
 	}
 	// If it is for a specified CPU
 	if (cpu >= 0 && cpu < tp.cpu_count) {
-		sprintf(data, "%llu", f->freqs_avail[freqs_index[cpu]]);
+		sprintf(data, "%llu", f->freqs_avail[freq_index]);
 		debug("writing a word '%s'", data);
 		return write_word(f->fds_freq[cpu], data, strlen(data), 1);
 	}

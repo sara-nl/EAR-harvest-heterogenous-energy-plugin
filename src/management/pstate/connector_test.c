@@ -151,6 +151,16 @@ int main(int argc, char *argv[])
 			scanf("%s", opt1);
 			RCALL(retlong, frequency_closest_high_freq((ulong) atol(opt1), 1));
 			debug("frequency_closest_high_freq returned %lu", retlong);
+		} else if (is(cmnd, "21")) {
+			RCALL(retplong, frequency_get_freq_rank_list()); 
+			for (i = 0; i < 16; ++i) {
+				retplong[i]    = 2500000LU;
+				retplong[i]    = 1000000LU;
+				retplong[i+32] = 2500000LU;
+				retplong[i+48] = 1000000LU;
+			}
+			RCALL(retlong, frequency_set_with_list(0, retplong));
+			debug("frequency_set_with_list returned %lu", retlong);
 		} 
 	}
 

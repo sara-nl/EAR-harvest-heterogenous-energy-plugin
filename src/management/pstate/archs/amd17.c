@@ -473,14 +473,14 @@ static state_t set_frequency_step1(amd17_ctx_t *f)
 	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s;
 	}
-	if (xtate_fail(s, f->driver->set_current(&f->driver_c, 1))) {
+	if (xtate_fail(s, f->driver->set_current(&f->driver_c, 1, all_cpus))) {
 		return s;
 	}
 
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index, int _cpu)
+state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index)
 {
 	state_t s2 = EAR_SUCCESS;
 	state_t s1 = EAR_SUCCESS;
@@ -492,9 +492,6 @@ state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index, int _cpu)
 	}
 	if (xtate_fail(s1, set_frequency_step1(f))) {
 		return s1;
-	}
-	if (cpu != all_cpus) {
-		return set_frequency_step2(f, (uint) _cpu, pstate_index[cpu]);
 	}
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		if (xtate_fail(s1, set_frequency_step2(f, cpu, pstate_index[cpu]))) {
@@ -504,7 +501,7 @@ state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index, int _cpu)
 	return s2;
 }
 
-state_t pstate_amd17_set_current(ctx_t *c, uint pstate_index)
+state_t pstate_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
 {
 	state_t s1 = EAR_SUCCESS;
 	state_t s2 = EAR_SUCCESS;
@@ -516,6 +513,9 @@ state_t pstate_amd17_set_current(ctx_t *c, uint pstate_index)
 	}
 	if (xtate_fail(s1, set_frequency_step1(f))) {
 		return s1;
+	}
+	if (_cpu != all_cpus) {
+		return set_frequency_step2(f, (uint) _cpu, pstate_index);
 	}
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		if (xtate_fail(s1, set_frequency_step2(f, cpu, pstate_index))) {
