@@ -5,7 +5,7 @@ CCC     = $(CC) $(CFLAGS)
 ######## INSTALLATION
 
 ifdef DB_BASE
-com1_BINS = eacct econtrol ereport
+com1_BINS = eacct econtrol ereport eacct1
 com1_PATH = $(DESTDIR)/bin
 com1_PERM = 2771
 com2_BINS = edb_create edb_clean_pm
@@ -24,6 +24,8 @@ rapi_OBJS = $(SRCDIR)/daemon/remote_api/eard_rapi.o $(SRCDIR)/common/messaging/m
 all: $(com1_BINS) $(com2_BINS)
 
 eacct: ear_acct.c $(comm_OBJS)
+	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
+eacct1: ear_acct1.c $(comm_OBJS)
 	$(CCC) $(DB_CFLAGS) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
 econtrol: ear_control.c $(rapi_OBJS) $(comm_OBJS)
