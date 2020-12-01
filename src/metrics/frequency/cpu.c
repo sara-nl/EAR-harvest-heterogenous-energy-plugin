@@ -56,7 +56,7 @@ state_t freq_cpu_init(topology_t *tp)
 		ops.data_print  = freq_intel63_data_print;
 		return ops.init(tp);
 	} else {
-		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
+		return_msg(EAR_ERROR, Generr.api_incompatible);
 	}
 }
 

@@ -41,7 +41,7 @@ state_t cache_load(topology_t *tp)
 		ops.read		= cache_perf_read;
 		ops.data_print	= cache_perf_data_print;
 	} else {
-		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
+		return_msg(EAR_ERROR, Generr.api_incompatible);
 	}
 
 	return EAR_SUCCESS;
