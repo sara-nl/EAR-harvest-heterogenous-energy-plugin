@@ -106,6 +106,7 @@ void check_policy_values(policy_conf_t *p,int nump)
 
 void check_policy(policy_conf_t *p)
 {
+#if 0
     unsigned long f;
     /* We are using pstates */
     if (p->def_freq==(float)0){
@@ -122,16 +123,18 @@ void check_policy(policy_conf_t *p)
             error("New def_freq %f",p->def_freq);
         }
     }
+#endif
 }
 
 void compute_policy_def_freq(policy_conf_t *p)
 {
+#if 0
 	if (p->def_freq==(float)0){
 		p->def_freq=(float)frequency_pstate_to_freq(p->p_state)/1000000.0;
 	}else{
 		p->p_state=frequency_closest_pstate((unsigned long)(p->def_freq*1000000));
 	}
-
+#endif
 }
 
 state_t POLICY_token(unsigned int *num_policiesp, policy_conf_t **power_policiesl,char *line)

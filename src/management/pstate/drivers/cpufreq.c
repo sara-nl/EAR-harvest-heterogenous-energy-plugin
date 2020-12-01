@@ -32,6 +32,7 @@ typedef struct cpufreq_ctx_s
 	ullong      freqs_current[128];
 	ullong      freqs_avail[128];
 	int         freqs_count;
+	int         freq_nominal;
 	char        freq_last[SZ_NAME_SHORT];
 	char        govr_last[SZ_NAME_SHORT];
 	char        freq_init[SZ_NAME_SHORT];
@@ -169,6 +170,28 @@ static state_t static_dispose(ctx_t *c, state_t s, char *msg)
 	return_msg(s, msg);
 }
 
+static void pstate_cpufreq_init_nominal(cpufreq_ctx_t *f)
+{	
+	char data[SZ_NAME_SHORT];
+	ullong aux = 0;
+	int fd = -1;
+
+	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN)
+	{
+		if ((fd = open("/sys/devices/system/cpu/cpu0/cpufreq/cpb", O_RDONLY)) >= 0) {
+			if (state_ok(read_word(fd, data, 0))) {
+				debug("cpb read: %s", data);
+				f->freq_nominal = atoi(data);
+			}
+			close(fd);
+		}
+	}
+	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
+		debug("freq[0] - freq[1] = %llu - %llu", f->freqs_avail[0], f->freqs_avail[1]);
+		f->freq_nominal = ((f->freqs_avail[0] - f->freqs_avail[1]) <= 1000);
+	}
+}
+
 state_t pstate_cpufreq_init(ctx_t *c)
 {
 	char path[SZ_PATH];
@@ -197,17 +220,25 @@ state_t pstate_cpufreq_init(ctx_t *c)
 	memset((void *) f->fds_freq, -1, tp.cpu_count * sizeof(int));
 	memset((void *) f->fds_freq, -1, tp.cpu_count * sizeof(int));
 	// Opening governors file (includes \n)
-	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
+	for (cpu = 0, aux = O_RDWR; cpu < tp.cpu_count; ++cpu) {
 		sprintf(path, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor", cpu);
-		if ((f->fds_govr[cpu] = open(path, O_RDWR)) == -1) {
-			return static_dispose(c, EAR_ERROR, strerror(errno));
+		if ((f->fds_govr[cpu] = open(path, aux)) == -1) {
+			if (aux == O_RDONLY) {
+				return static_dispose(c, EAR_ERROR, strerror(errno));
+			}
+			aux = O_RDONLY;
+			cpu = -1;
 		}
 	}
 	// Opening frequencies file (includes \n)
-	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
+	for (cpu = 0, aux = O_RDWR; cpu < tp.cpu_count; ++cpu) {
 		sprintf(path, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_setspeed", cpu);
-		if ((f->fds_freq[cpu] = open(path, O_RDWR)) == -1) {
-			return static_dispose(c, EAR_ERROR, strerror(errno));
+		if ((f->fds_freq[cpu] = open(path, aux)) == -1) {
+			if (aux == O_RDONLY) {
+				return static_dispose(c, EAR_ERROR, strerror(errno));
+			}
+			aux = O_RDONLY;
+			cpu = -1;
 		}
 	}
 	// Loading available frequencies
@@ -234,10 +265,13 @@ state_t pstate_cpufreq_init(ctx_t *c)
 	}
 	strncpy(f->govr_last, f->govr_init, SZ_NAME_SHORT);
 	strncpy(f->freq_last, f->freq_init, SZ_NAME_SHORT);
+	// Detecting nominal
+	pstate_cpufreq_init_nominal(f);
 	// Finishing 
 	debug ("init sum: %u available frequencies", f->freqs_count);
 	debug ("init sum: first frequency '%s'", f->freq_init);
 	debug ("init sum: first governor '%s'", f->govr_init);
+	debug ("init sum: nominal freq '%s'", f->freq_nominal);
 	f->init = 1;
 
 	return EAR_SUCCESS;
@@ -283,6 +317,13 @@ state_t pstate_cpufreq_get_current_list(ctx_t *c, const ullong **freq_list)
 		}
 	}
 	return s2;
+}
+
+state_t pstate_cpufreq_get_nominal(ctx_t *c, uint *pstate_nominal)
+{
+	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN) {
+		return EAR_SUCCESS;
+	}
 }
 
 state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor)

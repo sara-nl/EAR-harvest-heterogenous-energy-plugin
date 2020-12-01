@@ -17,15 +17,16 @@ all: all.components $(psta_BINS)
 
 proto:
 	/hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -Wall -fPIC -I $(SRCDIR) \
-	-o test_freq connector_test.c \
-	pstate.o archs/amd17.o archs/dummy.o drivers/cpufreq.o \
-	../../common/libcommon.a ../../metrics/libmetrics.a \
-	-lpthread -lm
-	/hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -Wall -fPIC -I $(SRCDIR) \
 	-DCONNECTOR=1 -o test_conn connector_test.c \
 	connector.o pstate.o archs/amd17.o archs/dummy.o drivers/cpufreq.o \
-	../../common/libcommon.a ../../metrics/libmetrics.a \
+	../../metrics/libmetrics.a ../../common/libcommon.a \
 	-lpthread -lm
+
+#	/hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -Wall -fPIC -I $(SRCDIR) \
+#	-o test_freq connector_test.c \
+#	pstate.o archs/amd17.o archs/dummy.o drivers/cpufreq.o \
+#	../../metrics/libmetrics.a ../../common/libcommon.a \
+#	-lpthread -lm
 
 ######## SUBFOLDERS
 

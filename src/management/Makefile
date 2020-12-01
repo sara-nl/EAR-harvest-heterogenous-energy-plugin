@@ -3,6 +3,11 @@
 stat_BINS = libmgt.a
 
 mana_OBJS = \
+    $(SRCDIR)/management/pstate/pstate.o \
+    $(SRCDIR)/management/pstate/connector.o \
+    $(SRCDIR)/management/pstate/archs/amd17.o \
+    $(SRCDIR)/management/pstate/archs/dummy.o \
+    $(SRCDIR)/management/pstate/drivers/cpufreq.o \
     $(SRCDIR)/management/gpu/gpu.o \
     $(SRCDIR)/management/gpu/archs/dummy.o
 

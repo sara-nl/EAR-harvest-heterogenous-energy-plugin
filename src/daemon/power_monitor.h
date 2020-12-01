@@ -33,13 +33,14 @@
 #include <cpufreq.h>
 #endif
 #else
-#include <common/hardware/cpupower.h>
+//#include <common/hardware/cpupower.h>
 #endif
 
 #include <common/types/application.h>
 #include <common/messaging/msg_conf.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/accumulators/power_metrics.h>
+#include <management/pstate/connector.h>
 #include <daemon/node_metrics.h>
 
 typedef struct powermon_app{

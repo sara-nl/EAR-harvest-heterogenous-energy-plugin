@@ -85,7 +85,10 @@ state_t msr_open(uint cpu)
 	}
 		
 	if (fds[cpu] < 0) {
-		return_unlock_msg(EAR_SYSCALL_ERROR, strerror(errno), &lock_cpu[cpu]);
+		if (errno == EACCES) {
+			return_unlock_msg(EAR_NO_PERMISSIONS, strerror(errno), &lock_cpu[cpu]);
+		}
+		return_unlock_msg(EAR_ERROR, strerror(errno), &lock_cpu[cpu]);
 	}
 	
 	counters[cpu] += 1;
@@ -136,9 +139,9 @@ state_t msr_read(uint cpu, void *buffer, size_t size, off_t offset)
 
 	if (pread(fds[cpu], buffer, size, offset) != size) {
 		#ifdef MSR_LOCK
-		return_unlock_msg(EAR_SYSCALL_ERROR, strerror(errno), &lock_cpu[cpu]);
+		return_unlock_msg(EAR_ERROR, strerror(errno), &lock_cpu[cpu]);
 		#else
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
+		return_msg(EAR_ERROR, strerror(errno));
 		#endif
 	}
 
@@ -166,9 +169,9 @@ state_t msr_write(uint cpu, const void *buffer, size_t size, off_t offset)
 
 	if (pwrite(fds[cpu], buffer, size, offset) != size) {
 		#ifdef MSR_LOCK
-		return_unlock_msg(EAR_SYSCALL_ERROR, strerror(errno), &lock_cpu[cpu]);
+		return_unlock_msg(EAR_ERROR, strerror(errno), &lock_cpu[cpu]);
 		#else
-		return_msg(EAR_SYSCALL_ERROR, strerror(errno));
+		return_msg(EAR_ERROR, strerror(errno));
 		#endif
 	}
 

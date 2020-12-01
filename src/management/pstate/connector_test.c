@@ -20,10 +20,12 @@
 #if CONNECTOR
 #define CALL(f) \
 	debug("calling " #f); \
-	_ ## f
+	f
+//	_ ## f
 #define RCALL(r, f) \
 	debug("calling " #f); \
-	r = _ ## f
+	r = f
+//	r = _ ## f
 #else
 #define CALL(f) \
 	debug("calling " #f); \
@@ -60,7 +62,7 @@ int main(int argc, char *argv[])
 
 		if (is(cmnd, "init")) {
 			RCALL(retint, frequency_init(topo.cpu_count));
-			debug("frequency_init returned %d", retint);
+			debug("frequency_init returned %d (%s)", retint, state_msg);
 		} else if (is(cmnd, "disp")) {
 			CALL(frequency_dispose());
 		} else if (is(cmnd, "1")) {
@@ -164,22 +166,9 @@ int main(int argc, char *argv[])
 		} 
 	}
 
-	// Diferencias:
-	// - frequency_get_cpu_freq: esta devuelve la frecuencia virtual, pero debería devolver la frecuencia real
-	//   cuando el governor no es userspace. En caso de userspace, no es tan sencillo porque sin pasar por nuestra
-	//   API la manera de saber a que registro MSR apunta a veces no es correcta.
-	// - frequency_get_nominal_freq, la API vieja utiliza la llamada a hardware_info y en AMD no funciona.
-	// - frequency_pstate_to_freq, se devuelve la nominal en caso de fallo, no la 1 por defecto.
-	// - frequency_freq_to_pstate, se devuelve pstate_count-1 en caso de fallo, no pstate_count.
-	// - frequency_pstate_to_freq_list, las frecuencias incorrectas son la nominal auténtica y no la 1 por defecto.
-	// - frequency_freq_to_pstate_list, las frecuencias por debajo devuelven pstate_count-1, no pstate_count.
-	// - frequency_closest_pstate, se devuelve la nominal en caso de ser una frecuencia inferior al último P_STATE,
-	//   de manera forzada, ya que la API de management devuelve la frecuencia más próxima, en este caso la última.
-	// - frequency_closest_frequency, sin embargo si devuelve la más cercana, a diferencia de frequency_closest_pstate.
-	// - No se puede poner boost en AMD todavía. 
-	//
-	// Comentarios:
-	// - _frequency_set_all_cpus, setea la frecuencia si existe, no la más cercana.
+	// src/tools/coeffs_compute.c
+	// src/common/types/configuration/policy_conf.c
+	// src/common/hardware/architecture.c
 
 	return 0;
 }

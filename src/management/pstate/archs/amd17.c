@@ -51,6 +51,7 @@ typedef struct amd17_ctx_s {
 	uint                 boost_enabled;
 	uint                 pss_nominal;
 	uint                 pss_count;
+	uint                 user_mode;
 	uint                 init;
 } amd17_ctx_t;
 
@@ -218,6 +219,35 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 	return EAR_SUCCESS;
 }
 
+state_t pstate_amd17_init_user(amd17_ctx_t *f)
+{
+	ullong *freqs_available;
+	// Initializing in user mode
+	f->user_mode = 1;
+	// In user mode the driver is the main actor
+	if (xtate_fail(s, f->driver->get_available_list(&f->driver_c, &freqs_available, &f->pss_count))) {
+		return static_dispose(f, 0, s, state_msg);
+	}
+	// Saving registers is not necessary because there is no writing
+	#if SHOW_DEBUGS
+	pstate_print(f);
+	#endif
+	// Boost enabled
+	/sys/devices/system/cpu/cpu0/cpufreq
+	f->boost_enabled
+	// Building PSS object list
+	if (xtate_fail(s, pstate_build_psss(f))) {
+		return static_dispose(f, tp.cpu_count, s, state_msg);
+	}
+	//
+	debug("num P_STATEs: %d", f->pss_count);
+	debug("nominal P_STATE: P%d", f->pss_nominal);
+	debug("boost enabled: %d", f->boost_enabled);
+	f->init = 1;
+	
+	return EAR_SUCCESS;
+}
+
 state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 {
 	amd17_ctx_t *f;
@@ -231,27 +261,35 @@ state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 	if (state_ok(static_init_test(c, &f))) {
 		return_msg(EAR_ERROR, Generr.api_initialized);
 	}
-	//
-	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
-		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
-			return static_dispose(NULL, cpu, s, state_msg);
-		}
-	}
-	//
-	if (xtate_fail(s, msr_read(tp.cpus[0].id, &data, sizeof(ullong), REG_LIMITS))) {
-		return static_dispose(NULL, tp.cpu_count, s, state_msg);
-	}
-	// Find maximum and minimum P_STATE
-	ullong pstate_max = getbits64(data, 2, 0); // P_STATE max ex: P0
-	ullong pstate_min = getbits64(data, 6, 4); // P_STATE min ex: P7
-	if (pstate_max > 1LLU || pstate_min < 1LLU) {
-		return static_dispose(NULL, tp.cpu_count, s, "Incorrect P_STATE limits");
-	}
 	// Context
     if ((c->context = calloc(1, sizeof(amd17_ctx_t))) == NULL) {
         return_msg(EAR_ERROR, strerror(errno));
     }
     f = (amd17_ctx_t *) c->context;
+	// Init driver
+	f->driver = ops_driver;
+	if (xtate_fail(s, f->driver->init(&f->driver_c))) {
+		return static_dispose(f, tp.cpu_count, s, state_msg);
+	}
+	// Opening MSRs (switch to user mode if permission denied)
+	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
+		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
+			if (state_is(s, EAR_NO_PERMISSIONS)) {
+				return pstate_amd17_init_user();
+			}
+			return static_dispose(f, cpu, s, state_msg);
+		}
+	}
+	// Reading min and max P_STATEs
+	if (xtate_fail(s, msr_read(tp.cpus[0].id, &data, sizeof(ullong), REG_LIMITS))) {
+		return static_dispose(f, tp.cpu_count, s, state_msg);
+	}
+	// Find maximum and minimum P_STATE
+	ullong pstate_max = getbits64(data, 2, 0); // P_STATE max ex: P0
+	ullong pstate_min = getbits64(data, 6, 4); // P_STATE min ex: P7
+	if (pstate_max > 1LLU || pstate_min < 1LLU) {
+		return static_dispose(f, tp.cpu_count, s, "Incorrect P_STATE limits");
+	}
 	// Save registers configuration
 	for (data = 0LLU, i = MAX_REGISTERS - 1; i >= 0; --i) {
 		if (xtate_fail(s, msr_read(0, &f->regs[i], sizeof(ullong), REG_P0+((ullong) i)))) {
@@ -272,11 +310,6 @@ state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 	f->pss_nominal   = f->boost_enabled;
 	// Building PSS object list
 	if (xtate_fail(s, pstate_build_psss(f))) {
-		return static_dispose(f, tp.cpu_count, s, state_msg);
-	}
-	// Init driver
-	f->driver = ops_driver;
-	if (xtate_fail(s, f->driver->init(&f->driver_c))) {
 		return static_dispose(f, tp.cpu_count, s, state_msg);
 	}
 	//

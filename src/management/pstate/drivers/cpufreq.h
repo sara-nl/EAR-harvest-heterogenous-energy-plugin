@@ -31,16 +31,17 @@ state_t pstate_cpufreq_get_available_list(ctx_t *c, const ullong **freq_list, ui
 
 state_t pstate_cpufreq_get_current_list(ctx_t *c, const ullong **freq_list);
 
+state_t pstate_cpufreq_get_nominal(ctx_t *c, uint *pstate_nominal);
+
 state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor);
 
 /** Setters **/
 state_t pstate_cpufreq_set_current_list(ctx_t *c, uint *freq_index);
 
-/* Sets a frequency in a specified CPU. Use all_cpus to set that P_STATE in all CPUs. */
+//Sets a frequency in a specified CPU. Use all_cpus to set that P_STATE in all CPUs.
 state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index, int cpu);
 
-/* You can recover the governor (and its frequency) by setting
- * Governor.last and Governor.init. */
+//You can recover the governor (and its frequency) by setting Governor.last and Governor.init.
 state_t pstate_cpufreq_set_governor(ctx_t *c, uint governor);
 
 #endif //MANAGEMENT_FREQUENCY_DRIVERS_CPUFREQ
