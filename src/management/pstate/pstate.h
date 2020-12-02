@@ -36,6 +36,7 @@ typedef struct mgt_ps_driver_ops_s
 	state_t (*dispose)            (ctx_t *c);
 	state_t (*get_available_list) (ctx_t *c, const ullong **freq_list, uint *freq_count);
 	state_t (*get_current_list)   (ctx_t *c, const ullong **freq_list);
+	state_t (*get_boost)          (ctx_t *c, uint *boost_enabled);
 	state_t (*get_governor)       (ctx_t *c, uint *governor);
 	state_t (*set_current_list)   (ctx_t *c, uint *freq_index);
 	state_t (*set_current)        (ctx_t *c, uint freq_index, int cpu);

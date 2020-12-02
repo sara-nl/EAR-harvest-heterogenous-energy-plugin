@@ -32,7 +32,7 @@ typedef struct cpufreq_ctx_s
 	ullong      freqs_current[128];
 	ullong      freqs_avail[128];
 	int         freqs_count;
-	int         freq_nominal;
+	int         boost_enabled;
 	char        freq_last[SZ_NAME_SHORT];
 	char        govr_last[SZ_NAME_SHORT];
 	char        freq_init[SZ_NAME_SHORT];
@@ -173,22 +173,22 @@ static state_t static_dispose(ctx_t *c, state_t s, char *msg)
 static void pstate_cpufreq_init_nominal(cpufreq_ctx_t *f)
 {	
 	char data[SZ_NAME_SHORT];
-	ullong aux = 0;
-	int fd = -1;
+	int fd;
 
-	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN)
+	if ((fd = open("/sys/devices/system/cpu/cpufreq/boost", O_RDONLY)) >= 0) {
+		if (state_ok(read_word(fd, data, 0))) {
+			f->boost_enabled = atoi(data);
+		}
+		close(fd);
+	}
+	if (tp.vendor == VENDOR_AMD)
 	{
 		if ((fd = open("/sys/devices/system/cpu/cpu0/cpufreq/cpb", O_RDONLY)) >= 0) {
 			if (state_ok(read_word(fd, data, 0))) {
-				debug("cpb read: %s", data);
-				f->freq_nominal = atoi(data);
+				f->boost_enabled = atoi(data);
 			}
 			close(fd);
 		}
-	}
-	if (tp->vendor == VENDOR_INTEL && tp->model >= MODEL_HASWELL_X) {
-		debug("freq[0] - freq[1] = %llu - %llu", f->freqs_avail[0], f->freqs_avail[1]);
-		f->freq_nominal = ((f->freqs_avail[0] - f->freqs_avail[1]) <= 1000);
 	}
 }
 
@@ -271,7 +271,7 @@ state_t pstate_cpufreq_init(ctx_t *c)
 	debug ("init sum: %u available frequencies", f->freqs_count);
 	debug ("init sum: first frequency '%s'", f->freq_init);
 	debug ("init sum: first governor '%s'", f->govr_init);
-	debug ("init sum: nominal freq '%s'", f->freq_nominal);
+	debug ("init sum: boost enabled '%d'", f->boost_enabled);
 	f->init = 1;
 
 	return EAR_SUCCESS;
@@ -319,11 +319,17 @@ state_t pstate_cpufreq_get_current_list(ctx_t *c, const ullong **freq_list)
 	return s2;
 }
 
-state_t pstate_cpufreq_get_nominal(ctx_t *c, uint *pstate_nominal)
+state_t pstate_cpufreq_get_boost(ctx_t *c, uint *boost_enabled)
 {
-	if (tp->vendor == VENDOR_AMD && tp->family >= FAMILY_ZEN) {
-		return EAR_SUCCESS;
+	cpufreq_ctx_t *f;
+	state_t s;
+	if (xtate_fail(s, static_init_test(c, &f))) {
+		return s;
 	}
+	if (boost_enabled != NULL) {
+		*boost_enabled = f->boost_enabled;
+	}
+	return EAR_SUCCESS;
 }
 
 state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor)

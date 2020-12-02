@@ -42,6 +42,7 @@ static state_t load_driver_cpufreq(topology_t *tp)
 	ops_driver.dispose            = pstate_cpufreq_dispose;
 	ops_driver.get_available_list = pstate_cpufreq_get_available_list;
 	ops_driver.get_current_list   = pstate_cpufreq_get_current_list;
+	ops_driver.get_boost          = pstate_cpufreq_get_boost;
 	ops_driver.get_governor       = pstate_cpufreq_get_governor;
 	ops_driver.set_current_list   = pstate_cpufreq_set_current_list;
 	ops_driver.set_current        = pstate_cpufreq_set_current;

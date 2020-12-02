@@ -147,27 +147,54 @@ static void pstate_print(amd17_ctx_t *f)
 }
 #endif
 
-static state_t pstate_build_psss(amd17_ctx_t *f)
+static state_t pstate_build_psss_single(ullong freq_mhz, ullong *cof, ullong *fid, ullong *did)
 {
-	ullong did[31] = {  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
-					   18, 19, 20, 21, 22, 23, 24, 25, 26, 28,
-					   30, 32, 34, 36, 38, 40, 42, 44 };
-	ullong p, m, d;
+	ullong _did[31] = {  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+					    18, 19, 20, 21, 22, 23, 24, 25, 26, 28,
+					    30, 32, 34, 36, 38, 40, 42, 44 };
 	ullong near;
 	ullong diff;
+	ullong m, d;
+	//	
+	near = UINT_MAX;
+	// Maximum multipier (255) and minimum (16)
+	for (m = 255; m >= 16; --m) {
+		// Divisors
+		for (d = 0; d < 31; ++d) {
+			if (((m * 1000LLU) * 200LLU) == ((freq_mhz * 1000LLU) * _did[d]))
+			{
+				diff = _did[d] + m;
+				diff = diff * diff;
+
+				if (diff < near) {
+					*cof = freq_mhz;
+					*fid = m;
+					*did = _did[d];
+					near = diff;
+				}
+			}
+		}
+	}
+	if (near == UINT_MAX) {
+		return_msg(EAR_ERROR, "impossible to build PSS");
+	}
+	return EAR_SUCCESS;
+}
+
+static state_t pstate_build_psss(amd17_ctx_t *f)
+{
+	state_t s;
+	ullong p;
 	int i;
 
 	// Getting P0 information
 	f->psss[0].fid = getbits64(f->regs[0],  7,  0);
 	f->psss[0].did = getbits64(f->regs[0], 13,  8);
-	
 	if (f->psss[0].did == 0) {
 		return_msg(EAR_ERROR, "the frequency divisor is 0");
 	}
-
 	// Getting the P0(b) Core Frequency
 	f->psss[0].cof = (f->psss[0].fid * 200LLU) / f->psss[0].did;
-
 	// Getting P0 in case boost is not enabled
 	i = 1;
 	
@@ -177,35 +204,16 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 		f->psss[1].did = f->psss[0].did;
 		i = 2;
 	}
-
 	// Getting P1 Core Frequency (intervals of 100 MHz)
 	if ((f->psss[0].cof % 100LLU) != 0) {
 		p = f->psss[0].cof + (100LLU - (f->psss[0].cof % 100LLU)) - 100LLU;
 	} else {
 		p = f->psss[0].cof - 100LLU;
 	}
-
 	// Getting PSS objects from P1 to P7
 	for (; p >= 1000 && i < MAX_PSTATES; p -= 100, ++i) {
-		near = UINT_MAX;
-		
-	// Maximum multipier (255) and minimum (16)
-		for (m = 255; m >= 16; --m) {
-			// Divisors
-			for (d = 0; d < 31; ++d)
-			{
-				if (((m * 1000LLU) * 200LLU) == ((p * 1000LLU) * did[d]))
-				{
-					diff = (f->psss[0].did + f->psss[0].fid) - (did[d] + m);
-					diff = diff * diff;
-
-					if (diff < near) {
-						f->psss[i].cof = p;
-						f->psss[i].fid = m;
-						f->psss[i].did = did[d];
-					}
-				}
-			}
+		if (xtate_fail(s, pstate_build_psss_single(p, &f->psss[i].cof, &f->psss[i].fid, &f->psss[i].did))) {
+			return s;	
 		}
 	}
 	f->pss_count = i;
@@ -221,20 +229,32 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 
 state_t pstate_amd17_init_user(amd17_ctx_t *f)
 {
-	ullong *freqs_available;
+	const ullong *freqs_available;
+	ullong cof, fid, did;
+	state_t s;
+
 	// Initializing in user mode
 	f->user_mode = 1;
 	// In user mode the driver is the main actor
 	if (xtate_fail(s, f->driver->get_available_list(&f->driver_c, &freqs_available, &f->pss_count))) {
 		return static_dispose(f, 0, s, state_msg);
 	}
-	// Saving registers is not necessary because there is no writing
+	// Boost enabled
+	if (xtate_ok(s, f->driver->get_boost(&f->driver_c, &f->boost_enabled))) {
+		f->pss_nominal = f->boost_enabled;
+	}
+	// Initializing PSS0 to initialize the list
+	cof = freqs_available[0] / 1000LLU;
+	debug("bro culture %llu", cof); 
+	if (xtate_fail(s, pstate_build_psss_single(cof, &cof, &fid, &did))) {
+		return s;
+	}
+	f->regs[0] = setbits64(      0LLU,  fid,  7,  0);
+	f->regs[0] = setbits64(f->regs[0],  did, 13,  8);
+	f->regs[0] = setbits64(f->regs[0], 1LLU, 63, 63);
 	#if SHOW_DEBUGS
 	pstate_print(f);
 	#endif
-	// Boost enabled
-	/sys/devices/system/cpu/cpu0/cpufreq
-	f->boost_enabled
 	// Building PSS object list
 	if (xtate_fail(s, pstate_build_psss(f))) {
 		return static_dispose(f, tp.cpu_count, s, state_msg);
@@ -275,7 +295,7 @@ state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
 			if (state_is(s, EAR_NO_PERMISSIONS)) {
-				return pstate_amd17_init_user();
+				return pstate_amd17_init_user(f);
 			}
 			return static_dispose(f, cpu, s, state_msg);
 		}

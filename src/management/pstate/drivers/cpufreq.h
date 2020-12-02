@@ -31,7 +31,7 @@ state_t pstate_cpufreq_get_available_list(ctx_t *c, const ullong **freq_list, ui
 
 state_t pstate_cpufreq_get_current_list(ctx_t *c, const ullong **freq_list);
 
-state_t pstate_cpufreq_get_nominal(ctx_t *c, uint *pstate_nominal);
+state_t pstate_cpufreq_get_boost(ctx_t *c, uint *boost_enabled);
 
 state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor);
 
