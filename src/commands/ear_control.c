@@ -340,7 +340,7 @@ void process_status(int num_status, status_t *status, char error_only)
         free(ips);
         free(status);
     }
-    else printf("An error retrieving status has occurred.\n");
+    else printf("No status were retrieved (nodes may be inactive).\n");
 }
 
 void process_app_status(int num_status, app_status_t *status, char is_master)
