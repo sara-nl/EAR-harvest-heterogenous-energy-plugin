@@ -17,6 +17,7 @@
 
 #define CACHE_METRICS 1
 //#define SHOW_DEBUGS 1
+//#define SHOW_ENERGY 1
 
 #include <errno.h>
 #include <stdio.h>
@@ -174,13 +175,17 @@ long long metrics_time()
 
 static void metrics_global_start()
 {
+	int ret;
 	aux_time = metrics_time();
 
 	if (masters_info.my_master_rank>=0)
 	{
 		eards_begin_app_compute_turbo_freq();
 		// New
-		eards_node_dc_energy(aux_energy,node_energy_datasize);
+		ret = eards_node_dc_energy(aux_energy,node_energy_datasize);
+		if ((ret == EAR_ERROR) || energy_lib_is_null(aux_energy)){
+			error("MR[%d] Error reading Node energy at application start",masters_info.my_master_rank);
+		}
 		eards_read_rapl(aux_rapl);
 		eards_start_uncore();
 		eards_read_uncore(metrics_bandwith_init[APP]);
@@ -272,6 +277,7 @@ static void metrics_global_stop()
 static void metrics_partial_start()
 {
 	int i;
+	/* This must be replaced by a copy of energy */
 	memcpy(metrics_ipmi[LOO],aux_energy,node_energy_datasize);
 	metrics_usecs[LOO]=aux_time;
 	
@@ -310,7 +316,7 @@ static void metrics_partial_start()
 static int metrics_partial_stop(uint where)
 {
 	long long aux_flops;
-	int i;
+	int i,ret;
 	ulong c_energy;
 	long long c_time;
 	float c_power;
@@ -326,7 +332,10 @@ static int metrics_partial_stop(uint where)
 
 	// Manual IPMI accumulation
 	if (masters_info.my_master_rank>=0){
-		eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
+		ret = eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
+		if (energy_lib_is_null(aux_energy_stop) || (ret == EAR_ERROR)){ 
+			return EAR_NOT_READY;
+		}
 		energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
 		energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
 		energy_lib_to_str(stop_energy_str,aux_energy_stop);	
@@ -356,7 +365,6 @@ static int metrics_partial_stop(uint where)
 		return EAR_NOT_READY;
 	}
 
-
 	/* This is new to avoid cases where uncore gets frozen */
 	if (masters_info.my_master_rank>=0){
 		eards_read_uncore(metrics_bandwith_end[LOO]);
@@ -382,23 +390,22 @@ static int metrics_partial_stop(uint where)
 		#endif
 	}
 	/* End new section to check frozen uncore counters */
+	energy_lib_copy(aux_energy,aux_energy_stop);
+	#if 0
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
+	#endif
 	aux_time=aux_time_stop;
 
 	if (masters_info.my_master_rank>=0){
 		if (c_power<(system_conf->max_sig_power*1.5)){
 			acum_ipmi[LOO] = c_energy;
 		}else{
-			verbose(1,"Computed power was not correct (%lf) reducing it to %lf\n",c_power,system_conf->min_sig_power);
+			error("Computed power was not correct (%lf) reducing it to %lf\n",c_power,system_conf->min_sig_power);
 			acum_ipmi[LOO] = system_conf->min_sig_power*c_time;
 		}
 		acum_ipmi[APP] += acum_ipmi[LOO];
 	}
-	ulong *ei,*ee;
-	ei=(ulong *)metrics_ipmi[LOO];
-	ee=(ulong *)aux_energy_stop;
-	//debug("loop energy %lu app acum energy %lu (init=%lu - end=%lu)",acum_ipmi[LOO],acum_ipmi[APP],*ei,*ee);
-	// Manual time accumulation
+	//  Manual time accumulation
 	metrics_usecs[LOO] = c_time;
 	metrics_usecs[APP] += metrics_usecs[LOO];
 	
@@ -543,9 +550,6 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	if (masters_info.my_master_rank>=0){
 	// Energy node
 		metrics->DC_power = (double) acum_ipmi[s] / (time_s * node_energy_units);
-		if ((metrics->DC_power > system_conf->max_sig_power) || (metrics->DC_power < system_conf->min_sig_power)){
-			debug("Context %d:Warning: Invalid power %.2lf Watts computed in signature : Energy %lu mJ Time %lf msec.\n",s,metrics->DC_power,acum_ipmi[s],time_s* 1000.0);
-		}
 
 		int p;
 		metrics->PCK_power=0;
@@ -582,6 +586,9 @@ static void metrics_compute_signature_data(uint global, signature_t *metrics, ui
 	
 	sig_shared_region[my_node_id].mpi_info.exec_time=extime;
 	sig_shared_region[my_node_id].mpi_info.perc_mpi=(double)sig_shared_region[my_node_id].mpi_info.mpi_time/(double)sig_shared_region[my_node_id].mpi_info.exec_time;
+	#if RESET_STATISTICS_AT_SIGNATURE
+	init_mpi_time = end_mpi_time;
+	#endif
 	/* Copying my info in the shared signature */
 	from_sig_to_mini(&sig_shared_region[my_node_id].sig,metrics);
 	/* If I'm the master, I have to copy in the special section */
@@ -664,6 +671,7 @@ int metrics_init(topology_t *topo)
 	// node_energy_datasize=eards_node_energy_data_size();
 	energy_lib_datasize(&node_energy_datasize);
 	energy_lib_units(&node_energy_units);
+	/* We should create a data_alloc for enerrgy and a set_null */
 	aux_energy=(edata_t)malloc(node_energy_datasize);
 	aux_energy_stop=(edata_t)malloc(node_energy_datasize);
 	metrics_ipmi[0]=(edata_t)malloc(node_energy_datasize);

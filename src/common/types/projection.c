@@ -15,6 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,7 +24,6 @@
 #include <common/config/config_env.h>
 #include <common/types/projection.h>
 #include <common/system/symplug.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/hardware/architecture.h>

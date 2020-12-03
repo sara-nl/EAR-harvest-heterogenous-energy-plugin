@@ -88,6 +88,7 @@ static int ppnode;
 
 cpu_set_t ear_process_mask;
 int ear_affinity_is_set=0;
+architecture_t arch_desc;
 // Loop information
 static uint mpi_calls_per_loop;
 static uint ear_iterations=0;
@@ -127,13 +128,18 @@ char pc_app_info_path[GENERIC_NAME];
 #endif
 
 void *earl_periodic_actions(void *no_arg);
+static int end_periodic_th=0;
 //
 static void print_local_data()
 {
 	char ver[64];
 	if (masters_info.my_master_rank==0) {
 	version_to_str(ver);
-	verbose(1, "------------EAR%s--------------------",ver);
+	#if MPI
+	verbose(1, "------------EAR%s MPI enabled --------------------",ver);
+	#else
+	verbose(1, "------------EAR%s MPI not enabled --------------------",ver);
+	#endif
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
@@ -434,26 +440,29 @@ static int get_local_id(char *node_name)
 	int master = 1;
 
 #if USE_LOCK_FILES
-	#if MPI
-	debug("MPI activated");
-	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
-
-	if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
-		master = 1;
-	} else {
-		master = 0;
-	}
+  sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
+  if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
+    master = 1;
+  } else {
+    master = 0;
+  }
+  #if MPI
+  if (master) {
+    debug("Rank %d is not the master in node %s", ear_my_rank, node_name);
+  }else{
+    debug("Rank %d is the master in node %s", ear_my_rank, node_name);
+    verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
+  }
 	#else
-	debug("MPI not activated");
-	master=0;
-	#endif
+  if (master) {
+    debug("Process %d is not the master in node %s", getpid(), node_name);
+  }else{
+    debug("Process %d is the master in node %s", getpid(), node_name);
+    verbose(2, "Process %d is the master in node %s", getpid(), node_name);
+  }
 
-	if (master) {
-		debug("Rank %d is not the master in node %s", ear_my_rank, node_name);
-	}else{
-		debug("Rank %d is the master in node %s", ear_my_rank, node_name);
-		verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
-	}
+  #endif
+
 #else
 	#if MPI
 	master = get_ear_local_id();
@@ -603,7 +612,6 @@ void ear_init()
 	char *tmp;
 	state_t st;
 	char *ext_def_freq_str=getenv(SCHED_EAR_DEF_FREQ);
-	architecture_t arch_desc;
 
 
 	if (ear_lib_initialized){
@@ -842,20 +850,39 @@ void ear_init()
 			error("pc_application_info area not found");
 		}
   	#endif
-
+		#if 0
 		if (is_affinity_set(&arch_desc.top,getpid(),&ear_affinity_is_set,&ear_process_mask)!=EAR_SUCCESS){
 			error("Checking the affinity mask");
 		}else{
+			/* Copy mask in shared memory */	
 			if (ear_affinity_is_set){	
+				sig_shared_region[my_node_id].cpu_mask = ear_process_mask;
+				sig_shared_region[my_node_id].affinity = 1;
 				verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
+				if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
 			}else{ 
+				sig_shared_region[my_node_id].affinity = 0;
 				verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);
 			}
 		}
+		#endif
 	}
+	  if (is_affinity_set(&arch_desc.top,getpid(),&ear_affinity_is_set,&ear_process_mask)!=EAR_SUCCESS){
+      error("Checking the affinity mask");
+    }else{
+      /* Copy mask in shared memory */
+      if (ear_affinity_is_set){ 
+        sig_shared_region[my_node_id].cpu_mask = ear_process_mask;
+        sig_shared_region[my_node_id].affinity = 1;
+        if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
+      }else{ 
+        sig_shared_region[my_node_id].affinity = 0;
+        verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);
+      } 
+    } 
 
-	ear_affinity_is_set=1;
-	if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
+
+
 	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
@@ -864,7 +891,7 @@ void ear_init()
 	init_power_policy(system_conf,resched_conf);
 	debug("init_power_models");
 	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
-	if (masters_info.my_master_rank>=0) verbose(1,"Policies and models initialized");	
+	if (masters_info.my_master_rank>=0) verbose(2,"Policies and models initialized");	
 
 	if (ext_def_freq==0){
 		EAR_default_frequency=system_conf->def_freq;
@@ -1370,7 +1397,8 @@ void *earl_periodic_actions(void *no_arg)
 			sleep(lib_period);
       ear_iterations++;
       states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
-		}while(1);
+		}while(end_periodic_th == 0);
+		return NULL;
 }
 
 
@@ -1384,6 +1412,13 @@ void ear_constructor()
 void ear_destructor()
 {
 	debug("Calling ear_finalize in ear_destructor %d",getpid());
+#if ONLY_MASTER
+  if (my_id) {
+    return;
+  }
+#endif
+	end_periodic_th = 1;
+	pthread_join(earl_periodic_th,NULL);
 	ear_finalize();
 }
 #else

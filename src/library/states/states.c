@@ -145,8 +145,9 @@ extern uint check_periodic_mode;
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
 				GPU_f=(float)GPU_FREQ/1000000.0; \
-        verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
-        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL);\
+        verbose(10,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
+        verbosen(1,"EAR+D(%s) at %.2f in %s MR[%d]: ",ear_app_name, prev_ff,application.node_id,masters_info.my_master_rank); \
+        verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL);\
 			}
 
 #else
@@ -155,8 +156,9 @@ extern uint check_periodic_mode;
         float AVGFF,prev_ff; \
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
-        verbose(1,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
-        verbose(1,"\t (CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec. Energy=%.1lfJ AVGF=%.2fGHz", CPI, GBS, POWER, TIME, ENERGY, AVGFF);\
+        verbose(10,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
+        verbosen(1,"EAR+D(%s) at %.2f in %s MR[%d]: ",ear_app_name, prev_ff,application.node_id,masters_info.my_master_rank); \
+        verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec. Energy=%.1lfJ AVGF=%.2fGHz", CPI, GBS, POWER, TIME, ENERGY, AVGFF);\
 			}
 #endif
 
@@ -411,7 +413,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			// Once min iterations is computed for performance accuracy we start computing application signature
 			EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
-			if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+			if (masters_info.my_master_rank>=0){ 
+				traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+				verbose(1,"MR[%d]: Going to EVALUATING_LOCAL_SIGNATURE",masters_info.my_master_rank);
+			}
 			metrics_compute_signature_begin();
 			begin_iter = iterations;
 			
@@ -440,7 +445,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 			#endif
 			EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
-			if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+			if (masters_info.my_master_rank>=0){ 
+				verbose(1,"MR[%d]: Going to EVALUATING_LOCAL_SIGNATURE",masters_info.my_master_rank);
+				traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+			}
 			break;
 		case RECOMPUTING_N:/************ RECOMPUTING_N *************/
 
@@ -462,7 +470,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/**/
 			loop_perf_count_period=perf_count_period;
 			EAR_STATE = SIGNATURE_STABLE;
-			if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+			if (masters_info.my_master_rank>=0){ 
+				verbose(1,"MR[%d]: Going to SIGNATURE_STABLE period=%d iterations=%d",masters_info.my_master_rank,perf_count_period,iterations);
+				traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+			}
 			break;
 		case EVALUATING_LOCAL_SIGNATURE: /********* EVALUATING_LOCAL_SIGNATURE **********/
 			/* We check from time to time if if the signature is ready */
@@ -515,7 +526,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
 			/* This function executes the energy policy */
 			adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
-			if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_LOCAL_SIGNATURE");
+			//if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_LOCAL_SIGNATURE");
 			pst=policy_node_apply(&app_signature,&policy_freq,&ready);
 			report_policy_state(ready);
 			/****** We mark our local signature as ready ************/
@@ -532,21 +543,32 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 					tries_current_loop++;
 					comp_N_begin = metrics_time();
 					EAR_STATE = RECOMPUTING_N;
-					if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+					if (masters_info.my_master_rank>=0){ 
+						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+						verbose(1,"MR[%d]: Going to RECOMPUTING_N",masters_info.my_master_rank);
+					}
 			}
 			else
 			{
 					EAR_STATE = SIGNATURE_STABLE;
-					if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+					if (masters_info.my_master_rank>=0){ 
+						verbose(1,"MR[%d]: Going to SIGNATURE_STABLE",masters_info.my_master_rank);
+						traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+					}
 			}
 			}
 			if (EAR_POLICY_STATE == EAR_POLICY_CONTINUE){
 				/* Should we check if N needs to be recomputed ?*/
-				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+				if (masters_info.my_master_rank>=0){ 
+					traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+				}
 			}
 			if (EAR_POLICY_STATE == EAR_POLICY_GLOBAL_EV){
 				EAR_STATE = EVALUATING_GLOBAL_SIGNATURE;
-				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_GLOBAL_SIGNATURE);
+				if (masters_info.my_master_rank>=0){ 
+					verbose(1,"MR[%d]: Going to EVALUATING_GLOBAL_SIGNATURE",masters_info.my_master_rank);
+					traces_policy_state(ear_my_rank, my_id,EVALUATING_GLOBAL_SIGNATURE);
+				}
 			}
 			signature_copy(&loop.signature, &loop_signature.signature);
 		  report_loop_signature(iterations,&loop,&loop_signature.job);
@@ -556,7 +578,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* END VERBOSE */
 			break;
 		case EVALUATING_GLOBAL_SIGNATURE:
-			if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_GLOBAL_SIGNATURE");
+			//if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_GLOBAL_SIGNATURE");
 			st = policy_app_apply(&policy_freq,&ready);
 			EAR_POLICY_STATE = ready;
 			if (EAR_POLICY_STATE == EAR_POLICY_READY){
@@ -568,12 +590,18 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
           tries_current_loop++;
           comp_N_begin = metrics_time();
           EAR_STATE = RECOMPUTING_N;
-          if (masters_info.my_master_rank>=0) log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+          if (masters_info.my_master_rank>=0){ 
+						verbose(1,"MR[%d]: Going to RECOMPUTING_N",masters_info.my_master_rank);
+						log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
+					}
       }
       else
       {   
           EAR_STATE = SIGNATURE_STABLE;
-          if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+          if (masters_info.my_master_rank>=0){ 
+						verbose(1,"MR[%d]: Going to SIGNATURE_STABLE",masters_info.my_master_rank);
+						traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
+					}
       }
 			}
 			break;
@@ -594,6 +622,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/*print_loop_signature("signature refreshed", &loop_signature.signature);*/
 
 			SET_VARIABLES();
+			SET_VARIABLES_GPU();
 
 
 			signature_copy(&loop.signature, &loop_signature.signature);
@@ -645,7 +674,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if ((tries_current_loop<MAX_POLICY_TRIES) && (curr_pstate==def_pstate))
 			{
 				EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
-				if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+				if (masters_info.my_master_rank>=0){ 
+					traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+					verbose(1,"MR[%d]: Going to EVALUATING_LOCAL_SIGNATURE",masters_info.my_master_rank);		
+				}
 				return;
 			}
 
@@ -656,6 +688,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				EAR_STATE = PROJECTION_ERROR;
 				pst=policy_get_default_freq(&policy_freq);
 				if (masters_info.my_master_rank>=0){ 
+					verbose(1,"MR[%d]: Going to PROJECTION_ERROR",masters_info.my_master_rank);
 					traces_policy_state(ear_my_rank, my_id,PROJECTION_ERROR);
 					traces_frequency(ear_my_rank, my_id, policy_freq);
 				}
@@ -667,6 +700,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (!policy_had_effect(&loop_signature.signature,l_sig))
 			{
 				EAR_STATE = SIGNATURE_HAS_CHANGED;
+				if (masters_info.my_master_rank>=0){ 
+					verbose(1,"MR[%d]: Going to SIGNATURE_HAS_CHANGED",masters_info.my_master_rank);
+				}
 				comp_N_begin = metrics_time();
 				policy_loop_init(&loop.id);
         #if DYNAIS_CUTOFF
@@ -674,7 +710,10 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
         #endif
 			} else {
 					EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
-					if (masters_info.my_master_rank>=0) traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+					if (masters_info.my_master_rank>=0){ 
+						verbose(1,"MR[%d]: Going to EVALUATING_LOCAL_SIGNATURE",masters_info.my_master_rank);
+						traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
+					}
 			}
 			break;
 		case PROJECTION_ERROR:

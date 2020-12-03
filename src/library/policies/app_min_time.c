@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/hardware/frequency.h>
@@ -47,6 +47,11 @@ extern signature_t policy_last_global_signature;
 
 typedef unsigned long ulong;
 
+/* Global statistics */
+static timestamp app_init;
+static mpi_information_t mpi_stats;
+
+
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
 #define FREQ_DEF(f) (!ext_def_freq?f:ext_def_freq)
@@ -63,10 +68,37 @@ state_t policy_init(polctx_t *c)
 		sig_shared_region[my_node_id].mpi_info.exec_time=0;
 		sig_shared_region[my_node_id].mpi_info.perc_mpi=0;
 
+    /* Gobal mpi statistics */
+    mpi_stats.mpi_time = 0;
+    mpi_stats.total_mpi_calls = 0;
+    mpi_stats.exec_time = 0;
+    mpi_stats.perc_mpi = 0;
+    mpi_stats.rank = sig_shared_region[my_node_id].mpi_info.rank;
+    timestamp_getfast(&app_init);
+
 
 		return EAR_SUCCESS;
 	}else return EAR_ERROR;
 }
+
+state_t policy_end(polctx_t *c)
+{
+  timestamp end;
+  ullong elap;
+  char buff[256];
+  char *stats=getenv(EAR_STATS);
+  /* Global statistics */
+  timestamp_getfast(&end);
+  elap=timestamp_diff(&end,&app_init,TIME_USECS);
+  mpi_stats.exec_time = elap;
+  mpi_stats.perc_mpi = (float) mpi_stats.mpi_time/(float)mpi_stats.exec_time;
+  if (stats != NULL){
+    mpi_info_to_str(&mpi_stats,buff,sizeof(buff));
+    verbose(0,buff);
+  }
+  return EAR_SUCCESS;
+}
+
 
 
 state_t policy_loop_init(polctx_t *c,loop_id_t *loop_id)
@@ -267,6 +299,11 @@ state_t policy_mpi_end(polctx_t *c)
 	elap=timestamp_diff(&end,&pol_time_init,TIME_USECS);
 	sig_shared_region[my_node_id].mpi_info.mpi_time=sig_shared_region[my_node_id].mpi_info.mpi_time+elap;
 	sig_shared_region[my_node_id].mpi_info.total_mpi_calls++;
+
+  /* Global statistics */
+  mpi_stats.mpi_time+=elap;
+  mpi_stats.total_mpi_calls++;
+
 	return EAR_SUCCESS;
 }
 
@@ -301,10 +338,10 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 		if (ret == EAR_SUCCESS){
 			debug("Node signatures ready");
 			if (sh_sig_per_proces){
-				ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,report_node_sig);
+				ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,sig_shared_region,report_node_sig);
 			}else{
 				compute_per_node_avg_sig_info(lib_shared_region,sig_shared_region,&per_node_shsig);
-				ret = send_node_signatures(&masters_info,lib_shared_region,&per_node_shsig,report_node_sig);
+				ret = send_node_signatures(&masters_info,lib_shared_region,&per_node_shsig,sig_shared_region,report_node_sig);
 			}
 		}
 	}

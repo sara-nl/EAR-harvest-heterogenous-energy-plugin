@@ -92,16 +92,16 @@ state_t check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsigna
 	return ret;
 }
 
-state_t send_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig)
+state_t send_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,shsignature_t *all_sig,int show_sig)
 {
 		state_t ret;
 		int max_ppn;
   	if (sh_sig_per_node) max_ppn = 1;
   	else                 max_ppn=mi->max_ppn;
   	if (!mi->node_info_pending){
-  		clean_signatures(data,sig);
+  		clean_signatures(data,all_sig);
       if (sh_sig_per_proces){
-          copy_my_sig_info(data,sig,mi->my_mpi_info);
+          copy_my_sig_info(data,all_sig,mi->my_mpi_info);
       }else{
 					shsignature_copy(mi->my_mpi_info,sig);
       }
@@ -113,7 +113,7 @@ state_t send_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignat
       }else{
         //debug("sh_signatures for master_rank %d sent to other nodes",mi->my_master_rank);
         	mi->node_info_pending=1;
-					if (show_sig) print_shared_signatures(data,sig);
+					if (show_sig) print_shared_signatures(data,all_sig);
       }
      }
      ret = EAR_SUCCESS;
@@ -146,7 +146,7 @@ void print_global_signatures(masters_info_t *mi)
   for (nodei=0;nodei<mi->my_master_size;nodei++){
     fprintf(stderr,"Printing info for node %d\n",nodei);
     for (node_ppn=0;node_ppn<ear_min(max_ppn,mi->ppn[nodei]);node_ppn++){
-      print_sh_signature(&mi->nodes_info[nodei*ear_min(max_ppn,mi->max_ppn)+node_ppn]);
+      print_sh_signature(node_ppn,&mi->nodes_info[nodei*ear_min(max_ppn,mi->max_ppn)+node_ppn]);
     }
   }
 }

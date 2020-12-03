@@ -636,6 +636,33 @@ unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t *mask)
   return real_freq;
 
 }
+unsigned long eards_change_freq_with_list(unsigned int num_cpus,unsigned long *newfreq)
+{
+  ulong real_freq = 0;
+  struct daemon_req req;
+  if (!app_connected) return 0;
+  req.req_service = SET_NODE_FREQ_WITH_LIST;
+  req.sec=create_sec_tag();
+	/* Specific info */
+  req.req_data.cpu_freq.num_cpus = num_cpus;
+  memcpy(&req.req_data.cpu_freq.cpu_freqs,newfreq,sizeof(ulong)*MAX_CPUS_SUPPORTED);
+
+  if (ear_fd_req[freq_req] >= 0)
+  {
+    if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)), sizeof(req),
+       "while writing request for changing frequency node with list")) return EAR_ERROR;
+
+    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)&real_freq, sizeof(ulong)), sizeof(ulong),
+      "while reading ack for changing frequency node with list")) return EAR_ERROR;
+
+  } else {
+    real_freq = 0;
+    debug( "change_freq service not provided");
+  }
+
+  return real_freq;
+
+}
 
 
 // END FREQUENCY SERVICES

@@ -43,25 +43,25 @@ typedef struct gpu_app{
 }gpu_app_t;
 
 typedef struct gpu_signature{
-  int num_gpus;
-  gpu_app_t gpu_data[MAX_GPUS_SUPPORTED];
+    int num_gpus;
+    gpu_app_t gpu_data[MAX_GPUS_SUPPORTED];
 }gpu_signature_t;
 
 typedef struct mini_sig
 {
-  float DC_power;
-  float GBS;
-	float TPI;
-  float CPI;
-  float Gflops;
-  float time;
-  ull FLOPS[FLOPS_EVENTS];
-	ull instructions;
-  ulong avg_f;
-  ulong def_f;
-  #if USE_GPUS
-  gpu_signature_t gpu_sig;
-  #endif
+    float DC_power;
+    float GBS;
+    float TPI;
+    float CPI;
+    float Gflops;
+    float time;
+    ull FLOPS[FLOPS_EVENTS];
+    ull instructions;
+    ulong avg_f;
+    ulong def_f;
+#if USE_GPUS
+    gpu_signature_t gpu_sig;
+#endif
 }ssig_t;
 
 

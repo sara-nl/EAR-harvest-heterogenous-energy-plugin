@@ -29,18 +29,23 @@ struct energy_op
 	state_t (*units)	(uint *units);
 	state_t (*accumulated)	(unsigned long *e,edata_t init,edata_t end);
   state_t (*energy_to_str)	(char *str,edata_t end);
+	uint    (*is_null)				(edata_t end);
+	state_t (*copy)						(edata_t dest,edata_t src);
 } energy_ops;
 static char energy_manu[SZ_NAME_MEDIUM];
 static char energy_prod[SZ_NAME_MEDIUM];
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
-static const int   energy_nops    = 5;
+static size_t my_energy_data_size;
+static const int   energy_nops    = 7;
 static const char *energy_names[] = {
 	"energy_datasize",
 	"energy_frequency",
 	"energy_units",
 	"energy_accumulated",
-	"energy_to_str"
+	"energy_to_str",
+	"energy_data_is_null",
+	"energy_data_copy"
 };
 
 state_t energy_lib_init(settings_conf_t *conf)
@@ -87,13 +92,17 @@ state_t energy_lib_init(settings_conf_t *conf)
 	} else {
 		ret = EAR_NOT_FOUND;
 	}
-
+	if (energy_ops.datasize != NULL){
+		energy_ops.datasize(&my_energy_data_size);
+	}else{
+		my_energy_data_size = 1;
+	}
 	return ret;
 }
 
 state_t energy_lib_datasize(size_t *size)
 {
-	preturn (energy_ops.datasize, size);
+	preturn(energy_ops.datasize,size);
 }
 
 state_t energy_lib_frequency(ulong *fus)
@@ -118,4 +127,29 @@ state_t energy_lib_accumulated(unsigned long *e,edata_t init,edata_t end)
 state_t energy_lib_to_str(char *str,edata_t e)
 {
 	preturn (energy_ops.energy_to_str,str,e );
+}
+
+uint energy_lib_is_null(edata_t e)
+{
+	if (energy_ops.is_null != NULL){
+		preturn(energy_ops.is_null,e);
+	}else{
+		ulong *def_e=(ulong *)e;
+		return (*def_e == 0);	
+	}
+	return 1;
+	
+}
+
+state_t energy_lib_copy(edata_t dst,edata_t src)
+{
+  if (energy_ops.copy != NULL){
+    preturn(energy_ops.copy,dst,src);
+  }else{
+    ulong *udst,*usrc;
+		udst = (ulong *)dst;
+		usrc = (ulong *)src;
+		memcpy(udst,usrc,my_energy_data_size);
+  }
+  return EAR_SUCCESS;
 }

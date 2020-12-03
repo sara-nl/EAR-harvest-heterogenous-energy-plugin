@@ -31,7 +31,6 @@
 #define EAR_UNDEFINED			-24
 #define EAR_TIMEOUT				-21
 #define EAR_SYSCALL_ERROR		-18
-#define EAR_UNAVAILABLE			-10
 
 /* type & functions */
 typedef int state_t;
@@ -54,11 +53,14 @@ char *state_msg;
 	}
 
 #define xtate_fail(s, function) \
-	(s = function) != EAR_SUCCESS
+	((s = function) != EAR_SUCCESS)
+
+#define xtate_ok(s, function) \
+	((s = function) == EAR_SUCCESS)
 
 #define state_assert(s, func, cons) \
     if (xtate_fail(s, func)) { \
-        error(#func " returned %d (%s)\n", s, state_msg); \
+        error(#func " returned %d (%s)", s, state_msg); \
         cons; \
     }
 
@@ -72,6 +74,7 @@ struct generr_s {
 	char *input_uninitialized;
 	char *lock;
 	char *context_null;
+	char *arg_outbounds;
 } Generr __attribute__((weak)) = {
 	.api_undefined = "the API is undefined",
 	.api_incompatible = "the current hardware is not supported by the API",
@@ -82,6 +85,7 @@ struct generr_s {
 	.input_uninitialized = "an argument is not initialized",
 	.lock = "error while using mutex_lock",
 	.context_null = "context can not be null",
+	.arg_outbounds = "argument out of bounds",
 };
 
 /*

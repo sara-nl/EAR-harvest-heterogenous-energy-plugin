@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
+#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 #include <library/policies/policy_api.h>
 
 static uint last_pc=0;
@@ -36,17 +38,13 @@ extern unsigned long ext_def_freq;
 static ulong *ext_gpu_def_freq;
 static ulong g_freq=0;
 
-#define debug(...) \
-{ \
-        dprintf(2, __VA_ARGS__); \
-        dprintf(2, "\n"); \
-}
 
 
 state_t policy_init(polctx_t *c)
 {
 	char *gpu_freq=getenv(SCHED_EAR_GPU_DEF_FREQ);
 	int i;
+	state_t ret;
 	gpu_lib_alloc_array(&ext_gpu_def_freq);
 	if ((gpu_freq!=NULL) && (c->app->user_type==AUTHORIZED)){ 
 		g_freq=atol(gpu_freq);
@@ -57,6 +55,7 @@ state_t policy_init(polctx_t *c)
 	for (i=0;i<c->num_gpus;i++){
 		debug("GPU_monitoring: GPU %d initialized with %lu",i,ext_gpu_def_freq[i]);
 	}
+	ret = gpu_lib_freq_limit_set(ext_gpu_def_freq);
 	return EAR_SUCCESS;
 }
 state_t policy_apply(polctx_t *c,signature_t *my_sig, ulong *new_freq,int *ready)

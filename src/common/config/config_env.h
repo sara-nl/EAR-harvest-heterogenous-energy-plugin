@@ -88,8 +88,10 @@
 /* Force to shares all the signatures */
 #define SHARE_INFO_PER_PROCESS "SLURM_SHARE_INFO_PER_PROCESS"
 /* Force to share only the average signature per node */
-#define SHARE_INFO_PER_NODE "SLURM_SHARE_INFO_PER_NODE"
+#define SHARE_INFO_PER_NODE 	"SLURM_SHARE_INFO_PER_NODE"
 #define USE_APP_MGR_POLICIES	"SLURM_APP_MGR_POLICIES"
+#define EAR_STATS 						"SLURM_GET_EAR_STATS"
+#define EAR_POLICY_GRAIN			"SLURM_EAR_POLICY_GRAIN"
 
 #endif //SCHED_SLURM
 

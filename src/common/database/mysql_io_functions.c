@@ -121,7 +121,18 @@
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_MYSQL_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
                                     "signature_id, power_signature_id) VALUES (?, ?, ?, ?, ?)"
+#if USE_GPUS
+#define LEARNING_SIGNATURE_QUERY_FULL    "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                                "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
+                                "instructions, cycles, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "\
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+#define LEARNING_SIGNATURE_QUERY_SIMPLE  "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power,  EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "\
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+#else
 #define LEARNING_SIGNATURE_QUERY_FULL   "INSERT INTO Learning_signatures (DC_power, DRAM_power,"\
                                         "PCK_power, EDP, GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                         "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
@@ -131,6 +142,7 @@
 #define LEARNING_SIGNATURE_QUERY_SIMPLE    "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
                                            "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
                                            "?, ?, ?)"
+#endif
 
 #define LEARNING_JOB_MYSQL_QUERY          "INSERT IGNORE INTO Learning_jobs (id, step_id, user_id, app_id, start_time, end_time, "\
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
@@ -1384,9 +1396,9 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
         for (i = 0; i < num_sigs; i++)
         {
             if (cont.type == EAR_TYPE_APPLICATION)
-                gpu_sig = &cont.app->signature.gpu_sig;
+                gpu_sig = &cont.app[i].signature.gpu_sig;
             else if (cont.type == EAR_TYPE_LOOP)
-                gpu_sig = &cont.loop->signature.gpu_sig;
+                gpu_sig = &cont.loop[i].signature.gpu_sig;
     
             current_gpu_sig_id += gpu_sig->num_gpus;
         }
@@ -1825,9 +1837,9 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     for (i = 0; i < num_sigs; i++)
     {
         if (cont.type == EAR_TYPE_APPLICATION)
-            gpu_sig = &cont.app->signature.gpu_sig;
+            gpu_sig = &cont.app[i].signature.gpu_sig;
         else if (cont.type == EAR_TYPE_LOOP)
-            gpu_sig = &cont.loop->signature.gpu_sig;
+            gpu_sig = &cont.loop[i].signature.gpu_sig;
 
         num_gpu_sigs += gpu_sig->num_gpus;
     }
@@ -1854,9 +1866,9 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     for (i = 0; i < num_sigs;  i++)
     {
         if (cont.type == EAR_TYPE_APPLICATION)
-            gpu_sig = &cont.app->signature.gpu_sig;
+            gpu_sig = &cont.app[i].signature.gpu_sig;
         else if (cont.type == EAR_TYPE_LOOP)
-            gpu_sig = &cont.loop->signature.gpu_sig;
+            gpu_sig = &cont.loop[i].signature.gpu_sig;
 
         for (j = 0; j < gpu_sig->num_gpus; j++)
         {

@@ -24,6 +24,10 @@
 #ifndef _LIB_SHARED_DATA_H
 #define _LIB_SHARED_DATA_H
 
+#define _GNU_SOURCE            
+#include <sched.h>
+
+
 #include <common/config.h>
 #include <common/types.h>
 #include <common/states.h>
@@ -53,6 +57,8 @@ typedef struct shsignature{
 	ssig_t sig;
 	int 				  app_state;
 	unsigned long new_freq;
+	cpu_set_t cpu_mask;
+	int affinity;
 }shsignature_t;
 
 
@@ -116,9 +122,11 @@ int are_signatures_ready(lib_shared_data_t *data,shsignature_t *sig);
 void clean_signatures(lib_shared_data_t *data,shsignature_t *sig);
 void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig);
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig);
-void print_sh_signature(shsignature_t *sig);
+void print_sh_signature(int localid,shsignature_t *sig);
 void clean_my_mpi_info(mpi_information_t *info);
 void print_local_mpi_info(mpi_information_t *info);
+void mpi_info_to_str(mpi_information_t *info,char *msg,size_t max);
+
 
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);
 int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *node_cp,int *rank_cp);

@@ -100,8 +100,8 @@ state_t remove_remote_connection(int fd)
 {
     int i=0;
 	debug("Closing remote connection %d",fd);
-	FD_CLR(fd, & rfds);
-	if (fd >= max_fd){
+	FD_CLR(fd, &rfds);
+	if (fd == (max_fd-1)){
 		/* We must update the maximum */	
 		max_fd = -1;
 		for (i=0;i< FD_SETSIZE; i++){
@@ -137,14 +137,17 @@ void * process_remote_req_th(void * arg)
 	rfds_sys=rfds;
   while ((numfds_ready = select(max_fd, &rfds_sys, NULL, NULL, NULL)) && (eard_must_exit == 0))
   {
+		verbose(VRAPI,"RemoteAPI thread new info received (new_conn/new_data)");
 		if (numfds_ready > 0) {
 			/* This is the normal use case */
       for (i = 0; i < max_fd; i++) {
           if (FD_ISSET(i, &rfds_sys)){
 						debug("Channel %d ready for reading",i);
 						if (i == pipe_for_new_conn[0]){ 
+							verbose(VRAPI,"New connection received in RemoteAPI thread");
 							add_new_connection();
 						}else{ 
+							verbose(VRAPI,"New request received in RemoteAPI thread");
 							ret=process_remote_requests(i);
 							if (ret != EAR_SUCCESS) remove_remote_connection(i);
 						}

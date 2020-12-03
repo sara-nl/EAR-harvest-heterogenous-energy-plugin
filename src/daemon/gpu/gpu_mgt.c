@@ -22,7 +22,7 @@
 #include <common/states.h>
 
 #include <management/gpu/gpu.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/output/debug.h>
 
@@ -114,7 +114,7 @@ state_t gpu_mgr_set_freq(uint num_dev_req,ulong *freqs)
 	}
 	for (i=0;i<num_dev_req;i++){
 		freqs[i]=freqs[i];
-		/* debug("gpu_mgr_set_freq gpu[%d]=%lu",i,freqs[i]);*/
+		debug("gpu_mgr_set_freq gpu[%d]=%lu",i,freqs[i]);
 	}
 	return mgt_gpu_freq_limit_set(&gpu_node_mgr,freqs);
 }

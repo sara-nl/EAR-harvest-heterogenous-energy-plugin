@@ -59,10 +59,13 @@
 #define ONLY_MASTER (FEAT_ONLY_MASTER || !MPI)
 #define USE_GPUS_IN_EARL 1
 #define USE_GPU_LIB (USE_GPUS && USE_GPUS_IN_EARL)
-#define MAX_GPUS_SUPPORTED 4
 //
 
 #define POWERCAP 1
 #define POWERCAP_EXT 0
 #define DYN_PAR 1
+
+/* Sets to 0 MI statistics after signature computation*/
+#define RESET_STATISTICS_AT_SIGNATURE 1
+
 #endif //EAR_CONFIG_DEV_H

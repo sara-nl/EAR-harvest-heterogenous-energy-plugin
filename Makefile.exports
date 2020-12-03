@@ -4,7 +4,7 @@ export FEAT_AVX512
 export CC
 export CC_FLAGS
 export MPICC
-export MPICC_CFLAGS
+export MPICC_FLAGS
 
 export MPI_BASE
 export MPI_CFLAGS

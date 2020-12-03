@@ -20,6 +20,7 @@
 
 #include <linux/limits.h>
 #include <common/types/loop.h>
+#include <common/hardware/architecture.h>
 #include <common/types/application.h>
 #include <library/common/global_comm.h>
 #include <library/common/library_shared_data.h>
@@ -67,6 +68,10 @@ extern lib_shared_data_t *lib_shared_region;
 extern shsignature_t *sig_shared_region;
 extern int my_node_id;
 extern masters_info_t masters_info;
+extern cpu_set_t ear_process_mask;
+extern int ear_affinity_is_set;
+extern architecture_t arch_desc;
+
 
 extern uint sh_sig_per_node;
 extern uint sh_sig_per_proces;

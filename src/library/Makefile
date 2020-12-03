@@ -1,5 +1,5 @@
 CFLAGS  = -fPIC -O2 -I$(SRCDIR)
-LDFLAGS = -shared -ldl -lm -lpthread
+LDFLAGS = -shared -ldl -lm -lpthread 
 
 ifeq ($(FEAT_MPI_API), 0)
 LIBCC       = $(CC)
@@ -66,7 +66,7 @@ endif
 all: all.components $(libs_OBJS)
 
 %.so: $(mpix_OBJS) $(core_OBJS) $(comm_OBJS)
-	$(LIBCC) $(LIBCC_FLAGS) -o $*.$(ext) $^ $(LDFLAGS)
+	$(LIBCC)  $(LIBCC_FLAGS) -o $*.$(ext) $^ $(LDFLAGS)
 
 ######## OPTIONS
 
