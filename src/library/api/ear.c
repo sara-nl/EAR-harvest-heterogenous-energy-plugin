@@ -243,6 +243,7 @@ void create_shared_regions()
 		my_node_id=0;
 		lib_shared_region->num_processes=1;
 		lib_shared_region->num_signatures=0;
+		lib_shared_region->master_rank = masters_info.my_master_rank;
 	}
 	debug("Node connected %u",my_node_id);
 	#if MPI
@@ -874,7 +875,7 @@ void ear_init()
       if (ear_affinity_is_set){ 
         sig_shared_region[my_node_id].cpu_mask = ear_process_mask;
         sig_shared_region[my_node_id].affinity = 1;
-        if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
+        //if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
       }else{ 
         sig_shared_region[my_node_id].affinity = 0;
         verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);

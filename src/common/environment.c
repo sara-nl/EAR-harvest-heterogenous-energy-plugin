@@ -58,7 +58,7 @@ int conf_ear_dynais_window_size=DEFAULT_DYNAIS_WINDOW_SIZE;
 #ifdef USE_EAR_CONF
 char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t my_cluster_conf;
-my_node_conf_t *my_node_conf;
+my_node_conf_t *my_node_conf=NULL;
 #endif
 
 

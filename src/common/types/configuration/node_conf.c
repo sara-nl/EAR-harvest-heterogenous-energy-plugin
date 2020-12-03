@@ -172,6 +172,7 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 int policy_name_to_nodeid(char *my_policy, my_node_conf_t *conf)
 {
     int i;
+		if ( conf == NULL) return EAR_ERROR;
     for (i = 0; i < conf->num_policies; i++)
     {
         if (strcmp(my_policy, conf->policies[i].name) == 0) return conf->policies[i].policy;

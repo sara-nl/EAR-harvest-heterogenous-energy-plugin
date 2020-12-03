@@ -73,7 +73,9 @@ state_t policy_end(polctx_t *c)
 {
   timestamp end;
   ullong elap;
-	char buff[256];
+	int fd;
+	char buff[256],buff2[300];
+	char file_name[256];
 	char *stats=getenv(EAR_STATS);
 	/* Global statistics */
   timestamp_getfast(&end);
@@ -81,8 +83,22 @@ state_t policy_end(polctx_t *c)
 	mpi_stats.exec_time = elap;
 	mpi_stats.perc_mpi = (float) mpi_stats.mpi_time/(float)mpi_stats.exec_time;
 	if (stats != NULL){
-		mpi_info_to_str(&mpi_stats,buff,sizeof(buff));
-		verbose(0,buff);
+		sprintf(file_name,"%s",stats);
+		fd=open(file_name,O_WRONLY|O_CREAT|O_APPEND,S_IRUSR|S_IWUSR);
+		if (fd < 0){
+			mpi_info_to_str(&mpi_stats,buff,sizeof(buff));
+			verbose(0,"MR[%d] %s",lib_shared_region->master_rank,buff);
+		}else{
+			if (masters_info.my_master_rank>=0){
+				mpi_info_head_to_str_csv(buff,sizeof(buff));
+				sprintf(buff2,"mrank;%s\n",buff);
+				write(fd,buff2,strlen(buff2));
+			}
+			mpi_info_to_str_csv(&mpi_stats,buff,sizeof(buff));
+			sprintf(buff2,"%d;%s\n",lib_shared_region->master_rank,buff);
+			write(fd,buff2,strlen(buff2));
+			close(fd);
+		}
 	}
 	return EAR_SUCCESS;
 }
