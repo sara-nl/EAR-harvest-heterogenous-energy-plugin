@@ -228,10 +228,10 @@ void print_full_apps(application_t *apps, int num_apps)
 #if USE_GPUS
     int j;
     double gpu_power, gpu_total_power;
-    unsigned long gpu_freq, gpu_util;
+    unsigned long gpu_freq, gpu_util, gpu_mem_util;
     char tmp[64];
     if (print_gpus) 
-        printf(" %-13s %-6s %-6s ", "G-POW(T/U)", "G-FREQ", "G-UTIL");
+        printf(" %-13s %-6s %-13s ", "G-POW(T/U)", "G-FREQ", "G-UTIL(G/M)");
 #endif
     printf("\n");
 
@@ -265,26 +265,28 @@ void print_full_apps(application_t *apps, int num_apps)
                 if (apps[i].signature.gpu_sig.num_gpus > 0)
                 {
                     gpu_power = gpu_total_power = 0;
-                    gpu_freq = gpu_util = 0;
+                    gpu_freq = gpu_util = gpu_mem_util = 0;
                     for (j = 0; j < apps[i].signature.gpu_sig.num_gpus; j++)
                     {
                         gpu_total_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
                         if (apps[i].signature.gpu_sig.gpu_data[j].GPU_util)
                         {
-                            gpu_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
-                            gpu_freq  += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
-                            gpu_util  += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                            gpu_power    += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                            gpu_freq     += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
+                            gpu_util     += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                            gpu_mem_util += apps[i].signature.gpu_sig.gpu_data[j].GPU_mem_util;
                         }
                     }
-                    gpu_freq  /= apps[i].signature.gpu_sig.num_gpus;
-                    gpu_util  /= apps[i].signature.gpu_sig.num_gpus;
+                    gpu_freq     /= apps[i].signature.gpu_sig.num_gpus;
+                    gpu_util     /= apps[i].signature.gpu_sig.num_gpus;
+                    gpu_mem_util /= apps[i].signature.gpu_sig.num_gpus;
 
-                    sprintf(tmp, "%lu%%", gpu_util);
-                    printf(" %-6.2lf/%-6.2lf %-6.3lf %-6s", gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
+                    sprintf(tmp, "%lu%%/%lu%%", gpu_util, gpu_mem_util);
+                    printf(" %-6.2lf/%-6.2lf %-6.3lf %13s", gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
                 }
                 else
                 {
-                    printf(" %-7s %-8s %-8s", "---", "---", "---");
+                    printf(" %-7s %-8s %-13s", "---", "---", "---");
                 }
             }
 #endif
@@ -309,7 +311,7 @@ void print_full_apps(application_t *apps, int num_apps)
 
             }
 #if USE_GPUS
-            if (print_gpus) printf(" %-7s %-8s %-8s", "---", "---", "---");
+            if (print_gpus) printf(" %-7s %-8s %-13s", "---", "---", "---");
 #endif
             printf("\n");
         }
@@ -344,15 +346,17 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     char mpi_sbatch_line_format[256];
     double vpi;
 #if USE_GPUS
-    char tmp[16];
+    char tmp[32];
     char gpu_format[256];
     char gpu_header[256];
     double gpu_power = 0;
     double gpu_total_power = 0;
     unsigned long gpu_freq = 0;
     unsigned long gpu_util = 0;
+    unsigned long gpu_mem_util = 0;
     unsigned long gpu_freq_aux = 0;
     unsigned long gpu_util_aux = 0;
+    unsigned long gpu_mem_util_aux = 0;
     int num_gpus = 0;
     int j = 0;
 #endif
@@ -376,8 +380,8 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             strcpy(mpi_sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s");
         }
 #if USE_GPUS
-        strcpy(gpu_header, " %-13s %-7s %-6s");
-        strcpy(gpu_format, " %-6.2lf/%-6.2lf %-7.3lf %-6s ");
+        strcpy(gpu_header, " %-13s %-7s %-13s");
+        strcpy(gpu_format, " %-6.2lf/%-6.2lf %-7.3lf %-13s ");
 #endif
     }
     else
@@ -414,7 +418,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "GFLOPS/WATT");
 
 #if USE_GPUS
-    if (print_gpus) dprintf(fd, gpu_header, "G-POW (T/U)", "G-FREQ", "G-UTIL");
+    if (print_gpus) dprintf(fd, gpu_header, "G-POW (T/U)", "G-FREQ", "G-UTIL(G/MEM)");
 #endif
     dprintf(fd, "\n");
 
@@ -443,24 +447,28 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                         num_gpus = 0;
                         gpu_freq_aux = 0;
                         gpu_util_aux = 0;
+                        gpu_mem_util_aux = 0;
                         for (j = 0; j < apps[i].signature.gpu_sig.num_gpus; j++)
                         {
                             gpu_total_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
                             if (apps[i].signature.gpu_sig.gpu_data[j].GPU_util)
                             {
-                                gpu_power    += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
-                                gpu_freq_aux += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
-                                gpu_util_aux += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                                gpu_power        += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                                gpu_freq_aux     += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
+                                gpu_util_aux     += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                                gpu_mem_util_aux += apps[i].signature.gpu_sig.gpu_data[j].GPU_mem_util;
                                 num_gpus++;
                             }
                         }
                         if (num_gpus > 0)
                         {
-                            gpu_freq_aux /= num_gpus;
-                            gpu_util_aux /= num_gpus;
+                            gpu_freq_aux     /= num_gpus;
+                            gpu_util_aux     /= num_gpus;
+                            gpu_mem_util_aux /= num_gpus;
                         }
-                        gpu_freq += gpu_freq_aux;
-                        gpu_util += gpu_util_aux;
+                        gpu_freq     += gpu_freq_aux;
+                        gpu_util     += gpu_util_aux;
+                        gpu_mem_util += gpu_mem_util_aux;
                     }
                 }
 #endif
@@ -505,9 +513,10 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 if (print_gpus)
                 {
                     gpu_total_power /= current_apps;
-                    gpu_power /= current_apps;
-                    gpu_freq  /= current_apps;
-                    gpu_util  /= current_apps;
+                    gpu_power    /= current_apps;
+                    gpu_freq     /= current_apps;
+                    gpu_util     /= current_apps;
+                    gpu_mem_util /= current_apps;
                 }
 #endif
 
@@ -546,7 +555,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                         {
                             if (num_gpus > 0)
                             {
-                                sprintf(tmp, "%ld%%", gpu_util);
+                                sprintf(tmp, "%ld%%/%ld%%", gpu_util, gpu_mem_util);
                                 dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
                             }
                             else
@@ -679,7 +688,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                     {
                         if (num_gpus > 0)
                         {
-                            sprintf(tmp, "%ld%%", gpu_util);
+                            sprintf(tmp, "%ld%%/%ld%%", gpu_util, gpu_mem_util);
                             dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
                         }
                         else
@@ -980,14 +989,14 @@ void print_loops(loop_t *loops, int num_loops)
 #if USE_GPUS
     //GPU variable declaration
     int s;
-    char gpu_line[256];
+    char gpu_line[256], tmp[16];
     double gpup = 0, gpupu = 0;
-    ulong  gpuf = 0, gpuu = 0, gpuused = 0;
-    strcpy(line, "%-12s %-8s %-8s");
+    ulong  gpuf = 0, gpuu = 0, gpuused = 0, gpu_mem_util = 0;
+    strcpy(line, "%-12s %-8s %-13s");
     if (print_gpus)
-        printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL");
+        printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL(G/MEM)");
     //prepare gpu_line format
-    strcpy(gpu_line, "%-6.1lf/%6.1lf  %-8.2lf %-8lu");
+    strcpy(gpu_line, "%-6.1lf/%6.1lf  %-8.2lf %-13s");
 #endif
     printf("\n");
 
@@ -1004,6 +1013,7 @@ void print_loops(loop_t *loops, int num_loops)
                     gpupu += sig.gpu_sig.gpu_data[s].GPU_power;
                     gpuf += sig.gpu_sig.gpu_data[s].GPU_freq;
                     gpuu += sig.gpu_sig.gpu_data[s].GPU_util;
+                    gpu_mem_util += sig.gpu_sig.gpu_data[s].GPU_mem_util;
                     gpuused++;
                 }
             }
@@ -1011,13 +1021,15 @@ void print_loops(loop_t *loops, int num_loops)
             {
                 gpuf /= gpuused;
                 gpuu /= gpuused;
+                gpu_mem_util /= gpuused;
             }
         }
 #endif
         printf(line, loops[i].jid, loops[i].step_id, loops[i].node_id, loops[i].total_iterations,
                      sig.DC_power, sig.GBS, sig.CPI, sig.Gflops/sig.DC_power, sig.time, (double)(sig.avg_f)/1000000);
 #if USE_GPUS
-        if (print_gpus) printf(gpu_line, gpup,gpupu,(double)gpuf/1000000.0,gpuu);
+        sprintf(tmp, "%lu%%/%lu%%", gpuu, gpu_mem_util);
+        if (print_gpus) printf(gpu_line, gpup, gpupu, (double)gpuf/1000000.0, tmp);
         gpuused = 0;
         gpupu = 0;
         gpuf = 0;
