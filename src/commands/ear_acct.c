@@ -43,6 +43,7 @@ int verbose = 0;
 int query_filters = 0;
 int all_mpi = 0;
 int avx = 0;
+int print_gpus = 1;
 char csv_path[256] = "";
 
 void usage(char *app)
@@ -60,9 +61,11 @@ void usage(char *app)
 "\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
 "\t\t-x\tshows the last EAR events. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
-"\t\t-r\tshows the EAR loop signatures. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
-"\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" \
-"", app);
+"\t\t-r\tshows the EAR loop signatures. Nodes, job ids, and step ids can be specified as if were showing job information.\n", app);
+#if USE_GPUS
+   //printf("\t\t-g\tdisplays GPU information on jobs that used them.\n" );
+#endif
+    printf("\t\t-n\tspecifies the number of jobs to be shown, starting from the most recent one. [default: 20][to get all jobs use -n all]\n" );
     printf("\t\t-f\tspecifies the file where the user-database can be found. If this option is used, the information will be read from the file and not the database.\n");
     #endif
 	exit(0);
@@ -225,9 +228,10 @@ void print_full_apps(application_t *apps, int num_apps)
 #if USE_GPUS
     int j;
     double gpu_power, gpu_total_power;
-    unsigned long gpu_freq, gpu_util;
+    unsigned long gpu_freq, gpu_util, gpu_mem_util;
     char tmp[64];
-    printf(" %-13s %-6s %-6s ", "G-POW(T/U)", "G-FREQ", "G-UTIL");
+    if (print_gpus) 
+        printf(" %-13s %-6s %-13s ", "G-POW(T/U)", "G-FREQ", "G-UTIL(G/M)");
 #endif
     printf("\n");
 
@@ -256,29 +260,34 @@ void print_full_apps(application_t *apps, int num_apps)
                     apps[i].signature.time * apps[i].signature.DC_power, vpi*100);
             }
 #if USE_GPUS
-            if (apps[i].signature.gpu_sig.num_gpus > 0)
+            if (print_gpus)
             {
-                gpu_power = gpu_total_power = 0;
-                gpu_freq = gpu_util = 0;
-                for (j = 0; j < apps[i].signature.gpu_sig.num_gpus; j++)
+                if (apps[i].signature.gpu_sig.num_gpus > 0)
                 {
-                    gpu_total_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
-                    if (apps[i].signature.gpu_sig.gpu_data[j].GPU_util)
+                    gpu_power = gpu_total_power = 0;
+                    gpu_freq = gpu_util = gpu_mem_util = 0;
+                    for (j = 0; j < apps[i].signature.gpu_sig.num_gpus; j++)
                     {
-                        gpu_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
-                        gpu_freq  += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
-                        gpu_util  += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                        gpu_total_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                        if (apps[i].signature.gpu_sig.gpu_data[j].GPU_util)
+                        {
+                            gpu_power    += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                            gpu_freq     += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
+                            gpu_util     += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                            gpu_mem_util += apps[i].signature.gpu_sig.gpu_data[j].GPU_mem_util;
+                        }
                     }
-                }
-                gpu_freq  /= apps[i].signature.gpu_sig.num_gpus;
-                gpu_util  /= apps[i].signature.gpu_sig.num_gpus;
+                    gpu_freq     /= apps[i].signature.gpu_sig.num_gpus;
+                    gpu_util     /= apps[i].signature.gpu_sig.num_gpus;
+                    gpu_mem_util /= apps[i].signature.gpu_sig.num_gpus;
 
-                sprintf(tmp, "%lu%%", gpu_util);
-                printf(" %-6.2lf/%-6.2lf %-6.3lf %-6s", gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
-            }
-            else
-            {
-                printf(" %-7s %-8s %-8s", "NO GPU", "NO GPU", "NO GPU");
+                    sprintf(tmp, "%lu%%/%lu%%", gpu_util, gpu_mem_util);
+                    printf(" %-6.2lf/%-6.2lf %-6.3lf %13s", gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
+                }
+                else
+                {
+                    printf(" %-7s %-8s %-13s", "---", "---", "---");
+                }
             }
 #endif
             printf("\n");
@@ -290,19 +299,19 @@ void print_full_apps(application_t *apps, int num_apps)
             {
                 printf("%8lu-%-3lu\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-7s",
                     apps[i].job.id, apps[i].job.step_id, apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
-                    avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
-                    apps[i].power_sig.time * apps[i].power_sig.DC_power, "NO-EARL");
+                    avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "---", "---", 
+                    apps[i].power_sig.time * apps[i].power_sig.DC_power, "---");
             }
             else
             {
                 printf("%8lu-%-6s\t %-10s %-15s %-20s %-10.2lf %-10.2lf %-10.2lf %-10s %-10s %-10.2lf %-7s",
                     apps[i].job.id, "sbatch", apps[i].node_id, apps[i].job.user_id, apps[i].job.app_id, 
-                    avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "NO-EARL", "NO-EARL", 
-                    apps[i].power_sig.time * apps[i].power_sig.DC_power, "NO-EARL");
+                    avg_f, apps[i].power_sig.time, apps[i].power_sig.DC_power, "---", "---", 
+                    apps[i].power_sig.time * apps[i].power_sig.DC_power, "---");
 
             }
 #if USE_GPUS
-            printf(" %-7s %-8s %-8s", "NO-EARL", "NO-EARL", "NO-EARL");
+            if (print_gpus) printf(" %-7s %-8s %-13s", "---", "---", "---");
 #endif
             printf("\n");
         }
@@ -337,15 +346,17 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
     char mpi_sbatch_line_format[256];
     double vpi;
 #if USE_GPUS
-    char tmp[16];
+    char tmp[32];
     char gpu_format[256];
     char gpu_header[256];
     double gpu_power = 0;
     double gpu_total_power = 0;
     unsigned long gpu_freq = 0;
     unsigned long gpu_util = 0;
+    unsigned long gpu_mem_util = 0;
     unsigned long gpu_freq_aux = 0;
     unsigned long gpu_util_aux = 0;
+    unsigned long gpu_mem_util_aux = 0;
     int num_gpus = 0;
     int j = 0;
 #endif
@@ -369,8 +380,8 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             strcpy(mpi_sbatch_line_format, "%8u-%-6s\t %-10s %-20s %-6s %-7u %-10.2lf %-10.2lf %-14.2lf %-10s %-10s %-14.2lf %-14s");
         }
 #if USE_GPUS
-            strcpy(gpu_header, " %-13s %-7s %-6s");
-            strcpy(gpu_format, " %-6.2lf/%-6.2lf %-7.3lf %-6s ");
+        strcpy(gpu_header, " %-13s %-7s %-13s");
+        strcpy(gpu_format, " %-6.2lf/%-6.2lf %-7.3lf %-13s ");
 #endif
     }
     else
@@ -407,7 +418,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             "POWER(Watts)", "GBS", "CPI", "ENERGY(J)", "GFLOPS/WATT");
 
 #if USE_GPUS
-    dprintf(fd, gpu_header, "G-POW (T/U)", "G-FREQ", "G-UTIL");
+    if (print_gpus) dprintf(fd, gpu_header, "G-POW (T/U)", "G-FREQ", "G-UTIL(G/MEM)");
 #endif
     dprintf(fd, "\n");
 
@@ -429,29 +440,36 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 total_energy += apps[i].signature.time * apps[i].signature.DC_power;
                 current_apps++;
 #if USE_GPUS
-                if (apps[i].signature.gpu_sig.num_gpus > 0)
+                if (print_gpus)
                 {
-                    num_gpus = 0;
-                    gpu_freq_aux = 0;
-                    gpu_util_aux = 0;
-                    for (j = 0; j < apps[i].signature.gpu_sig.num_gpus; j++)
+                    if (apps[i].signature.gpu_sig.num_gpus > 0)
                     {
-                        gpu_total_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
-                        if (apps[i].signature.gpu_sig.gpu_data[j].GPU_util)
+                        num_gpus = 0;
+                        gpu_freq_aux = 0;
+                        gpu_util_aux = 0;
+                        gpu_mem_util_aux = 0;
+                        for (j = 0; j < apps[i].signature.gpu_sig.num_gpus; j++)
                         {
-                            gpu_power    += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
-                            gpu_freq_aux += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
-                            gpu_util_aux += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
-                            num_gpus++;
+                            gpu_total_power += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                            if (apps[i].signature.gpu_sig.gpu_data[j].GPU_util)
+                            {
+                                gpu_power        += apps[i].signature.gpu_sig.gpu_data[j].GPU_power;
+                                gpu_freq_aux     += apps[i].signature.gpu_sig.gpu_data[j].GPU_freq;
+                                gpu_util_aux     += apps[i].signature.gpu_sig.gpu_data[j].GPU_util;
+                                gpu_mem_util_aux += apps[i].signature.gpu_sig.gpu_data[j].GPU_mem_util;
+                                num_gpus++;
+                            }
                         }
+                        if (num_gpus > 0)
+                        {
+                            gpu_freq_aux     /= num_gpus;
+                            gpu_util_aux     /= num_gpus;
+                            gpu_mem_util_aux /= num_gpus;
+                        }
+                        gpu_freq     += gpu_freq_aux;
+                        gpu_util     += gpu_util_aux;
+                        gpu_mem_util += gpu_mem_util_aux;
                     }
-                    if (num_gpus > 0)
-                    {
-                        gpu_freq_aux /= num_gpus;
-                        gpu_util_aux /= num_gpus;
-                    }
-                    gpu_freq += gpu_freq_aux;
-                    gpu_util += gpu_util_aux;
                 }
 #endif
             }
@@ -492,12 +510,15 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 avg_CPI /= current_apps;
                 avg_VPI /= current_apps;
 #if USE_GPUS
-                gpu_total_power /= current_apps;
-                gpu_power /= current_apps;
-                gpu_freq  /= current_apps;
-                gpu_util  /= current_apps;
+                if (print_gpus)
+                {
+                    gpu_total_power /= current_apps;
+                    gpu_power    /= current_apps;
+                    gpu_freq     /= current_apps;
+                    gpu_util     /= current_apps;
+                    gpu_mem_util /= current_apps;
+                }
 #endif
-                
 
                 if (avg_VPI == 0)
                     avg_VPI = -1;
@@ -530,13 +551,16 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                                     avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt);
                         }
 #if USE_GPUS
-                        if (num_gpus > 0)
+                        if (print_gpus)
                         {
-                            sprintf(tmp, "%ld%%", gpu_util);
-                            dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
+                            if (num_gpus > 0)
+                            {
+                                sprintf(tmp, "%ld%%/%ld%%", gpu_util, gpu_mem_util);
+                                dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
+                            }
+                            else
+                                dprintf(fd, gpu_header, "---", "---", "---");
                         }
-                        else
-                            dprintf(fd, gpu_header, "NO GPU", "NO GPU", "NO GPU");
 #endif
                         dprintf(fd, "\n");
                 }
@@ -555,25 +579,25 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                             if (avx)
                                 dprintf(fd, mpi_line_format,
                                     current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL");
+                                    avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---", "---");
                             else
                                 dprintf(fd, mpi_line_format,
                                     current_job_id, current_step_id, apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                                    avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---");
                         }
                         else
                         {
                             if (avx)
                                 dprintf(fd, mpi_sbatch_line_format,
                                     current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL");
+                                    avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---", "---");
                             else
                                 dprintf(fd, mpi_sbatch_line_format,
                                     current_job_id, "sbatch", apps[idx].job.user_id, apps[idx].job.app_id, curr_policy, current_apps, 
-                                    avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                                    avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---");
                         }
 #if USE_GPUS
-                        dprintf(fd, gpu_header, "NO-EARL", "NO-EARL", "NO-EARL");
+                        if (print_gpus) dprintf(fd, gpu_header, "---", "---", "---");
 #endif
                         dprintf(fd, "\n");
                 }
@@ -600,7 +624,7 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                 gpu_freq = 0;
                 gpu_util = 0;
                 gpu_power = 0;
-								gpu_total_power = 0;
+                gpu_total_power = 0;
 #endif
                 i--; //go back to current app
                 is_sbatch = (current_step_id == 4294967294) ? 1 : 0;
@@ -623,10 +647,13 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
             avg_CPI /= current_apps;
             avg_VPI /= current_apps;
 #if USE_GPUS
-            gpu_total_power /= current_apps;
-            gpu_power /= current_apps;
-            gpu_freq  /= current_apps;
-            gpu_util  /= current_apps;
+            if (print_gpus)
+            {
+                gpu_total_power /= current_apps;
+                gpu_power /= current_apps;
+                gpu_freq  /= current_apps;
+                gpu_util  /= current_apps;
+            }
 #endif
 
             if (avg_VPI == 0)
@@ -657,13 +684,16 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                                 avg_frequency, avg_time, avg_power, avg_GBS, avg_CPI, total_energy, gflops_watt);
                     }
 #if USE_GPUS
-                    if (num_gpus > 0)
+                    if (print_gpus)
                     {
-                        sprintf(tmp, "%ld%%", gpu_util);
-                        dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
+                        if (num_gpus > 0)
+                        {
+                            sprintf(tmp, "%ld%%/%ld%%", gpu_util, gpu_mem_util);
+                            dprintf(fd, gpu_format, gpu_total_power, gpu_power, (double)gpu_freq/1000000, tmp);
+                        }
+                        else
+                            dprintf(fd, gpu_header, "---", "---", "---");
                     }
-                    else
-                        dprintf(fd, gpu_header, "NO GPU", "NO GPU", "NO GPU");
 #endif
                     dprintf(fd, "\n");
             }
@@ -682,25 +712,26 @@ void print_short_apps(application_t *apps, int num_apps, int fd)
                     if (avx)
                         dprintf(fd, mpi_line_format,
                             current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL");
+                            avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---", "---");
                     else
                         dprintf(fd, mpi_line_format,
                             current_job_id, current_step_id, apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                            avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---");
                 }
                 else
                 {
                     if (avx)
                         dprintf(fd, mpi_sbatch_line_format,
                             current_job_id, "sbatch", apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL", "NO-EARL");
+                            avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---", "---");
                     else
                         dprintf(fd, mpi_sbatch_line_format,
                             current_job_id, "sbatch", apps[i-1].job.user_id, apps[i-1].job.app_id, curr_policy, current_apps, 
-                            avg_frequency, avg_time, avg_power, "NO-EARL", "NO-EARL", total_energy, "NO-EARL");
+                            avg_frequency, avg_time, avg_power, "---", "---", total_energy, "---");
                 }
 #if USE_GPUS
-                dprintf(fd, gpu_header, "NO-EARL", "NO-EARL", "NO-EARL");
+                if (print_gpus)
+                    dprintf(fd, gpu_header, "---", "---", "---");
 #endif
                 dprintf(fd, "\n");
             }
@@ -958,13 +989,14 @@ void print_loops(loop_t *loops, int num_loops)
 #if USE_GPUS
     //GPU variable declaration
     int s;
-    char gpu_line[256];
+    char gpu_line[256], tmp[16];
     double gpup = 0, gpupu = 0;
-    ulong  gpuf = 0, gpuu = 0, gpuused = 0;
-    strcpy(line, "%-12s %-8s %-8s");
-    printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL");
+    ulong  gpuf = 0, gpuu = 0, gpuused = 0, gpu_mem_util = 0;
+    strcpy(line, "%-12s %-8s %-13s");
+    if (print_gpus)
+        printf(line, "G-POWER(T/U)","G-FREQ","G-UTIL(G/MEM)");
     //prepare gpu_line format
-    strcpy(gpu_line, "%-6.1lf/%6.1lf  %-8.2lf %-8lu");
+    strcpy(gpu_line, "%-6.1lf/%6.1lf  %-8.2lf %-13s");
 #endif
     printf("\n");
 
@@ -973,30 +1005,36 @@ void print_loops(loop_t *loops, int num_loops)
     {
         signature_copy(&sig, &loops[i].signature);
 #if USE_GPUS
-        for (s=0;s<sig.gpu_sig.num_gpus;s++){
-            gpup += sig.gpu_sig.gpu_data[s].GPU_power;
-            if (sig.gpu_sig.gpu_data[s].GPU_util){
-                gpupu += sig.gpu_sig.gpu_data[s].GPU_power;
-                gpuf += sig.gpu_sig.gpu_data[s].GPU_freq;
-                gpuu += sig.gpu_sig.gpu_data[s].GPU_util;
-                gpuused++;
+        if (print_gpus)
+        {                
+            for (s=0; s<sig.gpu_sig.num_gpus; s++){
+                gpup += sig.gpu_sig.gpu_data[s].GPU_power;
+                if (sig.gpu_sig.gpu_data[s].GPU_util){
+                    gpupu += sig.gpu_sig.gpu_data[s].GPU_power;
+                    gpuf += sig.gpu_sig.gpu_data[s].GPU_freq;
+                    gpuu += sig.gpu_sig.gpu_data[s].GPU_util;
+                    gpu_mem_util += sig.gpu_sig.gpu_data[s].GPU_mem_util;
+                    gpuused++;
+                }
+            }
+            if (gpuused > 0)
+            {
+                gpuf /= gpuused;
+                gpuu /= gpuused;
+                gpu_mem_util /= gpuused;
             }
         }
-        if (gpuused > 0)
-        {
-            gpuf /= gpuused;
-            gpuu /= gpuused;
-        } 
 #endif
         printf(line, loops[i].jid, loops[i].step_id, loops[i].node_id, loops[i].total_iterations,
                      sig.DC_power, sig.GBS, sig.CPI, sig.Gflops/sig.DC_power, sig.time, (double)(sig.avg_f)/1000000);
 #if USE_GPUS
-        printf(gpu_line, gpup,gpupu,(double)gpuf/1000000.0,gpuu);
+        sprintf(tmp, "%lu%%/%lu%%", gpuu, gpu_mem_util);
+        if (print_gpus) printf(gpu_line, gpup, gpupu, (double)gpuf/1000000.0, tmp);
         gpuused = 0;
-				gpupu = 0;
-				gpuf = 0;
-				gpuu = 0;
-				gpup = 0;
+        gpupu = 0;
+        gpuf = 0;
+        gpuu = 0;
+        gpup = 0;
 #endif
         printf("\n");
     }
@@ -1221,7 +1259,7 @@ int main(int argc, char *argv[])
     }
 
     char *token;
-    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmablrc:hx::")) != -1) 
+    while ((opt = getopt(argc, argv, "n:u:j:f:t:vmabglrc:hx::")) != -1) 
     {
         switch (opt)
         {
@@ -1264,6 +1302,9 @@ int main(int argc, char *argv[])
                     }
                 }
                 else if (verbose) printf("No argument for -x\n");
+                break;
+            case 'g':
+                print_gpus = 1;
                 break;
             case 'f':
                 file_name = optarg;
