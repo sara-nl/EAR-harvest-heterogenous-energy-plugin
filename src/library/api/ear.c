@@ -135,7 +135,11 @@ static void print_local_data()
 	char ver[64];
 	if (masters_info.my_master_rank==0) {
 	version_to_str(ver);
-	verbose(1, "------------EAR%s--------------------",ver);
+	#if MPI
+	verbose(1, "------------EAR%s MPI enabled --------------------",ver);
+	#else
+	verbose(1, "------------EAR%s MPI not enabled --------------------",ver);
+	#endif
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);

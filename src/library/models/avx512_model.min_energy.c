@@ -162,7 +162,7 @@ state_t model_project_time(signature_t *sign,ulong from,ulong to,double *ptime)
 
 double avx512_vpi(signature_t *my_app)
 {
-	return (double)((my_app->FLOPS[3]/(unsigned long long)16)+(my_app->FLOPS[7]/(unsigned long long)8))/(double)my_app->instructions;
+	return ear_min(((double)((my_app->FLOPS[3]/(unsigned long long)16)+(my_app->FLOPS[7]/(unsigned long long)8))/(double)my_app->instructions),1.0);
 }
 double proj_power(coefficient_t *coeff,signature_t *sign)
 {
