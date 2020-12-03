@@ -44,28 +44,57 @@
  * windows.
  */
 
-#ifndef DYNAIS_H
-#define DYNAIS_H
+#include <library/dynais/dynais.h>
+#include <library/dynais/avx2/dynais.h>
+#include <library/dynais/avx512/dynais.h>
 
-#include <common/types/generic.h>
+static int type;
 
-#define MAX_LEVELS      10
-#define METRICS_WINDOW  40000
+static int dynais_intel_switch(int model)
+{
+	#ifdef FEAT_AVX512
+	switch (model) {
+		case MODEL_HASWELL_X:
+		case MODEL_BROADWELL_X:
+		case MODEL_SKYLAKE_X:
+		case MODEL_CASCADE_LAKE_X:
+		case MODEL_COOPER_LAKE_X:
+			return 512;
+	}
+	#endif
+	return 2;
+}
 
-// DynAIS output states
-#define END_LOOP       -1
-#define NO_LOOP         0
-#define IN_LOOP         1
-#define NEW_ITERATION   2
-#define NEW_LOOP        3
-#define END_NEW_LOOP    4
+dynais_call_t dynais_init(topology_t *tp, uint window, uint levels)
+{
+	if (tp->vendor == VENDOR_INTEL) {
+		type = dynais_intel_switch();
+	} else {
+		type = 2;
+	}
+	if (type == 512) {
+		return avx512_dynais_init((ushort) window, (ushort) levels);
+	}
+	return avx2_dynais_init(window, levels);
+}
 
-typedef int (*dynais_call_t) (uint sample, uint *size, uint *level);
+void dynais_dispose()
+{
+	if (type == 512) {
+		avx512_dynais_dispose();
+	} else if (type == 2) {
+		avx2_dynais_dispose();
+	}
+}
 
-dynais_call dynais_init(uint window, uint levels);
+int dynais_build_type()
+{
+	return type;
+}
 
-void dynais_dispose();
-
-int dynais_build_type();
-
-#endif //DYNAIS_H
+uint dynais_sample_convert(ulong sample)
+{
+	uint *p = (uint *) &sample;
+	p[0] = _mm_crc32_u32(p[0], p[1]);
+	return (uint) p[0];
+}

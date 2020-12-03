@@ -126,10 +126,13 @@ char app_mgt_path[GENERIC_NAME];
 pc_app_info_t *pc_app_info_data;
 char pc_app_info_path[GENERIC_NAME];
 #endif
+// Dynais
+static dynais_call_t dynais;
 
 void *earl_periodic_actions(void *no_arg);
 static int end_periodic_th=0;
 //
+
 static void print_local_data()
 {
 	char ver[64];
@@ -575,7 +578,7 @@ void update_configuration()
 	ear_whole_app=system_conf->learning;
 }
 
-void   pin_processes(topology_t *t,cpu_set_t *mask,int is_set,int ppn,int idx)
+void pin_processes(topology_t *t,cpu_set_t *mask,int is_set,int ppn,int idx)
 {
 	int first,cpus,i;
 	debug("We are %d processes in this node and I'm the number %d , Total CPUS %d",ppn,idx,t->cpu_count);
@@ -731,7 +734,6 @@ void ear_init()
 	}
 #endif
 
-
 	// Application static data and metrics
 	debug("init application");
 	init_application(&application);
@@ -812,7 +814,7 @@ void ear_init()
 
 	// Initializing DynAIS
 	debug("Dynais init");
-	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	dynais = dynais_init(&arch_desc.top, get_ear_dynais_window_size(), get_ear_dynais_levels());
 	debug("Dynais end");
 
 	// Policies && models
@@ -1142,14 +1144,13 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 	if (!ear_whole_app)
 	{
 		// Create the event for DynAIS
-		unsigned long  ear_event_l;
-		udyn_t ear_event_s;
-		udyn_t ear_size;
-		udyn_t ear_level;
+		ulong ear_event_l;
+		uint ear_event_s;
+		uint ear_size;
+		uint ear_level;
 
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
-
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 #if 0
@@ -1169,16 +1170,16 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				//debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
+				//debug("NEW_LOOP event %lu level %u size %u\n", ear_event_l, ear_level, ear_size);
 				ear_iterations=0;
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
+				states_begin_period(my_id, ear_event_l, (ulong) ear_size, (ulong) ear_level);
 				ear_loop_size=(uint)ear_size;
 				ear_loop_level=(uint)ear_level;
 				in_loop=1;
 				mpi_calls_per_loop=1;
 				break;
 			case END_NEW_LOOP:
-				//debug("END_LOOP - NEW_LOOP event %lu level %hu\n",ear_event_l,ear_level);
+				//debug("END_LOOP - NEW_LOOP event %lu level %u\n", ear_event_l, ear_level);
 				if (loop_with_signature) {
 					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
@@ -1190,7 +1191,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				ear_loop_size=(uint)ear_size;
 				ear_loop_level=(uint)ear_level;
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
+				states_begin_period(my_id, ear_event_l, (ulong) ear_size, (ulong) ear_level);
 				break;
 			case NEW_ITERATION:
 				ear_iterations++;
