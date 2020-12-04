@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <immintrin.h>
 #include <library/dynais/dynais.h>
+#include <library/dynais/avx2/dynais.h>
 #include <library/dynais/avx2/dynais_core.h>
 
 // General indexes.
@@ -63,7 +64,7 @@ static int avx2_dynais_alloc(uint **c, size_t o)
 	return 0;
 }
 
-int avx2_dynais_init(uint window, uint levels)
+dynais_call_t avx2_dynais_init(uint window, uint levels)
 {
 	int i, k;
 
@@ -73,11 +74,11 @@ int avx2_dynais_init(uint window, uint levels)
 	avx2_window = (window < METRICS_WINDOW) ? window : METRICS_WINDOW;
 	avx2_levels = (levels < MAX_LEVELS)     ? levels : MAX_LEVELS;
 
-	if (avx2_dynais_alloc(avx2_circular_samps, 00) != 0) return -1;
-	if (avx2_dynais_alloc(avx2_circular_sizes, 00) != 0) return -1;
-	if (avx2_dynais_alloc(avx2_circular_zeros, 16) != 0) return -1;
-	if (avx2_dynais_alloc(avx2_circular_indxs, 16) != 0) return -1;
-	if (avx2_dynais_alloc(avx2_circular_accus, 16) != 0) return -1;
+	if (avx2_dynais_alloc(avx2_circular_samps, 00) != 0) return NULL;
+	if (avx2_dynais_alloc(avx2_circular_sizes, 00) != 0) return NULL;
+	if (avx2_dynais_alloc(avx2_circular_zeros, 16) != 0) return NULL;
+	if (avx2_dynais_alloc(avx2_circular_indxs, 16) != 0) return NULL;
+	if (avx2_dynais_alloc(avx2_circular_accus, 16) != 0) return NULL;
 
 	// Filling index array
 	for (i = 0; i < levels; ++i) {

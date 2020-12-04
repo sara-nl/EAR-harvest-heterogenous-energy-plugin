@@ -48,6 +48,7 @@
 #define DYNAIS_H
 
 #include <common/types/generic.h>
+#include <common/hardware/topology.h>
 
 #define MAX_LEVELS      10
 #define METRICS_WINDOW  40000
@@ -62,10 +63,12 @@
 
 typedef int (*dynais_call_t) (uint sample, uint *size, uint *level);
 
-dynais_call dynais_init(uint window, uint levels);
+dynais_call_t dynais_init(topology_t *tp, uint window, uint levels);
 
 void dynais_dispose();
 
 int dynais_build_type();
+
+uint dynais_sample_convert(ulong sample);
 
 #endif //DYNAIS_H

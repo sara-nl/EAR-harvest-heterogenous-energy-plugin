@@ -49,9 +49,9 @@ extern __m512i zmmx29; // Shifts
 // Dynamic Application Iterative Structure Detection (DynAIS)
 //
 #ifdef DYN_CORE_N
-void dynais_avx512_core_n(ushort sample, ushort size, ushort level)
+void avx512_dynais_core_n(ushort sample, ushort size, ushort level)
 #else
-void dynais_avx512_core_0(ushort sample, ushort size, ushort level)
+void avx512_dynais_core_0(ushort sample, ushort size, ushort level)
 #endif
 {
 	__m512i zmmx00; // S

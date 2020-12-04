@@ -44,9 +44,14 @@
  * windows.
  */
 
+#include <stdlib.h>
+#include <unistd.h>
+#include <immintrin.h>
 #include <library/dynais/dynais.h>
 #include <library/dynais/avx2/dynais.h>
+#ifdef FEAT_AVX512
 #include <library/dynais/avx512/dynais.h>
+#endif
 
 static int type;
 
@@ -57,8 +62,8 @@ static int dynais_intel_switch(int model)
 		case MODEL_HASWELL_X:
 		case MODEL_BROADWELL_X:
 		case MODEL_SKYLAKE_X:
-		case MODEL_CASCADE_LAKE_X:
-		case MODEL_COOPER_LAKE_X:
+		//case MODEL_CASCADE_LAKE_X:
+		//case MODEL_COOPER_LAKE_X:
 			return 512;
 	}
 	#endif
@@ -68,12 +73,14 @@ static int dynais_intel_switch(int model)
 dynais_call_t dynais_init(topology_t *tp, uint window, uint levels)
 {
 	if (tp->vendor == VENDOR_INTEL) {
-		type = dynais_intel_switch();
+		type = dynais_intel_switch(tp->model);
 	} else {
 		type = 2;
 	}
 	if (type == 512) {
+		#ifdef FEAT_AVX512
 		return avx512_dynais_init((ushort) window, (ushort) levels);
+		#endif
 	}
 	return avx2_dynais_init(window, levels);
 }
@@ -81,7 +88,9 @@ dynais_call_t dynais_init(topology_t *tp, uint window, uint levels)
 void dynais_dispose()
 {
 	if (type == 512) {
+		#ifdef FEAT_AVX512
 		avx512_dynais_dispose();
+		#endif
 	} else if (type == 2) {
 		avx2_dynais_dispose();
 	}

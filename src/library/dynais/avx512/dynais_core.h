@@ -20,7 +20,7 @@
 
 #include <common/types/generic.h>
 
-void dynais_avx512_core_n(ushort sample, ushort size, ushort level);
-void dynais_avx512_core_0(ushort sample, ushort size, ushort level);
+void avx512_dynais_core_n(ushort sample, ushort size, ushort level);
+void avx512_dynais_core_0(ushort sample, ushort size, ushort level);
 
 #endif //EAR_DYNAIS_CORE_H

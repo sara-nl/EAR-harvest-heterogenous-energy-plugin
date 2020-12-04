@@ -46,9 +46,9 @@ extern __m256i ymmx30; //
 extern __m256i ymmx29; // Shifts
 
 #ifdef DYN_CORE_N
-void dynais_avx2_core_n(uint sample, uint size, uint level)
+void avx2_dynais_core_n(uint sample, uint size, uint level)
 #else
-void dynais_avx2_core_0(uint sample, uint size, uint level)
+void avx2_dynais_core_0(uint sample, uint size, uint level)
 #endif
 {
 	__m256i ymmx00; // S

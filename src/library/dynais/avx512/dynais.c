@@ -16,10 +16,10 @@
 */
 
 #include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <immintrin.h>
 #include <library/dynais/dynais.h>
+#include <library/dynais/avx512/dynais.h>
 #include <library/dynais/avx512/dynais_core.h>
 
 // General indexes.
@@ -76,11 +76,11 @@ dynais_call_t avx512_dynais_init(ushort window, ushort levels)
 		levels = 1;
 	}
 	// Allocating space
-	if (avx512_dynais_alloc(avx512_circular_samps, 00) != 0) return -1;
-	if (avx512_dynais_alloc(avx512_circular_sizes, 00) != 0) return -1;
-	if (avx512_dynais_alloc(avx512_circular_zeros, 32) != 0) return -1;
-	if (avx512_dynais_alloc(avx512_circular_indxs, 32) != 0) return -1;
-	if (avx512_dynais_alloc(avx512_circular_accus, 32) != 0) return -1;
+	if (avx512_dynais_alloc(avx512_circular_samps, 00) != 0) return NULL;
+	if (avx512_dynais_alloc(avx512_circular_sizes, 00) != 0) return NULL;
+	if (avx512_dynais_alloc(avx512_circular_zeros, 32) != 0) return NULL;
+	if (avx512_dynais_alloc(avx512_circular_indxs, 32) != 0) return NULL;
+	if (avx512_dynais_alloc(avx512_circular_accus, 32) != 0) return NULL;
 	// Filling index array
 	for (i = 0; i < levels; ++i) {
 		for (k = 0; k < avx512_window; ++k) {
@@ -127,7 +127,7 @@ static short avx512_dynais_hierarchical(ushort sample, ushort size, ushort level
 	return level;
 }
 
-short avx512_dynais(uint sample, uint *size, uint *govern_level)
+int avx512_dynais(uint sample, uint *size, uint *govern_level)
 {
 	short end_loop = 0;
 	short reach;
@@ -181,7 +181,7 @@ short avx512_dynais(uint sample, uint *size, uint *govern_level)
 			if (end_loop) {
 				return END_NEW_LOOP;
 			}
-			return avx512_current_resul[l];
+			return (int) avx512_current_resul[l];
 		}
 	}
 	// In case no loop were found: NO_LOOP or END_LOOP in level 0, size and
@@ -189,5 +189,5 @@ short avx512_dynais(uint sample, uint *size, uint *govern_level)
 	*govern_level = 0;
 	*size         = 0;
 
-	return -end_loop;
+	return (int) -end_loop;
 }
