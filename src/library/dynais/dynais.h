@@ -16,9 +16,9 @@
 */
 
 /*
- * Usage:
- * Just call dynais() passing the sample and the size of
- * this sample. It will be returned one of these states:
+ * Usage summary:
+ * Just call dynais() passing the sample and the size of this sample. It will be
+ * returned one of these states:
  *      END_LOOP
  *      NO_LOOP
  *      IN_LOOP
@@ -26,22 +26,17 @@
  *      NEW_LOOP
  *      END_NEW_LOOP
  *
+ * To initialize, you have to call dynais_init() method before, passing a
+ * topology, window length and number of levels. The function
+ * dynais_dispose() frees its memory allocation.
+ *
+ * Level is capped to a maximum of 10, and window to 40.000. But it is
+ * recommended to set a window of 500 at most to perform at its best.
+ *
  * Errors:
- * A returned dynais_init() value different than 0,
- * means that something went wrong while allocating
- * memory.
+ * A NULL returned by dynais_init() means that something went wrong while
+ * allocating memory.
  *
- * You HAVE to call dynais_init() method before with
- * the window length and the number of levels and
- * dynais_dispose() at the end of the execution.
- *
- * You can also set the METRICS define to 1 in case you
- * want some metrics at the end of the execution. Moreover,
- * you can increase MAX_LEVELS in case you need more or
- * METRICS_WINDOW, used to store the information of the
- * different loops found (sorted by size) because could
- * be necessary if you want to test big single level
- * windows.
  */
 
 #ifndef DYNAIS_H
@@ -63,12 +58,15 @@
 
 typedef int (*dynais_call_t) (uint sample, uint *size, uint *level);
 
+// Returns a dynais_call_t type. It is a pointer a specific AVX dynais call.
 dynais_call_t dynais_init(topology_t *tp, uint window, uint levels);
 
 void dynais_dispose();
 
+// Returns DynAIS type. 512 if it's AVX512, 2 if it's AVX2.
 int dynais_build_type();
 
+// Applies CRC to 64 bits sample, converting it to 32 bit value.
 uint dynais_sample_convert(ulong sample);
 
 #endif //DYNAIS_H
