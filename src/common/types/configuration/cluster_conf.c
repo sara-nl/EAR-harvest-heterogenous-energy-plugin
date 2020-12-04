@@ -758,6 +758,7 @@ void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
 int policy_name_to_id(char *my_policy, cluster_conf_t *conf)
 {
     int i;
+		if (conf == NULL) return EAR_ERROR;
     for (i = 0; i < conf->num_policies; i++)
     {
         if (strcmp(my_policy, conf->power_policies[i].name) == 0) return i;
