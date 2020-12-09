@@ -89,6 +89,7 @@ static state_t static_dispose(amd17_ctx_t *f, uint close_msr_up_to, state_t s, c
 {
 	int cpu;
 
+	// TODO: Recover MSR previous state
 	for (cpu = 0; cpu < close_msr_up_to; ++cpu) {
 		msr_close(tp.cpus[cpu].id);
 	}
@@ -183,10 +184,18 @@ static state_t pstate_build_psss_single(ullong freq_mhz, ullong *cof, ullong *fi
 
 static state_t pstate_build_psss(amd17_ctx_t *f)
 {
+	const ullong *freqs_available;
+	uint freq_count;
+	ullong min_mhz;
 	state_t s;
 	ullong p;
 	int i;
 
+	// Getting the minimum frequency specified by the driver
+	if (xtate_fail(s, f->driver->get_available_list(&f->driver_c, &freqs_available, &freq_count))) {
+		return static_dispose(f, 0, s, state_msg);
+	}
+	min_mhz = freqs_available[freq_count-1] / 1000LLU;
 	// Getting P0 information
 	f->psss[0].fid = getbits64(f->regs[0],  7,  0);
 	f->psss[0].did = getbits64(f->regs[0], 13,  8);
@@ -195,6 +204,10 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 	}
 	// Getting the P0(b) Core Frequency
 	f->psss[0].cof = (f->psss[0].fid * 200LLU) / f->psss[0].did;
+	// Comparing if MSR and driver frequency matches
+	if (f->psss[0].cof != min_mhz) {
+		return_msg(EAR_ERROR, "the driver and MSR frequency differs ");
+	}
 	// Getting P0 in case boost is not enabled
 	i = 1;
 	
@@ -211,7 +224,7 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 		p = f->psss[0].cof - 100LLU;
 	}
 	// Getting PSS objects from P1 to P7
-	for (; p >= 1000 && i < MAX_PSTATES; p -= 100, ++i) {
+	for (; p >= min_mhz && i < MAX_PSTATES; p -= 100, ++i) {
 		if (xtate_fail(s, pstate_build_psss_single(p, &f->psss[i].cof, &f->psss[i].fid, &f->psss[i].did))) {
 			return s;	
 		}
@@ -245,7 +258,6 @@ state_t pstate_amd17_init_user(amd17_ctx_t *f)
 	}
 	// Initializing PSS0 to initialize the list
 	cof = freqs_available[0] / 1000LLU;
-	debug("bro culture %llu", cof); 
 	if (xtate_fail(s, pstate_build_psss_single(cof, &cof, &fid, &did))) {
 		return s;
 	}
@@ -311,6 +323,7 @@ state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 		return static_dispose(f, tp.cpu_count, s, "Incorrect P_STATE limits");
 	}
 	// Save registers configuration
+	ullong min_mhz = 0LLU;
 	for (data = 0LLU, i = MAX_REGISTERS - 1; i >= 0; --i) {
 		if (xtate_fail(s, msr_read(0, &f->regs[i], sizeof(ullong), REG_P0+((ullong) i)))) {
 			return static_dispose(f, tp.cpu_count, s, state_msg);
@@ -392,12 +405,10 @@ state_t pstate_amd17_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *p
 	if (f->pss_nominal) {
 		pstate_list[0].idx = 0LLU;
 		pstate_list[0].khz = (f->psss[0].cof * 1000LLU) + 1000LLU;
-		pstate_list[0].mhz = (f->psss[0].cof + 1LLU);
 	}
 	for (i = f->pss_nominal; i < f->pss_count; ++i) {
 		pstate_list[i].idx = (ullong) i;
 		pstate_list[i].khz = f->psss[i].cof * 1000LLU;
-		pstate_list[i].mhz = f->psss[i].cof;
 	}
 	if (pstate_count != NULL) {
 		*pstate_count = f->pss_count;
@@ -423,7 +434,6 @@ state_t pstate_amd17_get_current_list(ctx_t *c, pstate_t *pstate_list)
 	{
 		pstate_list[cpu].idx = f->pss_nominal;
 		pstate_list[cpu].khz = f->psss[f->pss_nominal].cof * 1000LLU;
-		pstate_list[cpu].mhz = f->psss[f->pss_nominal].cof;
 
 		if (governor == Governor.userspace)
 		{
@@ -440,7 +450,6 @@ state_t pstate_amd17_get_current_list(ctx_t *c, pstate_t *pstate_list)
 					if (state_ok(static_get_index(f, cof, &pst, 0))) {
 						pstate_list[cpu].idx = pst;
 						pstate_list[cpu].khz = f->psss[pst].cof * 1000LLU;
-						pstate_list[cpu].mhz = f->psss[pst].cof;
 					}
 				}
 			}

@@ -180,7 +180,6 @@ state_t pstate_dummy_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *p
 	for (i = 0; i < f->freqs_count; ++i) {
 		pstate_list[i].idx = (ullong) i;
 		pstate_list[i].khz = f->freqs_available[i];
-		pstate_list[i].mhz = f->freqs_available[i] / 1000LLU;
 	}
 	if (pstate_count != NULL) {
 		*pstate_count = f->freqs_count;
@@ -204,13 +203,11 @@ state_t pstate_dummy_get_current_list(ctx_t *c, pstate_t *pstate_list)
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		pstate_list[cpu].idx = 0;
 		pstate_list[cpu].khz = f->freqs_available[0];
-		pstate_list[cpu].mhz = f->freqs_available[0] / 1000LLU;
 
 		if (state_ok(static_get_index(f, current_list[cpu], &pst, 0)))
 		{
 			pstate_list[cpu].idx = pst;
 			pstate_list[cpu].khz = f->freqs_available[pst];
-			pstate_list[cpu].mhz = f->freqs_available[pst] / 1000LLU;	
 		}
 	}
 
