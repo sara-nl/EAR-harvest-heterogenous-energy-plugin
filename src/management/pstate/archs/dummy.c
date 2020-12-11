@@ -144,11 +144,17 @@ state_t pstate_dummy_count(ctx_t *c, uint *pstate_count)
 static state_t static_get_index(dummy_ctx_t *f, ullong freq_khz, uint *pstate_index, uint closest)
 {
 	int pst;
-
+	// Boost test
+	if (f->boost_enabled && f->freqs_available[0] == freq_khz) {
+		*pstate_index = 0;
+		return EAR_SUCCESS;
+	}
+	// Closest test
 	if (closest && freq_khz > f->freqs_available[f->pstate_nominal]) {
 		*pstate_index = f->pstate_nominal;
 		return EAR_SUCCESS;
 	}
+	// Searching
 	for (pst = f->pstate_nominal; pst < f->freqs_count; ++pst)
 	{
 		debug("comparing frequencies %llu == %llu", f->freqs_available[pst], freq_khz);
