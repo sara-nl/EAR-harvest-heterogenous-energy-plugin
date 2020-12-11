@@ -154,6 +154,24 @@ ulong *frequency_get_freq_rank_list()
 	return list_khz;
 }
 
+
+ulong frequency_set_cpu(ulong freq_khz, uint cpu)
+{
+	uint pstate_index;
+	// Sets a frequency in KHz in all CPUs.
+	if (!init) {
+		return 0LU;
+	}
+	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
+		return 0LU;
+	}
+	if (state_fail(mgt_pstate_set_current(&c, pstate_index, cpu))) {
+		return 0LU;
+	}
+	// Returns written P_STATE.
+	return freq_khz;
+}
+
 ulong frequency_set_all_cpus(ulong freq_khz)
 {
 	uint pstate_index;

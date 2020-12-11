@@ -41,8 +41,8 @@ typedef struct pss_s {
 #define REG_P0			0xc0010064
 #define REG_P1			0xc0010065
 
-#define p0_khz(cof) ((f->psss[0].cof * 1000LLU) + 1000LLU)
-#define p1_khz(cof) ((f->psss[0].cof * 1000LLU))
+#define p0_khz(cof) ((cof * 1000LLU) + 1000LLU)
+#define p1_khz(cof) ((cof * 1000LLU))
 
 static topology_t tp;
 
@@ -368,6 +368,8 @@ static state_t static_get_index(amd17_ctx_t *f, ullong freq_khz, uint *pstate_in
 {
 	ullong cof_khz;
     int pst;
+
+	debug("A BER %llu - %llu", p0_khz(f->psss[0].cof), freq_khz);
 	// Boost test
 	if (f->boost_enabled && p0_khz(f->psss[0].cof) == freq_khz) {
 		*pstate_index = 0;
@@ -436,8 +438,8 @@ state_t pstate_amd17_get_current_list(ctx_t *c, pstate_t *pstate_list)
 	if (xtate_fail(s, f->driver->get_governor(&f->driver_c, &governor))) {
 		return s;
 	}
-	if (xtate_fail(s1, f->driver->get_current(&f->driver_c, &freq_list))) {
-		return s1;
+	if (xtate_fail(s, f->driver->get_current_list(&f->driver_c, &freq_list))) {
+		return s;
 	}
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu)
 	{
@@ -557,9 +559,10 @@ static state_t set_frequency_p0(amd17_ctx_t *f, uint cpu)
 		return s;
 	}
 	// Calling the driver to set P0 in specific CPU
-	if (xtate_fail(s1, f->driver->set_current(&f->driver_c, 0, cpu))) {
+	if (xtate_fail(s, f->driver->set_current(&f->driver_c, 0, cpu))) {
 		return s;
 	}
+	return EAR_SUCCESS;
 }
 
 state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index)
@@ -573,13 +576,13 @@ state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index)
 		return s1;
 	}
 	// Step 1
-	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
-		return s;
+	if (xtate_fail(s1, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
+		return s1;
 	}
 	// Step 2
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		// If P_STATE boost
-		if (pstate_index[i] == 0 && f->pss_nominal) {
+		if (pstate_index[cpu] == 0 && f->pss_nominal) {
 			if (xtate_fail(s1, set_frequency_p0(f, cpu))) {
 				s2 = s1;
 			}
@@ -602,8 +605,8 @@ state_t pstate_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
 		return s1;
 	}
 	// Step 1
-	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
-		return s;
+	if (xtate_fail(s1, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
+		return s1;
 	}
 	// Step 2 (single CPU)
 	if (_cpu != all_cpus) {

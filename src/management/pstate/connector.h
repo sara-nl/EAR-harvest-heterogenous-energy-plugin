@@ -42,6 +42,8 @@ ulong frequency_get_nominal_freq();
 ulong frequency_get_nominal_pstate();
 // Virtualizable. Init required. | Not used without initialization.
 ulong *frequency_get_freq_rank_list();
+// NEW
+ulong frequency_set_cpu(ulong freq_khz, uint cpu);
 // Daemon required. Init required. | Not used without initialization.
 ulong frequency_set_all_cpus(ulong freq_khz);
 // Daemon required. Init required | Not used without initialization.
