@@ -32,6 +32,10 @@ void ear_energy_diff(unsigned long ebegin,unsigned long eend, unsigned long *edi
 int ear_debug_energy(ulong *energy_j,ulong *energy_mj,ulong *time_sec,ulong *time_ms,ulong *os_time_sec,ulong *os_time_ms);
 /* Sets cpufreq in the CPU sets in mask */
 int ear_set_cpufreq(cpu_set_t *mask,unsigned long cpufreq);
+/* Sets gpufreq in a given gpu*/
+int ear_set_gpufreq(int gpu_id,unsigned long gpufreq);
+/* Sets gpufreq in all the GPUs */
+int ear_set_gpufreq_list(num_gpus,unsigned long *gpufreqlist);
 
 int ear_connect();
 void ear_disconnect();

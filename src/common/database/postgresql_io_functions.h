@@ -41,11 +41,8 @@
 #define LOOP_ARGS                   8
 #define JOB_ARGS                    16
 
-#if DEMO
-#define PERIODIC_METRIC_ARGS        8
-#else
-#define PERIODIC_METRIC_ARGS        6
-#endif
+#define PERIODIC_METRIC_ARGS        10
+
 #if !DB_SIMPLE
 #define SIGNATURE_ARGS              21
 #define AVG_SIGNATURE_ARGS          24

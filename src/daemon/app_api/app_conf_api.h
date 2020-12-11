@@ -19,12 +19,15 @@
 #define _APP_CONF_API_H
 #define _GNU_SOURCE
 #include <sched.h>
+#include <sys/types.h>
 
 #include <common/config.h>
 
 #define ENERGY_TIME		1000
 #define ENERGY_TIME_DEBUG               1001
 #define SELECT_CPU_FREQ									1002
+#define SET_GPUFREQ											1003
+#define SET_GPUFREQ_LIST								1004
 #define CONNECT		2000
 #define DISCONNECT 	2001
 #define INVALID_COMMAND 1
@@ -47,8 +50,19 @@ typedef struct cpu_freq_req{
 	unsigned long cpuf;
 }cpu_freq_req_t;
 
+typedef struct gpu_freq_req{
+	uint gpu_id;
+	ulong gpu_freq;
+}gpu_freq_req_t;
+
+typedef struct gpu_freq_list_req{
+	ulong gpu_freq[MAX_GPUS_SUPPORTED];
+}gpu_freq_list_req_t;
+
 typedef union app_send_data{
 	cpu_freq_req_t cpu_freq;
+	gpu_freq_req_t gpu_freq;
+	gpu_freq_list_req_t gpu_freq_list;
 }app_send_data_t;
 
 typedef struct app_send{

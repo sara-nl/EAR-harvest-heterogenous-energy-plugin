@@ -289,6 +289,49 @@ int ear_set_cpufreq(cpu_set_t *mask,unsigned long cpufreq)
 
 }
 
+int ear_set_gpufreq(int gpu_id,unsigned long gpufreq)
+{
+  int ret=EAR_ERROR;
+  app_send_t my_req;
+  app_recv_t my_data;
+  
+  /* Preparing the request */
+  my_req.req=SET_GPUFREQ;
+  my_req.send_data.gpu_freq.gpu_id=gpu_id;
+  my_req.send_data.gpu_freq.gpu_freq=gpufreq;
+  
+  /* Sending the request */
+  if ((ret=send_request(&my_req))!=EAR_SUCCESS) return ret;
+  
+  /* Waiting for an answer */
+  if ((ret=wait_answer(&my_data))!=EAR_SUCCESS) return ret;
+
+  
+  return my_data.ret;
+
+}
+int ear_set_gpufreq_list(uint num_gpus,unsigned long *gpufreqlist)
+{
+  int ret=EAR_ERROR;
+  app_send_t my_req;
+  app_recv_t my_data;
+ 
+  /* Preparing the request */
+  my_req.req=SET_GPUFREQ_LIST;
+	if (num_gpus > MAX_GPUS_SUPPORTED) return EAR_ERROR;
+  memcpy(my_req.send_data.gpu_freq_list.gpu_freq,gpufreqlist,sizeof(unsigned long)*num_gpus);
+
+  /* Sending the request */
+  if ((ret=send_request(&my_req))!=EAR_SUCCESS) return ret;
+
+  /* Waiting for an answer */
+  if ((ret=wait_answer(&my_data))!=EAR_SUCCESS) return ret;
+
+
+  return my_data.ret;
+
+}
+
 
 int ear_connect()
 {

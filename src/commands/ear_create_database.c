@@ -29,7 +29,7 @@
 char print_out = 1;
 cluster_conf_t my_cluster;
 char signature_detail = !DB_SIMPLE;
-char db_node_detail = DEMO;
+char db_node_detail = 1;
 
 void usage(char *app)
 {
@@ -816,6 +816,9 @@ int main(int argc,char *argv[])
             exit(0);
         }
     }
+
+
+
 #if DB_MYSQL 
     MYSQL *connection = mysql_init(NULL); 
 #elif DB_PSQL
@@ -827,7 +830,7 @@ int main(int argc,char *argv[])
 	print_database_conf(&my_cluster.database);
 
     signature_detail = my_cluster.database.report_sig_detail;
-    db_node_detail= my_cluster.database.report_node_detail;
+    db_node_detail = my_cluster.database.report_node_detail;
 
 #if DB_PSQL
     char **keys, **values, temp[32];
