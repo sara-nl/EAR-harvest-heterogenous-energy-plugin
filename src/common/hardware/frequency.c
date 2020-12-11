@@ -185,6 +185,11 @@ uint frequency_get_num_online_cpus()
 }
 
 // Privileged function
+ulong frequency_set_cpu(ulong freq_khz, uint cpu)
+{
+	return 0LU;
+}
+
 ulong frequency_set_all_cpus(ulong freq)
 {
 	int result, i = 0;

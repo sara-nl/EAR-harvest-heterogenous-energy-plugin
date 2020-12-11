@@ -42,6 +42,8 @@ ulong frequency_get_cpu_freq(uint cpu);
 ulong frequency_get_nominal_freq();
 ulong frequency_get_nominal_pstate();
 ulong *frequency_get_freq_rank_list();
+// NEW
+ulong frequency_set_cpu(ulong freq_khz, uint cpu);
 ulong frequency_set_all_cpus(ulong freq);
 ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq);
 ulong frequency_set_with_list(uint cpus,ulong *cpuf);
