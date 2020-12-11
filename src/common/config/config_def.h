@@ -51,8 +51,6 @@
 /* When set to 1, some fields are neither created not reported to the DB to
  * save space */
 #define DB_SIMPLE                           1
-/* When set to 1, avg frequency and temp is reported with periodic metrics */
-#define DEMO								1
 /* Maximum number of simultaneous DB connection for mysql user commands */
 #define MAX_DB_CONNECTIONS					20
 /* */

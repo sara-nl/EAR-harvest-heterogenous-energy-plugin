@@ -141,7 +141,7 @@ void set_default_db_conf(db_conf_t *db_conf)
   strcpy(db_conf->ip, "127.0.0.1");
   db_conf->port = 3306;
   db_conf->max_connections=MAX_DB_CONNECTIONS;
-  db_conf->report_node_detail=DEMO;
+  db_conf->report_node_detail=1;
   db_conf->report_sig_detail=!DB_SIMPLE;
   db_conf->report_loops=!LARGE_CLUSTER;
 }
