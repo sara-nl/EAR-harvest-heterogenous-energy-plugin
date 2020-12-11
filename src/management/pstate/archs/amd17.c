@@ -204,10 +204,6 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 	}
 	// Getting the P0(b) Core Frequency
 	f->psss[0].cof = (f->psss[0].fid * 200LLU) / f->psss[0].did;
-	// Comparing if MSR and driver frequency matches
-	if (f->psss[0].cof != min_mhz) {
-		return_msg(EAR_ERROR, "the driver and MSR frequency differs ");
-	}
 	// Getting P0 in case boost is not enabled
 	i = 1;
 	
@@ -323,7 +319,6 @@ state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 		return static_dispose(f, tp.cpu_count, s, "Incorrect P_STATE limits");
 	}
 	// Save registers configuration
-	ullong min_mhz = 0LLU;
 	for (data = 0LLU, i = MAX_REGISTERS - 1; i >= 0; --i) {
 		if (xtate_fail(s, msr_read(0, &f->regs[i], sizeof(ullong), REG_P0+((ullong) i)))) {
 			return static_dispose(f, tp.cpu_count, s, state_msg);
@@ -454,6 +449,24 @@ state_t pstate_amd17_get_current_list(ctx_t *c, pstate_t *pstate_list)
 				}
 			}
 		}
+
+		
+		ullong data[4];
+		data[0] = 0;
+		data[1] = 0;
+		data[2] = 0;
+		data[3] = 0;
+		
+		msr_read(cpu, &data[0], sizeof(ullong), 0xc0010061);
+		msr_read(cpu, &data[1], sizeof(ullong), 0xc0010062);
+		msr_read(cpu, &data[2], sizeof(ullong), 0xc0010063);
+		msr_read(cpu, &data[3], sizeof(ullong), 0xc0010015);
+
+		debug("P-state Current Limit: P-state maximum value: %llu", getbits64(data[0],  6,  4));
+		debug("P-state Current Limit: Current P-state limit: %llu", getbits64(data[0],  2,  0));
+   		debug("P-state Control: P-state change command: %llu",      getbits64(data[1],  2,  0));
+   		debug("P-state Status: Current P-state: %llu",              getbits64(data[2],  2,  0));
+		debug("Hardware Configuration: Core Perf. Boost Disable: %llu", getbits64(data[3], 25, 25))
 	}
 
 	return EAR_SUCCESS;

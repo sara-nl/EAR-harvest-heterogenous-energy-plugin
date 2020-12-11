@@ -27,7 +27,6 @@
 typedef struct pstate_s {
 	uint   idx;
 	ullong khz;
-	ullong mhz;
 } pstate_t;
 
 typedef struct mgt_ps_driver_ops_s
