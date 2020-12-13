@@ -249,6 +249,7 @@ ulong frequency_set_with_list(uint cpus,ulong *cpuf)
 	if (cpus > num_cpus) return 0;
 	for (i = 0; i < cpus; i++)
   {
+		if (cpuf[i] != 0){
 		if (is_valid_frequency(cpuf[i])){
 			debug("setting cpu %d to freq %lu",i,cpuf[i]);
 			freq_list_cpu[i] = cpuf[i];
@@ -256,6 +257,7 @@ ulong frequency_set_with_list(uint cpus,ulong *cpuf)
 			if (result < 0 ){
 				error("ERROR while switching cpu %d frequency to %lu ", i,cpuf[i]);
 			}
+		}
 		}
 	}
 	if (result < 0 ) return 0;
