@@ -305,6 +305,18 @@ ulong *frequency_get_freq_rank_list()
 	return freq_list_rank;
 }
 
+ulong frequency_get_cpufreq_list(uint cpus,ulong *cpuf)
+{
+	int i;
+	memset(cpuf,0,sizeof(ulong)*cpus);
+  if (cpus > num_cpus) {
+    return 0;
+  }
+	for (i=0;i< cpus;i++) cpuf[i] = CPUfreq_get(i);
+	return 0;
+}
+
+
 // ear_get_freq
 ulong frequency_pstate_to_freq(uint pstate)
 {

@@ -33,9 +33,16 @@ void eards_disconnect();
 /** Given a frequency value, sends a request to change the frequency to that
 *   value. Returns -1 if there's an error, 0 if the change_freq service has not
 *   been provided, and the final frequency value otherwise. */
+/* sets the same CPU freq in all the CPUs */
 unsigned long eards_change_freq(unsigned long newfreq);
+/* Sets the given CPU freq to CPUS set to 1 in the mask */
 unsigned long eards_change_freq_with_mask(unsigned long newfreq,cpu_set_t *mask);
+/* Changes the CPU freq of all the CPUs. If CPU freq for a CPU is 0, the CPU freq is not modified */
 unsigned long eards_change_freq_with_list(unsigned int num_cpus,unsigned long *newfreq);
+/* Returns the CPU freq in the given cpu */
+unsigned long eards_get_freq(unsigned int num_cpu);
+/* Sets the list of CPU freqs in freqlist and returns the avg*/
+unsigned long eards_get_freq_list(unsigned int num_cpus,unsigned long *freqlist); 
 /** Tries to set the frequency to the turbo value */
 void eards_set_turbo();
 
