@@ -36,6 +36,8 @@ state_t frequency_dispose();
 uint frequency_get_num_pstates();
 // Daemon required. Init required. | Not used without initialization.
 ulong frequency_get_cpu_freq(uint cpu);
+// NEW
+ulong frequency_get_cpufreq_list(uint cpus, ulong *cpuf);
 // Virtualizable. Init required. | Not used without initialization
 ulong frequency_get_nominal_freq();
 // Virtualizable. Init required. | Not used without initialization.

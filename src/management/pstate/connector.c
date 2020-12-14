@@ -119,6 +119,22 @@ ulong frequency_get_cpu_freq(uint cpu)
 	return (ulong) current_list[cpu].khz;
 }
 
+ulong frequency_get_cpufreq_list(uint cpu_count, ulong *freq_list)
+{
+	int i;
+	memset(freq_list, 0, sizeof(ulong)*cpu_count);
+	if (cpu_count > pstate_count) {
+		return 0;
+	}
+	if (state_fail(mgt_pstate_get_current_list(&c, current_list))) {
+		return 0LU;
+	}
+	for (i = 0; i < cpu_count; ++i) {
+		freq_list[i] = (ulong) current_list[cpu].khz;
+	}
+	return 0;
+}
+
 ulong frequency_get_nominal_freq()
 {
 	if (!init) {
@@ -153,7 +169,6 @@ ulong *frequency_get_freq_rank_list()
 	// Returns a list of KHz of each CPU.
 	return list_khz;
 }
-
 
 ulong frequency_set_cpu(ulong freq_khz, uint cpu)
 {

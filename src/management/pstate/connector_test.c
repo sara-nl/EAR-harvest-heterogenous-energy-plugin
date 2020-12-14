@@ -39,6 +39,7 @@ static governor_t govt;
 static char opt1[SZ_PATH];
 static char cmnd[SZ_PATH];
 static topology_t topo;
+static ulong retlonglist[256];
 static ulong *retplong;
 static ulong retlong;
 static cpu_set_t mask;
@@ -163,7 +164,21 @@ int main(int argc, char *argv[])
 			}
 			RCALL(retlong, frequency_set_with_list(0, retplong));
 			debug("frequency_set_with_list returned %lu", retlong);
-		} 
+		} else if (is(cmnd, "22")) {
+			RCALL(retint, frequency_get_num_pstates());
+			debug("frequency_get_num_pstates returned %d", retint);
+			RCALL(retlong, frequency_get_cpufreq_list(retint, retlonglist));
+			debug("frequency_get_cpufreq_list returned %lu", retlong);
+			for (i = 0; i < retint; ++i) {
+				debug("frequency_get_cpufreq_list %d:%lu", i, retlonglist[i]);
+			}
+		} else if (is(cmnd, "23")) {
+			scanf("%s", opt1);
+			retint = atoi(opt1);
+			scanf("%s", opt1);
+			RCALL(retlong, frequency_set_cpu((ulong) atol(opt1), retint));
+			debug("frequency_set_cpu returned %lu", retlong);
+		}
 	}
 
 	// src/tools/coeffs_compute.c
