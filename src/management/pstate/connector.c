@@ -130,7 +130,7 @@ ulong frequency_get_cpufreq_list(uint cpu_count, ulong *freq_list)
 		return 0LU;
 	}
 	for (i = 0; i < cpu_count; ++i) {
-		freq_list[i] = (ulong) current_list[cpu].khz;
+		freq_list[i] = (ulong) current_list[i].khz;
 	}
 	return 0;
 }

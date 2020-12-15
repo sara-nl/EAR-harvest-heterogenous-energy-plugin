@@ -147,7 +147,8 @@ int main(int argc, char *argv[])
 		} else if (is(cmnd, "19")) {
 			scanf("%s", opt1);
 			CPU_ZERO(&mask);
-			CPU_SET(2, &mask);
+			CPU_SET(atoi(opt1), &mask);
+			scanf("%s", opt1);
 			RCALL(retlong, frequency_set_with_mask(&mask, (ulong) atol(opt1)));
 			debug("frequency_set_with_mask returned %lu", retlong);
 		} else if (is(cmnd, "20")) {

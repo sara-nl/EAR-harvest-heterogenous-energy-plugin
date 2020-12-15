@@ -90,7 +90,7 @@ static state_t write_multi(int *fds, char *word, int line_break)
 	state_t s = EAR_SUCCESS;
 	int len = strlen(word)+1;
 	int cpu;
-	debug("writing a word '%s'", word);
+	debug("Multiple writing a word '%s'", word);
 	// Adding a line break
 	if (line_break) {
 		word[len-1] = '\n';

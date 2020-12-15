@@ -20,6 +20,16 @@
 
 #include <management/pstate/pstate.h>
 
+//
+// AMD Frequency limitations
+//	- Although you can change the frequency by MSR, when doing it, all socket MSR Px register
+//	  change together. This means that is not possible to set different range of frequencies
+//	  accross the same socket. You can set different frequencies by using different MSR Px
+//	  registers but currently we are using just the MSR P1 to set the current frequency.
+//  - This means that is possible to use BOOST in P0 and a custom frequency in P1 accross the
+//    same socket, but is very limited range of frequencies.
+//
+
 state_t pstate_amd17_status(topology_t *_tp);
 
 state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver);
