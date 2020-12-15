@@ -268,6 +268,15 @@ void mpi_info_to_str(mpi_information_t *info,char *msg,size_t max)
 {
 	snprintf(msg,max,"RANK[%d] total_mpi_calls %u exec_time %llu mpi_time %llu perc_mpi %.3lf ",info->rank,info->total_mpi_calls,info->exec_time,info->mpi_time,info->perc_mpi*100.0);
 }
+void mpi_info_head_to_str_csv(char *msg,size_t max)
+{
+	snprintf(msg,max,"lrank;total_mpi_calls;exec_time;mpi_time;perc_mpi_time");
+}
+void mpi_info_to_str_csv(mpi_information_t *info,char *msg,size_t max)
+{
+  snprintf(msg,max,"%d;%u;%llu;%llu;%.3lf",info->rank,info->total_mpi_calls,info->exec_time,info->mpi_time,info->perc_mpi*100.0);
+}
+
 
 void print_sh_signature(int localid,shsignature_t *sig)
 {

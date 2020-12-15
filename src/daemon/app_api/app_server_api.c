@@ -34,6 +34,7 @@
 #include <daemon/power_monitor.h>
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/energy/energy_node.h>
+#include <management/gpu/gpu.h>
 #include <management/cpufreq/connector.h>
 
 #define close_app_connection()
@@ -208,7 +209,7 @@ void remove_connection(char *root,int i)
 	unlink(app_to_eard);
 	unlink(eard_to_app);
 }
-void close_connection(int fd_in,int fd_out)
+static void close_connection(int fd_in,int fd_out)
 {
 	int i,found=0;
 	int max=-1,new_con=-1;
@@ -239,7 +240,7 @@ void close_connection(int fd_in,int fd_out)
 	
 }
 
-uint read_app_command(int fd_in,app_send_t *app_req)
+static uint read_app_command(int fd_in,app_send_t *app_req)
 {
 	int ret;
     int flags,orig_flags,tries;
@@ -283,7 +284,7 @@ uint read_app_command(int fd_in,app_send_t *app_req)
 
 
 /** Releases resources to connect with applications */
-void dispose_app_connection()
+static void dispose_app_connection()
 {
 	close(fd_app_to_eard);
 	unlink(app_to_eard);
@@ -298,7 +299,7 @@ void dispose_app_connection()
 /*********************************************************/
 
 /** Returns the energy in mJ and the time in ms  */
-void ear_energy(int fd_out)
+static void ear_energy(int fd_out)
 {
 	app_recv_t data;
 	ulong energy_mj,time_ms;
@@ -325,7 +326,7 @@ void ear_energy(int fd_out)
 
 }
 
-void ear_energy_debug(int fd_out)
+static void ear_energy_debug(int fd_out)
 {
         app_recv_t data;
         ulong energy_mj, time_ms;
@@ -365,7 +366,7 @@ void ear_energy_debug(int fd_out)
 
 }
 
-void  ear_set_cpufreq(int fd_out, cpu_set_t *mask,unsigned long cpuf)
+static void  ear_set_cpufreq(int fd_out, cpu_set_t *mask,unsigned long cpuf)
 {
 	app_recv_t data;
   /* Execute specific request */
@@ -376,7 +377,60 @@ void  ear_set_cpufreq(int fd_out, cpu_set_t *mask,unsigned long cpuf)
 	send_app_answer(fd_out,&data);
 }
 
+/* This funcion sets the frequency in one GPU */
+static void ear_set_gpufreq(int fd_out,uint gpuid,ulong gpu_freq)
+{
+	app_recv_t data;
+	state_t ret;
+	ctx_t c;
+	uint gnum;
+	
+	ulong * array;
+	if ((ret = mgt_gpu_init(&c)) != EAR_SUCCESS){
+		data.ret = ret;
+		send_app_answer(fd_out,&data);
+	}
+	mgt_gpu_count(&c,&gnum);
+	if (gpuid >= gnum){
+		data.ret =EAR_ERROR;
+		send_app_answer(fd_out,&data);
+	}
+	if ((ret = mgt_gpu_alloc_array(&c, &array)) != EAR_SUCCESS){
+    data.ret = ret;
+    send_app_answer(fd_out,&data);
+  }
+	if ((ret = mgt_gpu_freq_limit_get_current(&c,array)) != EAR_SUCCESS){
+    data.ret = ret;
+    send_app_answer(fd_out,&data);
+  }
+	array[gpuid] = gpu_freq;
+	if ((ret = mgt_gpu_freq_limit_set(&c,array)) != EAR_SUCCESS){
+    data.ret = ret;
+    send_app_answer(fd_out,&data);
+  }
+	mgt_gpu_dispose(&c);
+}
 
+/* This function sets th frequency in all the GPUS */
+static void ear_set_gpufreqlist(int fd_out,ulong *gpu_freq_list)
+{
+  app_recv_t data;
+  state_t ret;
+  ctx_t c;
+  uint gnum;
+  
+  ulong * array;
+  if ((ret = mgt_gpu_init(&c)) != EAR_SUCCESS){
+    data.ret = ret;
+    send_app_answer(fd_out,&data);
+  }
+  if ((ret = mgt_gpu_freq_limit_set(&c,gpu_freq_list)) != EAR_SUCCESS){
+    data.ret = ret;
+    send_app_answer(fd_out,&data);
+  }
+  mgt_gpu_dispose(&c);
+
+}
 
 
 
@@ -430,6 +484,12 @@ void process_request(int fd_in)
      	break;
 	case SELECT_CPU_FREQ:
 			ear_set_cpufreq(fd_out,&app_req.send_data.cpu_freq.mask,app_req.send_data.cpu_freq.cpuf);
+			break;
+	case SET_GPUFREQ:
+			ear_set_gpufreq(fd_out,app_req.send_data.gpu_freq.gpu_id,app_req.send_data.gpu_freq.gpu_freq);	
+			break;
+	case SET_GPUFREQ_LIST:
+			ear_set_gpufreqlist(fd_out,app_req.send_data.gpu_freq_list.gpu_freq);	
 			break;
 	case INVALID_COMMAND:
 		verbose(0,"PANIC, invalid command received and not recognized\n");

@@ -649,6 +649,7 @@ int eard_freq(int must_read)
 {
 	ulong ack;
 	state_t s;
+	ulong *f;
 
 	if (must_read) {
 		if (read(ear_fd_req[freq_req], &req, sizeof(req)) != sizeof(req))
@@ -670,6 +671,16 @@ int eard_freq(int must_read)
 		case SET_NODE_FREQ_WITH_LIST:
 			ack=frequency_set_with_list(req.req_data.cpu_freq.num_cpus,req.req_data.cpu_freq.cpu_freqs);
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
+			break;
+		case GET_CPUFREQ:
+			ack = frequency_get_cpu_freq(req.req_data.req_value);
+			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
+			break;
+		case GET_CPUFREQ_LIST:
+			f=calloc(sizeof(ulong),node_desc.cpu_count);
+			ack = frequency_get_cpufreq_list(req.req_data.req_value,f);
+			write(ear_fd_ack[freq_req], f,sizeof(ulong)*req.req_data.req_value);
+			free(f);
 			break;
 		case START_GET_FREQ:
 			ack = EAR_COM_OK;

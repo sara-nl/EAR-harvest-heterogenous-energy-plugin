@@ -56,7 +56,7 @@ fprintf(stderr,"ready\n");
     *best_freq=frequency_pstate_to_freq(curr_pstate);
   }else{
     next_pstate=curr_pstate-1;
-    *ready=EAR_POLICY_CONTINUE;
+    *ready=EAR_POLICY_TRY_AGAIN;
     *best_freq=frequency_pstate_to_freq(next_pstate);
 fprintf(stderr,"Not ready: next %d freq %lu\n",next_pstate,*best_freq);
   }
@@ -126,7 +126,7 @@ ulong curr_pstate,def_pstate,def_freq;
 state_t st;
     my_app=sig;
 
-*ready=EAR_POLICY_CONTINUE;
+*ready=EAR_POLICY_TRY_AGAIN;
 
 if (c==NULL) return EAR_ERROR;
 if (c->app==NULL) return EAR_ERROR;
@@ -158,7 +158,7 @@ def_pstate=frequency_closest_pstate(def_freq);
     /* We must not use models , we will check one by one*/
     /* If we are not running at default freq, we must check if we must follow */
     if (sig_ready[def_pstate]==0){
-    *ready=EAR_POLICY_CONTINUE;
+    *ready=EAR_POLICY_TRY_AGAIN;
     *new_freq=def_freq;
     } else{
     /* This is the normal case */

@@ -392,13 +392,14 @@ state_t policy_node_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 		signature_copy(&policy_last_local_signature,&node_sig);
   	if (my_policy_grain == POL_GRAIN_CORE) memset(policy_freq_list,0,sizeof(ulong)*MAX_CPUS_SUPPORTED);
 		st=polsyms_fun.node_policy_apply(c, &node_sig,policy_freq_list,ready);
-		if (*ready == EAR_POLICY_READY){
+		if ((*ready == EAR_POLICY_READY) || (*ready == EAR_POLICY_TRY_AGAIN)){
       if (my_policy_grain == POL_GRAIN_CORE){
         *freq_set = compute_avg_freq(policy_freq_list);
       }else{
         *freq_set = policy_freq_list[0];
       }
 			policy_cpu_freq_selection(my_sig,freq_set);
+			if (*ready == EAR_POLICY_TRY_AGAIN) *ready = EAR_POLICY_CONTINUE;
 		} /* Stop*/
   } else{
 		if (polsyms_fun.app_policy_apply != NULL ){

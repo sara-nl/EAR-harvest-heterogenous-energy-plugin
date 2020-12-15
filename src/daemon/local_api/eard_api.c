@@ -664,6 +664,64 @@ unsigned long eards_change_freq_with_list(unsigned int num_cpus,unsigned long *n
 
 }
 
+unsigned long eards_get_freq(unsigned int num_cpu)
+{
+  ulong real_freq = 0;
+  struct daemon_req req;
+  if (!app_connected) return 0;
+  req.req_service = GET_CPUFREQ;
+  req.sec=create_sec_tag();
+  /* Specific info */
+  req.req_data.req_value = num_cpu;
+  
+  if (ear_fd_req[freq_req] >= 0)
+  { 
+    if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)), sizeof(req),
+       "while writing request for changing frequency node with list")) return EAR_ERROR;
+    
+    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)&real_freq, sizeof(ulong)), sizeof(ulong),
+      "while reading cufreq from EARD")) return EAR_ERROR;
+  
+  } else {
+    real_freq = 0;
+    debug( "get_freq service not provided");
+  }
+  
+  return real_freq;
+
+}
+
+/* Sets the list of CPU freqs in freqlist and returns the avg*/
+unsigned long eards_get_freq_list(unsigned int num_cpus,unsigned long *freqlist)
+{
+  ulong real_freq = 0;
+	int i;
+  struct daemon_req req;
+  if (!app_connected) return 0;
+  req.req_service = GET_CPUFREQ_LIST;
+  req.sec=create_sec_tag();
+  /* Specific info */
+  req.req_data.req_value = num_cpus;
+ 	if (freqlist == NULL) return real_freq; 
+  if (ear_fd_req[freq_req] >= 0)
+  { 
+    if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)), sizeof(req),
+       "while writing request for changing frequency node with list")) return 0;
+    
+    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)freqlist, sizeof(ulong) * num_cpus), sizeof(ulong)*num_cpus,
+      "while reading cpu_freq with list")) return 0;
+ 		for (i=0;i<num_cpus;i++) real_freq += freqlist[i];
+		real_freq = real_freq/num_cpus; 
+  } else {
+    real_freq = 0;
+    debug( "get_freq_list service not provided");
+  }
+  
+  return real_freq;
+
+}
+
+
 
 // END FREQUENCY SERVICES
 //////////////// UNCORE REQUESTS

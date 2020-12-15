@@ -50,11 +50,11 @@ static void go_next_me(int curr_pstate,int *ready,ulong *best_freq,unsigned long
 {
 	int next_pstate;
 	if ((curr_pstate<(num_pstates-1))){
-		*ready=0;
+		*ready=EAR_POLICY_TRY_AGAIN;
 		next_pstate=curr_pstate+1;
 		*best_freq=frequency_pstate_to_freq(next_pstate);
 	}else{
-		*ready=1;
+		*ready=EAR_POLICY_READY;
 		*best_freq=frequency_pstate_to_freq(curr_pstate);
 	}
 }
@@ -123,7 +123,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		state_t st;
     my_app=sig;
 
-		*ready=EAR_POLICY_CONTINUE;
+		*ready=EAR_POLICY_TRY_AGAIN;
 
 		if (c==NULL) return EAR_ERROR;
 		if (c->app==NULL) return EAR_ERROR;
@@ -153,7 +153,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	/* We must not use models , we will check one by one*/
 	/* If we are not running at default freq, we must check if we must follow */
 	if (sig_ready[def_pstate]==0){
-		*ready=0;
+		*ready=EAR_POLICY_TRY_AGAIN;
 		*new_freq=def_freq;
 	} else{
 		time_ref = sig_list[def_pstate].time;
@@ -165,7 +165,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 			if (is_better_min_energy(my_app,prev_sig,time_max)){
 				go_next_me(curr_pstate,ready,new_freq,c->num_pstates);
 			}else{
-				*ready=1;
+				*ready=EAR_POLICY_READY;
 				*new_freq=frequency_pstate_to_freq(prev_pstate);
 			}
 		}else{

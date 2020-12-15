@@ -17,8 +17,24 @@
 
 #include <management/cpufreq/cpufreq_user.h>
 
-/* Returns the CPU freq in the given cpu */
-//unsigned long eards_get_freq(unsigned int num_cpu);
+uint cpu_count;
 
-/* Sets the list of CPU freqs in freqlist and returns the avg*/
-//unsigned long eards_get_freq_list(unsigned int num_cpus,unsigned long *freqlist);
+state_t mgt_pstate_user_get_current_list(ctx_t *c, pstate_t *pstate_list)
+{
+	ulong list_khz[4096]; // I hope there are no nodes with more than 4096 CPUs
+
+	// Cleaning
+	memset(pstate_list, 0, sizeof(pstate_t)*cpu_count);
+	// If 0 then an error ocurred
+	if (eards_get_freq_list(cpu_count, list_khz)) {
+		return_msg(EAR_ERROR, "error while contacting daemon");
+	}
+	// Getting also P_STATE
+	for (cpu = 0; cpu < cpu_count; ++cpu) {
+		pstate_list[cpu].khz = (ullong) list_khz[cpu];
+		if (state_fail(mgt_pstate_get_index(c, pstate_list[cpu].khz, &pstate_list[cpu].idx, 0))) {
+		}
+	}
+
+	return EAR_SUCCESS;
+}

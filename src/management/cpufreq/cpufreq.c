@@ -28,6 +28,7 @@
 
 static mgt_ps_driver_ops_t ops_driver;
 static mgt_ps_ops_t        ops;
+extern uint                cpu_count;
 
 static state_t load_driver_cpufreq(topology_t *tp)
 {
@@ -100,7 +101,9 @@ static state_t load_dummy(topology_t *tp)
 state_t mgt_pstate_load(topology_t *tp)
 {
 	// Thread locking required
-
+	// Saving the number of CPUs because the EARD call seems to require it
+	cpu_count = tp.cpu_count;
+	//
 	if (state_fail(load_driver_cpufreq(tp))) {
 		// Look for another driver
 	}

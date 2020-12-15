@@ -127,6 +127,8 @@ void print_node_conf(node_conf_t *node_conf);
 
 /** prints in the stderr the specific node configuration */
 void print_my_node_conf(my_node_conf_t *my_node_conf);
+int policy_name_to_nodeid(char *my_policy, my_node_conf_t *conf);
+
 
 void print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);
 void read_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf);

@@ -333,7 +333,7 @@ int dyncon_set_policy(new_policy_cont_t *p)
 {
 	state_t s=EAR_SUCCESS;
 	int pid;
-	pid=policy_name_to_id(p->name,&my_cluster_conf);
+	pid=policy_name_to_nodeid(p->name,my_node_conf);
 	if (pid==EAR_ERROR){ 
 		error("Policy %s not found",p->name);
 		return EAR_ERROR;

@@ -22,7 +22,7 @@
 #include <common/states.h>
 
 #include <management/gpu/gpu.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/output/debug.h>
 

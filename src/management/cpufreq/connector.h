@@ -32,9 +32,9 @@ typedef struct governor{
 state_t frequency_init(uint x);
 state_t frequency_dispose();
 
-// Virtualizable. Init required. | Not used without initialization.
+// Virtualizable. Init required. | Not used without initialization. | EARD, EARL, DVFS.
 uint frequency_get_num_pstates();
-// Daemon required. Init required. | Not used without initialization.
+// Daemon required. Init required. | Not used without initialization. |
 ulong frequency_get_cpu_freq(uint cpu);
 // NEW
 ulong frequency_get_cpufreq_list(uint cpus, ulong *cpuf);
@@ -78,7 +78,6 @@ ulong frequency_closest_high_freq(ulong freq_khz, int pstate_minimum);
 // Virtualizable. Init required. | Not used without initialization.
 void get_governor(governor_t *_governor);
 // Daemon required. Init required. | Not used without initialization.
-
 void set_governor(governor_t *_governor);
 
 #endif //MANAGEMENT_PSTATE_CONNECTOR

@@ -15,12 +15,15 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef DYNAIS_AVX512_CORE_H
-#define DYNAIS_AVX512_CORE_H
+#ifndef DYNAIS_AVX2_H
+#define DYNAIS_AVX2_H
 
-#include <common/types/generic.h>
+#include <library/dynais/dynais.h>
 
-void avx512_dynais_core_n(ushort sample, ushort size, ushort level);
-void avx512_dynais_core_0(ushort sample, ushort size, ushort level);
+dynais_call_t avx2_dynais_init(uint window, uint levels);
 
-#endif //EAR_DYNAIS_CORE_H
+int avx2_dynais(uint sample, uint *size, uint *level);
+
+void avx2_dynais_dispose();
+
+#endif //DYNAIS_AVX2_H

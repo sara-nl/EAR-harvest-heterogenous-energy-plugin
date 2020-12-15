@@ -39,6 +39,7 @@ typedef struct lib_shared_data{
 	unsigned int 	num_signatures;
 	double 				cas_counters;
 	signature_t 	master_signature;
+	int						master_rank;
 }lib_shared_data_t;
 
 typedef struct mpi_information{
@@ -126,6 +127,9 @@ void print_sh_signature(int localid,shsignature_t *sig);
 void clean_my_mpi_info(mpi_information_t *info);
 void print_local_mpi_info(mpi_information_t *info);
 void mpi_info_to_str(mpi_information_t *info,char *msg,size_t max);
+void mpi_info_to_str_csv(mpi_information_t *info,char *msg,size_t max);
+void mpi_info_head_to_str_csv(char *msg,size_t max);
+
 
 
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);

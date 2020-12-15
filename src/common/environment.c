@@ -58,7 +58,7 @@ int conf_ear_dynais_window_size=DEFAULT_DYNAIS_WINDOW_SIZE;
 #ifdef USE_EAR_CONF
 char my_ear_conf_path[GENERIC_NAME];
 cluster_conf_t my_cluster_conf;
-my_node_conf_t *my_node_conf;
+my_node_conf_t *my_node_conf=NULL;
 #endif
 
 
@@ -150,7 +150,7 @@ int getenv_ear_power_policy()
 	conf_ear_power_policy=DEFAULT_POWER_POLICY;
 	my_policy=getenv("EAR_POWER_POLICY");
 	if (my_policy!=NULL){
-		conf_ear_power_policy=policy_name_to_id(my_policy, &my_cluster_conf);
+		conf_ear_power_policy=policy_name_to_nodeid(my_policy, my_node_conf);
 		if (conf_ear_power_policy==EAR_ERROR)	conf_ear_power_policy=DEFAULT_POWER_POLICY;
 	}	
 	return conf_ear_power_policy;
