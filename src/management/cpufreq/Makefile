@@ -4,7 +4,8 @@ SRCDIR = /home/xjaneas/ngit/ear_private/src
 ######## FILES
 
 psta_BINS = \
-    pstate.o \
+    cpufreq.o \
+    cpufreq_user.o \
     connector.o
 
 ######## RULES
@@ -18,7 +19,7 @@ all: all.components $(psta_BINS)
 proto:
 	/hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -Wall -fPIC -I $(SRCDIR) \
 	-DCONNECTOR=1 -o test_conn connector_test.c \
-	connector.o pstate.o archs/amd17.o archs/dummy.o drivers/cpufreq.o \
+	connector.o cpufreq.o archs/amd17.o archs/dummy.o drivers/acpi_cpufreq.o \
 	../../metrics/libmetrics.a ../../common/libcommon.a \
 	-lpthread -lm
 

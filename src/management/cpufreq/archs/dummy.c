@@ -21,7 +21,7 @@
 #include <common/output/debug.h>
 #include <common/hardware/cpuid.h>
 #include <common/hardware/bithack.h>
-#include <management/pstate/archs/dummy.h>
+#include <management/cpufreq/archs/dummy.h>
 
 static topology_t tp;
 

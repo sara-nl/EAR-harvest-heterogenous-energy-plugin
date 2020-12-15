@@ -18,7 +18,7 @@
 #ifndef MANAGEMENT_FREQUENCY_ARCHS_AMD17
 #define MANAGEMENT_FREQUENCY_ARCHS_AMD17
 
-#include <management/pstate/pstate.h>
+#include <management/cpufreq/cpufreq.h>
 
 //
 // AMD Frequency limitations

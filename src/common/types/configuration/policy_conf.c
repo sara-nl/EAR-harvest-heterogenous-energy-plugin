@@ -24,7 +24,7 @@
 #include <common/output/verbose.h>
 #include <common/states.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <management/pstate/connector.h>
+#include <management/cpufreq/connector.h>
 
 
 /*

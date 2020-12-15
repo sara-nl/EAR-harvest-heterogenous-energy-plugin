@@ -44,7 +44,7 @@
 #include <common/types/configuration/cluster_conf.h>
 #include <metrics/frequency/cpu.h>
 #include <common/hardware/hardware_info.h>
-#include <management/pstate/connector.h>
+#include <management/cpufreq/connector.h>
 #include <daemon/power_monitor.h>
 #include <daemon/powercap/powercap.h>
 #include <daemon/node_metrics.h>

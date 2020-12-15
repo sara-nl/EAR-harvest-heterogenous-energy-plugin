@@ -18,7 +18,7 @@
 #ifndef MANAGEMENT_FREQUENCY_ARCHS_DUMMY
 #define MANAGEMENT_FREQUENCY_ARCHS_DUMMY
 
-#include <management/pstate/pstate.h>
+#include <management/cpufreq/cpufreq.h>
 
 state_t pstate_dummy_status(topology_t *_tp);
 

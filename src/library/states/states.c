@@ -41,7 +41,7 @@
 #include <library/policies/policy.h>
 #include <library/policies/policy_state.h>
 
-#include <management/pstate/connector.h>
+#include <management/cpufreq/connector.h>
 #include <daemon/local_api/eard_api.h>
 #include <common/environment.h>
 

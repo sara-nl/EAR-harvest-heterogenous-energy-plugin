@@ -29,7 +29,7 @@
 #include <common/types/projection.h> //?
 #include <library/policies/policy_api.h> //clean
 #include <library/policies/policy_ctx.h> //clean
-#include <management/pstate/connector.h>
+#include <management/cpufreq/connector.h>
 #include <daemon/local_api/eard_api.h> //?
 #include <library/policies/policy_state.h>
 

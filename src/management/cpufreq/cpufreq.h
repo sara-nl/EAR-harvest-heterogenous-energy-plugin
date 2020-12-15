@@ -15,8 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef MANAGEMENT_PSTATE
-#define MANAGEMENT_PSTATE
+#ifndef MANAGEMENT_CPUFREQ
+#define MANAGEMENT_CPUFREQ
 
 #include <common/states.h>
 #include <common/plugins.h>

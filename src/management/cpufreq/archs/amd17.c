@@ -23,7 +23,7 @@
 #include <common/output/debug.h>
 #include <common/string_enhanced.h>
 #include <common/hardware/bithack.h>
-#include <management/pstate/archs/amd17.h>
+#include <management/cpufreq/archs/amd17.h>
 
 typedef struct pss_s {
 	ullong fid;

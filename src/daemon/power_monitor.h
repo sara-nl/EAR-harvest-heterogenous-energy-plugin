@@ -40,7 +40,7 @@
 #include <common/messaging/msg_conf.h>
 #include <metrics/energy/energy_node.h>
 #include <metrics/accumulators/power_metrics.h>
-#include <management/pstate/connector.h>
+#include <management/cpufreq/connector.h>
 #include <daemon/node_metrics.h>
 
 typedef struct powermon_app{

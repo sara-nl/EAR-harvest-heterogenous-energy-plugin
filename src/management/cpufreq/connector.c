@@ -22,7 +22,7 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
-#include <management/pstate/connector.h>
+#include <management/cpufreq/connector.h>
 
 static topology_t topo;
 static ctx_t      c;

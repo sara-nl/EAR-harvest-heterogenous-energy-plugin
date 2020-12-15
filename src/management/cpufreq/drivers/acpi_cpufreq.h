@@ -18,7 +18,7 @@
 #ifndef MANAGEMENT_FREQUENCY_DRIVERS_CPUFREQ
 #define MANAGEMENT_FREQUENCY_DRIVERS_CPUFREQ
 
-#include <management/pstate/pstate.h>
+#include <management/cpufreq/cpufreq.h>
 
 state_t pstate_cpufreq_status(topology_t *tp);
 

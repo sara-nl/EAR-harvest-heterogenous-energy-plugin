@@ -23,7 +23,7 @@
 #include <string.h>
 #include <common/sizes.h>
 #include <common/output/debug.h>
-#include <management/pstate/drivers/cpufreq.h>
+#include <management/cpufreq/drivers/acpi_cpufreq.h>
 
 static topology_t tp;
 

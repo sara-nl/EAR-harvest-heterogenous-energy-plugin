@@ -20,7 +20,7 @@
 
 #define _GNU_SOURCE
 #include <sched.h>
-#include <management/pstate/pstate.h>
+#include <management/cpufreq/cpufreq.h>
 
 typedef struct governor{
 	char name[128];

@@ -20,10 +20,10 @@
 #include <common/sizes.h>
 #include <common/plugins.h>
 #include <common/output/debug.h>
-#include <management/pstate/pstate.h>
-#include <management/pstate/archs/amd17.h>
-#include <management/pstate/archs/dummy.h>
-#include <management/pstate/drivers/cpufreq.h>
+#include <management/cpufreq/cpufreq.h>
+#include <management/cpufreq/archs/amd17.h>
+#include <management/cpufreq/archs/dummy.h>
+#include <management/cpufreq/drivers/acpi_cpufreq.h>
 #include <metrics/frequency/cpu.h>
 
 static mgt_ps_driver_ops_t ops_driver;

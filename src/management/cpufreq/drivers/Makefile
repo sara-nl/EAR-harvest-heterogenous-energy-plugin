@@ -2,7 +2,7 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -Wall -g
 
 ######## FILES
 
-driv_OBJS = cpufreq.o
+driv_OBJS = acpi_cpufreq.o
 
 ######## RULES
 
