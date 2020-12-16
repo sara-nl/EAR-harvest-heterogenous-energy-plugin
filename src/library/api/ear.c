@@ -249,6 +249,7 @@ void create_shared_regions()
 		lib_shared_region->master_rank = masters_info.my_master_rank;
 	}
 	debug("Node connected %u",my_node_id);
+#if ONLY_MASTER == 0
 	#if MPI
 	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 		error("MPI_Barrier");
@@ -259,6 +260,7 @@ void create_shared_regions()
 		return;
 	}
 	#endif
+#endif
 	//print_lib_shared_data(lib_shared_region);
 	/* This region is for processes in the same node */
 	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
@@ -273,13 +275,14 @@ void create_shared_regions()
 	sig_shared_region[my_node_id].master=1;
 	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
 	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
-
+#if ONLY_MASTER == 0
 	#if MPI
 	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 		error("MPI_Barrier");
 		return;
 	}
 	#endif
+#endif
 	/* This part allocates memory for sharing data between nodes */
 	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
 	/* The node master, shares with other masters the number of processes in the node */

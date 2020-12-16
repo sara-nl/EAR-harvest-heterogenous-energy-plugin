@@ -482,3 +482,10 @@ state_t power_limit(ulong limit)
 	verbose(1,"Energy Intel Node Manager setting limit to %lu",limit);
 	return EAR_SUCCESS;
 }
+uint energy_data_is_null(edata_t e)  
+{
+  ulong *pe=(ulong *)e;
+  return (*pe == 0);
+
+}
+

@@ -183,7 +183,7 @@ static void metrics_global_start()
 		eards_begin_app_compute_turbo_freq();
 		// New
 		ret = eards_node_dc_energy(aux_energy,node_energy_datasize);
-		if ((ret == EAR_ERROR) || energy_lib_is_null(aux_energy)){
+		if ((ret == EAR_ERROR) || energy_lib_data_is_null(aux_energy)){
 			error("MR[%d] Error reading Node energy at application start",masters_info.my_master_rank);
 		}
 		eards_read_rapl(aux_rapl);
@@ -333,12 +333,12 @@ static int metrics_partial_stop(uint where)
 	// Manual IPMI accumulation
 	if (masters_info.my_master_rank>=0){
 		ret = eards_node_dc_energy(aux_energy_stop,node_energy_datasize);
-		if (energy_lib_is_null(aux_energy_stop) || (ret == EAR_ERROR)){ 
+		if (energy_lib_data_is_null(aux_energy_stop) || (ret == EAR_ERROR)){ 
 			return EAR_NOT_READY;
 		}
-		energy_lib_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
-		energy_lib_to_str(start_energy_str,metrics_ipmi[LOO]);	
-		energy_lib_to_str(stop_energy_str,aux_energy_stop);	
+		energy_lib_data_accumulated(&c_energy,metrics_ipmi[LOO],aux_energy_stop);
+		energy_lib_data_to_str(start_energy_str,metrics_ipmi[LOO]);	
+		energy_lib_data_to_str(stop_energy_str,aux_energy_stop);	
 		if ((where==SIG_END) && (c_energy==0) && (masters_info.my_master_rank>=0)){ 
 			debug("EAR_NOT_READY because of accumulated energy %lu\n",c_energy);
 			if (dispose) fprintf(stderr,"partial stop and EAR_NOT_READY\n");
@@ -390,7 +390,7 @@ static int metrics_partial_stop(uint where)
 		#endif
 	}
 	/* End new section to check frozen uncore counters */
-	energy_lib_copy(aux_energy,aux_energy_stop);
+	energy_lib_data_copy(aux_energy,aux_energy_stop);
 	#if 0
 	memcpy(aux_energy,aux_energy_stop,node_energy_datasize);
 	#endif

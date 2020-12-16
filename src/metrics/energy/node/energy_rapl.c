@@ -207,3 +207,13 @@ state_t energy_to_str(char *str,edata_t e)
   }
   return EAR_SUCCESS;
 }
+uint energy_data_is_null(edata_t e)  
+{
+	unsigned long long *pe=(unsigned long long *)e;
+	int i;
+	unsigned long long total=0;
+	check_num_packs();
+  for (i=0;i<RAPL_POWER_EVS*num_pack;i++){ total+=pe[i];}
+	return (total == 0);
+}
+
