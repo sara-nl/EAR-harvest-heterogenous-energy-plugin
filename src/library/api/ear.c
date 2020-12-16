@@ -823,6 +823,7 @@ void ear_init()
 	arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
 	debug("frequency_init");
 	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
+	arch_desc.pstates = frequency_get_num_pstates(); // Updating archs pstates value
 
 	if (ear_my_rank == 0)
 	{

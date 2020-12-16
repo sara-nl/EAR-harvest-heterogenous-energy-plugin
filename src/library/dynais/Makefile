@@ -1,4 +1,4 @@
-CFLAGS = -fPIC -O3 -I$(SRCDIR)
+CFLAGS = -fPIC -O3 -I$(SRCDIR) -g
 
 ######## FILES
 

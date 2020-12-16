@@ -78,10 +78,12 @@ dynais_call_t dynais_init(topology_t *tp, uint window, uint levels)
 		type = 2;
 	}
 	if (type == 512) {
+		debug("selected DynAIS for AVX-512");
 		#ifdef FEAT_AVX512
 		return avx512_dynais_init((ushort) window, (ushort) levels);
 		#endif
 	}
+	debug("selected DynAIS for AVX-2");
 	return avx2_dynais_init(window, levels);
 }
 

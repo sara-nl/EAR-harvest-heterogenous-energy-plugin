@@ -15,22 +15,23 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <daemon/local_api/eard_api.h>
 #include <management/cpufreq/cpufreq_user.h>
 
-uint cpu_count;
+extern uint mgt_cpu_count;
 
 state_t mgt_pstate_user_get_current_list(ctx_t *c, pstate_t *pstate_list)
 {
 	ulong list_khz[4096]; // I hope there are no nodes with more than 4096 CPUs
-
+	uint cpu;
 	// Cleaning
-	memset(pstate_list, 0, sizeof(pstate_t)*cpu_count);
+	memset(pstate_list, 0, sizeof(pstate_t)*mgt_cpu_count);
 	// If 0 then an error ocurred
-	if (eards_get_freq_list(cpu_count, list_khz)) {
+	if (eards_get_freq_list(mgt_cpu_count, list_khz)) {
 		return_msg(EAR_ERROR, "error while contacting daemon");
 	}
 	// Getting also P_STATE
-	for (cpu = 0; cpu < cpu_count; ++cpu) {
+	for (cpu = 0; cpu < mgt_cpu_count; ++cpu) {
 		pstate_list[cpu].khz = (ullong) list_khz[cpu];
 		if (state_fail(mgt_pstate_get_index(c, pstate_list[cpu].khz, &pstate_list[cpu].idx, 0))) {
 		}

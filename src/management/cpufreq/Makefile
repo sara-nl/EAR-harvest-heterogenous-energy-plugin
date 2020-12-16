@@ -14,6 +14,7 @@ all: all.components $(psta_BINS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
+
 #	$(CC) $(CFLAGS) -o pstate pstate.o archs/amd17.o drivers/cpufreq.o $(SRCDIR)/common/libcommon.a $(SRCDIR)/metrics/libmetrics.a -lpthread -lm
 
 proto:

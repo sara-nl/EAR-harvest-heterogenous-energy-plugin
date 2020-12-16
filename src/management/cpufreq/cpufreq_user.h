@@ -18,6 +18,8 @@
 #ifndef MANAGEMENT_CPUFREQ_USER
 #define MANAGEMENT_CPUFREQ_USER
 
+#include <management/cpufreq/cpufreq.h>
+
 state_t mgt_pstate_user_get_current_list(ctx_t *c, pstate_t *pstate_list);
 
 #endif //MANAGEMENT_CPUFREQ_USER

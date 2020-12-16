@@ -57,10 +57,13 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 	copy_arch_desc(&arch,myarch);
 	print_arch_desc(&arch);
 	VERB_SET_EN(0);
+	debug("1");
 	avx512_pstate=frequency_closest_pstate(arch.max_freq_avx512);
+	debug("2");
 	avx2_pstate=frequency_closest_pstate(arch.max_freq_avx2);
 	VERB_SET_EN(1);
-	debug("Pstate for maximum freq avx512 %lu=%d Pstate for maximum freq avx2 %lu=%d",arch.max_freq_avx512,avx512_pstate,arch.max_freq_avx2,avx2_pstate);
+	debug("Pstate for maximum freq avx512 %lu=%d Pstate for maximum freq avx2 %lu=%d",
+		arch.max_freq_avx512,avx512_pstate,arch.max_freq_avx2,avx2_pstate);
 
   coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
   if (coefficients == NULL) {
@@ -76,7 +79,9 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
     for (ref = 0; ref < num_pstates; ref++)
     {
 
+	  debug("3");
       coefficients[i][ref].pstate_ref = frequency_pstate_to_freq(i);
+	  debug("4");
       coefficients[i][ref].pstate = frequency_pstate_to_freq(ref);
       coefficients[i][ref].available = 0;
     }
@@ -91,11 +96,16 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
     num_coeffs=num_coeffs/sizeof(coefficient_t);
     int ccoeff;
     for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
+	  debug("5");
       ref=frequency_closest_pstate(coefficients_sm[ccoeff].pstate_ref);
+	  debug("6");
       i=frequency_closest_pstate(coefficients_sm[ccoeff].pstate);
+	  debug("7");
       if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
+	  debug("7.5");
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
       }
+	  debug("8");
     }
   }
 	basic_model_init=1;	

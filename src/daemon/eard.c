@@ -158,14 +158,6 @@ static uint error_energy=0;
 static uint error_connector=0;
 
 
-void check_policy_values(policy_conf_t *p,int nump)
-{
-	int i=0;
-	for (i=0;i<nump;i++){
-		check_policy(&p[i]);
-	}
-}
-
 void check_policy(policy_conf_t *p)
 {
 	unsigned long f;
@@ -184,6 +176,14 @@ void check_policy(policy_conf_t *p)
             error("New def_freq %f",p->def_freq);
         }
     }
+}
+
+void check_policy_values(policy_conf_t *p,int nump)
+{
+	int i=0;
+	for (i=0;i<nump;i++){
+		check_policy(&p[i]);
+	}
 }
 
 void compute_policy_def_freq(policy_conf_t *p)

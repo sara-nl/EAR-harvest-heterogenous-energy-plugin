@@ -2,6 +2,7 @@
 
 modl_BINS = \
     basic_model.so \
+    avx512_model.so \
     avx512_model.min_time.so \
     avx512_model.min_energy.so 
 modl_OBJS = models.o

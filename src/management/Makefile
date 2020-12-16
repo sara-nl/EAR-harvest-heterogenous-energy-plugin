@@ -4,13 +4,15 @@ stat_BINS = libmgt.a
 
 mana_OBJS = \
     $(SRCDIR)/management/cpufreq/cpufreq.o \
-    $(SRCDIR)/management/cpufreq/cpufreq_user.o \
     $(SRCDIR)/management/cpufreq/connector.o \
     $(SRCDIR)/management/cpufreq/archs/amd17.o \
     $(SRCDIR)/management/cpufreq/archs/dummy.o \
     $(SRCDIR)/management/cpufreq/drivers/acpi_cpufreq.o \
     $(SRCDIR)/management/gpu/gpu.o \
     $(SRCDIR)/management/gpu/archs/dummy.o
+    
+user_OBJS = \
+    $(SRCDIR)/management/cpufreq/cpufreq_user.o \
 
 ifdef CUDA_BASE
 mana_OBJS += \
