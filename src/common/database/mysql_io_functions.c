@@ -122,13 +122,13 @@
 #define LEARNING_APPLICATION_MYSQL_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
                                     "signature_id, power_signature_id) VALUES (?, ?, ?, ?, ?)"
 #if USE_GPUS
-#define LEARNING_SIGNATURE_QUERY_FULL    "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+#define LEARNING_SIGNATURE_QUERY_FULL    "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                 "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
                                 "instructions, cycles, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "\
                                 "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
-#define LEARNING_SIGNATURE_QUERY_SIMPLE  "INSERT INTO Signatures (DC_power, DRAM_power, PCK_power,  EDP,"\
+#define LEARNING_SIGNATURE_QUERY_SIMPLE  "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power,  EDP,"\
                                 "GBS, TPI, CPI, Gflops, time, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "\
                                 "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
