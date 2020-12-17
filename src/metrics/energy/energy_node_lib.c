@@ -118,26 +118,25 @@ state_t energy_lib_units(uint *units)
 	preturn (energy_ops.units, units);
 }
 
-state_t energy_lib_accumulated(unsigned long *e,edata_t init,edata_t end)
+state_t energy_lib_data_accumulated(unsigned long *e,edata_t init,edata_t end)
 {
 	*e=0;
 	preturn (energy_ops.accumulated,e,init,end );
 }
 
-state_t energy_lib_to_str(char *str,edata_t e)
+state_t energy_lib_data_to_str(char *str,edata_t e)
 {
 	preturn (energy_ops.energy_to_str,str,e );
 }
 
-uint energy_lib_is_null(edata_t e)
+uint energy_lib_data_is_null(edata_t e)
 {
 	if (energy_ops.is_null != NULL){
 		preturn(energy_ops.is_null,e);
 	}else{
-		ulong *def_e=(ulong *)e;
-		return (*def_e == 0);	
+		/* Should we return 1 or 0 by default */
+		return 1;
 	}
-	return 1;
 	
 }
 
