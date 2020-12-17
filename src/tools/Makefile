@@ -22,14 +22,19 @@ tool_PERM = 0770
 
 ######## FILES
 
-comm_OBJS = $(ROOTDIR)/src/common/libcommon.a -lm
+comm_OBJS = \
+    $(SRCDIR)/common/libcommon.a
+
+mang_OBJS = \
+    $(SRCDIR)/management/libmgt.a \
+	$(SRCDIR)/metrics/libmetrics.a
 
 ######## RULES
 
 all: $(tool_BINS)
 
-coeffs_compute: coeffs_compute.c $(comm_OBJS)
-	$(CCC) -g -o $@ $< $(LDFLAGS) $(comm_OBJS) $(DB_LDFLAGS)
+coeffs_compute: coeffs_compute.c $(mang_OBJS) $(comm_OBJS)
+	$(CCC) -g -o $@ $< $(LDFLAGS) $(mang_OBJS) $(comm_OBJS) $(DB_LDFLAGS) -lpthread
 
 coeffs_jobproj: coeffs_jobproj.c $(comm_OBJS)
 	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl
