@@ -43,11 +43,12 @@
  * the nombre of masters connected and expected. EARL is set to off in case
  * expected!=connected. */
 #define EAR_LIB_SYNC  1
+/* Still under development */
+#define USE_GPUS_IN_EARL 1
+#define USE_GPU_LIB (USE_GPUS && USE_GPUS_IN_EARL)
 
 /**** Deprecated. To be removed ****/
 #define EAR_CPUPOWER	1
-#define USE_GPUS_IN_EARL 1
-#define USE_GPU_LIB (USE_GPUS && USE_GPUS_IN_EARL)
 /* Specifies if RAPL msut be read with MSR registers (1) or with PAPI (0) */
 #define USE_MSR_RAPL						1
 /* When set to 1 , creates a thread in EARD to support application queries apart
