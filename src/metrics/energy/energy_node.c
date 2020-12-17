@@ -37,10 +37,11 @@ struct energy_op
 	state_t (*accumulated)				(ulong *e,edata_t init, edata_t end);
 	state_t (*energy_to_str)			(char *str,edata_t end);
 	state_t (*power_limit)				(void *c, ulong limit,ulong target);
+	uint    (*is_null)        		(edata_t end);
 } energy_ops;
 static char energy_objc[SZ_PATH];
 static int  energy_loaded  = 0;
-const int   energy_nops    = 11;
+const int   energy_nops    = 12;
 const char *energy_names[] = {
 	"energy_init",
 	"energy_dispose",
@@ -52,7 +53,8 @@ const char *energy_names[] = {
 	"energy_units",
 	"energy_accumulated",
 	"energy_to_str",
-	"energy_power_limit"
+	"energy_power_limit",
+	"energy_data_is_null"
 };
 
 state_t energy_load(char *energy_obj)
@@ -235,3 +237,15 @@ state_t energy_set_power_limit(ehandler_t *eh,ulong limit,ulong target)
 {
   preturn (energy_ops.power_limit, eh->context, limit ,target);
 }
+
+uint energy_data_is_null(ehandler_t *eh,edata_t e)
+{
+  if (energy_ops.is_null != NULL){
+    preturn(energy_ops.is_null,e);
+  }else{
+    /* Should we return 1 or 0 by default */
+    return 1;
+  }
+
+}
+

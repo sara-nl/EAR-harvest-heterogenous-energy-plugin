@@ -336,3 +336,10 @@ state_t energy_to_str(char *str,edata_t e)
   return EAR_SUCCESS;
 }
 
+uint energy_data_is_null(edata_t e)  
+{
+  ulong *pe=(ulong *)e;
+  return (*pe == 0);
+
+}
+
