@@ -121,6 +121,10 @@
 #define USE_EXT               0
 #define NW_EXT                "-opa"
 
+/** Specifies if the new version of the commands propagation is used and the number
+ *  * of jumps per node. */
+#define NUM_PROPS     3
+
 
 #endif //EAR_CONFIG_DEF_H
 
