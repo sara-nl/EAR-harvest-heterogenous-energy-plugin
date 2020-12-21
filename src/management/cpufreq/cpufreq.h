@@ -21,8 +21,26 @@
 #include <common/states.h>
 #include <common/plugins.h>
 #include <common/hardware/topology.h>
+#include <management/cpufreq/governor.h>
 
 #define all_cpus -1
+
+// The API
+// 
+// This API is designed to set the governor and frequency in the node. The 
+// procedure is the usual: load, init, get/set and dispose. To check
+// architecture limitations read the headers in archs folder.
+//
+// Folders:
+//	- archs: different node architectures, such as AMD and Intel.
+//	- drivers: API contacting to different system drivers, such as acpi_cpufreq.
+//	- recovery: old API.
+//
+// Compiling options:
+//	- You can set DISABLE_AMD in archs/Makefile to disable the AMD17 loading,
+//	  allowing the default or generic API selection.
+//	- You can set RECOVERY in Makefile to replace current API by the old one in
+//	  case of failure.
 
 typedef struct pstate_s {
 	uint   idx;
@@ -57,62 +75,29 @@ typedef struct mgt_ps_ops_s
 	state_t (*set_governor)         (ctx_t *c, uint governor);
 } mgt_ps_ops_t;
 
-struct governor_s {
-	uint conservative;
-	uint performance;
-    uint userspace;
-    uint powersave;
-    uint ondemand;
-    uint other;
-	uint last;
-	uint init;
-} Governor __attribute__((weak)) = {
-	.conservative = 0,
-	.performance = 1,
-    .userspace = 2,
-	.powersave = 3,
-	.ondemand = 4,
-	.other = 5,
-    .last = 6,
-	.init = 7,
-};
-
-struct goverstr_s {
-	char *conservative;
-	char *performance;
-	char *userspace;
-	char *powersave;
-	char *ondemand;
-	char *other;
-} Goverstr __attribute__((weak)) = {
-	.conservative = "conservative",
-	.performance = "performance",
-	.userspace = "userspace",
-	.powersave = "powersave",
-	.ondemand = "ondemand",
-	.other = "other",
-};
-
+// The first function to call, because discovers the system and sets the internal API.
 state_t mgt_pstate_load(topology_t *tp);
 
+// The second function to call, initializes all the data.
 state_t mgt_pstate_init(ctx_t *c);
 
+// Frees its allocated memory.
 state_t mgt_pstate_dispose(ctx_t *c);
 
 /** Getters */
-//Counts the available P_STATEs.
+// Counts the available P_STATEs.
 state_t mgt_pstate_count(ctx_t *c, uint *pstate_count);
 
-//Returns the available P_STATE (struct) list. The allocated list depends on the user.
+// Returns the available P_STATE (struct) list. The allocated list depends on the user.
 state_t mgt_pstate_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count);
 
-//Returns the current P_STATE (struct) per CPU.
+// Returns the current P_STATE (struct) per CPU.
 state_t mgt_pstate_get_current_list(ctx_t *c, pstate_t *pstate_list);
 
-//Returns the nominal P_STATE index.
+// Returns the nominal P_STATE index.
 state_t mgt_pstate_get_nominal(ctx_t *c, uint *pstate_index);
 
-//
+// Gets the governor (check governor.h to translate its int id to string).
 state_t mgt_pstate_get_governor(ctx_t *c, uint *governor);
 
 //Given a frequency in KHz, returns its available P_STATE index.
@@ -127,10 +112,5 @@ state_t mgt_pstate_set_current(ctx_t *c, uint pstate_index, int cpu);
 
 // Sets the governor (take a look to Governor global variable.
 state_t mgt_pstate_set_governor(ctx_t *c, uint governor);
-
-/** Helpers. */
-state_t mgt_pstate_governor_tostr(uint governor, char *buffer);
-
-state_t mgt_pstate_governor_toint(char *buffer, uint *governor);
 
 #endif //MANAGEMENT_PSTATE

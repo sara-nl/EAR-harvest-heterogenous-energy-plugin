@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 
 #include <common/sizes.h>
 #include <common/plugins.h>
@@ -178,42 +178,4 @@ state_t mgt_pstate_set_current(ctx_t *c, uint pstate_index, int cpu)
 state_t mgt_pstate_set_governor(ctx_t *c, uint governor)
 {
 	preturn (ops.set_governor, c, governor);
-}
-
-state_t mgt_pstate_governor_tostr(uint governor, char *buffer)
-{
-	if (governor == Governor.conservative) {
-		sprintf(buffer, Goverstr.conservative);
-	} else if (governor == Governor.performance) {
-		sprintf(buffer, Goverstr.performance);
-	} else if (governor == Governor.userspace) {
-		sprintf(buffer, Goverstr.userspace);
-	} else if (governor == Governor.powersave) {
-		sprintf(buffer, Goverstr.powersave);
-	} else if (governor == Governor.ondemand) {
-		sprintf(buffer, Goverstr.ondemand);
-	} else {
-		sprintf(buffer, Goverstr.other);
-		return_msg(EAR_ERROR, "undefined governor");
-	}
-	return EAR_SUCCESS;
-}
-
-state_t mgt_pstate_governor_toint(char *buffer, uint *governor)
-{
-	if (strncmp(buffer, Goverstr.conservative, 12) == 0) {
-		*governor = Governor.conservative;
-	} else if (strncmp(buffer, Goverstr.performance, 11) == 0) {
-		*governor = Governor.performance;
-	} else if (strncmp(buffer, Goverstr.userspace, 9) == 0) {
-		*governor = Governor.userspace;
-	} else if (strncmp(buffer, Goverstr.powersave, 9) == 0) {
-		*governor = Governor.powersave;
-	} else if (strncmp(buffer, Goverstr.ondemand, 8) == 0) {
-		*governor = Governor.ondemand;
-	} else {
-		*governor = Governor.other;
-		return_msg(EAR_ERROR, "undefined governor");
-	}
-	return EAR_SUCCESS;
 }

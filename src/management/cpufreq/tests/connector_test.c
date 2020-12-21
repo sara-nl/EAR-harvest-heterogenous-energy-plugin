@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 			for (i = 0; i < retint; ++i) {
 				debug("frequency_get_freq_rank_list %d:%lu", i, retplong[i]);
 			}
-		} else if (is(cmnd, "6")) { // Full 
+		} else if (is(cmnd, "6")) { 
 			scanf("%s", opt1);
 			RCALL(retlong, frequency_pstate_to_freq((uint) atoi(opt1)));
 			debug("frequency_pstate_to_freq returned %lu", retlong);
@@ -94,33 +94,33 @@ int main(int argc, char *argv[])
 			scanf("%s", opt1);
 			RCALL(retint, frequency_freq_to_pstate((ulong) atol(opt1)));
 			debug("frequency_freq_to_pstate returned %d", retint);
-		} else if (is(cmnd, "8")) { // Full 
+		} else if (is(cmnd, "8")) {
 			RCALL(retint, frequency_get_num_pstates());
 			debug("frequency_get_num_pstates returned %d", retint);
 			RCALL(retplong, frequency_get_freq_rank_list());
 			scanf("%s", opt1);
 			RCALL(retlong, frequency_pstate_to_freq_list((uint) atoi(opt1), retplong, retint));
 			debug("frequency_pstate_to_freq_list returned %lu", retlong);
-		} else if (is(cmnd, "9")) { // Full
+		} else if (is(cmnd, "9")) {
 			RCALL(retint, frequency_get_num_pstates());
 			debug("frequency_get_num_pstates returned %d", retint);
 			RCALL(retplong, frequency_get_freq_rank_list());
 			scanf("%s", opt1);
 			RCALL(retlong, frequency_freq_to_pstate_list((ulong) atol(opt1), retplong, retint));
 			debug("frequency_freq_to_pstate_list returned %lu", retlong);
-		} else if (is(cmnd, "10")) { // Full 
+		} else if (is(cmnd, "10")) {
 			scanf("%s", opt1);
 			RCALL(retint, frequency_is_valid_frequency((ulong) atol(opt1)));
 			debug("frequency_is_valid_frequency returned %d", retint);
-		} else if (is(cmnd, "11")) { // Full 
+		} else if (is(cmnd, "11")) {
 			scanf("%s", opt1);
 			RCALL(retint, frequency_is_valid_pstate((uint) atoi(opt1)));
-			debug("frequency_is_valid_frequency returned %d", retint);
-		} else if (is(cmnd, "12")) { // Full 
+			debug("frequency_is_valid_pstate returned %d", retint);
+		} else if (is(cmnd, "12")) {
 			scanf("%s", opt1);
 			RCALL(retint, frequency_closest_pstate((ulong) atol(opt1)));
 			debug("frequency_closest_pstate returned %d", retint);
-		} else if (is(cmnd, "13")) { //  
+		} else if (is(cmnd, "13")) { 
 			scanf("%s", opt1);
 			RCALL(retlong, frequency_closest_frequency((ulong) atol(opt1)));
 			debug("frequency_closest_frequency returned %lu", retlong);
@@ -157,20 +157,18 @@ int main(int argc, char *argv[])
 			debug("frequency_closest_high_freq returned %lu", retlong);
 		} else if (is(cmnd, "21")) {
 			RCALL(retplong, frequency_get_freq_rank_list()); 
-			for (i = 0; i < 16; ++i) {
-				retplong[i]    = 2500000LU;
-				retplong[i]    = 1000000LU;
-				retplong[i+32] = 2500000LU;
-				retplong[i+48] = 1000000LU;
+			for (i = 0; i < 20; ++i) {
+				retplong[i]    = 2400000LU;
+				retplong[i+20] = 1000000LU;
+				retplong[i+40] = 2400000LU;
+				retplong[i+60] = 1000000LU;
 			}
 			RCALL(retlong, frequency_set_with_list(0, retplong));
 			debug("frequency_set_with_list returned %lu", retlong);
 		} else if (is(cmnd, "22")) {
-			RCALL(retint, frequency_get_num_pstates());
-			debug("frequency_get_num_pstates returned %d", retint);
-			RCALL(retlong, frequency_get_cpufreq_list(retint, retlonglist));
+			RCALL(retlong, frequency_get_cpufreq_list(topo.cpu_count, retlonglist));
 			debug("frequency_get_cpufreq_list returned %lu", retlong);
-			for (i = 0; i < retint; ++i) {
+			for (i = 0; i < topo.cpu_count; ++i) {
 				debug("frequency_get_cpufreq_list %d:%lu", i, retlonglist[i]);
 			}
 		} else if (is(cmnd, "23")) {

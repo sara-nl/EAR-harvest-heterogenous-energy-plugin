@@ -20,6 +20,13 @@
 
 #include <management/cpufreq/cpufreq.h>
 
+//
+// Dummy/default/generic API:
+//
+// This API is designed to nothing more than rely on the driver. It just sorts
+// some of the driver raw information.
+//
+
 state_t pstate_dummy_status(topology_t *_tp);
 
 state_t pstate_dummy_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver);

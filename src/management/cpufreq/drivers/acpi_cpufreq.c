@@ -343,7 +343,7 @@ state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor)
 	}
 	if (xtate_fail(s, read_word(f->fds_govr[0], data, 1))) {
 		*governor = Governor.other;
-	} else if (xtate_fail(s, mgt_pstate_governor_toint(data, governor))) {
+	} else if (xtate_fail(s, mgt_governor_toint(data, governor))) {
 	}
 	return s;
 }
@@ -442,7 +442,7 @@ state_t pstate_cpufreq_set_governor(ctx_t *c, uint governor)
 	} else if (governor == Governor.last) {
 		set_freq = 1;
 	} else {
-		if (xtate_fail(s, mgt_pstate_governor_tostr(governor, govr_aux))) {
+		if (xtate_fail(s, mgt_governor_tostr(governor, govr_aux))) {
 			return s;
 		}
 	}

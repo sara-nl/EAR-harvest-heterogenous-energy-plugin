@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 
 #include <math.h>
 #include <stdlib.h>
@@ -62,6 +62,9 @@ state_t pstate_amd17_status(topology_t *_tp)
 {
 	state_t s;
 	debug("testing AMD17 P_STATE control status");
+	#if DISABLE_AMD
+	return EAR_ERROR;
+	#endif
 	if (_tp->vendor != VENDOR_AMD) {
 		return EAR_ERROR;
 	}
@@ -223,7 +226,7 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 		p = f->psss[0].cof - 100LLU;
 	}
 	// Getting PSS objects from P1 to P7
-	min_mhz = 1000;
+	//min_mhz = 1000;
 	for (; p >= min_mhz && i < MAX_PSTATES; p -= 100, ++i) {
 		if (xtate_fail(s, pstate_build_psss_single(p, &f->psss[i].cof, &f->psss[i].fid, &f->psss[i].did))) {
 			return s;	
@@ -368,6 +371,7 @@ state_t pstate_amd17_count(ctx_t *c, uint *pstate_count)
 static state_t static_get_index(amd17_ctx_t *f, ullong freq_khz, uint *pstate_index, uint closest)
 {
 	ullong cof_khz;
+	ullong aux_khz;
     int pst;
 
 	// Boost test
@@ -384,12 +388,17 @@ static state_t static_get_index(amd17_ctx_t *f, ullong freq_khz, uint *pstate_in
 	for (pst = f->pss_nominal; pst < f->pss_count; ++pst)
 	{
 		cof_khz = p1_khz(f->psss[pst].cof);
-		if (cof_khz == freq_khz) {
+		if (freq_khz == cof_khz) {
             *pstate_index = pst;
             return EAR_SUCCESS;
 		}
-		if (closest && cof_khz < freq_khz) {
-			*pstate_index = pst-1;
+		if (closest && freq_khz > cof_khz) {
+			if (pst > f->pss_nominal) {
+				aux_khz = p1_khz(f->psss[pst-1].cof) - freq_khz;
+				cof_khz = freq_khz - cof_khz;
+				pst = pst - (aux_khz < cof_khz);
+			}
+			*pstate_index = pst;
             return EAR_SUCCESS;
 		}
 	}
