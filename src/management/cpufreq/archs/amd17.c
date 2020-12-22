@@ -71,7 +71,7 @@ state_t cpufreq_amd17_status(topology_t *_tp)
 	if (_tp->family < FAMILY_ZEN) {
 		return EAR_ERROR;
 	}
-	// Thread control required
+	// Thread control required in this small section
 	if (tp.cpu_count == 0) {
 		if(xtate_fail(s, topology_copy(&tp, _tp))) {
 			return EAR_ERROR;
@@ -82,6 +82,7 @@ state_t cpufreq_amd17_status(topology_t *_tp)
 
 static state_t static_init_test(ctx_t *c, amd17_ctx_t **f)
 {
+	// This function converts a context into an specific AMD17 context
 	if (c == NULL) {
 		return_msg(EAR_ERROR, Generr.input_null);
 	}
@@ -96,6 +97,7 @@ static state_t static_dispose(amd17_ctx_t *f, uint close_msr_up_to, state_t s, c
 	int cpu;
 
 	// TODO: Recover MSR previous state
+	// Closing just the opened MSRs
 	for (cpu = 0; cpu < close_msr_up_to; ++cpu) {
 		msr_close(tp.cpus[cpu].id);
 	}
@@ -124,6 +126,7 @@ state_t cpufreq_amd17_dispose(ctx_t *c)
 #if SHOW_DEBUGS
 static void pstate_print(amd17_ctx_t *f)
 {
+	// Look into 'PPR 17h, Models 31h.pdf' the MSRC001_006[4...B] register information.
 	debug ("-----------------------------------------------------------------------------------");
 	tprintf_init(STDERR_FILENO, STR_MODE_DEF, "4 18 4 8 8 11 8 7 8 10 10");
 	tprintf("#||reg||en||IddDiv||IddVal||IddPerCore|||CpuVid|||CpuFid||  200||CpuDfsId||CoreCof");
@@ -156,6 +159,7 @@ static void pstate_print(amd17_ctx_t *f)
 
 static state_t pstate_build_psss_single(ullong freq_mhz, ullong *cof, ullong *fid, ullong *did)
 {
+	// List of predefined divisors.
 	ullong _did[31] = {  8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
 					    18, 19, 20, 21, 22, 23, 24, 25, 26, 28,
 					    30, 32, 34, 36, 38, 40, 42, 44 };
@@ -168,6 +172,13 @@ static state_t pstate_build_psss_single(ullong freq_mhz, ullong *cof, ullong *fi
 	for (m = 255; m >= 16; --m) {
 		// Divisors
 		for (d = 0; d < 31; ++d) {
+			// A frequency is composed by a multiplicator and a divisor, which are set
+			// in the MSR register. This function tests by brute-force, all possible
+			// combinations and selects the smallest multiplicator plus divisor add. 
+			// 
+			// 		formula = (multiplicator / divisor) * 200
+			// 		        = (fid / did) * 200
+			//
 			if (((m * 1000LLU) * 200LLU) == ((freq_mhz * 1000LLU) * _did[d]))
 			{
 				diff = _did[d] + m;
@@ -202,7 +213,8 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 		return static_dispose(f, 0, s, state_msg);
 	}
 	min_mhz = freqs_available[freq_count-1] / 1000LLU;
-	// Getting P0 information
+	// Getting P0(b) information from the first of a list of registers. In case of user mode,
+	// this register is filled virtually, because its impossible to read the MSR.
 	f->psss[0].fid = getbits64(f->regs[0],  7,  0);
 	f->psss[0].did = getbits64(f->regs[0], 13,  8);
 	if (f->psss[0].did == 0) {
@@ -212,7 +224,7 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 	f->psss[0].cof = (f->psss[0].fid * 200LLU) / f->psss[0].did;
 	// Getting P0 in case boost is not enabled
 	i = 1;
-	
+	// If boost is enabled, the non-boosted P0 is defined, if not P0(b) becomes P0.
 	if (f->boost_enabled) {
 		f->psss[1].cof = f->psss[0].cof;
 		f->psss[1].fid = f->psss[0].fid;
@@ -255,11 +267,11 @@ state_t cpufreq_amd17_init_user(amd17_ctx_t *f)
 	if (xtate_fail(s, f->driver->get_available_list(&f->driver_c, &freqs_available, &f->pss_count))) {
 		return static_dispose(f, 0, s, state_msg);
 	}
-	// Boost enabled
+	// Boost enabled checked by the driver.
 	if (xtate_ok(s, f->driver->get_boost(&f->driver_c, &f->boost_enabled))) {
 		f->pss_nominal = f->boost_enabled;
 	}
-	// Initializing PSS0 to initialize the list
+	// Initializing a virtual (because MSR can't be read) register PSS0 to initialize the list.
 	cof = freqs_available[0] / 1000LLU;
 	if (xtate_fail(s, pstate_build_psss_single(cof, &cof, &fid, &did))) {
 		return s;
@@ -301,7 +313,7 @@ state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
         return_msg(EAR_ERROR, strerror(errno));
     }
     f = (amd17_ctx_t *) c->context;
-	// Init driver
+	// Inititializing the driver before (because if doesn't work we can't do anything).
 	f->driver = ops_driver;
 	if (xtate_fail(s, f->driver->init(&f->driver_c))) {
 		return static_dispose(f, tp.cpu_count, s, state_msg);
@@ -315,7 +327,7 @@ state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 			return static_dispose(f, cpu, s, state_msg);
 		}
 	}
-	// Reading min and max P_STATEs
+	// Reading min and max P_STATEs (by MSR, not by CPUFREQ, but it is supposed to be the same).
 	if (xtate_fail(s, msr_read(tp.cpus[0].id, &data, sizeof(ullong), REG_LIMITS))) {
 		return static_dispose(f, tp.cpu_count, s, state_msg);
 	}
@@ -337,13 +349,13 @@ state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 	#if SHOW_DEBUGS
 	pstate_print(f);
 	#endif
-	// Boost enabled
+	// Boost enabled checked by MSR. 
 	if (xtate_fail(s, msr_read(0, &data, sizeof(ullong), REG_HWCONF))) {
 		return static_dispose(f, tp.cpu_count, s, state_msg);
 	}
 	f->boost_enabled = (uint) !getbits64(data, 25, 25);
 	f->pss_nominal   = f->boost_enabled;
-	// Building PSS object list
+	// Building PSS object list.
 	if (xtate_fail(s, pstate_build_psss(f))) {
 		return static_dispose(f, tp.cpu_count, s, state_msg);
 	}
@@ -384,7 +396,8 @@ static state_t static_get_index(amd17_ctx_t *f, ullong freq_khz, uint *pstate_in
 		*pstate_index = f->pss_nominal;
 		return EAR_SUCCESS;
 	}
-	// Searching
+	// The searching. The closest frequency in case of PST-1 and PST0 differences are
+	// equal, it will be PST0. 
 	for (pst = f->pss_nominal; pst < f->pss_count; ++pst)
 	{
 		cof_khz = p1_khz(f->psss[pst].cof);
