@@ -24,14 +24,12 @@
 #include <linux/version.h>
 #include <math.h>
 //#define SHOW_DEBUGS 0
-#include <common/config.h>
-
-#include <common/hardware/cpupower.h>
 #include <common/states.h>
+#include <common/config.h>
 #include <common/types/generic.h>
 #include <common/output/verbose.h>
-#include <common/hardware/frequency.h>
 #include <common/hardware/hardware_info.h>
+#include <management/cpufreq/recovery/frequency.h>
 
 static governor_t previous_cpu0_policy;
 static ulong previous_cpu0_freq;

@@ -123,7 +123,7 @@ ulong frequency_get_cpufreq_list(uint cpu_count, ulong *freq_list)
 {
 	int i;
 	memset(freq_list, 0, sizeof(ulong)*cpu_count);
-	if (cpu_count > pstate_count) {
+	if (cpu_count > topo.cpu_count) {
 		return 0;
 	}
 	if (state_fail(mgt_pstate_get_current_list(&c, current_list))) {
@@ -268,7 +268,7 @@ uint frequency_freq_to_pstate(ulong freq_khz)
 		return 0LU;
 	}
 	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
-		return pstate_count-1;
+		return pstate_count;
 	}
 	// Given a frequency in KHz returns a P_STATE index.
 	return pstate_index;
@@ -289,7 +289,7 @@ uint frequency_freq_to_pstate_list(ulong freq_khz, ulong *list, uint pstate_coun
 	for (i = found = 0; i < pstate_count && !found; ++i) {
 		found = (list[i] == freq_khz);
 	}
-	return i-1;
+	return i-found;
 }
 
 void frequency_set_performance_governor_all_cpus()
@@ -376,7 +376,7 @@ void get_governor(governor_t *_governor)
 	if (state_fail(mgt_pstate_get_governor(&c, &governor))) {
 		return;
 	}
-	if (state_fail(mgt_pstate_governor_tostr(governor, _governor->name))) {
+	if (state_fail(mgt_governor_tostr(governor, _governor->name))) {
 		return;
 	}
 	_governor->max_f = available_list[0].khz;
@@ -390,7 +390,7 @@ void set_governor(governor_t *_governor)
 	if (!init) {
 		return;
 	}
-	if (state_fail(mgt_pstate_governor_toint(_governor->name, &governor))) {
+	if (state_fail(mgt_governor_toint(_governor->name, &governor))) {
 		return;
 	}
 	if (state_fail(mgt_pstate_set_governor(&c, governor))) {

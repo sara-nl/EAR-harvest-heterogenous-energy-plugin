@@ -17,11 +17,10 @@
 
 #ifndef EAR_CONTROL_FREQUENCY_H
 #define EAR_CONTROL_FREQUENCY_H
-#include <linux/version.h>
 
+#include <linux/version.h>
 #define _GNU_SOURCE             /* See feature_test_macros(7) */
 #include <sched.h>
-
 #ifndef EAR_CPUPOWER
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0)
 #include <cpupower.h>
@@ -29,9 +28,8 @@
 #include <cpufreq.h>
 #endif
 #else
-#include <common/hardware/cpupower.h>
+#include <management/cpufreq/recovery/cpupower.h>
 #endif
-
 
 int frequency_init(uint cpus);
 void frequency_dispose();

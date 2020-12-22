@@ -658,12 +658,17 @@ void ear_init()
 	strtok(node_name, ".");
 
 	debug("Running in %s process=%d",node_name,getpid());
+
 	#if MPI
 	verb_level = get_ear_verbose();
 	#else
 	verb_level=1;
 	#endif
 	verb_channel=2;
+	if ((tmp = getenv(SCHED_EARL_VERBOSE)) != NULL) {
+		VERB_SET_LV(atoi(tmp));
+	}
+
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
 	#if MPI

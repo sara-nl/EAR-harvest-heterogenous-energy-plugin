@@ -18,6 +18,10 @@
 #ifndef EAR_CONFIG_DEF_H
 #define EAR_CONFIG_DEF_H
 
+// Maximum number of tries when doing non-blocking communications
+#define MAX_SOCKET_COMM_TRIES   10000000
+//
+#define EARDBD_TYPES            7
 /* These flags configures EARL */
 /* When set to 1, turbo is allowed */
 #define USE_TURBO							0
@@ -108,6 +112,19 @@
 
 #define LIMIT_LARGE_JOBS				2
 #define RED_PSTATES_LARGE_JOBS 	1
+
+/* These two options go together. USE_EXT defines if a automatic network
+ *  * extension must be added for inter-nodes communications. Targeted to
+ *   * architectures where hostname returned is not valid to communicate across
+ *    * nodes. In that case, NW_EXT specified the extension to concatenate to
+ *     * hostname */
+#define USE_EXT               0
+#define NW_EXT                "-opa"
+
+/** Specifies if the new version of the commands propagation is used and the number
+ *  * of jumps per node. */
+#define NUM_PROPS     3
+
 
 #endif //EAR_CONFIG_DEF_H
 

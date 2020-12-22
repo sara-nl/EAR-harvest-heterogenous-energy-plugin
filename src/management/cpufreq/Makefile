@@ -1,40 +1,42 @@
 CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -Wall
 SRCDIR = /home/xjaneas/ngit/ear_private/src
 
+######## OPTIONS
+
+RECOVERY = 0
+
 ######## FILES
 
-psta_BINS = \
+user_OBJS = \
+    cpufreq_user.o
+root_OBJS = \
     cpufreq.o \
-    cpufreq_user.o \
-    connector.o
+    connector.o \
+	governor.o
+ifeq ($(RECOVERY), 1)
+root_OBJS += \
+    replace
+endif
 
 ######## RULES
 
-all: all.components $(psta_BINS)
+all: all.components $(root_OBJS)
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-#	$(CC) $(CFLAGS) -o pstate pstate.o archs/amd17.o drivers/cpufreq.o $(SRCDIR)/common/libcommon.a $(SRCDIR)/metrics/libmetrics.a -lpthread -lm
-
-proto:
-	/hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -Wall -fPIC -I $(SRCDIR) \
-	-DCONNECTOR=1 -o test_conn connector_test.c \
-	connector.o cpufreq.o archs/amd17.o archs/dummy.o drivers/acpi_cpufreq.o \
-	../../metrics/libmetrics.a ../../common/libcommon.a \
-	-lpthread -lm
-
-#	/hpc/base/ctt/packages/compiler/gnu/9.1.0/bin/gcc -Wall -fPIC -I $(SRCDIR) \
-#	-o test_freq connector_test.c \
-#	pstate.o archs/amd17.o archs/dummy.o drivers/cpufreq.o \
-#	../../metrics/libmetrics.a ../../common/libcommon.a \
-#	-lpthread -lm
+replace: $(root_OBJS)
+	mv recovery/frequency.o connector.o
+	mv recovery/cpupower.o cpufreq.o
 
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'archs' $* || exit
-	@ $(MAKE) -C 'drivers' $* || exit
+	@ $(MAKE) -C 'archs'    $* || exit
+	@ $(MAKE) -C 'drivers'  $* || exit
+ifeq ($(RECOVERY), 1)
+	@ $(MAKE) -C 'recovery' $* || exit
+endif
 
 ######## OPTIONS
 
@@ -43,8 +45,6 @@ install: install.components
 %.install: ;
 
 clean: rclean clean.components
-	rm -f test_freq
-	rm -f test_conn
 
 depend: depend.components
 

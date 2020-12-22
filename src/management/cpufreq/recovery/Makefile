@@ -1,18 +1,10 @@
-CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -Wall
-
-######## OPTIONS
-
-DISABLE_AMD = 0
-
-ifeq ($(DISABLE_AMD), 1)
-DEFS += -DDISABLE_AMD=1
-endif
+CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC
 
 ######## FILES
 
 arch_OBJS = \
-    amd17.o \
-    dummy.o
+    frequency.o \
+    cpupower.o
 
 ######## RULES
 

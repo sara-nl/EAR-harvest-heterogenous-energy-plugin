@@ -39,9 +39,6 @@ state_t pstate_dummy_status(topology_t *_tp)
 {
 	state_t s;
 	debug("testing Dummy P_STATE control status");
-	if (_tp->vendor != VENDOR_INTEL) {
-		return EAR_ERROR;
-	}
 	// Thread control required
 	if (tp.cpu_count == 0) {
 		if(xtate_fail(s, topology_copy(&tp, _tp))) {
@@ -158,12 +155,17 @@ static state_t static_get_index(dummy_ctx_t *f, ullong freq_khz, uint *pstate_in
 	for (pst = f->pstate_nominal; pst < f->freqs_count; ++pst)
 	{
 		debug("comparing frequencies %llu == %llu", f->freqs_available[pst], freq_khz);
-		if (f->freqs_available[pst] == freq_khz) {
+		if (freq_khz == f->freqs_available[pst]) {
 			*pstate_index = pst;
 			return EAR_SUCCESS;
 		}
-		if (closest && f->freqs_available[pst] < freq_khz) {
-			*pstate_index = pst-1;
+		if (closest && freq_khz > f->freqs_available[pst]) {
+			if (pst > f->pstate_nominal) {
+				ullong aux_1 = f->freqs_available[pst-1] - freq_khz; 
+				ullong aux_0 = freq_khz - f->freqs_available[pst+0];
+				pst = pst - (aux_1 < aux_0);
+			}
+			*pstate_index = pst;
 			return EAR_SUCCESS;
 		}
 	}

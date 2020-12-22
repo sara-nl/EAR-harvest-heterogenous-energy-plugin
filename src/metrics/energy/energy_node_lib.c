@@ -140,7 +140,7 @@ uint energy_lib_data_is_null(edata_t e)
 	
 }
 
-state_t energy_lib_copy(edata_t dst,edata_t src)
+state_t energy_lib_data_copy(edata_t dst,edata_t src)
 {
   if (energy_ops.copy != NULL){
     preturn(energy_ops.copy,dst,src);

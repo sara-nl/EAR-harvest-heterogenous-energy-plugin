@@ -18,8 +18,8 @@
 #ifndef _EAR_TYPES_SIGNATURE
 #define _EAR_TYPES_SIGNATURE
 
-#include <common/types/generic.h>
 #include <common/config.h>
+#include <common/types/generic.h>
 #if USE_GPU_LIB
 #include <metrics/gpu/gpu.h>
 #endif
