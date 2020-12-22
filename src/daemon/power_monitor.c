@@ -72,8 +72,8 @@ nm_t my_nm_id;
 nm_data_t nm_init, nm_end, nm_diff, last_nm;
 
 extern topology_t node_desc;
-extern freq_cpu_t freq_job2;
-extern freq_cpu_t freq_job1;
+extern cpufreq_t freq_job2;
+extern cpufreq_t freq_job1;
 
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
@@ -408,7 +408,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 	read_enegy_data(ceh, &c_energy);
 	copy_energy_data(&current_ear_app[ccontext]->energy_init, &c_energy);
 	// CPU Frequency
-	state_assert(s, freq_cpu_read(&freq_job1), );
+	state_assert(s, cpufreq_read(&freq_job1), );
 	verbose(1,"job_init_powermon_app end");
 }
 
@@ -440,7 +440,7 @@ void job_end_powermon_app(ehandler_t *ceh)
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
 
 	// CPU Frequency
-	state_assert(s, freq_cpu_read_diff(&freq_job2, &freq_job1, NULL, &current_ear_app[ccontext]->app.power_sig.avg_f), );
+	state_assert(s, cpufreq_read_diff(&freq_job2, &freq_job1, NULL, &current_ear_app[ccontext]->app.power_sig.avg_f), );
 
 	// nominal is still pending
 
