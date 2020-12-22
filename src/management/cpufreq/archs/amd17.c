@@ -58,7 +58,7 @@ typedef struct amd17_ctx_s {
 	uint                 init;
 } amd17_ctx_t;
 
-state_t pstate_amd17_status(topology_t *_tp)
+state_t cpufreq_amd17_status(topology_t *_tp)
 {
 	state_t s;
 	debug("testing AMD17 P_STATE control status");
@@ -111,7 +111,7 @@ static state_t static_dispose(amd17_ctx_t *f, uint close_msr_up_to, state_t s, c
 	return_msg(s, msg);
 }
 
-state_t pstate_amd17_dispose(ctx_t *c)
+state_t cpufreq_amd17_dispose(ctx_t *c)
 {
 	amd17_ctx_t *f;
 	state_t s;
@@ -243,7 +243,7 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_init_user(amd17_ctx_t *f)
+state_t cpufreq_amd17_init_user(amd17_ctx_t *f)
 {
 	const ullong *freqs_available;
 	ullong cof, fid, did;
@@ -283,7 +283,7 @@ state_t pstate_amd17_init_user(amd17_ctx_t *f)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
+state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 {
 	amd17_ctx_t *f;
 	ullong data;
@@ -310,7 +310,7 @@ state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
 			if (state_is(s, EAR_NO_PERMISSIONS)) {
-				return pstate_amd17_init_user(f);
+				return cpufreq_amd17_init_user(f);
 			}
 			return static_dispose(f, cpu, s, state_msg);
 		}
@@ -357,7 +357,7 @@ state_t pstate_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 }
 
 /** Getters */
-state_t pstate_amd17_count(ctx_t *c, uint *pstate_count)
+state_t cpufreq_amd17_count(ctx_t *c, uint *pstate_count)
 {
 	amd17_ctx_t *f;
 	state_t s;
@@ -409,7 +409,7 @@ static state_t static_get_index(amd17_ctx_t *f, ullong freq_khz, uint *pstate_in
     return_msg(EAR_ERROR, "P_STATE not found");
 }
 
-state_t pstate_amd17_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
+state_t cpufreq_amd17_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
 {
 	amd17_ctx_t *f;
 	state_t s;
@@ -432,7 +432,7 @@ state_t pstate_amd17_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *p
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_get_current_list(ctx_t *c, pstate_t *pstate_list)
+state_t cpufreq_amd17_get_current_list(ctx_t *c, pstate_t *pstate_list)
 {
 	const ullong *freq_list;
 	ullong reg, fid, did, cof;
@@ -504,7 +504,7 @@ state_t pstate_amd17_get_current_list(ctx_t *c, pstate_t *pstate_list)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_get_nominal(ctx_t *c, uint *pstate_index)
+state_t cpufreq_amd17_get_nominal(ctx_t *c, uint *pstate_index)
 {
 	amd17_ctx_t *f;
 	state_t s;
@@ -515,7 +515,7 @@ state_t pstate_amd17_get_nominal(ctx_t *c, uint *pstate_index)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_get_governor(ctx_t *c, uint *governor)
+state_t cpufreq_amd17_get_governor(ctx_t *c, uint *governor)
 {
 	amd17_ctx_t *f;
 	state_t s;
@@ -525,7 +525,7 @@ state_t pstate_amd17_get_governor(ctx_t *c, uint *governor)
 	return f->driver->get_governor(&f->driver_c, governor);
 }
 
-state_t pstate_amd17_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uint closest)
+state_t cpufreq_amd17_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uint closest)
 {
     amd17_ctx_t *f;
     state_t s;
@@ -575,7 +575,7 @@ static state_t set_frequency_p0(amd17_ctx_t *f, uint cpu)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index)
+state_t cpufreq_amd17_set_current_list(ctx_t *c, uint *pstate_index)
 {
 	state_t s2 = EAR_SUCCESS;
 	state_t s1 = EAR_SUCCESS;
@@ -604,7 +604,7 @@ state_t pstate_amd17_set_current_list(ctx_t *c, uint *pstate_index)
 	return s2;
 }
 
-state_t pstate_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
+state_t cpufreq_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
 {
 	state_t s1 = EAR_SUCCESS;
 	state_t s2 = EAR_SUCCESS;
@@ -662,7 +662,7 @@ state_t pstate_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
 	return s2;
 }
 
-state_t pstate_amd17_set_governor(ctx_t *c, uint governor)
+state_t cpufreq_amd17_set_governor(ctx_t *c, uint governor)
 {
 	amd17_ctx_t *f;
 	state_t s;

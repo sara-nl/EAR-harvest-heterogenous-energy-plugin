@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #include <common/types/projection.h>
 #include <daemon/eard_api.h>
 #include <library/policies/policy_api.h>

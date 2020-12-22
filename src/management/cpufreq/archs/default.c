@@ -21,7 +21,7 @@
 #include <common/output/debug.h>
 #include <common/hardware/cpuid.h>
 #include <common/hardware/bithack.h>
-#include <management/cpufreq/archs/dummy.h>
+#include <management/cpufreq/archs/default.h>
 
 static topology_t tp;
 
@@ -35,7 +35,7 @@ typedef struct dummy_ctx_s {
 	uint                 init;
 } dummy_ctx_t;
 
-state_t pstate_dummy_status(topology_t *_tp)
+state_t cpufreq_default_status(topology_t *_tp)
 {
 	state_t s;
 	debug("testing Dummy P_STATE control status");
@@ -69,7 +69,7 @@ static state_t static_dispose(dummy_ctx_t *f, state_t s, char *msg)
 	return_msg(s, msg);
 }
 
-state_t pstate_dummy_dispose(ctx_t *c)
+state_t cpufreq_default_dispose(ctx_t *c)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -91,7 +91,7 @@ state_t static_init(dummy_ctx_t *f)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_dummy_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
+state_t cpufreq_default_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -127,7 +127,7 @@ state_t pstate_dummy_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 }
 
 /** Getters */
-state_t pstate_dummy_count(ctx_t *c, uint *pstate_count)
+state_t cpufreq_default_count(ctx_t *c, uint *pstate_count)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -176,7 +176,7 @@ static state_t static_get_index(dummy_ctx_t *f, ullong freq_khz, uint *pstate_in
 	return_msg(EAR_ERROR, "P_STATE not found");
 }
 
-state_t pstate_dummy_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
+state_t cpufreq_default_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -195,7 +195,7 @@ state_t pstate_dummy_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *p
 	return EAR_SUCCESS;
 }
 
-state_t pstate_dummy_get_current_list(ctx_t *c, pstate_t *pstate_list)
+state_t cpufreq_default_get_current_list(ctx_t *c, pstate_t *pstate_list)
 {
 	const ullong *current_list;
 	dummy_ctx_t *f;
@@ -222,7 +222,7 @@ state_t pstate_dummy_get_current_list(ctx_t *c, pstate_t *pstate_list)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_dummy_get_nominal(ctx_t *c, uint *pstate_index)
+state_t cpufreq_default_get_nominal(ctx_t *c, uint *pstate_index)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -233,7 +233,7 @@ state_t pstate_dummy_get_nominal(ctx_t *c, uint *pstate_index)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_dummy_get_governor(ctx_t *c, uint *governor)
+state_t cpufreq_default_get_governor(ctx_t *c, uint *governor)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -243,7 +243,7 @@ state_t pstate_dummy_get_governor(ctx_t *c, uint *governor)
 	return f->driver->get_governor(&f->driver_c, governor);
 }
 
-state_t pstate_dummy_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uint closest)
+state_t cpufreq_default_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uint closest)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -255,7 +255,7 @@ state_t pstate_dummy_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, ui
 }
 
 /** Setters */
-state_t pstate_dummy_set_current_list(ctx_t *c, uint *pstate_index)
+state_t cpufreq_default_set_current_list(ctx_t *c, uint *pstate_index)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -273,7 +273,7 @@ state_t pstate_dummy_set_current_list(ctx_t *c, uint *pstate_index)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_dummy_set_current(ctx_t *c, uint pstate_index, int cpu)
+state_t cpufreq_default_set_current(ctx_t *c, uint pstate_index, int cpu)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -291,7 +291,7 @@ state_t pstate_dummy_set_current(ctx_t *c, uint pstate_index, int cpu)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_dummy_set_governor(ctx_t *c, uint governor)
+state_t cpufreq_default_set_governor(ctx_t *c, uint governor)
 {
 	dummy_ctx_t *f;
 	state_t s;

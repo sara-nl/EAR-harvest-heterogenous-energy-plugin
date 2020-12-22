@@ -24,7 +24,7 @@
 #include <common/includes.h>
 #include <daemon/powercap/powercap_status.h>
 #include <common/types/signature.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #include <library/metrics/gpu.h>
 #include <library/policies/policy_ctx.h>
 #include <common/types/projection.h>

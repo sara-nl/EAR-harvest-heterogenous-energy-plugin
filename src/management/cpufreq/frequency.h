@@ -15,14 +15,14 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef MANAGEMENT_PSTATE_CONNECTOR
-#define MANAGEMENT_PSTATE_CONNECTOR
+#ifndef MANAGEMENT_CPUFREQ_FREQUENCY
+#define MANAGEMENT_CPUFREQ_FREQUENCY
 
 #define _GNU_SOURCE
 #include <sched.h>
 #include <management/cpufreq/cpufreq.h>
 
-typedef struct governor{
+typedef struct governor {
 	char name[128];
 	ulong max_f;
 	ulong min_f;
@@ -80,4 +80,4 @@ void get_governor(governor_t *_governor);
 // Daemon required. Init required. | Not used without initialization. | PMON.
 void set_governor(governor_t *_governor);
 
-#endif //MANAGEMENT_PSTATE_CONNECTOR
+#endif //MANAGEMENT_CPUFREQ_FREQUENCY

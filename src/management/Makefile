@@ -5,10 +5,10 @@ root_BINS = libmgt.a
 root_OBJS = \
     $(SRCDIR)/management/cpufreq/cpufreq.o \
     $(SRCDIR)/management/cpufreq/governor.o \
-    $(SRCDIR)/management/cpufreq/connector.o \
+    $(SRCDIR)/management/cpufreq/frequency.o \
     $(SRCDIR)/management/cpufreq/archs/amd17.o \
-    $(SRCDIR)/management/cpufreq/archs/dummy.o \
-    $(SRCDIR)/management/cpufreq/drivers/acpi_cpufreq.o \
+    $(SRCDIR)/management/cpufreq/archs/default.o \
+    $(SRCDIR)/management/cpufreq/drivers/linux_cpufreq.o \
     $(SRCDIR)/management/gpu/gpu.o \
     $(SRCDIR)/management/gpu/archs/dummy.o
     

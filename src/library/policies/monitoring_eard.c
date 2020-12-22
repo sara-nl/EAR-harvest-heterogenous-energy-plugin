@@ -26,7 +26,7 @@
 #include <common/output/verbose.h>
 #include <common/types/configuration/policy_conf.h>
 #include <common/types/risk.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 
 
 #define WARNING1_DEF_PSTATES_LESS 0

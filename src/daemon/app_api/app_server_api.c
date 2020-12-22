@@ -35,7 +35,7 @@
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/energy/energy_node.h>
 #include <management/gpu/gpu.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 
 #define close_app_connection()
 

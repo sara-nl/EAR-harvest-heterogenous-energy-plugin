@@ -20,7 +20,7 @@
 
 extern uint mgt_cpu_count;
 
-state_t mgt_pstate_user_get_current_list(ctx_t *c, pstate_t *pstate_list)
+state_t mgt_cpufreq_user_get_current_list(ctx_t *c, pstate_t *pstate_list)
 {
 	ulong list_khz[4096]; // I hope there are no nodes with more than 4096 CPUs
 	uint cpu;
@@ -33,7 +33,7 @@ state_t mgt_pstate_user_get_current_list(ctx_t *c, pstate_t *pstate_list)
 	// Getting also P_STATE
 	for (cpu = 0; cpu < mgt_cpu_count; ++cpu) {
 		pstate_list[cpu].khz = (ullong) list_khz[cpu];
-		if (state_fail(mgt_pstate_get_index(c, pstate_list[cpu].khz, &pstate_list[cpu].idx, 0))) {
+		if (state_fail(mgt_cpufreq_get_index(c, pstate_list[cpu].khz, &pstate_list[cpu].idx, 0))) {
 		}
 	}
 

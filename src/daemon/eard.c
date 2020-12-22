@@ -25,7 +25,7 @@
 #include <common/environment.h>
 #include <common/types/log_eard.h>
 #include <common/types/pc_app_info.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #include <common/hardware/hardware_info.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/energy/cpu.h>

@@ -35,7 +35,7 @@
 #include <common/types/application.h>
 #include <common/types/coefficient.h>
 #include <common/types/configuration/cluster_conf.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 

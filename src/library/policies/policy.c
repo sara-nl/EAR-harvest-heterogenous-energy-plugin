@@ -25,7 +25,7 @@
 #include <common/includes.h>
 #include <common/config/config_env.h>
 #include <common/system/symplug.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #include <library/policies/policy_ctx.h>
 #include <library/policies/policy.h>
 #include <library/common/externs.h>

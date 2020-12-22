@@ -22,7 +22,7 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <common/output/debug.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 
 static topology_t topo;
 static ctx_t      c;
@@ -43,13 +43,13 @@ state_t frequency_init(uint x)
 	if (xtate_fail(s, topology_init(&topo))) {
 		return s;
 	}
-	if (xtate_fail(s, mgt_pstate_load(&topo))) {
+	if (xtate_fail(s, mgt_cpufreq_load(&topo))) {
 		return s;
 	}
-	if (xtate_fail(s, mgt_pstate_init(&c))) {
+	if (xtate_fail(s, mgt_cpufreq_init(&c))) {
 		return s;
 	}
-	if (xtate_fail(s, mgt_pstate_count(&c, &pstate_count))) {
+	if (xtate_fail(s, mgt_cpufreq_count(&c, &pstate_count))) {
 		return s;
 	}
 	//alloc
@@ -63,10 +63,10 @@ state_t frequency_init(uint x)
         return_msg(EAR_ERROR, strerror(errno));
     }
 	//
-	if (xtate_fail(s, mgt_pstate_get_available_list(&c, available_list, NULL))) {
+	if (xtate_fail(s, mgt_cpufreq_get_available_list(&c, available_list, NULL))) {
 		return s;
 	}
-	if (xtate_fail(s, mgt_pstate_get_nominal(&c, &pstate_nominal))) {
+	if (xtate_fail(s, mgt_cpufreq_get_nominal(&c, &pstate_nominal))) {
 		return s;
 	}
 	init = 1;
@@ -81,7 +81,7 @@ state_t frequency_dispose()
 	if (!init) {
 		return_msg(EAR_NOT_INITIALIZED, Generr.api_uninitialized);
 	}
-	if (xtate_fail(s, mgt_pstate_dispose(&c))) {
+	if (xtate_fail(s, mgt_cpufreq_dispose(&c))) {
 		return s;
 	}
 	if (xtate_fail(s, topology_close(&topo))) {
@@ -112,7 +112,7 @@ ulong frequency_get_cpu_freq(uint cpu)
 	if (cpu >= topo.cpu_count) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_get_current_list(&c, current_list))) {
+	if (state_fail(mgt_cpufreq_get_current_list(&c, current_list))) {
 		return 0LU;
 	}
 	// Returns the current frequency given a CPU in KHz.
@@ -126,7 +126,7 @@ ulong frequency_get_cpufreq_list(uint cpu_count, ulong *freq_list)
 	if (cpu_count > topo.cpu_count) {
 		return 0;
 	}
-	if (state_fail(mgt_pstate_get_current_list(&c, current_list))) {
+	if (state_fail(mgt_cpufreq_get_current_list(&c, current_list))) {
 		return 0LU;
 	}
 	for (i = 0; i < cpu_count; ++i) {
@@ -177,10 +177,10 @@ ulong frequency_set_cpu(ulong freq_khz, uint cpu)
 	if (!init) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
+	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_set_current(&c, pstate_index, cpu))) {
+	if (state_fail(mgt_cpufreq_set_current(&c, pstate_index, cpu))) {
 		return 0LU;
 	}
 	// Returns written P_STATE.
@@ -194,10 +194,10 @@ ulong frequency_set_all_cpus(ulong freq_khz)
 	if (!init) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
+	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_set_current(&c, pstate_index, all_cpus))) {
+	if (state_fail(mgt_cpufreq_set_current(&c, pstate_index, all_cpus))) {
 		return 0LU;
 	}
 	// Returns written P_STATE.
@@ -212,14 +212,14 @@ ulong frequency_set_with_mask(cpu_set_t *mask, ulong freq_khz)
 	if (!init) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
+	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
   		return current_list[0].khz;
 	}
     for (i = 0; i < topo.cpu_count; i++)
     {
     	if (CPU_ISSET(i, mask)) {
 			debug("setting CPU%d to P_STATE %u", i, pstate_index);
-			if (state_fail(mgt_pstate_set_current(&c, pstate_index, i))) {
+			if (state_fail(mgt_cpufreq_set_current(&c, pstate_index, i))) {
 				error("while setting frequency of CPU%d to %lu", i, freq_khz);
 			}
 		}
@@ -237,8 +237,8 @@ ulong frequency_set_with_list(uint x, ulong *list)
 		return 0LU;
 	}
 	for (cpu = 0; cpu < topo.cpu_count; ++cpu) {
-		if (xtate_ok(s1, mgt_pstate_get_index(&c, (ullong) list[cpu], &pstate_index, 0))) {
-			if (xtate_ok(s2, mgt_pstate_set_current(&c, pstate_index, cpu))) {
+		if (xtate_ok(s1, mgt_cpufreq_get_index(&c, (ullong) list[cpu], &pstate_index, 0))) {
+			if (xtate_ok(s2, mgt_cpufreq_set_current(&c, pstate_index, cpu))) {
 			}
 		}
 	}
@@ -267,7 +267,7 @@ uint frequency_freq_to_pstate(ulong freq_khz)
 	if (!init) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
+	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
 		return pstate_count;
 	}
 	// Given a frequency in KHz returns a P_STATE index.
@@ -294,12 +294,12 @@ uint frequency_freq_to_pstate_list(ulong freq_khz, ulong *list, uint pstate_coun
 
 void frequency_set_performance_governor_all_cpus()
 {
-	mgt_pstate_set_governor(&c, Governor.performance);
+	mgt_cpufreq_set_governor(&c, Governor.performance);
 }
 
 void frequency_set_userspace_governor_all_cpus()
 {
-	mgt_pstate_set_governor(&c, Governor.userspace);
+	mgt_cpufreq_set_governor(&c, Governor.userspace);
 }
 
 int frequency_is_valid_frequency(ulong freq_khz)
@@ -308,7 +308,7 @@ int frequency_is_valid_frequency(ulong freq_khz)
 	if (!init) {
 		return 0;
 	}
-	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
+	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 0))) {
 		return 0;
 	}
 	return 1;
@@ -331,7 +331,7 @@ uint frequency_closest_pstate(ulong freq_khz)
 	if (freq_khz < available_list[pstate_count-1].khz) {
 		return pstate_nominal;
 	}
-	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 1))) {
+	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 1))) {
 		return pstate_nominal;
 	}
 	return pstate_index;
@@ -343,7 +343,7 @@ ulong frequency_closest_frequency(ulong freq_khz)
 	if (!init) {
 		return 0LU;
 	}
-	if (state_fail(mgt_pstate_get_index(&c, (ullong) freq_khz, &pstate_index, 1))) {
+	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 1))) {
 		return available_list[pstate_count-1].khz;
 	}
 	return available_list[pstate_index].khz;
@@ -373,7 +373,7 @@ void get_governor(governor_t *_governor)
 	if (!init) {
 		return;
 	}
-	if (state_fail(mgt_pstate_get_governor(&c, &governor))) {
+	if (state_fail(mgt_cpufreq_get_governor(&c, &governor))) {
 		return;
 	}
 	if (state_fail(mgt_governor_tostr(governor, _governor->name))) {
@@ -393,7 +393,7 @@ void set_governor(governor_t *_governor)
 	if (state_fail(mgt_governor_toint(_governor->name, &governor))) {
 		return;
 	}
-	if (state_fail(mgt_pstate_set_governor(&c, governor))) {
+	if (state_fail(mgt_cpufreq_set_governor(&c, governor))) {
 		return;
 	}
 }

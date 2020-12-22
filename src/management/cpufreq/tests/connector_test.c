@@ -11,9 +11,9 @@
 #include <common/states.h>
 #include <common/hardware/topology.h>
 #if CONNECTOR
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #else
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #endif
 #include <common/output/debug.h>
 

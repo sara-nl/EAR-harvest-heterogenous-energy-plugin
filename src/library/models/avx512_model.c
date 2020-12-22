@@ -22,7 +22,7 @@
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #include <common/hardware/architecture.h>
 
 #include <library/models/models_api.h>

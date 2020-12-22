@@ -15,33 +15,33 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef MANAGEMENT_FREQUENCY_DRIVERS_CPUFREQ
-#define MANAGEMENT_FREQUENCY_DRIVERS_CPUFREQ
+#ifndef MANAGEMENT_CPUFREQ_DRIVERS_LINUX_CPUFREQ
+#define MANAGEMENT_CPUFREQ_DRIVERS_LINUX_CPUFREQ
 
 #include <management/cpufreq/cpufreq.h>
 
-state_t pstate_cpufreq_status(topology_t *tp);
+state_t cpufreq_linux_status(topology_t *tp);
 
-state_t pstate_cpufreq_init(ctx_t *c);
+state_t cpufreq_linux_init(ctx_t *c);
 
-state_t pstate_cpufreq_dispose(ctx_t *c);
+state_t cpufreq_linux_dispose(ctx_t *c);
 
 /** Getters **/
-state_t pstate_cpufreq_get_available_list(ctx_t *c, const ullong **freq_list, uint *freq_count);
+state_t cpufreq_linux_get_available_list(ctx_t *c, const ullong **freq_list, uint *freq_count);
 
-state_t pstate_cpufreq_get_current_list(ctx_t *c, const ullong **freq_list);
+state_t cpufreq_linux_get_current_list(ctx_t *c, const ullong **freq_list);
 
-state_t pstate_cpufreq_get_boost(ctx_t *c, uint *boost_enabled);
+state_t cpufreq_linux_get_boost(ctx_t *c, uint *boost_enabled);
 
-state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor);
+state_t cpufreq_linux_get_governor(ctx_t *c, uint *governor);
 
 /** Setters **/
-state_t pstate_cpufreq_set_current_list(ctx_t *c, uint *freq_index);
+state_t cpufreq_linux_set_current_list(ctx_t *c, uint *freq_index);
 
 //Sets a frequency in a specified CPU. Use all_cpus to set that P_STATE in all CPUs.
-state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index, int cpu);
+state_t cpufreq_linux_set_current(ctx_t *c, uint freq_index, int cpu);
 
 //You can recover the governor (and its frequency) by setting Governor.last and Governor.init.
-state_t pstate_cpufreq_set_governor(ctx_t *c, uint governor);
+state_t cpufreq_linux_set_governor(ctx_t *c, uint governor);
 
-#endif //MANAGEMENT_FREQUENCY_DRIVERS_CPUFREQ
+#endif //MANAGEMENT_CPUFREQ_DRIVERS_LINUX_CPUFREQ

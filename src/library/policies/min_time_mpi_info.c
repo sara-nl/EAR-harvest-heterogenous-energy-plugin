@@ -25,7 +25,7 @@
 //#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/states.h>
-#include <management/cpufreq/connector.h>
+#include <management/cpufreq/frequency.h>
 #include <common/types/projection.h>
 #include <common/types/risk.h>
 #include <common/hardware/hardware_info.h>

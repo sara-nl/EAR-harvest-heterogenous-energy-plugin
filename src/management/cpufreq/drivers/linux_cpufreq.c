@@ -105,7 +105,7 @@ static state_t write_multi(int *fds, char *word, int line_break)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_cpufreq_status(topology_t *_tp)
+state_t cpufreq_linux_status(topology_t *_tp)
 {
 	char data[SZ_NAME_SHORT];
 	state_t s;
@@ -170,7 +170,7 @@ static state_t static_dispose(ctx_t *c, state_t s, char *msg)
 	return_msg(s, msg);
 }
 
-static void pstate_cpufreq_init_nominal(cpufreq_ctx_t *f)
+static void cpufreq_linux_init_nominal(cpufreq_ctx_t *f)
 {	
 	char data[SZ_NAME_SHORT];
 	int fd;
@@ -192,7 +192,7 @@ static void pstate_cpufreq_init_nominal(cpufreq_ctx_t *f)
 	}
 }
 
-state_t pstate_cpufreq_init(ctx_t *c)
+state_t cpufreq_linux_init(ctx_t *c)
 {
 	char path[SZ_PATH];
 	cpufreq_ctx_t *f;
@@ -266,7 +266,7 @@ state_t pstate_cpufreq_init(ctx_t *c)
 	strncpy(f->govr_last, f->govr_init, SZ_NAME_SHORT);
 	strncpy(f->freq_last, f->freq_init, SZ_NAME_SHORT);
 	// Detecting nominal
-	pstate_cpufreq_init_nominal(f);
+	cpufreq_linux_init_nominal(f);
 	// Finishing 
 	debug ("init sum: %u available frequencies", f->freqs_count);
 	debug ("init sum: first frequency '%s'", f->freq_init);
@@ -277,13 +277,13 @@ state_t pstate_cpufreq_init(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_cpufreq_dispose(ctx_t *c)
+state_t cpufreq_linux_dispose(ctx_t *c)
 {
 	return static_dispose(c, EAR_SUCCESS, "");
 }
 
 /* Getters */
-state_t pstate_cpufreq_get_available_list(ctx_t *c, const ullong **freq_list, uint *freq_count)
+state_t cpufreq_linux_get_available_list(ctx_t *c, const ullong **freq_list, uint *freq_count)
 {
 	cpufreq_ctx_t *f;
 	state_t s;
@@ -295,7 +295,7 @@ state_t pstate_cpufreq_get_available_list(ctx_t *c, const ullong **freq_list, ui
 	return EAR_SUCCESS;
 }
 
-state_t pstate_cpufreq_get_current_list(ctx_t *c, const ullong **freq_list)
+state_t cpufreq_linux_get_current_list(ctx_t *c, const ullong **freq_list)
 {
 	char data[SZ_NAME_SHORT];
 	state_t s2 = EAR_SUCCESS;
@@ -319,7 +319,7 @@ state_t pstate_cpufreq_get_current_list(ctx_t *c, const ullong **freq_list)
 	return s2;
 }
 
-state_t pstate_cpufreq_get_boost(ctx_t *c, uint *boost_enabled)
+state_t cpufreq_linux_get_boost(ctx_t *c, uint *boost_enabled)
 {
 	cpufreq_ctx_t *f;
 	state_t s;
@@ -332,7 +332,7 @@ state_t pstate_cpufreq_get_boost(ctx_t *c, uint *boost_enabled)
 	return EAR_SUCCESS;
 }
 
-state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor)
+state_t cpufreq_linux_get_governor(ctx_t *c, uint *governor)
 {
 	char data[SZ_NAME_SHORT];
 	state_t s = EAR_SUCCESS;
@@ -349,7 +349,7 @@ state_t pstate_cpufreq_get_governor(ctx_t *c, uint *governor)
 }
 
 /** Setters */
-state_t pstate_cpufreq_set_current_list(ctx_t *c, uint *freqs_index)
+state_t cpufreq_linux_set_current_list(ctx_t *c, uint *freqs_index)
 {
 	char data[SZ_NAME_SHORT];
 	state_t s2 = EAR_SUCCESS;
@@ -378,7 +378,7 @@ state_t pstate_cpufreq_set_current_list(ctx_t *c, uint *freqs_index)
 	return s2;
 }
 
-state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index, int cpu)
+state_t cpufreq_linux_set_current(ctx_t *c, uint freq_index, int cpu)
 {
 	char data[SZ_NAME_SHORT];
 	cpufreq_ctx_t *f;
@@ -408,7 +408,7 @@ state_t pstate_cpufreq_set_current(ctx_t *c, uint freq_index, int cpu)
 	return_msg(EAR_ERROR, Generr.cpu_invalid);
 }
 
-state_t pstate_cpufreq_set_governor(ctx_t *c, uint governor)
+state_t cpufreq_linux_set_governor(ctx_t *c, uint governor)
 {
 	cpufreq_ctx_t *f;
 	char govr_aux[SZ_NAME_SHORT];
@@ -420,7 +420,7 @@ state_t pstate_cpufreq_set_governor(ctx_t *c, uint governor)
 	if (xtate_fail(s, static_init_test(c, &f))) {
 		return s;
 	}
-	if (xtate_fail(s, pstate_cpufreq_get_governor(c, &current))) {
+	if (xtate_fail(s, cpufreq_linux_get_governor(c, &current))) {
 		return s;
 	}
 	if (governor == current) {

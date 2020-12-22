@@ -11,7 +11,7 @@ user_OBJS = \
     cpufreq_user.o
 root_OBJS = \
     cpufreq.o \
-    connector.o \
+    frequency.o \
 	governor.o
 ifeq ($(RECOVERY), 1)
 root_OBJS += \
@@ -26,7 +26,7 @@ all: all.components $(root_OBJS)
 	$(CC) $(CFLAGS) -c $<
 
 replace: $(root_OBJS)
-	mv recovery/frequency.o connector.o
+	mv recovery/frequency.o frequency.o
 	mv recovery/cpupower.o cpufreq.o
 
 ######## SUBFOLDERS

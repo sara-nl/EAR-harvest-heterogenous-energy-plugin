@@ -12,7 +12,7 @@ endif
 
 arch_OBJS = \
     amd17.o \
-    dummy.o
+    default.o
 
 ######## RULES
 
