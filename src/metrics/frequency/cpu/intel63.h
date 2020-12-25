@@ -32,9 +32,9 @@ state_t cpufreq_intel63_read_diff(cpufreq_t *f2, cpufreq_t *f1, ulong *freqs, ul
 
 state_t cpufreq_intel63_read_copy(cpufreq_t *f2, cpufreq_t *f1, ulong *freqs, ulong *average);
 
-state_t cpufreq_intel63_data_alloc(cpufreq_t *f, ulong *freqs[], ulong *freqs_count);
+state_t cpufreq_intel63_data_alloc(cpufreq_t *f, ulong *freqs[]);
 
-state_t cpufreq_intel63_data_count(uint *count);
+state_t cpufreq_intel63_data_count(uint *cpufreq_size, uint *freqs_count);
 
 state_t cpufreq_intel63_data_copy(cpufreq_t *f_dst, cpufreq_t *f_src);
 

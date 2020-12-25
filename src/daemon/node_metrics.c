@@ -71,7 +71,9 @@ int init_node_metrics(nm_t *id, topology_t *topo, ulong def_freq)
 	state_assert(s, temp_init(&temp_ctx),);
 
 	// CPU/IMC Frequency	
-	state_assert(s, cpufreq_init(topo),);
+	state_assert(s, cpufreq_load(topo),);
+	state_assert(s, cpufreq_init()    ,);
+
 	state_assert(s, freq_imc_init(topo),);
 
 	//
@@ -92,7 +94,7 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
 	state_assert(s, temp_data_alloc(&nm->temp),);
 	
 	// CPU/IMC Frequency
-	state_assert(s, cpufreq_data_alloc(&nm->freq_cpu, NULL, NULL),);
+	state_assert(s, cpufreq_data_alloc(&nm->freq_cpu, NULL),);
 	state_assert(s, freq_imc_data_alloc(&nm->freq_imc, NULL, NULL),);
 	nm->avg_cpu_freq=0;
 	nm->avg_imc_freq=0;

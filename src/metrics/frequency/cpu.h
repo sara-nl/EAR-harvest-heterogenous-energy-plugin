@@ -20,13 +20,14 @@
 
 #include <common/types.h>
 #include <common/states.h>
+#include <common/plugins.h>
 #include <common/hardware/topology.h>
 
 typedef ctx_t cpufreq_t;
 
-state_t cpufreq_init(topology_t *tp);
+state_t cpufreq_load(topology_t *tp);
 
-state_t cpufreq_load();
+state_t cpufreq_init();
 
 state_t cpufreq_dispose();
 
@@ -39,9 +40,9 @@ state_t cpufreq_read_diff(cpufreq_t *ef2, cpufreq_t *ef1, ulong *freqs, ulong *a
 // Privileged function.
 state_t cpufreq_read_copy(cpufreq_t *ef2, cpufreq_t *ef1, ulong *freqs, ulong *average);
 
-state_t cpufreq_data_alloc(cpufreq_t *ef, ulong **freqs, ulong *freqs_count);
+state_t cpufreq_data_alloc(cpufreq_t *ef, ulong *freqs[]);
 
-state_t cpufreq_data_count(uint *count);
+state_t cpufreq_data_count(uint *cpufreq_size, uint *freqs_count);
 
 state_t cpufreq_data_copy(cpufreq_t *ef_dst, cpufreq_t *ef_src);
 

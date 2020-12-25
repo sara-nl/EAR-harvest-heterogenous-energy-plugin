@@ -1469,13 +1469,14 @@ int main(int argc, char *argv[]) {
 	verbose(VCONF, "Default max frequency defined to %lu", eard_max_freq);
 
 	// CPU Frequency
-	state_assert(s, cpufreq_init(&node_desc), _exit(0));
-	state_assert(s, cpufreq_data_alloc(&freq_global2, NULL, NULL), _exit(0));
-	state_assert(s, cpufreq_data_alloc(&freq_global1, NULL, NULL), _exit(0));
-	state_assert(s, cpufreq_data_alloc(&freq_local2, NULL, NULL), _exit(0));
-	state_assert(s, cpufreq_data_alloc(&freq_local1, NULL, NULL), _exit(0));
-	state_assert(s, cpufreq_data_alloc(&freq_job2, NULL, NULL), _exit(0));
-	state_assert(s, cpufreq_data_alloc(&freq_job1, NULL, NULL), _exit(0));
+	state_assert(s, cpufreq_load(&node_desc), _exit(0));
+	state_assert(s, cpufreq_init(),           _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_global2, NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_global1, NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_local2,  NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_local1,  NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_job2,    NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_job1,    NULL), _exit(0));
 
 #if EARD_LOCK
 	eard_lock(ear_tmp);

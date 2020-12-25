@@ -15,7 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#include <common/plugins.h>
 #include <metrics/frequency/cpu.h>
 #include <metrics/frequency/cpu/intel63.h>
 
@@ -26,8 +25,8 @@ static struct cpu_freq_ops
 	state_t (*read)       (cpufreq_t *ef);
 	state_t (*read_diff)  (cpufreq_t *ef2, cpufreq_t *ef1, ulong *freqs, ulong *average);
 	state_t (*read_copy)  (cpufreq_t *ef2, cpufreq_t *ef1, ulong *freqs, ulong *average);
-	state_t (*data_alloc) (cpufreq_t *ef, ulong *freqs[], ulong *freqs_count);
-	state_t (*data_count) (uint *count);
+	state_t (*data_alloc) (cpufreq_t *ef, ulong *freqs[]);
+	state_t (*data_count) (uint *cpufreq_size, uint *freqs_count);
 	state_t (*data_copy)  (cpufreq_t *ef_dst, cpufreq_t *ef_src);
 	state_t (*data_free)  (cpufreq_t *ef, ulong *freqs[]);
 	state_t (*data_diff)  (cpufreq_t *ef2, cpufreq_t *ef1, ulong *freqs, ulong *average);
@@ -50,7 +49,7 @@ state_t cpufreq_load(topology_t *tp)
 		ops.data_diff   = cpufreq_intel63_data_diff;
 		ops.data_print  = cpufreq_intel63_data_print;
 	} else {
-		return_msg(EAR_INCOMPATIBLE, Generr.api_incompatible);
+		return_msg(EAR_ERROR, Generr.api_incompatible);
 	}
 	return EAR_SUCCESS;
 }
@@ -80,14 +79,14 @@ state_t cpufreq_read_copy(cpufreq_t *ef2, cpufreq_t *ef1, ulong *freqs, ulong *a
 	preturn(ops.read_copy, ef2, ef1, freqs, average);
 }
 
-state_t cpufreq_data_alloc(cpufreq_t *ef, ulong **freqs, ulong *freqs_count)
+state_t cpufreq_data_alloc(cpufreq_t *ef, ulong **freqs)
 {
-	preturn(ops.data_alloc, ef, freqs, freqs_count);
+	preturn(ops.data_alloc, ef, freqs);
 }
 
-state_t cpufreq_data_count(uint *count)
+state_t cpufreq_data_count(uint *cpufreq_size, uint *freqs_count)
 {
-	preturn(ops.data_count, count);
+	preturn(ops.data_count, cpufreq_size, freqs_count);
 }
 
 state_t cpufreq_data_copy(cpufreq_t *ef_dst, cpufreq_t *ef_src)

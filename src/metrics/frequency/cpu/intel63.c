@@ -41,10 +41,13 @@ typedef struct aperf_intel63_s
 
 state_t cpufreq_intel63_status(topology_t *t)
 {
-	if (!(t->vendor == VENDOR_AMD && t->family >= FAMILY_ZEN)) {
-		return EAR_ERROR;
-	}
-	if (!(t->vendor == VENDOR_INTEL && t->model >= MODEL_HASWELL_X)) {
+	int compat1;
+	int compat2;
+	state_t s;
+
+	compat1 = (t->vendor == VENDOR_AMD   && t->family >= FAMILY_ZEN);
+	compat2 = (t->vendor == VENDOR_INTEL && t->model  >= MODEL_HASWELL_X);
+	if (!compat1 && !compat2) {
 		return EAR_ERROR;
 	}
 	// Thread control required in this small section
@@ -66,7 +69,6 @@ static state_t static_init_test()
 
 static state_t static_dispose(uint close_msr_up_to, state_t s, char *msg)
 {
-	state_t s;
 	int cpu;
 	for (cpu = 0; cpu < close_msr_up_to; ++cpu) {
 		msr_close(tp.cpus[cpu].id);
@@ -79,12 +81,12 @@ state_t cpufreq_intel63_init()
 {
 	state_t s;
 	int cpu;
-	//
+	// This is a patch to allow multiple inits without control, but it has to be fixed.
 	if (xtate_ok(s, static_init_test())) {
-		return_msg(EAR_ERROR, Generr.api_initialized);
+		return EAR_SUCCESS;
 	}
 	// Opening MSRs.
-	for (cpu = 0; cpu < cpu_count && !user_mode; ++cpu) {
+	for (cpu = 0; cpu < tp.cpu_count && !user_mode; ++cpu) {
 		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
 			// If fails, enters in user mode.
 			if (state_is(s, EAR_NO_PERMISSIONS)) {
@@ -117,7 +119,7 @@ state_t cpufreq_intel63_read(cpufreq_t *f)
 		return s1;
 	}
 	if (user_mode) {
-		return_unlock_msg(EAR_NO_PERMISSIONS, Generr.no_permissions);
+		return_msg(EAR_NO_PERMISSIONS, Generr.no_permissions);
 	}
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu)
 	{
@@ -147,39 +149,45 @@ state_t cpufreq_intel63_read_copy(cpufreq_t *f2, cpufreq_t *f1, ulong *freqs, ul
 	return cpufreq_intel63_data_copy(f1, f2);
 }
 
-state_t cpufreq_intel63_data_alloc(cpufreq_t *f, ulong *freqs[], ulong *freqs_count)
+state_t cpufreq_intel63_data_alloc(cpufreq_t *f, ulong *freqs[])
 {
+	uint cpufreq_size;
+	uint freqs_count;
 	state_t s;
 	//
 	if (xtate_fail(s, static_init_test())) {
 		return s;
-	}
-	if (freqs_count != NULL) {
-		*freqs_count = 0;
+	}	
+	if (xtate_fail(s, cpufreq_intel63_data_count(&cpufreq_size, &freqs_count))) {
+		return s;
 	}
 	// Allocating space for cpufreq_t
-	if (posix_memalign((void **) &f->context, 64, sizeof(aperf_intel63_t) * tp.cpu_count) != 0) {
+	if (posix_memalign((void **) &f->context, 64, cpufreq_size) != 0) {
 		return_msg(EAR_ERROR, Generr.alloc_error);
 	}
+	f->size = cpufreq_size;
 	// Allocating space for freqs[]
 	if (freqs != NULL) {
-		if (posix_memalign((void **) freqs, 64, sizeof(ulong) * tp.cpu_count) != 0) {
+		if (posix_memalign((void **) freqs, 64, sizeof(ulong) * freqs_count) != 0) {
 			return_msg(EAR_ERROR, Generr.alloc_error);
-		}
-		if (freqs_count != NULL) {
-			*freqs_count = tp.cpu_count;
 		}
 	}
 
 	return EAR_SUCCESS;
 }
 
-state_t cpufreq_intel63_data_count(uint *count)
+state_t cpufreq_intel63_data_count(uint *cpufreq_size, uint *freqs_count)
 {
+	state_t s;
 	if (xtate_fail(s, static_init_test())) {
 		return s;
 	}
-	*count = sizeof(aperf_intel63_t) * tp.cpu_count;
+	if (cpufreq_size != NULL) {
+		*cpufreq_size = sizeof(aperf_intel63_t) * tp.cpu_count;
+	}
+	if (freqs_count != NULL) {
+		*freqs_count = tp.cpu_count;
+	}
 	return EAR_SUCCESS;
 }
 
@@ -223,6 +231,7 @@ state_t cpufreq_intel63_data_diff(cpufreq_t *f2, cpufreq_t *f1, ulong *freqs, ul
 	aperf_intel63_t *d1;
 	ulong valid_count = 0;
 	ulong freq_aux;
+	state_t s;
 	int cpu;
 
 	if (xtate_fail(s, static_init_test())) {
