@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <common/types.h>
 #include <common/states.h>
+#include <common/hardware/topology.h>
 
 #define msr_clean(fd) \
 	*fd = -1

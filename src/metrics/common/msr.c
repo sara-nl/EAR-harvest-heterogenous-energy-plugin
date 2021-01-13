@@ -24,7 +24,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <common/sizes.h>
-#include <common/states.h>
 #include <common/output/verbose.h>
 #include <metrics/common/msr.h>
 
@@ -187,7 +186,7 @@ state_t msr_print(topology_t *tp, off_t offset)
 	ulong value_c;
 	ulong value_t;
 	state_t s_c;
-	state_t t_c;
+	state_t s_t;
 	int id_c;
 	int id_t;
 	int i;
@@ -208,7 +207,7 @@ state_t msr_print(topology_t *tp, off_t offset)
 		if (state_ok(s_c)) msr_read(id_c, &value_c, sizeof(ulong), offset);
 		if (state_ok(s_t)) msr_read(id_t, &value_t, sizeof(ulong), offset);
 		// Printing
-		verbose(0, "%d/%d: %lu\t\t\t%lu", id_c, id_t, value_c, value_t);
+		verbose(0, "%d/%d: %lu %lu", id_c, id_t, value_c, value_t);
 		// Closing
 		if (state_ok(s_c)) msr_close(id_c);
 		if (state_ok(s_t)) msr_close(id_t);
