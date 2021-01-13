@@ -48,4 +48,9 @@ state_t freq_imc_data_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong
 
 state_t freq_imc_data_print(ulong *freqs, ulong *average);
 
+// Switch to management
+state_t mgt_imcfreq_set_current(ctx_t *c, ulong max_khz, ulong min_khz);
+
+state_t mgt_imcfreq_set_current(ctx_t *c, ulong *max_khz, ulong *min_khz);
+
 #endif //METRICS_FREQUENCY_IMC_H

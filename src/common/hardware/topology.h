@@ -73,9 +73,9 @@ struct tp_group_s
 typedef struct core_s
 {
 	int id;
-	int is_thread;
+	int is_thread;      // If is the second thread in a core.
 	int l3_id;
-	int sibling_id;
+	int sibling_id;     // The thread sibling within a core.
 	int socket_id;
 	ulong freq_base;
 } core_t;

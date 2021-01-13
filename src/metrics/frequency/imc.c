@@ -121,3 +121,61 @@ state_t freq_imc_data_print(ulong *freqs, ulong *average)
 {
 	opreturn(ops.data_print, freqs, average);
 }
+
+/*
+ *
+ *
+ *
+ */
+
+#define U_MSR_UNCORE_RATIO_LIMIT	0x000620
+#define U_MSR_UNCORE_RL_MASK_MAX	0x00007F
+#define U_MSR_UNCORE_RL_MASK_MIN	0x007F00
+
+state_t mgt_imcfreq_set_current(ctx_t *c, ulong max_khz, ulong min_khz)
+{
+	off_t address = U_MSR_UNCORE_RATIO_LIMIT;
+	uint64_t set0 = 0;
+	uint64_t set1 = 0;
+	state_t r;
+	int i;
+
+	max_khz = max_khz / 100000LU;
+	min_khz = min_khz / 100000LU;
+
+	for (i = 0; i < 1; ++i)
+	{
+		set0 = (min_khz << 8) & U_MSR_UNCORE_RL_MASK_MIN;
+		set1 = (max_khz << 0) & U_MSR_UNCORE_RL_MASK_MAX;
+		set0 = set0 | set1;
+
+		if ((r = msr_write(0, &set0, sizeof(uint64_t), address)) != EAR_SUCCESS) {
+			return r;
+		}
+	}
+
+	return EAR_SUCCESS;
+}
+
+state_t mgt_imcfreq_set_current(ctx_t *c, ulong *max_khz, ulong *min_khz)
+{
+	off_t address = U_MSR_UNCORE_RATIO_LIMIT;
+	uint64_t result = 0;
+	state_t r;
+	int i;
+
+	for (i = 0; i < 1; ++i)
+	{
+		// Read
+		if ((r = msr_read(0, &result, sizeof(uint64_t), address)) != EAR_SUCCESS) {
+			return r;
+		}
+
+		*max_mhz = (result & U_MSR_UNCORE_RL_MASK_MAX) >> 0;
+		*min_mhz = (result & U_MSR_UNCORE_RL_MASK_MIN) >> 8;
+		*max_khz = max_khz * 100000LU;
+		*min_mhz = min_mhz * 100000LU;
+	}
+
+	return EAR_SUCCESS;
+}
