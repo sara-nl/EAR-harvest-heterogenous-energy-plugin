@@ -30,6 +30,10 @@ static mpif_t next_mpif;
 mpic_t ear_mpic;
 mpif_t ear_mpif;
 
+void (*func_con) (void);
+void (*func_des) (void);
+
+
 static int module_file_exists(char *path)
 {
 	return (access(path, X_OK) == 0);
@@ -126,7 +130,7 @@ static void module_mpi_dlsym_next()
 }
 #endif
 
-static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
+static int module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 {
 	void **next_mpic_v = (void **) &next_mpic;
 	void **next_mpif_v = (void **) &next_mpif;
@@ -140,28 +144,40 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 
 	symplug_join(RTLD_NEXT, (void **) &next_mpic, mpic_names, MPIC_N);
 	symplug_join(RTLD_NEXT, (void **) &next_mpif, mpif_names, MPIF_N);
-	verbose(3, "LOADER: dlsym for C init returned %p", next_mpic.Init);
-	verbose(3, "LOADER: dlsym for F init returned %p", next_mpif.init);
+	verbose(3, "LOADER: MPI (C) next symbols loaded, Init address is %p", next_mpic.Init);
+	verbose(3, "LOADER: MPI (F) next symbols loaded, Init address is %p", next_mpif.init);
 
 	//
 	libear = dlopen(path_so, RTLD_NOW | RTLD_GLOBAL);
 	if (libear == NULL){
-		error("LOADER: dlopen error %s",dlerror());
+		error("LOADER: dlopen error %s", dlerror());
 	}else{
 		verbose(3, "LOADER: dlopen returned %p", libear);
 	}
+	
+	void (*ear_mpic_setnext) (mpic_t *) = NULL;
+	void (*ear_mpif_setnext) (mpif_t *) = NULL;
 
 	if (libear != NULL)
 	{
-		if (lang_c) {
-			symplug_join(libear, (void **) &ear_mpic, ear_mpic_names, MPIC_N);
+		ear_mpic_setnext = dlsym(libear, "ear_mpic_setnext");
+		ear_mpif_setnext = dlsym(libear, "ear_mpif_setnext");
+
+		if (ear_mpic_setnext == NULL && lang_c) {
+			lang_c = 0;
 		}
-		if (lang_f) {
-			symplug_join(libear, (void **) &ear_mpif, ear_mpif_names, MPIF_N);
+		if (ear_mpif_setnext == NULL && lang_f) {
+			lang_f = 0;
 		}
-	} else {
-		verbose(0, "LOADER: dlopen failed %s", dlerror())
+		if (!lang_c && !lang_f) {
+			verbose(1, "LOADER: the loaded library does not have MPI symbols");
+			dlclose(libear);
+			libear = NULL;
+		}
 	}
+
+	if (libear != NULL && lang_c) symplug_join(libear, (void **) &ear_mpic, ear_mpic_names, MPIC_N);
+	if (libear != NULL && lang_f) symplug_join(libear, (void **) &ear_mpif, ear_mpif_names, MPIF_N);
 
 	//
 	for(i = 0; i < MPIC_N; ++i)
@@ -178,13 +194,21 @@ static void module_mpi_dlsym(char *path_so, int lang_c, int lang_f)
 	}
 	
 	// Setting MPI next symbols
-	if (libear != NULL)
-	{
-		void (*ear_mpic_setnext) (mpic_t *) = dlsym(libear, "ear_mpic_setnext");
-		void (*ear_mpif_setnext) (mpif_t *) = dlsym(libear, "ear_mpif_setnext");
-		if (ear_mpic_setnext != NULL) ear_mpic_setnext(&next_mpic);
-		if (ear_mpif_setnext != NULL) ear_mpif_setnext(&next_mpif);
+	if (!lang_c && !lang_f) {
+		return 0;
 	}
+	
+	if (ear_mpic_setnext != NULL) ear_mpic_setnext(&next_mpic);
+	if (ear_mpif_setnext != NULL) ear_mpif_setnext(&next_mpif);
+
+  func_con = dlsym(libear, "ear_constructor");
+  func_des = dlsym(libear, "ear_destructor");
+
+  verbose(3, "LOADER: function constructor %p", func_con);
+  verbose(3, "LOADER: function destructor %p", func_des);
+
+	
+	return 1;
 }
 
 static int module_mpi_is()
@@ -208,7 +232,26 @@ int module_mpi()
 	//
 	module_mpi_get_libear(path_so, &lang_c, &lang_f);
 	//
-	module_mpi_dlsym(path_so, lang_c, lang_f);
-	// Returning 1 because is MPI (avoiding if loading went well).
+	if (!module_mpi_dlsym(path_so, lang_c, lang_f)){
+		return 0;
+	}
+	if (atexit(module_mpi_destructor) != 0) {
+    verbose(0, "LOADER: cannot set exit function");
+  }
+  if (func_con != NULL) {
+    func_con();
+  }
+
 	return 1;
+	
 }
+
+void module_mpi_destructor()
+{
+  verbose(3, "LOADER: loading module default (destructor)");
+
+  if (func_des != NULL) {
+    func_des();
+  }
+}
+

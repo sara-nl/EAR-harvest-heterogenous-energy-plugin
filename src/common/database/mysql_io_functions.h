@@ -41,11 +41,7 @@
 #define LOOP_ARGS                   8
 #define JOB_ARGS                    16
 
-#if DEMO
-#define PERIODIC_METRIC_ARGS        7
-#else
-#define PERIODIC_METRIC_ARGS        6
-#endif
+#define PERIODIC_METRIC_ARGS        10
 
 #if USE_GPUS
 #define GPU_SIGNATURE_ARGS          5

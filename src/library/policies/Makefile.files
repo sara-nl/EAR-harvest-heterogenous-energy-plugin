@@ -1,0 +1,37 @@
+poli_OBJS = \
+    policy.o \
+    pc_suport.o
+
+poli_BINS = \
+    min_time.so  \
+    min_energy.so \
+    min_time_no_models.so \
+    min_energy_no_models.so \
+    monitoring.so 
+
+ifeq ($(FEAT_MPI_API), 1)
+poli_BINS += \
+    app_min_time.so \
+    app_monitoring.so \
+    app_min_energy.so \
+		load_balance.so
+endif
+
+ifdef CUDA_BASE
+poli_BINS += \
+    gpu_monitoring.so \
+    gpu_min_time.so \
+    gpu_min_energy.so
+endif
+
+eard_BINS = \
+    min_time_eard.so \
+    min_energy_eard.so \
+    monitoring_eard.so 
+
+ifeq ($(FEAT_MPI_API), 1)
+eard_BINS += \
+    load_balance_eard.so
+endif
+
+

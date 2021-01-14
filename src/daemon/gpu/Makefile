@@ -15,6 +15,7 @@ all:$(gpu_mgt_OBJS)
 ######## OPTIONS
 
 install: ;
+%.install: ;
 
 clean: rclean;
 

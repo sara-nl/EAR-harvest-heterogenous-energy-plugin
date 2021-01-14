@@ -19,6 +19,18 @@
 #include <common/includes.h>
 #include <common/system/symplug.h>
 
+state_t symplug_test(void *calls[], uint n)
+{
+	uint i;
+	for (i = 0; i < n; ++i)
+	{
+		if (calls[i] == NULL) {
+			return EAR_ERROR;
+		}
+	}
+	return EAR_SUCCESS;
+}
+
 state_t symplug_join(void *handle, void *calls[], const char *names[], uint n)
 {
 	char *error;
@@ -44,7 +56,7 @@ static state_t _symplug_open(char *path, void *calls[], const char *names[], uin
 {
 	void *handle = dlopen(path, flags);
 	if (handle == NULL) {
-		debug("%s",dlerror());
+		verbose(0,"%s",dlerror());
 		state_return_msg(EAR_ERROR, 0, dlerror());
 	}
 	return symplug_join(handle, calls, names, n);

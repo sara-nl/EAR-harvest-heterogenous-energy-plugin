@@ -869,7 +869,7 @@ void print_all(MYSQL *connection, int start_time, int end_time, char *inc_query,
             }
 #endif
           
-            if (row[0] && all_nodes) { //when getting energy we compute the avg_power
+            if (row[0] && all_nodes && (atoll(row[2]) != atoll(row[1]))) { //when getting energy we compute the avg_power
                 printf("%15lld", (atoll(row[0]) /(atoll(row[2]) - atoll(row[1]))));
 #if USE_GPUS
                 printf("%15lld", (atoll(row[3]) /(atoll(row[2]) - atoll(row[1]))));
@@ -1127,7 +1127,7 @@ int main(int argc,char *argv[])
         }
     }
 
-
+    if (start_time == 0) start_time = end_time - MAX(my_conf.eard.period_powermon, my_conf.db_manager.insr_time)*4;
     if (!all_users && !all_nodes && !all_tags && !all_eardbds && !global_energy && !report_events)
     {
         long long result = get_sum(connection, start_time, end_time, divisor);
@@ -1164,7 +1164,6 @@ int main(int argc,char *argv[])
         exit(0);
     }
 
-    if (start_time == 0) start_time = end_time - MAX(my_conf.eard.period_powermon, my_conf.db_manager.insr_time)*4;
     if (all_users)
         print_all(connection, start_time, end_time, ALL_USERS, ALL_PER_METRIC_TYPE);
     else if (all_tags)

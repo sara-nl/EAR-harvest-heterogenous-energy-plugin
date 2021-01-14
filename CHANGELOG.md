@@ -1,3 +1,8 @@
+- Added new cache metrics using PERF API, compatible with Intel and AMD
+- Updated topology to include number of GPR counters information, online CPUs (stepping still missing) and cache lines.
+- Added full AMD compatibility (FLOPs, bandwidth and CPI) and dummies when not compatible
+
+
 ### EAR3.4
 - TAGS support included in policies
 - Request dynamic in eard_rapi

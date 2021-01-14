@@ -28,6 +28,7 @@ clean: local_api.gclean rclean;
 ######## DEPENDENCIES
 
 install:
+%.install: ;
 
 depend: depend.others
 

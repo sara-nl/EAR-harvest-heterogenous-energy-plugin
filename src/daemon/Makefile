@@ -13,7 +13,6 @@ local_api_OBJS = \
 	local_api/eard_api.o
 
 remote_api_OBJS= \
-  remote_api/eard_rapi_internals.o \
   remote_api/eard_server_api.o \
   remote_api/dyn_conf_theading.o \
   remote_api/dynamic_configuration.o 

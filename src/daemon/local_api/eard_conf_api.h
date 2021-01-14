@@ -32,6 +32,11 @@ typedef struct gpu_freq_req{
 	uint  num_dev;
 	ulong gpu_freqs[MAX_GPUS_SUPPORTED];
 }gpu_freq_req_t;
+typedef struct cpu_freq_req{
+  uint  num_cpus;
+  ulong cpu_freqs[MAX_CPUS_SUPPORTED];
+}cpu_freq_req_t;
+
 
 typedef struct new_freq_type{
 	unsigned long f;
@@ -45,6 +50,7 @@ union daemon_req_opt {
 	ear_event_t event;
 	new_freq_type_t f_mask;
 	gpu_freq_req_t  gpu_freq;
+	cpu_freq_req_t  cpu_freq;
 };
 
 struct daemon_req {
@@ -72,6 +78,9 @@ struct daemon_req {
 #define START_APP_COMP_FREQ 	6
 #define END_APP_COMP_FREQ 		7
 #define SET_FREQ_WITH_MASK 8
+#define SET_NODE_FREQ_WITH_LIST 9
+#define GET_CPUFREQ				10
+#define GET_CPUFREQ_LIST	11
 
 #define END_COMM 				1000
 

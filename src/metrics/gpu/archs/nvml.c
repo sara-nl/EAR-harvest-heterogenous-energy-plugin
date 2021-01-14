@@ -411,8 +411,6 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 	ullong time_i;
 	double time_f;
 
-	// Cleaning
-	nvml_data_null(d3);
 	#if 0
 	debug("%d freq gpu (MHz), %lu = %lu - %lu", i, d3->freq_gpu_mhz, d2->freq_gpu_mhz, d1->freq_gpu_mhz);
 	debug("%d freq mem (MHz), %lu = %lu - %lu", i, d3->freq_mem_mhz, d2->freq_mem_mhz, d1->freq_mem_mhz);
@@ -454,12 +452,16 @@ static void nvml_read_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff, int i)
 
 state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff)
 {
+	state_t s;
 	int i;
 	if (!ok_unprivileged) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (data2 == NULL || data1 == NULL || data_diff == NULL) {
 		return_msg(EAR_ERROR, Error.null_data);
+	}
+	if (xtate_fail(s, nvml_data_null(data_diff))) {
+		return s;
 	}
 	for (i = 0; i < dev_count; i++) {
 		nvml_read_diff(data2, data1, data_diff, i);

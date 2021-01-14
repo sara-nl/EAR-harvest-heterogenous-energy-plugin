@@ -1,82 +1,67 @@
-PCFLAGS =  $(CFLAGS) $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
+PCFLAGS = $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS)
 
 ######## FILES
 
-poli_OBJS = \
-    policy.o \
-		pc_suport.o
+include ./Makefile.files
 
+poli_DEPS = \
+    $(SRCDIR)/common/libcommon.a \
+    $(SRCDIR)/daemon/powercap/powercap_status.o
+poli_PATH = $(DESTDIR)/lib/plugins/policies
+poli_PERM = 0775
 
-modl_BINS = \
-       min_time.so  \
-       min_energy.so \
-       min_time_no_models.so \
-       min_energy_no_models.so \
-       monitoring.so 
+pmpi_DEPS = $(SRCDIR)/common/system/time.o
 
-ifdef MPI_API
-modl_BINS += \
-			 min_time_mpi_info.so \
-			 monitoring_ext.so \
-			 monitoring_ext_notime.so 
-endif
-ifdef CUDA_BASE
-modl_BINS += \
-			gpu_monitoring.so \
-			gpu_min_time.so \
-			gpu_min_energy.so 
-endif
-
-modl_PATH = $(DESTDIR)/lib/plugins/policies
-modl_PERM = 0775
-
-eard_modl_BINS = \
-			min_time_eard.so \
-			min_energy_eard.so \
-			monitoring_eard.so 
-
-eard_modl_PATH = $(DESTDIR)/lib/plugins/eard_policies
-eard_modl_PERM = 0775
-
-deps= $(SRCDIR)/common/libcommon.a $(SRCDIR)/daemon/powercap/powercap_status.o
+eard_DEPS = $(SRCDIR)/common/libcommon.a
+eard_PATH = $(DESTDIR)/lib/plugins/eard_policies
+eard_PERM = $(poli_PERM)
 
 ########
 
-all: $(poli_OBJS) $(modl_BINS) $(eard_modl_BINS)
-
-min_time_eard_eard.o: min_time_eard.c
-	$(CC) $(CC_FLAGS)  $(PCFLAGS) -c $<
-
-min_energy_eard.o:min_energy_eard.c
-	$(CC) $(CC_FLAGS)  $(PCFLAGS) -c $<
-monitoring_eard.o:monitoring_eard.c
-	$(CC) $(CC_FLAGS)  $(PCFLAGS) -c $<
-
+all: $(poli_OBJS) $(poli_BINS) $(eard_BINS)
+ 
 %.o: %.c 
 	$(CC) $(PCFLAGS) -c $<
 
-%.so: %.o $(deps)
-	$(CC) -shared -o $@ $< 
+min_time_eard_eard.o: min_time_eard.c
+	$(CC) $(PCFLAGS) -c $<
 
-min_energy_eard.so:min_energy_eard.o $(SRCDIR)/common/libcommon.a
-	$(CC) $(CC_FLAGS) $(PCFLAGS) -shared $< -o $@   $(SRCDIR)/common/libcommon.a
-min_time_eard.so:min_time_eard.o $(SRCDIR)/common/libcommon.a
-	$(CC) $(CC_FLAGS) $(PCFLAGS) -shared $< -o $@   $(SRCDIR)/common/libcommon.a
-monitoring_eard.so:monitoring_eard.o $(SRCDIR)/common/libcommon.a
-	$(CC) $(CC_FLAGS) $(PCFLAGS) -shared $< -o $@   $(SRCDIR)/common/libcommon.a
+min_energy_eard.o: min_energy_eard.c
+	$(CC) $(PCFLAGS) -c $<
 
+load_balance_eard.o: load_balance_eard.c
+	$(CC) $(PCFLAGS) -c $<
 
-min_time_mpi_info.so: min_time_mpi_info.o $(SRCDIR)/common/system/time.o
-	$(CC) $(CC_FLAGS) $(PCFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
+monitoring_eard.o: monitoring_eard.c
+	$(CC) $(PCFLAGS) -c $<
 
-monitoring_ext.so:monitoring_ext.o $(SRCDIR)/common/system/time.o	
-	$(CC) $(CC_FLAGS) $(PCFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
-monitoring_ext_notime.so:monitoring_ext_notime.o $(SRCDIR)/common/system/time.o	
-	$(CC) $(CC_FLAGS) $(PCFLAGS) -shared $< -o $@ $(SRCDIR)/common/system/time.o
+%.so: %.o $(poli_DEPS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^ 
+
+min_energy_eard.so: min_energy_eard.o $(eard_DEPS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^
+
+load_balance_eard.so: load_balance_eard.o $(eard_DEPS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^
+
+min_time_eard.so: min_time_eard.o $(eard_DEPS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^
+
+monitoring_eard.so: monitoring_eard.o $(eard_DEPS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^
+
+min_time_mpi_info.so: min_time_mpi_info.o $(pmpi_DEPS)
+	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
+
+monitoring_ext.so: monitoring_ext.o $(pmpi_DEPS)
+	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
+
+monitoring_ext_notime.so: monitoring_ext_notime.o $(pmpi_DEPS)
+	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
 
 ######## OPTIONS 
 
-install: modl.ginstall eard_modl.ginstall;
+install: poli.ginstall eard.ginstall;
 
 clean: rclean;
 

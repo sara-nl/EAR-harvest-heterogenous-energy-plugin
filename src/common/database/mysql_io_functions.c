@@ -121,7 +121,18 @@
 //Learning_phase insert queries
 #define LEARNING_APPLICATION_MYSQL_QUERY  "INSERT INTO Learning_applications (job_id, step_id, node_id, "\
                                     "signature_id, power_signature_id) VALUES (?, ?, ?, ?, ?)"
+#if USE_GPUS
+#define LEARNING_SIGNATURE_QUERY_FULL    "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
+                                "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
+                                "instructions, cycles, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "\
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
+#define LEARNING_SIGNATURE_QUERY_SIMPLE  "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power,  EDP,"\
+                                "GBS, TPI, CPI, Gflops, time, avg_f, def_f, min_GPU_sig_id, max_GPU_sig_id) VALUES "\
+                                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+
+#else
 #define LEARNING_SIGNATURE_QUERY_FULL   "INSERT INTO Learning_signatures (DC_power, DRAM_power,"\
                                         "PCK_power, EDP, GBS, TPI, CPI, Gflops, time, FLOPS1, FLOPS2, FLOPS3, FLOPS4, "\
                                         "FLOPS5, FLOPS6, FLOPS7, FLOPS8,"\
@@ -131,6 +142,7 @@
 #define LEARNING_SIGNATURE_QUERY_SIMPLE    "INSERT INTO Learning_signatures (DC_power, DRAM_power, PCK_power, EDP,"\
                                            "GBS, TPI, CPI, Gflops, time, avg_f, def_f) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "\
                                            "?, ?, ?)"
+#endif
 
 #define LEARNING_JOB_MYSQL_QUERY          "INSERT IGNORE INTO Learning_jobs (id, step_id, user_id, app_id, start_time, end_time, "\
                                     "start_mpi_time, end_mpi_time, policy, threshold, procs, job_type, def_f, user_acc, user_group, e_tag) VALUES" \
@@ -144,7 +156,7 @@
 char *SIGNATURE_MYSQL_QUERY;
 char *AVG_SIGNATURE_MYSQL_QUERY;*/
 static char full_signature = !DB_SIMPLE;
-static char node_detail = DEMO;
+static char node_detail = 1;
 
 #if !DB_SIMPLE
 char *LEARNING_SIGNATURE_MYSQL_QUERY = LEARNING_SIGNATURE_QUERY_FULL;
@@ -155,11 +167,8 @@ char *LEARNING_SIGNATURE_MYSQL_QUERY = LEARNING_SIGNATURE_QUERY_SIMPLE;
 char *SIGNATURE_MYSQL_QUERY = SIGNATURE_QUERY_SIMPLE;    
 char *AVG_SIGNATURE_MYSQL_QUERY = AVG_SIGNATURE_QUERY_SIMPLE;      
 #endif
-#if DEMO
+
 char *PERIODIC_METRIC_MYSQL_QUERY = PERIODIC_METRIC_QUERY_DETAIL;
-#else
-char *PERIODIC_METRIC_MYSQL_QUERY = PERIODIC_METRIC_QUERY_SIMPLE;
-#endif
 
 long autoincrement_offset = 0;
 
@@ -295,7 +304,7 @@ int mysql_insert_application(MYSQL *connection, application_t *app)
     }
 
     //string types
-    bind[2].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[2].buffer_type = MYSQL_TYPE_STRING;
     bind[2].buffer_length = strlen(app->node_id);
 
     //storage variable assignation
@@ -495,7 +504,7 @@ int mysql_batch_insert_jobs(MYSQL *connection, application_t *app, int num_apps)
 
         //string types
         bind[2+offset].buffer_type = bind[3+offset].buffer_type = bind[8+offset].buffer_type = 
-        bind[13+offset].buffer_type = bind[14+offset].buffer_type = bind[15+offset].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[13+offset].buffer_type = bind[14+offset].buffer_type = bind[15+offset].buffer_type = MYSQL_TYPE_STRING;
 
         bind[2+offset].buffer_length = strlen(app[i].job.user_id);
         bind[3+offset].buffer_length = strlen(app[i].job.app_id);
@@ -605,7 +614,7 @@ int mysql_batch_insert_applications_no_mpi(MYSQL *connection, application_t *app
         bind[3+offset].is_null = (my_bool*) 1;
 
         //string types
-        bind[2+offset].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[2+offset].buffer_type = MYSQL_TYPE_STRING;
         bind[2+offset].buffer_length = strlen(app->node_id);
 
         //storage variable assignation
@@ -783,7 +792,7 @@ int mysql_insert_loop(MYSQL *connection, loop_t *loop)
     }
 
     //string types
-    bind[5].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[5].buffer_type = MYSQL_TYPE_STRING;
     bind[5].buffer_length = strlen(loop->node_id);
 
     //storage variable assignation
@@ -1002,7 +1011,7 @@ int mysql_insert_job(MYSQL *connection, job_t *job, char is_learning)
 
     //string types
     bind[2].buffer_type = bind[3].buffer_type = bind[8].buffer_type = 
-    bind[13].buffer_type = bind[14].buffer_type = bind[15].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[13].buffer_type = bind[14].buffer_type = bind[15].buffer_type = MYSQL_TYPE_STRING;
 
     bind[2].buffer_length = strlen(job->user_id);
     bind[3].buffer_length = strlen(job->app_id);
@@ -1384,9 +1393,9 @@ int mysql_batch_insert_signatures(MYSQL *connection, signature_container_t cont,
         for (i = 0; i < num_sigs; i++)
         {
             if (cont.type == EAR_TYPE_APPLICATION)
-                gpu_sig = &cont.app->signature.gpu_sig;
+                gpu_sig = &cont.app[i].signature.gpu_sig;
             else if (cont.type == EAR_TYPE_LOOP)
-                gpu_sig = &cont.loop->signature.gpu_sig;
+                gpu_sig = &cont.loop[i].signature.gpu_sig;
     
             current_gpu_sig_id += gpu_sig->num_gpus;
         }
@@ -1825,9 +1834,9 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     for (i = 0; i < num_sigs; i++)
     {
         if (cont.type == EAR_TYPE_APPLICATION)
-            gpu_sig = &cont.app->signature.gpu_sig;
+            gpu_sig = &cont.app[i].signature.gpu_sig;
         else if (cont.type == EAR_TYPE_LOOP)
-            gpu_sig = &cont.loop->signature.gpu_sig;
+            gpu_sig = &cont.loop[i].signature.gpu_sig;
 
         num_gpu_sigs += gpu_sig->num_gpus;
     }
@@ -1854,9 +1863,9 @@ int mysql_batch_insert_gpu_signatures(MYSQL *connection, signature_container_t c
     for (i = 0; i < num_sigs;  i++)
     {
         if (cont.type == EAR_TYPE_APPLICATION)
-            gpu_sig = &cont.app->signature.gpu_sig;
+            gpu_sig = &cont.app[i].signature.gpu_sig;
         else if (cont.type == EAR_TYPE_LOOP)
-            gpu_sig = &cont.loop->signature.gpu_sig;
+            gpu_sig = &cont.loop[i].signature.gpu_sig;
 
         for (j = 0; j < gpu_sig->num_gpus; j++)
         {
@@ -2088,7 +2097,7 @@ int mysql_insert_periodic_metric(MYSQL *connection, periodic_metric_t *per_met)
     bind[4].is_unsigned = bind[5].is_unsigned = 1;
 
     //varchar types
-    bind[3].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[3].buffer_type = MYSQL_TYPE_STRING;
     bind[3].buffer_length = strlen(per_met->node_id);
 
     //storage variable assignation
@@ -2144,7 +2153,7 @@ int mysql_insert_periodic_aggregation(MYSQL *connection, periodic_aggregation_t 
     }
 
     //varchar types
-    bind[3].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[3].buffer_type = MYSQL_TYPE_STRING;
     bind[3].buffer_length = strlen(per_agg->eardbd_host);
 
     //storage variable assignation
@@ -2210,7 +2219,7 @@ int mysql_batch_insert_periodic_metrics(MYSQL *connection, periodic_metric_t *pe
             bind[offset+j].buffer_type = MYSQL_TYPE_LONG;
             bind[offset+j].is_unsigned = 1;
         }
-        bind[offset+3].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[offset+3].buffer_type = MYSQL_TYPE_STRING;
         bind[offset+3].buffer_length = strlen(per_mets[i].node_id);
 
         bind[0+offset].buffer = (char *)&per_mets[i].start_time;
@@ -2283,7 +2292,7 @@ int mysql_batch_insert_periodic_aggregations(MYSQL *connection, periodic_aggrega
             bind[j+offset].buffer_type = MYSQL_TYPE_LONGLONG;
         }
         //varchar types
-        bind[PERIODIC_AGGREGATION_ARGS - 1 + offset].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[PERIODIC_AGGREGATION_ARGS - 1 + offset].buffer_type = MYSQL_TYPE_STRING;
         bind[PERIODIC_AGGREGATION_ARGS - 1 + offset].buffer_length = strlen(per_aggs[i].eardbd_host);
 
         //storage variable assignation
@@ -2332,7 +2341,7 @@ int mysql_insert_ear_event(MYSQL *connection, ear_event_t *ear_ev)
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
     }
     bind[1].buffer_type = MYSQL_TYPE_LONG;
-    bind[5].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[5].buffer_type = MYSQL_TYPE_STRING;
     bind[5].buffer_length = strlen(ear_ev->node_id);
 
     //storage variable assignation
@@ -2383,7 +2392,7 @@ int mysql_batch_insert_ear_events(MYSQL *connection, ear_event_t *ear_ev, int nu
             bind[offset+j].buffer_type = MYSQL_TYPE_LONGLONG;
         }
 	bind[offset+1].buffer_type = MYSQL_TYPE_LONG;
-        bind[offset+5].buffer_type = MYSQL_TYPE_VARCHAR;
+        bind[offset+5].buffer_type = MYSQL_TYPE_STRING;
         bind[offset+5].buffer_length = strlen(ear_ev[i].node_id);
 
         //storage variable assignation
@@ -2427,7 +2436,7 @@ int mysql_insert_gm_warning(MYSQL *connection, gm_warning_t *warning)
         bind[i].buffer_type = MYSQL_TYPE_LONGLONG;
         bind[i].is_unsigned = 1;
     } 
-    bind[9].buffer_type = MYSQL_TYPE_VARCHAR;
+    bind[9].buffer_type = MYSQL_TYPE_STRING;
     bind[9].buffer_length = strlen(warning->policy);
 
     bind[0].buffer = (char *)&warning->energy_percent;

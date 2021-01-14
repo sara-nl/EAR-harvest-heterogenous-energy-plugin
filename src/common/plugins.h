@@ -25,6 +25,7 @@
 
 typedef struct ctx_s {
 	void *context;
+	size_t size;
 } ctx_t;
 
 #define preturn(call, ...) \

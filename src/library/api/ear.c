@@ -34,6 +34,7 @@
 #include <common/config/config_env.h>
 #include <common/colors.h>
 #include <common/environment.h>
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/application.h>
 #include <common/types/version.h>
@@ -87,6 +88,7 @@ static int ppnode;
 
 cpu_set_t ear_process_mask;
 int ear_affinity_is_set=0;
+architecture_t arch_desc;
 // Loop information
 static uint mpi_calls_per_loop;
 static uint ear_iterations=0;
@@ -124,15 +126,23 @@ char app_mgt_path[GENERIC_NAME];
 pc_app_info_t *pc_app_info_data;
 char pc_app_info_path[GENERIC_NAME];
 #endif
+// Dynais
+static dynais_call_t dynais;
 
 void *earl_periodic_actions(void *no_arg);
+static int end_periodic_th=0;
 //
+
 static void print_local_data()
 {
 	char ver[64];
 	if (masters_info.my_master_rank==0) {
 	version_to_str(ver);
-	verbose(1, "------------EAR%s--------------------",ver);
+	#if MPI
+	verbose(1, "------------EAR%s MPI enabled --------------------",ver);
+	#else
+	verbose(1, "------------EAR%s MPI not enabled --------------------",ver);
+	#endif
 	verbose(1, "App/user id: '%s'/'%s'", application.job.app_id, application.job.user_id);
 	verbose(1, "Node/job id/step_id: '%s'/'%lu'/'%lu'", application.node_id, application.job.id,application.job.step_id);
 	verbose(2, "App/loop summary file: '%s'/'%s'", app_summary_path, loop_summary_path);
@@ -212,6 +222,10 @@ void create_shared_regions()
 {
 	char *tmp=get_ear_tmp();
 	int bfd=-1;
+  int total_size;
+  int total_elements;
+  int per_node_elements;
+
 
 	/* This section allocates shared memory for processes in same node */
 	debug("Master creating shared regions for node synchro");
@@ -232,8 +246,10 @@ void create_shared_regions()
 		my_node_id=0;
 		lib_shared_region->num_processes=1;
 		lib_shared_region->num_signatures=0;
+		lib_shared_region->master_rank = masters_info.my_master_rank;
 	}
 	debug("Node connected %u",my_node_id);
+#if ONLY_MASTER == 0
 	#if MPI
 	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 		error("MPI_Barrier");
@@ -244,6 +260,7 @@ void create_shared_regions()
 		return;
 	}
 	#endif
+#endif
 	//print_lib_shared_data(lib_shared_region);
 	/* This region is for processes in the same node */
 	if (get_shared_signatures_path(tmp,shsignature_region_path)!=EAR_SUCCESS){
@@ -258,13 +275,14 @@ void create_shared_regions()
 	sig_shared_region[my_node_id].master=1;
 	sig_shared_region[my_node_id].mpi_info.rank=ear_my_rank;
 	clean_my_mpi_info(&sig_shared_region[my_node_id].mpi_info);
-
+#if ONLY_MASTER == 0
 	#if MPI
 	if (PMPI_Barrier(MPI_COMM_WORLD)!=MPI_SUCCESS){
 		error("MPI_Barrier");
 		return;
 	}
 	#endif
+#endif
 	/* This part allocates memory for sharing data between nodes */
 	masters_info.ppn=malloc(masters_info.my_master_size*sizeof(int));
 	/* The node master, shares with other masters the number of processes in the node */
@@ -283,19 +301,24 @@ void create_shared_regions()
 	}
 	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
 	/* For scalability concerns, we can compile the system sharing all the processes information (SHARE_INFO_PER_PROCESS) or only 1 per node (SHARE_INFO_PER_NODE)*/
-	#if SHARE_INFO_PER_PROCESS
-	debug("Sharing info at process level, reporting N per node");
-	int total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
-	int total_elements=masters_info.max_ppn*masters_info.my_master_size;
-	int per_node_elements=masters_info.max_ppn;
+	if (sh_sig_per_node && sh_sig_per_proces){
+		error("Signatures can only be shared with node OR process granularity,not both, default node");
+		sh_sig_per_node = 1;
+		sh_sig_per_proces = 0;
+	}
+	if (sh_sig_per_proces){
+		debug("Sharing info at process level, reporting N per node");
+		total_size=masters_info.max_ppn*masters_info.my_master_size*sizeof(shsignature_t);
+		total_elements=masters_info.max_ppn*masters_info.my_master_size;
+		per_node_elements=masters_info.max_ppn;
+	}
+	if (sh_sig_per_node){
+		debug("Sharing info at node level, reporting 1 per node");
+		total_size=masters_info.my_master_size*sizeof(shsignature_t);
+		total_elements=masters_info.my_master_size;
+		per_node_elements=1;
+	}
 	ratio_PPN=(float)lib_shared_region->num_processes/(float)masters_info.max_ppn;
-	#endif
-	#if SHARE_INFO_PER_NODE
-	debug("Sharing info at node level, reporting 1 per node");
-	int total_size=masters_info.my_master_size*sizeof(shsignature_t);
-	int total_elements=masters_info.my_master_size;
-	int per_node_elements=1;
-	#endif
 	masters_info.nodes_info=(shsignature_t *)calloc(total_elements,sizeof(shsignature_t));
 	if (masters_info.nodes_info==NULL){ 
 		error("Allocating memory for node_info");
@@ -424,26 +447,29 @@ static int get_local_id(char *node_name)
 	int master = 1;
 
 #if USE_LOCK_FILES
-	#if MPI
-	debug("MPI activated");
-	sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
-
-	if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
-		master = 1;
-	} else {
-		master = 0;
-	}
+  sprintf(fd_lock_filename, "%s/.ear_app_lock.%d", get_ear_tmp(), create_ID(my_job_id,my_step_id));
+  if ((fd_master_lock = file_lock_master(fd_lock_filename)) < 0) {
+    master = 1;
+  } else {
+    master = 0;
+  }
+  #if MPI
+  if (master) {
+    debug("Rank %d is not the master in node %s", ear_my_rank, node_name);
+  }else{
+    debug("Rank %d is the master in node %s", ear_my_rank, node_name);
+    verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
+  }
 	#else
-	debug("MPI not activated");
-	master=0;
-	#endif
+  if (master) {
+    debug("Process %d is not the master in node %s", getpid(), node_name);
+  }else{
+    debug("Process %d is the master in node %s", getpid(), node_name);
+    verbose(2, "Process %d is the master in node %s", getpid(), node_name);
+  }
 
-	if (master) {
-		debug("Rank %d is not the master in node %s", ear_my_rank, node_name);
-	}else{
-		debug("Rank %d is the master in node %s", ear_my_rank, node_name);
-		verbose(2, "Rank %d is the master in node %s", ear_my_rank, node_name);
-	}
+  #endif
+
 #else
 	#if MPI
 	master = get_ear_local_id();
@@ -556,7 +582,7 @@ void update_configuration()
 	ear_whole_app=system_conf->learning;
 }
 
-void   pin_processes(topology_t *t,cpu_set_t *mask,int is_set,int ppn,int idx)
+void pin_processes(topology_t *t,cpu_set_t *mask,int is_set,int ppn,int idx)
 {
 	int first,cpus,i;
 	debug("We are %d processes in this node and I'm the number %d , Total CPUS %d",ppn,idx,t->cpu_count);
@@ -593,7 +619,6 @@ void ear_init()
 	char *tmp;
 	state_t st;
 	char *ext_def_freq_str=getenv(SCHED_EAR_DEF_FREQ);
-	architecture_t arch_desc;
 
 
 	if (ear_lib_initialized){
@@ -610,6 +635,7 @@ void ear_init()
 	my_size=1;
 	#endif
 
+	load_app_mgr_env();
 
 	//debug("Reading the environment");
 
@@ -637,7 +663,6 @@ void ear_init()
 	#else
 	verb_level=1;
 	#endif
-	verb_level=1;
 	verb_channel=2;
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
@@ -712,7 +737,6 @@ void ear_init()
 		return;
 	}
 #endif
-
 
 	// Application static data and metrics
 	debug("init application");
@@ -794,7 +818,7 @@ void ear_init()
 
 	// Initializing DynAIS
 	debug("Dynais init");
-	dynais_init(get_ear_dynais_window_size(), get_ear_dynais_levels());
+	dynais = dynais_init(&arch_desc.top, get_ear_dynais_window_size(), get_ear_dynais_levels());
 	debug("Dynais end");
 
 	// Policies && models
@@ -832,20 +856,39 @@ void ear_init()
 			error("pc_application_info area not found");
 		}
   	#endif
-
+		#if 0
 		if (is_affinity_set(&arch_desc.top,getpid(),&ear_affinity_is_set,&ear_process_mask)!=EAR_SUCCESS){
 			error("Checking the affinity mask");
 		}else{
+			/* Copy mask in shared memory */	
 			if (ear_affinity_is_set){	
+				sig_shared_region[my_node_id].cpu_mask = ear_process_mask;
+				sig_shared_region[my_node_id].affinity = 1;
 				verbose(1,"Affinity mask defined for rank %d",masters_info.my_master_rank);
+				if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
 			}else{ 
+				sig_shared_region[my_node_id].affinity = 0;
 				verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);
 			}
 		}
+		#endif
 	}
+	  if (is_affinity_set(&arch_desc.top,getpid(),&ear_affinity_is_set,&ear_process_mask)!=EAR_SUCCESS){
+      error("Checking the affinity mask");
+    }else{
+      /* Copy mask in shared memory */
+      if (ear_affinity_is_set){ 
+        sig_shared_region[my_node_id].cpu_mask = ear_process_mask;
+        sig_shared_region[my_node_id].affinity = 1;
+        //if (masters_info.my_master_rank>=0) print_affinity_mask(&arch_desc.top);
+      }else{ 
+        sig_shared_region[my_node_id].affinity = 0;
+        verbose(1,"Affinity mask not defined for rank %d",masters_info.my_master_rank);
+      } 
+    } 
 
-	ear_affinity_is_set=1;
-	print_affinity_mask(&arch_desc.top);
+
+
 	#ifdef SHOW_DEBUGS
 	print_arch_desc(&arch_desc);
 	#endif
@@ -854,7 +897,7 @@ void ear_init()
 	init_power_policy(system_conf,resched_conf);
 	debug("init_power_models");
 	init_power_models(system_conf->user_type,&system_conf->installation,&arch_desc);
-	if (masters_info.my_master_rank>=0) verbose(1,"Policies and models initialized");	
+	if (masters_info.my_master_rank>=0) verbose(2,"Policies and models initialized");	
 
 	if (ext_def_freq==0){
 		EAR_default_frequency=system_conf->def_freq;
@@ -954,7 +997,7 @@ void ear_finalize()
 	// Closing and obtaining global metrics
 	debug("metrics dispose");
 	dispose=1;
-	if (masters_info.my_master_rank>=0) verbose(1,"Total resources computed %lu",get_total_resources());
+	if (masters_info.my_master_rank>=0) verbose(1,"Total resources computed %d",get_total_resources());
 	metrics_dispose(&application.signature, get_total_resources());
 	dynais_dispose();
 	if (!my_id) frequency_dispose();
@@ -1105,14 +1148,13 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 	if (!ear_whole_app)
 	{
 		// Create the event for DynAIS
-		unsigned long  ear_event_l;
-		udyn_t ear_event_s;
-		udyn_t ear_size;
-		udyn_t ear_level;
+		ulong ear_event_l;
+		uint ear_event_s;
+		uint ear_size;
+		uint ear_level;
 
 		ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		ear_event_s = dynais_sample_convert(ear_event_l);
-
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n",__FILE__);
 
 #if 0
@@ -1132,16 +1174,16 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 			case IN_LOOP:
 				break;
 			case NEW_LOOP:
-				//debug("NEW_LOOP event %lu level %hu size %hu\n",ear_event_l,ear_level,ear_size);
+				//debug("NEW_LOOP event %lu level %u size %u\n", ear_event_l, ear_level, ear_size);
 				ear_iterations=0;
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
+				states_begin_period(my_id, ear_event_l, (ulong) ear_size, (ulong) ear_level);
 				ear_loop_size=(uint)ear_size;
 				ear_loop_level=(uint)ear_level;
 				in_loop=1;
 				mpi_calls_per_loop=1;
 				break;
 			case END_NEW_LOOP:
-				//debug("END_LOOP - NEW_LOOP event %lu level %hu\n",ear_event_l,ear_level);
+				//debug("END_LOOP - NEW_LOOP event %lu level %u\n", ear_event_l, ear_level);
 				if (loop_with_signature) {
 					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
@@ -1153,7 +1195,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				mpi_calls_per_loop=1;
 				ear_loop_size=(uint)ear_size;
 				ear_loop_level=(uint)ear_level;
-				states_begin_period(my_id, ear_event_l, ear_size,ear_level);
+				states_begin_period(my_id, ear_event_l, (ulong) ear_size, (ulong) ear_level);
 				break;
 			case NEW_ITERATION:
 				ear_iterations++;
@@ -1360,7 +1402,8 @@ void *earl_periodic_actions(void *no_arg)
 			sleep(lib_period);
       ear_iterations++;
       states_periodic_new_iteration(my_id, 1, ear_iterations, 1, 1,mpi_calls_in_period);
-		}while(1);
+		}while(end_periodic_th == 0);
+		return NULL;
 }
 
 
@@ -1374,7 +1417,21 @@ void ear_constructor()
 void ear_destructor()
 {
 	debug("Calling ear_finalize in ear_destructor %d",getpid());
+#if ONLY_MASTER
+  if (my_id) {
+    return;
+  }
+#endif
+	end_periodic_th = 1;
+	pthread_join(earl_periodic_th,NULL);
 	ear_finalize();
+}
+#else
+void ear_constructor()
+{
+}
+void ear_destructor()
+{
 }
 #endif
 

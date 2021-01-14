@@ -30,11 +30,6 @@
 // TODO: clean, just for fix spaguettis
 static topology_t topo_static;
 
-static int file_is_accessible(const char *path)
-{
-	return (access(path, F_OK) == 0);
-}
-
 state_t topology_select(topology_t *t, topology_t *s, int component, int group, int val)
 {
 	ulong addr_offset;
@@ -86,6 +81,10 @@ state_t topology_select(topology_t *t, topology_t *s, int component, int group, 
 
 	s->socket_count = t->socket_count;
 	s->cpu_count = c;
+
+	if (s->cpu_count <= 0) {
+		return_msg(EAR_ERROR, "invalid topology");
+	}
 	
 	return EAR_SUCCESS;
 }
@@ -281,6 +280,21 @@ static void topology_cpuid(topology_t *topo)
 	}
 }
 
+static int is_online(const char *path)
+{
+	char c = '0';
+	if (access(path, F_OK) != 0) {
+		return 0;
+	}
+	if (state_fail(file_read(path, &c, sizeof(char)))) {
+		return 0;
+	}
+	if (c != '1') {
+		return 0;
+	}
+	return 1;
+}
+
 state_t topology_init(topology_t *topo)
 {
 	char path[SZ_NAME_LARGE];
@@ -304,10 +318,10 @@ state_t topology_init(topology_t *topo)
 
 	/* Number of CPUs */
 	do {
-		sprintf(path, "/sys/devices/system/cpu/cpu%d", topo->cpu_count + 1);
+		sprintf(path, "/sys/devices/system/cpu/cpu%d/online", topo->cpu_count + 1);
 		topo->cpu_count += 1;
 	}
-	while(file_is_accessible(path));
+	while(is_online(path));
 	
 	//
 	topo->cpus = calloc(topo->cpu_count, sizeof(core_t));
@@ -340,21 +354,6 @@ state_t topology_init(topology_t *topo)
 	return EAR_SUCCESS;
 }
 
-state_t topology_print(topology_t *topo, int fd)
-{
-	dprintf(fd, "cpu_count        : %d\n", topo->cpu_count);
-	dprintf(fd, "socket_count     : %d\n", topo->socket_count);
-	dprintf(fd, "threads_per_core : %d\n", topo->threads_per_core);
-	dprintf(fd, "smt_enabled      : %d\n", topo->smt_enabled);
-	dprintf(fd, "l3_count         : %d\n", topo->l3_count);
-	dprintf(fd, "vendor           : %d\n", topo->vendor);
-	dprintf(fd, "family           : %d\n", topo->family);
-	dprintf(fd, "gpr_count        : %d\n", topo->gpr_count);
-	dprintf(fd, "gpr_bits         : %d\n", topo->gpr_bits);
-	dprintf(fd, "nmi_watchdog     : %d\n", topo->nmi_watchdog);
-	return EAR_SUCCESS;
-}
-
 state_t topology_close(topology_t *topo)
 {
 	// TODO: spaguettis
@@ -369,3 +368,40 @@ state_t topology_close(topology_t *topo)
 	return EAR_SUCCESS;
 }
 
+#define f_print(f, ...) \
+	f (__VA_ARGS__, \
+		"cpu_count        : %d\n" \
+    	"socket_count     : %d\n" \
+		"threads_per_core : %d\n" \
+		"smt_enabled      : %d\n" \
+    	"l3_count         : %d\n" \
+		"vendor           : %d\n" \
+		"family           : %d\n" \
+		"gpr_count        : %d\n" \
+		"gpr_bits         : %d\n" \
+		"nmi_watchdog     : %d\n" \
+	, \
+		topo->cpu_count, \
+		topo->socket_count, \
+		topo->threads_per_core, \
+		topo->smt_enabled, \
+		topo->l3_count, \
+		topo->vendor, \
+		topo->family, \
+		topo->gpr_count, \
+		topo->gpr_bits, \
+		topo->nmi_watchdog);
+
+state_t topology_print(topology_t *topo, int fd)
+{
+	f_print(dprintf, fd);
+
+	return EAR_SUCCESS;
+}
+
+state_t topology_tostr(topology_t *topo, char *buffer, size_t n)
+{
+	f_print(snprintf, buffer, n);
+
+	return EAR_SUCCESS;
+}

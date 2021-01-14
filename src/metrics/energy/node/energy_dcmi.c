@@ -564,3 +564,10 @@ state_t energy_dc_time_read(void *c, edata_t energy_mj, ulong *time_ms)
   return EAR_SUCCESS;
 
 }
+uint energy_data_is_null(edata_t e)  
+{
+  ulong *pe=(ulong *)e;
+  return (*pe == 0);
+
+}
+

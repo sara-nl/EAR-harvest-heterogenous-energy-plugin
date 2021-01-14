@@ -29,7 +29,7 @@
 char print_out = 1;
 cluster_conf_t my_cluster;
 char signature_detail = !DB_SIMPLE;
-char db_node_detail = DEMO;
+char db_node_detail = 1;
 
 void usage(char *app)
 {
@@ -111,7 +111,7 @@ void create_users(void *connection, char *db_name, char *db_user, char *db_user_
 #elif DB_PSQL
     sprintf(query, "GRANT SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO %s", db_user);
     run_query(connection, query);
-    sprintf(query, "GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA public TO %s", db_user);
+    sprintf(query, "GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO %s", db_user);
 #endif
     run_query(connection, query);
     
@@ -561,7 +561,7 @@ max_GPU_sig_id INT, "
 
 #if USE_GPUS
     sprintf(query, "CREATE TABLE IF NOT EXISTS GPU_signatures ( \
-id SERIA NOT NULL, \
+id SERIAL NOT NULL, \
 GPU_power FLOAT, \
 GPU_freq INT, \
 GPU_mem_freq INT, \
@@ -816,6 +816,9 @@ int main(int argc,char *argv[])
             exit(0);
         }
     }
+
+
+
 #if DB_MYSQL 
     MYSQL *connection = mysql_init(NULL); 
 #elif DB_PSQL
@@ -827,7 +830,7 @@ int main(int argc,char *argv[])
 	print_database_conf(&my_cluster.database);
 
     signature_detail = my_cluster.database.report_sig_detail;
-    db_node_detail= my_cluster.database.report_node_detail;
+    db_node_detail = my_cluster.database.report_node_detail;
 
 #if DB_PSQL
     char **keys, **values, temp[32];
@@ -857,11 +860,12 @@ int main(int argc,char *argv[])
         keys[1] = "user";
         keys[2] = "password";
         keys[3] = "host";
-        if (my_cluster.database.port > 0)
+        //setting port value makes the connector crash
+        /*if (my_cluster.database.port > 0)
         {
             keys[4] = "port";
             values[4] = temp;
-        }
+        }*/
 
         strtolow(my_cluster.database.database);
         strtolow(my_cluster.database.ip);
@@ -872,11 +876,13 @@ int main(int argc,char *argv[])
         values[2] = passw;
         values[3] = my_cluster.database.ip;
 
+        fprintf(stdout, "connecting to database\n");
         connection = PQconnectdbParams((const char * const *)keys, (const char * const *)values, 0);
+        fprintf(stdout, "connected to database\n");
 
         if (PQstatus(connection) != CONNECTION_OK)
         {
-            fprintf(stderr, "ERROR connecting to the database: %s\n", PQerrorMessage(connection));
+            fprintf(stdout, "ERROR connecting to the database: %s\n", PQerrorMessage(connection));
             free(keys);
             free(values);
             PQfinish(connection);

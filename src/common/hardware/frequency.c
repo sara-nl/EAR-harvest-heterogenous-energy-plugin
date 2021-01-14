@@ -65,7 +65,7 @@ static ulong *get_frequencies_cpu()
 		// Returns:
 		// X -> if not
 		// 0 -> if the specified CPU is present
-		// status = cpufreq_cpu_exists(i);
+		// status = cpucpufreq_exists(i);
 		status = 0;
 		#else
 		// Returns:
@@ -185,6 +185,11 @@ uint frequency_get_num_online_cpus()
 }
 
 // Privileged function
+ulong frequency_set_cpu(ulong freq_khz, uint cpu)
+{
+	return 0LU;
+}
+
 ulong frequency_set_all_cpus(ulong freq)
 {
 	int result, i = 0;
@@ -215,13 +220,13 @@ ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq)
 {
   int result, i = 0;
   
-  debug("setting all cpus to %lu KHz", freq);
   if (is_valid_frequency(freq))
   { 
     
     for (i = 0; i < num_cpus; i++)
     { 
 			if (CPU_ISSET(i,mask)){
+				debug("setting cpu %d to freq %lu",i,freq);
       	freq_list_cpu[i] = freq;
       	// This is a privileged function
       	result=CPUfreq_set_frequency(i,freq);
@@ -234,6 +239,29 @@ ulong frequency_set_with_mask(cpu_set_t *mask,ulong freq)
   }
   return freq_list_cpu[0];
      
+}
+
+/* Returns 0 in case of some error and the last CPUF set when success */
+ulong frequency_set_with_list(uint cpus,ulong *cpuf)
+{
+	int result=0, i = 0;
+	if (cpuf == NULL) return 0;
+	if (cpus > num_cpus) return 0;
+	for (i = 0; i < cpus; i++)
+  {
+		if (cpuf[i] != 0){
+		if (is_valid_frequency(cpuf[i])){
+			debug("setting cpu %d to freq %lu",i,cpuf[i]);
+			freq_list_cpu[i] = cpuf[i];
+			result = CPUfreq_set_frequency(i,cpuf[i]);
+			if (result < 0 ){
+				error("ERROR while switching cpu %d frequency to %lu ", i,cpuf[i]);
+			}
+		}
+		}
+	}
+	if (result < 0 ) return 0;
+	return (ulong)result;
 }
 //
 uint frequency_get_num_freqs()
@@ -278,6 +306,18 @@ ulong *frequency_get_freq_rank_list()
 {
 	return freq_list_rank;
 }
+
+ulong frequency_get_cpufreq_list(uint cpus,ulong *cpuf)
+{
+	int i;
+	memset(cpuf,0,sizeof(ulong)*cpus);
+  if (cpus > num_cpus) {
+    return 0;
+  }
+	for (i=0;i< cpus;i++) cpuf[i] = CPUfreq_get(i);
+	return 0;
+}
+
 
 // ear_get_freq
 ulong frequency_pstate_to_freq(uint pstate)

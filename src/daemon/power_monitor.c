@@ -34,7 +34,7 @@
 #include <common/config.h>
 #include <common/system/sockets.h>
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 
 #include <common/output/verbose.h>
 #include <common/types/generic.h>
@@ -72,8 +72,8 @@ nm_t my_nm_id;
 nm_data_t nm_init, nm_end, nm_diff, last_nm;
 
 extern topology_t node_desc;
-extern freq_cpu_t freq_job2;
-extern freq_cpu_t freq_job1;
+extern cpufreq_t freq_job2;
+extern cpufreq_t freq_job1;
 
 extern int eard_must_exit;
 extern char ear_tmp[MAX_PATH_SIZE];
@@ -408,7 +408,7 @@ void job_init_powermon_app(ehandler_t *ceh, application_t *new_app, uint from_mp
 	read_enegy_data(ceh, &c_energy);
 	copy_energy_data(&current_ear_app[ccontext]->energy_init, &c_energy);
 	// CPU Frequency
-	state_assert(s, freq_cpu_read(&freq_job1), );
+	state_assert(s, cpufreq_read(&freq_job1), );
 	verbose(1,"job_init_powermon_app end");
 }
 
@@ -440,7 +440,7 @@ void job_end_powermon_app(ehandler_t *ceh)
 	current_ear_app[ccontext]->app.power_sig.time = difftime(app_power.end, app_power.begin);
 
 	// CPU Frequency
-	state_assert(s, freq_cpu_read_diff(&freq_job2, &freq_job1, NULL, &current_ear_app[ccontext]->app.power_sig.avg_f), );
+	state_assert(s, cpufreq_read_diff(&freq_job2, &freq_job1, NULL, &current_ear_app[ccontext]->app.power_sig.avg_f), );
 
 	// nominal is still pending
 
@@ -497,7 +497,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 	case NORMAL:
 		appID->is_learning=0;
 		debug("Policy requested %s",appID->job.policy);
-    p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
+    p_id=policy_name_to_nodeid(appID->job.policy, my_node_conf);
 		debug("Policy %s is ID %d",appID->job.policy,p_id);
     /* Use cluster conf function */
     if (p_id!=EAR_ERROR){
@@ -514,7 +514,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		if (my_policy==NULL){
 			error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 		    authorized_context.p_state=1;
-            int mo_pid = policy_name_to_id("monitoring", &my_cluster_conf);
+            int mo_pid = policy_name_to_nodeid("monitoring", my_node_conf);
             if (mo_pid != EAR_ERROR)
                 authorized_context.policy = mo_pid;
             else
@@ -533,7 +533,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 
 	case AUTHORIZED:
 		if (appID->is_learning){
-            int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+            int mo_pid = policy_name_to_nodeid("monitoring", my_node_conf);
             if (mo_pid != EAR_ERROR)
                 authorized_context.policy = mo_pid;
             else
@@ -546,7 +546,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 			authorized_context.settings[0]=0;
 			my_policy=&authorized_context;
 		}else{
-			p_id=policy_name_to_id(appID->job.policy, &my_cluster_conf);
+			p_id=policy_name_to_nodeid(appID->job.policy, my_node_conf);
 			if (p_id!=EAR_ERROR){
       	        my_policy=get_my_policy_conf(my_node_conf,p_id);
 				authorized_context.policy=p_id;
@@ -568,7 +568,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 				if (my_policy==NULL){
 					error("Error Default policy configuration returns NULL,invalid policy, check ear.conf (setting MONITORING)");
 					authorized_context.p_state=1;
-                    int mo_pid = policy_name_to_id("MONITORING_ONLY", &my_cluster_conf);
+                    int mo_pid = policy_name_to_nodeid("monitoring", my_node_conf);
                     if (mo_pid != EAR_ERROR)
                         authorized_context.policy = mo_pid;
                     else
@@ -584,7 +584,7 @@ policy_conf_t *configure_context(uint user_type, energy_tag_t *my_tag, applicati
 		break;
 	case ENERGY_TAG:
 		appID->is_learning=0;
-        int mo_pid = policy_name_to_id("monitoring", &my_cluster_conf);
+        int mo_pid = policy_name_to_nodeid("monitoring", my_node_conf);
         if (mo_pid != EAR_ERROR)
             authorized_context.policy = mo_pid;
         else
@@ -880,7 +880,7 @@ void powermon_new_def_freq(uint p_id, ulong def) {
 	uint cpolicy;
 	ps = frequency_closest_pstate(def);
 	if ((ccontext >= 0) && (current_ear_app[ccontext]->app.is_mpi == 0)) {
-		cpolicy = policy_name_to_id(current_ear_app[ccontext]->app.job.policy, &my_cluster_conf);
+		cpolicy = policy_name_to_nodeid(current_ear_app[ccontext]->app.job.policy, my_node_conf);
 		if (cpolicy == p_id) { /* If the process runs at selected policy */
 			if (def < current_node_freq) {
 				verbose(VJOBPMON, "DefFreq: Application is not mpi, automatically changing freq from %lu to %lu",

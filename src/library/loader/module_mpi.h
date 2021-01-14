@@ -25,4 +25,6 @@
 
 int module_mpi();
 
+void module_mpi_destructor();
+
 #endif //LIBRARY_LOADER_MPI_H

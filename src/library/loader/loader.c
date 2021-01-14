@@ -53,8 +53,27 @@ static int init()
 	pid1 = getpid();
 	pid2 = (pid_t) atoi(task);
 	verbose(4, "LOADER: loader pids: %d/%d", pid1, pid2);
-	
+	return 1;	
 	return pid1 == pid2;
+}
+
+int must_load()
+{
+	if ((strstr(program_invocation_name, "bash") == NULL) &&
+	(strstr(program_invocation_name, "hydra") == NULL)){
+		verbose(2,"LOADER: Program %s loaded with EAR",program_invocation_name);
+		return 1;
+	}
+	verbose(2,"LOADER: Program %s loaded without EAR",program_invocation_name);
+	return 0;
+}
+
+int load_no_mpi()
+{
+	char *app_to_load=getenv(SCHED_LOADER_LOAD_NO_MPI_LIB);
+	if (app_to_load == NULL) return 0;
+	if (strstr(program_invocation_name,app_to_load) == NULL) return 0;
+	return 1;
 }
 
 void  __attribute__ ((constructor)) loader()
@@ -64,13 +83,18 @@ void  __attribute__ ((constructor)) loader()
 		verbose(4, "LOADER: escaping the application '%s'", program_invocation_name);
 		return;
 	}
-	verbose(3, "LOADER: loading for application '%s'", program_invocation_name);
+	verbose(2, "LOADER: loading for application '%s'", program_invocation_name);
 	
-	// Module MPI
-	_loaded_mpi = module_mpi();
-	// Module default
-	if (!_loaded_mpi && strcmp(program_invocation_name,"/bin/bash")) {
-		_loaded_con = module_constructor();
+	if (must_load()){ 
+		// Module MPI
+		verbose(2,"Tring MPI module");
+		_loaded_mpi = module_mpi();
+
+		// Module default
+		if (!_loaded_mpi && load_no_mpi()) {
+			verbose(2,"Tring default module");
+			_loaded_con = module_constructor();
+		}
 	}
 	// New modules here...
 #if 0

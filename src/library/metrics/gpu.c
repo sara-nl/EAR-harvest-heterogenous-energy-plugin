@@ -209,7 +209,18 @@ state_t gpu_lib_freq_limit_reset()
 
 state_t gpu_lib_freq_limit_set(ulong *khz)
 {
-	// EARD
+	int ret,i;
+	if (khz == NULL){  
+		state_return_msg(EAR_ERROR,EAR_BAD_ARGUMENT,"Invalid NULL argument");
+	}
+	for (i=0;i<dev_count;i++){
+		verbose(0,"GPU_LIB_FREQ[%d]=%lu",i,khz[i]);
+	}
+	
+	ret = eards_gpu_set_freq(dev_count,khz);
+	if (ret != EAR_SUCCESS){
+		state_return_msg(EAR_ERROR,EAR_SYSCALL_ERROR,"EARD local API error in GPU_Set_freq");
+	}
 	return EAR_SUCCESS;
 }
 

@@ -60,8 +60,6 @@ state_t cpi_intel63_init(ctx_t *c)
 
 state_t cpi_intel63_dispose(ctx_t *c)
 {
-	return EAR_SUCCESS;
-
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}

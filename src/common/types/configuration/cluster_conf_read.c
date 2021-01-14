@@ -553,7 +553,6 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 		else if (!strcmp(token, "NODENAME"))
 		{
 			int i = 0;
-			int island = 0;
 			int num_nodes = 0;
 			int num_cpus = 0;
 			//fully restore the line
@@ -601,7 +600,7 @@ void get_cluster_config(FILE *conf_file, cluster_conf_t *conf)
 			if (coef_file != NULL)
 				for (i = 0; i < num_nodes; i++)
 					conf->nodes[conf->num_nodes+i].coef_file = coef_file;
-				conf->num_nodes += num_nodes;
+			conf->num_nodes += num_nodes;
 		} // NODENAME END
 
 

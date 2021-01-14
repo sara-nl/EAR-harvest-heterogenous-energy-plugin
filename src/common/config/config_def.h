@@ -18,6 +18,10 @@
 #ifndef EAR_CONFIG_DEF_H
 #define EAR_CONFIG_DEF_H
 
+// Maximum number of tries when doing non-blocking communications
+#define MAX_SOCKET_COMM_TRIES   10000000
+//
+#define EARDBD_TYPES            7
 /* These flags configures EARL */
 /* When set to 1, turbo is allowed */
 #define USE_TURBO							0
@@ -51,8 +55,6 @@
 /* When set to 1, some fields are neither created not reported to the DB to
  * save space */
 #define DB_SIMPLE                           1
-/* When set to 1, avg frequency and temp is reported with periodic metrics */
-#define DEMO								0
 /* Maximum number of simultaneous DB connection for mysql user commands */
 #define MAX_DB_CONNECTIONS					20
 /* */
@@ -61,10 +63,13 @@
 #define EAR_MIN_P_STATE                     4
 #define POWERMON_FREQ                       30
 #define DAEMON_PORT_NUMBER                  50000
+#define EARGM_PORT_NUMBER                   50001
+#define DEF_DBD_SERVER_PORT									50002
+#define DEF_DBD_MIRROR_PORT									50003
+#define DEF_DBD_SYNCHR_PORT									50004
 #define DEFAULT_T1                          60
 #define DEFAULT_T2                          600
 #define MAX_ENERGY                          300
-#define EARGM_PORT_NUMBER                   60000
 #define DEFAULT_POWER                       275
 #define GRACE_T1                            3
 #define EAR_OVERHEAD_CONTROL                1
@@ -85,9 +90,6 @@
 #define DEF_DBD_FILE_LOG					1
 #define DEF_DBD_AGGREGATION_TIME			60
 #define DEF_DBD_INSERTION_TIME				30
-#define DEF_DBD_SERVER_PORT					4711
-#define DEF_DBD_MIRROR_PORT					4712
-#define DEF_DBD_SYNCHR_PORT					4713
 /* MegaBytes allocated for caching the node metrics. */
 #define DEF_DBD_ALLOC_MBS					120
 
@@ -110,6 +112,19 @@
 
 #define LIMIT_LARGE_JOBS				2
 #define RED_PSTATES_LARGE_JOBS 	1
+
+/* These two options go together. USE_EXT defines if a automatic network
+ *  * extension must be added for inter-nodes communications. Targeted to
+ *   * architectures where hostname returned is not valid to communicate across
+ *    * nodes. In that case, NW_EXT specified the extension to concatenate to
+ *     * hostname */
+#define USE_EXT               0
+#define NW_EXT                "-opa"
+
+/** Specifies if the new version of the commands propagation is used and the number
+ *  * of jumps per node. */
+#define NUM_PROPS     3
+
 
 #endif //EAR_CONFIG_DEF_H
 

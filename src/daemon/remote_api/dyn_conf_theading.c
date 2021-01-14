@@ -49,7 +49,6 @@ extern int eard_must_exit;
 
 state_t init_active_connections_list()
 {
-	int i;
 	FD_ZERO(&rfds);
 	/* Nex sockets will be written in the pipe and the thread will wake up */
 	if (pipe(pipe_for_new_conn)<0){
@@ -66,7 +65,6 @@ state_t init_active_connections_list()
 
 state_t notify_new_connection(int fd)
 {
-	int i=0,found=0;
 	if (write(pipe_for_new_conn[1],&fd,sizeof(int)) < 0){
 		error("Error sending new fd for remote command %s",strerror(errno));
 		return EAR_ERROR;
@@ -76,7 +74,6 @@ state_t notify_new_connection(int fd)
 
 state_t add_new_connection()
 {
-	int ret;
 	int new_fd;
 	/* New fd will be read from the pipe */
 	if (read(pipe_for_new_conn[0],&new_fd,sizeof(int)) < 0){
@@ -101,10 +98,10 @@ state_t add_new_connection()
 
 state_t remove_remote_connection(int fd)
 {
-  int i=0,found=0;
+    int i=0;
 	debug("Closing remote connection %d",fd);
-	FD_CLR(fd, & rfds);
-	if (fd >= max_fd){
+	FD_CLR(fd, &rfds);
+	if (fd == (max_fd-1)){
 		/* We must update the maximum */	
 		max_fd = -1;
 		for (i=0;i< FD_SETSIZE; i++){
@@ -140,14 +137,17 @@ void * process_remote_req_th(void * arg)
 	rfds_sys=rfds;
   while ((numfds_ready = select(max_fd, &rfds_sys, NULL, NULL, NULL)) && (eard_must_exit == 0))
   {
+		verbose(VRAPI,"RemoteAPI thread new info received (new_conn/new_data)");
 		if (numfds_ready > 0) {
 			/* This is the normal use case */
       for (i = 0; i < max_fd; i++) {
           if (FD_ISSET(i, &rfds_sys)){
 						debug("Channel %d ready for reading",i);
 						if (i == pipe_for_new_conn[0]){ 
+							verbose(VRAPI,"New connection received in RemoteAPI thread");
 							add_new_connection();
 						}else{ 
+							verbose(VRAPI,"New request received in RemoteAPI thread");
 							ret=process_remote_requests(i);
 							if (ret != EAR_SUCCESS) remove_remote_connection(i);
 						}

@@ -31,6 +31,8 @@
 #include <library/policies/policy_ctx.h> //clean
 #include <common/hardware/frequency.h>
 #include <daemon/local_api/eard_api.h> //?
+#include <library/policies/policy_state.h>
+
 
 #ifdef EARL_RESEARCH
 extern unsigned long ext_def_freq;
@@ -50,11 +52,11 @@ static void go_next_mt(int curr_pstate,int *ready,ulong *best_freq,int min_pstat
 fprintf(stderr,"go_next_mt: curr_pstate %d min_pstate %d\n",curr_pstate,min_pstate);
   if (curr_pstate==min_pstate){
 fprintf(stderr,"ready\n");
-    *ready=1;
+    *ready=EAR_POLICY_READY;
     *best_freq=frequency_pstate_to_freq(curr_pstate);
   }else{
     next_pstate=curr_pstate-1;
-    *ready=0;
+    *ready=EAR_POLICY_TRY_AGAIN;
     *best_freq=frequency_pstate_to_freq(next_pstate);
 fprintf(stderr,"Not ready: next %d freq %lu\n",next_pstate,*best_freq);
   }
@@ -124,7 +126,7 @@ ulong curr_pstate,def_pstate,def_freq;
 state_t st;
     my_app=sig;
 
-*ready=0;
+*ready=EAR_POLICY_TRY_AGAIN;
 
 if (c==NULL) return EAR_ERROR;
 if (c->app==NULL) return EAR_ERROR;
@@ -156,7 +158,7 @@ def_pstate=frequency_closest_pstate(def_freq);
     /* We must not use models , we will check one by one*/
     /* If we are not running at default freq, we must check if we must follow */
     if (sig_ready[def_pstate]==0){
-    *ready=0;
+    *ready=EAR_POLICY_TRY_AGAIN;
     *new_freq=def_freq;
     } else{
     /* This is the normal case */
@@ -166,7 +168,7 @@ def_pstate=frequency_closest_pstate(def_freq);
        if (is_better_min_time(sig,prev_sig,min_eff_gain)){
        go_next_mt(curr_pstate,ready,new_freq,min_pstate);
         }else{
-        *ready=1;
+        *ready=EAR_POLICY_READY;
          *new_freq=frequency_pstate_to_freq(prev_pstate);
         }
 }else{

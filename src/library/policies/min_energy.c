@@ -22,7 +22,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 0
+//#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/hardware/frequency.h>
@@ -30,6 +30,8 @@
 #include <library/policies/policy_api.h>
 #include <daemon/local_api/eard_api.h>
 #include <daemon/powercap/powercap_status.h>
+#include <library/policies/policy_state.h>
+
 
 typedef unsigned long ulong;
 #ifdef EARL_RESEARCH
@@ -100,7 +102,11 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 
 		// This is the frequency at which we were running
     #ifdef POWERCAP
-    curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+    if (c->pc_limit > 0){
+			curr_freq=frequency_closest_high_freq(my_app->avg_f,1);
+		}else{
+			curr_freq=*(c->ear_frequency);
+		}
     #else
     curr_freq=*(c->ear_frequency);
     #endif
@@ -110,7 +116,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 		eff_f=frequency_closest_high_freq(my_app->avg_f,1);
 
 
-		*ready=1;
+		*ready=EAR_POLICY_READY;
 
 		// If is not the default P_STATE selected in the environment, a projection
 		// is made for the reference P_STATE in case the coefficents were available.
@@ -189,7 +195,7 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	}
 	/* Corregir frecuencia por powercap y activar greedy si es necesario */
 	}else{ 
-		*ready=0;
+		*ready=EAR_POLICY_CONTINUE;
 		return EAR_ERROR;
 	}
 

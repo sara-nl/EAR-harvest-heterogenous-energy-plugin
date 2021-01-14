@@ -1,5 +1,5 @@
-CFLAGS  = $(CC_FLAGS) $(MPI_CFLAGS) -I$(SRCDIR) -O2 -fPIC
-LDFLAGS = $(SRCDIR)/common/libcommon.a -ldl
+CFLAGS  = -O2 -fPIC -I$(SRCDIR)
+LDFLAGS = -ldl
 
 ######## FILES
 
@@ -10,23 +10,20 @@ load_OBJS = \
     module_mpif.o \
     module_default.o
 
-load_BINS = \
-    libearld.so
-
+load_BINS = libearld.so
 load_DEPS = $(SRCDIR)/common/libcommon.a
-
 load_PATH = $(DESTDIR)/lib
 load_PERM = 0775
 
 ######## RULES
 
-all: $(load_OBJS) $(load_BINS)
+all: $(load_BINS)
 
 %.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
+	$(CC) $(CC_FLAGS) $(MPI_CFLAGS) $(CFLAGS) -c $<
 
-libearld.so:
-	$(CC) -shared -o libearld.so $(load_OBJS) $(LDFLAGS) $(load_DEPS)
+libearld.so: $(load_OBJS) $(load_DEPS)
+	$(CC) $(CC_FLAGS) -shared -o $@ $^ $(LDFLAGS)
 
 ######## OPTIONS 
 

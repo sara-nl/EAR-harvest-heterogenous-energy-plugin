@@ -18,6 +18,24 @@
 #ifndef METRICS_TEMPERATURE_H
 #define METRICS_TEMPERATURE_H
 
-#include <metrics/temperature/cpu/intel63.h>
+#include <common/states.h>
+#include <common/plugins.h>
+#include <common/hardware/topology.h>
+
+state_t temp_load(topology_t *tp);
+
+state_t temp_init(ctx_t *c);
+
+state_t temp_dispose(ctx_t *c);
+
+/* Requires a llong array of a length of total node sockets. */
+state_t temp_read(ctx_t *c, llong *temp, llong *average);
+
+state_t temp_data_alloc(llong **temp);
+
+state_t temp_data_free(llong **temp);
+
+/* Copies temp1 in temp2. */
+state_t temp_data_copy(llong *temp2, llong *temp1);
 
 #endif

@@ -24,14 +24,22 @@
 #ifndef _LIB_SHARED_DATA_H
 #define _LIB_SHARED_DATA_H
 
-#include <common/system/shared_areas.h>
+#define _GNU_SOURCE            
+#include <sched.h>
+
+
 #include <common/config.h>
+#include <common/types.h>
+#include <common/states.h>
 #include <common/types/signature.h>
+#include <common/system/shared_areas.h>
 
 typedef struct lib_shared_data{
-	int num_processes;
-	unsigned int num_signatures;
-	double cas_counters;
+	int 					num_processes;
+	unsigned int 	num_signatures;
+	double 				cas_counters;
+	signature_t 	master_signature;
+	int						master_rank;
 }lib_shared_data_t;
 
 typedef struct mpi_information{
@@ -46,9 +54,12 @@ typedef struct shsignature{
 	uint master;
 	uint ready;
 	mpi_information_t mpi_info;
-	signature_t sig;
+	/* sig was originally a signature_t */
+	ssig_t sig;
 	int 				  app_state;
 	unsigned long new_freq;
+	cpu_set_t cpu_mask;
+	int affinity;
 }shsignature_t;
 
 
@@ -112,16 +123,33 @@ int are_signatures_ready(lib_shared_data_t *data,shsignature_t *sig);
 void clean_signatures(lib_shared_data_t *data,shsignature_t *sig);
 void clean_mpi_info(lib_shared_data_t *data,shsignature_t *sig);
 void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig);
-void print_ready_shared_signatures(int master_rank,lib_shared_data_t *data,shsignature_t *sig);
-void print_sh_signature(shsignature_t *sig);
+void print_sh_signature(int localid,shsignature_t *sig);
 void clean_my_mpi_info(mpi_information_t *info);
 void print_local_mpi_info(mpi_information_t *info);
+void mpi_info_to_str(mpi_information_t *info,char *msg,size_t max);
+void mpi_info_to_str_csv(mpi_information_t *info,char *msg,size_t max);
+void mpi_info_head_to_str_csv(char *msg,size_t max);
+
+
 
 int select_cp(lib_shared_data_t *data,shsignature_t *sig);
 int select_global_cp(int size,int max,int *ppn,shsignature_t *my_sh_sig,int *node_cp,int *rank_cp);
+void compute_avg_sh_signatures(int size,int max,int *ppn,shsignature_t *my_sh_sig,signature_t *sig);
+
 double min_perc_mpi_in_node(lib_shared_data_t *data,shsignature_t *sig);
+void compute_per_node_avg_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *my_node_sig);
+
 
 void copy_my_mpi_info(lib_shared_data_t *data,shsignature_t *sig,mpi_information_t *my_mpi_info);
 void copy_my_sig_info(lib_shared_data_t *data,shsignature_t *sig,shsignature_t *rem_sig);
+void shsignature_copy(shsignature_t *dst,shsignature_t *src);
+
+int compute_per_node_most_loaded_process(lib_shared_data_t *data,shsignature_t *sig);
+
+
+void load_app_mgr_env();
+int my_shsig_id();
+int shsig_id(int node,int rank);
+
 
 #endif

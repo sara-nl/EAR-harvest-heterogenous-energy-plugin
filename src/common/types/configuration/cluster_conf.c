@@ -83,7 +83,7 @@ int get_ip(char *nodename, cluster_conf_t *conf)
 
 int get_num_nodes(cluster_conf_t *my_conf)
 {
-    int i, j, k;
+    int i, j;
     int total_nodes = 0;
     
     if (my_conf->num_islands < 1)
@@ -272,7 +272,6 @@ int get_default_tag_id(cluster_conf_t *conf)
 my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf, char *nodename)
 {
 	int i=0, j=0, range_found=0;
-    int num_spec_nodes = 0;
     int range_id = -1;
     int tag_id = -1, def_tag_id = -1;
 
@@ -403,13 +402,17 @@ my_node_conf_t *get_my_node_conf(cluster_conf_t *my_conf, char *nodename)
         }
     }
     /* Automatic computation of powercap */
-    if (n->powercap == -1){
+		#if POWERCAP
+		/* If node powercap is -1, and there is a global powercap, power is equally distributed */
+    if (n->powercap == DEF_POWER_CAP){
       if (my_conf->eargm.power > 0){
         n->powercap = my_conf->eargm.power / my_conf->cluster_num_nodes;
       }else{
+				/* 0 means no limit */
         n->powercap = 0;
       }
     }
+		#endif
 
 
 	return n;
@@ -737,6 +740,11 @@ void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
         strcpy(buf, "MO");
         return;
     }
+		else if (!strncmp(policy, "load_balance",strlen("load_balance")))
+		{
+			strcpy(buf, "LB");
+			return;
+		}
     else if (pol == EAR_ERROR)
     {
         strcpy(buf, "NP");
@@ -750,6 +758,7 @@ void get_short_policy(char *buf, char *policy, cluster_conf_t *conf)
 int policy_name_to_id(char *my_policy, cluster_conf_t *conf)
 {
     int i;
+		if (conf == NULL) return EAR_ERROR;
     for (i = 0; i < conf->num_policies; i++)
     {
         if (strcmp(my_policy, conf->power_policies[i].name) == 0) return i;

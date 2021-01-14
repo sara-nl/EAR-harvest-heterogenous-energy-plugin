@@ -18,11 +18,11 @@
 #ifndef _GLOBAL_COMM_H
 #define _GLOBAL_COMM_H
 
-#if MPI
-#include <mpi.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <library/common/library_shared_data.h>
+
+#if MPI
+
+#include <mpi.h>
 
 typedef struct masters_info{
 	MPI_Comm masters_comm;
@@ -46,12 +46,16 @@ state_t is_info_ready(MPI_Request *req);
 state_t wait_for_data(MPI_Request *req);
 
 
-void check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig);
+state_t check_mpi_info(masters_info_t *mi,int *node_cp,int *rank_cp,int show_sig);
 void print_mpi_info(masters_info_t *mi);
-void check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,int show_sig);
+state_t check_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig);
+state_t send_node_signatures(masters_info_t *mi,lib_shared_data_t *data,shsignature_t *sig,shsignature_t *all_sig,int show_sig);
 int load_unbalance(masters_info_t *mi);
 void print_global_signatures(masters_info_t *mi);
+state_t compute_avg_app_signature(masters_info_t *mi,signature_t *gsig);
+
 #else
+
 typedef struct masters_info{
   int my_master_rank;
   int my_master_size;
@@ -61,11 +65,13 @@ typedef struct masters_info{
   shsignature_t *nodes_info;
   int node_info_pending;
 }masters_info_t;
+
 #define check_mpi_info(a,b,c,d) (*b=0;*c=0)
 #define print_mpi_info(a)
 #define check_node_signatures(a,b,c,d)
 #define load_unbalance(a) 0
 #define print_global_signatures(a)
+#define compute_avg_app_signature(a,b) EAR_SUCCESS
 
 #endif
 #endif

@@ -168,6 +168,19 @@ void print_my_node_conf(my_node_conf_t *my_node_conf)
 	verbose(VCCONF,"max_sig_power %.0lf min_sig_power %.0lf error_power %.0lf\nmax_temp %lu powercap %ld max_powercap %ld powercap_type %d\ngpu_def_freq %lu\n",my_node_conf->max_sig_power,my_node_conf->min_sig_power,my_node_conf->max_error_power,my_node_conf->max_temp,my_node_conf->powercap,my_node_conf->max_powercap,my_node_conf->powercap_type,my_node_conf->gpu_def_freq);
 }
 
+/** Converts from policy name to policy_id . Returns EAR_ERROR if error*/
+int policy_name_to_nodeid(char *my_policy, my_node_conf_t *conf)
+{
+    int i;
+		if ( conf == NULL) return EAR_ERROR;
+    for (i = 0; i < conf->num_policies; i++)
+    {
+        if (strcmp(my_policy, conf->policies[i].name) == 0) return conf->policies[i].policy;
+    }
+  return EAR_ERROR;
+}
+
+
 void print_my_node_conf_fd_binary(int fd,my_node_conf_t *myconf)
 {
 	// this function needs to be revwritten
