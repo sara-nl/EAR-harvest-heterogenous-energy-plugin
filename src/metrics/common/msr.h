@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <common/types.h>
 #include <common/states.h>
+#include <common/hardware/topology.h>
 
 #define msr_clean(fd) \
 	*fd = -1
@@ -37,5 +38,7 @@ state_t msr_read(uint cpu, void *buffer, size_t count, off_t offset);
 /* */
 state_t msr_write(uint cpu, const void *buffer, size_t count, off_t offset);
 
+/* Prints a register of all threads in the node. */
+state_t msr_print(topology_t *tp, off_t offset);
 
 #endif //EAR_MSR_H

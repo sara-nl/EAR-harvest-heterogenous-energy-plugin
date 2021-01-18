@@ -951,7 +951,7 @@ void signal_handler(int sig) {
 		} else {
 			verbose(VCONF, "Loading EAR configuration");
 			verbose(VCONF, "There are %d Nodes in the cluster",my_cluster_conf.num_nodes);
-			compute_default_pstates_per_policy(my_cluster_conf.num_policies, my_cluster_conf.power_policies);
+		  compute_default_pstates_per_policy(my_cluster_conf.num_policies, my_cluster_conf.power_policies);
 			print_cluster_conf(&my_cluster_conf);
 			free(my_node_conf);
 			my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);

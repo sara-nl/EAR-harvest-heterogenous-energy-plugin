@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <stdio.h>
+#include <metrics/common/msr.h>
 #include <metrics/frequency/imc.h>
 #include <metrics/frequency/imc/dummy.h>
 #include <metrics/frequency/imc/intel63.h>
@@ -120,4 +122,85 @@ state_t freq_imc_data_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong
 state_t freq_imc_data_print(ulong *freqs, ulong *average)
 {
 	opreturn(ops.data_print, freqs, average);
+}
+
+/*
+ *
+ *
+ *
+ */
+
+#define U_MSR_UNCORE_RATIO_LIMIT	0x000620
+#define U_MSR_UNCORE_RL_MASK_MAX	0x00007F
+#define U_MSR_UNCORE_RL_MASK_MIN	0x007F00
+
+static topology_t tp_static;
+
+state_t mgt_imcfreq_load(topology_t *tp)
+{
+	return topology_select(tp, &tp_static, TPSelect.socket, TPGroup.merge, 0);
+}
+
+state_t mgt_imcfreq_init(ctx_t *c)
+{
+	int i;
+
+	for (i = 0; i < tp_static.cpu_count; ++i) {
+		msr_open(tp_static.cpus[i].id);
+	}
+	
+	return EAR_SUCCESS;
+}
+
+state_t mgt_imcfreq_set_current(ctx_t *c, ulong max_khz, ulong min_khz)
+{
+	off_t address = U_MSR_UNCORE_RATIO_LIMIT;
+	uint64_t set0 = 0;
+	uint64_t set1 = 0;
+	state_t r;
+	int i;
+
+	max_khz = max_khz / 100000LU;
+	min_khz = min_khz / 100000LU;
+
+	for (i = 0; i < tp_static.cpu_count; ++i)
+	{
+		set0 = (min_khz << 8) & U_MSR_UNCORE_RL_MASK_MIN;
+		set1 = (max_khz << 0) & U_MSR_UNCORE_RL_MASK_MAX;
+		set0 = set0 | set1;
+
+		debug("writing %lu (%lu) and %lu (%lu) in CPU%d", set1, max_khz, set0, min_khz, tp_static.cpus[i].id);
+		if ((r = msr_write(tp_static.cpus[i].id, &set0, sizeof(uint64_t), address)) != EAR_SUCCESS) {
+			return r;
+		}
+	}
+
+	return EAR_SUCCESS;
+}
+
+state_t mgt_imcfreq_get_current(ctx_t *c, ulong *max_khz, ulong *min_khz)
+{
+	off_t address = U_MSR_UNCORE_RATIO_LIMIT;
+	uint64_t result = 0;
+	state_t r;
+	int i;
+
+	*max_khz = 0;
+	*min_khz = 0;
+	
+	for (i = 0; i < tp_static.cpu_count; ++i)
+	{
+		// Read
+		if ((r = msr_read(tp_static.cpus[i].id, &result, sizeof(uint64_t), address)) != EAR_SUCCESS) {
+			return r;
+		}
+
+		*max_khz = (result & U_MSR_UNCORE_RL_MASK_MAX) >> 0;
+		*min_khz = (result & U_MSR_UNCORE_RL_MASK_MIN) >> 8;
+		*max_khz = *max_khz * 100000LU;
+		*min_khz = *min_khz * 100000LU;
+	}
+	debug("read max_khz: %lu, min_khz: %lu\n", *max_khz, *min_khz);
+
+	return EAR_SUCCESS;
 }

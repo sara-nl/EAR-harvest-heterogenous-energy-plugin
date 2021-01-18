@@ -55,6 +55,7 @@ extern uint my_port;
 void process_remote_requests(int clientfd)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     uint req;
     long ack=EAR_SUCCESS;
     debug("connection received");

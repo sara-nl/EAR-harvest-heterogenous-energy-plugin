@@ -75,7 +75,7 @@ static void tprintf_color_close(char **oput)
 
 /*
  *
-	 *
+ *
  *
  */
 
