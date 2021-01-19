@@ -634,6 +634,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			/* VERBOSE */
 			VERBOSE_SIG();
 			REPORT_TRACES();
+
 			/* END VERBOSE */
 
 			

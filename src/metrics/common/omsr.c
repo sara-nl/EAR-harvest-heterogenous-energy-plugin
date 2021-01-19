@@ -112,7 +112,7 @@ state_t omsr_open(uint cpu, int *fd)
 state_t omsr_close(int *fd)
 {
 	if (*fd < 0) {
-		return EAR_ALREADY_CLOSED;
+		return EAR_ERROR;
 	}
 	if (msr_initialised>0) msr_initialised--;
 	close(*fd);

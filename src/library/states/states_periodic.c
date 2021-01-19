@@ -271,6 +271,7 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
 						#endif
 
 					}	
+
 					// Loop printing algorithm
 					signature_copy(&loop.signature, &loop_signature.signature);
 					report_loop_signature(iterations,&loop);

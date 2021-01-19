@@ -44,7 +44,6 @@ core_OBJS = \
     api/ear.o \
     common/library_shared_data.o \
     metrics/metrics.o \
-    metrics/gpu.o \
     models/models.o \
     policies/policy.o \
     policies/pc_suport.o \
@@ -59,6 +58,11 @@ mpix_OBJS = \
     api/mpic.o \
     api/mpif.o \
     common/global_comm.o
+endif
+
+ifdef CUDA_BASE
+core_OBJS += \
+    metrics/gpu.o
 endif
 
 ######## RULES

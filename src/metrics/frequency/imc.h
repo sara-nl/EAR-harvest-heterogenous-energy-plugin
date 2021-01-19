@@ -20,6 +20,7 @@
 
 #include <common/types.h>
 #include <common/states.h>
+#include <common/plugins.h>
 #include <common/hardware/topology.h>
 
 typedef struct freq_imc_s {
@@ -47,5 +48,24 @@ state_t freq_imc_data_free(freq_imc_t *ef, ulong *freqs[]);
 state_t freq_imc_data_diff(freq_imc_t *ef2, freq_imc_t *ef1, ulong *freqs, ulong *average);
 
 state_t freq_imc_data_print(ulong *freqs, ulong *average);
+
+// Switch to management
+//
+// Info: changing an MSR, changes is value in all CPUs within de socket.
+//       It has to be changed per socket.
+//
+// Example:
+//	mgt_imcfreq_load(&tp);
+//	mgt_imcfreq_init(&ctx);
+// 	mgt_imcfreq_get_current(&ctx, &max_khz, &min_khz);
+//	mgt_imcfreq_set_current(&ctx, 6300000, 1200000);
+//
+state_t mgt_imcfreq_load(topology_t *c);
+
+state_t mgt_imcfreq_init(ctx_t *c);
+
+state_t mgt_imcfreq_set_current(ctx_t *c, ulong max_khz, ulong min_khz);
+
+state_t mgt_imcfreq_get_current(ctx_t *c, ulong *max_khz, ulong *min_khz);
 
 #endif //METRICS_FREQUENCY_IMC_H

@@ -35,7 +35,7 @@ typedef struct nm{
 }nm_t;
 
 typedef struct node_metrics{
-	freq_cpu_t freq_cpu;
+	cpufreq_t freq_cpu;
 	freq_imc_t freq_imc;
 	ulong avg_cpu_freq;
 	ulong avg_imc_freq;

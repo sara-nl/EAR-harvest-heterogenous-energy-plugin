@@ -300,6 +300,14 @@ void print_shared_signatures(lib_shared_data_t *data,shsignature_t *sig)
 		print_sh_signature(i,&sig[i]);
 	}
 }
+void print_ready_shared_signatures(int master_rank,lib_shared_data_t *data,shsignature_t *sig)
+{
+	uint numr=0,i;
+	if (master_rank < 0) return;
+	if (are_signatures_ready(data,sig)){
+		print_shared_signatures(data,sig);
+	}
+}
 
 
 

@@ -16,6 +16,7 @@
 */
 
 //#define SHOW_DEBUGS 1
+#include <common/output/verbose.h>
 
 #include <math.h>
 #include <errno.h>
@@ -34,10 +35,10 @@
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/job.h>
-#include <common/output/verbose.h>
 
 #include <common/messaging/msg_conf.h>
 #include <common/messaging/msg_internals.h>
+
 
 int eards_remote_connected=0;
 int eards_sfd=-1;
@@ -384,7 +385,6 @@ int send_command(request_t *command)
 
     command_size = get_command_size(command, &command_b);
     debug("send_command: command size: %lu\t request_t size: %lu", command_size, sizeof(request_t));
-
     
     if (send_non_block_data(eards_sfd, command_size, command_b, EAR_TYPE_COMMAND) != EAR_SUCCESS)
         error("send_command: Error sending command");
@@ -444,7 +444,9 @@ int send_non_block_data(int fd, size_t size, char *data, int type)
         }
 	} while ((tries < MAX_SOCKET_COMM_TRIES) && (to_send > 0) && (must_abort == 0)); //still pending to send and hasn't tried more than MAX_TRIES
 
-	if (tries >= MAX_SOCKET_COMM_TRIES) debug("send_non_block_data: tries reached in recv %d", tries);
+	if (tries >= MAX_SOCKET_COMM_TRIES) { 
+        debug("send_non_block_data: tries reached in recv %d", tries); 
+    }
 
 	/* If there are bytes left to send, we return a 0 */
 	if (to_send) { 
@@ -509,8 +511,9 @@ request_header_t receive_data(int fd, void **data)
     {
         if (head.type != EAR_TYPE_APP_STATUS)
         {
-            if (!((head.size == 0) && (head.type == 0))) 
+            if (!((head.size == 0) && (head.type == 0))) {
                 debug("receive_data: error recieving response data. Invalid data size (%d) or type (%d).", head.size, head.type);
+            }
             head.type = EAR_ERROR;
             head.size = 0;
             return head;
@@ -648,7 +651,9 @@ int eards_remote_connect(char *nodename,uint port)
                     close(sfd);
                     continue;
                 }
-                else debug("Connected");
+                else {
+                    debug("Connected"); 
+                }
             }
             else
             {
