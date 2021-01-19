@@ -1275,6 +1275,7 @@ int main(int argc, char *argv[])
                 user = optarg;
                 break;
             case 'j':
+                limit = limit == 20 ? -1 : limit; //if the limit is still the default
                 if (strchr(optarg, ','))
                 {
                     strcpy(job_ids, optarg);
