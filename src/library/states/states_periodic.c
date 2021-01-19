@@ -255,9 +255,15 @@ void states_periodic_new_iteration(int my_id, uint period, uint iterations, uint
             prev_ff=(float)prev_f/1000000.0;
             policy_freqf=(float)policy_freq/1000000.0;
 						#if USE_GPU_LIB
+						if (GPU_UTIL){
             verbose(1,
                   "\n\nEAR+P(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz)\n\t              (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)--> New frequency selected %.2fGHz\n",
                   ear_app_name, prev_ff, application.node_id,event, period, iterations, CPI, GBS, POWER, TIME, AVGFF,GPU_POWER,GPU_FREQ,GPU_UTIL, policy_freqf);
+						}else{
+            verbose(1,
+                  "\n\nEAR+P(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz)--> New frequency selected %.2fGHz\n",
+                  ear_app_name, prev_ff, application.node_id,event, period, iterations, CPI, GBS, POWER, TIME, AVGFF, policy_freqf);
+						}
 						#else
             verbose(1,
                   "\n\nEAR+P(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u,iterations=%d\n\t\tApp. Signature (CPI=%.3lf GBS=%.2lf Power=%.1lfW Time=%.3lfsec. CPU avg freq %.2fGHz) --> New frequency selected %.2fGHz\n",

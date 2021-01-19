@@ -354,13 +354,22 @@ state_t frequency_uncore_set_limits(uint32_t *buffer)
 	uint64_t set0 = 0;
 	uint64_t set1 = 0;
 	state_t r;
+	int enabled;
 	int i, j;
 
-	if (!_init) {
-		return EAR_NOT_INITIALIZED;
-	}
+  state_t s;
+  int cpu;
 
-	for (i = 0, j = 0; i < _cpus_num; ++i, j += 2)
+  if (xtate_fail(s, ifreq_intel63_is_enabled(&enabled))) {
+    return s;
+  }
+  if (!enabled) {
+    if (xtate_fail(s, ifreq_intel63_enable())) {
+      return s;
+    }   
+  }
+
+	for (i = 0, j = 0; i < cpu_count; ++i, j += 2)
 	{
 		set0 = (buffer[j+0] << 8) & U_MSR_UNCORE_RL_MASK_MIN;
 		set1 = (buffer[j+1] << 0) & U_MSR_UNCORE_RL_MASK_MAX;
@@ -380,12 +389,20 @@ state_t frequency_uncore_get_limits(uint32_t *buffer)
 	uint64_t result1 = 0;
 	state_t r;
 	int i, j;
-
-	if (!_init) {
-		return EAR_NOT_INITIALIZED;
+	int enabled;
+	state_t s;
+	int cpu;
+	
+	if (xtate_fail(s, ifreq_intel63_is_enabled(&enabled))) {
+		return s;
+	}
+	if (!enabled) {
+		if (xtate_fail(s, ifreq_intel63_enable())) {
+			return s;
+		}
 	}
 
-	for (i = 0, j = 0; i < _cpus_num; ++i, j += 2)
+	for (i = 0, j = 0; i < cpu_count; ++i, j += 2)
 	{
 		buffer[j+0] = 0;
 		buffer[j+1] = 0;

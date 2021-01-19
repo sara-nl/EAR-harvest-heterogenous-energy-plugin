@@ -51,6 +51,7 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
   char coeff_file_fn[128];
   int begin_pstate, end_pstate;
   int i, ref;
+	int cfound = 0;
 
 	debug("Using avx512_model\n");
 	num_pstates=myarch->pstates;
@@ -95,9 +96,11 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
       i=frequency_closest_pstate(coefficients_sm[ccoeff].pstate);
       if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
+				cfound++;
       }
     }
   }
+	verbose(2,"%d Coefficients found",cfound);
 	basic_model_init=1;	
 	return EAR_SUCCESS;
 }

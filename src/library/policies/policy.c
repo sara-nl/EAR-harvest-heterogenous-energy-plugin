@@ -21,7 +21,7 @@
 #include <mpi.h>
 #endif
 #include <dlfcn.h>
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 #include <common/includes.h>
 #include <common/config/config_env.h>
 #include <common/system/symplug.h>
@@ -114,7 +114,9 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	state_t ret;
 
   char *obj_path = getenv(SCHED_EAR_POWER_POLICY);
+	char *ins_path = getenv(SCHED_EARL_INSTALL_PATH);
 	char *app_mgr_policy = getenv(USE_APP_MGR_POLICIES);
+	char use_path[SZ_PATH_INCOMPLETE];
 	int app_mgr=0;
 	if (app_mgr_policy != NULL) app_mgr = atoi(app_mgr_policy);
 	#if SHOW_DEBUGS
@@ -124,15 +126,34 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 	}else{
 		debug("%s undefined",SCHED_EAR_POWER_POLICY);
 	}
+	if (ins_path !=NULL){
+		debug("%s = %s",SCHED_EARL_INSTALL_PATH,ins_path);
+	}else{
+		debug("%s undefined",SCHED_EARL_INSTALL_PATH);
+	}
 	}
 	#endif
-  if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
+  if (((obj_path==NULL) && (ins_path == NULL)) || (app_settings->user_type!=AUTHORIZED)){
 			if (!app_mgr){
     		sprintf(basic_path,"%s/policies/%s.so",data->dir_plug,app_settings->policy_name);
 			}else{
     		sprintf(basic_path,"%s/policies/app_%s.so",data->dir_plug,app_settings->policy_name);
 			}
     	obj_path=basic_path;
+	}else{
+		if (obj_path == NULL){
+			if (ins_path != NULL){
+				sprintf(use_path,"%s/plugins/policies", ins_path);	
+			}else{
+				sprintf(use_path,"%s/policies", data->dir_plug);
+			}
+			if (!app_mgr){
+				sprintf(basic_path,"%s/%s.so",use_path,app_settings->policy_name);		
+			}else{
+				sprintf(basic_path,"%s/app_%s.so",use_path,app_settings->policy_name);		
+			}
+			obj_path=basic_path;
+		}
 	}
   if (masters_info.my_master_rank>=0) verbose(1,"loading policy %s",obj_path);
 	if (policy_load(obj_path,&polsyms_fun)!=EAR_SUCCESS){
@@ -174,10 +195,15 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
     debug("%s undefined",SCHED_EAR_GPU_POWER_POLICY);
   }
   #endif
-  if ((obj_path==NULL) || (app_settings->user_type!=AUTHORIZED)){
+  if (((obj_path==NULL) && (ins_path == NULL)) || (app_settings->user_type!=AUTHORIZED)){
       sprintf(basic_path,"%s/policies/gpu_%s.so",data->dir_plug,app_settings->policy_name);
       obj_path=basic_path;
-  }
+  }else{
+    if (obj_path == NULL){
+      sprintf(basic_path,"%s/plugins/policies/gpu_%s.so",ins_path,app_settings->policy_name);
+      obj_path=basic_path;
+    }
+	}
   debug("loading policy %s",obj_path);
   if (policy_load(obj_path,&gpu_polsyms_fun)!=EAR_SUCCESS){
     error("Error loading policy %s",obj_path);
@@ -272,12 +298,11 @@ static ulong compute_avg_freq(ulong *my_policy_list)
 static void print_freq_per_core()
 {
 	int i;
-	return;
 	for (i=0;i<arch_desc.top.cpu_count;i++)
   {
-		verbosen(0,"CPU[%d]=%.2f ",i,(float)freq_per_core[i]/1000000.0);
+		verbosen(2,"CPU[%d]=%.2f ",i,(float)freq_per_core[i]/1000000.0);
 	}
-	verbose(0," ");
+	verbose(2," ");
 }
 static void from_proc_to_core()
 {
@@ -303,6 +328,7 @@ static void policy_cpu_freq_selection(signature_t *my_sig,ulong *freq_set)
 {
 	polctx_t *c=&my_pol_ctx;
 	int i;
+	char pol_grain_str[128];
 	debug("policy_cpu_freq_selection");
 #if POWERCAP
   if (pc_app_info_data->mode==PC_DVFS){
@@ -317,28 +343,28 @@ static void policy_cpu_freq_selection(signature_t *my_sig,ulong *freq_set)
   }
 #endif
 	memset(freq_per_core,0,sizeof(ulong)*MAX_CPUS_SUPPORTED);
+	if (my_policy_grain == POL_GRAIN_CORE) sprintf(pol_grain_str,"POL_GRAIN_CORE");
+	else sprintf(pol_grain_str,"POL_GRAIN_NODE");
+	verbose(2,"my_policy_grain %s and affinity %d",pol_grain_str,ear_affinity_is_set);
 	/* Assumption: If affinity is set for master, it is set for all, we could check individually */
 	if ((my_policy_grain == POL_GRAIN_CORE) && (ear_affinity_is_set)){
-		debug("POL_GRAIN_CORE && affinity");
 		from_proc_to_core();		
 	}else{
-		debug("my_policy_grain %d and affinity %d",my_policy_grain,ear_affinity_is_set);
 		debug("Setting same freq in all node %lu",policy_freq_list[0]);
 		for (i=0;i<MAX_CPUS_SUPPORTED;i++) freq_per_core[i]=policy_freq_list[0];
 	}
-	print_freq_per_core();
+	// print_freq_per_core();
   if (*freq_set != *(c->ear_frequency))
   {
 		/* *(c->ear_frequency) =  eards_change_freq(*freq_set);*/
 		*(c->ear_frequency) = eards_change_freq_with_list(arch_desc.top.cpu_count,freq_per_core);
-		verbose(1,"MR[%d]: Setting frequency to %lu (ret=%lu)",masters_info.my_master_rank,*freq_set,*(c->ear_frequency));
+		verbose(2,"MR[%d]: Setting frequency_list to %lu (ret=%lu)",masters_info.my_master_rank,*freq_set,*(c->ear_frequency));
 		return;
-		verbose(1,"MR[%d] Setting frequency to %lu",masters_info.my_master_rank,*freq_set);
       if(ear_affinity_is_set == 0){
-        debug("Setting frequency to %lu",*freq_set);
+				verbose(2,"MR[%d] Setting frequency_node to %lu",masters_info.my_master_rank,*freq_set);
         *(c->ear_frequency) =  eards_change_freq(*freq_set);
       }else{
-        debug("We ARE using affinity mask");
+				verbose(2,"MR[%d] Setting frequency_mask to %lu",masters_info.my_master_rank,*freq_set);
         /* How to manage cores vs CPUS */
         *(c->ear_frequency) =  eards_change_freq_with_mask(*freq_set,&ear_process_mask);
       }

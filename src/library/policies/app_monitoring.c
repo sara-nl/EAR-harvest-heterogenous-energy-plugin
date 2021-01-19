@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
@@ -84,6 +84,7 @@ state_t policy_end(polctx_t *c)
 	mpi_stats.perc_mpi = (float) mpi_stats.mpi_time/(float)mpi_stats.exec_time;
 	if (stats != NULL){
 		sprintf(file_name,"%s",stats);
+		verbose(1,"Using %s STATS output file",stats);
 		fd=open(file_name,O_WRONLY|O_CREAT|O_APPEND,S_IRUSR|S_IWUSR);
 		if (fd < 0){
 			mpi_info_to_str(&mpi_stats,buff,sizeof(buff));

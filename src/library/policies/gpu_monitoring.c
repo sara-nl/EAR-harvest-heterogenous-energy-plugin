@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <library/policies/policy_api.h>
 
@@ -53,7 +53,7 @@ state_t policy_init(polctx_t *c)
 		gpu_lib_freq_limit_get_current(&c->gpu_mgt_ctx, ext_gpu_def_freq);
 	}
 	for (i=0;i<c->num_gpus;i++){
-		debug("GPU_monitoring: GPU %d initialized with %lu",i,ext_gpu_def_freq[i]);
+		verbose(1,"GPU_monitoring: GPU %d initialized with %lu",i,ext_gpu_def_freq[i]);
 	}
 	ret = gpu_lib_freq_limit_set(ext_gpu_def_freq);
 	return EAR_SUCCESS;

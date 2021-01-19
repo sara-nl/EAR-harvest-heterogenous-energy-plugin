@@ -22,6 +22,7 @@
 #include <daemon/shared_configuration.h>
 #include <common/hardware/frequency.h>
 #include <common/hardware/architecture.h>
+#include <common/output/verbose.h>
 
 #include <library/models/models_api.h>
 
@@ -52,6 +53,7 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
   char coeff_file_fn[128];
   int begin_pstate, end_pstate;
   int i, ref;
+	int cfound = 0;
 
 	debug("Using basic_model\n");
 	num_pstates=(uint)myarch->pstates;
@@ -91,15 +93,19 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
       if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
                 debug("initializing coeffs for ref: %d i: %d\n", ref, i);
+				cfound++;
       }
     }
   }
+	verbose(2,"%d Coefficients found",cfound);
 	basic_model_init=1;	
+	#if 0
     for (ref = 0; ref < num_pstates; ref++)
     {
         for (i = 0; i < num_pstates; i++)
                 debug("coefficient from ref: %d i: %d available: %d\n", ref, i, coefficients[ref][i].available);
     }
+	#endif
 	return EAR_SUCCESS;
 }
 
