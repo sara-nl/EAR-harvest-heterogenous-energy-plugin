@@ -28,8 +28,11 @@ typedef struct governor {
 	ulong min_f;
 } governor_t;
 
-// Initialized in: ear.c/eard.c/dvfs.c/
+// Initialized in: eard.c/dvfs.c/
 state_t frequency_init(uint x);
+// Initialized in: ear.c
+state_t frequency_init_user(ulong *freq_list, uint freq_count);
+
 state_t frequency_dispose();
 
 // Virtualizable. Init required. | Not used without initialization. | EARD, EARL, DVFS, PMON. POL.

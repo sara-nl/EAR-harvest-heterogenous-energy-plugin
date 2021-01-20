@@ -31,6 +31,8 @@ state_t cpufreq_default_status(topology_t *_tp);
 
 state_t cpufreq_default_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver);
 
+state_t cpufreq_default_init_user(ctx_t *c, mgt_ps_driver_ops_t *ops_driver, const ullong *freq_list, uint freq_count);
+
 state_t cpufreq_default_dispose(ctx_t *c);
 
 /** Getters */

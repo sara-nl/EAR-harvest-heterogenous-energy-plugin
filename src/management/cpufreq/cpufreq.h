@@ -63,6 +63,7 @@ typedef struct mgt_ps_driver_ops_s
 typedef struct mgt_ps_ops_s
 {
 	state_t (*init)                 (ctx_t *c, mgt_ps_driver_ops_t *driver_ops);
+	state_t (*init_user)            (ctx_t *c, mgt_ps_driver_ops_t *driver_ops, const ullong *freq_list, uint freq_count);
 	state_t (*dispose)              (ctx_t *c);
 	state_t (*count)                (ctx_t *c, uint *pstate_count);
 	state_t (*get_available_list)   (ctx_t *c, pstate_t *pstate_list, uint *pstate_count);
@@ -80,6 +81,9 @@ state_t mgt_cpufreq_load(topology_t *tp);
 
 // The second function to call, initializes all the data.
 state_t mgt_cpufreq_init(ctx_t *c);
+
+// Not privileged init. If freq_list is NULL the API tries to initialize anyway.
+state_t mgt_cpufreq_init_user(ctx_t *c, const ullong *freq_list, uint freq_count);
 
 // Frees its allocated memory.
 state_t mgt_cpufreq_dispose(ctx_t *c);

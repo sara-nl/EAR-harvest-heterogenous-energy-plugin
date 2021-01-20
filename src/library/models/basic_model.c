@@ -15,28 +15,23 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <common/states.h>
+#include <common/output/debug.h>
 #include <common/types/signature.h>
 #include <daemon/shared_configuration.h>
 #include <management/cpufreq/frequency.h>
 #include <common/hardware/architecture.h>
-
 #include <library/models/models_api.h>
-
 
 static coefficient_t **coefficients;
 static coefficient_t *coefficients_sm;
 static int num_coeffs;
 static uint num_pstates;
 static uint basic_model_init=0;
-//#define SHOW_DEBUGS 0
-#ifdef SHOW_DEBUGS
-#define debug(...) fprintf(stderr, __VA_ARGS__); 
-#else
-#define debug(...) 
-#endif
 
 static int valid_range(ulong from,ulong to)
 {
@@ -47,59 +42,68 @@ static int valid_range(ulong from,ulong to)
 /* This function loads any information needed by the energy model */
 state_t model_init(char *etc,char *tmp,architecture_t *myarch)
 {
-  char coeff_file[128];
-  char coeff_default_file[128];
-  char coeff_file_fn[128];
-  int begin_pstate, end_pstate;
-  int i, ref;
+	char coeff_file[128];
+	char coeff_default_file[128];
+	char coeff_file_fn[128];
+	int begin_pstate, end_pstate;
+	int i, ref;
 
-	debug("Using basic_model\n");
-	num_pstates=(uint)myarch->pstates;
-	debug("Using %u pstates",num_pstates);
+	num_pstates = (uint) myarch->pstates;
+	debug("Using basic_model.so (%u pstates)",num_pstates);
 
-  coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
-  if (coefficients == NULL) {
+	coefficients = (coefficient_t **) malloc(sizeof(coefficient_t *) * num_pstates);
+	if (coefficients == NULL) {
 		return EAR_ERROR;
-  }
-  for (i = 0; i < num_pstates; i++)
-  {
-    coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * num_pstates);
-    if (coefficients[i] == NULL) {
+	}
+
+	for (i = 0; i < num_pstates; i++)
+	{
+		coefficients[i] = (coefficient_t *) malloc(sizeof(coefficient_t) * num_pstates);
+		if (coefficients[i] == NULL) {
 			return EAR_ERROR;
-    }
+		}
+		for (ref = 0; ref < num_pstates; ref++)
+		{
+			coefficients[i][ref].pstate_ref = frequency_pstate_to_freq(i);
+			coefficients[i][ref].pstate     = frequency_pstate_to_freq(ref);
+			coefficients[i][ref].available  = 0;
+			debug("frequency_pstate_to_freq(%d) = %llu",   i, coefficients[i][ref].pstate_ref);
+			debug("frequency_pstate_to_freq(%d) = %llu", ref, coefficients[i][ref].pstate);
+		}
+	}
 
-    for (ref = 0; ref < num_pstates; ref++)
-    {
-
-      coefficients[i][ref].pstate_ref = frequency_pstate_to_freq(i);
-      coefficients[i][ref].pstate = frequency_pstate_to_freq(ref);
-      coefficients[i][ref].available = 0;
-    }
-  }
-
-
-  char coeffs_path[GENERIC_NAME];
-  get_coeffs_default_path(tmp,coeffs_path);
-  num_coeffs=0;
-  coefficients_sm=attach_coeffs_default_shared_area(coeffs_path,&num_coeffs);
-  if (num_coeffs>0){
-    num_coeffs=num_coeffs/sizeof(coefficient_t);
+	char coeffs_path[GENERIC_NAME];
     int ccoeff;
-    for (ccoeff=0;ccoeff<num_coeffs;ccoeff++){
-      ref=frequency_closest_pstate(coefficients_sm[ccoeff].pstate_ref);
-      i=frequency_closest_pstate(coefficients_sm[ccoeff].pstate);
-      if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
+	
+	num_coeffs = 0;
+	get_coeffs_default_path(tmp, coeffs_path);
+	coefficients_sm = attach_coeffs_default_shared_area(coeffs_path, &num_coeffs);
+	
+	if (num_coeffs>0)
+	{
+		num_coeffs = num_coeffs / sizeof(coefficient_t);
+
+		for (ccoeff=0;ccoeff<num_coeffs;ccoeff++)
+		{
+      		ref = frequency_closest_pstate(coefficients_sm[ccoeff].pstate_ref);
+			i   = frequency_closest_pstate(coefficients_sm[ccoeff].pstate);
+			if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)) {
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
-                debug("initializing coeffs for ref: %d i: %d\n", ref, i);
-      }
-    }
-  }
+                //debug("initializing coeffs for ref: %d i: %d", ref, i);
+			}
+		}
+	}
+
 	basic_model_init=1;	
-    for (ref = 0; ref < num_pstates; ref++)
-    {
-        for (i = 0; i < num_pstates; i++)
-                debug("coefficient from ref: %d i: %d available: %d\n", ref, i, coefficients[ref][i].available);
+
+	#if 0    
+	for (ref = 0; ref < num_pstates; ref++) {
+        for (i = 0; i < num_pstates; i++) {
+                debug("coefficient from ref: %d i: %d available: %d", ref, i, coefficients[ref][i].available);
+		}
     }
+	#endif
+
 	return EAR_SUCCESS;
 }
 
@@ -151,7 +155,7 @@ state_t model_project_power(signature_t *sign, ulong from,ulong to,double *ppowe
 
 state_t model_projection_available(ulong from,ulong to)
 {
-    debug("checking if coefficient from %lu to %lu is available: %lu\n", from, to, coefficients[from][to].available);
+    //debug("checking if coefficient from %lu to %lu is available: %lu", from, to, coefficients[from][to].available);
 	if (valid_range(from, to) && coefficients[from][to].available) return EAR_SUCCESS;
 	else return EAR_ERROR;
 }

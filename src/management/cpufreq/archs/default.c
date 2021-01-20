@@ -91,6 +91,11 @@ state_t static_init(dummy_ctx_t *f)
 	return EAR_SUCCESS;
 }
 
+state_t cpufreq_default_init_user(ctx_t *c, mgt_ps_driver_ops_t *ops_driver, const ullong *freq_list, uint freq_count)
+{
+	return cpufreq_default_init(c, ops_driver);
+}
+
 state_t cpufreq_default_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 {
 	dummy_ctx_t *f;

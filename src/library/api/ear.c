@@ -829,12 +829,23 @@ void ear_init()
 	// Policies && models
 	arch_desc.max_freq_avx512=system_conf->max_avx512_freq;
 	arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
-	debug("frequency_init");
-	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
-	arch_desc.pstates = frequency_get_num_pstates(); // Updating archs pstates value
 
-	if (ear_my_rank == 0)
-	{
+	// Frequencies
+	ulong *freq_list;
+	uint freq_count;
+	// Getting frequencies from EARD
+	debug("initializing frequencies");
+	get_frequencies_path(get_ear_tmp(), app_mgt_path);
+	debug("looking for frequencies in '%s'", app_mgt_path);
+	freq_list = attach_frequencies_shared_area(app_mgt_path, (int *) &freq_count);
+	freq_count = freq_count / sizeof(ulong);
+	// Initializing API in user mode	
+	frequency_init_user(freq_list, freq_count);
+	dettach_frequencies_shared_area();
+	// You can utilize now the frequency API
+	arch_desc.pstates = frequency_get_num_pstates();
+	// Other frequency things
+	if (ear_my_rank == 0) {
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			verbose(2, "turbo learning phase, turbo selected and start computing");
 			if (!my_id) eards_set_turbo();
@@ -843,6 +854,7 @@ void ear_init()
 		}
 	}
 
+	// This is not frequency any more
 	if (masters_info.my_master_rank>=0){
 	  #if POWERCAP
   	get_app_mgt_path(get_ear_tmp(),app_mgt_path);

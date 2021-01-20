@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 
 #include <common/sizes.h>
 #include <common/plugins.h>
@@ -62,6 +62,7 @@ static state_t load_amd17(topology_t *tp)
 	}
 	
 	ops.init               = cpufreq_amd17_init;
+	ops.init_user          = cpufreq_amd17_init_user;
 	ops.dispose            = cpufreq_amd17_dispose;
 	ops.count              = cpufreq_amd17_count;
 	ops.get_available_list = cpufreq_amd17_get_available_list;
@@ -85,6 +86,7 @@ static state_t load_dummy(topology_t *tp)
 	}
 
 	ops.init               = cpufreq_default_init;
+	ops.init_user          = cpufreq_default_init_user;
 	ops.dispose            = cpufreq_default_dispose;
 	ops.count              = cpufreq_default_count;
 	ops.get_available_list = cpufreq_default_get_available_list;
@@ -126,6 +128,11 @@ state_t mgt_cpufreq_load(topology_t *tp)
 state_t mgt_cpufreq_init(ctx_t *c)
 {
 	preturn (ops.init, c, &ops_driver);
+}
+
+state_t mgt_cpufreq_init_user(ctx_t *c, const ullong *freq_list, uint freq_count)
+{
+	preturn (ops.init_user, c, &ops_driver, freq_list, freq_count);
 }
 
 state_t mgt_cpufreq_dispose(ctx_t *c)

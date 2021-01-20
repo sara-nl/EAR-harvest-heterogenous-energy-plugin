@@ -204,7 +204,8 @@ void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 	}
 }
 
-void init_frequency_list() {
+void init_frequency_list()
+{
 	int ps, i;
 	ps = frequency_get_num_pstates();
 	int size = ps * sizeof(ulong);
@@ -1200,12 +1201,21 @@ int coeffs_per_island_default_exist(char *filename) {
 	return file_size;
 }
 
-int read_coefficients_default() {
+int read_coefficients_default()
+{
 	char my_coefficients_file[GENERIC_NAME];
 	int file_size = 0;
 	file_size = coeffs_per_node_default_exist(my_coefficients_file);
-	if (file_size == EAR_OPEN_ERROR) {
+	verbose(0, "################## COEFFS DEFAULT NODE %s", my_coefficients_file);
+
+	if (file_size == EAR_OPEN_ERROR)
+	{
+		verbose(0, "################## EAR_OPEN_ERROR");
+
 		file_size = coeffs_per_island_default_exist(my_coefficients_file);
+	
+		verbose(0, "################## COEFFS DEFAULT ISLAND %s", my_coefficients_file);
+		
 		if (file_size == EAR_OPEN_ERROR) {
 			warning("Warning, coefficients not found");
 			my_coefficients_default = (coefficient_t *) calloc(1, sizeof(coefficient_t));

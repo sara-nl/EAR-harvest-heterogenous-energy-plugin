@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -33,7 +33,7 @@ static uint       pstate_count;
 static uint       pstate_nominal;
 static uint       init;
 
-state_t frequency_init(uint x)
+static state_t static_init(ullong *freq_list, uint freq_count)
 {
 	state_t s;
 	
@@ -46,8 +46,14 @@ state_t frequency_init(uint x)
 	if (xtate_fail(s, mgt_cpufreq_load(&topo))) {
 		return s;
 	}
-	if (xtate_fail(s, mgt_cpufreq_init(&c))) {
-		return s;
+	if (freq_list == NULL) {
+		if (xtate_fail(s, mgt_cpufreq_init(&c))) {
+			return s;
+		}
+	} else {
+		if (xtate_fail(s, mgt_cpufreq_init_user(&c, freq_list, freq_count))) {
+			return s;
+		}
 	}
 	if (xtate_fail(s, mgt_cpufreq_count(&c, &pstate_count))) {
 		return s;
@@ -72,6 +78,16 @@ state_t frequency_init(uint x)
 	init = 1;
 	
 	return EAR_SUCCESS;
+}
+
+state_t frequency_init_user(ulong *freq_list, uint freq_count)
+{
+	return static_init((ullong *) freq_list, freq_count);
+}
+
+state_t frequency_init(uint x)
+{
+	return static_init(NULL, 0);
 }
 
 state_t frequency_dispose()
@@ -325,15 +341,19 @@ int frequency_is_valid_pstate(uint pstate)
 uint frequency_closest_pstate(ulong freq_khz)
 {
 	uint pstate_index;
+	//fprintf(stderr, "frequency_closest_pstate, init %d, freq_khz %lu ...", init, freq_khz);
 	if (!init) {
 		return 1;
 	}
 	if (freq_khz < available_list[pstate_count-1].khz) {
+		//fprintf(stderr, "leaving because is less than %lu\n", available_list[pstate_count-1].khz);
 		return pstate_nominal;
 	}
 	if (state_fail(mgt_cpufreq_get_index(&c, (ullong) freq_khz, &pstate_index, 1))) {
+		//fprintf(stderr, "leaving because mgt_cpufreq_get_index failed\n");
 		return pstate_nominal;
 	}
+		//fprintf(stderr, "leaving because is ok, indes %d\n", pstate_index);
 	return pstate_index;
 }
 

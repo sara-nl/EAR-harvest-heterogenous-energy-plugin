@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 
 #include <math.h>
 #include <stdlib.h>
@@ -120,6 +120,9 @@ state_t cpufreq_amd17_dispose(ctx_t *c)
 	if (xtate_fail(s, static_init_test(c, &f))) {
 		return s;
 	}
+	if (f->user_mode) {
+		return static_dispose(f, 0, EAR_SUCCESS, NULL);
+	}
 	return static_dispose(f, tp.cpu_count, EAR_SUCCESS, NULL);
 }
 
@@ -199,6 +202,42 @@ static state_t pstate_build_psss_single(ullong freq_mhz, ullong *cof, ullong *fi
 	return EAR_SUCCESS;
 }
 
+static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst, uint test);
+
+static int pstate_clean_psss(amd17_ctx_t *f, uint i)
+{
+	int how_many;
+	// If reached the deepest point then return
+	if (i == f->pss_count) {
+		return 0;
+	}
+	//
+	how_many = pstate_clean_psss(f, i+1);
+	// If we are OK then return
+	if (state_ok(set_frequency_p1(f, 0, i, 1))) {
+		return how_many+1;
+	}
+	// We are not OK
+	debug("frequency %llu can't be written", f->psss[i].cof);
+	// If we are not OK and the next is OK
+	int h;
+	for (h = 0; h < how_many; ++h) {
+		memcpy(&f->psss[i+h], &f->psss[i+h+1], sizeof(pss_t));
+	}
+	// If we are not OK and the next is not OK
+	return how_many;
+}
+
+static void pstate_print_psss(amd17_ctx_t *f)
+{
+	int i;
+	debug("PSS object list: ");
+	for (i = 0; i < f->pss_count; ++i) {
+		debug("P%d: %llum * 200 / %llud = %llu MHz", i,
+			  f->psss[i].fid, f->psss[i].did, f->psss[i].cof);
+	}
+}
+
 static state_t pstate_build_psss(amd17_ctx_t *f)
 {
 	const ullong *freqs_available;
@@ -245,31 +284,18 @@ static state_t pstate_build_psss(amd17_ctx_t *f)
 		}
 	}
 	f->pss_count = i;
-	#if SHOW_DEBUGS
-	debug("PSS object list: ");
-	for (i = 0; i < f->pss_count; ++i) {
-		debug("P%d: %llum * 200 / %llud = %llu MHz", i,
-			  f->psss[i].fid, f->psss[i].did, f->psss[i].cof);
-	}
-	#endif
 	return EAR_SUCCESS;
 }
 
-state_t cpufreq_amd17_init_user(amd17_ctx_t *f)
+static state_t pstate_build_psss_user(amd17_ctx_t *f)
 {
 	const ullong *freqs_available;
 	ullong cof, fid, did;
 	state_t s;
 
-	// Initializing in user mode
-	f->user_mode = 1;
 	// In user mode the driver is the main actor
 	if (xtate_fail(s, f->driver->get_available_list(&f->driver_c, &freqs_available, &f->pss_count))) {
 		return static_dispose(f, 0, s, state_msg);
-	}
-	// Boost enabled checked by the driver.
-	if (xtate_ok(s, f->driver->get_boost(&f->driver_c, &f->boost_enabled))) {
-		f->pss_nominal = f->boost_enabled;
 	}
 	// Initializing a virtual (because MSR can't be read) register PSS0 to initialize the list.
 	cof = freqs_available[0] / 1000LLU;
@@ -284,9 +310,52 @@ state_t cpufreq_amd17_init_user(amd17_ctx_t *f)
 	#endif
 	// Building PSS object list
 	if (xtate_fail(s, pstate_build_psss(f))) {
-		return static_dispose(f, tp.cpu_count, s, state_msg);
+		return static_dispose(f, 0, s, state_msg);
 	}
+	
+	return EAR_SUCCESS;
+}
+
+state_t cpufreq_amd17_init_user(ctx_t *c, mgt_ps_driver_ops_t *ops_driver, const ullong *freq_list, uint freq_count)
+{
+	amd17_ctx_t *f;
+	state_t s;
+	int i;
+
+	debug("initializing AMD17 P_STATE control");
 	//
+	if (state_ok(static_init_test(c, &f))) {
+		return_msg(EAR_ERROR, Generr.api_initialized);
+	}
+	// Context
+    if ((c->context = calloc(1, sizeof(amd17_ctx_t))) == NULL) {
+        return_msg(EAR_ERROR, strerror(errno));
+    }
+    f = (amd17_ctx_t *) c->context;
+	// User mode please.
+	f->user_mode = 1;
+	// Inititializing the driver before (because if doesn't work we can't do anything).
+	f->driver = ops_driver;
+	if (xtate_fail(s, f->driver->init(&f->driver_c))) {
+		return static_dispose(f, 0, s, state_msg);
+	}
+	// Boost enabled checked by the driver.
+	if (xtate_ok(s, f->driver->get_boost(&f->driver_c, &f->boost_enabled))) {
+		f->pss_nominal = f->boost_enabled;
+	}
+	// Inititializing the driver before (because if doesn't work we can't do anything).
+	if (freq_list == NULL) {
+		if (xtate_fail(s, pstate_build_psss_user(f))) {
+			return static_dispose(f, 0, s, state_msg);
+		}
+	} else {
+		f->pss_count = freq_count;
+		for (i = 0; i < f->pss_count; ++i) {
+			f->psss[i].cof = freq_list[i] / 1000LLU;
+		}
+	} 
+	// Initializing in user mode
+	pstate_print_psss(f);
 	debug("num P_STATEs: %d", f->pss_count);
 	debug("nominal P_STATE: P%d", f->pss_nominal);
 	debug("boost enabled: %d", f->boost_enabled);
@@ -321,9 +390,11 @@ state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 	// Opening MSRs (switch to user mode if permission denied)
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		if (xtate_fail(s, msr_open(tp.cpus[cpu].id))) {
+			#if 0
 			if (state_is(s, EAR_NO_PERMISSIONS)) {
 				return cpufreq_amd17_init_user(f);
 			}
+			#endif
 			return static_dispose(f, cpu, s, state_msg);
 		}
 	}
@@ -359,7 +430,10 @@ state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 	if (xtate_fail(s, pstate_build_psss(f))) {
 		return static_dispose(f, tp.cpu_count, s, state_msg);
 	}
+	// Cleaning
+	f->pss_count = pstate_clean_psss(f, 1) + 1;
 	//
+	pstate_print_psss(f);
 	debug("num P_STATEs: %d", f->pss_count);
 	debug("nominal P_STATE: P%d", f->pss_nominal);
 	debug("boost enabled: %d", f->boost_enabled);
@@ -550,8 +624,9 @@ state_t cpufreq_amd17_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, u
 }
 
 /** Setters */
-static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst)
+static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst, uint test)
 {
+	ullong aux;
 	ullong reg;
 	state_t s;
 
@@ -567,8 +642,19 @@ static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst)
 	if (xtate_fail(s, msr_write(cpu, &reg, sizeof(ullong), REG_P1))) {
 		return s;
 	}
+
 	debug("edited CPU%d P1 MSR to (%llum * 200 / %llud) = %llu MHz",
 		  cpu, f->psss[pst].fid, f->psss[pst].did, f->psss[pst].cof);
+
+	// Test in case the frequency is not written
+	if (test) {
+		if (xtate_fail(s, msr_read(cpu, &aux, sizeof(ullong), REG_P1))) {
+			return s;
+		}
+		if (aux != reg) {
+			return_msg(EAR_ERROR, "frequency not written");
+		}
+	}
 
 	return EAR_SUCCESS;
 }
@@ -610,7 +696,7 @@ state_t cpufreq_amd17_set_current_list(ctx_t *c, uint *pstate_index)
 				s2 = s1;
 			}
 		// Else
-		} else if (xtate_fail(s1, set_frequency_p1(f, cpu, pstate_index[cpu]))) {
+		} else if (xtate_fail(s1, set_frequency_p1(f, cpu, pstate_index[cpu], 0))) {
 			s2 = s1;
 		}
 	}
@@ -642,10 +728,10 @@ state_t cpufreq_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
 			return set_frequency_p0(f, (uint) tp.cpus[_cpu].sibling_id);
 		// Else
 		} else {
-			if (xtate_fail(s1, set_frequency_p1(f, (uint) _cpu, pstate_index))) {
+			if (xtate_fail(s1, set_frequency_p1(f, (uint) _cpu, pstate_index, 0))) {
 				return s1;
 			}
-			return set_frequency_p1(f, (uint) tp.cpus[_cpu].sibling_id, pstate_index);
+			return set_frequency_p1(f, (uint) tp.cpus[_cpu].sibling_id, pstate_index, 0);
 		}
 	}
 	// Step 2 (all CPUs to P0)
@@ -664,7 +750,7 @@ state_t cpufreq_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
 	}
 	// Step 2 (all CPUs to P1)
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
-		if (xtate_fail(s1, set_frequency_p1(f, cpu, pstate_index))) {
+		if (xtate_fail(s1, set_frequency_p1(f, cpu, pstate_index, 0))) {
 			s2 = s1;
 		}
 	}

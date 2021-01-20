@@ -34,6 +34,8 @@ state_t cpufreq_amd17_status(topology_t *_tp);
 
 state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver);
 
+state_t cpufreq_amd17_init_user(ctx_t *c, mgt_ps_driver_ops_t *ops_driver, const ullong *freq_list, uint freq_count);
+
 state_t cpufreq_amd17_dispose(ctx_t *c);
 
 /** Getters */
