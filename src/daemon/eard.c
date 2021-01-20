@@ -1206,16 +1206,8 @@ int read_coefficients_default()
 	char my_coefficients_file[GENERIC_NAME];
 	int file_size = 0;
 	file_size = coeffs_per_node_default_exist(my_coefficients_file);
-	verbose(0, "################## COEFFS DEFAULT NODE %s", my_coefficients_file);
-
-	if (file_size == EAR_OPEN_ERROR)
-	{
-		verbose(0, "################## EAR_OPEN_ERROR");
-
+	if (file_size == EAR_OPEN_ERROR) {
 		file_size = coeffs_per_island_default_exist(my_coefficients_file);
-	
-		verbose(0, "################## COEFFS DEFAULT ISLAND %s", my_coefficients_file);
-		
 		if (file_size == EAR_OPEN_ERROR) {
 			warning("Warning, coefficients not found");
 			my_coefficients_default = (coefficient_t *) calloc(1, sizeof(coefficient_t));

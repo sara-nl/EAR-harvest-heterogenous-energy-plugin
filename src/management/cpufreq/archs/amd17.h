@@ -20,15 +20,13 @@
 
 #include <management/cpufreq/cpufreq.h>
 
-//
 // AMD Frequency limitations
 //	- Although you can change the frequency by MSR, when doing it, all socket MSR Px register
 //	  change together. This means that is not possible to set different range of frequencies
 //	  accross the same socket. You can set different frequencies by using different MSR Px
-//	  registers but currently we are using just the MSR P1 to set the current frequency.
-//  - This means that is possible to use BOOST in P0 and a custom frequency in P1 accross the
-//    same socket, but is very limited range of frequencies.
-//
+//	  registers, but currently we are using just the MSR P1.
+//	- This means that is not possible to use different frequencies per thread/core. Just P1
+//	  and boost.
 
 state_t cpufreq_amd17_status(topology_t *_tp);
 

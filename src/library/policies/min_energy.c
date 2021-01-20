@@ -148,13 +148,13 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				best_freq=curr_freq;
 			}else{
 				/* Nominal is the reference , if projections are ready, we project time and power */
-         debug("current_freq is not the nominal");
+				debug("current_freq is not the nominal");
 
 				if (projection_available(curr_pstate,min_pstate) == EAR_SUCCESS){
 					project_power(my_app,curr_pstate,min_pstate,&power_ref);
 					project_time(my_app,curr_pstate,min_pstate,&time_ref);
 					best_freq=nominal;
-          debug("projecting to nominal\t time: %.2lf\t power: %.2lf", time_ref, power_ref);
+					debug("projecting to nominal\t time: %.2lf\t power: %.2lf", time_ref, power_ref);
 				}else{
         	time_ref=my_app->time;
         	power_ref=my_app->DC_power;

@@ -41,6 +41,15 @@
 //	  allowing the default or generic API selection.
 //	- You can set RECOVERY in Makefile to replace current API by the old one in
 //	  case of failure.
+//
+// Future work:
+// 	- Offer a function to get frequency configurations between threads, cores,
+// 	  or other kind of group of CPUs. In example:
+// 	  	mgt_cpufreq_get_conf(thread, core, group);
+// 	- Offer a function to serialize/marshall context to copy its internal data
+// 	  (context) in user mode applications. In example:
+// 	  	mgt_cpufreq_serialize(ctx_t *c, void **serialization, size_t *size);
+// 	  Or maybe to force static sized context allocations.
 
 typedef struct pstate_s {
 	uint   idx;
