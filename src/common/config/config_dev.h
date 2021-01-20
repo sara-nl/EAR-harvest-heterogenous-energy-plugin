@@ -29,11 +29,19 @@
 #define POWERCAP 			1
 #define POWERCAP_EXT 	0
 #define DYN_PAR 			1
+#if 1
+//Specifies if specific node propagation can be used
+#define NODE_PROP			0
+/** Specifies if eard's rapi uses dynamic size commands. Set to 0 if you want 
+ * compatibility with old EAR versions. */
+#define DYNAMIC_COMMANDS    0
+#else
 //Specifies if specific node propagation can be used
 #define NODE_PROP			1
 /** Specifies if eard's rapi uses dynamic size commands. Set to 0 if you want 
  * compatibility with old EAR versions. */
-#define DYNAMIC_COMMANDS    0
+#define DYNAMIC_COMMANDS    1
+#endif
 
 
 /*** EARL ***/

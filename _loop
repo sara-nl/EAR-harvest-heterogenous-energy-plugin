@@ -144,10 +144,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
    append_loop_text_file(loop_summary_path, loop,&loop_signature.job);
 	#endif
 	#if USE_DB
-    if (masters_info.my_master_rank>=0){ 
-			check_signature_to_db(&loop->signature);
-			eards_write_loop_signature(loop);
-		}
+    if (masters_info.my_master_rank>=0) eards_write_loop_signature(loop);
     #endif
 	
 	
