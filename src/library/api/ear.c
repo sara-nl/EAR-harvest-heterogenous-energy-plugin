@@ -1009,7 +1009,7 @@ void ear_finalize()
 	if (!my_id) 
 	{
 		debug("Reporting application data");
-		check_signature_to_db(&application.signature);
+		clean_db_signature(&application.signature);
 		eards_write_app_signature(&application);
 		append_application_text_file(app_summary_path, &application, 1);
 		report_mpi_application_data(&application);

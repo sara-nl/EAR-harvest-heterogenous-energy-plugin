@@ -131,13 +131,17 @@ void acum_sig_metrics(signature_t *dst,signature_t *src)
 	
 }
 /** Checks all the values are valid to be reported to DB and fixes potential problems*/
-void check_signature_to_db(signature_t *sig)
+void clean_db_signature(signature_t *sig)
 {
-	if (!isnormal(sig->DC_power)) sig->DC_power = 0;
-	if (!isnormal(sig->CPI))			sig->CPI = 0;
-	if (!isnormal(sig->TPI))			sig->TPI = 0;
-	if (!isnormal(sig->GBS))			sig->GBS = 0;
-	if (!isnormal(sig->Gflops))		sig->Gflops = 0;
+	if (!isnormal(sig->time))				sig->time = 0;
+	if (!isnormal(sig->EDP))				sig->EDP = 0;
+	if (!isnormal(sig->DC_power)) 	sig->DC_power = 0;
+	if (!isnormal(sig->DRAM_power)) sig->DRAM_power = 0;
+	if (!isnormal(sig->PCK_power)) 	sig->PCK_power = 0;
+	if (!isnormal(sig->CPI))				sig->CPI = 0;
+	if (!isnormal(sig->TPI))				sig->TPI = 0;
+	if (!isnormal(sig->GBS))				sig->GBS = 0;
+	if (!isnormal(sig->Gflops))			sig->Gflops = 0;
 	
 #if USE_GPUS
 	if (sig->gpu_sig.num_gpus){

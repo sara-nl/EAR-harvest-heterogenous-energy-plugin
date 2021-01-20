@@ -555,13 +555,13 @@ state_t policy_new_iteration(loop_id_t *loop_id)
 state_t policy_mpi_init()
 {
 	polctx_t *c=&my_pol_ctx;
-	preturn(polsyms_fun.mpi_init,c);
+	preturn_opt(polsyms_fun.mpi_init,c);
 }
 
 state_t policy_mpi_end()
 {
 	polctx_t *c=&my_pol_ctx;
-	preturn(polsyms_fun.mpi_end,c);
+	preturn_opt(polsyms_fun.mpi_end,c);
 }
 
 /** GLOBAL EVENTS */

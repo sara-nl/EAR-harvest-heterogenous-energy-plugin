@@ -117,7 +117,7 @@ void states_periodic_end_period(uint iterations)
 		#endif
 		#if USE_DB
 		if (masters_info.my_master_rank>=0){ 
-			check_signature_to_db(&loop.signature);
+			clean_db_signature(&loop.signature);
 			eards_write_loop_signature(&loop);
 		}
 		#endif
@@ -145,7 +145,7 @@ static void report_loop_signature(uint iterations,loop_t *loop)
 	#endif
 	#if USE_DB
     if (masters_info.my_master_rank>=0){ 
-			check_signature_to_db(&loop->signature);
+			clean_db_signature(&loop->signature);
 			eards_write_loop_signature(loop);
 		}
     #endif

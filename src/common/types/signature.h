@@ -100,7 +100,7 @@ void signature_init(signature_t *sig);
 /** Replicates the signature in *source to *destiny */
 void signature_copy(signature_t *destiny, signature_t *source);
 /** Checks all the values are valid to be reported to DB and fixes potential problems*/
-void check_signature_to_db(signature_t *sig);
+void clean_db_signature(signature_t *sig);
 
 /** Outputs the signature contents to the file pointed by the fd. */
 void signature_print_fd(int fd, signature_t *sig, char is_extended);
