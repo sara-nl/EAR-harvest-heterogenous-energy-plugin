@@ -143,12 +143,12 @@ struct daemon_req req;
 
 int RAPL_counting = 0;
 int eard_must_exit = 0;
-static freq_cpu_t freq_global2;
-static freq_cpu_t freq_global1;
-static freq_cpu_t freq_local2;
-static freq_cpu_t freq_local1;
-freq_cpu_t freq_job2;
-freq_cpu_t freq_job1;
+static cpufreq_t freq_global2;
+static cpufreq_t freq_global1;
+static cpufreq_t freq_local2;
+static cpufreq_t freq_local1;
+cpufreq_t freq_job2;
+cpufreq_t freq_job1;
 topology_t node_desc;
 
 /* EARD init errors control */
@@ -482,7 +482,7 @@ void eard_exit(uint restart)
 	}
 
 	// CPU Frequency
-	state_assert(s, freq_cpu_dispose(), );
+	state_assert(s, cpufreq_dispose(), );
 	// RAM Bandwidth
 	dispose_uncores();
 
@@ -721,13 +721,13 @@ int eard_freq(int must_read)
 			break;
 		case START_GET_FREQ:
 			ack = EAR_COM_OK;
-			if (xtate_fail(s, freq_cpu_read(&freq_local1))) {
+			if (xtate_fail(s, cpufreq_read(&freq_local1))) {
 				error("when reading CPU local frequency (%d, %s)", s, state_msg);
 			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case END_GET_FREQ:
-			if (xtate_fail(s, freq_cpu_read_diff(&freq_local2, &freq_local1, NULL, &ack))) {
+			if (xtate_fail(s, cpufreq_read_diff(&freq_local2, &freq_local1, NULL, &ack))) {
 				error("when reading CPU local frequency (%d, %s)", s, state_msg);
 			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
@@ -746,13 +746,13 @@ int eard_freq(int must_read)
 			break;
 		case START_APP_COMP_FREQ:
 			ack = EAR_COM_OK;
-			if (xtate_fail(s, freq_cpu_read(&freq_global1))) {
+			if (xtate_fail(s, cpufreq_read(&freq_global1))) {
 				error("when reading CPU global frequency (%d, %s)", s, state_msg);
 			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case END_APP_COMP_FREQ:
-			if (xtate_fail(s, freq_cpu_read_diff(&freq_global2, &freq_global1, NULL, &ack))) {
+			if (xtate_fail(s, cpufreq_read_diff(&freq_global2, &freq_global1, NULL, &ack))) {
 				error("when reading CPU global frequency (%d, %s)", s, state_msg);
 			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
@@ -988,6 +988,7 @@ void signal_handler(int sig) {
 		} else {
 			verbose(VCONF, "Loading EAR configuration");
 			verbose(VCONF, "There are %d Nodes in the cluster",my_cluster_conf.num_nodes);
+		  compute_default_pstates_per_policy(my_cluster_conf.num_policies, my_cluster_conf.power_policies);
 			print_cluster_conf(&my_cluster_conf);
 			free(my_node_conf);
 			my_node_conf = get_my_node_conf(&my_cluster_conf, nodename);
@@ -1507,13 +1508,14 @@ int main(int argc, char *argv[]) {
 	verbose(VCONF, "Default max frequency defined to %lu", eard_max_freq);
 
 	// CPU Frequency
-	state_assert(s, freq_cpu_init(&node_desc), _exit(0));
-	state_assert(s, freq_cpu_data_alloc(&freq_global2, NULL, NULL), _exit(0));
-	state_assert(s, freq_cpu_data_alloc(&freq_global1, NULL, NULL), _exit(0));
-	state_assert(s, freq_cpu_data_alloc(&freq_local2, NULL, NULL), _exit(0));
-	state_assert(s, freq_cpu_data_alloc(&freq_local1, NULL, NULL), _exit(0));
-	state_assert(s, freq_cpu_data_alloc(&freq_job2, NULL, NULL), _exit(0));
-	state_assert(s, freq_cpu_data_alloc(&freq_job1, NULL, NULL), _exit(0));
+	state_assert(s, cpufreq_load(&node_desc), _exit(0));
+	state_assert(s, cpufreq_init(),           _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_global2, NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_global1, NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_local2,  NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_local1,  NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_job2,    NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_job1,    NULL), _exit(0));
 
 #if EARD_LOCK
 	eard_lock(ear_tmp);

@@ -42,6 +42,7 @@ extern int eards_sfd;
 int eards_get_app_master_status(cluster_conf_t *my_cluster_conf, app_status_t **status)
 {
 	request_t command;
+    memset(&command, 0, sizeof(request_t));
     request_header_t head;
 
     debug("eards_status");
@@ -66,6 +67,7 @@ int eards_get_app_master_status(cluster_conf_t *my_cluster_conf, app_status_t **
 int eards_get_app_node_status(cluster_conf_t *my_cluster_conf, app_status_t **status)
 {
 	request_t command;
+    memset(&command, 0, sizeof(request_t));
     request_header_t head;
 
     debug("eards_status");
@@ -101,9 +103,11 @@ int send_status(request_t *command, status_t **status)
     return (head.size/sizeof(status_t));
 
 }
-int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status)
+
+int eards_get_status(cluster_conf_t *my_cluster_conf, status_t **status)
 {
 	request_t command;
+    memset(&command, 0, sizeof(request_t));
     request_header_t head;
 
     debug("eards_status");
@@ -127,6 +131,7 @@ int eards_get_status(cluster_conf_t *my_cluster_conf,status_t **status)
 int eards_new_job(new_job_req_t *new_job)
 {
 	request_t command;
+    memset(&command, 0, sizeof(request_t));
 
     debug("eards_new_job");
 	command.req=EAR_RC_NEW_JOB;
@@ -140,6 +145,7 @@ int eards_new_job(new_job_req_t *new_job)
 int eards_end_job(job_id jid,job_id sid)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
 
     debug("eards_end_job");
     command.req=EAR_RC_END_JOB;
@@ -154,6 +160,7 @@ int eards_end_job(job_id jid,job_id sid)
 int eards_set_max_freq(unsigned long freq)
 {
 	request_t command;
+    memset(&command, 0, sizeof(request_t));
 	command.req=EAR_RC_MAX_FREQ;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -164,6 +171,7 @@ int eards_set_max_freq(unsigned long freq)
 int eards_set_freq(unsigned long freq)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_SET_FREQ;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -173,6 +181,7 @@ int eards_set_freq(unsigned long freq)
 int eards_set_def_freq(unsigned long freq)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_DEF_FREQ;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -183,6 +192,7 @@ int eards_set_def_freq(unsigned long freq)
 int eards_red_max_and_def_freq(uint p_states)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_RED_PSTATE;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -193,6 +203,7 @@ int eards_red_max_and_def_freq(uint p_states)
 int eards_restore_conf()
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_REST_CONF;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -203,6 +214,7 @@ int eards_restore_conf()
 int eards_set_th(unsigned long th)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_NEW_TH;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -214,6 +226,7 @@ int eards_set_th(unsigned long th)
 int eards_inc_th(unsigned long th)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_INC_TH;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -224,6 +237,7 @@ int eards_inc_th(unsigned long th)
 int eards_ping()
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_PING;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -235,6 +249,7 @@ int eards_ping()
 int eards_set_powerlimit(unsigned long limit)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
   	command.node_dist = INT_MAX;
     command.req=EAR_RC_SET_POWER;
     command.time_code = time(NULL);
@@ -245,6 +260,7 @@ int eards_set_powerlimit(unsigned long limit)
 int eards_red_powerlimit(unsigned int type, unsigned long limit)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.node_dist = INT_MAX;
     command.req=EAR_RC_RED_POWER;
     command.time_code = time(NULL);
@@ -256,6 +272,7 @@ int eards_red_powerlimit(unsigned int type, unsigned long limit)
 int eards_inc_powerlimit(unsigned int type, unsigned long limit)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.node_dist = INT_MAX;
     command.req=EAR_RC_INC_POWER;
     command.time_code = time(NULL);
@@ -268,6 +285,7 @@ int eards_inc_powerlimit(unsigned int type, unsigned long limit)
 int eards_set_risk(risk_t risk,unsigned long target)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.node_dist = INT_MAX;
     command.req=EAR_RC_SET_RISK;
     command.time_code = time(NULL);
@@ -281,6 +299,7 @@ int eards_set_risk(risk_t risk,unsigned long target)
 int eards_set_policy_info(new_policy_cont_t *p)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_SET_POLICY;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -291,6 +310,7 @@ int eards_set_policy_info(new_policy_cont_t *p)
 int eards_set_default_powercap()
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_DEF_POWERCAP;
     command.node_dist = INT_MAX;
     command.time_code = time(NULL);
@@ -309,6 +329,7 @@ int eards_set_default_powercap()
 int get_app_master_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **status)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     app_status_t *temp_status;
     request_header_t head;
     time_t ctime = time(NULL);
@@ -340,6 +361,7 @@ int get_app_master_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_
 int get_app_node_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t **status)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     app_status_t *temp_status;
     request_header_t head;
     time_t ctime = time(NULL);
@@ -370,6 +392,7 @@ int get_app_node_status_all_nodes(cluster_conf_t *my_cluster_conf, app_status_t 
 void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_SET_RISK;
     command.time_code = time(NULL);
 	command.my_req.risk.level=risk;
@@ -380,6 +403,7 @@ void set_risk_all_nodes(risk_t risk, unsigned long target, cluster_conf_t *my_cl
 void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_INC_TH;
     command.my_req.ear_conf.th=th;
     command.my_req.ear_conf.p_id=p_id;
@@ -390,6 +414,7 @@ void increase_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf
 void increase_th_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf, int *ips, int num_ips)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.nodes = ips;
     command.num_nodes = num_ips;
     command.req=EAR_RC_INC_TH;
@@ -402,6 +427,7 @@ void increase_th_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf, in
 void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_NEW_TH;
     command.my_req.ear_conf.th=th;
     command.my_req.ear_conf.p_id=p_id;
@@ -412,6 +438,7 @@ void set_th_all_nodes(ulong th, ulong p_id, cluster_conf_t *my_cluster_conf)
 void ping_all_nodes_propagated(cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req = EAR_RC_PING;
     send_command_all(command, my_cluster_conf);
 }
@@ -419,6 +446,7 @@ void ping_all_nodes_propagated(cluster_conf_t *my_cluster_conf)
 void set_max_freq_all_nodes(ulong max_freq, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_MAX_FREQ;
     command.my_req.ear_conf.max_freq = max_freq;
     send_command_all(command, my_cluster_conf);
@@ -427,6 +455,7 @@ void set_max_freq_all_nodes(ulong max_freq, cluster_conf_t *my_cluster_conf)
 void set_freq_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_SET_FREQ;
     command.my_req.ear_conf.max_freq = freq;
     send_command_all(command, my_cluster_conf);
@@ -435,6 +464,7 @@ void set_freq_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf)
 void red_def_max_pstate_all_nodes(ulong pstate, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_RED_PSTATE;
     command.my_req.ear_conf.p_states = pstate;
     send_command_all(command, my_cluster_conf);
@@ -444,6 +474,7 @@ void red_def_max_pstate_all_nodes(ulong pstate, cluster_conf_t *my_cluster_conf)
 void set_def_pstate_all_nodes(uint pstate,ulong pid,cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_SET_DEF_PSTATE;
     command.my_req.ear_conf.p_states = pstate;
 		command.my_req.ear_conf.p_id = pid;
@@ -454,6 +485,7 @@ void set_def_pstate_all_nodes(uint pstate,ulong pid,cluster_conf_t *my_cluster_c
 void set_max_pstate_all_nodes(uint pstate,cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_SET_MAX_PSTATE;
     command.my_req.ear_conf.p_states = pstate;
     send_command_all(command, my_cluster_conf);
@@ -463,6 +495,7 @@ void set_max_pstate_all_nodes(uint pstate,cluster_conf_t *my_cluster_conf)
 void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_DEF_FREQ;
     command.my_req.ear_conf.max_freq=freq;
     send_command_all(command, my_cluster_conf);
@@ -471,6 +504,7 @@ void reduce_frequencies_all_nodes(ulong freq, cluster_conf_t *my_cluster_conf)
 void restore_conf_all_nodes(cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_REST_CONF;
     send_command_all(command, my_cluster_conf);
 }
@@ -478,6 +512,7 @@ void restore_conf_all_nodes(cluster_conf_t *my_cluster_conf)
 void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_DEF_FREQ;
     command.my_req.ear_conf.max_freq = freq;
 	command.my_req.ear_conf.p_id = policy;
@@ -487,6 +522,7 @@ void set_def_freq_all_nodes(ulong freq, ulong policy, cluster_conf_t *my_cluster
 void set_default_powercap_all_nodes(cluster_conf_t *my_cluster_conf)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_DEF_POWERCAP;
     send_command_all(command, my_cluster_conf);
 }
@@ -494,6 +530,7 @@ void set_default_powercap_all_nodes(cluster_conf_t *my_cluster_conf)
 int status_all_nodes(cluster_conf_t *my_cluster_conf, status_t **status)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     status_t *temp_status;
     request_header_t head;
     time_t ctime = time(NULL);
@@ -543,6 +580,7 @@ int eards_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t
 {
     powercap_status_t *temp_status;
     request_t command;
+    memset(&command, 0, sizeof(request_t));
 
     command.node_dist = INT_MAX;
     command.req = EAR_RC_GET_POWERCAP_STATUS;
@@ -562,6 +600,7 @@ int eards_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t
 int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status_t **pc_status)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     powercap_status_t *temp_status;
     request_header_t head;
     int num_status = 0;
@@ -590,6 +629,7 @@ int cluster_get_powercap_status(cluster_conf_t *my_cluster_conf, powercap_status
 int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_t *released)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     request_header_t head;
     pc_release_data_t *temp_released;
 
@@ -617,6 +657,7 @@ int cluster_release_idle_power(cluster_conf_t *my_cluster_conf, pc_release_data_
 int cluster_set_powercap_opt(cluster_conf_t *my_cluster_conf, powercap_opt_t *pc_opt)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EAR_RC_SET_POWERCAP_OPT;
     command.time_code = time(NULL);
     command.my_req.pc_opt=*pc_opt;

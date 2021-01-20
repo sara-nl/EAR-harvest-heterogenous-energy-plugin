@@ -49,9 +49,7 @@ char *state_msg;
 #define state_is(state1, state2) \
 	state1 == state2
 	
-
 #define return_msg(no, msg) { \
-	debug("returning %d, %s'", no, msg); \
 	state_msg = msg; \
 	return no; \
 	}
@@ -80,6 +78,7 @@ struct generr_s {
 	char *context_null;
 	char *arg_outbounds;
 	char *cpu_invalid;
+	char *no_permissions;
 } Generr __attribute__((weak)) = {
 	.api_undefined = "the API is undefined",
 	.api_incompatible = "the current hardware is not supported by the API",
@@ -92,6 +91,7 @@ struct generr_s {
 	.context_null = "context can not be null",
 	.arg_outbounds = "argument out of bounds",
 	.cpu_invalid = "invalid CPU",
+	.no_permissions = "not enough privileges to perform this action.",
 };
 
 /*

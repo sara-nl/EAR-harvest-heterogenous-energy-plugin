@@ -214,7 +214,7 @@ state_t gpu_lib_freq_limit_set(ulong *khz)
 		state_return_msg(EAR_ERROR,EAR_BAD_ARGUMENT,"Invalid NULL argument");
 	}
 	for (i=0;i<dev_count;i++){
-		verbose(0,"GPU_LIB_FREQ[%d]=%lu",i,khz[i]);
+		verbose(2,"GPU_LIB_FREQ[%d]=%lu",i,khz[i]);
 	}
 	
 	ret = eards_gpu_set_freq(dev_count,khz);

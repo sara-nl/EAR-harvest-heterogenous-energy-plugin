@@ -88,6 +88,7 @@ int eargm_connect(char *nodename,uint use_port)
 int eargm_new_job(uint num_nodes)
 {
 	request_t command;
+    memset(&command, 0, sizeof(request_t));
 	command.req=EARGM_NEW_JOB;
 	command.my_req.eargm_data.num_nodes=num_nodes;
 	verbose(2,"command %u num_nodes %u\n",command.req,command.my_req.eargm_data.num_nodes);
@@ -97,6 +98,7 @@ int eargm_new_job(uint num_nodes)
 int eargm_end_job(uint num_nodes)
 {
     request_t command;
+    memset(&command, 0, sizeof(request_t));
     command.req=EARGM_END_JOB;
 	command.my_req.eargm_data.num_nodes=num_nodes;
 	verbose(2,"command %u num_nodes %u\n",command.req,command.my_req.eargm_data.num_nodes);

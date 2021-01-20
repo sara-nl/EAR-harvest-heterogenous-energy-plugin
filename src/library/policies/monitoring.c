@@ -23,7 +23,7 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <management/cpufreq/frequency.h>
 #include <common/types/projection.h>

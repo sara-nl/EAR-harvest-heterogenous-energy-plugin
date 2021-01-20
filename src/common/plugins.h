@@ -25,6 +25,7 @@
 
 typedef struct ctx_s {
 	void *context;
+	size_t size;
 } ctx_t;
 
 #define preturn(call, ...) \
@@ -32,5 +33,12 @@ typedef struct ctx_s {
 		return_msg(EAR_UNDEFINED, Generr.api_undefined); \
 	} \
 	return call (__VA_ARGS__);
+
+#define preturn_opt(call, ...) \
+  if (call == NULL) { \
+    return EAR_SUCCESS; \
+  } \
+  return call (__VA_ARGS__);
+
 
 #endif //EAR_PRIVATE_PLUGINS_H

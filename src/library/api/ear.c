@@ -29,7 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/time.h>
-
+//#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/config/config_env.h>
 #include <common/colors.h>
@@ -297,9 +297,9 @@ void create_shared_regions()
 	masters_info.max_ppn=masters_info.ppn[0];
 	for (i=1;i<masters_info.my_master_size;i++){ 
 		if (masters_info.ppn[i]>masters_info.max_ppn) masters_info.max_ppn=masters_info.ppn[i];
-		if (masters_info.my_master_rank==0) verbose(1,"Processes in node %d = %d",i,masters_info.ppn[i]);
+		if (masters_info.my_master_rank==0) verbose(2,"Processes in node %d = %d",i,masters_info.ppn[i]);
 	}
-	verbose(1,"max number of ppn is %d",masters_info.max_ppn);
+	verbose(2,"max number of ppn is %d",masters_info.max_ppn);
 	/* For scalability concerns, we can compile the system sharing all the processes information (SHARE_INFO_PER_PROCESS) or only 1 per node (SHARE_INFO_PER_NODE)*/
 	if (sh_sig_per_node && sh_sig_per_proces){
 		error("Signatures can only be shared with node OR process granularity,not both, default node");
@@ -671,6 +671,9 @@ void ear_init()
 
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
+ if ((tmp = getenv(SCHED_EARL_VERBOSE)) != NULL) {
+        VERB_SET_LV(atoi(tmp));
+  }
 	#if MPI
 	num_nodes = get_ear_num_nodes();
 	ppnode = my_size / num_nodes;
@@ -1024,6 +1027,7 @@ void ear_finalize()
 	if (!my_id) 
 	{
 		debug("Reporting application data");
+		clean_db_signature(&application.signature);
 		eards_write_app_signature(&application);
 		append_application_text_file(app_summary_path, &application, 1);
 		report_mpi_application_data(&application);

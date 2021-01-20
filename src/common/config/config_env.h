@@ -69,6 +69,8 @@
 #define SCHED_EAR_DEF_FREQ "SLURM_HACK_EAR_DEF_FREQ"
 /* This var forces an EARL verbosity */
 #define SCHED_EARL_VERBOSE "SLURM_HACK_EARL_VERBOSE"
+/* This variables HACKS all the library environment, simplifies the utilization of a privatized environment */
+#define SCHED_EARL_INSTALL_PATH "SLURM_HACK_EARL_INSTALL_PATH"
 
 /* END HACK section */
 

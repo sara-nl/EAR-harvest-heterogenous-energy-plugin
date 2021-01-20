@@ -61,6 +61,7 @@ void usage(char *app)
 "\t\t-t\tspecifies the energy_tag of the jobs that will be retrieved. [default: all tags].\n" \
 "\t\t-l\tshows the information for each node for each job instead of the global statistics for said job.\n" \
 "\t\t-x\tshows the last EAR events. Nodes, job ids, and step ids can be specified as if were showing job information.\n" \
+"\t\t-m\tprints power signatures regardless of wether mpi signatures are available or not.\n" \
 "\t\t-r\tshows the EAR loop signatures. Nodes, job ids, and step ids can be specified as if were showing job information.\n", app);
 #if USE_GPUS
    //printf("\t\t-g\tdisplays GPU information on jobs that used them.\n" );
@@ -1275,6 +1276,7 @@ int main(int argc, char *argv[])
                 user = optarg;
                 break;
             case 'j':
+                limit = limit == 20 ? -1 : limit; //if the limit is still the default
                 if (strchr(optarg, ','))
                 {
                     strcpy(job_ids, optarg);

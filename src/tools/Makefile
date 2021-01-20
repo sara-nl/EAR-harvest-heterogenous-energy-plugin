@@ -37,10 +37,10 @@ coeffs_compute: coeffs_compute.c $(mang_OBJS) $(comm_OBJS)
 	$(CCC) -g -o $@ $< $(LDFLAGS) $(mang_OBJS) $(comm_OBJS) $(DB_LDFLAGS) -lpthread
 
 coeffs_jobproj: coeffs_jobproj.c $(comm_OBJS)
-	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl -lm
 
 coeffs_quality: coeffs_quality.c $(comm_OBJS)
-	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl -lm
 
 coeffs_show: coeffs_show.c $(comm_OBJS)
 	$(CCC) -I$(SRCDIR) -o $@ $< $(comm_OBJS)
@@ -61,7 +61,7 @@ get_active_nodes: get_active_nodes.c $(comm_OBJS)
 	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
 
 learning_show: learning_show.c $(comm_OBJS)
-	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)
+	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -lm
 
 learning_delete: learning_delete.c $(comm_OBJS)
 	$(CCC) -g -o $@ $< $(comm_OBJS) $(DB_LDFLAGS)

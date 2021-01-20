@@ -35,7 +35,7 @@ int ear_set_cpufreq(cpu_set_t *mask,unsigned long cpufreq);
 /* Sets gpufreq in a given gpu*/
 int ear_set_gpufreq(int gpu_id,unsigned long gpufreq);
 /* Sets gpufreq in all the GPUs */
-int ear_set_gpufreq_list(num_gpus,unsigned long *gpufreqlist);
+int ear_set_gpufreq_list(int num_gpus,unsigned long *gpufreqlist);
 
 int ear_connect();
 void ear_disconnect();

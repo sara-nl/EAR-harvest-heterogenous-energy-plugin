@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <math.h>
 #include <common/config.h>
 #include <common/types/signature.h>
 #include <common/math_operations.h>
@@ -129,6 +130,29 @@ void acum_sig_metrics(signature_t *dst,signature_t *src)
 		#endif
 	
 }
+/** Checks all the values are valid to be reported to DB and fixes potential problems*/
+void clean_db_signature(signature_t *sig)
+{
+	if (!isnormal(sig->time))				sig->time = 0;
+	if (!isnormal(sig->EDP))				sig->EDP = 0;
+	if (!isnormal(sig->DC_power)) 	sig->DC_power = 0;
+	if (!isnormal(sig->DRAM_power)) sig->DRAM_power = 0;
+	if (!isnormal(sig->PCK_power)) 	sig->PCK_power = 0;
+	if (!isnormal(sig->CPI))				sig->CPI = 0;
+	if (!isnormal(sig->TPI))				sig->TPI = 0;
+	if (!isnormal(sig->GBS))				sig->GBS = 0;
+	if (!isnormal(sig->Gflops))			sig->Gflops = 0;
+	
+#if USE_GPUS
+	if (sig->gpu_sig.num_gpus){
+		int g;
+		for (g=0;g<sig->gpu_sig.num_gpus;g++){
+			if (!isnormal(sig->gpu_sig.gpu_data[g].GPU_power)) sig->gpu_sig.gpu_data[g].GPU_power = 0;
+		}
+	}
+#endif
+}
+
 
 void acum_ssig_metrics(ssig_t *avg_sig,ssig_t *s)
 {
