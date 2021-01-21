@@ -22,13 +22,17 @@
 #include <common/types/log.h>
 #include <daemon/local_api/eard_conf_api.h>
 #include <metrics/gpu/gpu.h>
+#include <metrics/frequency/cpu.h>
+#include <metrics/frequency/imc.h>
 
+/************************************/
 /** Tries to connect with the daemon. Returns 0 on success and -1 otherwise. */
 int eards_connect(application_t *my_app);
 int eards_connected();
 /** Closes the connection with the daemon. */
 void eards_disconnect();
 
+/************************************/
 // Frequency services
 /** Given a frequency value, sends a request to change the frequency to that
 *   value. Returns -1 if there's an error, 0 if the change_freq service has not
@@ -46,6 +50,8 @@ unsigned long eards_get_freq_list(unsigned int num_cpus,unsigned long *freqlist)
 /** Tries to set the frequency to the turbo value */
 void eards_set_turbo();
 
+
+/**** This API is going to be deprecated ****/
 /** Requests the frequency data size. Returns -1 if there's an error, and the
 *   actual value otherwise. */
 unsigned long eards_get_data_size_frequency();
@@ -62,6 +68,24 @@ void eards_begin_app_compute_turbo_freq();
 *   frequency between the begin call and the end call on success, -1 otherwise. */
 unsigned long eards_end_app_compute_turbo_freq();
 
+/**** New API for cpufreq management */
+/* Load, init etc can be used directly from metrics */
+/* These are privileged functions */
+state_t eards_cpufreq_read(cpufreq_t *ef,size_t size);
+
+
+/************************************/
+// Uncore frequency management
+state_t eards_freq_imc_data_count(uint *count);
+state_t eards_freq_imc_read(freq_imc_t *ef,size_t size);
+state_t eards_mgt_imcfreq_get_current( ulong *max_khz, ulong *min_khz);
+state_t eards_mgt_imcfreq_set_current( ulong max_khz, ulong min_khz);
+
+
+
+
+
+/************************************/
 // Uncore services
 /** Sends a request to read the uncores. Returns -1 if there's an error, on
 *   success stores the uncores values' into *values and returns 0. */
@@ -77,6 +101,7 @@ int eards_reset_uncore();
 *   actual value otherwise. */
 unsigned long eards_get_data_size_uncore();
 
+/************************************/
 // RAPL services
 /** Sends a request to read the RAPL counters. Returns -1 if there's an error,
 *   and on success returns 0 and fills the array given by parameter with the
@@ -92,6 +117,7 @@ int eards_reset_rapl();
 *   actual value otherwise. */
 unsigned long eards_get_data_size_rapl();
 
+/************************************/
 // System services
 /** Sends a request to the deamon to write the whole application signature.
 *   Returns 0 on success, -1 on error. */
@@ -102,6 +128,7 @@ ulong eards_write_loop_signature(loop_t *loop_signature);
 /** Reports a new EAR event */
 ulong eards_write_event(ear_event_t *event);
 
+/************************************/
 // Node energy services
 /** Requests the IPMI data size. Returns -1 if there's an error, and the
 *   actual value otherwise. */
@@ -119,7 +146,8 @@ ulong eards_write_loop_signature(loop_t *loop_signature);
 /** Returns the frequency at which the node energy frequency is refreshed */
 ulong eards_node_energy_frequency();
 
-
+/************************************/
+// GPU services
 int eards_gpu_model(uint *gpu_model);
 int eards_gpu_dev_count(uint *gpu_dev_count);
 int eards_gpu_data_read(gpu_t *gpu_info,uint num_dev);

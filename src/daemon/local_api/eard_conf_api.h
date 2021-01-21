@@ -42,6 +42,12 @@ typedef struct new_freq_type{
 	unsigned long f;
 	cpu_set_t mask;	
 }new_freq_type_t;
+
+typedef struct unc_freq_req{
+	ulong max_unc;
+	ulong min_unc;
+}unc_freq_req_t;
+
 // Data type to send the requests
 union daemon_req_opt {
     unsigned long req_value;
@@ -51,6 +57,7 @@ union daemon_req_opt {
 	new_freq_type_t f_mask;
 	gpu_freq_req_t  gpu_freq;
 	cpu_freq_req_t  cpu_freq;
+	unc_freq_req_t	unc_freq;
 };
 
 struct daemon_req {
@@ -81,6 +88,15 @@ struct daemon_req {
 #define SET_NODE_FREQ_WITH_LIST 9
 #define GET_CPUFREQ				10
 #define GET_CPUFREQ_LIST	11
+
+/*** NEW FREQ functions */
+#define READ_CPUFREQ			12
+
+/* UNC frequency management */
+#define UNC_SIZE					20
+#define UNC_READ					21
+#define UNC_GET_LIMITS		22
+#define UNC_SET_LIMITS		23
 
 #define END_COMM 				1000
 
