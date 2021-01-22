@@ -15,12 +15,15 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 
 #include <common/output/debug.h>
 #include <metrics/common/perf.h>
 #include <metrics/flops/cpu/amd49.h>
 
+// Currently we don't count FLOPs, just instructions using a Perf RAW
+// event. Old way to count FLOPs:
+//
 // References:
 // PPR for AMD Family 17h. Topic 2.1.15.4.1 Floating Point (FP) Events.
 //
@@ -55,8 +58,8 @@ static perf_t perf_mer4;
 
 // The counters are 48 bit values. But it can be added the MergeEvent
 // counter which supposedly expands the counters to 64 bits.
-static llong values[5];
-static llong accums[5];
+static llong values[8];
+static llong accums[8];
 
 state_t flops_amd49_status(topology_t *tp)
 {
@@ -71,20 +74,17 @@ state_t flops_amd49_init(ctx_t *c)
 	state_t s;
 
 	// Why we are then counting the instructions instead the pure FLOPS?
-	//
-	// Because 
-	s = perf_open(&perf_evn0, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_insts);
-	
-	//
+	// Because its difficult to set the required events in its proper
+	// place in the set of counters. We are just counting instructions.
+	s = perf_open(&perf_evn0, NULL, 0, PERF_TYPE_RAW, cmd_avx_insts);
+	// Old FLOPs counting
 	#if 0
 	s = perf_opex(&perf_evn0, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_flops, pf_exc);
 	s = perf_open(&perf_mer1, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
-
 	s = perf_open(&perf_mer2, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
 	s = perf_open(&perf_evn3, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_flops);
 	s = perf_open(&perf_mer4, &perf_evn0, 0, PERF_TYPE_RAW, cmd_avx_merge);
 	#endif
-
 	// Remove warning
 	(void) (s);
 
@@ -101,7 +101,6 @@ state_t flops_amd49_reset(ctx_t *c)
 	state_t s;
 
 	s = perf_reset(&perf_evn0);
-
 	// Remove warning
 	(void) (s);
 
@@ -113,7 +112,6 @@ state_t flops_amd49_start(ctx_t *c)
 	state_t s;
 
 	s = perf_start(&perf_evn0);
-
 	// Remove warning
 	(void) (s);
 
@@ -122,49 +120,28 @@ state_t flops_amd49_start(ctx_t *c)
 
 state_t flops_amd49_read(ctx_t *c, llong *flops, llong *ops)
 {
-	llong aux;
 	state_t s;
 
 	s = perf_read(&perf_evn0, values);
-
 	// Remove warning
 	(void) (s);
 
-	debug("read 0 %lld", values[0]);
-	debug("read 1 %lld", values[1]);
-	debug("read 2 %lld", values[2]);
-	debug("read 3 %lld", values[3]);
-	debug("read 4 %lld", values[4]);
-
-	if ((aux = values[0]) == 0) {
-		aux = values[3];
-	}
-
-	accums[0] += aux;
-	accums[1]  = 0;
-	accums[2]  = 0;
-	accums[3]  = 0;
-	accums[4]  = 0;
-
-	if ((aux = values[0]) == 0) {
-		aux = values[3];
-	}
-
+	accums[0] += values[0];
+	// We are counting instructions, and we are doing it in 128D index.
 	if (ops != NULL) {
-		ops[0] = 0;
-		ops[1] = 0;
-		ops[2] = 0;
-		ops[3] = 0;
-		ops[4] = aux;
-		ops[5] = 0;
-		ops[6] = 0;
-		ops[7] = 0;
+		ops[INDEX_064F] = 0;
+		ops[INDEX_064D] = 0;
+		ops[INDEX_128F] = 0;
+		ops[INDEX_128D] = values[0];
+		ops[INDEX_256F] = 0;
+		ops[INDEX_256D] = 0;
+		ops[INDEX_512F] = 0;
+		ops[INDEX_512D] = 0;
 	}
-
+	// Multiplying by the 128D weight, the minimum SSE/AVX FLOPs
 	if (flops != NULL) {
-		*flops  = aux;
+		*flops = ops[INDEX_128D] * WEIGHT_128D;
 	}
-
 	debug("total flops %lld", *flops);
 
 	return EAR_SUCCESS;
@@ -174,8 +151,7 @@ state_t flops_amd49_stop(ctx_t *c, llong *flops, llong *ops)
 {
 	state_t s;
 
-	s = perf_stop(&perf_evn0);
-	
+	s = perf_stop(&perf_evn0);	
 	// Remove warning
 	(void) (s);
 
@@ -190,35 +166,26 @@ state_t flops_amd49_count(ctx_t *c, uint *count)
 
 state_t flops_amd49_read_accum(ctx_t *c, llong *ops)
 {
-	ops[0] = 0;
-	ops[1] = 0;
-	ops[2] = 0;
-	ops[3] = 0;
-	ops[4] = accums[0];
-	ops[5] = 0;
-	ops[6] = 0;
-	ops[7] = 0;
+	ops[INDEX_064F] = 0;
+	ops[INDEX_064D] = 0;
+	ops[INDEX_128F] = 0;
+	ops[INDEX_128D] = accums[0];
+	ops[INDEX_256F] = 0;
+	ops[INDEX_256D] = 0;
+	ops[INDEX_512F] = 0;
+	ops[INDEX_512D] = 0;
 	return EAR_SUCCESS;
 }
 
 state_t flops_amd49_weights(uint *weigths)
 {
-	weigths[0] = 0;
-	weigths[1] = 0;
-	weigths[2] = 0;
-	weigths[3] = 0;
-	weigths[4] = 1;
-	weigths[5] = 0;
-	weigths[6] = 0;
-	weigths[7] = 0;
+	weigths[INDEX_064F] = WEIGHT_064F;
+	weigths[INDEX_064D] = WEIGHT_064D;
+	weigths[INDEX_128F] = WEIGHT_128F;
+	weigths[INDEX_128D] = WEIGHT_128D;
+	weigths[INDEX_256F] = WEIGHT_256F;
+	weigths[INDEX_256D] = WEIGHT_256D;
+	weigths[INDEX_512F] = WEIGHT_512F;
+	weigths[INDEX_512D] = WEIGHT_512D;
 	return EAR_SUCCESS;
 }
-
-
-
-
-
-
-
-
-
