@@ -50,7 +50,6 @@ char *state_msg;
 	state1 == state2
 
 #define return_msg(no, msg) { \
-	debug("returning %d, %s'", no, msg); \
 	state_msg = msg; \
 	return no; \
 	}

@@ -25,10 +25,10 @@
 #include <errno.h>
 
 
+//#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/states.h>
 #include <common/types/generic.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/app_api/app_conf_api.h>
 
@@ -37,6 +37,7 @@ static int fd_eard_to_app=-1;
 static char app_to_eard[MAX_PATH_SIZE];
 static char eard_to_app[MAX_PATH_SIZE];
 static char my_app_to_eard[MAX_PATH_SIZE];
+
 
 #define MAX_TRIES 100
 
@@ -80,6 +81,7 @@ static int create_connection()
 		}
     }
 	chmod(eard_to_app,S_IRUSR|S_IWGRP|S_IWOTH);
+  debug("Pipes created\n");
 	/* EARD connection */	
 	debug("opening pipe and sending request\n");
     	fd_app_to_eard=open(app_to_eard,O_WRONLY|O_NONBLOCK);
@@ -272,7 +274,8 @@ int ear_set_cpufreq(cpu_set_t *mask,unsigned long cpufreq)
   int ret=EAR_ERROR;
   app_send_t my_req;
   app_recv_t my_data;
-  
+ 
+	debug("ear_set_cpufreq"); 
   /* Preparing the request */
   my_req.req=SELECT_CPU_FREQ;
 	my_req.send_data.cpu_freq.mask=*mask;

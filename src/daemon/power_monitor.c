@@ -465,6 +465,7 @@ void report_powermon_app(powermon_app_t *app) {
 #if USE_DB
 	if (my_cluster_conf.eard.use_mysql)
 	{
+		clean_db_power_signature(&app->app.power_sig);
 		if (!my_cluster_conf.eard.use_eardbd) {
 			if (!db_insert_application(&app->app)){
 				debug( "Application signature correctly written");

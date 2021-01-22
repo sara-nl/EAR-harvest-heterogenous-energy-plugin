@@ -34,4 +34,11 @@ typedef struct ctx_s {
 	} \
 	return call (__VA_ARGS__);
 
+#define preturn_opt(call, ...) \
+  if (call == NULL) { \
+    return EAR_SUCCESS; \
+  } \
+  return call (__VA_ARGS__);
+
+
 #endif //EAR_PRIVATE_PLUGINS_H
