@@ -1031,6 +1031,7 @@ void print_loops(loop_t *loops, int num_loops)
 #if USE_GPUS
         sprintf(tmp, "%lu%%/%lu%%", gpuu, gpu_mem_util);
         if (print_gpus) printf(gpu_line, gpup, gpupu, (double)gpuf/1000000.0, tmp);
+        gpu_mem_util = 0;
         gpuused = 0;
         gpupu = 0;
         gpuf = 0;
