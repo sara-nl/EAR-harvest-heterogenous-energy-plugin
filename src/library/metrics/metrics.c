@@ -152,7 +152,18 @@ static long long metrics_l3[2];
 #endif
 static timestamp init_mpi_time;
 static int first_timestamp=1;
-
+#define NEW_CPUFREQ 1
+#if NEW_CPUFREQ
+static state_t s;
+static ulong cpufreq_data_avg[2];
+static cpufreq_t cpufreq_data_init[2],cpufreq_data_end[2];
+static uint mycpufreq_data_size,mycpufreq_data_count;
+static ulong def_imc_max_khz,def_imc_min_khz;
+static ulong imc_max_khz,imc_min_khz;
+static ctx_t imc_lib_ctx;
+static uint imc_count;
+static ulong cpufreq_avg;
+#endif
 static int NI=0;
 
 
@@ -180,6 +191,12 @@ static void metrics_global_start()
 
 	if (masters_info.my_master_rank>=0)
 	{
+		#if NEW_CPUFREQ
+		verbose(2,"metrics_global_start");
+		if (xtate_fail(s, eards_cpufreq_read(&cpufreq_data_init[APP],mycpufreq_data_size))){
+			error("CPUFreq data read in global_start");
+		}
+		#endif
 		eards_begin_app_compute_turbo_freq();
 		// New
 		ret = eards_node_dc_energy(aux_energy,node_energy_datasize);
@@ -222,6 +239,21 @@ static void metrics_global_stop()
 	timestamp end_mpi_time;
 	//
 	if (masters_info.my_master_rank>=0){ 
+    #if NEW_CPUFREQ
+    if (xtate_fail(s, eards_cpufreq_read(&cpufreq_data_end[APP],mycpufreq_data_size))){
+      error("CPUFreq data read in global_stop");
+    }
+		if (xtate_fail(s,cpufreq_data_diff(&cpufreq_data_end[APP],&cpufreq_data_init[APP],NULL,&cpufreq_data_avg[APP]))){
+			error("CPUFreq data diff");
+		}else{
+			verbose(1,"CPUFreq average for the application is %.2fGHz",(float)cpufreq_data_avg[APP]/1000000.0);
+		}
+  	if (xtate_fail(s,eards_mgt_imcfreq_set_current(def_imc_max_khz,def_imc_min_khz))){
+    	error("IMC set current failed (%d,%s)",s,state_msg);
+  	} 
+  	verbose(2,"IMC freq restored to %.2f-%.2f",(float)def_imc_max_khz/1000000.0,(float)def_imc_min_khz/1000000.0); 
+
+		#endif
 		metrics_avg_frequency[APP] = eards_end_app_compute_turbo_freq();
 	}else{
 		metrics_avg_frequency[APP]=0;
@@ -283,6 +315,12 @@ static void metrics_partial_start()
 	
 	if (masters_info.my_master_rank>=0){ 
 		eards_begin_compute_turbo_freq();
+    #if NEW_CPUFREQ
+    if (xtate_fail(s, eards_cpufreq_read(&cpufreq_data_init[LOO],mycpufreq_data_size))){
+      error("CPUFreq data read in partial start");
+    }
+    #endif
+
 		#if USE_GPU_LIB
 		if (gpu_initialized){
 		if (gpu_loop_stopped) {
@@ -412,6 +450,17 @@ static int metrics_partial_stop(uint where)
 	// Daemon metrics
 	if (masters_info.my_master_rank>=0){ 
 		metrics_avg_frequency[LOO] = eards_end_compute_turbo_freq();
+    #if NEW_CPUFREQ
+    if (xtate_fail(s, eards_cpufreq_read(&cpufreq_data_end[LOO],mycpufreq_data_size))){
+      error("CPUFreq data read in partial stop");
+    }
+    if (xtate_fail(s,cpufreq_data_diff(&cpufreq_data_end[LOO],&cpufreq_data_init[LOO],NULL,&cpufreq_data_avg[LOO]))){
+      error("CPUFreq data diff");
+    }else{
+      verbose(1,"CPUFreq average for the application is %.2fGHz",(float)cpufreq_data_avg[LOO]/1000000.0);
+    }
+    #endif
+
 	/* This code needs to be adapted to read , compute the difference, and copy begin=end 
  	* diff_uncores(values,values_end,values_begin,num_counters);
  	* copy_uncores(values_begin,values_end,num_counters);
@@ -604,6 +653,7 @@ int metrics_init(topology_t *topo)
 	ulong bandwith_size;
 	ulong rapl_size;
 	state_t st;
+	char *cimc_max_khz,*cimc_min_khz;
 
 	debug("Masters region %p size %lu",&masters_info,sizeof(masters_info));
 	debug("My master rank %d",masters_info.my_master_rank);
@@ -713,6 +763,60 @@ int metrics_init(topology_t *topo)
 	memset(metrics_rapl[APP], 0, rapl_size);
 	memset(aux_rapl, 0, rapl_size);
 	memset(last_rapl, 0, rapl_size);
+  #if NEW_CPUFREQ
+	if (masters_info.my_master_rank>=0){
+  if (xtate_fail(s,cpufreq_load(topo))){
+    error("Cpufrequency load failed");
+  }
+  if (xtate_fail(s,cpufreq_init())){
+      error("Cpufrequency init failed");
+  }
+	if (xtate_fail(s,cpufreq_data_count(&mycpufreq_data_size,&mycpufreq_data_count))){
+		error("Cpufrequency data size failed");
+	}else{
+		verbose(2,"Cpufrequency data size %u", mycpufreq_data_size);
+	}
+  if (xtate_fail(s,cpufreq_data_alloc(&cpufreq_data_init[APP],NULL)) || xtate_fail(s,cpufreq_data_alloc(&cpufreq_data_end[APP],NULL)) || xtate_fail(s,cpufreq_data_alloc(&cpufreq_data_init[LOO],NULL)) || xtate_fail(s,cpufreq_data_alloc(&cpufreq_data_end[LOO],NULL))){
+			error("Cpufreq allocation failed");
+	}
+	verbose(2,"CPUFreq data allocated");
+	if (xtate_fail(s,mgt_imcfreq_load(topo))){
+		error("IMC management load failed");
+	}
+	if (xtate_fail(s,mgt_imcfreq_init(&imc_lib_ctx))){
+		error("IMC management init failed");
+	}
+	#if 0
+	if (xtate_fail(s,freq_imc_init(topo))){
+		error("IMC metrics failed");
+	}
+	if (xtate_fail(s,eards_freq_imc_data_count(&imc_count))){
+		error("IMC count failed");
+	}else{
+		verbose(2,"IMC count returns %u",imc_count);
+	}
+	#endif
+	if (xtate_fail(s,eards_mgt_imcfreq_get_current(&def_imc_max_khz,&def_imc_min_khz))){
+		error("Getting IMC limits (%d,%s)",s,state_msg);
+	}	else{
+		verbose(2,"IMC limits: Max %.2fGHz and Min %.2fGHz",(float)def_imc_max_khz/1000000.0,(float)def_imc_min_khz/1000000.0);
+	}
+	cimc_max_khz = getenv(SCHED_MAX_IMC_FREQ);
+	cimc_min_khz = getenv(SCHED_MIN_IMC_FREQ);
+	if (cimc_max_khz == (char*)NULL) imc_max_khz = def_imc_max_khz;
+	else											imc_max_khz = atoi(cimc_max_khz);
+	if (cimc_min_khz == (char*)NULL) imc_min_khz = def_imc_min_khz;
+	else {											
+			imc_min_khz = atoi(cimc_min_khz);
+	}
+	
+	if (xtate_fail(s,eards_mgt_imcfreq_set_current(imc_max_khz,imc_min_khz))){
+		error("IMC set current failed (%d,%s)",s,state_msg);
+	}	
+	verbose(2,"New CPUfreq and IMC initialized IMC freq set to %.2f-%.2f",(float)imc_max_khz/1000000.0,(float)imc_min_khz/1000000.0);	
+	}
+  #endif
+
 
 	#if USE_GPU_LIB
 	if (masters_info.my_master_rank>=0){
