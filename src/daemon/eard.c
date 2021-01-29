@@ -726,7 +726,6 @@ int eard_freq(int must_read)
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case READ_CPUFREQ:
-			verbose(0,"cpufreq_read with size %u",size_cpufreqs);
 			if (xtate_fail(s, cpufreq_read(&freq_app_req))) {
 				error("when reading CPU global frequency requeste by app (%d, %s)", s, state_msg);
 			}
@@ -744,22 +743,19 @@ int eard_freq(int must_read)
 			write(ear_fd_ack[freq_req],&imc_data_app.data,unc_c);
 			break;
 		case UNC_GET_LIMITS:
-			verbose(0,"UNC_GET_LIMITS request received");
 			memset(imc_limits,0,sizeof(imc_limits));
 			if (xtate_fail(s,mgt_imcfreq_get_current(&imc_eard_ctx,&imc_limits[0],&imc_limits[1]))){
 				error("When reading imc limits req by app (%d, %s)", s, state_msg);
 			}
-			verbose(0,"IMC limits max %lu min %lu",imc_limits[0],imc_limits[1]);
+			debug("IMC limits max %lu min %lu",imc_limits[0],imc_limits[1]);
 			write(ear_fd_ack[freq_req],imc_limits,sizeof(ulong)*2);
 			break;
 		case UNC_SET_LIMITS:
-			verbose(0,"UNC_SET_LIMITS request receivedi %lu %lu",req.req_data.unc_freq.max_unc,req.req_data.unc_freq.min_unc);
+			debug("UNC_SET_LIMITS request received %lu %lu",req.req_data.unc_freq.max_unc,req.req_data.unc_freq.min_unc);
 			ack = EAR_SUCCESS;
 			if (xtate_fail(s,mgt_imcfreq_set_current(&imc_eard_ctx,req.req_data.unc_freq.max_unc,req.req_data.unc_freq.min_unc))){
 				error("When setting imc limits req by app (%d, %s)", s, state_msg);
 				ack = (ulong) s;
-			}else{
-				verbose(0,"IMC limits updated");
 			}
 			write(ear_fd_ack[freq_req],&ack,sizeof(ulong));
 			break;

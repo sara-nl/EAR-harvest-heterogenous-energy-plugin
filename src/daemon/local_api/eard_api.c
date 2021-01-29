@@ -735,7 +735,6 @@ state_t eards_cpufreq_read(cpufreq_t *ef,size_t size)
   req.req_service = READ_CPUFREQ;
   req.sec=create_sec_tag();
   /* Specific info */
-	verbose(1,"eards_cpufreq_read with size %u",size);
   if (ear_fd_req[freq_req] >= 0)
   { 
     if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)), sizeof(req),
@@ -810,7 +809,7 @@ state_t eards_mgt_imcfreq_get_current( ulong *max_khz, ulong *min_khz)
     
     if (warning_api(my_read(ear_fd_ack[freq_req], (char *)data, size), size,
       "receiving uncore freq limits ")){ state_return_msg(EAR_ERROR,errno,"Receiving uncore freq limits");}
-		verbose(1,"IMC limits %lu %lu",data[0],data[1]);
+		debug("IMC limits %lu %lu",data[0],data[1]);
 		*max_khz = data[0];
 		*min_khz = data[1];
   }
