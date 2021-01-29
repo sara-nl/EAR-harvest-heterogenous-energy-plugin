@@ -33,16 +33,14 @@ plug_SRCS = \
         slurm_plugin_rcom_eard.c \
         slurm_plugin_rcom_eargmd.c \
         slurm_plugin_rcom_shared.c \
-        slurm_plugin_serialization.c \
-        slurm_plugin_test.c
+        slurm_plugin_serialization.c
 
 plug_HDRS = \
         slurm_plugin.h \
         slurm_plugin_environment.h \
         slurm_plugin_options.h \
         slurm_plugin_rcom.h \
-        slurm_plugin_serialization.h \
-        slurm_plugin_test.h
+        slurm_plugin_serialization.h
 
 ######## RULES
 
