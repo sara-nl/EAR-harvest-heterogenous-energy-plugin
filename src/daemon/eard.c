@@ -654,6 +654,7 @@ int eard_freq(int must_read)
 	ulong ack;
 	state_t s;
 	ulong *f;
+	ulong imc_limits[2];
 
 	if (must_read) {
 		if (read(ear_fd_req[freq_req], &req, sizeof(req)) != sizeof(req))
@@ -725,11 +726,11 @@ int eard_freq(int must_read)
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
 			break;
 		case READ_CPUFREQ:
-			memset(&freq_app_req.context ,0,size_cpufreqs);
+			verbose(0,"cpufreq_read with size %u",size_cpufreqs);
 			if (xtate_fail(s, cpufreq_read(&freq_app_req))) {
 				error("when reading CPU global frequency requeste by app (%d, %s)", s, state_msg);
 			}
-			write(ear_fd_ack[freq_req],&freq_app_req.context,size_cpufreqs);
+			write(ear_fd_ack[freq_req],freq_app_req.context,size_cpufreqs);
 			break;
     /* These functions are new for UNC freq management */
 		case UNC_SIZE:
@@ -740,25 +741,27 @@ int eard_freq(int must_read)
 			if (xtate_fail(s,freq_imc_read(&imc_data_app))){
 					error("WHen reading unc frequency requested by app (%d, %s)", s, state_msg);
 			}
-			write(ear_fd_ack[freq_req],&imc_data_app,unc_c);
+			write(ear_fd_ack[freq_req],&imc_data_app.data,unc_c);
 			break;
 		case UNC_GET_LIMITS:
-			{
-			ulong imc_limits[2];
+			verbose(0,"UNC_GET_LIMITS request received");
 			memset(imc_limits,0,sizeof(imc_limits));
 			if (xtate_fail(s,mgt_imcfreq_get_current(&imc_eard_ctx,&imc_limits[0],&imc_limits[1]))){
 				error("When reading imc limits req by app (%d, %s)", s, state_msg);
 			}
-			write(ear_fd_ack[freq_req],imc_limits,sizeof(imc_limits));
-			}
+			verbose(0,"IMC limits max %lu min %lu",imc_limits[0],imc_limits[1]);
+			write(ear_fd_ack[freq_req],imc_limits,sizeof(ulong)*2);
 			break;
 		case UNC_SET_LIMITS:
+			verbose(0,"UNC_SET_LIMITS request receivedi %lu %lu",req.req_data.unc_freq.max_unc,req.req_data.unc_freq.min_unc);
 			ack = EAR_SUCCESS;
 			if (xtate_fail(s,mgt_imcfreq_set_current(&imc_eard_ctx,req.req_data.unc_freq.max_unc,req.req_data.unc_freq.min_unc))){
 				error("When setting imc limits req by app (%d, %s)", s, state_msg);
 				ack = (ulong) s;
+			}else{
+				verbose(0,"IMC limits updated");
 			}
-			write(ear_fd_ack[freq_req],&ack,sizeof(ack));
+			write(ear_fd_ack[freq_req],&ack,sizeof(ulong));
 			break;
 
 		default:
@@ -1527,6 +1530,7 @@ int main(int argc, char *argv[]) {
 	// IMC Management
 	state_assert(s, mgt_imcfreq_load(&node_desc), _exit(0));
 	state_assert(s, mgt_imcfreq_init(&imc_eard_ctx), _exit(0));
+	verbose(VCONF, "IMC metrics and management initialized ");
 		
 
 

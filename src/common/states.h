@@ -128,8 +128,10 @@ int intern_error_num;
 	return state;
 
 #define state_return_msg(state, error_num, error_str) \
+{ \
 	intern_error_num = error_num; \
 	intern_error_str = error_str; \
-	return state;
+	return state;\
+}
 
 #endif //STATES_H
