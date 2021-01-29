@@ -16,6 +16,8 @@
 */
 
 #include <stdio.h>
+#define SHOW_DEBUGS 1
+#include <common/output/debug.h>
 #include <metrics/common/msr.h>
 #include <metrics/frequency/imc.h>
 #include <metrics/frequency/imc/dummy.h>
@@ -138,7 +140,10 @@ static topology_t tp_static;
 
 state_t mgt_imcfreq_load(topology_t *tp)
 {
-	return topology_select(tp, &tp_static, TPSelect.socket, TPGroup.merge, 0);
+	state_t s;
+	s = topology_select(tp, &tp_static, TPSelect.socket, TPGroup.merge, 0);
+	debug("imc load cpu count %d",tp_static.cpu_count);
+	return s;
 }
 
 state_t mgt_imcfreq_init(ctx_t *c)
@@ -187,10 +192,12 @@ state_t mgt_imcfreq_get_current(ctx_t *c, ulong *max_khz, ulong *min_khz)
 
 	*max_khz = 0;
 	*min_khz = 0;
-	
+
+	debug("imc cpu count %d",tp_static.cpu_count);	
 	for (i = 0; i < tp_static.cpu_count; ++i)
 	{
 		// Read
+		debug("Opening MSR for CPU %d",tp_static.cpus[i].id);
 		if ((r = msr_read(tp_static.cpus[i].id, &result, sizeof(uint64_t), address)) != EAR_SUCCESS) {
 			return r;
 		}

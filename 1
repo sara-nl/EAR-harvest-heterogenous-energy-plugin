@@ -731,18 +731,18 @@ state_t eards_cpufreq_read(cpufreq_t *ef,size_t size)
 {
   int i; 
   struct daemon_req req;
-  if (!app_connected){ state_return_msg(EAR_NOT_INITIALIZED,EAR_NOT_INITIALIZED, Generr.api_uninitialized);}
+  if (!app_connected) state_return_msg(EAR_NOT_INITIALIZED,EAR_NOT_INITIALIZED, Generr.api_uninitialized);;
   req.req_service = READ_CPUFREQ;
   req.sec=create_sec_tag();
   /* Specific info */
-	verbose(1,"eards_cpufreq_read with size %u",size);
+	memset(ef,0,size);
   if (ear_fd_req[freq_req] >= 0)
   { 
     if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)), sizeof(req),
-       "while asking for average cpufreq metrics")){ state_return_msg(EAR_ERROR,errno,"Asking for cpufreq metrics");}
+       "while asking for average cpufreq metrics")) state_return_msg(EAR_ERROR,errno,"Asking for cpufreq metrics");
     
-    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)(ef->context), size), size,
-      "receiving cpufreq metrics from EARD")){ state_return_msg(EAR_ERROR,errno,"Receiving cpufreq");}
+    if (warning_api(my_read(ear_fd_ack[freq_req], (char *)ef, size), size,
+      "receiving cpufreq metrics from EARD")) state_return_msg(EAR_ERROR,errno,"Receiving cpufreq");
   } 
   return EAR_SUCCESS;
 }
@@ -755,7 +755,7 @@ state_t eards_freq_imc_data_count(uint *count)
   int i;
 	size_t size;
   struct daemon_req req;
-  if (!app_connected){ state_return_msg(EAR_NOT_INITIALIZED,EAR_NOT_INITIALIZED, Generr.api_uninitialized);}
+  if (!app_connected) state_return_msg(EAR_NOT_INITIALIZED,EAR_NOT_INITIALIZED, Generr.api_uninitialized);;
   req.req_service = UNC_SIZE;
   req.sec=create_sec_tag();
 	/* Specific info */
@@ -764,10 +764,10 @@ state_t eards_freq_imc_data_count(uint *count)
 	if (ear_fd_req[freq_req] >= 0)
   { 
     if (warning_api(my_write(ear_fd_req[freq_req],(char *)&req, sizeof(req)), sizeof(req),
-       "while asking for uncore freq size")){ state_return_msg(EAR_ERROR,errno,"Asking for uncore freq size");}
+       "while asking for uncore freq size")) state_return_msg(EAR_ERROR,errno,"Asking for uncore freq size");
     
     if (warning_api(my_read(ear_fd_ack[freq_req], (char *)count, size), size,
-      "receiving uncore freq size")){ state_return_msg(EAR_ERROR,errno,"Receiving uncore freq size");}
+      "receiving uncore freq size")) state_return_msg(EAR_ERROR,errno,"Receiving uncore freq size");
   } 
   return EAR_SUCCESS;
 }
