@@ -16,7 +16,7 @@
 */
 
 #include <stdio.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <metrics/common/msr.h>
 #include <metrics/frequency/imc.h>

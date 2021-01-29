@@ -28,7 +28,7 @@
 #include <signal.h>
 #include <common/colors.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
 #include <daemon/powercap/powercap_status_conf.h>

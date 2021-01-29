@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#define SHOW_DEBUGS 1
+//#define SHOW_DEBUGS 1
 #include <common/system/time.h>
 #include <common/output/debug.h>
 #include <metrics/common/msr.h>

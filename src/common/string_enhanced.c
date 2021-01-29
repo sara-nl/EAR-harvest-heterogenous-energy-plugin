@@ -226,7 +226,7 @@ int strinlist(const char *list, const char *separator, const char *element)
 		if (strlen(e) < len) {
 			len = strlen(e);
 		}
-		fprintf(stderr, "LOL %s %d\n", e, len);
+		fprintf(stderr, "LOL %s %lu\n", e, len);
 		if (strncmp(element, e, len) == 0) {
 			return 1;
                 }
