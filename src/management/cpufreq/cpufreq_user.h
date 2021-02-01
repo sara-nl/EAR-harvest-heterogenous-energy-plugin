@@ -20,6 +20,13 @@
 
 #include <management/cpufreq/cpufreq.h>
 
+// This is the userspace API.
+//
+// Check cpufreq.h to learn about the cpufreq API. The purpose of this API is
+// to offer an unprivileged version of some functions of cpufreq API. These
+// functions contact with EARD internally.
+
+// Returns the current P_STATE (struct) per CPU.
 state_t mgt_cpufreq_user_get_current_list(ctx_t *c, pstate_t *pstate_list);
 
 #endif //MANAGEMENT_CPUFREQ_USER

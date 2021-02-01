@@ -21,6 +21,17 @@
 #include <common/types.h>
 #include <common/states.h>
 
+// Governors
+//
+// The purpose of this file is to split the governor from cpufreq API, because
+// it created symbol conflicts when compiling.
+//
+// More information about governors:
+// 	https://www.kernel.org/doc/Documentation/cpu-freq/governors.txt
+//
+// Note: governor last means the previous governor before governor change. Init
+//       means the governor set before the API was initialized.
+//
 struct governor_s {
 	uint conservative;
 	uint performance;
@@ -60,6 +71,5 @@ struct goverstr_s {
 state_t mgt_governor_tostr(uint governor, char *buffer);
 
 state_t mgt_governor_toint(char *buffer, uint *governor);
-
 
 #endif //MANAGEMENT_GOVERNOR

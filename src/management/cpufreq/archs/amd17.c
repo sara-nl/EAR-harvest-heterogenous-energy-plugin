@@ -624,6 +624,7 @@ state_t cpufreq_amd17_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, u
 }
 
 /** Setters */
+// Sets the current P_STATE to MSR P1 adding new frequency.
 static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst, uint test)
 {
 	ullong aux;
@@ -659,13 +660,14 @@ static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst, uint test)
 	return EAR_SUCCESS;
 }
 
+// Sets the current P_STATE to MSR P0
 static state_t set_frequency_p0(amd17_ctx_t *f, uint cpu)
 {
 	state_t s;
 	// Recovering all MSR P1s to its original state
-//	if (xtate_fail(s, msr_write(cpu, &f->regs[1], sizeof(ullong), REG_P1))) {
-//		return s;
-//	}
+	//	if (xtate_fail(s, msr_write(cpu, &f->regs[1], sizeof(ullong), REG_P1))) {
+	//		return s;
+	//	}
 	// Calling the driver to set P0 in specific CPU
 	if (xtate_fail(s, f->driver->set_current(&f->driver_c, 0, cpu))) {
 		return s;

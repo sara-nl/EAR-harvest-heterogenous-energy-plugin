@@ -175,6 +175,10 @@ state_t mgt_cpufreq_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uin
 state_t mgt_cpufreq_set_current_list(ctx_t *c, uint *pstate_index)
 {
 	preturn (ops.set_current_list, c, pstate_index);
+	// si noseque
+	// daemon
+	// si no secuantos
+	// library
 }
 
 state_t mgt_cpufreq_set_current(ctx_t *c, uint pstate_index, int cpu)
