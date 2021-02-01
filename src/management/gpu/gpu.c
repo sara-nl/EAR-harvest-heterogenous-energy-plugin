@@ -106,7 +106,7 @@ state_t mgt_gpu_count(ctx_t *c, uint *dev_count)
 state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array, uint *dev_count)
 {
 	mgt_gpu_count(c, dev_count);
-	*array = calloc(dev_count, sizeof(ulong));
+	*array = calloc(*dev_count, sizeof(ulong));
 	return EAR_SUCCESS;
 }
 

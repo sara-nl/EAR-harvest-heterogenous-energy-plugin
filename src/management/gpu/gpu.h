@@ -89,7 +89,7 @@ state_t mgt_gpu_count(ctx_t *c, uint *dev_count);
 state_t mgt_gpu_alloc_array(ctx_t *c, ulong **list, uint *dev_count);
 
 // Gets the current clock cap for each GPU in the node (in KHz).
-state_t mgt_gpu_freq_limit_get_current(ctx_t *c, ulong *freq_list;
+state_t mgt_gpu_freq_limit_get_current(ctx_t *c, ulong *freq_list);
 
 // Gets the default clock cap for each GPU in the node (in KHz).
 state_t mgt_gpu_freq_limit_get_default(ctx_t *c, ulong *freq_list);

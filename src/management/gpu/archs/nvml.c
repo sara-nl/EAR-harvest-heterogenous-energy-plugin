@@ -645,10 +645,10 @@ state_t nvml_freq_list(ctx_t *c, const ulong ***list_khz, const uint **list_len)
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (list_khz != NULL) {
-		*list_khz = clock_list;
+		*list_khz = (const ulong **) clock_list;
 	}
 	if (list_len != NULL) {
-		*list_len = clock_lens;
+		*list_len = (const uint *) clock_lens;
 	}
 	return EAR_SUCCESS;
 }

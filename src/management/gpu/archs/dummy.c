@@ -104,10 +104,10 @@ state_t dummy_freq_get_next(ctx_t *c, uint d, ulong freq_ref, uint *freq_idx, ui
 state_t dummy_freq_list(ctx_t *c, const ulong ***list_khz, const uint **list_len)
 {
 	if (list_khz != NULL) {
-		*list_khz = clock_list;
+		*list_khz = (const ulong **) clock_list;
 	}
 	if (list_len != NULL) {
-		*list_len = clock_lens;
+		*list_len = (const uint *) clock_lens;
 	}
 	return EAR_SUCCESS;
 }

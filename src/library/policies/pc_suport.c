@@ -31,8 +31,8 @@
 #include <common/types/pc_app_info.h>
 #if POWERCAP
 extern pc_app_info_t *pc_app_info_data;
-static ulong **gpu_freq_list;
-static uint *gpu_freq_num;
+static const ulong **gpu_freq_list;
+static const uint *gpu_freq_num;
 state_t pc_support_init(polctx_t *c)
 {
 	#if USE_GPUS

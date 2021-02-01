@@ -130,7 +130,7 @@ state_t gpu_data_print(gpu_t *data, int fd);
 // Copies the printing string in a char buffer.
 state_t gpu_data_tostr(gpu_t *data, char *buffer, int length);
 
-/* Special function, returns the using model (if not initialized returns MODEL_UNDEFINED).
+// Special function, returns the using model (if not initialized returns MODEL_UNDEFINED).
 uint gpu_model();
 
 #endif
