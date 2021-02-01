@@ -29,7 +29,15 @@
 #define INDEX_256F 2
 #define INDEX_256D 6
 #define INDEX_512F 3
-#define INDEX_512D 7
+#define INDEX_512D  7
+#define WEIGHT_064F 1
+#define WEIGHT_064D 1
+#define WEIGHT_128F 4
+#define WEIGHT_128D 2
+#define WEIGHT_256F 8
+#define WEIGHT_256D 4
+#define WEIGHT_512F 16
+#define WEIGHT_512D 8
 
 
 
