@@ -25,12 +25,14 @@
 #include <common/output/debug.h>
 #include <management/cpufreq/drivers/linux_cpufreq.h>
 
+#define N_FREQS 128
+
 static topology_t tp;
 
 typedef struct cpufreq_ctx_s
 {
-	ullong      freqs_current[128];
-	ullong      freqs_avail[128];
+	ullong      freqs_current[N_FREQS];
+	ullong      freqs_avail[N_FREQS];
 	int         freqs_count;
 	int         boost_enabled;
 	char        freq_last[SZ_NAME_SHORT];
@@ -43,6 +45,7 @@ typedef struct cpufreq_ctx_s
 } cpufreq_ctx_t;
 
 // TODO:
+// Reads a string from a fd with or without an lseek 0.
 static state_t read_word(int fd, char *word, int reset_position)
 {
 	int i = 0;
@@ -65,6 +68,7 @@ static state_t read_word(int fd, char *word, int reset_position)
 	return EAR_SUCCESS;
 }
 
+// Writes a string 'word' in fd, adding a line break or not.
 static state_t write_word(int fd, char *word, int s, int line_break)
 {
 	int i, r, p;
@@ -85,6 +89,7 @@ static state_t write_word(int fd, char *word, int s, int line_break)
 	return EAR_SUCCESS;
 }
 
+// Writes a word in a list of file descriptors.
 static state_t write_multi(int *fds, char *word, int line_break)
 {
 	state_t s = EAR_SUCCESS;
@@ -122,7 +127,6 @@ state_t cpufreq_linux_status(topology_t *_tp)
 	if (strncmp(data, "acpi-cpufreq", 12) != 0) {
 		return_msg(EAR_ERROR, "driver not found");
 	}
-	// TODO:
 	if (tp.cpu_count == 0) {
 		if(xtate_fail(s, topology_copy(&tp, _tp))) {
 			return EAR_ERROR;
@@ -181,8 +185,7 @@ static void cpufreq_linux_init_nominal(cpufreq_ctx_t *f)
 		}
 		close(fd);
 	}
-	if (tp.vendor == VENDOR_AMD)
-	{
+	if (tp.vendor == VENDOR_AMD) {
 		if ((fd = open("/sys/devices/system/cpu/cpu0/cpufreq/cpb", O_RDONLY)) >= 0) {
 			if (state_ok(read_word(fd, data, 0))) {
 				f->boost_enabled = atoi(data);
@@ -218,7 +221,7 @@ state_t cpufreq_linux_init(ctx_t *c)
 		return static_dispose(c, EAR_ERROR, strerror(errno));
 	}
 	memset((void *) f->fds_freq, -1, tp.cpu_count * sizeof(int));
-	memset((void *) f->fds_freq, -1, tp.cpu_count * sizeof(int));
+	memset((void *) f->fds_govr, -1, tp.cpu_count * sizeof(int));
 	// Opening governors file (includes \n)
 	for (cpu = 0, aux = O_RDWR; cpu < tp.cpu_count; ++cpu) {
 		sprintf(path, "/sys/devices/system/cpu/cpu%d/cpufreq/scaling_governor", cpu);
@@ -246,7 +249,7 @@ state_t cpufreq_linux_init(ctx_t *c)
 	if ((aux = open(path, O_RDONLY)) == -1) {
 		return static_dispose(c, EAR_ERROR, strerror(errno));
 	}
-	for(i = 0; i < 128; ++i, f->freqs_count = i) {
+	for(i = 0; i < N_FREQS; ++i, f->freqs_count = i) {
 		if (state_fail(read_word(aux, path, 0))) {
 			break;
 		}

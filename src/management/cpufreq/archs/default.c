@@ -143,6 +143,7 @@ state_t cpufreq_default_count(ctx_t *c, uint *pstate_count)
 	return EAR_SUCCESS;
 }
 
+// Given a frequency, find its P_STATE (or closest).
 static state_t static_get_index(dummy_ctx_t *f, ullong freq_khz, uint *pstate_index, uint closest)
 {
 	int pst;

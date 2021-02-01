@@ -20,6 +20,13 @@
 
 #include <management/cpufreq/cpufreq.h>
 
+// This API contacts with CPUFreq files to change frequency and governor. These
+// files are used by the ACPI_CPUFreq and Intel_PSTATE drivers. Is adapted to
+// serve EAR cpufreq API.
+//
+// More information about CPUFreq fies
+//	https://www.kernel.org/doc/html/v4.14/admin-guide/pm/cpufreq.html
+
 state_t cpufreq_linux_status(topology_t *tp);
 
 state_t cpufreq_linux_init(ctx_t *c);

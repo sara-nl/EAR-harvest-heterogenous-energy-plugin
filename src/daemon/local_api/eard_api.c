@@ -664,7 +664,7 @@ unsigned long eards_change_freq_with_list(unsigned int num_cpus,unsigned long *n
 
 }
 
-unsigned long eards_get_freq(unsigned int num_cpu)
+	unsigned long eards_get_freq(unsigned int num_cpu)
 {
   ulong real_freq = 0;
   struct daemon_req req;
@@ -822,6 +822,15 @@ int eards_stop_uncore(unsigned long long *values)
         debug( "read uncore service not provided");
     }
     return ack;
+}
+
+int pipe_send(uint api, uint event, void *content, size_t size)
+{
+	req.req_service = event;
+	req.sec = create_sec_tag();
+
+
+	write(fd[api], );
 }
 
 int eards_read_uncore(unsigned long long *values)

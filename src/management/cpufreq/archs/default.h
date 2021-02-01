@@ -20,12 +20,10 @@
 
 #include <management/cpufreq/cpufreq.h>
 
-//
 // Dummy/default/generic API:
 //
 // This API is designed to nothing more than rely on the driver. It just sorts
 // some of the driver raw information.
-//
 
 state_t cpufreq_default_status(topology_t *_tp);
 

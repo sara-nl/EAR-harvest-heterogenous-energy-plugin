@@ -15,11 +15,12 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <nvml.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>
