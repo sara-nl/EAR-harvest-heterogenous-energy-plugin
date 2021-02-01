@@ -55,14 +55,9 @@ typedef int   plug_context_t;
 struct component_s {
 	plug_component_t plugin;
 	plug_component_t library;
-	plug_component_t monitor;
-	plug_component_t test;
-	// Component verbose missing
-	plug_component_t verbose;
 } Component __attribute__((weak)) = {
 	.plugin  = "SLURM_ECPLUG",
 	.library = "SLURM_ECLIBR",
-	.test    = "SLURM_ECTEST",
 };
 
 struct context_s {
@@ -90,17 +85,16 @@ struct constring_s {
 };
 
 typedef struct varname_s {
-	char *loc;
-	char *rem;
-	char *ear;
-	char *cmp;
-	char *hck;
+	char *loc; // Variables from user environment
+	char *rem; // Variables from local to remote
+	char *ear; // Variables from remote to task
+	char *cmp; // Component variables
+	char *hck; // Hack variables
 } varnames_t;
 
 struct variables_s {
 	varnames_t comp_libr;
 	varnames_t comp_plug;
-	varnames_t comp_test;
 	varnames_t comp_verb;
 	varnames_t hack_load;
 	varnames_t verbose;
@@ -135,12 +129,13 @@ struct variables_s {
 	varnames_t ld_libr;
 	varnames_t node_num;
 	varnames_t version;
+	varnames_t nodes_allowed;
+	varnames_t nodes_excluded;
 }
 	Var __attribute__((weak)) =
 {
 .comp_libr = { .cmp = "SLURM_COMP_LIBRARY" },
 .comp_plug = { .cmp = "SLURM_COMP_PLUGIN"  },
-.comp_test = { .cmp = "SLURM_COMP_TEST"    },
 .comp_verb = { .cmp = "SLURM_COMP_VERBOSE" },
 .hack_load = { .hck =  HACK_FILE_LOAD      },
 .verbose   = { .loc = "SLURM_LOC_VERB",      .ear = VAR_OPT_VERB      },
@@ -174,7 +169,9 @@ struct variables_s {
 .ld_prel   = { .rem = "",                    .ear = "LD_PRELOAD"      },
 .ld_libr   = { .rem = "",                    .ear = "LD_LIBRARY_PATH" },
 .node_num  = { .loc = "SLURM_NNODES",        .ear = "" },
-.version   = { .loc = "SLURM_EAR_MPI_VERSION", .ear = ""              }
+.version   = { .loc = "SLURM_EAR_MPI_VERSION",     .ear = ""          },
+.nodes_allowed  = { .rem = "SLURM_NODES_ALLOWED",  .ear = ""          },
+.nodes_excluded = { .rem = "SLURM_NODES_EXCLUDED", .ear = ""          },
 };
 
 /*

@@ -213,13 +213,26 @@ void strtoup(char *string)
     }
 }
 
-int strinc(const char *string1, const char *string2)
+int strinlist(const char *list, const char *separator, const char *element)
 {
-	strncpy(buffer1, string1, SZ_BUFF_BIG);
-	strncpy(buffer2, string2, SZ_BUFF_BIG);
-	strtoup(buffer1);
-	strtoup(buffer2);
-	return (strstr(buffer1, buffer2) != NULL);
+	char buffer[SZ_PATH];
+	size_t len;
+	char *e;
+
+	strcpy(buffer, list);	
+	e = strtok(buffer, separator);
+	while (e != NULL) {
+		len = strlen(element);
+		if (strlen(e) < len) {
+			len = strlen(e);
+		}
+		fprintf(stderr, "LOL %s %lu\n", e, len);
+		if (strncmp(element, e, len) == 0) {
+			return 1;
+                }
+		e = strtok(NULL, separator);
+	}
+	return 0;
 }
 
 char* strclean(char *string, char chr)

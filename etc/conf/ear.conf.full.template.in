@@ -140,10 +140,12 @@ AuthorizedGroups=grp1,grp2
 #---------------------------------------------------------------------------------------------------
 # Tags are used for architectural descriptions. Max. AVX frequencies are used in predictor models
 # and are SKU-specific. Max. and min. power are used for warning and error tracking. 
-# At least a default tag is mandatory
-# to be included in this file for a cluster to work properly.
+# Powercap specifies the maximum power a node is allowed to use by default. If EARGM is actively
+# monitoring the cluster's powercap, max_powercap can be used to ensure that a node's power will never
+# go beyond that value, regardless of the free power available cluster-wide.
+# At least a default tag is mandatory to be included in this file for a cluster to work properly.
 Tag=6148 default=yes max_avx512=2.2 max_avx2=2.6 max_power=500 min_power=50 error_power=600 coeffs=coeffs.default powercap=0
-Tag=6126 max_avx512=2.3 max_avx2=2.9 ceffs=coeffs.6126.default max_power=600 error_power=700 powercap=0
+Tag=6126 max_avx512=2.3 max_avx2=2.9 ceffs=coeffs.6126.default max_power=600 error_power=700 powercap=150 max_powercap=250
 
 #---------------------------------------------------------------------------------------------------
 ## Power policies

@@ -61,9 +61,8 @@ void strtolow(char *string);
 /** Converts a string to upper case. */
 void strtoup(char *string);
 
-/** Compares if the string2 is included in the string 1 regardless they are
- * upper or lowercase */
-int strinc(const char *string1, const char *string2);
+// Given a list and a separator in strtok format, search an element in the list
+int strinlist(const char *list, const char *separator, const char *element);
 
 /** Removes characters c from string s. */
 void remove_chars(char *s, char c);
