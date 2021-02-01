@@ -580,7 +580,7 @@ int eards_remote_connect(char *nodename,uint port)
     struct addrinfo *result, *rp;
     char port_number[50]; 	// that size needs to be validated
     int sfd, s;
-    fd_set set;
+    fd_set r_set, w_set;
 
     /*if (eards_remote_connected){ 
         debug("Connection already done!");
@@ -627,9 +627,11 @@ int eards_remote_connect(char *nodename,uint port)
         }
         else
         {
-            FD_ZERO(&set);
-            FD_SET(sfd, &set);
-            if (select(sfd+1, &set, &set, NULL, &timeout) > 0) 
+            FD_ZERO(&w_set);
+            FD_SET(sfd, &w_set);
+            FD_ZERO(&r_set);
+            FD_SET(sfd, &r_set);
+            if (select(sfd+1, &r_set, &w_set, NULL, &timeout) > 0) 
             {
                 optlen = sizeof(int);
                 sysret = getsockopt(sfd, SOL_SOCKET, SO_ERROR, (void *)(&valopt), &optlen);

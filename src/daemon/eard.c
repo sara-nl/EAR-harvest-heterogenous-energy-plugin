@@ -143,13 +143,17 @@ struct daemon_req req;
 
 int RAPL_counting = 0;
 int eard_must_exit = 0;
-static cpufreq_t freq_global2;
+static cpufreq_t freq_global2,freq_app_req;
 static cpufreq_t freq_global1;
 static cpufreq_t freq_local2;
 static cpufreq_t freq_local1;
 cpufreq_t freq_job2;
 cpufreq_t freq_job1;
+static uint size_cpufreqs,count_cpufreqs;
+static uint unc_c;
 topology_t node_desc;
+static freq_imc_t imc_data_app;
+static ctx_t imc_eard_ctx;
 
 /* EARD init errors control */
 static uint error_uncore=0;
@@ -687,6 +691,7 @@ int eard_freq(int must_read)
 	ulong ack;
 	state_t s;
 	ulong *f;
+	ulong imc_limits[2];
 
 	if (must_read) {
 		if (read(ear_fd_req[freq_req], &req, sizeof(req)) != sizeof(req))
@@ -756,6 +761,40 @@ int eard_freq(int must_read)
 				error("when reading CPU global frequency (%d, %s)", s, state_msg);
 			}
 			write(ear_fd_ack[freq_req], &ack, sizeof(unsigned long));
+			break;
+		case READ_CPUFREQ:
+			if (xtate_fail(s, cpufreq_read(&freq_app_req))) {
+				error("when reading CPU global frequency requeste by app (%d, %s)", s, state_msg);
+			}
+			write(ear_fd_ack[freq_req],freq_app_req.context,size_cpufreqs);
+			break;
+    /* These functions are new for UNC freq management */
+		case UNC_SIZE:
+			write(ear_fd_ack[freq_req],&unc_c,sizeof(uint));
+			break;
+		case UNC_READ:
+			memset(&imc_data_app,0,unc_c);
+			if (xtate_fail(s,freq_imc_read(&imc_data_app))){
+					error("WHen reading unc frequency requested by app (%d, %s)", s, state_msg);
+			}
+			write(ear_fd_ack[freq_req],&imc_data_app.data,unc_c);
+			break;
+		case UNC_GET_LIMITS:
+			memset(imc_limits,0,sizeof(imc_limits));
+			if (xtate_fail(s,mgt_imcfreq_get_current(&imc_eard_ctx,&imc_limits[0],&imc_limits[1]))){
+				error("When reading imc limits req by app (%d, %s)", s, state_msg);
+			}
+			debug("IMC limits max %lu min %lu",imc_limits[0],imc_limits[1]);
+			write(ear_fd_ack[freq_req],imc_limits,sizeof(ulong)*2);
+			break;
+		case UNC_SET_LIMITS:
+			debug("UNC_SET_LIMITS request received %lu %lu",req.req_data.unc_freq.max_unc,req.req_data.unc_freq.min_unc);
+			ack = EAR_SUCCESS;
+			if (xtate_fail(s,mgt_imcfreq_set_current(&imc_eard_ctx,req.req_data.unc_freq.max_unc,req.req_data.unc_freq.min_unc))){
+				error("When setting imc limits req by app (%d, %s)", s, state_msg);
+				ack = (ulong) s;
+			}
+			write(ear_fd_ack[freq_req],&ack,sizeof(ulong));
 			break;
 
 		default:
@@ -1516,6 +1555,18 @@ int main(int argc, char *argv[]) {
 	state_assert(s, cpufreq_data_alloc(&freq_local1,  NULL), _exit(0));
 	state_assert(s, cpufreq_data_alloc(&freq_job2,    NULL), _exit(0));
 	state_assert(s, cpufreq_data_alloc(&freq_job1,    NULL), _exit(0));
+	state_assert(s, cpufreq_data_alloc(&freq_app_req,    NULL), _exit(0));
+	state_assert(s, cpufreq_data_count(&size_cpufreqs,&count_cpufreqs), _exit(0));
+	// IMC frequency
+	state_assert(s, freq_imc_init(&node_desc), _exit(0));
+  state_assert(s, freq_imc_data_count(&unc_c), _exit(0));
+  state_assert(s, freq_imc_data_alloc(&imc_data_app, NULL,NULL), _exit(0));
+	// IMC Management
+	state_assert(s, mgt_imcfreq_load(&node_desc), _exit(0));
+	state_assert(s, mgt_imcfreq_init(&imc_eard_ctx), _exit(0));
+	verbose(VCONF, "IMC metrics and management initialized ");
+		
+
 
 #if EARD_LOCK
 	eard_lock(ear_tmp);

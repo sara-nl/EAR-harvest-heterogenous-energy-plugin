@@ -76,40 +76,37 @@ int plug_read_plugstack(spank_t sp, int ac, char **av, plug_serialization_t *sd)
 				}
 			}
 		}
-		if ((strlen(av[i]) > 14) && (strncmp ("localstatedir=", av[i], 14) == 0))
-		{
-			strncpy(sd->pack.path_temp, &av[i][14], SZ_NAME_MEDIUM);
-	
+		if ((strlen(av[i]) > 14) && (strncmp ("localstatedir=", av[i], 14) == 0)) {
 			found_path_temp = 1;
-
+			strncpy(sd->pack.path_temp, &av[i][14], SZ_NAME_MEDIUM);
 			plug_verbose(sp, 2, "plugstack found temporal files in path '%s'", sd->pack.path_temp);
 		}
-		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0))
-		{
-			strncpy(sd->pack.path_inst, &av[i][7], SZ_NAME_MEDIUM);
+		if ((strlen(av[i]) > 7) && (strncmp ("prefix=", av[i], 7) == 0)) {
 			found_path_inst = 1;
-
+			strncpy(sd->pack.path_inst, &av[i][7], SZ_NAME_MEDIUM);
 			plug_verbose(sp, 2, "plugstack found prefix in path '%s'", sd->pack.path_inst);
 		}
-		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0))
-		{
-			strncpy(sd->pack.eargmd.host, &av[i][12], SZ_NAME_MEDIUM);
+		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_host=", av[i], 12) == 0)) {
 			found_eargmd_host = 1;
-			
+			strncpy(sd->pack.eargmd.host, &av[i][12], SZ_NAME_MEDIUM);
 			plug_verbose(sp, 2, "plugstack found eargm host '%s'", sd->pack.eargmd.host);
 		}
-		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0))
-		{
+		if ((strlen(av[i]) > 12) && (strncmp ("eargmd_port=", av[i], 12) == 0)) {
+			found_earmgd_port = 1;	
 			sd->pack.eargmd.port = atoi(&av[i][12]);
-			found_earmgd_port = 1;
-			
 			plug_verbose(sp, 2, "plugstack found eargm port '%d'", sd->pack.eargmd.port);
 		}
-		if ((strlen(av[i]) > 11) && (strncmp ("eargmd_min=", av[i], 11) == 0))
-		{
+		if ((strlen(av[i]) > 11) && (strncmp ("eargmd_min=", av[i], 11) == 0)) {
 			sd->pack.eargmd.min = atoi(&av[i][11]);
-			
 			plug_verbose(sp, 2, "plugstack found eargm min '%d'", sd->pack.eargmd.min);
+		}
+		if ((strlen(av[i]) > 14) && (strncmp ("nodes_allowed=", av[i], 14) == 0)) {
+			strncpy(sd->pack.nodes_allowed, &av[i][14], SZ_PATH);
+			plug_verbose(sp, 2, "plugstack found allowed nodes: '%s'", sd->pack.nodes_allowed);
+		}
+		if ((strlen(av[i]) > 15) && (strncmp ("nodes_excluded=", av[i], 15) == 0)) {
+			strncpy(sd->pack.nodes_excluded, &av[i][15], SZ_PATH);
+			plug_verbose(sp, 2, "plugstack found excluded nodes: '%s'", sd->pack.nodes_excluded);
 		}
 	}
 
@@ -237,14 +234,10 @@ int plug_print_variables(spank_t sp)
 
 	printenv_agnostic(sp, Component.plugin);
 	printenv_agnostic(sp, Component.library);
-	printenv_agnostic(sp, Component.test);
-
 	printenv_agnostic(sp, Var.comp_libr.cmp);
 	printenv_agnostic(sp, Var.comp_plug.cmp);
-	printenv_agnostic(sp, Var.comp_test.cmp);
 	printenv_agnostic(sp, Var.comp_verb.cmp);
 	printenv_agnostic(sp, Var.hack_load.hck);
-
 	printenv_agnostic(sp, Var.verbose.loc);
 	printenv_agnostic(sp, Var.policy.loc);
 	printenv_agnostic(sp, Var.policy_th.loc);
@@ -258,11 +251,12 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.gm_host.loc);
 	printenv_agnostic(sp, Var.gm_port.loc);
 	printenv_agnostic(sp, Var.gm_secure.loc);
-	
 	printenv_agnostic(sp, Var.user.rem);
 	printenv_agnostic(sp, Var.group.rem);
 	printenv_agnostic(sp, Var.path_temp.rem);
 	printenv_agnostic(sp, Var.path_inst.rem);
+	printenv_agnostic(sp, Var.nodes_allowed.rem);
+	printenv_agnostic(sp, Var.nodes_excluded.rem);
 	printenv_agnostic(sp, Var.ctx_last.rem);
 	printenv_agnostic(sp, Var.was_sbac.rem);
 	printenv_agnostic(sp, Var.was_srun.rem);
@@ -273,7 +267,6 @@ int plug_print_variables(spank_t sp)
 	printenv_agnostic(sp, Var.job_nodn.rem);
 	printenv_agnostic(sp, Var.step_nodl.rem);
 	printenv_agnostic(sp, Var.step_nodn.rem);
-
 	printenv_agnostic(sp, Var.verbose.ear);
 	printenv_agnostic(sp, Var.policy.ear);
 	printenv_agnostic(sp, Var.policy_th.ear);
@@ -295,28 +288,19 @@ int plug_print_variables(spank_t sp)
 
 int plug_deserialize_components(spank_t sp)
 {
-	int test;
-
 	plug_component_setenabled(sp, Component.plugin, 0);
 	plug_component_setenabled(sp, Component.library, 0);
-	plug_component_setenabled(sp, Component.test, 0);
 
-	/*
-	 * Components
-	 */
-	if (valenv_agnostic(sp, Var.comp_test.cmp, &test)) {
-		plug_component_setenabled(sp, Component.test, test);
-	}
-	if (test || !isenv_agnostic(sp, Var.comp_plug.cmp, "0")) {
+	// Components
+	if (!isenv_agnostic(sp, Var.comp_plug.cmp, "0")) {
 		plug_component_setenabled(sp, Component.plugin, 1);
 	}
-	if (test || isenv_agnostic(sp, Var.comp_libr.cmp, "1")) {
+	if (isenv_agnostic(sp, Var.comp_libr.cmp, "1")) {
 		plug_component_setenabled(sp, Component.library, 1);
 	}
-
 	// Return
 	if (!plug_component_isenabled(sp, Component.plugin)) {
-                return ESPANK_ERROR;
+		return ESPANK_ERROR;
         }
 
 	return ESPANK_SUCCESS;
@@ -330,9 +314,7 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	VERB_SET_EN(0);
 	ERROR_SET_EN(0);
 
-	/*
-	 * Components
-	 */
+	// Cleaning, we don't want inheritance of this variables
 	unsetenv_agnostic(sp, Var.verbose.ear);
 	unsetenv_agnostic(sp, Var.policy.ear);
 	unsetenv_agnostic(sp, Var.policy_th.ear);
@@ -346,12 +328,7 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	//unsetenv_agnostic(sp, Var.path_trac.ear);
 	unsetenv_agnostic(sp, Var.name_app.ear);
 
-	// Exception (in testing)
-	//unsetenv_agnostic(sp, Var.path_temp.ear);
-
-	/*
-	 * User information
-	 */
+	// User information
 	uid_t uid = geteuid();
 	gid_t gid = getgid();
 	struct passwd *upw = getpwuid(uid);
@@ -367,9 +344,7 @@ int plug_deserialize_local(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "user '%u' ('%s')", uid, sd->job.user.user);
 	plug_verbose(sp, 2, "user group '%u' ('%s')", gid, sd->job.user.group);
 
-	/*
-	 * Subject
-	 */
+	// Subject
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
 	return ESPANK_SUCCESS;
@@ -379,18 +354,19 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_serialize_remote");
 
-	/*
-	 * User
-	 */
+	// User
 	setenv_agnostic(sp, Var.user.rem,  sd->job.user.user,  1);
 	setenv_agnostic(sp, Var.group.rem, sd->job.user.group, 1);
+	
+	// Installation
 	setenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, 1);
 	setenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, 1);
+	
+	// Node allowance
+	setenv_agnostic(sp, Var.nodes_allowed.rem,  sd->pack.nodes_allowed,  1);
+	setenv_agnostic(sp, Var.nodes_excluded.rem, sd->pack.nodes_excluded, 1);
 
-	/*
-	 * Subject
-	 */
-
+	// Subject
 	if (plug_context_is(sp, Context.srun)) {
 		setenv_agnostic(sp, Var.ctx_last.rem, Constring.srun, 1);
 		setenv_agnostic(sp, Var.was_srun.rem, "1", 1);
@@ -400,9 +376,7 @@ int plug_serialize_remote(spank_t sp, plug_serialization_t *sd)
 		setenv_agnostic(sp, Var.was_sbac.rem, "1", 1);
 	}
 
-	/*
-	 * EARGMD
-	 */
+	// EARGMD
 	if (sd->pack.eargmd.enabled == 1)
 	{
 		sprintf(buffer1, "%d", sd->pack.eargmd.port);
@@ -420,34 +394,30 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "function plug_deserialize_remote");
 	int s1, s2;
 
-	// Silence
+	// Silence (not for the plugin, for other EAR APIs)
 	VERB_SET_EN(0);
 	ERROR_SET_EN(0);
 	
-	/*
-	 * Options
-	 */
-	repenv_agnostic(sp, Var.verbose.loc, Var.verbose.ear);
-	repenv_agnostic(sp, Var.policy.loc, Var.policy.ear);
+	// Converting optiion variables to task directly
+	repenv_agnostic(sp, Var.verbose.loc,   Var.verbose.ear);
+	repenv_agnostic(sp, Var.policy.loc,    Var.policy.ear);
 	repenv_agnostic(sp, Var.policy_th.loc, Var.policy_th.ear);
 	repenv_agnostic(sp, Var.frequency.loc, Var.frequency.ear);
-	repenv_agnostic(sp, Var.learning.loc, Var.learning.ear);
-	repenv_agnostic(sp, Var.tag.loc, Var.tag.ear);
+	repenv_agnostic(sp, Var.learning.loc,  Var.learning.ear);
+	repenv_agnostic(sp, Var.tag.loc,       Var.tag.ear);
 	repenv_agnostic(sp, Var.path_usdb.loc, Var.path_usdb.ear);
 	//repenv_agnostic(sp, Var.path_trac.loc, Var.path_trac.ear);
 
-	/*
-	 * User
-	 */
-	getenv_agnostic(sp, Var.user.rem, sd->job.user.user, SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, Var.group.rem, sd->job.user.group, SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, Var.account.rem, sd->job.user.account, SZ_NAME_MEDIUM);
-	getenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp, SZ_PATH);
-	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst, SZ_PATH);
-
-	/*
-	 * Subject
-	 */
+	// User
+	getenv_agnostic(sp, Var.user.rem,      sd->job.user.user,    SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, Var.group.rem,     sd->job.user.group,   SZ_NAME_MEDIUM);
+	getenv_agnostic(sp, Var.account.rem,   sd->job.user.account, SZ_NAME_MEDIUM);
+	
+	// Installation
+	getenv_agnostic(sp, Var.path_temp.rem, sd->pack.path_temp,   SZ_PATH);
+	getenv_agnostic(sp, Var.path_inst.rem, sd->pack.path_inst,   SZ_PATH);
+	
+	// Subject
 	gethostname(sd->subject.host, SZ_NAME_MEDIUM);
 
 	if (isenv_agnostic(sp, Var.ctx_last.rem, Constring.srun)) {
@@ -457,14 +427,27 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	} else {
 		sd->subject.context_local = Context.error;
 	}
-
 	if (sd->subject.context_local == Context.error) {
 		return ESPANK_ERROR;
 	}
 
-	/*
-	 * Job/step
-	 */
+	// Allowance
+	if (getenv_agnostic(sp, Var.nodes_excluded.rem, sd->pack.nodes_excluded, SZ_PATH)) {
+		// If is excluded, then it can't continue
+		if (strinlist(sd->pack.nodes_excluded, ",", sd->subject.host)) {
+			plug_verbose(sp, 2, "found node '%s' in the exclusion list", sd->subject.host);
+			return ESPANK_ERROR;
+		}
+	}
+	if (getenv_agnostic(sp, Var.nodes_allowed.rem, sd->pack.nodes_allowed, SZ_PATH)) {
+		// If is not included, then it can't continue
+		if (!strinlist(sd->pack.nodes_allowed, ",", sd->subject.host)) {
+			plug_verbose(sp, 2, "not found node '%s' in the allowance list", sd->subject.host);
+			return ESPANK_ERROR;
+		}
+	}
+
+	// Job/step
 	s1 = 0;
 	s2 = 0;
 
@@ -475,14 +458,11 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 		s1 = getenv_agnostic(sp, Var.step_nodl.rem, buffer1, SZ_BUFF_EXTRA);
 		s2 = getenv_agnostic(sp, Var.step_nodn.rem, buffer2, SZ_BUFF_EXTRA);
 	}
-
 	if (s1 && s2) {
 		sd->job.node_n = atoi(buffer2);
 	}
 
-	/*
-	 * Master
-	 */
+	// Master
 	hostlist_t p1;
 	char *p2;
 
@@ -491,13 +471,11 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 		s1 = s2 = 0;
 	}
 
-	if (s1 && s2)
-	{
+	if (s1 && s2) {
 		p1 = slurm_hostlist_create(buffer1);
 		p2 = slurm_hostlist_shift(p1);
 
-		if (p2 != NULL)
-		{
+		if (p2 != NULL) {
 			s1 = strlen(sd->subject.host);
 			s2 = strlen(p2);
 
@@ -513,9 +491,7 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	plug_verbose(sp, 2, "subject '%s' is master? '%d'",
 		sd->subject.host, sd->subject.is_master);
 
-	/*
-	 * EARMGD
-	 */
+	// EARGMD
 	sd->pack.eargmd.min = 1;	
 
 	s1 = getenv_agnostic(sp, Var.gm_host.loc, sd->pack.eargmd.host, SZ_NAME_MEDIUM);
@@ -536,13 +512,13 @@ int plug_deserialize_remote(spank_t sp, plug_serialization_t *sd)
 	repenv_agnostic(sp, Var.path_temp.rem, Var.path_temp.ear);
 	repenv_agnostic(sp, Var.path_inst.rem, Var.path_inst.ear);
 
-	/*
-	 * Clean
-	 */
+	// Cleaning
 	unsetenv_agnostic(sp, Var.user.rem);
 	unsetenv_agnostic(sp, Var.group.rem);
 	unsetenv_agnostic(sp, Var.path_temp.rem);
 	unsetenv_agnostic(sp, Var.path_inst.rem);
+	unsetenv_agnostic(sp, Var.nodes_allowed.rem);
+	unsetenv_agnostic(sp, Var.nodes_excluded.rem);
 	
 	return ESPANK_SUCCESS;
 }
@@ -551,9 +527,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 {
 	plug_verbose(sp, 2, "function plug_serialize_task");
 
-	/*
-  	 * EAR variables
-  	 */
+	// EAR variables
 	settings_conf_t *setts = &sd->pack.eard.setts;
 
 	// Variable EAR_ENERGY_TAG, unset
@@ -621,7 +595,7 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 
 	plug_verbose(sp, 2, "trying to load file '%s'", buffer1);
 
-	//if (file_is_regular(buffer1))
+	// If we can load
 	if (access(buffer1, X_OK) == 0)
 	{
 		char *ld_buf = sd->job.user.env.ld_preload;
@@ -637,6 +611,9 @@ int plug_serialize_task(spank_t sp, plug_serialization_t *sd)
 		}
 
 		setenv_agnostic(sp, Var.ld_prel.ear, buffer1, 1);
+	} else {
+		plug_verbose(sp, 2, "this file can't be loaded '%s' (%d, %s)",
+			buffer1, errno, strerror(errno));
 	}
 	#endif	
 
