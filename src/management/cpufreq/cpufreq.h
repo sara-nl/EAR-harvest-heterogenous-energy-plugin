@@ -50,6 +50,15 @@
 // 	  (context) in user mode applications. In example:
 // 	  	mgt_cpufreq_serialize(ctx_t *c, void **serialization, size_t *size);
 // 	  Or maybe to force static sized context allocations.
+//
+// Use example:
+//		mgt_cpufreq_load(&topo);
+//		mgt_cpufreq_init(&context);
+//		mgt_cpufreq_count(&context, &pstate_count);
+//		available_list = calloc(pstate_count, sizeof(pstate_t)));
+//		mgt_cpufreq_get_available_list(&context, available_list, NULL);
+//		mgt_cpufreq_set_current(&context, 1, all_cpus);
+//		mgt_cpufreq_dispose(&context);
 
 typedef struct pstate_s {
 	uint   idx;

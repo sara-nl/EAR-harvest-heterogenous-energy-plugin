@@ -639,7 +639,7 @@ state_t nvml_freq_limit_set(ctx_t *c, ulong *khz)
 	return e;
 }
 
-state_t nvml_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len)
+state_t nvml_freq_list(ctx_t *c, const ulong ***list_khz, const uint **list_len)
 {
 	if (!ok_unprivileged) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);

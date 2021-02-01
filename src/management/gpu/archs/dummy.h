@@ -42,7 +42,7 @@ state_t dummy_freq_get_valid(ctx_t *c, uint dev, ulong freq_ref, ulong *freq_nea
 
 state_t dummy_freq_get_next(ctx_t *c, uint dev, ulong freq_ref, uint *freq_idx, uint flag);
 
-state_t dummy_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len);
+state_t dummy_freq_list(ctx_t *c, const ulong ***list_khz, const uint **list_len);
 
 state_t dummy_power_cap_get_current(ctx_t *c, ulong *watts);
 

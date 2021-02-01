@@ -634,12 +634,12 @@ static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst, uint test)
 	if (cpu >= tp.cpu_count) {
 		return_msg(EAR_ERROR, Generr.cpu_invalid);
 	}
-
+	// Setting the P_STATE 'pst' multiplicator and divider
 	reg = f->regs[0];
 	reg = setbits64(reg, f->psss[pst].fid,  7,  0);
 	reg = setbits64(reg, f->psss[pst].did, 13,  8);
 	reg = setbits64(reg,             1LLU, 63, 63);
-
+	// Writing its value in MSR
 	if (xtate_fail(s, msr_write(cpu, &reg, sizeof(ullong), REG_P1))) {
 		return s;
 	}
