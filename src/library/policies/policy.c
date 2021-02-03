@@ -155,7 +155,7 @@ state_t init_power_policy(settings_conf_t *app_settings,resched_t *res)
 			obj_path=basic_path;
 		}
 	}
-  if (masters_info.my_master_rank>=0) verbose(1,"loading policy %s",obj_path);
+  if (masters_info.my_master_rank>=0) verbose(2,"loading policy %s",obj_path);
 	if (policy_load(obj_path,&polsyms_fun)!=EAR_SUCCESS){
 		error("Error loading policy %s",obj_path);
 	}

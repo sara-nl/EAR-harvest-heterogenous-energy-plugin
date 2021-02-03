@@ -103,10 +103,12 @@ __attribute__((used)) state_t mgt_gpu_count(ctx_t *c, uint *dev_count)
 	preturn (ops.count, c, dev_count);
 }
 
-state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array, uint *dev_count)
+state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array, uint *_dev_count)
 {
-	mgt_gpu_count(c, dev_count);
-	*array = calloc(*dev_count, sizeof(ulong));
+	uint dev_count;
+	mgt_gpu_count(c, &dev_count);
+	*array = calloc(dev_count, sizeof(ulong));
+	if (_dev_count != NULL) *_dev_count = dev_count;
 	return EAR_SUCCESS;
 }
 

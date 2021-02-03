@@ -26,10 +26,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+//#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
+#include <common/colors.h>
 #include <common/math_operations.h>
 #include <common/types/log.h>
 #include <common/types/application.h>
@@ -147,11 +148,13 @@ extern uint check_periodic_mode;
 				GPU_f=(float)GPU_FREQ/1000000.0; \
         verbose(2,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
         verbosen(1,"EAR+D(%s) at %.2f in %s MR[%d]: ",ear_app_name, prev_ff,application.node_id,masters_info.my_master_rank); \
+				verbosen(1,"%s",COL_GRE);\
 				if (GPU_UTIL) {\
         verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL);\
 				}else { \
         verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)", CPI, GBS, POWER, TIME,  AVGFF);\
 				}\
+				verbosen(1,"%s",COL_CLR);\
 			}
 
 #else
@@ -162,7 +165,9 @@ extern uint check_periodic_mode;
         prev_ff=(float)prev_f/1000000.0; \
         verbose(2,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
         verbosen(1,"EAR+D(%s) at %.2f in %s MR[%d]: ",ear_app_name, prev_ff,application.node_id,masters_info.my_master_rank); \
+				verbosen(1,"%s",COL_GRE);\
         verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec. Energy=%.1lfJ AVGF=%.2fGHz", CPI, GBS, POWER, TIME, ENERGY, AVGFF);\
+				verbosen(1,"%s",COL_CLR);\
 			}
 #endif
 

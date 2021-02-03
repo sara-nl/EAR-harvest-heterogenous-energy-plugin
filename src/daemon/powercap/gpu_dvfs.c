@@ -290,7 +290,7 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 	uint gpu_idle=0,gpu_run=0,total_util=0;
 	/* Set data */
 	current_gpu_pc=limit;
-	debug("%sGPU-DVFS:set_powercap_value %u%s",COL_BLU,limit,COL_CLR);
+	debug("%sGPU-DVFS:set_powercap_value %lu%s",COL_BLU,limit,COL_CLR);
 
 	debug("%s",COL_BLU);
 	debug("GPU: set_powercap_value %lu",limit);

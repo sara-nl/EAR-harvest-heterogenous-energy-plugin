@@ -112,7 +112,7 @@ void  __attribute__ ((constructor)) loader()
 		if (_loaded) return;
 
 		// Module default
-		if (load_no_official(path_lib_so,libhack)) {
+		if (load_no_official()) {
 			verbose(2,"Tring default module");
 			_loaded = module_constructor();
 		}
