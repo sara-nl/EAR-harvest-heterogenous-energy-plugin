@@ -15,16 +15,11 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef LIBRARY_LOADER_MPI_H
-#define LIBRARY_LOADER_MPI_H
+#ifndef _MODULE_COMMON_H
+#define _MODULE_COMMON_H
+int module_file_exists(char *path);
 
-#include <library/api/mpic.h>
-#include <library/api/mpif.h>
-#include <library/loader/module_mpic.h>
-#include <library/loader/module_mpif.h>
+void module_get_path_libear(char **path_lib,char **hack_lib );
+#endif
 
-int module_mpi(char *path_lib_so,char *libhack);
 
-void module_mpi_destructor();
-
-#endif //LIBRARY_LOADER_MPI_H

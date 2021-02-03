@@ -18,6 +18,7 @@
 #include <metrics/gpu/archs/nvml.h>
 
 #ifdef CUDA_BASE
+//#define SHOW_DEBUGS 1
 
 #include <nvml.h>
 #include <dlfcn.h>
@@ -210,6 +211,7 @@ static state_t static_init()
 	{
 		nvml_data_free(&pool);
 		monitor_unregister(sus);
+		debug("GPU monitor FAILS");
 		return s;
 	}
 

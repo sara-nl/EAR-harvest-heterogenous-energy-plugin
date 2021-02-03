@@ -23,10 +23,10 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/colors.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <daemon/powercap/powercap_status_conf.h>
 #include <daemon/powercap/powercap_status.h>
@@ -136,7 +136,7 @@ state_t gpu_dvfs_pc_thread_init(void *p)
 	gpu_data_alloc(&values_gpu_end);
 	gpu_data_alloc(&values_gpu_diff);
 	mgt_gpu_freq_list(&gpu_pc_ctx, &gpu_freq_list, &gpu_num_freqs);
-	printf_gpu_freq_list(gpu_freq_list,gpu_num_freqs);
+	// printf_gpu_freq_list(gpu_freq_list,gpu_num_freqs);
   gpu_dvfs_pc_enabled=1;
   debug("Power measurement initialized in gpu_dvfs_pc thread initialization");
 	if (gpu_read(&gpu_metric_ctx,values_gpu_init)!= EAR_SUCCESS){
@@ -290,6 +290,8 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 	uint gpu_idle=0,gpu_run=0,total_util=0;
 	/* Set data */
 	current_gpu_pc=limit;
+	debug("%sGPU-DVFS:set_powercap_value %u%s",COL_BLU,limit,COL_CLR);
+
 	debug("%s",COL_BLU);
 	debug("GPU: set_powercap_value %lu",limit);
 	debug("GPU: Phase 1, allocating power to idle GPUS");
@@ -399,6 +401,11 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 	int i;
 	uint used=0;
 	uint g_tbr;
+	if (current_gpu_pc == PC_UNLIMITED){
+		*in_target = 0;
+		*tbr  = 0;
+		return 0;
+	}
 	/* If we are not using th GPU we can release all the power */
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		used += (gpu_pc_util[i]>0);
@@ -416,7 +423,7 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 	/* If we know, we must check */
 	*in_target = 1;*tbr=0;
 	for (i=0;i<gpu_pc_num_gpus;i++){
-		if (t_freq[i] != c_freq[i]){ 
+		if ((t_freq[i] != c_freq[i]) && (gpu_pc_util[i]>0)){ 
 			*in_target=0;
 			debug("We cannot release power from GPU %d",i);
 		}else{

@@ -22,11 +22,11 @@
 #include <string.h>
 #include <errno.h>
 #define _GNU_SOURCE
+#define SHOW_DEBUGS 1
 #include <pthread.h>
 #include <common/config.h>
 #include <common/config/config_install.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/symplug.h>
 #include <common/types/configuration/cluster_conf.h>
@@ -134,8 +134,9 @@ static uint gpu_pc_num_gpus=1;
 static topology_t pc_topology_info;
 /* These functions identies and monitors load changes */
 
-#define MAX_ALLOWED_DIFF 0.1
+#define MAX_ALLOWED_DIFF 0.25
 
+/* This function decides if we have to changed the utilization or not */
 static uint gpu_util_changed(ulong curr,ulong prev)
 {
 	float diff;
@@ -179,6 +180,8 @@ uint pmgt_utilization_changed()
 	}
 	return ret;
 }
+
+/* These two functions monitors the system utilization : CPU and GPU */
 static state_t util_detect_main(void *p)
 {
   int i;
@@ -219,14 +222,15 @@ static state_t util_detect_init(void *p)
   return EAR_SUCCESS;
 }
 
+/* This function initilices the utilization monitoring */
 void util_monitoring_init()
 {
 	#if USE_GPUS
   sus_util_detection=suscription();
   sus_util_detection->call_main = util_detect_main;
   sus_util_detection->call_init = util_detect_init;
-  sus_util_detection->time_relax = 1000;
-  sus_util_detection->time_burst = 1000;
+  sus_util_detection->time_relax = 2000;
+  sus_util_detection->time_burst = 2000;
   sus_util_detection->suscribe(sus_util_detection);
 	#endif
 }
@@ -596,7 +600,7 @@ void pmgt_powercap_status_per_domain()
 			if (ret){
 				debug("Domain %d is ok with the power: in_target %u, power TBR %u",i,intarget,tbr);
 			}else{
-				debug("Domain %d cannot share power because is not in the target",i);
+				debug("Domain %d cannot share power because is not in the target, in_target %u, power TBR %u",i,intarget,tbr);
 			}
 		}
 	}

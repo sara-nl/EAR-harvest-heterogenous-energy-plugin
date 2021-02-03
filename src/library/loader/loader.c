@@ -25,12 +25,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <library/loader/loader.h>
+#include <library/loader/module_common.h>
 #include <library/loader/module_mpi.h>
+#include <library/loader/module_cuda.h>
+#include <library/loader/module_openmp.h>
 #include <library/loader/module_default.h>
 #include <common/config/config_env.h>
 
 static int _loaded_con;
-static int _loaded_mpi;
+static int _loaded_mpi,_loaded;
 
 static int init()
 {
@@ -68,7 +71,7 @@ int must_load()
 	return 0;
 }
 
-int load_no_mpi()
+int load_no_official()
 {
 	char *app_to_load=getenv(SCHED_LOADER_LOAD_NO_MPI_LIB);
 	if (app_to_load == NULL) return 0;
@@ -78,6 +81,10 @@ int load_no_mpi()
 
 void  __attribute__ ((constructor)) loader()
 {
+  char *path_lib_so;
+  char *libhack;
+
+
 	// Initialization
 	if (!init()) {
 		verbose(4, "LOADER: escaping the application '%s'", program_invocation_name);
@@ -86,14 +93,28 @@ void  __attribute__ ((constructor)) loader()
 	verbose(2, "LOADER: loading for application '%s'", program_invocation_name);
 	
 	if (must_load()){ 
+  	module_get_path_libear(&path_lib_so,&libhack);
+  	if ((path_lib_so == NULL) && (libhack == NULL)){
+    	verbose(1,"LOADER EAR path and EAR debug HACKS are NULL");
+   	 	return ;
+  	}
+
 		// Module MPI
 		verbose(2,"Tring MPI module");
-		_loaded_mpi = module_mpi();
+		_loaded = module_mpi(path_lib_so,libhack);
+
+		if (_loaded) return;
+			
+		_loaded = module_constructor_openmp(path_lib_so,libhack);
+		if (_loaded) return;
+
+		_loaded = module_constructor_cuda(path_lib_so,libhack);
+		if (_loaded) return;
 
 		// Module default
-		if (!_loaded_mpi && load_no_mpi()) {
+		if (load_no_official(path_lib_so,libhack)) {
 			verbose(2,"Tring default module");
-			_loaded_con = module_constructor();
+			_loaded = module_constructor();
 		}
 	}
 	// New modules here...

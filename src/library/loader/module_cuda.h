@@ -15,16 +15,11 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef LIBRARY_LOADER_MPI_H
-#define LIBRARY_LOADER_MPI_H
+#ifndef LIBRARY_LOADER_CUDA_H
+#define LIBRARY_LOADER_CUDA_H
 
-#include <library/api/mpic.h>
-#include <library/api/mpif.h>
-#include <library/loader/module_mpic.h>
-#include <library/loader/module_mpif.h>
+int module_constructor_cuda(char *path_lib_so,char *libhack);
 
-int module_mpi(char *path_lib_so,char *libhack);
+void module_destructor_cuda();
 
-void module_mpi_destructor();
-
-#endif //LIBRARY_LOADER_MPI_H
+#endif 

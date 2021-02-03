@@ -21,32 +21,41 @@
 #include <unistd.h>
 #include <common/config.h>
 #include <library/loader/loader.h>
-#include <library/loader/module_default.h>
+#include <library/loader/module_openmp.h>
+#include <library/loader/module_common.h>
 
-void (*func_con) (void);
-void (*func_des) (void);
+static void (*func_con) (void);
+static void (*func_des) (void);
 
-static int module_file_exists(char *path)
+
+static int module_openmp_is()
 {
-	return (access(path, X_OK) == 0);
+	/* We manage OpenMP and MKL with same library */
+	void * ompsym,*mklsym;
+	ompsym = dlsym(RTLD_DEFAULT, "omp_get_max_threads") ;
+	if (ompsym != NULL) return 1;
+	mklsym = dlsym (RTLD_DEFAULT, "mkl_get_max_threads");
+	if (mklsym != NULL) return 1;
+	return 0;
 }
 
-static int module_constructor_dlsym(char *path_so)
+
+static int module_constructor_dlsym(char *path_lib_so,char *libhack,char *path_so)
 {
 	void *libear;
-	char *hack;
 
-	// Last chance to force a concrete library file.
-	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
-		sprintf(path_so, "%s", hack);
-	} else if ((hack = getenv(HACK_PATH_LIBR)) != NULL) {
-		sprintf(path_so, "%s/%s.%s", hack, REL_NAME_LIBR,DEF_EXT);
-	} else if ((hack = getenv(VAR_INS_PATH)) != NULL) {
-		sprintf(path_so, "%s/%s/%s.%s", hack, REL_PATH_LIBR, REL_NAME_LIBR,DEF_EXT);
-	} else {
-		verbose(2, "LOADER: installation path not found");
-		return 0;
-	}
+
+  if ((path_lib_so == NULL) && (libhack == NULL)){
+    verbose(0,"LOADER EAR path and EAR debug HACKS are NULL in CUDA module");
+    return 0;
+  }
+
+  if (libhack == NULL){
+    sprintf(path_so, "%s/%s.%s", path_lib_so, REL_NAME_LIBR, OPENMP_EXT);
+  }else{
+    sprintf(path_so, "%s", libhack);
+  }
+  
 
 	verbose(2, "LOADER: loading library %s", path_so);
 
@@ -78,17 +87,21 @@ static int module_constructor_dlsym(char *path_so)
 	return 1;
 }
 
-int module_constructor()
+int module_constructor_openmp(char *path_lib_so,char *libhack)
 {
 	static char path_so[4096];
 
-	verbose(3, "LOADER: loading module default (constructor)");
+	verbose(3, "LOADER: loading module openmp (constructor)");
+  if (!module_openmp_is()){
+    verbose(3, "LOADER: App is not an OpenMP app");
+    return 0;
+  }
 
-	if (!module_constructor_dlsym(path_so)) {
+	if (!module_constructor_dlsym(path_lib_so,libhack,path_so)) {
 		return 0;
 	}
-	if (atexit(module_destructor) != 0) {
-		verbose(0, "LOADER: cannot set exit function");
+	if (atexit(module_destructor_openmp) != 0) {
+		verbose(1, "LOADER: cannot set exit function");
 	}
 	if (func_con != NULL) {
 		func_con();
@@ -97,9 +110,9 @@ int module_constructor()
 	return 1;
 }
 
-void module_destructor()
+void module_destructor_openmp()
 {
-	verbose(3, "LOADER: loading module default (destructor)");
+	verbose(3, "LOADER: loading module openmp (destructor)");
 
 	if (func_des != NULL) {
 		func_des();

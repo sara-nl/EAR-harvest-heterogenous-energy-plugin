@@ -52,13 +52,20 @@ void pmgt_powercap_to_str(pwr_mgt_t *phandler,char *b);
 void pmgt_set_status(pwr_mgt_t *phandler,uint status);
 uint pmgt_get_powercap_strategy(pwr_mgt_t *phandler);
 void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode);
+/* Based on the current power consumption per domain and the status (idle/run) distributes the power accross domains */
 void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain,uint st);
+/* Sets the requested frequency */
 void pmgt_set_app_req_freq(pwr_mgt_t *phandler,pc_app_info_t *pc_app);
+/* Notifies the pwr_mgt a new job/end job event */
 void pmgt_new_job(pwr_mgt_t *phandler);
 void pmgt_end_job(pwr_mgt_t *phandler);
+/* Notifies the pwr_mgt the node goes from idle to run */
 void pmgt_idle_to_run(pwr_mgt_t *phandler);
+/* Notifies the pwr_mgt the node goes from run to idle */
 void pmgt_run_to_idle(pwr_mgt_t *phandler);
+/* When the measured utilization changes, this funcion re-distributes the power based on that */
 void pmgt_powercap_node_reallocation();
+/* Estimates the powercap status per domain (To be completed )*/
 void pmgt_powercap_status_per_domain();
 
 

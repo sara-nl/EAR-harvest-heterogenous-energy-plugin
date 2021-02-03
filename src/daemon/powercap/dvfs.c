@@ -23,12 +23,12 @@
 #include <errno.h>
 #include <unistd.h>
 #define _GNU_SOURCE
+#define SHOW_DEBUGS 1
 #include <pthread.h>
 #include <common/config.h>
 #include <signal.h>
 #include <common/colors.h>
 #include <common/states.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
 #include <metrics/energy/cpu.h>
@@ -131,10 +131,13 @@ state_t dvfs_pc_thread_main(void *p)
       if (power_rapl > my_limit){ /* We are above the PC */
         c_freq=frequency_get_cpu_freq(0);
         c_pstate=frequency_freq_to_pstate(c_freq);
-        c_pstate=ear_min(c_pstate+1,num_pstates-1);
-        c_freq=frequency_pstate_to_freq(c_pstate);
-        debug("DVFS:%sReducing freq to %lu (pstate %u): power %f limit %f%s",COL_RED,c_freq,c_pstate,power_rapl,my_limit,COL_CLR);
-        frequency_set_all_cpus(c_freq);
+				/* If we are running at the lowest frequency there is nothing else to do */
+				if (c_pstate < (num_pstates-1)){
+        	c_pstate=ear_min(c_pstate+1,num_pstates-1);
+        	c_freq=frequency_pstate_to_freq(c_pstate);
+        	debug("DVFS:%sReducing freq to %lu (pstate %u): power %f limit %f%s",COL_RED,c_freq,c_pstate,power_rapl,my_limit,COL_CLR);
+        	frequency_set_all_cpus(c_freq);
+				}
       }else{ /* We are below the PC */
         t_pstate=frequency_freq_to_pstate(c_req_f);
         c_freq=frequency_get_cpu_freq(0);
@@ -258,6 +261,7 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 {
 	ulong c_freq;
 	uint ctbr;
+	if (current_dvfs_pc == PC_UNLIMITED) return 0;
 	/* If we don't know the req_f we cannot release power */
 	if (c_req_f == 0) return 0;
 	c_freq=frequency_get_cpu_freq(0);

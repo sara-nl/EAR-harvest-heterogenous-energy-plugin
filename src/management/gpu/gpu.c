@@ -25,7 +25,7 @@
 static mgt_gpu_ops_t ops;
 static uint loaded;
 
-state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
+__attribute__((used)) state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 {
 	if (loaded != 0) {
 		if (_ops != NULL) {
@@ -88,17 +88,17 @@ state_t mgt_gpu_load(mgt_gpu_ops_t **_ops)
 	return EAR_SUCCESS;
 }
 
-state_t mgt_gpu_init(ctx_t *c)
+__attribute__((used)) state_t mgt_gpu_init(ctx_t *c)
 {
 	preturn (ops.init, c);
 }
 
-state_t mgt_gpu_dispose(ctx_t *c)
+__attribute__((used)) state_t mgt_gpu_dispose(ctx_t *c)
 {
 	preturn (ops.dispose, c);
 }
 
-state_t mgt_gpu_count(ctx_t *c, uint *dev_count)
+__attribute__((used)) state_t mgt_gpu_count(ctx_t *c, uint *dev_count)
 {
 	preturn (ops.count, c, dev_count);
 }

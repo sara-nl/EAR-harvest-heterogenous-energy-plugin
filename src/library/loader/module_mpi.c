@@ -19,11 +19,13 @@
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <common/config.h>
 #include <common/system/file.h>
 #include <common/system/symplug.h>
 #include <common/string_enhanced.h>
 #include <library/loader/loader.h>
 #include <library/loader/module_mpi.h>
+#include <library/loader/module_common.h>
 
 static mpic_t next_mpic;
 static mpif_t next_mpif;
@@ -34,17 +36,11 @@ void (*func_con) (void);
 void (*func_des) (void);
 
 
-static int module_file_exists(char *path)
-{
-	return (access(path, X_OK) == 0);
-}
 
-static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
+static void module_mpi_get_libear(char *path_lib_so,char *libhack,char *path_so, int *lang_c, int *lang_f)
 {
 	static char buffer[4096];
 	char *extension = NULL;
-	char *path = NULL;
-	char *hack = NULL;
 	char *vers = NULL;
 	int len = 4096;
 	int fndi = 0;
@@ -53,13 +49,8 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 
 	*lang_c = 0;
 	*lang_f = 0;
-
-	if ((hack = getenv(HACK_PATH_LIBR)) != NULL) {
-		hack = getenv(HACK_PATH_LIBR);
-	} else if ((path = getenv(VAR_INS_PATH)) == NULL) {
-		verbose(2, "LOADER: installation path not found");
-		return;
-	}
+	if (path_lib_so != NULL) verbose(2,"LOADER path_lib_so %s",path_lib_so);
+	if (libhack != NULL) verbose(2,"LOADER  using HACK %s",libhack);
 
 	// Getting the library version
 	MPI_Get_library_version(buffer, &len);
@@ -81,10 +72,10 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 		fndi, fndo, fndm);
 
 	//
-	extension = "so";
+	extension = INTEL_EXT;
 
 	if (fndo) {
-		extension = "ompi.so";
+		extension = OPENMPI_EXT;
 	}
 
 	if ((vers = getenv(FLAG_NAME_LIBR)) != NULL) {
@@ -93,18 +84,16 @@ static void module_mpi_get_libear(char *path_so, int *lang_c, int *lang_f)
 			extension = buffer;
 		}
 	}
+  if (path_lib_so != NULL) verbose(2,"LOADER: path %s rellibname %s extension %s",path_lib_so, REL_NAME_LIBR, extension);
 
 	//
-	if (!hack) {
-		sprintf(path_so, "%s/%s/%s.%s", path, REL_PATH_LIBR, REL_NAME_LIBR, extension);
-	} else {
-		sprintf(path_so, "%s/%s.%s", hack, REL_NAME_LIBR, extension);
+	if (libhack == NULL){	
+		sprintf(path_so, "%s/%s.%s", path_lib_so, REL_NAME_LIBR, extension);
+	}else{
+		sprintf(path_so, "%s", libhack);
 	}
 
-	// Last chance to force a concrete library file.
-	if ((hack = getenv(HACK_FILE_LIBR)) != NULL) {
-		sprintf(path_so, "%s", hack);
-	}
+	verbose(2,"LOADER: lib path %s",path_so);
 	
 	//if (!file_is_regular(path_so)) {
 	if (!module_file_exists(path_so)) {
@@ -216,7 +205,7 @@ static int module_mpi_is()
 	return !(dlsym(RTLD_DEFAULT, "MPI_Get_library_version") == NULL);
 }
 
-int module_mpi()
+int module_mpi(char *path_lib_so,char *libhack)
 {
 	static char path_so[4096];
 	int lang_c;
@@ -230,13 +219,13 @@ int module_mpi()
 	}
 
 	//
-	module_mpi_get_libear(path_so, &lang_c, &lang_f);
+	module_mpi_get_libear(path_lib_so,libhack,path_so, &lang_c, &lang_f);
 	//
 	if (!module_mpi_dlsym(path_so, lang_c, lang_f)){
 		return 0;
 	}
 	if (atexit(module_mpi_destructor) != 0) {
-    verbose(0, "LOADER: cannot set exit function");
+    verbose(1, "LOADER: cannot set exit function");
   }
   if (func_con != NULL) {
     func_con();

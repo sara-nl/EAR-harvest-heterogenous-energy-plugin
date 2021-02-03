@@ -18,6 +18,14 @@
 #ifndef EAR_CONFIG_DEF_H
 #define EAR_CONFIG_DEF_H
 
+
+/* LOADER definitions */
+#define INTEL_EXT 	"so"
+#define OPENMPI_EXT "ompi.so"
+#define CUDA_EXT		"seq.so"
+#define OPENMP_EXT	"seq.so"
+#define DEF_EXT			"seq.so"
+
 // Maximum number of tries when doing non-blocking communications
 #define MAX_SOCKET_COMM_TRIES   10000000
 //

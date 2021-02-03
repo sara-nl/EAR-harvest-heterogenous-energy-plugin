@@ -5,9 +5,12 @@ LDFLAGS = -ldl
 
 load_OBJS = \
     loader.o \
+	  module_common.o \
     module_mpi.o \
     module_mpic.o \
     module_mpif.o \
+    module_cuda.o \
+    module_openmp.o \
     module_default.o
 
 load_BINS = libearld.so
