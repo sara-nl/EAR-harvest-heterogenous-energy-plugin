@@ -103,11 +103,10 @@ __attribute__((used)) state_t mgt_gpu_count(ctx_t *c, uint *dev_count)
 	preturn (ops.count, c, dev_count);
 }
 
-state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array)
+state_t mgt_gpu_alloc_array(ctx_t *c, ulong **array, uint *dev_count)
 {
-	uint dev_count;
-	mgt_gpu_count(c, &dev_count);
-	*array = calloc(dev_count, sizeof(ulong));
+	mgt_gpu_count(c, dev_count);
+	*array = calloc(*dev_count, sizeof(ulong));
 	return EAR_SUCCESS;
 }
 
@@ -146,7 +145,7 @@ state_t mgt_gpu_freq_get_next(ctx_t *c, uint d, ulong freq_ref, uint *freq_idx, 
 	preturn (ops.freq_get_next, c, d, freq_ref, freq_idx, flag);
 }
 
-state_t mgt_gpu_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len)
+state_t mgt_gpu_freq_list(ctx_t *c, const ulong ***list_khz, const uint **list_len)
 {
 	preturn (ops.freq_list, c, list_khz, list_len);
 }

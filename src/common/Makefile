@@ -1,4 +1,5 @@
 include ./Makefile.files
+
 CFLAGS = -fPIC -O2 -I$(SRCDIR) $(CONSTANTS)
 
 ######## FILES

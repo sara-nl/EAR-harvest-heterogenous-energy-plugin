@@ -15,6 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -22,16 +24,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 #include <common/types/projection.h>
 #include <library/policies/policy_api.h>
 #include <daemon/local_api/eard_api.h>
 #include <daemon/powercap/powercap_status.h>
 #include <library/policies/policy_state.h>
-
 
 typedef unsigned long ulong;
 #ifdef EARL_RESEARCH
@@ -148,13 +148,13 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 				best_freq=curr_freq;
 			}else{
 				/* Nominal is the reference , if projections are ready, we project time and power */
-         debug("current_freq is not the nominal");
+				debug("current_freq is not the nominal");
 
 				if (projection_available(curr_pstate,min_pstate) == EAR_SUCCESS){
 					project_power(my_app,curr_pstate,min_pstate,&power_ref);
 					project_time(my_app,curr_pstate,min_pstate,&time_ref);
 					best_freq=nominal;
-          debug("projecting to nominal\t time: %.2lf\t power: %.2lf", time_ref, power_ref);
+					debug("projecting to nominal\t time: %.2lf\t power: %.2lf", time_ref, power_ref);
 				}else{
         	time_ref=my_app->time;
         	power_ref=my_app->DC_power;
@@ -169,32 +169,38 @@ state_t policy_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready)
 	// We compute the maximum performance loss
 	time_max = time_ref + (time_ref * max_penalty);
 
-   debug("Max_freq set to %lu min_pstate = %d nominal %lu curr_frequency %lu curr_pstate %lu time_max: %.2lf",c->app->max_freq,min_pstate,nominal,curr_freq,curr_pstate,time_max);
+   debug("Max_freq set to %lu min_pstate = %d nominal %lu curr_frequency %lu curr_pstate %lu time_max: %.2lf",
+		c->app->max_freq,min_pstate,nominal,curr_freq,curr_pstate,time_max);
 
-	debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
+	debug("Policy Signature (CPI=%lf GBS=%lf Power=%lf Time=%lf TPI=%lf)",
+		my_app->CPI,my_app->GBS,my_app->DC_power,my_app->time,my_app->TPI);
 
 	// MIN_ENERGY_TO_SOLUTION ALGORITHM
 	// Calcular el min_pstate que este dentro del limite
 	for (i = min_pstate; i < c->num_pstates;i++)
 	{
+		debug("testing projection between P%d and P%d", curr_pstate, i);
 		if (projection_available(curr_pstate,i)==EAR_SUCCESS)
 		{
-				st=project_power(my_app,curr_pstate,i,&power_proj);
-				st=project_time(my_app,curr_pstate,i,&time_proj);
-				projection_set(i,time_proj,power_proj);
-				energy_proj=power_proj*time_proj;
-        debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
-			if ((energy_proj < best_solution) && (time_proj < time_max))
-			{
-          debug("new best solution found");
-					best_freq = frequency_pstate_to_freq(i);
-					best_solution = energy_proj;
-					best_pstate=i;
+			debug("ok");
+			st=project_power(my_app,curr_pstate,i,&power_proj);
+			st=project_time(my_app,curr_pstate,i,&time_proj);
+			projection_set(i,time_proj,power_proj);
+			energy_proj=power_proj*time_proj;
+
+        	debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf",
+				curr_pstate, i, time_proj, power_proj, energy_proj);
+			
+			if ((energy_proj < best_solution) && (time_proj < time_max)) {
+        		debug("new best solution found");
+				best_freq = frequency_pstate_to_freq(i);
+				best_solution = energy_proj;
+				best_pstate=i;
 			}
 		}
 	}
 	/* Corregir frecuencia por powercap y activar greedy si es necesario */
-	}else{ 
+	} else { 
 		*ready=EAR_POLICY_CONTINUE;
 		return EAR_ERROR;
 	}

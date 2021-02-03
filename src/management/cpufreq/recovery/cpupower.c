@@ -15,19 +15,19 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <linux/version.h>
 //#define SHOW_DEBUGS 1
-#include <common/config.h>
 #include <common/sizes.h>
-#include <common/output/verbose.h>
 #include <common/states.h>
+#include <common/config.h>
+#include <common/output/verbose.h>
 
 // PATHS list
 static char *cpufreq_path="/sys/devices/system/cpu/cpu";

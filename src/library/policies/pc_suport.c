@@ -24,15 +24,15 @@
 #include <common/includes.h>
 #include <daemon/powercap/powercap_status.h>
 #include <common/types/signature.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 #include <library/metrics/gpu.h>
 #include <library/policies/policy_ctx.h>
 #include <common/types/projection.h>
 #include <common/types/pc_app_info.h>
 #if POWERCAP
 extern pc_app_info_t *pc_app_info_data;
-static ulong **gpu_freq_list;
-static uint *gpu_freq_num;
+static const ulong **gpu_freq_list;
+static const uint *gpu_freq_num;
 state_t pc_support_init(polctx_t *c)
 {
 	#if USE_GPUS

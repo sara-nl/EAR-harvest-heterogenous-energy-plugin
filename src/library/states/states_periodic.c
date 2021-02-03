@@ -36,7 +36,7 @@
 #include <library/common/externs.h>
 #include <library/common/global_comm.h>
 #include <library/metrics/metrics.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 #include <daemon/local_api/eard_api.h>
 #include <library/policies/policy_state.h>
 

@@ -1,22 +1,28 @@
 ######## FILES
 
-stat_BINS = libmgt.a
+root_BINS = libmgt.a
 
-mana_OBJS = \
+root_OBJS = \
+    $(SRCDIR)/management/cpufreq/cpufreq.o \
+    $(SRCDIR)/management/cpufreq/governor.o \
+    $(SRCDIR)/management/cpufreq/frequency.o \
+    $(SRCDIR)/management/cpufreq/archs/amd17.o \
+    $(SRCDIR)/management/cpufreq/archs/default.o \
+    $(SRCDIR)/management/cpufreq/drivers/linux_cpufreq.o \
     $(SRCDIR)/management/gpu/gpu.o \
     $(SRCDIR)/management/gpu/archs/dummy.o
-
+    
 ifdef CUDA_BASE
-mana_OBJS += \
+root_OBJS += \
     $(SRCDIR)/management/gpu/archs/nvml.o
 endif
 
 ######## RULES
 
-all: all.components $(stat_BINS)
+all: all.components $(root_BINS)
 
-libmgt.a: $(mana_OBJS)
-	$(AR) rvs $@ $(mana_OBJS)
+libmgt.a: Makefile $(root_OBJS)
+	$(AR) rvs $@ $(root_OBJS)
 
 ######## OPTIONS
 
@@ -35,7 +41,8 @@ depend-clean: depend-clean.components
 ######## SUBFOLDERS
 
 %.components:
-	@ $(MAKE) -C 'gpu' $* || exit
+	@ $(MAKE) -C 'gpu'     $* || exit
+	@ $(MAKE) -C 'cpufreq' $* || exit
 
 ######## EXPORTS
 

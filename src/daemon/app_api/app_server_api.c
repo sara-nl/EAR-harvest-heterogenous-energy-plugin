@@ -35,7 +35,7 @@
 #include <daemon/app_api/app_conf_api.h>
 #include <metrics/energy/energy_node.h>
 #include <management/gpu/gpu.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 
 #define close_app_connection()
 
@@ -397,7 +397,7 @@ static void ear_set_gpufreq(int fd_out,uint gpuid,ulong gpu_freq)
 		data.ret =EAR_ERROR;
 		send_app_answer(fd_out,&data);
 	}
-	if ((ret = mgt_gpu_alloc_array(&c, &array)) != EAR_SUCCESS){
+	if ((ret = mgt_gpu_alloc_array(&c, &array, NULL)) != EAR_SUCCESS){
     data.ret = ret;
     send_app_answer(fd_out,&data);
   }

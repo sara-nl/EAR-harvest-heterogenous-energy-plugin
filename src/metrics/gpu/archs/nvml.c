@@ -162,6 +162,7 @@ static int load_test(char *path)
 
 static int static_load()
 {
+	// Looking for nvidia library in tipical paths.
 	if (load_test(getenv(HACK_FILE_NVML))) return 1;
 	if (load_test(CUDA_BASE "/targets/x86_64-linux/lib/libnvidia-ml.so")) return 1;
 	if (load_test(CUDA_BASE "/lib64/libnvidia-ml.so")) return 1;
@@ -202,13 +203,13 @@ static state_t static_init()
 		nvml_data_free(&pool);
 		return s;
 	}
+	// Initializing monitoring thread suscription.
 	sus = suscription();
 	sus->call_main  = nvml_pool;
 	sus->time_relax = 1000;
 	sus->time_burst = 300;
-
-	if (xtate_fail(s, monitor_register(sus)))
-	{
+	// Initializing monitoring thread.
+	if (xtate_fail(s, monitor_register(sus))) {
 		nvml_data_free(&pool);
 		monitor_unregister(sus);
 		debug("GPU monitor FAILS");

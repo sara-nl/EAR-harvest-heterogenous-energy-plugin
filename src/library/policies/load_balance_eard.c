@@ -25,7 +25,7 @@
 #include <common/output/verbose.h>
 #include <common/types/risk.h>
 #include <common/types/configuration/policy_conf.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 
 #define WARNING1_INC 0.05
 #define WARNING1_MAX_PSTATES_LESS 0

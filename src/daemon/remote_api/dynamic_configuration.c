@@ -37,7 +37,7 @@
 #include <common/types/log_eard.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <common/system/symplug.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 #include <common/messaging/msg_conf.h>
 
 //#define SHOW_DEBUGS 1

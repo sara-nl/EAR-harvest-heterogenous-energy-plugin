@@ -40,7 +40,7 @@ state_t topology_select(topology_t *t, topology_t *s, int component, int group, 
 	int i;
 	int j;
 	int c;
-;
+
 	just = (group == TPGroup.merge);
 
 	if (component == TPSelect.l3) {
@@ -298,7 +298,7 @@ static int is_online(const char *path)
 state_t topology_init(topology_t *topo)
 {
 	char path[SZ_NAME_LARGE];
-	int i;
+	int i, j;
 
 	// TODO: spaguettis
 	if (topo_static.cpu_count != 0) {
@@ -338,9 +338,16 @@ state_t topology_init(topology_t *topo)
 			topo->threads_per_core = 2;
 			topo->smt_enabled = 1;
 		}
-		if (topo->cpus[i].l3_id > (topo->l3_count-1)) {
-			topo->l3_count = topo->cpus[i].l3_id + 1;
+		// 0 1 2 3
+		for (j = 0; j < i; ++j) {
+			if (topo->cpus[j].l3_id == topo->cpus[i].l3_id) {
+				break;
+			}
 		}
+		topo->l3_count += (j == i);
+		//if (topo->cpus[i].l3_id > (topo->l3_count-1)) {
+		//	topo->l3_count = topo->cpus[i].l3_id + 1;
+		//}
 	
 		// Base frequency	
 		topology_freq_getbase(i, &topo->cpus[i].freq_base);

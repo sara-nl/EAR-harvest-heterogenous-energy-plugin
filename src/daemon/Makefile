@@ -13,9 +13,9 @@ local_api_OBJS = \
 	local_api/eard_api.o
 
 remote_api_OBJS= \
-  remote_api/eard_server_api.o \
-  remote_api/dyn_conf_theading.o \
-  remote_api/dynamic_configuration.o 
+    remote_api/eard_server_api.o \
+    remote_api/dyn_conf_theading.o \
+    remote_api/dynamic_configuration.o 
 
 powercap_OBJS = \
 	powercap/powercap_status.o \
@@ -28,19 +28,19 @@ gpu_mgt_OBJS = \
 eard_OBJS = \
     eard_checkpoint.o \
     power_monitor.o \
-		app_mgt.o \
+	app_mgt.o \
     shared_configuration.o \
     app_api/app_server_api.o \
     node_metrics.o 
 
 eard_OBJS += \
-		$(remote_api_OBJS) \
-		$(powercap_OBJS) \
-		$(gpu_mgt_OBJS) \
+    $(remote_api_OBJS) \
+    $(powercap_OBJS) \
+    $(gpu_mgt_OBJS) \
     $(SRCDIR)/database_cache/eardbd_api.o \
     $(SRCDIR)/metrics/libmetrics.a \
-    $(SRCDIR)/common/libcommon.a \
-    $(SRCDIR)/management/libmgt.a 
+    $(SRCDIR)/management/libmgt.a \
+    $(SRCDIR)/common/libcommon.a
 
 ######## RULES
 

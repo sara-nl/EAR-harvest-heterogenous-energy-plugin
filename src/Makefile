@@ -1,12 +1,13 @@
 ######## FILES
 
-COMPONENTS = common 
+COMPONENTS = \
+    common \
+    metrics \
+    management
 ifdef DB_BASE
 	COMPONENTS += database_cache
 endif
 	COMPONENTS += \
-                  metrics \
-                  management \
                   daemon \
                   commands \
                   tests \

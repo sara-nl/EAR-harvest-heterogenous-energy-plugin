@@ -17,16 +17,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-//#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/types/signature.h>
-#include <daemon/shared_configuration.h>
-#include <common/hardware/frequency.h>
 #include <common/hardware/architecture.h>
-
+#include <management/cpufreq/frequency.h>
+#include <daemon/shared_configuration.h>
 #include <library/models/models_api.h>
-
 
 static coefficient_t **coefficients;
 static coefficient_t *coefficients_sm;
@@ -35,7 +32,6 @@ static uint num_pstates;
 static uint basic_model_init=0;
 static architecture_t arch;
 static int avx512_pstate=1,avx2_pstate=1;
-
 
 static int valid_range(ulong from,ulong to)
 {
@@ -51,7 +47,6 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
   char coeff_file_fn[128];
   int begin_pstate, end_pstate;
   int i, ref;
-	int cfound = 0;
 
 	debug("Using avx512_model\n");
 	num_pstates=myarch->pstates;
@@ -95,13 +90,11 @@ state_t model_init(char *etc,char *tmp,architecture_t *myarch)
       ref=frequency_closest_pstate(coefficients_sm[ccoeff].pstate_ref);
       i=frequency_closest_pstate(coefficients_sm[ccoeff].pstate);
       if (frequency_is_valid_pstate(ref) && frequency_is_valid_pstate(i)){
-				cfound++;
 				memcpy(&coefficients[ref][i],&coefficients_sm[ccoeff],sizeof(coefficient_t));
       }
     }
   }
 	basic_model_init=1;	
-	verbose(2,"%d Coefficients found",cfound);
 	return EAR_SUCCESS;
 }
 double avx512_vpi(signature_t *my_app);

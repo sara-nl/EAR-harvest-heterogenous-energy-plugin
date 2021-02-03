@@ -71,7 +71,7 @@ state_t gpu_lib_freq_limit_reset();
 
 state_t gpu_lib_freq_limit_set(ulong *khz);
 
-state_t gpu_lib_freq_list(ulong ***list_khz, uint **list_len);
+state_t gpu_lib_freq_list(const ulong ***list_khz, const uint **list_len);
 
 state_t gpu_lib_power_cap_get_current(ctx_t *c, ulong *watts);
 

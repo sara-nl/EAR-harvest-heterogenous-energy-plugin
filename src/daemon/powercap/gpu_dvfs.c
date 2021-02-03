@@ -58,8 +58,8 @@ static ulong *gpu_pc_curr_power;
 static ulong *gpu_pc_util;
 static float *pdist;
 static ulong *c_freq,*t_freq,*n_freq;
-static ulong **gpu_freq_list=NULL;
-static uint *gpu_num_freqs=NULL;
+static const ulong **gpu_freq_list=NULL;
+static const uint *gpu_num_freqs=NULL;
 static gpu_ops_t     *ops_met;
 
 ulong select_lower_gpu_freq(uint i,ulong f)
@@ -105,7 +105,7 @@ ulong select_higher_gpu_freq(uint i,ulong f)
   return gpu_freq_list[i][j-1];
 }
 
-static void printf_gpu_freq_list(ulong **f,uint *num_f)
+static void printf_gpu_freq_list(const ulong **f, const uint *num_f)
 {
 	int i,j;
 #if SHOW_DEBUGS

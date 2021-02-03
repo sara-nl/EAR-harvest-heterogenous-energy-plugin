@@ -173,7 +173,21 @@ state_t bwidth_amd49_count(ctx_t *c, uint *count)
 
 state_t bwidth_amd49_start(ctx_t *c)
 {
-	return bwidth_amd49_reset(c);
+	bwidth_amd49_t *bw = (bwidth_amd49_t *) c->context;
+	state_t s;
+	int i;
+	
+	if (!initialized) {
+		return_msg(EAR_ERROR, Generr.api_uninitialized);
+	}
+	// One chunk of L3 per CCX	
+	for (i = 0; i < bw->fd_count; ++i) {
+		s = msr_write(bw->tp.cpus[i].id, &cmd_l3 , sizeof(ulong), ctl_l3);
+	}
+	// Remove warning
+	(void) (s);
+
+	return EAR_SUCCESS;
 }
 
 state_t bwidth_amd49_stop(ctx_t *c, ullong *cas)
@@ -185,18 +199,15 @@ state_t bwidth_amd49_stop(ctx_t *c, ullong *cas)
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
-
 	#if 0
 	// Two channels per CCD
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctl0);
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctl1);
 	#endif
-
 	// One chunk of L3 per CCX	
 	for (i = 0; i < bw->fd_count; ++i) {
 		s = msr_write(bw->tp.cpus[i].id, &cmd_off, sizeof(ulong), ctl_l3);
 	}
-	
 	// Remove warning
 	(void) (s);
 
@@ -212,7 +223,6 @@ state_t bwidth_amd49_reset(ctx_t *c)
 	if (!initialized) {
 		return_msg(EAR_ERROR, Generr.api_uninitialized);
 	}
-
 	#if 0
 	// Two channels per CCD (more or less)
 	s = msr_write(bw->tp.cpus[0].id, &df_cmd0, sizeof(ulong), df_ctl0);
@@ -221,13 +231,10 @@ state_t bwidth_amd49_reset(ctx_t *c)
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctr0);
 	s = msr_write(bw->tp.cpus[0].id, &cmd_off, sizeof(ulong), df_ctr1);
 	#endif
-
 	// One chunk of L3 per CCX	
 	for (i = 0; i < bw->fd_count; ++i) {
 		s = msr_write(bw->tp.cpus[i].id, &cmd_off, sizeof(ulong), ctr_l3);
-		s = msr_write(bw->tp.cpus[i].id, &cmd_l3 , sizeof(ulong), ctl_l3);
 	}
-
 	// Remove warning
 	(void) (s);
 

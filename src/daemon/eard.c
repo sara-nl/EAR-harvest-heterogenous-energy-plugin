@@ -25,7 +25,7 @@
 #include <common/environment.h>
 #include <common/types/log_eard.h>
 #include <common/types/pc_app_info.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 #include <common/hardware/hardware_info.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/energy/cpu.h>
@@ -162,6 +162,42 @@ static uint error_energy=0;
 static uint error_connector=0;
 
 
+void check_policy(policy_conf_t *p)
+{
+	unsigned long f;
+    /* We are using pstates */
+    if (p->def_freq==(float)0){
+        if (p->p_state>=frequency_get_num_pstates()) p->p_state=frequency_get_nominal_pstate();
+    }
+    else
+    {
+        /* We are using frequencies */
+        f=(unsigned long)(p->def_freq*1000000);
+        if (!frequency_is_valid_frequency(f))
+        {
+            error("Default frequency %lu for policy %s is not valid",f,p->name);
+            p->def_freq=(float)frequency_closest_frequency(f)/(float)1000000;
+            error("New def_freq %f",p->def_freq);
+        }
+    }
+}
+
+void check_policy_values(policy_conf_t *p,int nump)
+{
+	int i=0;
+	for (i=0;i<nump;i++){
+		check_policy(&p[i]);
+	}
+}
+
+void compute_policy_def_freq(policy_conf_t *p)
+{
+	if (p->def_freq==(float)0){
+		p->def_freq=(float)frequency_pstate_to_freq(p->p_state)/1000000.0;
+	}else{
+		p->p_state=frequency_closest_pstate((unsigned long)(p->def_freq*1000000));
+	}
+}
 
 void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 {
@@ -172,7 +208,8 @@ void compute_default_pstates_per_policy(uint num_policies, policy_conf_t *plist)
 	}
 }
 
-void init_frequency_list() {
+void init_frequency_list()
+{
 	int ps, i;
 	ps = frequency_get_num_pstates();
 	int size = ps * sizeof(ulong);
@@ -1204,7 +1241,8 @@ int coeffs_per_island_default_exist(char *filename) {
 	return file_size;
 }
 
-int read_coefficients_default() {
+int read_coefficients_default()
+{
 	char my_coefficients_file[GENERIC_NAME];
 	int file_size = 0;
 	file_size = coeffs_per_node_default_exist(my_coefficients_file);

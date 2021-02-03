@@ -22,12 +22,11 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <common/config.h>
 #include <sys/types.h>
-#include <common/hardware/cpupower.h>
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_multifit.h>
+#include <common/config.h>
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <common/database/db_helper.h>
@@ -36,6 +35,7 @@
 #include <common/types/application.h>
 #include <common/types/coefficient.h>
 #include <common/types/configuration/cluster_conf.h>
+#include <management/cpufreq/frequency.h>
 
 #define CREATE_FLAGS S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH
 
@@ -94,13 +94,12 @@ uint freq_to_p_state(ulong freq)
 
 uint fill_list_p_states()
 {
-	  unsigned long num_pstates = 0;
-		unsigned long *flist;
-		flist=CPUfreq_get_available_frequencies(0,&num_pstates);
-		MALLOC(node_freq_list, unsigned long, num_pstates);
-		memcpy(node_freq_list,flist,sizeof(unsigned long)*num_pstates);
-		CPUfreq_put_available_frequencies(flist);
-    return (uint)num_pstates;
+    if (state_fail(frequency_init(0))) {
+        verbose(0, "failed to initialize frequency API (%s)", state_msg);
+        exit(0);
+    }
+    node_freq_list = frequency_get_freq_rank_list();
+    return frequency_get_num_pstates();
 }
 
 int app_exists(application_t *Applist, uint total_apps, application_t *newApp) {

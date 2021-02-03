@@ -39,7 +39,7 @@
 #include <common/types/version.h>
 #include <common/types/application.h>
 #include <common/types/pc_app_info.h>
-#include <common/hardware/frequency.h>
+#include <management/cpufreq/frequency.h>
 #include <common/hardware/hardware_info.h>
 
 #include <library/common/externs_alloc.h>
@@ -657,12 +657,17 @@ void ear_init()
 	strtok(node_name, ".");
 
 	debug("Running in %s process=%d",node_name,getpid());
+
 	#if MPI
 	verb_level = get_ear_verbose();
 	#else
 	verb_level=1;
 	#endif
 	verb_channel=2;
+	if ((tmp = getenv(SCHED_EARL_VERBOSE)) != NULL) {
+		VERB_SET_LV(atoi(tmp));
+	}
+
 	set_ear_total_processes(my_size);
 	ear_whole_app = get_ear_learning_phase();
  if ((tmp = getenv(SCHED_EARL_VERBOSE)) != NULL) {
@@ -826,11 +831,23 @@ void ear_init()
 	// Policies && models
 	arch_desc.max_freq_avx512=system_conf->max_avx512_freq;
 	arch_desc.max_freq_avx2=system_conf->max_avx2_freq;
-	debug("frequency_init");
-	frequency_init(arch_desc.top.cpu_count); //Initialize cpufreq info
 
-	if (ear_my_rank == 0)
-	{
+	// Frequencies
+	ulong *freq_list;
+	uint freq_count;
+	// Getting frequencies from EARD
+	debug("initializing frequencies");
+	get_frequencies_path(get_ear_tmp(), app_mgt_path);
+	debug("looking for frequencies in '%s'", app_mgt_path);
+	freq_list = attach_frequencies_shared_area(app_mgt_path, (int *) &freq_count);
+	freq_count = freq_count / sizeof(ulong);
+	// Initializing API in user mode	
+	frequency_init_user(freq_list, freq_count);
+	dettach_frequencies_shared_area();
+	// You can utilize now the frequency API
+	arch_desc.pstates = frequency_get_num_pstates();
+	// Other frequency things
+	if (ear_my_rank == 0) {
 		if (ear_whole_app == 1 && ear_use_turbo == 1) {
 			verbose(2, "turbo learning phase, turbo selected and start computing");
 			if (!my_id) eards_set_turbo();
@@ -839,6 +856,7 @@ void ear_init()
 		}
 	}
 
+	// This is not frequency any more
 	if (masters_info.my_master_rank>=0){
 	  #if POWERCAP
   	get_app_mgt_path(get_ear_tmp(),app_mgt_path);

@@ -15,11 +15,12 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+//#define SHOW_DEBUGS 1
+
 #include <nvml.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
-//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>
@@ -638,16 +639,16 @@ state_t nvml_freq_limit_set(ctx_t *c, ulong *khz)
 	return e;
 }
 
-state_t nvml_freq_list(ctx_t *c, ulong ***list_khz, uint **list_len)
+state_t nvml_freq_list(ctx_t *c, const ulong ***list_khz, const uint **list_len)
 {
 	if (!ok_unprivileged) {
 		return_msg(EAR_NOT_INITIALIZED, Error.init_not);
 	}
 	if (list_khz != NULL) {
-		*list_khz = clock_list;
+		*list_khz = (const ulong **) clock_list;
 	}
 	if (list_len != NULL) {
-		*list_len = clock_lens;
+		*list_len = (const uint *) clock_lens;
 	}
 	return EAR_SUCCESS;
 }

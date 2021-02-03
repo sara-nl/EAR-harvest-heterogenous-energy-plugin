@@ -182,7 +182,7 @@ state_t gpu_lib_data_tostr(gpu_t *data, char *buffer, int length)
  */
 state_t gpu_lib_alloc_array(ulong **array)
 {
-	return ops_man->alloc_array(NULL, array);
+	return ops_man->alloc_array(NULL, array, NULL);
 }
 
 state_t gpu_lib_freq_limit_get_current(ctx_t *_c, ulong *khz)
@@ -224,7 +224,7 @@ state_t gpu_lib_freq_limit_set(ulong *khz)
 	return EAR_SUCCESS;
 }
 
-state_t gpu_lib_freq_list(ulong ***list_khz, uint **list_len)
+state_t gpu_lib_freq_list(const ulong ***list_khz, const uint **list_len)
 {
 	return ops_man->freq_list(NULL, list_khz, list_len);
 }
