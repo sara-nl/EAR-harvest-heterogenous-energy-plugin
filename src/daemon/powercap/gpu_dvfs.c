@@ -171,16 +171,17 @@ state_t gpu_dvfs_pc_thread_main(void *p)
     if (c_status==PC_STATUS_RUN){
       /* Aplicar limites */
       if ((current_gpu_pc>0)  && (c_status==PC_STATUS_RUN)){
+			//debug("GPU[%d] power %lf limit %lu",i,values_gpu_diff[i].power_w,gpu_pc_curr_power[i]);
       if (values_gpu_diff[i].power_w > gpu_pc_curr_power[i]){ /* We are above the PC */
 				/* Use the list of freuencies */
 				n_freq[i] = select_lower_gpu_freq(i,c_freq[i]);
-				verbose(0,"%sReducing the GPU-freq[%d] from %lu to %lu (cpower %lf limit %lu) %s",COL_RED,i,c_freq[i],n_freq[i],values_gpu_diff[i].power_w,gpu_pc_curr_power[i],COL_CLR);
+				debug("%sReducing the GPU-freq[%d] from %lu to %lu (cpower %lf limit %lu) %s",COL_RED,i,c_freq[i],n_freq[i],values_gpu_diff[i].power_w,gpu_pc_curr_power[i],COL_CLR);
       }else{ /* We are below the PC */
         if (c_freq[i] < t_freq[i]){
           extra=compute_extra_gpu_power(values_gpu_diff[i].power_w,c_freq[i],t_freq[i]);
           if (((values_gpu_diff[i].power_w+extra)< gpu_pc_curr_power[i]) && (c_mode==PC_MODE_TARGET)){
 						n_freq[i] = select_higher_gpu_freq(i,c_freq[i]);
-						verbose(0,"%sIncreasing the GPU-freq[%d] from %lu to %lu, estimated %lf=(%lf+%lu), limit %lu %s",COL_GRE,i,c_freq[i],n_freq[i],values_gpu_diff[i].power_w+extra,values_gpu_diff[i].power_w,extra,gpu_pc_curr_power[i],COL_CLR);
+						debug("%sIncreasing the GPU-freq[%d] from %lu to %lu, estimated %lf=(%lf+%lu), limit %lu %s",COL_GRE,i,c_freq[i],n_freq[i],values_gpu_diff[i].power_w+extra,values_gpu_diff[i].power_w,extra,gpu_pc_curr_power[i],COL_CLR);
           }
         }
       }
@@ -292,9 +293,9 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 	current_gpu_pc=limit;
 	debug("%sGPU-DVFS:set_powercap_value %lu%s",COL_BLU,limit,COL_CLR);
 
-	debug("%s",COL_BLU);
-	debug("GPU: set_powercap_value %lu",limit);
-	debug("GPU: Phase 1, allocating power to idle GPUS");
+	//debug("%s",COL_BLU);
+	//debug("GPU: set_powercap_value %lu",limit);
+	//debug("GPU: Phase 1, allocating power to idle GPUS");
 	for (i=0;i<gpu_pc_num_gpus;i++){	
 		pdist[i]=0.0;
 		total_util+=gpu_util[i];
@@ -306,7 +307,7 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 			gpu_run++;
 		}
 	}
-	debug("GPU: Phase 2: Allocating power to %u running GPUS",gpu_run);
+	//debug("GPU: Phase 2: Allocating power to %u running GPUS",gpu_run);
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		if (gpu_util[i]>0){
 			pdist[i]=(float)gpu_util[i]/(float)total_util;
@@ -317,10 +318,10 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 		}
 	}
   for (i=0;i<gpu_pc_num_gpus;i++) {
-    debug("GPU: util_gpu[%d]=%lu power_alloc=%lu",i,gpu_util[i],gpu_pc_curr_power[i]);
+    //debug("GPU: util_gpu[%d]=%lu power_alloc=%lu",i,gpu_util[i],gpu_pc_curr_power[i]);
   }
 	memcpy(gpu_pc_util,gpu_util,sizeof(ulong)*gpu_pc_num_gpus);
-	debug("%s",COL_CLR);
+	//debug("%s",COL_CLR);
 	return EAR_SUCCESS;
 }
 
@@ -391,7 +392,7 @@ void set_app_req_freq(ulong *f)
 {
 	int i;
 	for (i=0;i<gpu_pc_num_gpus;i++) {
-  	/* debug("GPU_DVFS:GPU %d Requested application freq set to %lu",i,f[i]); */
+  	//debug("GPU_DVFS:GPU %d Requested application freq set to %lu",i,f[i]); 
 		t_freq[i]=f[i];
 	}
 }
@@ -400,28 +401,26 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 {
 	int i;
 	uint used=0;
-	uint g_tbr;
+	uint g_tbr = 0;
+	*in_target = 0;
+	*tbr = 0;
 	if (current_gpu_pc == PC_UNLIMITED){
-		*in_target = 0;
-		*tbr  = 0;
 		return 0;
 	}
 	/* If we are not using th GPU we can release all the power */
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		used += (gpu_pc_util[i]>0);
+		if (t_freq[i] == 0) return 0;
 	}
 	if (!used){
 		*in_target=1;
-		if (gpu_pc_num_gpus == 0) *tbr=current_gpu_pc;
-		else *tbr=(current_gpu_pc- (MIN_GPU_IDLE_POWER*gpu_pc_num_gpus));
+		if (gpu_pc_num_gpus == 0) *tbr = current_gpu_pc;
+		else *tbr=(current_gpu_pc - (MIN_GPU_IDLE_POWER*gpu_pc_num_gpus));
+		debug("%sReleasing %u Watts from the GPU%s",COL_GRE,*tbr,COL_CLR);
 		return 1;
 	}
-	/* Otherwise, if we don't know app requirements , we are not in the target */
-	if (t_freq[i] == 0 ){
-		return 0;
-	}
 	/* If we know, we must check */
-	*in_target = 1;*tbr=0;
+	*in_target = 1;*tbr = 0;
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		if ((t_freq[i] != c_freq[i]) && (gpu_pc_util[i]>0)){ 
 			*in_target=0;
@@ -429,7 +428,7 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 		}else{
 			g_tbr = (uint)((gpu_pc_curr_power[i] - values_gpu_diff[i].power_w) *0.75);
 			*tbr = *tbr +  g_tbr;
-			debug("We can release %u W from GPU %d since target = %lu current %lu",g_tbr,i,t_freq[i] ,c_freq[i]);
+			debug("%sWe can release %u W from GPU %d since target = %lu current %lu%s",COL_GRE,g_tbr,i,t_freq[i] ,c_freq[i],COL_CLR);
 		}
 	}
 	if (*in_target){

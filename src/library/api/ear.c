@@ -625,6 +625,7 @@ void ear_init()
 		return;
 	}
 
+
 	// MPI
 	#if MPI
 	PMPI_Comm_rank(MPI_COMM_WORLD, &ear_my_rank);

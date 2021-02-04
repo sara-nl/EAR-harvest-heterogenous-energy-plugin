@@ -15,33 +15,21 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef EAR_DEBUG_H
-#define EAR_DEBUG_H
-
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <common/states.h>
 
-int debug_channel	__attribute__((weak)) = 2;
-
-#if SHOW_DEBUGS
-#define debug_full(...) \
-{ \
-        dprintf(debug_channel, "%s:%s:%d: ", __FILE__, __FUNCTION__, __LINE__); \
-        dprintf(debug_channel, __VA_ARGS__); \
-        dprintf(debug_channel, "\n"); \
+state_t loadavg(float *min,float *Vmin,float *XVmin,uint * runnable,uint *total,uint *lastpid)
+{
+  FILE *f;
+  f = fopen("/proc/loadavg","r");
+  if (f == NULL)
+  {
+		return EAR_ERROR;
+  }
+  fscanf(f,"%f %f %f %u/%u %u",min,Vmin,XVmin,runnable,total,lastpid);
+  fclose(f);
+  return EAR_SUCCESS;
 }
-#define debug(...) \
-{ \
-        dprintf(debug_channel, __VA_ARGS__); \
-        dprintf(debug_channel, "\n"); \
-}
 
-
-#else
-#define debug(...)
-#endif
-
-// Set
-#define DEBUG_SET_FD(fd) debug_channel = fd;
-
-#endif //EAR_DEBUG_H
