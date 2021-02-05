@@ -259,10 +259,13 @@ int strinargs(int argc, char *argv[], const char *opt, char *value)
         long_options[0].flag    = NULL;
         long_options[0].val     = 2;
         // This function is for '-long' or '--long' type arguments, 
-        // and returns 2 as we specified. 
-        result = getopt_long (argc, argv, "", long_options, NULL);
+        // and returns 2 as we specified.
+        do { 
+        	result = getopt_long (argc, argv, "", long_options, NULL);
+		} while (result != 2 && result != -1);
         // Expected result
         expected = 2;
+        //int result2 = getopt_long (argc, argv, "", long_options, NULL);
     } else {
         // This function is for '-i' type parameters.
         result = getopt(argc, argv, opt);
