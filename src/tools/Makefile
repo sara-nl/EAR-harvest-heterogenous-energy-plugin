@@ -33,9 +33,8 @@ mang_OBJS = \
 
 all: $(tool_BINS)
 
-coeffs_compute: coeffs_compute.c $(mang_OBJS) $(comm_OBJS) old_coeffs_compute.c
+coeffs_compute: coeffs_compute.c $(mang_OBJS) $(comm_OBJS)
 	$(CCC) -o $@ $< $(LDFLAGS) $(mang_OBJS) $(comm_OBJS) $(DB_LDFLAGS) -lpthread -ldl
-	$(CCC) -o old_coeffs_compute old_coeffs_compute.c $(LDFLAGS) $(mang_OBJS) $(comm_OBJS) $(DB_LDFLAGS) -lpthread -ldl
 
 coeffs_jobproj: coeffs_jobproj.c $(comm_OBJS)
 	$(CCC) -o $@ $< $(comm_OBJS) $(DB_LDFLAGS) -ldl -lm

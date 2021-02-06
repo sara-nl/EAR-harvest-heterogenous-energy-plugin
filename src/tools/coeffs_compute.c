@@ -130,7 +130,14 @@ static void compute_power(matrix_t *matrix_base, matrix_t *matrix_target)
 	gsl_vector *power_target   = gsl_vector_alloc(n);
 	gsl_vector *coefficients   = gsl_vector_alloc(3);
 	//
+//	printf("%llu -> %llu\n", matrix_base->pstate.khz, matrix_target->pstate.khz);
 	for (a = 0; a < n; ++a) {
+#if 0
+		printf("\t%lu\t%0.2lf\t%0.2lf\t%0.2lf\t%s\n",
+			matrix_base->app_list[a].signature.def_f, matrix_base->app_list[a].signature.CPI,
+			matrix_base->app_list[a].signature.TPI,   matrix_base->app_list[a].signature.DC_power,
+			matrix_base->app_list[a].job.app_id);
+#endif
 		// Initializations
 		gsl_vector_set(power_target, a, 0.0);
 		gsl_matrix_set(signature_base, a, 0, 0.0);
@@ -320,7 +327,6 @@ static state_t matrix_init(pstate_t *pstate_list, uint pstate_count, matrix_t **
 		(*matrix)[p].pstate = pstate_list[p];
 		(*matrix)[p].id = p;
 	}
-	verbose(0, "pstates found: %d", pstate_count);
 	return EAR_SUCCESS;
 }
 
@@ -399,13 +405,19 @@ static state_t pstate_sort(application_t *app_list, uint app_count, pstate_t **p
 	int a, b, f;
 	ullong def_f;
 	// Counting different frequencies.
-	for (a = 0, *pstate_count = 0; a < app_count; ++a) {
+	for (a = 0, *pstate_count = 0; a < app_count; ++a) { 
+		if (app_list[a].signature.def_f == 0LU) {
+			continue;
+		}
 		for (b = 0; b < a; ++b) {
 			if (app_list[a].signature.def_f == app_list[b].signature.def_f) {
 				break;
 			}
 		}
 		*pstate_count += (a == b);
+	}
+	if (*pstate_count <= 1) {
+		return_msg(EAR_ERROR, "found 1 or less P_STATEs in the learning applications list.");
 	}
 	// Allocating the P_STATE list.
 	*pstate_list = calloc(*pstate_count, sizeof(pstate_t));
@@ -433,6 +445,7 @@ static state_t pstate_sort(application_t *app_list, uint app_count, pstate_t **p
 		// Finally the greater not repeated frequency is saved.
 		(*pstate_list)[f].khz = def_f;
 	}
+	verbose(0, "pstates found: %d",* pstate_count);
 
 	return EAR_SUCCESS;	
 }
