@@ -1,5 +1,4 @@
 CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -Wall
-SRCDIR = /home/xjaneas/ngit/ear_private/src
 
 ######## OPTIONS
 

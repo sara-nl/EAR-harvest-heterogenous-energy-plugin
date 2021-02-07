@@ -74,7 +74,7 @@ static int find_app(matrix_t *matrix, char *app_name)
 	return -1;
 }
 
-static state_t compute_cpi(matrix_t *matrix_base, matrix_t *matrix_target)
+static void compute_cpi(matrix_t *matrix_base, matrix_t *matrix_target)
 {
 	int n, a, b;
 	//
