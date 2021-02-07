@@ -396,7 +396,7 @@ void set_app_req_freq(ulong *f)
 		t_freq[i]=f[i];
 	}
 }
-
+#define MIN_GPU_POWER_MARGIN 10
 uint get_powercap_status(uint *in_target,uint *tbr)
 {
 	int i;
@@ -426,12 +426,13 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 			*in_target=0;
 			debug("We cannot release power from GPU %d",i);
 		}else{
-			g_tbr = (uint)((gpu_pc_curr_power[i] - values_gpu_diff[i].power_w) *0.75);
+			g_tbr = (uint)((gpu_pc_curr_power[i] - values_gpu_diff[i].power_w) *0.5);
 			*tbr = *tbr +  g_tbr;
 			debug("%sWe can release %u W from GPU %d since target = %lu current %lu%s",COL_GRE,g_tbr,i,t_freq[i] ,c_freq[i],COL_CLR);
 		}
 	}
 	if (*in_target){
+		if (*tbr < MIN_GPU_POWER_MARGIN) *tbr = 0;
 		return 1;	
 	}
 	return 0;

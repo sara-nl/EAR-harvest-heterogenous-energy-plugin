@@ -63,7 +63,7 @@ void pmgt_end_job(pwr_mgt_t *phandler);
 void pmgt_idle_to_run(pwr_mgt_t *phandler);
 /* Notifies the pwr_mgt the node goes from run to idle */
 void pmgt_run_to_idle(pwr_mgt_t *phandler);
-/* When the measured utilization changes, this funcion re-distributes the power based on that */
+/* When the measured utilization changes, this funcion re-distributes the power based on that, only internally, it doesn't change the powercap allocated to each component */
 void pmgt_powercap_node_reallocation();
 /* Estimates the powercap status per domain (To be completed )*/
 void pmgt_powercap_status_per_domain();
