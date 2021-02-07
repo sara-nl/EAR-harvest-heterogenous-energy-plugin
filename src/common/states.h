@@ -19,6 +19,7 @@
 #define STATES_H
 
 #include <errno.h>
+#include <common/sizes.h>
 #include <common/output/error.h>
 #include <common/output/debug.h>
 
@@ -33,6 +34,9 @@
 #define EAR_SYSCALL_ERROR		-18
 #define EAR_TIMEOUT				-21
 #define EAR_UNDEFINED			-24
+
+/* error buffer */
+char state_buffer[SZ_BUFF_BIG];
 
 /* type & functions */
 typedef int state_t;
@@ -54,15 +58,23 @@ char *state_msg;
 	return no; \
 	}
 
+#define return_xmsg(no, ...) { \
+	state_msg = state_buffer; \
+	sprintf(state_buffer, __VA_ARGS__); \
+	return no; \
+	}
+
 #define xtate_fail(s, function) \
 	((s = function) != EAR_SUCCESS)
 
 #define xtate_ok(s, function) \
 	((s = function) == EAR_SUCCESS)
 
+// error(#func " returned %d (%s)", s, state_msg);
+
 #define state_assert(s, func, cons) \
     if (xtate_fail(s, func)) { \
-        error(#func " returned %d (%s)", s, state_msg); \
+        error("returned %d, %s (%s:%d)", s, state_msg, __FILE__, __LINE__); \
         cons; \
     }
 
@@ -81,7 +93,7 @@ struct generr_s {
 	char *no_permissions;
 } Generr __attribute__((weak)) = {
 	.api_undefined = "the API is undefined",
-	.api_incompatible = "the current hardware is not supported by the API",
+	.api_incompatible = "current hardware is not supported by the API",
 	.api_uninitialized = "the API is not initialized",
 	.api_initialized = "the API is already initialized",
 	.alloc_error = "error ocurred during allocation",
