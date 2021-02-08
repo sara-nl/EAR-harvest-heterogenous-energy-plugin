@@ -250,19 +250,9 @@ state_t policy_init()
 	if (polsyms_fun.init != NULL){
 		ret=polsyms_fun.init(c);
 	}
-
-	if (polsyms_fun.ganularity != NULL){
-		polsyms_fun.ganularity(c,&my_policy_grain);
-		if (my_policy_grain == POL_GRAIN_CORE){
-			policy_freq_list = calloc(MAX_CPUS_SUPPORTED,sizeof(ulong));
-		}else{
-			policy_freq_list=calloc(1,sizeof(ulong));
-		}
-		freq_per_core = calloc(MAX_CPUS_SUPPORTED,sizeof(ulong));
-	}else{
-		policy_freq_list=calloc(1,sizeof(ulong));
-		freq_per_core = calloc(MAX_CPUS_SUPPORTED,sizeof(ulong));
-	}
+	/* Even though the policy could be at the Node granularity, we will use a list */
+	policy_freq_list = calloc(MAX_CPUS_SUPPORTED,sizeof(ulong));
+	freq_per_core = calloc(MAX_CPUS_SUPPORTED,sizeof(ulong));
 	signature_init(&policy_last_local_signature);
 	signature_init(&policy_last_global_signature);
 
@@ -300,7 +290,7 @@ static void print_freq_per_core()
 	int i;
 	for (i=0;i<arch_desc.top.cpu_count;i++)
   {
-		verbosen(2,"CPU[%d]=%.2f ",i,(float)freq_per_core[i]/1000000.0);
+		if (freq_per_core[i]>0) verbosen(2,"CPU[%d]=%.2f ",i,(float)freq_per_core[i]/1000000.0);
 	}
 	verbose(2," ");
 }
@@ -351,23 +341,19 @@ static void policy_cpu_freq_selection(signature_t *my_sig,ulong *freq_set)
 		from_proc_to_core();		
 	}else{
 		debug("Setting same freq in all node %lu",policy_freq_list[0]);
-		for (i=0;i<MAX_CPUS_SUPPORTED;i++) freq_per_core[i]=policy_freq_list[0];
+		for (i=1;i<MAX_CPUS_SUPPORTED;i++) policy_freq_list[i]=policy_freq_list[0];
+		if (ear_affinity_is_set){ 
+			from_proc_to_core();
+		}else{
+			for (i=0;i<MAX_CPUS_SUPPORTED;i++) freq_per_core[i]=policy_freq_list[0];
+		}
 	}
-	// print_freq_per_core();
+	print_freq_per_core();
   if (*freq_set != *(c->ear_frequency))
   {
 		/* *(c->ear_frequency) =  eards_change_freq(*freq_set);*/
 		*(c->ear_frequency) = eards_change_freq_with_list(arch_desc.top.cpu_count,freq_per_core);
 		verbose(2,"MR[%d]: Setting frequency_list to %lu (ret=%lu)",masters_info.my_master_rank,*freq_set,*(c->ear_frequency));
-		return;
-      if(ear_affinity_is_set == 0){
-				verbose(2,"MR[%d] Setting frequency_node to %lu",masters_info.my_master_rank,*freq_set);
-        *(c->ear_frequency) =  eards_change_freq(*freq_set);
-      }else{
-				verbose(2,"MR[%d] Setting frequency_mask to %lu",masters_info.my_master_rank,*freq_set);
-        /* How to manage cores vs CPUS */
-        *(c->ear_frequency) =  eards_change_freq_with_mask(*freq_set,&ear_process_mask);
-      }
   }
 }
 
@@ -455,6 +441,7 @@ state_t policy_node_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 				debug("GPU[%d] freq selected after powercap filter %lu",i,gpu_f[i]);
 			}
 		#endif
+			/* Pending: We must filter the CPUs I'm using */
 			eards_gpu_set_freq(my_pol_ctx.num_gpus,gpu_f);
 		}
 		free(gpu_f);
