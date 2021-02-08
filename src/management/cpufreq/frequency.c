@@ -253,9 +253,11 @@ ulong frequency_set_with_list(uint x, ulong *list)
 		return 0LU;
 	}
 	for (cpu = 0; cpu < topo.cpu_count; ++cpu) {
-		if (xtate_ok(s1, mgt_cpufreq_get_index(&c, (ullong) list[cpu], &pstate_index, 0))) {
-			if (xtate_ok(s2, mgt_cpufreq_set_current(&c, pstate_index, cpu))) {
-			}
+		if (list[cpu] > 0 ){
+		  if (xtate_ok(s1, mgt_cpufreq_get_index(&c, (ullong) list[cpu], &pstate_index, 0))) {
+			  if (xtate_ok(s2, mgt_cpufreq_set_current(&c, pstate_index, cpu))) {
+			  }
+		  }
 		}
 	}
 	if (state_fail(s1) || state_fail(s2)) {

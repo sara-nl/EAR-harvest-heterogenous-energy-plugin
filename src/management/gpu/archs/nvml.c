@@ -632,8 +632,10 @@ state_t nvml_freq_limit_set(ctx_t *c, ulong *khz)
 	}
 	debug("nvml_clock_limit_set devices %d",dev_count);
 	for (i = 0, e = EAR_SUCCESS; i < dev_count; ++i) {
-		if (xtate_fail(s, clocks_set(i, (uint) (khz[i] / 1000LU)))) {
-			e = s;
+		if (khz[i] > 0){
+		  if (xtate_fail(s, clocks_set(i, (uint) (khz[i] / 1000LU)))) {
+			  e = s;
+		  }
 		}
 	}
 	return e;
