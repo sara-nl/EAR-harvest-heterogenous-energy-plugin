@@ -619,6 +619,7 @@ static state_t usage(int argc, char *argv[])
     return EAR_ERROR;
 }
 
+#if 0
 state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
 {
 	mgt_cpufreq_count(c, pstate_count);
@@ -630,6 +631,7 @@ state_t mgt_cpufreq_alloc_current(ctx_t *c, pstate_t **pstate_list, uint *pstate
 {
 	return EAR_ERROR;
 }
+#endif
 
 int main(int argc, char *argv[])
 {
