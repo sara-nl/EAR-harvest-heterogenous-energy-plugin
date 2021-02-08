@@ -664,10 +664,12 @@ static state_t set_frequency_p1(amd17_ctx_t *f, uint cpu, uint pst, uint test)
 static state_t set_frequency_p0(amd17_ctx_t *f, uint cpu)
 {
 	state_t s;
-	// Recovering all MSR P1s to its original state
-	//	if (xtate_fail(s, msr_write(cpu, &f->regs[1], sizeof(ullong), REG_P1))) {
-	//		return s;
-	//	}
+	#if 0
+	// Recovering all MSR P1s to its original state (excess of robustness)
+	if (xtate_fail(s, msr_write(cpu, &f->regs[1], sizeof(ullong), REG_P1))) {
+		return s;
+	}
+	#endif
 	// Calling the driver to set P0 in specific CPU
 	if (xtate_fail(s, f->driver->set_current(&f->driver_c, 0, cpu))) {
 		return s;
@@ -686,10 +688,12 @@ state_t cpufreq_amd17_set_current_list(ctx_t *c, uint *pstate_index)
 	if (xtate_fail(s1, static_init_test(c, &f))) {
 		return s1;
 	}
-	// Step 1
+	#if 0
+	// Step 1 (excesss of robustness, better rely on external functions to change governor).
 	if (xtate_fail(s1, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s1;
 	}
+	#endif
 	// Step 2
 	for (cpu = 0; cpu < tp.cpu_count; ++cpu) {
 		// If P_STATE boost
@@ -715,10 +719,12 @@ state_t cpufreq_amd17_set_current(ctx_t *c, uint pstate_index, int _cpu)
 	if (xtate_fail(s1, static_init_test(c, &f))) {
 		return s1;
 	}
-	// Step 1
+	#if 0
+	// Step 1 (excesss of robustness, better rely on external functions to change governor).
 	if (xtate_fail(s1, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s1;
 	}
+	#endif
 	debug("setting P_STATE %d (cof: %llu) in cpu %d", pstate_index, f->psss[pstate_index].cof, _cpu);
 	// Step 2 (single CPU)
 	if (_cpu != all_cpus) {

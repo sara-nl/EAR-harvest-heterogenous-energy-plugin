@@ -269,9 +269,12 @@ state_t cpufreq_default_set_current_list(ctx_t *c, uint *pstate_index)
 	if (xtate_fail(s, static_init_test(c, &f))) {
 		return s;
 	}
+	#if 0
+	// Too much robustness
 	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s;
 	}
+	#endif
 	if (xtate_fail(s, f->driver->set_current_list(&f->driver_c, pstate_index))) {
 		return s;
 	}
@@ -287,9 +290,12 @@ state_t cpufreq_default_set_current(ctx_t *c, uint pstate_index, int cpu)
 	if (xtate_fail(s, static_init_test(c, &f))) {
 		return s;
 	}
+	#if 0
+	// Too much robustness
 	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s;
 	}
+	#endif
 	if (xtate_fail(s, f->driver->set_current(&f->driver_c, pstate_index, cpu))) {
 		return s;
 	}
