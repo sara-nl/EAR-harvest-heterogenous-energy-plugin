@@ -1196,7 +1196,7 @@ void read_from_database(char *user, int job_id, int limit, int step_id, char *e_
     {
         if (full_length)
             for (i = 0; i < num_apps; i++)
-                append_application_text_file(csv_path, &apps[i], 0);
+                append_application_text_file(csv_path, &apps[i], my_conf.database.report_sig_detail);
         else
         {
             int fd = open(csv_path, O_WRONLY | O_CREAT | O_TRUNC , S_IRUSR|S_IWUSR|S_IRGRP);
