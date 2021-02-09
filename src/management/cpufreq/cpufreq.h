@@ -74,7 +74,7 @@ typedef struct mgt_ps_driver_ops_s
 	state_t (*get_boost)          (ctx_t *c, uint *boost_enabled);
 	state_t (*get_governor)       (ctx_t *c, uint *governor);
 	state_t (*set_current_list)   (ctx_t *c, uint *freq_index);
-	state_t (*set_current)        (ctx_t *c, uint freq_index, int cpu);
+		state_t (*set_current)        (ctx_t *c, uint freq_index, int cpu);
 	state_t (*set_governor)       (ctx_t *c, uint governor);
 } mgt_ps_driver_ops_t;
 
@@ -83,7 +83,7 @@ typedef struct mgt_ps_ops_s
 	state_t (*init)                 (ctx_t *c, mgt_ps_driver_ops_t *driver_ops);
 	state_t (*init_user)            (ctx_t *c, mgt_ps_driver_ops_t *driver_ops, const ullong *freq_list, uint freq_count);
 	state_t (*dispose)              (ctx_t *c);
-	state_t (*count)                (ctx_t *c, uint *pstate_count);
+	state_t (*count_available)      (ctx_t *c, uint *pstate_count);
 	state_t (*get_available_list)   (ctx_t *c, pstate_t *pstate_list, uint *pstate_count);
 	state_t (*get_current_list)     (ctx_t *c, pstate_t *pstate_list);
 	state_t (*get_nominal)          (ctx_t *c, uint *pstate_index);
@@ -94,45 +94,52 @@ typedef struct mgt_ps_ops_s
 	state_t (*set_governor)         (ctx_t *c, uint governor);
 } mgt_ps_ops_t;
 
-// The first function to call, because discovers the system and sets the internal API.
+/** The first function to call, because discovers the system and sets the internal API.
 state_t mgt_cpufreq_load(topology_t *tp);
 
-// The second function to call, initializes all the data.
+/** The second function to call, initializes all the data.
 state_t mgt_cpufreq_init(ctx_t *c);
 
-// Not privileged init. If freq_list is NULL the API tries to initialize anyway.
+/** Not privileged init. If freq_list is NULL the API tries to initialize anyway.
 state_t mgt_cpufreq_init_user(ctx_t *c, const ullong *freq_list, uint freq_count);
 
-// Frees its allocated memory.
+/** Frees its allocated memory. */
 state_t mgt_cpufreq_dispose(ctx_t *c);
 
-/** Getters */
-// Counts the available P_STATEs.
-state_t mgt_cpufreq_count(ctx_t *c, uint *pstate_count);
+// Data
+/** Returns the number of available P_STATEs. */
+state_t mgt_cpufreq_count_available(ctx_t *c, uint *pstate_count);
 
-// Returns the available P_STATE (struct) list. The allocated list depends on the user.
+/** Allocates a list of available P_STATEs. */
+state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *pstate_count);
+
+/** Allocates a list of current P_STATE per CPU. */
+state_t mgt_cpufreq_alloc_current(ctx_t *c, pstate_t **pstate_list, uint *pstate_count);
+
+// Getters
+/** Returns the available P_STATE (struct) list. The allocated list depends on the user. */
 state_t mgt_cpufreq_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count);
 
-// Returns the current P_STATE (struct) per CPU.
+/** Returns the current P_STATE (struct) per CPU. */
 state_t mgt_cpufreq_get_current_list(ctx_t *c, pstate_t *pstate_list);
 
-// Returns the nominal P_STATE index.
+/** Returns the nominal P_STATE index. */
 state_t mgt_cpufreq_get_nominal(ctx_t *c, uint *pstate_index);
 
-// Gets the governor (check governor.h to translate its int id to string).
+/** Gets the governor (check governor.h to translate its int id to string). */
 state_t mgt_cpufreq_get_governor(ctx_t *c, uint *governor);
 
-//Given a frequency in KHz, returns its available P_STATE index.
+/** Given a frequency in KHz, returns its available P_STATE index. */
 state_t mgt_cpufreq_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uint closest);
 
-/** Setters */
-//Sets a P_STATE and userspace governor per CPU. The allocated list depends on the user.
+// Setters
+/** Sets a P_STATE and userspace governor per CPU. The allocated list depends on the user. */
 state_t mgt_cpufreq_set_current_list(ctx_t *c, uint *pstate_index);
 
-// Set a P_STATE in specified CPU. Use all_cpus to set that P_STATE in all CPUs.
+/** Set a P_STATE in specified CPU. Use all_cpus to set that P_STATE in all CPUs. */
 state_t mgt_cpufreq_set_current(ctx_t *c, uint pstate_index, int cpu);
 
-// Sets the governor (take a look to Governor global variable.
+/** Sets the governor (take a look to Governor global variable. */
 state_t mgt_cpufreq_set_governor(ctx_t *c, uint governor);
 
 #endif //MANAGEMENT_PSTATE

@@ -443,7 +443,7 @@ state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 }
 
 /** Getters */
-state_t cpufreq_amd17_count(ctx_t *c, uint *pstate_count)
+state_t cpufreq_amd17_count_available(ctx_t *c, uint *pstate_count)
 {
 	amd17_ctx_t *f;
 	state_t s;

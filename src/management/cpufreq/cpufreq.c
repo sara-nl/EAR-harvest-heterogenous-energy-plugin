@@ -60,11 +60,11 @@ static state_t load_amd17(topology_t *tp)
 		debug("cpufreq_amd17_status returned (%d, '%s')", s, state_msg);
 		return s;
 	}
-	
+
 	ops.init               = cpufreq_amd17_init;
 	ops.init_user          = cpufreq_amd17_init_user;
 	ops.dispose            = cpufreq_amd17_dispose;
-	ops.count              = cpufreq_amd17_count;
+	ops.count_available    = cpufreq_amd17_count_available;
 	ops.get_available_list = cpufreq_amd17_get_available_list;
 	ops.get_current_list   = cpufreq_amd17_get_current_list;
 	ops.get_nominal        = cpufreq_amd17_get_nominal;
@@ -88,7 +88,7 @@ static state_t load_dummy(topology_t *tp)
 	ops.init               = cpufreq_default_init;
 	ops.init_user          = cpufreq_default_init_user;
 	ops.dispose            = cpufreq_default_dispose;
-	ops.count              = cpufreq_default_count;
+	ops.count_available    = cpufreq_default_count_available;
 	ops.get_available_list = cpufreq_default_get_available_list;
 	ops.get_current_list   = cpufreq_default_get_current_list;
 	ops.get_nominal        = cpufreq_default_get_nominal;
@@ -140,12 +140,41 @@ state_t mgt_cpufreq_dispose(ctx_t *c)
 	preturn (ops.dispose, c);
 }
 
-/** Getters */
-state_t mgt_cpufreq_count(ctx_t *c, uint *pstate_count)
+/** Data */
+state_t mgt_cpufreq_count_available(ctx_t *c, uint *pstate_count)
 {
 	preturn (ops.count, c, pstate_count);
 }
 
+state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
+{
+	uint count;
+	state_t s;
+	// Getting the total available P_STATEs
+	if (xtate_fail(s, mgt_cpufreq_alloc_available(c, &count))) {
+		return s;
+	}
+	if (pstate_list) {
+		*pstate_list = calloc(count, sizeof(pstate_t));
+	}
+	if (pstate_count) {
+		*pstate_count = count;
+	}
+	return EAR_SUCCESS;
+}
+
+state_t mgt_cpufreq_alloc_current(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
+{
+	if (pstate_count) {
+		*pstate_count = mgt_cpu_count;
+	}
+	if (pstate_list) {
+		*pstate_list = calloc(mgt_cpu_count, sizeof(pstate_t));
+	}
+	return EAR_SUCCESS;
+}
+
+/** Getters */
 state_t mgt_cpufreq_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
 {
 	preturn (ops.get_available_list, c, pstate_list, pstate_count);

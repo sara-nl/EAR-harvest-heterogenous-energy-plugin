@@ -132,7 +132,7 @@ state_t cpufreq_default_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 }
 
 /** Getters */
-state_t cpufreq_default_count(ctx_t *c, uint *pstate_count)
+state_t cpufreq_default_count_available(ctx_t *c, uint *pstate_count)
 {
 	dummy_ctx_t *f;
 	state_t s;

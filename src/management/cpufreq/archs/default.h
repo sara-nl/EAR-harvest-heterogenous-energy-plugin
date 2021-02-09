@@ -33,9 +33,10 @@ state_t cpufreq_default_init_user(ctx_t *c, mgt_ps_driver_ops_t *ops_driver, con
 
 state_t cpufreq_default_dispose(ctx_t *c);
 
-/** Getters */
-state_t cpufreq_default_count(ctx_t *c, uint *pstate_count);
+// Data
+state_t cpufreq_default_count_available(ctx_t *c, uint *pstate_count);
 
+// Getters
 state_t cpufreq_default_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count);
 
 state_t cpufreq_default_get_current_list(ctx_t *c, pstate_t *pstate_list);
@@ -46,7 +47,7 @@ state_t cpufreq_default_get_governor(ctx_t *c, uint *governor);
 
 state_t cpufreq_default_get_index(ctx_t *c, ullong freq_khz, uint *pstate_index, uint closest);
 
-/** Setters */
+// Setters
 state_t cpufreq_default_set_current_list(ctx_t *c, uint *pstate_index);
 
 state_t cpufreq_default_set_current(ctx_t *c, uint pstate_index, int cpu);
