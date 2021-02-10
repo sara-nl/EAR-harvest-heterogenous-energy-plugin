@@ -15,11 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#include <metrics/gpu/archs/nvml.h>
-
-#ifdef CUDA_BASE
-//#define SHOW_DEBUGS 1
-
 #include <nvml.h>
 #include <dlfcn.h>
 #include <stdlib.h>
@@ -30,6 +25,7 @@
 #include <common/system/monitor.h>
 #include <common/system/symplug.h>
 #include <common/config/config_env.h>
+#include <metrics/gpu/archs/nvml.h>
 
 static const char *nvml_names[] =
 {
@@ -604,25 +600,3 @@ state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge)
 	
 	return EAR_SUCCESS;
 }
-
-#else
-
-state_t nvml_status() { return EAR_ERROR; }
-state_t nvml_init(ctx_t *c) { return EAR_ERROR; }
-state_t nvml_init_unprivileged(ctx_t *c) { return EAR_ERROR; }
-state_t nvml_dispose(ctx_t *c) { return EAR_ERROR; }
-state_t nvml_count(ctx_t *c, uint *dev_count) { return EAR_ERROR; }
-state_t nvml_pool(void *p) { return EAR_ERROR; }
-state_t nvml_read(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
-state_t nvml_read_raw(ctx_t *c, gpu_t *data) { return EAR_ERROR; }
-state_t nvml_read_copy(ctx_t *c, gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
-state_t nvml_data_diff(gpu_t *data2, gpu_t *data1, gpu_t *data_diff) { return EAR_ERROR; }
-state_t nvml_data_merge(gpu_t *data_diff, gpu_t *data_merge) { return EAR_ERROR; }
-state_t nvml_data_alloc(gpu_t **data) { return EAR_ERROR; }
-state_t nvml_data_free(gpu_t **data) { return EAR_ERROR; }
-state_t nvml_data_null(gpu_t *data) { return EAR_ERROR; }
-state_t nvml_data_copy(gpu_t *data_dst, gpu_t *data_src) { return EAR_ERROR; }
-state_t nvml_data_print(gpu_t *data, int fd) { return EAR_ERROR; }
-state_t nvml_data_tostr(gpu_t *data, char *buffer, int length) { return EAR_ERROR; }
-
-#endif

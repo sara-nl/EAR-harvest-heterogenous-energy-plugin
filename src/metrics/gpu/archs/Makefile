@@ -2,12 +2,11 @@ CFLAGS = $(CC_FLAGS) -I$(SRCDIR) -fPIC -Wall
 
 ######## FILES
 
-gpu_OBJS = \
-    nvml.o \
-    dummy.o
+gpu_OBJS = dummy.o
 
 ifdef CUDA_BASE
-gpu_DEFS = -DCUDA_BASE=\"$(CUDA_BASE)\"
+gpu_OBJS += nvml.o
+gpu_DEFS  = -DCUDA_BASE=\"$(CUDA_BASE)\"
 endif
 
 ######## RULES
@@ -20,19 +19,11 @@ nvml.o: nvml.c nvml.h
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c $<
 
-######## SUBFOLDERS
-
-%.components: ;
-
 ######## OPTIONS
 
 install: ;
 
 clean: rclean;
-
-depend: depend.components
-
-depend-clean: depend-clean.components
 
 ######## EXPORTS
 
