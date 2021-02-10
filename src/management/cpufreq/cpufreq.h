@@ -32,7 +32,8 @@
 // architecture limitations read the headers in archs folder.
 //
 // Props:
-// 	- Thread safe: no.
+// 	- Thread safe: partially.
+//	- User space: no.
 //
 // Folders:
 //	- archs: different node architectures, such as AMD and Intel.
