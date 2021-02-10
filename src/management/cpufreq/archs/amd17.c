@@ -443,7 +443,7 @@ state_t cpufreq_amd17_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 }
 
 /** Getters */
-state_t cpufreq_amd17_count(ctx_t *c, uint *pstate_count)
+state_t cpufreq_amd17_count_available(ctx_t *c, uint *pstate_count)
 {
 	amd17_ctx_t *f;
 	state_t s;
@@ -496,7 +496,7 @@ static state_t static_get_index(amd17_ctx_t *f, ullong freq_khz, uint *pstate_in
     return_msg(EAR_ERROR, "P_STATE not found");
 }
 
-state_t cpufreq_amd17_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
+state_t cpufreq_amd17_get_available_list(ctx_t *c, pstate_t *pstate_list)
 {
 	amd17_ctx_t *f;
 	state_t s;
@@ -512,9 +512,6 @@ state_t cpufreq_amd17_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *
 	for (i = f->pss_nominal; i < f->pss_count; ++i) {
 		pstate_list[i].idx = (ullong) i;
 		pstate_list[i].khz = p1_khz(f->psss[i].cof);
-	}
-	if (pstate_count != NULL) {
-		*pstate_count = f->pss_count;
 	}
 	return EAR_SUCCESS;
 }

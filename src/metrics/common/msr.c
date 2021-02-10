@@ -53,7 +53,25 @@ static struct error_s {
 	pthread_mutex_unlock(lock); \
 	return s;
 
-/* */
+
+state_t msr_test(topology_t *tp)
+{
+	state_t s = EAR_SUCCESS;
+	int c, b;
+	if (tp->cpu_count == 0) {
+		return_msg(EAR_ERROR, Generr.input_uninitialized);
+	}
+	for (c = 0; c < tp->cpu_count; ++c) {
+		if (xtate_fail(s, msr_open(c))) {
+			break;
+		}
+	}
+	for (b = 0; b < c; ++b) {
+		msr_close(b);
+	}
+	return s;
+}
+
 state_t msr_open(uint cpu)
 {
 	char msr_file_name[SZ_PATH_KERNEL];
@@ -61,7 +79,6 @@ state_t msr_open(uint cpu)
 	if (cpu >= MSR_MAX) {
 		return_msg(EAR_BAD_ARGUMENT, Error.cpu_invalid);
 	}
-
 	// General exclusion
 	while (pthread_mutex_trylock(&lock_gen));
 
@@ -70,72 +87,57 @@ state_t msr_open(uint cpu)
 			return_unlock_msg(EAR_ERROR, Error.lock, &lock_gen);
 		}
 	}
-
 	init[cpu] = 1;
 	pthread_mutex_unlock(&lock_gen);
-
 	// CPU exclusion
 	while (pthread_mutex_trylock(&lock_cpu[cpu]));
-	
 	if (counters[cpu] == 0) {
 		sprintf(msr_file_name, "/dev/cpu/%d/msr", cpu);
 		fds[cpu] = open(msr_file_name, O_RDWR);
 		debug("msr open %d", fds[cpu]);
 	}
-		
 	if (fds[cpu] < 0) {
 		if (errno == EACCES) {
 			return_unlock_msg(EAR_NO_PERMISSIONS, strerror(errno), &lock_cpu[cpu]);
 		}
 		return_unlock_msg(EAR_ERROR, strerror(errno), &lock_cpu[cpu]);
 	}
-	
 	counters[cpu] += 1;
+
 	return_unlock(EAR_SUCCESS, &lock_cpu[cpu]);
 }
 
-/* */
 state_t msr_close(uint cpu)
 {
 	if (cpu >= MSR_MAX) {
 		return_msg(EAR_BAD_ARGUMENT, Error.cpu_invalid);
 	}
-	
 	if (counters[cpu] == 0) {
 		return_msg(EAR_NOT_INITIALIZED, Error.cpu_uninitialized);
 	}
-	
 	while (pthread_mutex_trylock(&lock_cpu[cpu]));
-	
 	if (counters[cpu] == 0) {
 		return_unlock_msg(EAR_NOT_INITIALIZED, Error.cpu_uninitialized, &lock_cpu[cpu]);
 	}
-
 	counters[cpu] -= 1;
-
 	if (counters[cpu] == 0) {
 		close(fds[cpu]);
 		fds[cpu] = -1;
 	}
-	
 	return_unlock(EAR_SUCCESS, &lock_cpu[cpu]);
 }
 
-/* */
 state_t msr_read(uint cpu, void *buffer, size_t size, off_t offset)
 {
 	if (cpu >= MSR_MAX) {
 		return_msg(EAR_BAD_ARGUMENT, Error.cpu_invalid);
 	}
-	
 	if (counters[cpu] == 0 || fds[cpu] < 0) {
 		return_msg(EAR_NOT_INITIALIZED, Error.cpu_uninitialized);
 	}
-
 	#ifdef MSR_LOCK
 	while (pthread_mutex_trylock(&lock_cpu[cpu]));
 	#endif
-
 	if (pread(fds[cpu], buffer, size, offset) != size) {
 		#ifdef MSR_LOCK
 		return_unlock_msg(EAR_ERROR, strerror(errno), &lock_cpu[cpu]);
@@ -143,7 +145,6 @@ state_t msr_read(uint cpu, void *buffer, size_t size, off_t offset)
 		return_msg(EAR_ERROR, strerror(errno));
 		#endif
 	}
-
 	#ifdef MSR_LOCK
 	return_unlock(EAR_SUCCESS, &lock_cpu[cpu]);
 	#else
@@ -151,21 +152,17 @@ state_t msr_read(uint cpu, void *buffer, size_t size, off_t offset)
 	#endif
 }
 
-/* */
 state_t msr_write(uint cpu, const void *buffer, size_t size, off_t offset)
 {
 	if (cpu >= MSR_MAX) {
 		return_msg(EAR_BAD_ARGUMENT, Error.cpu_invalid);
 	}
-
 	if (counters[cpu] == 0 || fds[cpu] < 0) {
 		return_msg(EAR_NOT_INITIALIZED, Error.cpu_uninitialized);
 	}
-
 	#ifdef MSR_LOCK
 	while (pthread_mutex_trylock(&lock_cpu[cpu]));
 	#endif
-
 	if (pwrite(fds[cpu], buffer, size, offset) != size) {
 		#ifdef MSR_LOCK
 		return_unlock_msg(EAR_ERROR, strerror(errno), &lock_cpu[cpu]);
@@ -173,7 +170,6 @@ state_t msr_write(uint cpu, const void *buffer, size_t size, off_t offset)
 		return_msg(EAR_ERROR, strerror(errno));
 		#endif
 	}
-
 	#ifdef MSR_LOCK
 	return_unlock(EAR_SUCCESS, &lock_cpu[cpu]);
 	#else

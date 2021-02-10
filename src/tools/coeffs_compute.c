@@ -619,20 +619,6 @@ static state_t usage(int argc, char *argv[])
     return EAR_ERROR;
 }
 
-#if 0
-state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
-{
-	mgt_cpufreq_count(c, pstate_count);
-	*pstate_list = calloc(*pstate_count, sizeof(pstate_t));
-	return EAR_SUCCESS;
-}
-
-state_t mgt_cpufreq_alloc_current(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
-{
-	return EAR_ERROR;
-}
-#endif
-
 int main(int argc, char *argv[])
 {
     char             host_name[SZ_NAME_MEDIUM];
