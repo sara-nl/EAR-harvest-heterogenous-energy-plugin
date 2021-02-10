@@ -311,6 +311,9 @@ state_t pmgt_init()
 	char basic_path[SZ_PATH_INCOMPLETE];
 	topology_init(&pc_topology_info);
 	#if USE_GPUS
+	if (gpu_load(NULL,0,NULL)!= EAR_SUCCESS){
+    error("Initializing GPU(load) in powercap");
+	}
   if (gpu_init(&gpu_pc)!=EAR_SUCCESS){
     error("Initializing GPU in powercap");
   }

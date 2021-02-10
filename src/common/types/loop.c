@@ -22,6 +22,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <assert.h>
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -67,6 +68,14 @@ int loop_init(loop_t *loop, job_t *job,ulong event, ulong size, ulong level)
 	gethostname(loop->node_id,sizeof(loop->node_id));
 	strtok(loop->node_id,".");
 	return EAR_SUCCESS;
+}
+
+void clean_db_loop(loop_t *loop)
+{
+	if (loop->id.event > INT_MAX) loop->id.event = INT_MAX;
+	if (loop->id.size > INT_MAX) loop->id.size = INT_MAX; 
+	if (loop->id.level > INT_MAX) loop->id.level = INT_MAX;
+	clean_db_signature(&loop->signature);
 }
 
 int set_null_loop(loop_t *loop)

@@ -23,14 +23,15 @@
 #include <errno.h>
 #define _GNU_SOURCE
 #include <pthread.h>
+#define SHOW_DEBUGS 1
 #include <common/config.h>
 #include <common/colors.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
 #include <daemon/powercap/powercap_status_conf.h>
 #include <common/system/monitor.h>
+#include <management/cpufreq/frequency.h>
 
 #define POWERCAP_MON 0
 
@@ -53,7 +54,7 @@
 static uint c_limit;
 static uint policy_enabled=0;
 static uint pc_on=0;
-
+static ulong c_req_f;
 int do_cmd(char *cmd)
 {
   if (strcmp(cmd,"NO_CMD")==0) return 0;
@@ -192,3 +193,38 @@ void set_verb_channel(int fd)
 	VERB_SET_FD(fd);
 	DEBUG_SET_FD(fd);
 }
+void set_app_req_freq(ulong *f)
+{
+	debug("INM:Requested application freq set to %lu",*f);
+	c_req_f=*f;	
+}
+
+#define MIN_CPU_POWER_MARGIN 10
+uint get_powercap_status(uint *in_target,uint *tbr)
+{
+	ulong c_freq;
+	uint ctbr;
+	*in_target = 0;
+	*tbr = 0;
+	if (c_limit == PC_UNLIMITED) return 0;
+	/* If we don't know the req_f we cannot release power */
+	if (c_req_f == 0) return 0;
+	c_freq=frequency_get_cpu_freq(0);
+	if (c_freq != c_req_f) return 0;
+	/* Power reading is pending */
+	#if 0
+	ctbr = (my_limit -  power_rapl) * 0.5;
+	*in_target = 1;
+	if (ctbr >= MIN_CPU_POWER_MARGIN){
+		//debug("We can reuse %u W of power from the CPU since target %lu and current %lu",ctbr,c_req_f,c_freq);
+		*tbr = ctbr; 
+	}else{
+		*tbr = 0;
+	}
+	return 1;
+	#endif
+	*in_target = 1;
+	*tbr = 0;
+	return 1;
+}
+	
