@@ -43,48 +43,25 @@ state_t temp_dummy_dispose(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
+// Data
+state_t temp_dummy_count_devices(ctx_t *c, uint *count)
+{
+	if (count != NULL) {
+		*count = socket_count;
+	}
+	return EAR_SUCCESS;
+}
+
+// Getters
 state_t temp_dummy_read(ctx_t *c, llong *temp, llong *average)
 {
-	if (temp == NULL) {
-		return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
-	}
-    if (memset((void *) temp, 0, sizeof(llong)*socket_count) != temp) {
-		return_msg(EAR_ERROR, strerror(errno));
+	if (temp != NULL) {
+		if (memset((void *) temp, 0, sizeof(llong)*socket_count) != temp) {
+			return_msg(EAR_ERROR, strerror(errno));
+		}
 	}
 	if (average != NULL) {
 		*average = 0;
-	}
-	return EAR_SUCCESS;
-}
-
-state_t temp_dummy_data_alloc(llong **temp)
-{
-	if (temp == NULL) {
-		return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
-	}
-	if ((*temp = (llong *) calloc(socket_count, sizeof(llong))) == NULL) {
-		return_msg(EAR_ERROR, strerror(errno));
-	}
-	return EAR_SUCCESS;
-}
-
-state_t temp_dummy_data_free(llong **temp)
-{
-	if (temp == NULL || *temp == NULL) {
-		return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
-	}
-	free(*temp);
-	*temp = NULL;
-	return EAR_SUCCESS;
-}
-
-state_t temp_dummy_data_copy(llong *temp2, llong *temp1)
-{
-	if (temp2 == NULL || temp1 == NULL) {
-		return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
-	}
-	if (memcpy((void *) temp2, (const void *) temp1, sizeof(llong)*socket_count) != temp2) {
-		return_msg(EAR_ERROR, strerror(errno));
 	}
 	return EAR_SUCCESS;
 }

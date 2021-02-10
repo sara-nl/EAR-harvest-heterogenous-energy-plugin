@@ -33,7 +33,7 @@
 //
 // Props:
 // 	- Thread safe: partially.
-//	- User space: no.
+//	- User mode: no.
 //
 // Folders:
 //	- archs: different node architectures, such as AMD and Intel.

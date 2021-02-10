@@ -22,20 +22,34 @@
 #include <common/plugins.h>
 #include <common/hardware/topology.h>
 
+// The API
+//
+// Props:
+//	- Thread safe: no.
+//	- User mode: no.
+//	- Type: direct value.
+//
+//
+
 state_t temp_load(topology_t *tp);
 
 state_t temp_init(ctx_t *c);
 
 state_t temp_dispose(ctx_t *c);
 
-/* Requires a llong array of a length of total node sockets. */
-state_t temp_read(ctx_t *c, llong *temp, llong *average);
+/** It returns the number of sockets. */
+state_t temp_count_devices(ctx_t *c, uint *count);
 
-state_t temp_data_alloc(llong **temp);
-
-state_t temp_data_free(llong **temp);
+// Data
+state_t temp_data_alloc(ctx_t *c, llong **temp_list, uint *temp_count);
 
 /* Copies temp1 in temp2. */
-state_t temp_data_copy(llong *temp2, llong *temp1);
+state_t temp_data_copy(ctx_t *c, llong *temp_list2, llong *temp_list1);
+
+state_t temp_data_free(ctx_t *c, llong **temp_list);
+
+// Getter
+/** Requires a llong array of a length of total node sockets. */
+state_t temp_read(ctx_t *c, llong *temp_list, llong *average);
 
 #endif
