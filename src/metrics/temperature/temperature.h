@@ -24,12 +24,21 @@
 
 // The API
 //
+// This API returns a temperature in Celsius degrees per socket.
+//
 // Props:
-//	- Thread safe: no.
-//	- User mode: no.
+//	- Thread safe: yes.
+//	- User mode: just in amd17.
 //	- Type: direct value.
 //
+// Folders:
+//  - archs: different node architectures, such as AMD and Intel.
+//  - tests: examples.
 //
+// Future work:
+//
+// Use example:
+//  - You can find an example in cpufreq/tests folder.
 
 state_t temp_load(topology_t *tp);
 

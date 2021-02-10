@@ -6,8 +6,8 @@ int main()
 {
 	topology_t  tp;
 	llong      *temp_list;
-	llong       temp_count;
 	llong       temp_average;
+	uint        temp_count;
 	state_t     s;
 	ctx_t       c;
 	int         i;

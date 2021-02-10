@@ -23,7 +23,7 @@
 #include <metrics/temperature/archs/intel63.h>
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static uint socket_count;
+static topology_t tp;
 
 #define IA32_THERM_STATUS               0x19C
 #define IA32_PKG_THERM_STATUS           0x1B1
@@ -110,7 +110,7 @@ state_t temp_intel63_count_devices(ctx_t *c, uint *count)
 		return s;
 	}
 	if (count != NULL) {
-		*count = socket_count;
+		*count = tp.cpu_count;
 	}
 	return EAR_SUCCESS;
 }

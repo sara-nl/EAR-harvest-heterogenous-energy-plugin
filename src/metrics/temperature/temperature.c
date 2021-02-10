@@ -25,7 +25,7 @@ static struct temp_ops
 {
 	state_t (*init)          (ctx_t *c);
 	state_t (*dispose)       (ctx_t *c);
-	state_t (*count_devices) (ctx_t *count);
+	state_t (*count_devices) (ctx_t *c, uint *count);
 	state_t (*read)          (ctx_t *c, llong *temp, llong *average);
 } ops;
 

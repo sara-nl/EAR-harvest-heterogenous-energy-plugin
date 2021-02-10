@@ -39,7 +39,6 @@ mets_OBJS = \
     $(SRCDIR)/metrics/frequency/imc.o \
     $(SRCDIR)/metrics/frequency/imc/dummy.o \
     $(SRCDIR)/metrics/frequency/imc/intel63.o \
-    $(SRCDIR)/metrics/stalls/stalls.o \
     $(SRCDIR)/metrics/temperature/temperature.o \
     $(SRCDIR)/metrics/temperature/archs/amd17.o \
     $(SRCDIR)/metrics/temperature/archs/intel63.o \
@@ -76,7 +75,6 @@ clean: clean.components rclean;
 	@ $(MAKE) -C 'flops'        $* || exit
 	@ $(MAKE) -C 'frequency'    $* || exit
 	@ $(MAKE) -C 'gpu'          $* || exit
-	@ $(MAKE) -C 'stalls'       $* || exit
 	@ $(MAKE) -C 'accumulators' $* || exit
 	@ $(MAKE) -C 'temperature'  $* || exit
 
