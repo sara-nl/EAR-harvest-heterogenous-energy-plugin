@@ -31,10 +31,14 @@
 // procedure is the usual: load, init, get/set and dispose. To check
 // architecture limitations read the headers in archs folder.
 //
+// Props:
+// 	- Thread safe: no.
+//
 // Folders:
 //	- archs: different node architectures, such as AMD and Intel.
 //	- drivers: API contacting to different system drivers, such as acpi_cpufreq.
 //	- recovery: old API.
+//	- tests: examples.
 //
 // Compiling options:
 //	- You can set DISABLE_AMD in archs/Makefile to disable the AMD17 loading,
@@ -52,13 +56,7 @@
 // 	  Or maybe to force static sized context allocations.
 //
 // Use example:
-//		mgt_cpufreq_load(&topo);
-//		mgt_cpufreq_init(&context);
-//		mgt_cpufreq_count(&context, &pstate_count);
-//		available_list = calloc(pstate_count, sizeof(pstate_t)));
-//		mgt_cpufreq_get_available_list(&context, available_list, NULL);
-//		mgt_cpufreq_set_current(&context, 1, all_cpus);
-//		mgt_cpufreq_dispose(&context);
+//	- You can find an example in cpufreq/tests folder.
 
 typedef struct pstate_s {
 	uint   idx; // P_STATE index
