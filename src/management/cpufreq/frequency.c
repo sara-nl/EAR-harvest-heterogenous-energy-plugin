@@ -55,7 +55,7 @@ static state_t static_init(ullong *freq_list, uint freq_count)
 			return s;
 		}
 	}
-	if (xtate_fail(s, mgt_cpufreq_count(&c, &pstate_count))) {
+	if (xtate_fail(s, mgt_cpufreq_count_available(&c, &pstate_count))) {
 		return s;
 	}
 	//alloc
@@ -69,7 +69,7 @@ static state_t static_init(ullong *freq_list, uint freq_count)
         return_msg(EAR_ERROR, strerror(errno));
     }
 	//
-	if (xtate_fail(s, mgt_cpufreq_get_available_list(&c, available_list, NULL))) {
+	if (xtate_fail(s, mgt_cpufreq_get_available_list(&c, available_list))) {
 		return s;
 	}
 	if (xtate_fail(s, mgt_cpufreq_get_nominal(&c, &pstate_nominal))) {

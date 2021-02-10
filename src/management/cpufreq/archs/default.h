@@ -37,7 +37,7 @@ state_t cpufreq_default_dispose(ctx_t *c);
 state_t cpufreq_default_count_available(ctx_t *c, uint *pstate_count);
 
 // Getters
-state_t cpufreq_default_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count);
+state_t cpufreq_default_get_available_list(ctx_t *c, pstate_t *pstate_list);
 
 state_t cpufreq_default_get_current_list(ctx_t *c, pstate_t *pstate_list);
 

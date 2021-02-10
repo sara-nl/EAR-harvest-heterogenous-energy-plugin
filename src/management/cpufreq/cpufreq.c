@@ -17,6 +17,8 @@
 
 //#define SHOW_DEBUGS 1
 
+#include <stdlib.h>
+#include <unistd.h>
 #include <common/sizes.h>
 #include <common/plugins.h>
 #include <common/output/debug.h>
@@ -143,7 +145,7 @@ state_t mgt_cpufreq_dispose(ctx_t *c)
 /** Data */
 state_t mgt_cpufreq_count_available(ctx_t *c, uint *pstate_count)
 {
-	preturn (ops.count, c, pstate_count);
+	preturn (ops.count_available, c, pstate_count);
 }
 
 state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
@@ -151,7 +153,7 @@ state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *psta
 	uint count;
 	state_t s;
 	// Getting the total available P_STATEs
-	if (xtate_fail(s, mgt_cpufreq_alloc_available(c, &count))) {
+	if (xtate_fail(s, mgt_cpufreq_count_available(c, &count))) {
 		return s;
 	}
 	if (pstate_list) {
@@ -163,21 +165,24 @@ state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *psta
 	return EAR_SUCCESS;
 }
 
-state_t mgt_cpufreq_alloc_current(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
+state_t mgt_cpufreq_alloc_current(ctx_t *c, pstate_t **pstate_list, uint **index_list, uint *both_count)
 {
-	if (pstate_count) {
-		*pstate_count = mgt_cpu_count;
+	if (both_count) {
+		*both_count = mgt_cpu_count;
 	}
 	if (pstate_list) {
 		*pstate_list = calloc(mgt_cpu_count, sizeof(pstate_t));
+	}
+	if (index_list) {
+		*index_list = calloc(mgt_cpu_count, sizeof(uint));
 	}
 	return EAR_SUCCESS;
 }
 
 /** Getters */
-state_t mgt_cpufreq_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
+state_t mgt_cpufreq_get_available_list(ctx_t *c, pstate_t *pstate_list)
 {
-	preturn (ops.get_available_list, c, pstate_list, pstate_count);
+	preturn (ops.get_available_list, c, pstate_list);
 }
 
 state_t mgt_cpufreq_get_current_list(ctx_t *c, pstate_t *pstate_list)
