@@ -132,7 +132,7 @@ state_t cpufreq_default_init(ctx_t *c, mgt_ps_driver_ops_t *ops_driver)
 }
 
 /** Getters */
-state_t cpufreq_default_count(ctx_t *c, uint *pstate_count)
+state_t cpufreq_default_count_available(ctx_t *c, uint *pstate_count)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -182,7 +182,7 @@ static state_t static_get_index(dummy_ctx_t *f, ullong freq_khz, uint *pstate_in
 	return_msg(EAR_ERROR, "P_STATE not found");
 }
 
-state_t cpufreq_default_get_available_list(ctx_t *c, pstate_t *pstate_list, uint *pstate_count)
+state_t cpufreq_default_get_available_list(ctx_t *c, pstate_t *pstate_list)
 {
 	dummy_ctx_t *f;
 	state_t s;
@@ -194,9 +194,6 @@ state_t cpufreq_default_get_available_list(ctx_t *c, pstate_t *pstate_list, uint
 	for (i = 0; i < f->freqs_count; ++i) {
 		pstate_list[i].idx = (ullong) i;
 		pstate_list[i].khz = f->freqs_available[i];
-	}
-	if (pstate_count != NULL) {
-		*pstate_count = f->freqs_count;
 	}
 	return EAR_SUCCESS;
 }
@@ -269,9 +266,12 @@ state_t cpufreq_default_set_current_list(ctx_t *c, uint *pstate_index)
 	if (xtate_fail(s, static_init_test(c, &f))) {
 		return s;
 	}
+	#if 0
+	// Too much robustness
 	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s;
 	}
+	#endif
 	if (xtate_fail(s, f->driver->set_current_list(&f->driver_c, pstate_index))) {
 		return s;
 	}
@@ -287,9 +287,12 @@ state_t cpufreq_default_set_current(ctx_t *c, uint pstate_index, int cpu)
 	if (xtate_fail(s, static_init_test(c, &f))) {
 		return s;
 	}
+	#if 0
+	// Too much robustness
 	if (xtate_fail(s, f->driver->set_governor(&f->driver_c, Governor.userspace))) {
 		return s;
 	}
+	#endif
 	if (xtate_fail(s, f->driver->set_current(&f->driver_c, pstate_index, cpu))) {
 		return s;
 	}

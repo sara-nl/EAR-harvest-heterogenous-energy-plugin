@@ -23,7 +23,13 @@
 #include <common/plugins.h>
 #include <common/system/time.h>
 
+// The API
+//
 // This is an API to control the frequency and power of the node GPUs.
+//
+// Props:
+// 	- Thread safe: yes.
+//	- User space: no.
 //
 // Folders:
 //	- archs: different GPU controllers, such as Nvidia NMVL.

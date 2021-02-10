@@ -55,7 +55,7 @@ static state_t static_init(ullong *freq_list, uint freq_count)
 			return s;
 		}
 	}
-	if (xtate_fail(s, mgt_cpufreq_count(&c, &pstate_count))) {
+	if (xtate_fail(s, mgt_cpufreq_count_available(&c, &pstate_count))) {
 		return s;
 	}
 	//alloc
@@ -69,7 +69,7 @@ static state_t static_init(ullong *freq_list, uint freq_count)
         return_msg(EAR_ERROR, strerror(errno));
     }
 	//
-	if (xtate_fail(s, mgt_cpufreq_get_available_list(&c, available_list, NULL))) {
+	if (xtate_fail(s, mgt_cpufreq_get_available_list(&c, available_list))) {
 		return s;
 	}
 	if (xtate_fail(s, mgt_cpufreq_get_nominal(&c, &pstate_nominal))) {
@@ -253,11 +253,9 @@ ulong frequency_set_with_list(uint x, ulong *list)
 		return 0LU;
 	}
 	for (cpu = 0; cpu < topo.cpu_count; ++cpu) {
-		if (list[cpu] > 0 ){
-		  if (xtate_ok(s1, mgt_cpufreq_get_index(&c, (ullong) list[cpu], &pstate_index, 0))) {
-			  if (xtate_ok(s2, mgt_cpufreq_set_current(&c, pstate_index, cpu))) {
-			  }
-		  }
+		if (xtate_ok(s1, mgt_cpufreq_get_index(&c, (ullong) list[cpu], &pstate_index, 0))) {
+			if (xtate_ok(s2, mgt_cpufreq_set_current(&c, pstate_index, cpu))) {
+			}
 		}
 	}
 	if (state_fail(s1) || state_fail(s2)) {

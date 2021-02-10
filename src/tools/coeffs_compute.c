@@ -184,16 +184,25 @@ static void print_coefficients(matrix_t *matrix, int m, int p)
 
 	if (header++ == 0) {
 		verbose(0, "-----------------------------------------------------------------------------------------------------------");
-		tprintf_init(fderr, STR_MODE_DEF, "8 8 10 10 10 10 10 10 10 10 10");
+		tprintf_init(fderr, STR_MODE_COL, "8 8 10 10 10 10 10 10 10 10 10");
 		tprintf("f_from||f_to|||A||B||C||D||E||D|||e.cpi||e.time||e.power");
 		tprintf("------||----|||-||-||-||-||-||-|||-----||------||-------");
 	}
+	// Error color
+	char *ecc = (matrix[m].err_cpi[i]   < 4.0) ? "": STR_YLW;
+	char *ect = (matrix[m].err_time[i]  < 4.0) ? "": STR_YLW;
+	char *ecp = (matrix[m].err_power[i] < 4.0) ? "": STR_YLW;
+	      ecc = (matrix[m].err_cpi[i]   < 8.0) ? ecc: STR_RED;
+	      ect = (matrix[m].err_time[i]  < 8.0) ? ect: STR_RED;
+	      ecp = (matrix[m].err_power[i] < 8.0) ? ecp: STR_RED;
 
-	tprintf("%llu||%llu|||%+0.3lf||%+0.3lf||%+0.3lf||%+0.3lf||%+0.3lf||%+0.3lf|||%0.2lf||%0.2lf||%0.2lf",
+	tprintf("%llu||%llu|||%+0.3lf||%+0.3lf||%+0.3lf||%+0.3lf||%+0.3lf||%+0.3lf|||%s%0.2lf||%s%0.2lf||%s%0.2lf",
 		matrix[m].pstate.khz, matrix[p].pstate.khz,
 		matrix[m].coef_list[i].A, matrix[m].coef_list[i].B, matrix[m].coef_list[i].C,
 		matrix[m].coef_list[i].D, matrix[m].coef_list[i].E, matrix[m].coef_list[i].F,
-		matrix[m].err_cpi[i], matrix[m].err_time[i], matrix[m].err_power[i]);
+		ecc, matrix[m].err_cpi[i],
+		ect, matrix[m].err_time[i],
+		ecp, matrix[m].err_power[i]);
 }
 
 static state_t compute_coefficients(matrix_t *matrix, uint matrix_count)
@@ -230,7 +239,7 @@ static state_t compute_coefficients(matrix_t *matrix, uint matrix_count)
 		}
 		// Computing coefficients.
 		for (p = 0; p < matrix_count; ++p) {
-			if (matrix[p].app_count > 0) {
+			if (matrix[p].app_count > 0 && m != p) {
 				compute_power(&matrix[m], &matrix[p]);
 				compute_cpi(&matrix[m], &matrix[p]);
 			}
@@ -530,6 +539,10 @@ static state_t configuration(int argc, char *argv[], cluster_conf_t *conf, my_no
 	char *p = aux_name;
 	state_t s;
 
+	// Verbosity test
+	if (strinargs(argc, argv, "verbose", buffer1)) {
+		VERB_SET_LV(1);
+	}
     if (state_fail(get_ear_conf_path(path))) {
        	return_msg(EAR_ERROR, "error getting ear.conf path");
     }
@@ -572,10 +585,6 @@ static state_t configuration(int argc, char *argv[], cluster_conf_t *conf, my_no
 	if ((*fd = open(buffer1, F_WR|F_CR|F_TR, F_UR|F_UW|F_GR|F_GW|F_OR|F_OW)) < 0) {
 		return_xmsg(EAR_ERROR, "failed opening file '%s' (%s)", buffer1, strerror(errno));
 	}
-	// Verbosity test
-	if (strinargs(argc, argv, "verbose", buffer1)) {
-		VERB_SET_LV(1);
-	}
 	verbose(0, "-----------------------------------------------------------------------------------------------------------");
 	verbose(0, "host name:     %s", aux_name); 
 	verbose(0, "host alias:    %s", aux_alias); 
@@ -617,18 +626,6 @@ static state_t usage(int argc, char *argv[])
     verbose(0, "\t--verbose\t\tVerbose mode. It includes errors.");
 
     return EAR_ERROR;
-}
-
-state_t mgt_cpufreq_alloc_available(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
-{
-	mgt_cpufreq_count(c, pstate_count);
-	*pstate_list = calloc(*pstate_count, sizeof(pstate_t));
-	return EAR_SUCCESS;
-}
-
-state_t mgt_cpufreq_alloc_current(ctx_t *c, pstate_t **pstate_list, uint *pstate_count)
-{
-	return EAR_ERROR;
 }
 
 int main(int argc, char *argv[])
