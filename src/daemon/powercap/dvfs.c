@@ -76,6 +76,12 @@ void frequency_npstate_to_nfreq(uint *p,ulong *f,uint cpus)
 	for (i=0;i<cpus;i++) f[i] = frequency_pstate_to_freq(p[i]);
 }
 
+void extend_from_cpu_to_list(int cpu, uint *list,uint num_cpus)
+{
+	ulong value = list[cpu];
+	uint i;
+	for (i=0;i<num_cpus;i++) list[i] = value;
+}
 
 /************************ This function is called by the monitor before the iterative part ************************/
 state_t dvfs_pc_thread_init(void *p)
@@ -143,23 +149,24 @@ state_t dvfs_pc_thread_main(void *p)
     if (c_status==PC_STATUS_RUN){
       /* Aplicar limites */
       if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
-      if (power_rapl > my_limit){ /* We are above the PC */
-				frequency_get_cpufreq_list(node_size,c_freq);
+			frequency_get_cpufreq_list(node_size,c_freq);
+      if (power_rapl > my_limit){ /* We are above the PC , reduce freq*/
         frequency_nfreq_to_npstate(c_freq,c_pstate,node_size);
 				/* If we are running at the lowest frequency there is nothing else to do */
-				if (c_pstate[0] < (num_pstates-1)){ /*PENDING*/
-        	c_pstate[0]=ear_min(c_pstate[0]+1,num_pstates-1); /* PENDING */
+				if (c_pstate[0] < (num_pstates-1)){ /*Pending verctor extension*/
+        	c_pstate[0]=ear_min(c_pstate[0]+1,num_pstates-1); /* Pending verctor extension */
+					extend_from_cpu_to_list(0,c_pstate,node_size);
         	frequency_npstate_to_nfreq(c_pstate,c_freq,node_size);
 					frequency_set_with_list(node_size,c_freq);
 				}
       }else{ /* We are below the PC */
         frequency_nfreq_to_npstate(c_req_f,t_pstate,node_size);
-				frequency_get_cpufreq_list(node_size,c_freq);
         frequency_nfreq_to_npstate(c_freq,c_pstate,node_size);
         if (c_pstate[0]>t_pstate[0]){ /* PENDING */
           extra=compute_extra_power(power_rapl,1,t_pstate[0]);
           if (((power_rapl+extra)<my_limit) && (c_mode==PC_MODE_TARGET)){ /* PENDING */
             c_pstate[0]=c_pstate[0]-1; /* PENDING */
+						extend_from_cpu_to_list(0,c_pstate,node_size);
         		frequency_npstate_to_nfreq(c_pstate,c_freq,node_size);
 						frequency_set_with_list(node_size,c_freq);
           }
