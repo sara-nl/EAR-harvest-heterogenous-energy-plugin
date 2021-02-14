@@ -462,34 +462,17 @@ void parse_island(cluster_conf_t *conf, char *line)
         tag_parsing = 0;
     }
     int id_f = idx < 0 ? conf->num_islands: idx;
-    if (!contains_ip && conf->islands[id_f].num_ips > 0)
+    if (!contains_ip)
     {
+        int id_db = conf->islands[id_f].num_ips > 0 ? 0 : -1;
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-            conf->islands[id_f].ranges[i].db_ip = 0;
+            conf->islands[id_f].ranges[i].db_ip = id_db;
     }
-    else if (!contains_ip)
+    if (!contains_sec_ip)
     {
+        int id_sec_db = conf->islands[id_f].num_backups > 0 ? 0 : -1;
         for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-            conf->islands[id_f].ranges[i].db_ip = -1;
-    }
-    if (!contains_sec_ip && conf->islands[id_f].num_backups > 0)
-    {
-        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-            conf->islands[id_f].ranges[i].sec_ip = 0;
-    }
-    else if (!contains_sec_ip)
-    {
-        for (i = current_ranges; i < conf->islands[id_f].num_ranges; i++)
-            conf->islands[id_f].ranges[i].sec_ip = -1;
-    }
-    if (conf->islands[id_f].num_ips)
-    {
-        for (i = 0; i < current_ranges; i++)
-        {
-            if (conf->islands[id_f].ranges[i].db_ip < 0) conf->islands[id_f].ranges[i].db_ip = 0;
-
-            if (conf->islands[id_f].ranges[i].sec_ip < 0) conf->islands[id_f].ranges[i].sec_ip = 0;
-        }
+            conf->islands[id_f].ranges[i].sec_ip = id_sec_db;
     }
     if (idx < 0)
         conf->num_islands++;
