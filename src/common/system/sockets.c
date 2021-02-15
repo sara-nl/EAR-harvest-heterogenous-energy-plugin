@@ -261,10 +261,10 @@ static state_t _send(socket_t *socket, ssize_t bytes_expc, char *buffer)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
+state_t sockets_send(socket_t *socket, socket_header_t *header, char *content)
 {
 	char output_buffer[SZ_BUFF_BIG];
-	packet_header_t *output_header;
+	socket_header_t *output_header;
 	char *output_content;
 	state_t state;
 
@@ -282,13 +282,13 @@ state_t sockets_send(socket_t *socket, packet_header_t *header, char *content)
 	output_content = PACKET_CONTENT(output_buffer);
 
 	// Copy process
-	memcpy(output_header, header, sizeof(packet_header_t));
+	memcpy(output_header, header, sizeof(socket_header_t));
 	memcpy(output_content, content, header->content_size);
 
 	pthread_mutex_lock(&lock_send);
 	{
 		// Sending
-		state = _send(socket, sizeof(packet_header_t) + header->content_size, output_buffer);
+		state = _send(socket, sizeof(socket_header_t) + header->content_size, output_buffer);
 		
 		pthread_mutex_unlock(&lock_send);
 	}
@@ -374,7 +374,7 @@ static state_t _receive(int fd, ssize_t bytes_expc, char *buffer, int block)
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block)
+state_t sockets_receive(int fd, socket_header_t *header, char *buffer, ssize_t size_buffer, int block)
 {
 	state_t state;
 
@@ -388,7 +388,7 @@ state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t s
 	}
 
 	// Receiving the header
-	state = _receive(fd, sizeof(packet_header_t), (char *) header, block);
+	state = _receive(fd, sizeof(socket_header_t), (char *) header, block);
 
 	if (state_fail(state)) {
 		state_return(state);
@@ -471,13 +471,13 @@ state_t sockets_nonblock_clean(int fd)
  *
  */
 
-state_t sockets_header_clean(packet_header_t *header)
+state_t sockets_header_clean(socket_header_t *header)
 {
-	memset((void *) header, 0, sizeof(packet_header_t));
+	memset((void *) header, 0, sizeof(socket_header_t));
 	state_return(EAR_SUCCESS);
 }
 
-state_t sockets_header_update(packet_header_t *header)
+state_t sockets_header_update(socket_header_t *header)
 {
 	if (strlen(header->host_src) == 0) {
 		gethostname(header->host_src, sizeof(header->host_src));

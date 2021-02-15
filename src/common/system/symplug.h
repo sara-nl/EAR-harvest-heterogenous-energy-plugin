@@ -22,12 +22,11 @@
 #include <common/types.h>
 #include <common/states.h>
 #include <common/plugins.h>
-#include <common/attributes.h>
 
 state_t symplug_join(void *handle, void *calls[], const char *names[], uint n);
 
 state_t symplug_open(char *path, void *calls[], const char *names[], uint n);
-state_t symplug_open_lazy(char *path, void *calls[], const char *names[], uint n);
 
+state_t symplug_open_lazy(char *path, void *calls[], const char *names[], uint n);
 
 #endif //COMMON_SYSTEM_SYMPLUG_H
