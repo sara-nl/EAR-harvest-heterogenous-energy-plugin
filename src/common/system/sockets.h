@@ -30,7 +30,7 @@
 #define TCP                 SOCK_STREAM
 #define UDP                 SOCK_DGRAM
 #define NON_BLOCK_TRYS      1000
-#define socket_header_t     socket_header_t
+#define packet_header_t     socket_header_t
 
 typedef struct socket {
 	struct addrinfo *info;
@@ -51,7 +51,7 @@ typedef struct socket {
 // uncompatible with normal headers, be keep in mind that you have to connect
 // modules compiled with the same property.
 typedef struct socket_header_s {
-#if SHOW_DEBUGS
+#if SOCKETS_DEBUG
 	char    host_src[SZ_NAME_SHORT]; // Filled in sockets_send()
     time_t  timestamp;               // Filled in sockets_send()
 #endif

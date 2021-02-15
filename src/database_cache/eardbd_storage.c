@@ -465,8 +465,13 @@ void storage_sample_receive(int fd, packet_header_t *header, char *content)
 	index = storage_index_extract(type, &name);
 
 	if (verbosity) {
+		#if SOCKETS_DEBUG
 		verbose_xaxxw("received from host '%s' an object of type: '%s' (t: '%d', i: '%d')",
 			header->host_src, name, type, index);
+		#else
+		verbose_xaxxw("received object of type: '%s' (t: '%d', i: '%d')",
+			name, type, index);
+		#endif
 	}
 
 	//TODO:

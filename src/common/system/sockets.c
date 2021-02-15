@@ -474,17 +474,18 @@ state_t sockets_nonblock_clean(int fd)
 state_t sockets_header_clean(socket_header_t *header)
 {
 	memset((void *) header, 0, sizeof(socket_header_t));
-	state_return(EAR_SUCCESS);
+	return EAR_SUCCESS;
 }
 
 state_t sockets_header_update(socket_header_t *header)
 {
+	#if SOCKETS_DEBUG
 	if (strlen(header->host_src) == 0) {
 		gethostname(header->host_src, sizeof(header->host_src));
 	}
-
 	header->timestamp = time(NULL);
-	state_return(EAR_SUCCESS);
+	#endif
+	return EAR_SUCCESS;
 }
 
 /*
