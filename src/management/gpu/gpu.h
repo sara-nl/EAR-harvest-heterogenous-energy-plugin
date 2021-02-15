@@ -29,7 +29,7 @@
 //
 // Props:
 // 	- Thread safe: yes.
-//	- User space: no.
+//	- User mode: no.
 //
 // Folders:
 //	- archs: different GPU controllers, such as Nvidia NMVL.

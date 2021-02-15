@@ -20,6 +20,14 @@
 
 #include <common/states.h>
 
+// Attributes
+#define attr2(a1, a2)    __attribute__ ((a1, a2))
+#define attr(a)          __attribute__ ((a))
+#define attr_hidden      visibility("hidden")
+#define attr_protected   visibility("protected")
+#define attr_internal    visibility("internal")
+#define attr_weak        weak
+// Verbosity parameters
 #define empty	NULL
 #define none	0
 

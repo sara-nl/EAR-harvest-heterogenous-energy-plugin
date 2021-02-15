@@ -15,8 +15,8 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-#ifndef EAR_SOCKETS_H
-#define EAR_SOCKETS_H
+#ifndef COMMON_SOCKETS_H
+#define COMMON_SOCKETS_H
 
 #include <netdb.h>
 #include <arpa/inet.h>
@@ -26,36 +26,48 @@
 #include <common/states.h>
 #include <common/types/generic.h>
 
-#define BACKLOG				10
-#define TCP					SOCK_STREAM
-#define UDP					SOCK_DGRAM
-#define NON_BLOCK_TRYS		1000
+#define BACKLOG             10
+#define TCP                 SOCK_STREAM
+#define UDP                 SOCK_DGRAM
+#define NON_BLOCK_TRYS      1000
+#define packet_header_t     socket_header_t
 
-/* types */
 typedef struct socket {
 	struct addrinfo *info;
-	char host_dst[SZ_NAME_SHORT];
-	char *host;
-	uint protocol;
-	uint port;
-	int fd;
+	char             host_dst[SZ_NAME_SHORT];
+	char            *host;
+	uint             protocol;
+	uint             port;
+	int              fd;
 } socket_t;
 
-typedef struct packet_header {
-	char host_src[SZ_NAME_SHORT]; // Filled in sockets_send()
-	time_t timestamp; // Filled in sockets_send()
-	size_t content_size; // Filled in sockets_send()
-	uchar content_type;
-	uchar data_extra1;
-	uchar data_extra2;
-	uchar data_extra3;
-}  packet_header_t;
+// Since size_t is 8 bytes and content_type is 2 bytes (0 to 65535), the minimum
+// space allocated for a header is 16 bytes, due gcc alignment policies. For
+// header exploitation, because there are lots of times that no additional data
+// needs to be sended, there are extra auxiliar types, an 8 bytes ullong, a 4
+// bytes uint, and two ucharts for completing a total 24 bytes allocation.
+//
+// There are two additional parameters for debug purposes. The debug header is
+// uncompatible with normal headers, be keep in mind that you have to connect
+// modules compiled with the same property.
+typedef struct socket_header_s {
+#if SOCKETS_DEBUG
+	char    host_src[SZ_NAME_SHORT]; // Filled in sockets_send()
+    time_t  timestamp;               // Filled in sockets_send()
+#endif
+	size_t  content_size;            // 8 bytes ( 8)
+	ullong  aux_data1;               // 8 bytes (16)
+	uint    aux_data2;               // 4 bytes (20)
+	ushort  content_type;            // 2 byte  (22)
+	uchar   aux_data3;               // 1 byte  (23)
+	uchar   aux_data4;               // 1 byte  (24)
+}  socket_header_t;
 
 #define PACKET_HEADER(buffer) \
-	(packet_header_t *) buffer;
+	(socket_header_t *) buffer;
 
 #define PACKET_CONTENT(buffer) \
-	(void *) &buffer[sizeof(packet_header_t)];
+	(void *) &buffer[sizeof(socket_header_t)];
 
 /* Initialization */
 state_t sockets_init(socket_t *socket, char *host, uint port, uint protocol);
@@ -80,9 +92,9 @@ state_t sockets_close(socket_t *socket);
 state_t sockets_close_fd(int fd);
 
 /* Write & read */
-state_t sockets_send(socket_t *socket, packet_header_t *header, char *content);
+state_t sockets_send(socket_t *socket, socket_header_t *header, char *content);
 
-state_t sockets_receive(int fd, packet_header_t *header, char *buffer, ssize_t size_buffer, int block);
+state_t sockets_receive(int fd, socket_header_t *header, char *buffer, ssize_t size_buffer, int block);
 
 /* Timeout */
 state_t sockets_timeout_set(int fd, time_t timeout);
@@ -95,9 +107,9 @@ state_t sockets_nonblock_set(int fd);
 state_t sockets_nonblock_clean(int fd);
 
 /* Header */
-state_t sockets_header_clean(packet_header_t *header);
+state_t sockets_header_clean(socket_header_t *header);
 
-state_t sockets_header_update(packet_header_t *header);
+state_t sockets_header_update(socket_header_t *header);
 
 /* Addresses */
 void sockets_get_hostname(struct sockaddr_storage *host_addr, char *buffer, int length);
@@ -106,4 +118,4 @@ void sockets_get_hostname_fd(int fd, char *buffer, int length);
 
 void sockets_get_ip(struct sockaddr_storage *host_addr, long *ip);
 
-#endif //EAR_SOCKETS_H
+#endif //COMMON_SOCKETS_H
