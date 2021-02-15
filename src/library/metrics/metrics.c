@@ -192,7 +192,6 @@ static void metrics_global_start()
 	if (masters_info.my_master_rank>=0)
 	{
 		#if NEW_CPUFREQ
-		verbose(2,"metrics_global_start");
 		if (xtate_fail(s, eards_cpufreq_read(&cpufreq_data_init[APP],mycpufreq_data_size))){
 			error("CPUFreq data read in global_start");
 		}

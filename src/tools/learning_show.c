@@ -75,6 +75,8 @@ int main(int argc,char *argv[])
 	if (get_ear_conf_path(buffer) == EAR_ERROR) {
 		printf("ERROR while getting ear.conf path\n");
 		exit(0);
+	}else{
+		printf("Reading from %s\n",buffer);
 	}
 
 	//

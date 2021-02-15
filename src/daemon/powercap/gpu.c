@@ -26,11 +26,12 @@
 #include <pthread.h>
 #include <common/config.h>
 #include <signal.h>
+#define SHOW_DEBUGS 1
 #include <common/colors.h>
 #include <common/states.h>
-#define SHOW_DEBUGS 1
 #include <common/output/verbose.h>
 #include <common/system/execute.h>
+#include <metrics/gpu/gpu.h>
 #include <daemon/powercap/powercap_status_conf.h>
 #include <management/gpu/gpu.h>
 #include <common/system/monitor.h>
@@ -44,12 +45,16 @@ static uint c_status=PC_STATUS_IDLE;
 static uint c_mode=PC_MODE_LIMIT;
 
 static ctx_t gpu_pc_ctx;
+static ctx_t gpu_pc_ctx_data;
 static uint gpu_pc_num_gpus;
 static ulong *gpu_pc_min_power;
 static ulong *gpu_pc_max_power;
 static ulong *gpu_pc_curr_power;
 static ulong *gpu_pc_util;
+static ulong *gpu_pc_freqs;
+static ulong *t_freq;
 static float *pdist;
+static gpu_t *gpu_pc_power_data;
 
 #define MIN_GPU_IDLE_POWER 30
 
@@ -102,8 +107,22 @@ state_t enable(suscription_t *sus)
       ret = EAR_ERROR;
       debug("Error allocating memory in GPU enable");
 		}
+    t_freq=calloc(gpu_pc_num_gpus,sizeof(ulong));
+
 		mgt_gpu_power_cap_get_rank(&gpu_pc_ctx,gpu_pc_min_power,gpu_pc_max_power);
+		mgt_gpu_alloc_array(&gpu_pc_ctx,&gpu_pc_freqs,NULL);
 	}
+	  if (gpu_load(NULL,0,NULL)!= EAR_SUCCESS){
+    error("Initializing GPU(load) in gpu plugin");
+  }
+  if (gpu_init(&gpu_pc_ctx_data)!=EAR_SUCCESS){
+    error("Initializing GPU in GPU powercap plugin");
+  }
+	if (gpu_data_alloc(&gpu_pc_power_data)!=EAR_SUCCESS){
+    error("Initializing GPU data in powercap");
+  }
+
+
 	return ret;
 }
 
@@ -211,3 +230,62 @@ void set_new_utilization(ulong *util)
 	int_set_powercap_value(current_gpu_pc,util);
 
 }
+
+void set_app_req_freq(ulong *f)
+{
+	int i;
+	for (i=0;i<gpu_pc_num_gpus;i++) {
+  	//debug("GPU_DVFS:GPU %d Requested application freq set to %lu",i,f[i]); 
+  	t_freq[i]=f[i];
+  }
+}
+#define MIN_GPU_POWER_MARGIN 10
+
+uint get_powercap_status(uint *in_target,uint *tbr)
+{
+	int i;
+	uint used=0;
+	uint g_tbr = 0;
+	*in_target = 0;
+	*tbr = 0;
+	if (current_gpu_pc == PC_UNLIMITED){
+		return 0;
+	}
+	/* If we are not using th GPU we can release all the power */
+	for (i=0;i<gpu_pc_num_gpus;i++){
+		used += (gpu_pc_util[i]>0);
+		if (t_freq[i] == 0) return 0;
+	}
+	if (!used){
+		*in_target=1;
+		if (gpu_pc_num_gpus == 0) *tbr = current_gpu_pc;
+		else *tbr=(current_gpu_pc - (MIN_GPU_IDLE_POWER*gpu_pc_num_gpus));
+		debug("%sReleasing %u Watts from the GPU%s",COL_GRE,*tbr,COL_CLR);
+		return 1;
+	}
+	mgt_gpu_freq_limit_get_current(&gpu_pc_ctx,gpu_pc_freqs);
+  if (gpu_read_raw(&gpu_pc_ctx_data,gpu_pc_power_data) != EAR_SUCCESS){
+    error("Error reading GPU data in powercap GPU plugin");
+  }
+
+	/* If we know, we must check */
+	*in_target = 1;*tbr = 0;
+	for (i=0;i<gpu_pc_num_gpus;i++){
+		/* gpu_pc_util is an average during a period , is more confident than an instantaneous measure*/
+		if ((t_freq[i] != gpu_pc_freqs[i]) && (gpu_pc_util[i]>0)){ 
+			*in_target=0;
+			debug("We cannot release power from GPU %d",i);
+		}else{
+			/* However we use instanteneous power to compute potential power releases */
+			g_tbr = (uint)((gpu_pc_curr_power[i] - gpu_pc_power_data[i].power_w) *0.5);
+			*tbr = *tbr +  g_tbr;
+			debug("%sWe can release %u W from GPU %d since target = %lu current %lu%s",COL_GRE,g_tbr,i,t_freq[i] ,gpu_pc_freqs[i],COL_CLR);
+		}
+	}
+	if (*in_target){
+		if (*tbr < MIN_GPU_POWER_MARGIN) *tbr = 0;
+		return 1;	
+	}
+	return 0;
+}
+  	

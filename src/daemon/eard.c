@@ -27,6 +27,7 @@
 #include <common/types/pc_app_info.h>
 #include <management/cpufreq/frequency.h>
 #include <common/hardware/hardware_info.h>
+#include <metrics/common/msr.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/energy/cpu.h>
 #include <metrics/energy/energy_node.h>
@@ -1375,6 +1376,11 @@ int main(int argc, char *argv[]) {
 
 	verbose(0,"Topology detected: sockets %d, cores %d, threads %d",
 			node_desc.socket_count, node_desc.core_count, node_desc.cpu_count);
+
+	if (msr_test(&node_desc) != EAR_SUCCESS){
+		error("msr files are not available, please check the msr kernel module is loaded (modprobe msr)");
+		_exit(1);
+	}
 
 	//
 	verbose(0,"Initializing frequency list");
