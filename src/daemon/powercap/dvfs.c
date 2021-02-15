@@ -63,6 +63,8 @@ static float power_rapl,my_limit;
 static ulong *c_freq;
 static uint  *c_pstate,*t_pstate;
 static uint node_size;
+static uint dvfs_status = PC_STATUS_OK;
+static uint dvfs_ask_def = 0;
 
 /************************ These functions must be implemented in cpufreq *****/
 void frequency_nfreq_to_npstate(ulong *f,uint *p,uint cpus)
@@ -151,6 +153,9 @@ state_t dvfs_pc_thread_main(void *p)
       if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
 			frequency_get_cpufreq_list(node_size,c_freq);
       if (power_rapl > my_limit){ /* We are above the PC , reduce freq*/
+				if (dvfs_status == PC_STATUS_RELEASE){
+					dvfs_ask_def = 1;
+				}
         frequency_nfreq_to_npstate(c_freq,c_pstate,node_size);
 				/* If we are running at the lowest frequency there is nothing else to do */
 				if (c_pstate[0] < (num_pstates-1)){ /*Pending verctor extension*/
@@ -213,6 +218,8 @@ state_t set_powercap_value(uint pid,uint domain,uint limit,uint *cpu_util)
 	/* Set data */
 	debug("%sDVFS:set_powercap_value %u%s",COL_BLU,limit,COL_CLR);
 	current_dvfs_pc=limit;
+	dvfs_status = PC_STATUS_OK;
+	dvfs_ask_def = 0;
 	return EAR_SUCCESS;
 }
 
@@ -273,23 +280,37 @@ void set_verb_channel(int fd)
 
 
 #define MIN_CPU_POWER_MARGIN 10
-uint get_powercap_status(uint *in_target,uint *tbr)
+
+/* Returns 0 when 1) No info, 2) No limit 3) We cannot share power. */
+/* Returns 1 when power can be shared with other modules */
+/* Status can be: PC_STATUS_OK, PC_STATUS_GREEDY, PC_STATUS_RELEASE, PC_STATUS_ASK_DEF */
+/* tbr is > 0 when PC_STATUS_RELEASE , 0 otherwise */
+/* X_status is the plugin status */
+/* X_ask_def means we must ask for our power */
+
+uint get_powercap_status(uint *status,uint *tbr)
 {
 	uint ctbr;
-	*in_target = 0;
+	*status = PC_STATUS_OK;
 	*tbr = 0;
+	/* Return 0 means we cannot release power */
 	if (current_dvfs_pc == PC_UNLIMITED) return 0;
 	/* If we don't know the req_f we cannot release power */
 	if (c_req_f == 0) return 0;
 	frequency_get_cpufreq_list(node_size,c_freq);
-	if (c_freq[0] != c_req_f[0]) return 0; /* Pending for NJObs */
-	ctbr = (my_limit -  power_rapl) * 0.5;
-	*in_target = 1;
-	if (ctbr >= MIN_CPU_POWER_MARGIN){
-		//debug("We can reuse %u W of power from the CPU since target %lu and current %lu",ctbr,c_req_f,c_freq);
-		*tbr = ctbr; 
-	}else{
-		*tbr = 0;
+	if (c_freq[0] < c_req_f[0]){
+		if (dvfs_ask_def) *status = PC_STATUS_ASK_DEF;
+		else *status = PC_STATUS_GREEDY;
+		return 0; /* Pending for NJObs */
 	}
+	ctbr = (my_limit -  power_rapl) * 0.5;
+	*status = PC_STATUS_RELEASE;
+	*tbr = ctbr; 
+	if (ctbr < MIN_CPU_POWER_MARGIN){
+		*tbr = 0;
+		*status = PC_STATUS_OK;
+		return 0;
+	}
+	dvfs_status = *status;
 	return 1;
 }

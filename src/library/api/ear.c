@@ -964,7 +964,7 @@ void ear_init()
 	fflush(stderr);
 
 	// Tracing init
-	if (!my_id){
+	if (masters_info.my_master_rank>=0){
 	traces_init(system_conf,application.job.app_id,masters_info.my_master_rank, my_id, num_nodes, my_size, ppnode);
 
 	traces_start();
@@ -1008,7 +1008,7 @@ void ear_finalize()
 #endif
 
 	// Tracing
-	if (!my_id){
+	if (masters_info.my_master_rank>=0){
 	traces_stop();
 	traces_end(ear_my_rank, my_id, 0);
 
@@ -1086,7 +1086,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 	{
 		unsigned long  ear_event_l = (unsigned long)((((buf>>5)^dest)<<5)|call_type);
 		//unsigned short ear_event_s = dynais_sample_convert(ear_event_l);
-	if (!my_id){
+	if (masters_info.my_master_rank>=0){
 	    traces_mpi_call(ear_my_rank, my_id,
                         (ulong) ear_event_l,
                         (ulong) buf,
@@ -1117,7 +1117,7 @@ void ear_mpi_call(mpi_call call_type, p2i buf, p2i dest)
 								// we must compute N here
 								ear_periodic_mode=PERIODIC_MODE_ON;
 								mpi_calls_in_period=(uint)(total_mpi_calls/dynais_timeout)*lib_period;
-								if (!my_id) traces_start();
+								if (masters_info.my_master_rank>=0) traces_start();
 								debug("Going to periodic mode after %lf secs: mpi calls in period %u\n",
 									time_from_mpi_init,mpi_calls_in_period);
 								states_periodic_begin_period(my_id, NULL, 1, 1);
@@ -1211,7 +1211,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 				}
 
 				loop_with_signature=0;
-				if (!my_id) traces_end_period(ear_my_rank, my_id);
+				if (masters_info.my_master_rank>=0) traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
@@ -1228,7 +1228,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 					//		  ear_loop_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
-				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
+				if (masters_info.my_master_rank>=0) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, ear_loop_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -1238,7 +1238,7 @@ void ear_mpi_call_dynais_on(mpi_call call_type, p2i buf, p2i dest)
 					//debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
-				if (!my_id)  traces_end_period(ear_my_rank, my_id);
+				if (masters_info.my_master_rank>=0)  traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				in_loop=0;
@@ -1273,7 +1273,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 
 		//debug("EAR(%s) EAR executing before an MPI Call: DYNAIS ON\n", __FILE__);
 
-		if (!my_id) traces_mpi_call(ear_my_rank, my_id,
+		if (masters_info.my_master_rank>=0) traces_mpi_call(ear_my_rank, my_id,
 						(unsigned long) buf,
 						(unsigned long) dest,
 						(unsigned long) call_type,
@@ -1302,7 +1302,7 @@ void ear_mpi_call_dynais_off(mpi_call call_type, p2i buf, p2i dest)
 							  //ear_level, ear_event_l, ear_loop_size, ear_iterations);
 				}
 
-				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
+				if (masters_info.my_master_rank>=0) traces_new_n_iter(ear_my_rank, my_id, ear_event_l, ear_loop_size, ear_iterations);
 				states_new_iteration(my_id, ear_loop_size, ear_iterations, (uint)ear_level, ear_event_l, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -1341,7 +1341,7 @@ unsigned long ear_new_loop()
 					debug("loop ends with %d iterations detected", ear_iterations);
 				}
 				loop_with_signature=0;
-				if (!my_id) traces_end_period(ear_my_rank, my_id);
+				if (masters_info.my_master_rank>=0) traces_end_period(ear_my_rank, my_id);
 				states_end_period(ear_iterations);
 				ear_iterations=0;
 				mpi_calls_per_loop=1;
@@ -1368,7 +1368,7 @@ void ear_end_loop(unsigned long loop_id)
 					}
 					loop_with_signature=0;
 					states_end_period(ear_iterations);
-					if (!my_id) traces_end_period(ear_my_rank, my_id);
+					if (masters_info.my_master_rank>=0) traces_end_period(ear_my_rank, my_id);
 					ear_iterations=0;
 					in_loop=0;
 					mpi_calls_per_loop=0;
@@ -1398,7 +1398,7 @@ void ear_new_iteration(unsigned long loop_id)
 				//debug("new iteration detected for level %u, event %lu, size %u and iterations %u",
   				//1, loop_id,1, ear_iterations);
 				}
-				if (!my_id) traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
+				if (masters_info.my_master_rank>=0) traces_new_n_iter(ear_my_rank, my_id, loop_id, 1, ear_iterations);
 				states_new_iteration(my_id, 1, ear_iterations, 1, loop_id, mpi_calls_per_loop);
 				mpi_calls_per_loop=1;
 				break;
@@ -1415,7 +1415,7 @@ void *earl_periodic_actions(void *no_arg)
 {
 		verbose(1,"EARL periodic thread ON");
 		// if (pthread_setname_np(pthread_self(), "EARL_periodic_th")) error("Setting name for EARL_periodic_th thread %s" , strerror(errno));
-		if (!my_id) traces_start();
+		if (masters_info.my_master_rank>=0) traces_start();
     states_periodic_begin_period(my_id, NULL, 1, 1);
     ear_iterations=0;
 		mpi_calls_in_period=1;

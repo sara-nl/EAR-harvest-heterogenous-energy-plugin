@@ -56,6 +56,10 @@ static ulong *t_freq;
 static float *pdist;
 static gpu_t *gpu_pc_power_data;
 
+static uint gpu_status = PC_STATUS_OK;
+static uint gpu_ask_def = 0;
+
+
 #define MIN_GPU_IDLE_POWER 30
 
 state_t disable()
@@ -240,13 +244,19 @@ void set_app_req_freq(ulong *f)
   }
 }
 #define MIN_GPU_POWER_MARGIN 10
+/* Returns 0 when 1) No info, 2) No limit 3) We cannot share power. */
+/* Returns 1 when power can be shared with other modules */
+/* Status can be: PC_STATUS_OK, PC_STATUS_GREEDY, PC_STATUS_RELEASE, PC_STATUS_ASK_DEF */
+/* tbr is > 0 when PC_STATUS_RELEASE , 0 otherwise */
+/* X_status is the plugin status */
+/* X_ask_def means we must ask for our power */
 
-uint get_powercap_status(uint *in_target,uint *tbr)
+uint get_powercap_status(uint *status,uint *tbr)
 {
 	int i;
 	uint used=0;
 	uint g_tbr = 0;
-	*in_target = 0;
+	*status = PC_STATUS_OK;
 	*tbr = 0;
 	if (current_gpu_pc == PC_UNLIMITED){
 		return 0;
@@ -257,7 +267,7 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 		if (t_freq[i] == 0) return 0;
 	}
 	if (!used){
-		*in_target=1;
+		*status = PC_STATUS_RELEASE;
 		if (gpu_pc_num_gpus == 0) *tbr = current_gpu_pc;
 		else *tbr=(current_gpu_pc - (MIN_GPU_IDLE_POWER*gpu_pc_num_gpus));
 		debug("%sReleasing %u Watts from the GPU%s",COL_GRE,*tbr,COL_CLR);
@@ -269,12 +279,14 @@ uint get_powercap_status(uint *in_target,uint *tbr)
   }
 
 	/* If we know, we must check */
-	*in_target = 1;*tbr = 0;
+	*status = PC_STATUS_RELEASE;*tbr = 0;
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		/* gpu_pc_util is an average during a period , is more confident than an instantaneous measure*/
 		if ((t_freq[i] != gpu_pc_freqs[i]) && (gpu_pc_util[i]>0)){ 
-			*in_target=0;
 			debug("We cannot release power from GPU %d",i);
+			*status = PC_STATUS_GREEDY;
+			*tbr = 0;
+			return 0;
 		}else{
 			/* However we use instanteneous power to compute potential power releases */
 			g_tbr = (uint)((gpu_pc_curr_power[i] - gpu_pc_power_data[i].power_w) *0.5);
@@ -282,10 +294,12 @@ uint get_powercap_status(uint *in_target,uint *tbr)
 			debug("%sWe can release %u W from GPU %d since target = %lu current %lu%s",COL_GRE,g_tbr,i,t_freq[i] ,gpu_pc_freqs[i],COL_CLR);
 		}
 	}
-	if (*in_target){
-		if (*tbr < MIN_GPU_POWER_MARGIN) *tbr = 0;
-		return 1;	
+	if (*tbr < MIN_GPU_POWER_MARGIN){ 
+		*tbr = 0;
+		*status = PC_STATUS_OK;
+		return 0;
 	}
-	return 0;
+	return 1;
+
 }
   	
