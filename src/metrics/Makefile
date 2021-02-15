@@ -31,9 +31,6 @@ mets_OBJS = \
     $(SRCDIR)/metrics/flops/cpu/amd49.o \
     $(SRCDIR)/metrics/flops/cpu/intel63.o \
     $(SRCDIR)/metrics/flops/cpu/dummy.o \
-    $(SRCDIR)/metrics/gpu/gpu.o \
-    $(SRCDIR)/metrics/gpu/archs/dummy.o \
-    $(SRCDIR)/metrics/gpu/archs/nvml.o \
     $(SRCDIR)/metrics/frequency/cpu.o \
     $(SRCDIR)/metrics/frequency/cpu/intel63.o \
     $(SRCDIR)/metrics/frequency/imc.o \
@@ -43,6 +40,13 @@ mets_OBJS = \
     $(SRCDIR)/metrics/temperature/archs/amd17.o \
     $(SRCDIR)/metrics/temperature/archs/intel63.o \
     $(SRCDIR)/metrics/temperature/archs/dummy.o
+   
+ifdef CUDA_BASE
+mets_OBJS += \
+    $(SRCDIR)/metrics/gpu/gpu.o \
+    $(SRCDIR)/metrics/gpu/archs/dummy.o \
+    $(SRCDIR)/metrics/gpu/archs/nvml.o
+endif
 
 ######## RULES
 

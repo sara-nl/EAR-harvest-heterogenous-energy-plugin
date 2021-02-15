@@ -15,6 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
+#include <stdlib.h>
 #include <common/output/debug.h>
 #include <metrics/temperature/temperature.h>
 #include <metrics/temperature/archs/amd17.h>
