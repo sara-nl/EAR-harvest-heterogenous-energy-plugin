@@ -99,7 +99,9 @@ state_t gpu_pc_thread_main(void *p)
 		gpu_cons_power[i] = values_gpu_diff[i].power_w;
 	}
 	if (util_changed(gpu_local_util,gpu_pc_total_util)){
+		debug("GPU:Intelnal power redistribution because util (%u -> %lu)",gpu_local_util,gpu_pc_total_util);
 		int_set_powercap_value(current_gpu_pc,gpu_pc_util);
+		gpu_pc_total_util = gpu_local_util;
 	}
 	return EAR_SUCCESS;
 }
@@ -194,6 +196,7 @@ state_t enable(suscription_t *sus)
 
 state_t set_powercap_value(uint pid,uint domain,ulong limit,ulong *gpu_util)
 {
+	debug("powermgr gpu power allocated %lu",limit);
 	return int_set_powercap_value(limit,gpu_util);
 }
 static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
@@ -203,17 +206,18 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 	int i;
 	float alloc,ualloc;
 	ulong gpu_idle=0,gpu_run=0,total_util=0;
+	current_gpu_pc=limit;
 	/* Set data */
 	debug("%s",COL_BLU);
 	debug("GPU: set_powercap_value %lu",limit);
 	debug("GPU: Phase 1, allocating power to idle GPUS");
 	for (i=0;i<gpu_pc_num_gpus;i++){	
-		pdist[i]=0.0;
-		total_util+=gpu_util[i];
-		if (gpu_util[i]==0){ 
+		pdist[i] = 0.0;
+		total_util += gpu_util[i];
+		if (gpu_util[i] == 0){ 
 			gpu_idle++;
-			gpu_pc_curr_power[i]=gpu_pc_min_power[i];
-			limit=limit - MIN_GPU_IDLE_POWER;
+			gpu_pc_curr_power[i] = gpu_pc_min_power[i];
+			limit = limit - MIN_GPU_IDLE_POWER;
 		}else{
 			gpu_run++;
 		}
@@ -221,8 +225,8 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
 	debug("GPU: Phase 2: Allocating power to %lu running GPUS",gpu_run);
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		if (gpu_util[i]>0){
-			pdist[i]=(float)gpu_util[i]/(float)total_util;
-			alloc=(float)limit*pdist[i];
+			pdist[i] = (float)gpu_util[i]/(float)total_util;
+			alloc = (float)limit*pdist[i];
 			ualloc = alloc;
 			if (ualloc > gpu_pc_max_power[i]) ualloc = gpu_pc_max_power[i];
 			if (ualloc < gpu_pc_min_power[i]) ualloc = gpu_pc_min_power[i];
@@ -234,7 +238,6 @@ static state_t int_set_powercap_value(ulong limit,ulong *gpu_util)
     debug("GPU: util_gpu[%d]=%lu power_alloc=%lu",i,gpu_util[i],gpu_pc_curr_power[i]);
   }
 	memcpy(gpu_pc_util,gpu_util,sizeof(ulong)*gpu_pc_num_gpus);
-	current_gpu_pc=limit;
 	debug("%s",COL_CLR);
 	return EAR_SUCCESS;
 }
