@@ -65,6 +65,7 @@ static uint  *c_pstate,*t_pstate;
 static uint node_size;
 static uint dvfs_status = PC_STATUS_OK;
 static uint dvfs_ask_def = 0;
+static uint dvfs_monitor_initialized = 0;
 
 /************************ These functions must be implemented in cpufreq *****/
 void frequency_nfreq_to_npstate(ulong *f,uint *p,uint cpus)
@@ -90,6 +91,8 @@ state_t dvfs_pc_thread_init(void *p)
 {
   state_t s;
   topology_t node_desc;
+
+	debug("DVFS_monitor_init");
 
   s = topology_init(&node_desc);
   num_packs=node_desc.socket_count;
@@ -128,6 +131,7 @@ state_t dvfs_pc_thread_init(void *p)
 	c_req_f = calloc(node_size,sizeof(ulong));
 	c_pstate = calloc(node_size,sizeof(uint));
 	t_pstate = calloc(node_size,sizeof(uint));
+	dvfs_monitor_initialized = 1;
 	return EAR_SUCCESS;
 }
 /************************ This function is called by the monitor in iterative part ************************/
@@ -293,10 +297,12 @@ uint get_powercap_status(uint *status,uint *tbr)
 	uint ctbr;
 	*status = PC_STATUS_OK;
 	*tbr = 0;
+	//debug("DVFS: get_powercap_status");
+	if (!dvfs_monitor_initialized) return 0;
 	/* Return 0 means we cannot release power */
 	if (current_dvfs_pc == PC_UNLIMITED) return 0;
 	/* If we don't know the req_f we cannot release power */
-	if (c_req_f == 0) return 0;
+	if (c_req_f[0] == 0) return 0;
 	frequency_get_cpufreq_list(node_size,c_freq);
 	if (c_freq[0] < c_req_f[0]){
 		if (dvfs_ask_def) *status = PC_STATUS_ASK_DEF;

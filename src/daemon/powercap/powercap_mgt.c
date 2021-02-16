@@ -32,6 +32,7 @@
 #include <common/system/symplug.h>
 #include <common/types/configuration/cluster_conf.h>
 #include <daemon/shared_configuration.h>
+#include <daemon/powercap/powercap_status.h>
 #include <daemon/powercap/powercap_mgt.h>
 #include <common/system/monitor.h>
 #if USE_GPUS
@@ -149,7 +150,6 @@ static uint gpu_pc_num_gpus=1;
 static topology_t pc_topology_info;
 /* These functions identies and monitors load changes */
 
-#define MAX_ALLOWED_DIFF 0.25
 #define TDP_CPU 150
 #define TDP_DRAM 30
 #define TDP_GPU 250
@@ -180,26 +180,6 @@ void compute_power_distribution()
 	debug("W[NODE]=%.2f W[CPU]=%.2f W[GPU]=%.2f",pdomains_def[DOMAIN_NODE],pdomains_def[DOMAIN_CPU],pdomains_def[DOMAIN_GPUS]);
 }
 
-/* This function decides if we have to changed the utilization or not */
-static uint util_changed(ulong curr,ulong prev)
-{
-	float diff;
-	int idiff,icurr,iprev;	
-	icurr=(int)curr;
-	iprev=(int)prev;
-	if ((prev == 0) && (curr)) return 1;
-	if ((curr == 0) && (prev)) return 1;
-	if ((!prev) && (!curr)) return 0;
-	idiff = (icurr - iprev);
-	if (idiff < 0){ 
-		idiff = idiff * -1;
-		diff = (float)idiff / (float)iprev;
-	}else{
-		diff = (float)idiff / (float)icurr;
-	}
-	// debug("Current util and prev util differs in %.3f prev %lu curr %lu",diff,prev,curr);
-	return (diff > 	MAX_ALLOWED_DIFF);
-}
 
 uint pmgt_utilization_changed()
 {
@@ -702,21 +682,25 @@ void pmgt_powercap_status_per_domain(uint action)
 	uint ret,from,to;
 	uint status, tbr;
 	#if USE_GPUS
+	#if 0
 	if (action == CHECK_ASK_DEFAULT){
 		debug("CHECK_ASK_DEFAULT");
 	}else{
 		debug("CHECK_ASK_POWER_RED");
 	}
+	#endif
 	memset(cdomain_status,0,sizeof(domain_status_t)*NUM_DOMAINS);
 	/* We ask each domain its curent status to distribute power accross domains */
 	for (i=0; i< NUM_DOMAINS;i++){
 		if (pcsyms_fun[i].get_powercap_status != NULL){
 			ret=pcsyms_fun[i].get_powercap_status(&status,&tbr);
+			#if 0
 			if (ret ){
 				debug("%sDomain %d can share power: status %u, power TBR %u%s",COL_GRE,i,status,tbr,COL_CLR);
 			} else{
 				debug("Domain %d cannot share power status %u, power TBR %u",i,status,tbr);
 			}
+			#endif
 			cdomain_status[i].ok = status;
 			cdomain_status[i].exceed = tbr;
 			/* status = 0 when it's ok and 1 when it can release power */
@@ -740,7 +724,7 @@ void pmgt_powercap_status_per_domain(uint action)
 	}else if ((cdomain_status[DOMAIN_GPU].ok == PC_STATUS_GREEDY) && (cdomain_status[DOMAIN_CPU].ok == PC_STATUS_RELEASE)){
 		from = DOMAIN_CPU;
 		to = DOMAIN_GPU;
-	}
+	}else return;
 	uint new_power_recv = pmgt_limit*pdomains[to] + cdomain_status[from].exceed;
 	uint new_power_send = pmgt_limit*pdomains[from] - cdomain_status[from].exceed;
 	debug("%u Watts have been moved from domain %u to domain %u",cdomain_status[from].exceed,from,to);

@@ -270,7 +270,7 @@ uint get_powercap_status(uint *status,uint *tbr)
 		*status = PC_STATUS_RELEASE;
 		if (gpu_pc_num_gpus == 0) *tbr = current_gpu_pc;
 		else *tbr=(current_gpu_pc - (MIN_GPU_IDLE_POWER*gpu_pc_num_gpus));
-		debug("%sReleasing %u Watts from the GPU%s",COL_GRE,*tbr,COL_CLR);
+		//debug("%sReleasing %u Watts from the GPU%s",COL_GRE,*tbr,COL_CLR);
 		return 1;
 	}
 	mgt_gpu_freq_limit_get_current(&gpu_pc_ctx,gpu_pc_freqs);
@@ -283,7 +283,7 @@ uint get_powercap_status(uint *status,uint *tbr)
 	for (i=0;i<gpu_pc_num_gpus;i++){
 		/* gpu_pc_util is an average during a period , is more confident than an instantaneous measure*/
 		if ((t_freq[i] != gpu_pc_freqs[i]) && (gpu_pc_util[i]>0)){ 
-			debug("We cannot release power from GPU %d",i);
+			//debug("We cannot release power from GPU %d",i);
 			*status = PC_STATUS_GREEDY;
 			*tbr = 0;
 			return 0;
@@ -291,7 +291,7 @@ uint get_powercap_status(uint *status,uint *tbr)
 			/* However we use instanteneous power to compute potential power releases */
 			g_tbr = (uint)((gpu_pc_curr_power[i] - gpu_pc_power_data[i].power_w) *0.5);
 			*tbr = *tbr +  g_tbr;
-			debug("%sWe can release %u W from GPU %d since target = %lu current %lu%s",COL_GRE,g_tbr,i,t_freq[i] ,gpu_pc_freqs[i],COL_CLR);
+			//debug("%sWe can release %u W from GPU %d since target = %lu current %lu%s",COL_GRE,g_tbr,i,t_freq[i] ,gpu_pc_freqs[i],COL_CLR);
 		}
 	}
 	if (*tbr < MIN_GPU_POWER_MARGIN){ 

@@ -20,6 +20,7 @@
 #include <daemon/powercap/powercap_status_conf.h>
 #include <common/types/pc_app_info.h>
 
+uint util_changed(ulong curr,ulong prev);
 /** Limits the power to be requested to the hardware configuration */
 uint limit_max_power(node_powercap_opt_t *pc_opt,uint extra);
 
