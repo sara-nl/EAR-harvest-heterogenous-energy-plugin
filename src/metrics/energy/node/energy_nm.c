@@ -226,6 +226,7 @@ state_t nm_ene(struct ipmi_intf *intf, struct ipmi_data *out)
     return EAR_BUSY;
   }
 
+// ipmitool raw 0x2E 0x81 0x66 0x4A 0x00 0x20 0x01 0x82 0x00 0x08
 //// bytes_rq[3]=(uint8_t)0x66;
 //// bytes_rq[4]=(uint8_t)0x4A;
 //// bytes_rq[5]=(uint8_t)0x00;

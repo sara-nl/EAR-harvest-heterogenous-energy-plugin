@@ -33,6 +33,7 @@
 #include <common/system/execute.h>
 #include <metrics/gpu/gpu.h>
 #include <daemon/powercap/powercap_status_conf.h>
+#include <daemon/powercap/powercap_status.h>
 #include <management/gpu/gpu.h>
 #include <common/system/monitor.h>
 
@@ -46,6 +47,7 @@ static uint c_mode=PC_MODE_LIMIT;
 
 static ctx_t gpu_pc_ctx;
 static ctx_t gpu_pc_ctx_data;
+static gpu_t *values_gpu_init,*values_gpu_end,*values_gpu_diff;
 static uint gpu_pc_num_gpus;
 static ulong *gpu_pc_min_power;
 static ulong *gpu_pc_max_power;
@@ -58,9 +60,49 @@ static gpu_t *gpu_pc_power_data;
 
 static uint gpu_status = PC_STATUS_OK;
 static uint gpu_ask_def = 0;
+static ulong gpu_pc_total_util = 0;
+static double *gpu_cons_power;
 
 
 #define MIN_GPU_IDLE_POWER 30
+
+
+static state_t int_set_powercap_value(ulong limit,ulong *gpu_util);
+/************************ This function is called by the monitor before the iterative part ************************/
+state_t gpu_pc_thread_init(void *p)
+{
+  state_t s;
+	if (gpu_read(&gpu_pc_ctx_data,values_gpu_init)!= EAR_SUCCESS){
+		debug("Error in gpu_read in gpu_dvfs_pc");
+		return EAR_ERROR;
+	}
+	return EAR_SUCCESS;
+}
+	/************************ This function is called by the monitor in iterative part ************************/
+state_t gpu_pc_thread_main(void *p)
+{
+	char gpu_str[512];
+	ulong extra;
+	uint i;
+	uint gpu_local_util = 0;
+	
+	if (!gpu_pc_enabled) return EAR_SUCCESS;
+	if (gpu_read(&gpu_pc_ctx_data,values_gpu_end)!=EAR_SUCCESS){
+		debug("Error in gpu_read gpu_dvfs_pc");
+		return EAR_ERROR;
+	}
+	/* Metrics computation */
+	gpu_data_diff(values_gpu_end,values_gpu_init,values_gpu_diff);
+	for (i=0;i<gpu_pc_num_gpus;i++){
+		gpu_local_util += values_gpu_diff[i].util_gpu;
+		gpu_pc_util[i] = values_gpu_diff[i].util_gpu;
+		gpu_cons_power[i] = values_gpu_diff[i].power_w;
+	}
+	if (util_changed(gpu_local_util,gpu_pc_total_util)){
+		int_set_powercap_value(current_gpu_pc,gpu_pc_util);
+	}
+	return EAR_SUCCESS;
+}
 
 state_t disable()
 {
@@ -99,6 +141,13 @@ state_t enable(suscription_t *sus)
       ret = EAR_ERROR;
       debug("Error allocating memory in GPU enable");
     }
+		gpu_cons_power = calloc(gpu_pc_num_gpus,sizeof(ulong));
+    if (gpu_cons_power == NULL){
+      gpu_pc_enabled = 0;
+      ret = EAR_ERROR;
+      debug("Error allocating memory in GPU enable");
+    }
+
     gpu_pc_util = calloc(gpu_pc_num_gpus,sizeof(uint));
     if (gpu_pc_util == NULL){
       gpu_pc_enabled = 0;
@@ -125,12 +174,24 @@ state_t enable(suscription_t *sus)
 	if (gpu_data_alloc(&gpu_pc_power_data)!=EAR_SUCCESS){
     error("Initializing GPU data in powercap");
   }
+	gpu_data_alloc(&values_gpu_init);
+	gpu_data_alloc(&values_gpu_end);
+	gpu_data_alloc(&values_gpu_diff);
 
+	/* Suscription is for gpu power monitoring */
+	if (sus == NULL){
+		debug("NULL subscription in GPU-DVFS powercap");
+		return EAR_ERROR;
+	}
+	sus->call_main = gpu_pc_thread_main;
+	sus->call_init = gpu_pc_thread_init;
+	sus->time_relax = 1000;
+	sus->time_burst = 1000;
+	sus->suscribe(sus);
 
 	return ret;
 }
 
-static state_t int_set_powercap_value(ulong limit,ulong *gpu_util);
 state_t set_powercap_value(uint pid,uint domain,ulong limit,ulong *gpu_util)
 {
 	return int_set_powercap_value(limit,gpu_util);
@@ -232,7 +293,7 @@ void set_new_utilization(ulong *util)
     debug("GPU: util_gpu[%d]=%lu",i,util[i]);
   }
 	int_set_powercap_value(current_gpu_pc,util);
-
+	memcpy(gpu_pc_util,util,sizeof(ulong)*gpu_pc_num_gpus);
 }
 
 void set_app_req_freq(ulong *f)
@@ -274,9 +335,6 @@ uint get_powercap_status(uint *status,uint *tbr)
 		return 1;
 	}
 	mgt_gpu_freq_limit_get_current(&gpu_pc_ctx,gpu_pc_freqs);
-  if (gpu_read_raw(&gpu_pc_ctx_data,gpu_pc_power_data) != EAR_SUCCESS){
-    error("Error reading GPU data in powercap GPU plugin");
-  }
 
 	/* If we know, we must check */
 	*status = PC_STATUS_RELEASE;*tbr = 0;
@@ -289,7 +347,7 @@ uint get_powercap_status(uint *status,uint *tbr)
 			return 0;
 		}else{
 			/* However we use instanteneous power to compute potential power releases */
-			g_tbr = (uint)((gpu_pc_curr_power[i] - gpu_pc_power_data[i].power_w) *0.5);
+			g_tbr = (uint)((gpu_pc_curr_power[i] - gpu_cons_power[i]) *0.5);
 			*tbr = *tbr +  g_tbr;
 			//debug("%sWe can release %u W from GPU %d since target = %lu current %lu%s",COL_GRE,g_tbr,i,t_freq[i] ,gpu_pc_freqs[i],COL_CLR);
 		}
