@@ -39,6 +39,7 @@ clean: clean.components comm.gclean rclean;
 	@ $(MAKE) -C 'hardware' 	$* || exit
 	@ $(MAKE) -C 'database' 	$* || exit
 	@ $(MAKE) -C 'messaging' 	$* || exit
+	@ $(MAKE) -C 'config'		$* || exit
 
 ######## DEPENDENCIES
 
