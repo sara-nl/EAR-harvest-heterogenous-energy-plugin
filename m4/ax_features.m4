@@ -1,11 +1,32 @@
-##*****************************************************************************
-## $Id$
-##*****************************************************************************
-#  AUTHOR:
-#    Jordi Gómez
-#
-#  DESCRIPTION:
-##*****************************************************************************
+AC_DEFUN([X_AC_VAR_BACKUP], [
+    CPPFLAGS_backup=$CPPFLAGS
+    CPPFLAGS=$1
+    LDFLAGS_backup=$LDFLAGS
+    LDFLAGS=$2
+    LIBS_backup=$LIBS
+    LIBS=$3
+])
+
+AC_DEFUN([X_AC_VAR_UNBACKUP], [
+    CPPFLAGS=$CPPFLAGS_backup
+    LDFLAGS=$LDFLAGS_backup
+    LIBS=$LIBS_backup
+])
+
+
+AC_DEFUN([X_AC_VAR_PRINT], [
+    echo $CPPFLAGS
+    echo $LDFLAGS
+    echo $LIBS
+])
+
+AC_DEFUN([X_AC_GET_LD_LIBRARY_PATHS], [
+    LIST_LD=`echo $LD_LIBRARY_PATH | tr ':' ' '`
+    _ax_ld_dirs_root=
+    for p in ${LIST_LD}; do
+        _ax_ld_dirs_root="${_ax_ld_dirs_root=} `echo $(cd ${p}/..; pwd)`"
+    done
+])
 
 AC_DEFUN([AX_PRE_OPT_FEATURES],
 [
@@ -121,4 +142,48 @@ AC_DEFUN([AX_PRE_OPT_FEATURES],
 	#
 	AC_ARG_VAR([USER],[Sets the owner user of your installed files])
 	AC_ARG_VAR([GROUP],[Sets the owner group of your installed files])
+])
+
+AC_DEFUN([AX_POST_OPT_FEATURES],
+[
+	if test "x$DB_NAME" = "xpgsql"; then
+		DB_MYSQL=0
+		DB_PGSQL=1
+	else
+		DB_MYSQL=1
+		DB_PGSQL=0
+	fi
+
+	#IFS='.' read -r -a array_version <<< "$PACKAGE_VERSION" && echo $array_version[0]
+	#column -t -s '\ $PACKAGE_VERSION
+	#echo ${PACKAGE_VERSION} | column -t -s '.' | awk '{print $1}'
+	
+	OIFS=$IFS
+	IFS='.'
+	for x in $PACKAGE_VERSION; do
+    	VERSION_MAJOR="[$x]"
+		break
+	done
+	for x in $PACKAGE_VERSION; do
+    	VERSION_MINOR="[$x]"
+	done
+	IFS=$OIFS
+
+	#
+	#
+	#
+
+	AC_SUBST(CC_FLAGS)
+	AC_SUBST(MPICC)
+	AC_SUBST(MPICC_FLAGS)
+	AC_SUBST(MPI_DIR)
+	AC_SUBST(MPI_CPPFLAGS)
+	AC_SUBST(MPI_VERSION)
+	AC_SUBST(FEAT_AVX512)
+	AC_SUBST(FEAT_GPUS)
+	AC_SUBST(DB_MYSQL)
+	AC_SUBST(DB_PGSQL)
+	AC_SUBST(EAR_TMP)
+	AC_SUBST(VERSION_MAJOR)
+	AC_SUBST(VERSION_MINOR)
 ])
