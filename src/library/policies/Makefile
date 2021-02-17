@@ -1,4 +1,8 @@
-PCFLAGS = $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS)
+
+ifeq ($(FEAT_GPU_OPT), 1)
+GPU_OPT_FLAG = -DGPU_OPT=1
+endif
+PCFLAGS = $(CC_FLAGS) $(LIB_CFLAGS) $(CFLAGS) $(GPU_OPT_FLAG)
 
 ######## FILES
 
@@ -53,15 +57,15 @@ monitoring_eard.so: monitoring_eard.o $(eard_DEPS)
 min_time_mpi_info.so: min_time_mpi_info.o $(pmpi_DEPS)
 	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
 
-monitoring_ext.so: monitoring_ext.o $(pmpi_DEPS)
-	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
-
-monitoring_ext_notime.so: monitoring_ext_notime.o $(pmpi_DEPS)
-	$(LIBCC) $(LIBCC_FLAGS) -shared -o $@ $^
-
 ######## OPTIONS 
 
 install: poli.ginstall eard.ginstall;
+	ln -s $(eard_PATH)/min_energy_eard.so $(eard_PATH)/min_energy_no_models_eard.so 
+	ln -s $(eard_PATH)/min_time_eard.so $(eard_PATH)/min_time_no_models_eard.so 
+ifeq ($(FEAT_RESEARCH),1)
+	ln -s $(eard_PATH)/min_energy_eard.so $(eard_PATH)/app_min_energy_eard.so 
+	ln -s $(eard_PATH)/min_time_eard.so $(eard_PATH)/app_min_time_eard.so 
+endif
 
 clean: rclean;
 

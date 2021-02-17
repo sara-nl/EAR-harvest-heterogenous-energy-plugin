@@ -1,6 +1,12 @@
 # Features
+# This feature activates the MPI EARL version or non-MPI
 FEAT_MPI_API = 1
+# This feature is automatically generated based on the CPU version detected
 FEAT_AVX512  = @FEAT_AVX512@
+# This feature extend the setof files installed
+FEAT_RESEARCH = 1
+# This feature enables or not the installation of GPU optimization policies. If 0, only monitoring is supported
+FEAT_GPU_OPT  = 0
 
 # Compilers
 CC           = @CC@

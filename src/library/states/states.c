@@ -143,17 +143,16 @@ extern uint check_periodic_mode;
 #define VERBOSE_SIG() \
 			if (masters_info.my_master_rank>=0 || show_signatures){\
         float AVGFF,prev_ff,GPU_f; \
+				char gpu_buff[512]; \
+				strcpy(gpu_buff,"");\
         AVGFF=(float)AVGF/1000000.0; \
         prev_ff=(float)prev_f/1000000.0; \
 				GPU_f=(float)GPU_FREQ/1000000.0; \
         verbose(2,"EAR+D(%s) at %.2f in %s: LoopID=%lu, LoopSize=%u-%u,iterations=%d",ear_app_name, prev_ff,application.node_id,event, period, level,iterations); \
         verbosen(1,"EAR+D(%s) at %.2f in %s MR[%d]: ",ear_app_name, prev_ff,application.node_id,masters_info.my_master_rank); \
 				verbosen(1,"%s",COL_GRE);\
-				if (GPU_UTIL) {\
-        verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t (GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)", CPI, GBS, POWER, TIME,  AVGFF,GPU_POWER,GPU_f,GPU_UTIL);\
-				}else { \
-        verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)", CPI, GBS, POWER, TIME,  AVGFF);\
-				}\
+				if (GPU_UTIL) sprintf(gpu_buff,"(GPU_power %.2lfW GPU_freq %.1fGHz GPU_util %lu)",GPU_POWER,GPU_f,GPU_UTIL);\
+        verbose(1,"(CPI=%.3lf GBS=%.2lf Power=%.2lfW Time=%.3lfsec.  AVGF=%.2fGHz)\n\t %s", CPI, GBS, POWER, TIME,  AVGFF,gpu_buff);\
 				verbosen(1,"%s",COL_CLR);\
 			}
 
@@ -170,6 +169,8 @@ extern uint check_periodic_mode;
 				verbosen(1,"%s",COL_CLR);\
 			}
 #endif
+
+/* Auxiliary functions */
 
 void report_policy_state(int st)
 {
@@ -195,12 +196,90 @@ ulong select_near_freq(ulong avg)
 	return near;
 }
 
+
+/* This function check is this application is going to be affected or not (an estimation based on CPI and GBS) by DynIAS */
+static void check_dynais_on(signature_t *A, signature_t *B)
+{
+  if (!equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH*2) || !equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH*2)){
+    dynais_enabled=DYNAIS_ENABLED;
+    debug("Dynais ON ");
+  }
+}
+
+/* This function checks if there is too much overhead from DynAIS and sets it to OFF */
+static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
+{
+#if EAR_OVERHEAD_CONTROL
+    ulong dynais_overhead_usec=0;
+    float dynais_overhead_perc;
+
+    dynais_overhead_usec=mpi_calls_iter;
+    dynais_overhead_perc=((float)dynais_overhead_usec/(float)1000000)*(float)100/loop_signature.signature.time;
+    if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
+    // Disable dynais : API is still pending
+    	#if DYNAIS_CUTOFF
+    	dynais_enabled=DYNAIS_DISABLED;
+    	#endif
+    	if (masters_info.my_master_rank>=0) log_report_dynais_off(application.job.id,application.job.step_id);
+    }
+    if (dynais_enabled==DYNAIS_DISABLED){
+    	debug("DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%lu min_time=%lu",
+    	loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
+    }
+    last_first_event=event;
+    last_calls_in_loop=mpi_calls_iter;
+    last_loop_size=period;
+    last_loop_level=level;
+#endif
+    
+}
+
+static int policy_had_effect(signature_t *A, signature_t *B)
+{
+  if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
+    equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH))
+  {
+    return 1;
+  }
+  return 0;
+}
+
+static void print_loop_signature(char *title, signature_t *loop)
+{
+  float avg_f = (float) loop->avg_f / 1000000.0;
+
+  debug("(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
+                title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
+}
+
+void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
+static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
+{
+    my_loop->total_iterations = iterations;
+  #if DB_FILES
+    append_loop_text_file(loop_summary_path, my_loop,job);
+  #endif
+  #if USE_DB
+    if (masters_info.my_master_rank>=0){
+      clean_db_loop(my_loop);
+      eards_write_loop_signature(my_loop);
+    }
+    #endif
+}
+
+   
+
+
+/* End auxiliary functions */
+
+/* This function is executed at application end */
 void states_end_job(int my_id,  char *app_name)
 {
 	debug("EAR(%s) Ends execution. ", app_name);
 	end_log();
 }
 
+/* This function is executed at application init */
 void states_begin_job(int my_id,  char *app_name)
 {
 	ulong	architecture_min_perf_accuracy_time;
@@ -243,6 +322,7 @@ int states_my_state()
 	return EAR_STATE;
 }
 
+/* This function is executed at each loop init */
 void states_begin_period(int my_id, ulong event, ulong size,ulong level)
 {
 	int i;
@@ -265,6 +345,7 @@ void states_begin_period(int my_id, ulong event, ulong size,ulong level)
     }
 }
 
+/* This function is executed at each loop end */
 void states_end_period(uint iterations)
 {
 	if (loop_with_signature)
@@ -285,73 +366,8 @@ void states_end_period(uint iterations)
 	policy_loop_end(&loop.id);
 }
 
-static void check_dynais_on(signature_t *A, signature_t *B)
-{
-	if (!equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH*2) || !equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH*2)){
-		dynais_enabled=DYNAIS_ENABLED;
-		debug("Dynais ON ");
-	}
-}
 
-static void check_dynais_off(ulong mpi_calls_iter,uint period, uint level, ulong event)
-{
-#if EAR_OVERHEAD_CONTROL
-    ulong dynais_overhead_usec=0;
-    float dynais_overhead_perc;
-
-    dynais_overhead_usec=mpi_calls_iter;
-    dynais_overhead_perc=((float)dynais_overhead_usec/(float)1000000)*(float)100/loop_signature.signature.time;
-    if (dynais_overhead_perc>MAX_DYNAIS_OVERHEAD){
-    // Disable dynais : API is still pending
-    	#if DYNAIS_CUTOFF
-    	dynais_enabled=DYNAIS_DISABLED;
-    	#endif
-    	if (masters_info.my_master_rank>=0) log_report_dynais_off(application.job.id,application.job.step_id);
-    }
-	if (dynais_enabled==DYNAIS_DISABLED){
-    	debug("DYNAIS_DISABLED: Total time %lf (s) dynais overhead %lu usec in %lu mpi calls(%lf percent), event=%lu min_time=%lu",
-    	loop_signature.signature.time,dynais_overhead_usec,mpi_calls_iter,dynais_overhead_perc,event,perf_accuracy_min_time);
-	}
-    last_first_event=event;
-    last_calls_in_loop=mpi_calls_iter;
-    last_loop_size=period;
-    last_loop_level=level;
-#endif
-    
-}
-static int policy_had_effect(signature_t *A, signature_t *B)
-{
-	if (equal_with_th(A->CPI, B->CPI, EAR_ACCEPTED_TH) &&
-		equal_with_th(A->GBS, B->GBS, EAR_ACCEPTED_TH))
-	{
-		return 1;
-	}
-	return 0;
-}
-
-static void print_loop_signature(char *title, signature_t *loop)
-{
-	float avg_f = (float) loop->avg_f / 1000000.0;
-
-	debug("(%s) Avg. freq: %.2lf (GHz), CPI/TPI: %0.3lf/%0.3lf, GBs: %0.3lf, DC power: %0.3lf, time: %0.3lf, GFLOPS: %0.3lf",
-                title, avg_f, loop->CPI, loop->TPI, loop->GBS, loop->DC_power, loop->time, loop->Gflops);
-}
-
-void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event, ulong mpi_calls_iter);
-static void report_loop_signature(uint iterations,loop_t *my_loop,job_t *job)
-{
-   	my_loop->total_iterations = iterations;
-	#if DB_FILES
-   	append_loop_text_file(loop_summary_path, my_loop,job);
-	#endif
-	#if USE_DB
-    if (masters_info.my_master_rank>=0){ 
-			clean_db_loop(my_loop);
-			eards_write_loop_signature(my_loop);
-		}
-    #endif
-}
-
+/* This is the main function when used DynAIS. It applies the EAR state diagram that drives the internal behaviour */
 void states_new_iteration(int my_id, uint period, uint iterations, uint level, ulong event,ulong mpi_calls_iter)
 {
 	double CPI, TPI, GBS, POWER, TIME, ENERGY, EDP, VPI, IN_MPI_PERC,IN_MPI_SEC,GPU_POWER;
@@ -379,6 +395,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	pst=policy_get_default_freq(&policy_def_freq);
 	def_pstate=frequency_closest_pstate(policy_def_freq);
 
+	/* A rescheduling is a global event generated by the EARGM */
 	if (system_conf!=NULL){
 	if (masters_info.my_master_rank>=0){
 	if (resched_conf->force_rescheduling){
@@ -396,6 +413,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 	}
 	}
 
+	/* Based on the EAR internal state....*/
 	switch (EAR_STATE)
 	{
 		/* This is a new state to minimize overhead, we just check the loop has , at least, some granularity */
@@ -409,12 +427,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				if (masters_info.my_master_rank>=0) traces_start();
 			}
 			break;
+
+		/* FIRST_ITERATION computed the iteration duration and how many iterations needs to be considered to compute a signature */
 		case FIRST_ITERATION: /********* FIRST_ITERATION *********/
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
 
 			if (comp_N_time == 0) comp_N_time = 1;
-			// We include a dynamic configurarion of EAR
+			/* We include a dynamic configurarion of EAR */
 			if (comp_N_time < (long long) perf_accuracy_min_time) {
 				perf_count_period = (perf_accuracy_min_time / comp_N_time) + 1;
 			} else {
@@ -426,7 +446,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (perf_count_period_10p==0) perf_count_period_10p=1;
 			/**/
 
-			// Once min iterations is computed for performance accuracy we start computing application signature
+			/* Once min iterations is computed for performance accuracy we start computing application signature */
 			EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
 			if (masters_info.my_master_rank>=0){ 
 				traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
@@ -435,11 +455,12 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			metrics_compute_signature_begin();
 			begin_iter = iterations;
 			
-			// Loop printing algorithm
 			loop.id.event = event;
 			loop.id.level = level;
 			loop.id.size = period;
 			break;
+	
+		/* If the signature (basically CPI and GBS) changes, we must recompute the number of iterations */
 		case SIGNATURE_HAS_CHANGED: /********* SIGNATURE_HAS_CHANGED *************/
 			comp_N_end = metrics_time();
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
@@ -465,6 +486,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				traces_policy_state(ear_my_rank, my_id,EVALUATING_LOCAL_SIGNATURE);
 			}
 			break;
+
+		/* Again, we recompute the number of iterations to be considered but in this case because we habe changed the frequency */
+		/* This state could be removed */
 		case RECOMPUTING_N:/************ RECOMPUTING_N *************/
 
 			comp_N_time = metrics_usecs_diff(comp_N_end, comp_N_begin);
@@ -490,6 +514,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				traces_policy_state(ear_my_rank, my_id,SIGNATURE_STABLE);
 			}
 			break;
+
+		/* After N iterations of being in this state the signature will be computed and the policy will be applied, next state will 
+ * 		depend on the policy itself. See the REAMDE file to see the different alternatives */
 		case EVALUATING_LOCAL_SIGNATURE: /********* EVALUATING_LOCAL_SIGNATURE **********/
 			/* We check from time to time if if the signature is ready */
 			/* Included to accelerate the signature computation */
@@ -507,8 +534,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 				perf_count_period++;
 				return;
 			}
-			//verbose(1,"Signature ready for process %d time %lld",my_node_id,metrics_time());
-			//print_loop_signature("signature computed", &loop_signature.signature);
+
       /* Included for dynais test */
       if (loop_with_signature==0){
                 time_t curr_time;
@@ -517,15 +543,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
                 time_from_mpi_init=difftime(curr_time,application.job.start_time);
                 debug("Number of seconds since the application start_time at which signature is computed %lf",time_from_mpi_init);
       }
-      /* END */
 
 			loop_with_signature = 1;
 			#if EAR_OVERHEAD_CONTROL
 			check_periodic_mode=0;
 			#endif
 
-			// Computing dynais overhead
-			// Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF
+			/* Computing dynais overhead
+			** Change dynais_enabled to ear_tracing_status=DYNAIS_ON/DYNAIS_OFF */
 			if (dynais_enabled==DYNAIS_ENABLED){
 				check_dynais_off(mpi_calls_iter,period,level,event);
 			}
@@ -535,15 +560,14 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			SET_VARIABLES_GPU();
 			begin_iter = iterations;
 
-			// memcpy(&last_signature, &loop_signature, sizeof(application_t));
 			memcpy(&signatures[curr_pstate], &loop_signature, sizeof(application_t));
 			sig_ready[curr_pstate]=1;
 
 			/* This function executes the energy policy */
 			adapt_signature_to_node(&app_signature,&loop_signature.signature,ratio_PPN);
-			//if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_LOCAL_SIGNATURE");
 			pst=policy_node_apply(&app_signature,&policy_freq,&ready);
 			report_policy_state(ready);
+
 			/****** We mark our local signature as ready ************/
 			signature_ready(&sig_shared_region[my_node_id],EVALUATING_LOCAL_SIGNATURE);
 			/* For no masters, ready will be 0, pending */
@@ -620,6 +644,8 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
       }
 			}
 			break;
+
+		/* If the policy is ok, we are in stable state and we increase the numbers of iterations to compute the signature */
 		case SIGNATURE_STABLE:
 
 			// I have executed N iterations more with a new frequency, we must check the signature
@@ -673,16 +699,11 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			if (pok)
 			{
 				/* When collecting traces, we maintain the period */
-				if (masters_info.my_master_rank>=0){
-				if (traces_are_on()==0)	perf_count_period = perf_count_period * 2;
+				if ((masters_info.my_master_rank>=0) && (traces_are_on()==0)){
+					perf_count_period = perf_count_period * 2;
 				}
 				tries_current_loop=0;
-				debug("Policy ok");
-			}else{
-				debug("Policy NOT ok");
 			}
-			debug("EAR(%s): CurrentSig (Time %2.3lf Power %3.2lf Energy %.2lf) LastSig (Time %2.3lf Power %3.2lf Energy %.2lf) ",
-			ear_app_name, TIME, POWER, ENERGY, l_sig->time,l_sig->DC_power, (l_sig->time*l_sig->DC_power));
 
 			if (pok) return;
 
@@ -698,7 +719,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			}
 
 
-			/* We must report a problem and go to the default configuration*/
+			/* If we cannot select an optimal frequency, We must report a problem and go to the default configuration*/
 			if (tries_current_loop>=MAX_POLICY_TRIES){
 				if (masters_info.my_master_rank>=0) log_report_max_tries(application.job.id,application.job.step_id, application.job.def_f);
 				EAR_STATE = PROJECTION_ERROR;
@@ -757,6 +778,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 
             ENERGY = TIME * POWER;
             EDP = ENERGY * TIME;
+						VERBOSE_SIG();
 
             /* VERBOSE */
 						if (masters_info.my_master_rank>=0){

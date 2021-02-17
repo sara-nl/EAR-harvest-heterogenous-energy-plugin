@@ -50,6 +50,9 @@ state_t policy_init(polctx_t *c)
 		g_freq=atol(gpu_freq);
 		for (i=0;i<c->num_gpus;i++) ext_gpu_def_freq[i]=g_freq;
 	}else{ 
+		/* We can uncomment this line in case we want to guarantee GPU is set at the max frequency */
+		/* We assume the scheduler will offer some flag to set, so we just the already existing one */
+		/* gpu_lib_freq_limit_get_max(&c->gpu_mgt_ctx, ext_gpu_def_freq); */
 		gpu_lib_freq_limit_get_current(&c->gpu_mgt_ctx, ext_gpu_def_freq);
 	}
 	for (i=0;i<c->num_gpus;i++){

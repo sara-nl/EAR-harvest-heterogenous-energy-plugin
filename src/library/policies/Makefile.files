@@ -10,18 +10,24 @@ poli_BINS = \
     monitoring.so 
 
 ifeq ($(FEAT_MPI_API), 1)
+ifeq ($(FEAT_RESEARCH),1)
 poli_BINS += \
     app_min_time.so \
     app_monitoring.so \
     app_min_energy.so \
 		load_balance.so
 endif
+endif
 
 ifdef CUDA_BASE
 poli_BINS += \
-    gpu_monitoring.so \
+    gpu_monitoring.so 
+
+ifeq ($(FEAT_GPU_OPT),1)
+poli_BINS += \
     gpu_min_time.so \
     gpu_min_energy.so
+endif
 endif
 
 eard_BINS = \
@@ -30,8 +36,10 @@ eard_BINS = \
     monitoring_eard.so 
 
 ifeq ($(FEAT_MPI_API), 1)
+ifeq ($(FEAT_RESEARCH),1)
 eard_BINS += \
     load_balance_eard.so
+endif
 endif
 
 

@@ -1,5 +1,7 @@
 export FEAT_MPI_API
 export FEAT_AVX512
+export FEAT_RESEARCH
+export FEAT_GPU_OPT  
 
 export CC
 export CC_FLAGS
