@@ -25,11 +25,11 @@
 #include <metrics/temperature/archs/amd17.h>
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static uint n_sockets;
+static uint socket_count;
 
 typedef struct hwfds_s {
-	uint  n_ids;
-	uint *n_fds;
+	uint  id_count;
+	uint *fd_count;
 	int **fds;
 } hwfds_t;
 
@@ -41,9 +41,9 @@ state_t temp_amd17_status(topology_t *topo)
 		return EAR_ERROR;
 	}
 	while (pthread_mutex_trylock(&lock));
-	if (n_sockets == 0) {
+	if (socket_count == 0) {
 		if (xtate_ok(s, hwmon_find_drivers("k10temp", NULL, NULL))) {
-			n_sockets = topo->socket_count;
+			socket_count = topo->socket_count;
 		}
 	}
 	pthread_mutex_unlock(&lock);
@@ -52,7 +52,7 @@ state_t temp_amd17_status(topology_t *topo)
 
 state_t temp_amd17_init(ctx_t *c)
 {
-	uint n_ids;
+	uint id_count;
 	uint *ids;
 	state_t s;
 	int i;
@@ -62,7 +62,7 @@ state_t temp_amd17_init(ctx_t *c)
 		return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
 	}
 	// Looking for ids
-	if (xtate_fail(s, hwmon_find_drivers("k10temp", &ids, &n_ids))) {
+	if (xtate_fail(s, hwmon_find_drivers("k10temp", &ids, &id_count))) {
 		return s;
 	}
 	// Allocating context
@@ -72,16 +72,16 @@ state_t temp_amd17_init(ctx_t *c)
 	// Allocating file descriptors)
 	hwfds_t *h = (hwfds_t *) c->context;
 	
-	if ((h->fds = calloc(n_ids, sizeof(int *))) == NULL) {
+	if ((h->fds = calloc(id_count, sizeof(int *))) == NULL) {
 		return_msg(s, strerror(errno));
 	}
-	if ((h->n_fds = calloc(n_ids, sizeof(uint))) == NULL) {
+	if ((h->fd_count = calloc(id_count, sizeof(uint))) == NULL) {
 		return_msg(s, strerror(errno));
 	}
-	h->n_ids = n_ids;
+	h->id_count = id_count;
 	//
-	for (i = 0; i < h->n_ids; ++i) {
-		if (xtate_fail(s, hwmon_open_files(ids[i], Hwmon.temp_input, &h->fds[i], &h->n_fds[i]))) {
+	for (i = 0; i < h->id_count; ++i) {
+		if (xtate_fail(s, hwmon_open_files(ids[i], Hwmon.temp_input, &h->fds[i], &h->fd_count[i]))) {
 			return s;
 		}
 	}
@@ -91,26 +91,51 @@ state_t temp_amd17_init(ctx_t *c)
 	return EAR_SUCCESS;
 }
 
-state_t temp_amd17_dispose(ctx_t *c)
+static state_t get_context(ctx_t *c, hwfds_t **h)
 {
-	hwfds_t *h;
-	int i, j, r;
-
 	if (c == NULL || c->context == NULL) {
-		return EAR_SUCCESS;
+		return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
 	}
-
-	h = (hwfds_t *) c->context;
-	for (i = 0; i < h->n_ids; ++i) {
-		hwmon_close_files(h->fds[i], h->n_fds[i]);
-	}
-	free(h->n_fds);
-	free(h->fds);
-
-	c->context = NULL;
+	*h = (hwfds_t *) c->context;
 	return EAR_SUCCESS;
 }
 
+state_t temp_amd17_dispose(ctx_t *c)
+{
+	int i, j, r;
+	hwfds_t *h;
+	state_t s;
+
+	if (xtate_fail(s, get_context(c, &h))) {
+		return s;
+	}
+	for (i = 0; i < h->id_count; ++i) {
+		hwmon_close_files(h->fds[i], h->fd_count[i]);
+	}
+	c->context = NULL;
+	free(h->fd_count);
+	free(h->fds);
+
+	return EAR_SUCCESS;
+}
+
+// Data
+state_t temp_amd17_count_devices(ctx_t *c, uint *count)
+{
+	hwfds_t *h;
+	state_t s;
+
+	if (xtate_fail(s, get_context(c, &h))) {
+		return s;
+	}
+	if (count != NULL) {
+		*count = socket_count;
+	}
+
+	return EAR_SUCCESS;
+}
+
+// Getters
 static llong parse(char *buffer, int n)
 {
 	char aux[SZ_NAME_SHORT];
@@ -132,35 +157,34 @@ static llong parse(char *buffer, int n)
 
 state_t temp_amd17_read(ctx_t *c, llong *temp, llong *average)
 {
-	char data[SZ_PATH];	
+	char data[SZ_PATH];
+	llong aux1, aux2;
 	int i, j, k;
 	hwfds_t *h;
 	state_t s;
-	llong aux;
-	
-	if (c == NULL || c->context == NULL || temp == NULL) {
-		return_msg(EAR_BAD_ARGUMENT, Generr.input_null);
+
+	if (xtate_fail(s, get_context(c, &h))) {
+		return s;
 	}
-
-	h = (hwfds_t *) c->context;
-
-	for (k = 0, aux = 0; k < n_sockets; ++k) {
+	for (k = 0, aux1 = aux2 = 0; k < socket_count && temp != NULL; ++k) {
 		temp[k] = 0;
 	}
-
-	for (i = 0, k = 0; i < h->n_ids && k < n_sockets; ++i) {
-		for (j = 0; j < h->n_fds[i] && k < n_sockets; ++j, ++k) {
+	for (i = 0, k = 0; i < h->id_count && k < socket_count; ++i) {
+		for (j = 0; j < h->fd_count[i] && k < socket_count; ++j, ++k) {
 			if (xtate_fail(s, hwmon_read(h->fds[i][j], data, SZ_PATH))) {
 				return s;
 			}
 			debug("read %s", data);
-			temp[k] = parse(data, 2);
-			aux    += temp[k];
+			aux1  = parse(data, 2);
+			aux2 += aux1;
+			if (temp != NULL) {
+				temp[k] = aux1;
+			}
 		}
 	}
-
+	//
 	if (average != NULL) {
-		*average = aux / (llong) n_sockets;
+		*average = aux2 / (llong) socket_count;
 	}
 
 	return EAR_SUCCESS;

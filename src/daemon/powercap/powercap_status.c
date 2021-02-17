@@ -32,6 +32,29 @@
 #include <daemon/powercap/powercap.h>
 #include <common/types/pc_app_info.h>
 
+/* This function decides if we have to changed the utilization or not */
+#define MAX_ALLOWED_DIFF 0.25
+uint util_changed(ulong curr,ulong prev)
+{
+  float diff;
+  int idiff,icurr,iprev;
+  icurr=(int)curr;
+  iprev=(int)prev;
+  if ((prev == 0) && (curr)) return 1;
+  if ((curr == 0) && (prev)) return 1;
+  if ((!prev) && (!curr)) return 0;
+  idiff = (icurr - iprev);
+  if (idiff < 0){
+    idiff = idiff * -1;
+    diff = (float)idiff / (float)iprev;
+  }else{
+    diff = (float)idiff / (float)icurr;
+  }
+  // debug("Current util and prev util differs in %.3f prev %lu curr %lu",diff,prev,curr);
+  return (diff >  MAX_ALLOWED_DIFF);
+}
+
+
 uint compute_power_to_release(node_powercap_opt_t *pc_opt,uint current)
 {
 	return pc_opt->th_release;

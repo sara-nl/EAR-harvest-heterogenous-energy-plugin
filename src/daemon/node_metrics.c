@@ -91,7 +91,7 @@ int init_node_metrics_data(nm_t *id,nm_data_t *nm)
 	}
 
 	// CPU Temperature
-	state_assert(s, temp_data_alloc(&nm->temp),);
+	state_assert(s, temp_data_alloc(&temp_ctx, &nm->temp, NULL),);
 	
 	// CPU/IMC Frequency
 	state_assert(s, cpufreq_data_alloc(&nm->freq_cpu, NULL),);
@@ -149,7 +149,7 @@ int diff_node_metrics(nm_t *id,nm_data_t *init,nm_data_t *end,nm_data_t *diff_nm
 	}
 
 	// Temperature
-	state_assert(s, temp_data_copy(diff_nm->temp, end->temp),);
+	state_assert(s, temp_data_copy(&temp_ctx, diff_nm->temp, end->temp),);
 	diff_nm->avg_temp = end->avg_temp;
 
 	// CPU & IMC Frequency
@@ -189,7 +189,7 @@ int copy_node_metrics(nm_t *id, nm_data_t *dest, nm_data_t *src)
 	}
 
 	// Temperature
-	state_assert(s, temp_data_copy(dest->temp, src->temp),);
+	state_assert(s, temp_data_copy(&temp_ctx, dest->temp, src->temp),);
 	dest->avg_temp = src->avg_temp;
 
 	// Frequencies

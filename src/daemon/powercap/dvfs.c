@@ -51,7 +51,7 @@ static uint current_dvfs_pc=0,set_dvfs_pc=0;
 static uint dvfs_pc_enabled=0;
 static uint c_status=PC_STATUS_IDLE;
 static uint c_mode=PC_MODE_LIMIT;
-static ulong c_req_f;
+static ulong *c_req_f;
 static ulong num_pstates;
 static suscription_t *sus_dvfs;
 
@@ -60,13 +60,39 @@ static uint dvfs_pc_secs=0,num_packs;
 static  unsigned long long *values_rapl_init,*values_rapl_end,*values_diff;
 static int *fd_rapl;
 static float power_rapl,my_limit;
+static ulong *c_freq;
+static uint  *c_pstate,*t_pstate;
+static uint node_size;
+static uint dvfs_status = PC_STATUS_OK;
+static uint dvfs_ask_def = 0;
+static uint dvfs_monitor_initialized = 0;
+
+/************************ These functions must be implemented in cpufreq *****/
+void frequency_nfreq_to_npstate(ulong *f,uint *p,uint cpus)
+{
+	int i;
+	for (i=0;i<cpus;i++) p[i] = frequency_freq_to_pstate(f[i]);
+}
+void frequency_npstate_to_nfreq(uint *p,ulong *f,uint cpus)
+{
+	int i;
+	for (i=0;i<cpus;i++) f[i] = frequency_pstate_to_freq(p[i]);
+}
+
+void extend_from_cpu_to_list(int cpu, uint *list,uint num_cpus)
+{
+	ulong value = list[cpu];
+	uint i;
+	for (i=0;i<num_cpus;i++) list[i] = value;
+}
 
 /************************ This function is called by the monitor before the iterative part ************************/
 state_t dvfs_pc_thread_init(void *p)
 {
   state_t s;
-  uint node_size;
   topology_t node_desc;
+
+	debug("DVFS_monitor_init");
 
   s = topology_init(&node_desc);
   num_packs=node_desc.socket_count;
@@ -101,6 +127,11 @@ state_t dvfs_pc_thread_init(void *p)
   debug("DVFS:Initializing frequency in dvfs_pc %u cpus",node_size);
   frequency_init(node_size);
 	num_pstates = frequency_get_num_pstates();
+	c_freq = calloc(node_size,sizeof(ulong));
+	c_req_f = calloc(node_size,sizeof(ulong));
+	c_pstate = calloc(node_size,sizeof(uint));
+	t_pstate = calloc(node_size,sizeof(uint));
+	dvfs_monitor_initialized = 1;
 	return EAR_SUCCESS;
 }
 /************************ This function is called by the monitor in iterative part ************************/
@@ -108,8 +139,6 @@ state_t dvfs_pc_thread_main(void *p)
 {
 		char rapl_energy_str[512];
 		unsigned long long acum_energy;
-  	uint c_pstate,t_pstate;
-  	ulong c_freq;
 		uint extra;
 
     dvfs_pc_secs=(dvfs_pc_secs+1)%DEBUG_PERIOD;
@@ -124,52 +153,36 @@ state_t dvfs_pc_thread_main(void *p)
 		// debug("DVFS monitoring exectuted power_computed=%f limit %u",power_rapl,current_dvfs_pc);
     /*debug("%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,(float)current_dvfs_pc*RAPL_VS_NODE_POWER,current_dvfs_pc*RAPL_VS_NODE_POWER_limit,COL_CLR);*/
     if (c_status==PC_STATUS_RUN){
-			#if 0
-      if (!dvfs_pc_secs){
-        debug("DVFS:%sTotal power in dvfs_pc %f Watts limit %u DRAM+PCK low-limit %f up-limit %f%s",COL_BLU,power_rapl,current_dvfs_pc,my_limit,my_limit,COL_CLR);
-      }
-			#endif
       /* Aplicar limites */
       if ((current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN)){
-      if (power_rapl > my_limit){ /* We are above the PC */
-        c_freq=frequency_get_cpu_freq(0);
-        c_pstate=frequency_freq_to_pstate(c_freq);
+			frequency_get_cpufreq_list(node_size,c_freq);
+      if (power_rapl > my_limit){ /* We are above the PC , reduce freq*/
+				if (dvfs_status == PC_STATUS_RELEASE){
+					dvfs_ask_def = 1;
+				}
+        frequency_nfreq_to_npstate(c_freq,c_pstate,node_size);
 				/* If we are running at the lowest frequency there is nothing else to do */
-				if (c_pstate < (num_pstates-1)){
-        	c_pstate=ear_min(c_pstate+1,num_pstates-1);
-        	c_freq=frequency_pstate_to_freq(c_pstate);
-        	//debug("DVFS:%sReducing freq to %lu (pstate %u): power %f limit %f%s",COL_RED,c_freq,c_pstate,power_rapl,my_limit,COL_CLR);
-        	frequency_set_all_cpus(c_freq);
+				if (c_pstate[0] < (num_pstates-1)){ /*Pending verctor extension*/
+        	c_pstate[0]=ear_min(c_pstate[0]+1,num_pstates-1); /* Pending verctor extension */
+					extend_from_cpu_to_list(0,c_pstate,node_size);
+        	frequency_npstate_to_nfreq(c_pstate,c_freq,node_size);
+					frequency_set_with_list(node_size,c_freq);
 				}
       }else{ /* We are below the PC */
-        t_pstate=frequency_freq_to_pstate(c_req_f);
-        c_freq=frequency_get_cpu_freq(0);
-        c_pstate=frequency_freq_to_pstate(c_freq);
-        if (c_pstate>t_pstate){
-          extra=compute_extra_power(power_rapl,1,t_pstate);
-          if (((power_rapl+extra)<my_limit) && (c_mode==PC_MODE_TARGET)){
-            c_pstate=c_pstate-1;
-            c_freq=frequency_pstate_to_freq(c_pstate);
-            //debug("DVFS:%sIncreasing freq to %lu (t_pstate %u c_pstate %u) estimated %f = %f + %u, limit %f%s",COL_RED,c_freq,t_pstate,c_pstate,power_rapl+extra,power_rapl,extra,my_limit,COL_CLR);
-            frequency_set_all_cpus(c_freq);
-          }else{
-						#if 0
-            if (!dvfs_pc_secs){ 
-							debug("DVFS:Not increasing becase not enough power");
-						}
-						#endif
+        frequency_nfreq_to_npstate(c_req_f,t_pstate,node_size);
+        frequency_nfreq_to_npstate(c_freq,c_pstate,node_size);
+        if (c_pstate[0]>t_pstate[0]){ /* PENDING */
+          extra=compute_extra_power(power_rapl,1,t_pstate[0]);
+          if (((power_rapl+extra)<my_limit) && (c_mode==PC_MODE_TARGET)){ /* PENDING */
+            c_pstate[0]=c_pstate[0]-1; /* PENDING */
+						extend_from_cpu_to_list(0,c_pstate,node_size);
+        		frequency_npstate_to_nfreq(c_pstate,c_freq,node_size);
+						frequency_set_with_list(node_size,c_freq);
           }
-        }else if (c_pstate < t_pstate){
-					//debug("c_pstate %u < t_pstate %u. Power %f limit %f",c_pstate,t_pstate,power_rapl,my_limit);
-					c_freq=frequency_pstate_to_freq(t_pstate);
-					//debug("Setting freq to %.2f",(float)c_freq/1000000.0);
-					frequency_set_all_cpus(c_freq);
+        }else if (c_pstate[0] < t_pstate[0]){
+					frequency_npstate_to_nfreq(t_pstate,c_freq,node_size);
+					frequency_set_with_list(node_size,c_freq);
 				}
-				#if 0
-				else{
-          if (!dvfs_pc_secs) debug("DVFS: Not increasing because c_pstate %u == t_pstate %u. Power %f limit %f",c_pstate,t_pstate,power_rapl,my_limit);
-        }
-				#endif
       }
 
     } /* (current_dvfs_pc>0)  && (c_status==PC_STATUS_RUN) */
@@ -209,6 +222,8 @@ state_t set_powercap_value(uint pid,uint domain,uint limit,uint *cpu_util)
 	/* Set data */
 	debug("%sDVFS:set_powercap_value %u%s",COL_BLU,limit,COL_CLR);
 	current_dvfs_pc=limit;
+	dvfs_status = PC_STATUS_OK;
+	dvfs_ask_def = 0;
 	return EAR_SUCCESS;
 }
 
@@ -255,8 +270,9 @@ void set_pc_mode(uint mode)
 
 void set_app_req_freq(ulong *f)
 {
+	int i;
 	debug("DVFS:Requested application freq set to %lu",*f);
-	c_req_f=*f;	
+	for (i=0;i<node_size;i++) c_req_f[i] = *f;	
 }
 
 void set_verb_channel(int fd)
@@ -268,24 +284,39 @@ void set_verb_channel(int fd)
 
 
 #define MIN_CPU_POWER_MARGIN 10
-uint get_powercap_status(uint *in_target,uint *tbr)
+
+/* Returns 0 when 1) No info, 2) No limit 3) We cannot share power. */
+/* Returns 1 when power can be shared with other modules */
+/* Status can be: PC_STATUS_OK, PC_STATUS_GREEDY, PC_STATUS_RELEASE, PC_STATUS_ASK_DEF */
+/* tbr is > 0 when PC_STATUS_RELEASE , 0 otherwise */
+/* X_status is the plugin status */
+/* X_ask_def means we must ask for our power */
+
+uint get_powercap_status(uint *status,uint *tbr)
 {
-	ulong c_freq;
 	uint ctbr;
-	*in_target = 0;
+	*status = PC_STATUS_OK;
 	*tbr = 0;
+	//debug("DVFS: get_powercap_status");
+	if (!dvfs_monitor_initialized) return 0;
+	/* Return 0 means we cannot release power */
 	if (current_dvfs_pc == PC_UNLIMITED) return 0;
 	/* If we don't know the req_f we cannot release power */
-	if (c_req_f == 0) return 0;
-	c_freq=frequency_get_cpu_freq(0);
-	if (c_freq != c_req_f) return 0;
-	ctbr = (my_limit -  power_rapl) * 0.5;
-	*in_target = 1;
-	if (ctbr >= MIN_CPU_POWER_MARGIN){
-		//debug("We can reuse %u W of power from the CPU since target %lu and current %lu",ctbr,c_req_f,c_freq);
-		*tbr = ctbr; 
-	}else{
-		*tbr = 0;
+	if (c_req_f[0] == 0) return 0;
+	frequency_get_cpufreq_list(node_size,c_freq);
+	if (c_freq[0] < c_req_f[0]){
+		if (dvfs_ask_def) *status = PC_STATUS_ASK_DEF;
+		else *status = PC_STATUS_GREEDY;
+		return 0; /* Pending for NJObs */
 	}
+	ctbr = (my_limit -  power_rapl) * 0.5;
+	*status = PC_STATUS_RELEASE;
+	*tbr = ctbr; 
+	if (ctbr < MIN_CPU_POWER_MARGIN){
+		*tbr = 0;
+		*status = PC_STATUS_OK;
+		return 0;
+	}
+	dvfs_status = *status;
 	return 1;
 }

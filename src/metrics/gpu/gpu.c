@@ -15,7 +15,6 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
 #include <common/output/debug.h>
 #include <metrics/gpu/gpu.h>
 #include <metrics/gpu/archs/nvml.h>
@@ -30,8 +29,6 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 	if (loaded != 0) {
 		return EAR_SUCCESS;
 	}
-
-	//
 	if (model_force == MODEL_UNDEFINED) {
 		if (state_ok(nvml_status())) {
 			model_force = MODEL_NVML;
@@ -39,9 +36,8 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 			model_force = MODEL_DUMMY;
 		}
 	}
-
+	#ifdef CUDA_BASE
 	if (model_force == MODEL_NVML) {
-		debug("loaded NVML");
 		ops.init		= nvml_init;
 		ops.init_unprivileged = nvml_init_unprivileged;
 		ops.dispose		= nvml_dispose;
@@ -60,8 +56,10 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		ops.data_tostr	= nvml_data_tostr;
 		model           = MODEL_NVML;
 		loaded			= 1;
-	} else {
-		debug("loaded DUMMY");
+		debug("loaded NVML");
+	} else
+	#endif
+	{
 		ops.init		= gpu_dummy_init;
 		ops.init_unprivileged = gpu_dummy_init;
 		ops.dispose		= gpu_dummy_dispose;
@@ -80,15 +78,14 @@ state_t gpu_load(gpu_ops_t **_ops, uint model_force, uint *model_used)
 		ops.data_tostr	= gpu_dummy_data_tostr;
 		model           = MODEL_DUMMY;
 		loaded			= 1;
+		debug("loaded DUMMY");
 	}
-
 	if (model_used != NULL) {
 		*model_used = model;
 	}
 	if (_ops != NULL) {
 		*_ops = &ops;
 	}
-
 	return EAR_SUCCESS;
 }
 
