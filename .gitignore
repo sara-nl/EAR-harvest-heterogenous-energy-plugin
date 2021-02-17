@@ -13,6 +13,7 @@ etc/rpms/rpmbuild.sh
 *config.log
 *config.status
 *cpu_property.out
+*defines.log
 /configure
 
 # IDE
