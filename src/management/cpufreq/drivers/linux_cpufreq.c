@@ -26,12 +26,13 @@
 #include <management/cpufreq/drivers/linux_cpufreq.h>
 
 #define N_FREQS 128
+#define N_CPUS  4096
 
 static topology_t tp;
 
 typedef struct cpufreq_ctx_s
 {
-	ullong      freqs_current[N_FREQS];
+	ullong      freqs_current[N_CPUS];
 	ullong      freqs_avail[N_FREQS];
 	int         freqs_count;
 	int         boost_enabled;
