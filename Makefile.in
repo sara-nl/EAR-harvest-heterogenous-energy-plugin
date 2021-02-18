@@ -3,10 +3,10 @@
 FEAT_MPI_API = 1
 # This feature is automatically generated based on the CPU version detected
 FEAT_AVX512  = @FEAT_AVX512@
-# This feature extend the setof files installed
+# This feature extend the set of files installed
 FEAT_RESEARCH = 1
 # This feature enables or not the installation of GPU optimization policies. If 0, only monitoring is supported
-FEAT_GPU_OPT  = 0
+FEAT_GPU_OPT  = 1
 
 # Compilers
 CC           = @CC@

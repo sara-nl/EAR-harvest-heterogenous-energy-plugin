@@ -4,6 +4,7 @@
 dlog_BINS = defines.log
 dlog_PATH = $(ETCDIR)/ear
 dlog_PERM = 0660
+dlog_FOLD = .
 
 ######## RULES
 

@@ -60,11 +60,11 @@ min_time_mpi_info.so: min_time_mpi_info.o $(pmpi_DEPS)
 ######## OPTIONS 
 
 install: poli.ginstall eard.ginstall
-	ln -s ./min_energy_eard.so $(eard_PATH)/min_energy_no_models_eard.so 
-	ln -s ./min_time_eard.so $(eard_PATH)/min_time_no_models_eard.so 
+	ln -sf ./min_energy_eard.so $(eard_PATH)/min_energy_no_models_eard.so 
+	ln -sf ./min_time_eard.so $(eard_PATH)/min_time_no_models_eard.so 
 ifeq ($(FEAT_RESEARCH),1)
-	ln -s ./min_energy_eard.so $(eard_PATH)/app_min_energy_eard.so 
-	ln -s ./min_time_eard.so $(eard_PATH)/app_min_time_eard.so 
+	ln -sf ./min_energy_eard.so $(eard_PATH)/app_min_energy_eard.so 
+	ln -sf ./min_time_eard.so $(eard_PATH)/app_min_time_eard.so 
 endif
 
 clean: rclean;
