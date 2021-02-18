@@ -1,6 +1,7 @@
 ######## FILES
 
 OBJS = \
+		states_comm.o \
     states.o \
     states_periodic.o
 

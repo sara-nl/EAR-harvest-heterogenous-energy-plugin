@@ -16,7 +16,7 @@ defines.log:
 
 ######## OPTIONS
 
-install: dlog.ginstall;
+install: dlog.finstall;
 
 devel.install: ;
 

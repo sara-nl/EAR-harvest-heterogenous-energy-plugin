@@ -171,10 +171,10 @@ state_t dvfs_pc_thread_main(void *p)
         if (c_pstate[0] < (num_pstates-1)){ /*Pending verctor extension*/
             c_pstate[0]=ear_min(c_pstate[0]+1,num_pstates-1); /* Pending verctor extension */
             extend_from_cpu_to_list(0,c_pstate,node_size);
-            debug("%spower above limit, current freq %u%s", COL_RED, c_freq[0], COL_CLR);
+            debug("%spower above limit, current freq %lu%s", COL_RED, c_freq[0], COL_CLR);
             frequency_npstate_to_nfreq(c_pstate,c_freq,node_size);
             frequency_set_with_list(node_size,c_freq);
-            debug("%spower above limit, setting freq %u%s", COL_RED, c_freq[0], COL_CLR);
+            debug("%spower above limit, setting freq %lu%s", COL_RED, c_freq[0], COL_CLR);
         }
     }else{ /* We are below the PC */
         if (c_req_f[0] == 0) return EAR_SUCCESS;
@@ -188,12 +188,12 @@ state_t dvfs_pc_thread_main(void *p)
                 extend_from_cpu_to_list(0,c_pstate,node_size);
                 frequency_npstate_to_nfreq(c_pstate,c_freq,node_size);
                 frequency_set_with_list(node_size,c_freq);
-                debug("%spower below limit, setting freq %u%s", COL_GRE, c_freq[0], COL_CLR);
+                debug("%spower below limit, setting freq %lu%s", COL_GRE, c_freq[0], COL_CLR);
             }
         }else if (c_pstate[0] < t_pstate[0]){
             frequency_npstate_to_nfreq(t_pstate,c_freq,node_size);
             frequency_set_with_list(node_size,c_freq);
-            debug("%spower below limit, and freq above req_f (%u) setting freq %u%s", COL_GRE, c_req_f[0], c_freq[0], COL_CLR);
+            debug("%spower below limit, and freq above req_f (%lu) setting freq %lu%s", COL_GRE, c_req_f[0], c_freq[0], COL_CLR);
         }
     }
     return EAR_SUCCESS;
