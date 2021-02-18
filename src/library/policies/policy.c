@@ -202,6 +202,31 @@ static void policy_cpu_freq_selection(signature_t *my_sig,ulong *freq_set)
   	verbose(2,"MR[%d]: Setting frequency_list to %lu (ret=%lu)",masters_info.my_master_rank,*freq_set,*(c->ear_frequency));
   }
 }
+
+state_t policy_gpu_freq_selection(polctx_t *c,signature_t *my_sig,ulong *gpu_f, int *ready)
+{
+  int i;
+  if (*ready == EAR_POLICY_READY ){
+    /* Powercap limits are checked here but this code could be moved to a function */
+    #if POWERCAP
+    for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
+      debug("GPU[%d] freq requested %lu",i,gpu_f[i]);
+    }
+    pc_app_info_data->num_gpus_used=my_sig->gpu_sig.num_gpus;
+    memcpy(pc_app_info_data->req_gpu_f,gpu_f,my_pol_ctx.num_gpus*sizeof(ulong));
+    if (pc_app_info_data->mode==PC_DVFS){
+      pc_support_adapt_gpu_freq(c,&my_pol_ctx.app->pc_opt,gpu_f,my_sig);
+    }
+    for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
+      debug("GPU[%d] freq selected after powercap filter %lu",i,gpu_f[i]);
+    }
+    #endif
+    /* Pending: We must filter the GPUs I'm using */
+    eards_gpu_set_freq(my_pol_ctx.num_gpus,gpu_f);
+  }
+  return EAR_SUCCESS;
+
+}
  
 
 
@@ -477,25 +502,7 @@ state_t policy_node_apply(signature_t *my_sig,ulong *freq_set, int *ready)
 		ulong *gpu_f=calloc(my_pol_ctx.num_gpus,sizeof(ulong));
 		stg=gpu_polsyms_fun.node_policy_apply(c, my_sig,gpu_f,ready);
 		/* We must apply a gpu_freq change */
-		if (*ready == EAR_POLICY_READY ){
-		
-		/* Powercap limits are checked here but this code could be moved to a function */
-		#if POWERCAP
-			for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
-				debug("GPU[%d] freq requested %lu",i,gpu_f[i]);
-			}
-			pc_app_info_data->num_gpus_used=my_sig->gpu_sig.num_gpus;
-			memcpy(pc_app_info_data->req_gpu_f,gpu_f,my_pol_ctx.num_gpus*sizeof(ulong));
-    	if (pc_app_info_data->mode==PC_DVFS){
-      	pc_support_adapt_gpu_freq(c,&my_pol_ctx.app->pc_opt,gpu_f,my_sig);
-    	}
-			for (i=0;i<my_sig->gpu_sig.num_gpus;i++){
-				debug("GPU[%d] freq selected after powercap filter %lu",i,gpu_f[i]);
-			}
-		#endif
-			/* Pending: We must filter the GPUs I'm using */
-			eards_gpu_set_freq(my_pol_ctx.num_gpus,gpu_f);
-		}
+		policy_gpu_freq_selection(c,my_sig,gpu_f,ready);
 		free(gpu_f);
 	}
 	#endif

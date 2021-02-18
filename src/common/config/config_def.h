@@ -41,7 +41,7 @@
  * generates a warning and a syslog message when activated. Values greather
  * than MAX_ERROR_POWER are considered an error and not reported into the DB */
 #define MIN_SIG_POWER                       30.0
-#define MAX_SIG_POWER                       600.0
+#define MAX_SIG_POWER                       700.0
 #define MAX_ERROR_POWER                     1000.0
 #define MAX_TEMP							150
 #define MAX_POWER_CAP					0
@@ -59,17 +59,17 @@
 #define EARD_FILE_LOG						1
 /** These definitions affects DB configuration */
 /* When set to 1, loops signatures are not reported to the DB to save space */
-#define LARGE_CLUSTER                       1
+#define LARGE_CLUSTER                       0
 /* When set to 1, some fields are neither created not reported to the DB to
  * save space */
-#define DB_SIMPLE                           1
+#define DB_SIMPLE                           0
 /* Maximum number of simultaneous DB connection for mysql user commands */
 #define MAX_DB_CONNECTIONS					20
 /* */
 #define PERFORMANCE_GAIN                    0.75
 #define EAR_ACCEPTED_TH                     0.05
 #define EAR_MIN_P_STATE                     4
-#define POWERMON_FREQ                       30
+#define POWERMON_FREQ                       60
 #define DAEMON_PORT_NUMBER                  50000
 #define EARGM_PORT_NUMBER                   50001
 #define DEF_DBD_SERVER_PORT									50002
@@ -78,7 +78,7 @@
 #define DEFAULT_T1                          60
 #define DEFAULT_T2                          600
 #define MAX_ENERGY                          300
-#define DEFAULT_POWER                       275
+#define DEFAULT_POWER                      	300 
 #define GRACE_T1                            3
 #define EAR_OVERHEAD_CONTROL                1
 #define MAX_TIME_DYNAIS_WITHOUT_SIGNATURE   15
@@ -113,6 +113,7 @@
 
 #define EARGM_DEF_POWERCAP_LIMIT 0
 #define EARGM_DEF_T1_POWER 60
+/* 1=auto by default, 0=monitoring_only */
 #define EARGM_POWERCAP_DEF_MODE 1
 #define EARGM_POWERCAP_DEF_ACTION "no_action"
 #define EARGM_ENERGYCAP_DEF_ACTION "no_action"
