@@ -45,6 +45,8 @@ state_t pmgt_handler_alloc(pwr_mgt_t **phandler);
 state_t pmgt_disable_policy(pwr_mgt_t *phandler,uint pid);
 state_t pmgt_disable_policies(pwr_mgt_t *phandler);
 state_t pmgt_set_powercap_value(pwr_mgt_t *phandler,uint pid,uint domain,ulong limit);
+
+/* Sets in powercap the powercap per domain : 3 domains in CPU only systems and 4 in CPU+GPU */
 state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,ulong *powercap);
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid);
 void pmgt_print_powercap_value(pwr_mgt_t *phandler,int fd);

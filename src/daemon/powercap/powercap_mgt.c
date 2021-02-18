@@ -514,12 +514,13 @@ state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,ulong *powercap)
 	state_t ret,gret;
 	ulong total=0,parc;
 	int i;
+	if (powercap == NULL) return EAR_ERROR;
 	for (i=0;i<NUM_DOMAINS;i++){
+		powercap[i] = 0;
 		ret=freturn(pcsyms_fun[i].get_powercap_value,pid,&parc);
-		if (domains_loaded[i]) total+=parc;
+		if (domains_loaded[i]) powercap[i] = parc;
 		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
-	*powercap=total;
 	return gret;
 }
 uint pmgt_is_powercap_enabled(pwr_mgt_t *phandler,uint pid)
