@@ -15,7 +15,7 @@
 * found in COPYING.BSD and COPYING.EPL files.
 */
 
-//#define SHOW_DEBUGS 1
+#define SHOW_DEBUGS 1
 
 #define _GNU_SOURCE
 #include <math.h>
@@ -255,6 +255,8 @@ ulong frequency_set_with_list(uint x, ulong *list)
 	for (cpu = 0; cpu < topo.cpu_count; ++cpu) {
 		if (xtate_ok(s1, mgt_cpufreq_get_index(&c, (ullong) list[cpu], &pstate_index, 0))) {
 			if (xtate_ok(s2, mgt_cpufreq_set_current(&c, pstate_index, cpu))) {
+                if (cpu == 0)
+                  debug("frequency set to pstate %u", pstate_index); 
 			}
 		}
 	}

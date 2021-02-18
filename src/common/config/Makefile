@@ -1,0 +1,38 @@
+######## FILES
+
+# The list of libc_OBJS is in Makefile.files
+dlog_BINS = defines.log
+dlog_PATH = $(ETCDIR)/ear
+dlog_PERM = 0660
+
+######## RULES
+
+.PHONY: $(dlog_BINS)
+
+all: $(dlog_BINS)
+
+defines.log: 
+	$(shell ./Makefile.script defines.log)
+
+######## OPTIONS
+
+install: dlog.ginstall;
+
+devel.install: ;
+
+%.install: ;
+
+clean: rclean;
+
+######## SUBFOLDERS
+
+%.components: ;
+
+######## DEPENDENCIES
+
+depend: depend.components
+
+depend-clean: depend-clean.components
+
+include $(SRCDIR)/Makefile.depend
+include $(SRCDIR)/Makefile.extra

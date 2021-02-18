@@ -187,26 +187,3 @@ AC_DEFUN([AX_POST_OPT_FEATURES],
 	AC_SUBST(VERSION_MAJOR)
 	AC_SUBST(VERSION_MINOR)
 ])
-
-AC_DEFUN([PRINT_IN_FILE],
-[
-	printf " --------------------------------------------------------------------------------\n" &>> $1
-	printf "file: " &>> $1
-	printf $2 &>> $1
-	printf "\n--------------------------------------------------------------------------------\n" &>> $1
-	cat $2 &>> $1
-	printf "\n" &>> $1
-]) 
-
-AC_DEFUN([AX_POST_OUTPUT],
-[
-	CONF_FILE=defines.log
-	# Cleaning the file
-	printf "" &> $CONF_FILE
-	# Append
-	PRINT_IN_FILE([$CONF_FILE],["src/common/config/config_install.h"])
-	PRINT_IN_FILE([$CONF_FILE],["src/common/config/config_def.h"])
-	PRINT_IN_FILE([$CONF_FILE],["src/common/config/config_dev.h"])
-	PRINT_IN_FILE([$CONF_FILE],["src/common/config/config_env.h"])
-])
-
