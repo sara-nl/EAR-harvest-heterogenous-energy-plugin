@@ -21,8 +21,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#define SHOW_DEBUGS 1
 #include <common/config.h>
-//#define SHOW_DEBUGS 1
 #include <common/states.h>
 #include <common/output/verbose.h>
 #include <management/cpufreq/frequency.h>
@@ -41,6 +41,8 @@ extern unsigned long ext_def_freq;
 #else
 #define FREQ_DEF(f) f
 #endif
+
+extern uint current_earl_state;
 
 static ulong req_f;
 static timestamp pol_time_init;
@@ -289,11 +291,11 @@ ulong load_balance_for_process(polctx_t *c,float max_node_penalty,uint local_id)
 				st=project_time(my_app,curr_pstate,i,&time_proj);
 				projection_set(i,time_proj,power_proj);
 				energy_proj=power_proj*time_proj;
-        debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
+        // debug("projected from %lu to %d\t time: %.2lf\t power: %.2lf energy: %.2lf", curr_pstate, i, time_proj, power_proj, energy_proj);
 			if ((energy_proj < best_solution) && (time_proj < time_max))
 			{
-          debug("new best solution found");
 					best_freq = frequency_pstate_to_freq(i);
+          /* debug("MR[%d] new best solution found %lu",masters_info.my_master_rank,best_freq); */
 					best_solution = energy_proj;
 					best_pstate=i;
 			}
@@ -315,7 +317,15 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 	char buff[512];
 	double my_cpi, cp_cpi;
 	int num_proj_found = 0;
+  timestamp end;
+  ullong elap;
+
 	/*debug("APP_POLICY");*/
+	#if SHOW_DEBUGS
+  timestamp_getfast(&end);
+  elap=timestamp_diff(&end,&app_init,TIME_MSECS);
+	#endif
+
 
   ulong best_freq,best_pstate,freq_ref,eff_f;
 	ulong curr_freq,nominal;
@@ -340,16 +350,18 @@ state_t policy_app_apply(polctx_t *c,signature_t *sig,ulong *new_freq,int *ready
 		}
     my_app=sig;
     if (global_sig_ready){
+			debug("earl_elapsed:%llu msec MR[%d] Global signature ready ",elap,masters_info.my_master_rank);
       *ready=EAR_POLICY_READY;
       global_sig_ready=0;
     }else{
+			debug("earl_elapsed:%llu msec MR[%d] Global signature not ready ",elap,masters_info.my_master_rank);
       *new_freq=*(c->ear_frequency);
       *ready=EAR_POLICY_CONTINUE;
       return EAR_SUCCESS;
     }
 
     signature_to_str(my_app,buff,sizeof(buff));
-		debug("POLICY_SIG %s",buff);
+		debug("POLICY_SIG[%d] %s",masters_info.my_master_rank,buff);
 
 		if (LB_node_cp == masters_info.my_master_rank){
 			verbose(1,"MR[%d] My Node is the CP, I will not change the frequency %lu",masters_info.my_master_rank,*new_freq);
@@ -454,11 +466,21 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 	char buff[512];
 	int ml;
 	shsignature_t *per_node_shsig; 
+  timestamp end;
+  ullong elap;
+
+  /*debug("APP_POLICY");*/
+	#if SHOW_DEBUGS
+  timestamp_getfast(&end);
+  elap=timestamp_diff(&end,&app_init,TIME_MSECS);
+	#endif
   if (masters_info.my_master_rank>=0){
+		debug("TS %llu msec MR[%d]: new_iteration sig_ready %d info pending %d state %u",elap,masters_info.my_master_rank,global_sig_ready,masters_info.node_info_pending,current_earl_state);
 		/* We will only check th mpi info when we have already used it */
 		if (!global_sig_ready){
     ret = check_mpi_info(&masters_info,&LB_node_cp,&LB_rank_cp,report_all_sig);
     if (ret == EAR_SUCCESS){
+			debug("earl_timestamp %llu msec MR[%d] Info from other nodes received",elap,masters_info.my_master_rank);
 			global_sig_ready=1;
 			debug("policy_new_iteration Node_CP %d Rank_CP %d",LB_node_cp,LB_rank_cp);
       compute_avg_app_signature(&masters_info,&gsig);
@@ -469,7 +491,7 @@ state_t policy_new_iteration(polctx_t *c,loop_id_t *loop_id)
 		if (masters_info.node_info_pending == 0){
     ret = check_node_signatures(&masters_info,lib_shared_region,sig_shared_region);
     if (ret == EAR_SUCCESS){
-      debug("Node signatures ready");
+      debug("earl_timestamp %llu msec MR[%d] Node signatures ready sharing with other nodes",elap,masters_info.my_master_rank);
       if (sh_sig_per_proces){
         ret = send_node_signatures(&masters_info,lib_shared_region,sig_shared_region,sig_shared_region,report_node_sig);
       }else{

@@ -36,6 +36,10 @@ int debug_channel	__attribute__((weak)) = 2;
         dprintf(debug_channel, "\n"); \
 }
 
+#define debugn(...) \
+{ \
+        dprintf(debug_channel, __VA_ARGS__); \
+}
 
 #else
 #define debug(...)

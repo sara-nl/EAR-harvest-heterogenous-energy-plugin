@@ -64,6 +64,7 @@ static uint tries_current_loop_same_freq=0;
 static ulong perf_accuracy_min_time = 1000000;
 static uint perf_count_period = 100,loop_perf_count_period,perf_count_period_10p;
 static uint EAR_STATE = NO_PERIOD;
+uint current_earl_state = NO_PERIOD;
 static uint EAR_POLICY_STATE = EAR_POLICY_NO_STATE;
 static int current_loop_id;
 static int MAX_POLICY_TRIES;
@@ -475,7 +476,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 						  log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
 					  }
         } else {   
-            EAR_STATE = SIGNATURE_STABLE;
+            EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
         }
 			}
 			break;
@@ -586,6 +587,7 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 			break;
 		default: break;
 	}
+	current_earl_state = EAR_STATE;
 	state_report_traces_state(masters_info.my_master_rank,ear_my_rank, my_id,EAR_STATE);
 	debug("End states_end_iteration");
 }
