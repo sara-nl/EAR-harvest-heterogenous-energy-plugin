@@ -168,8 +168,8 @@ void compute_power_distribution()
 	pd_dram = bpd_dram * pc_topology_info.socket_count;
 	pd_gpu = bpd_gpu * gpu_pc_num_gpus;
 	pd_pckg = pd_cpu + pd_dram;
-	pd_total = pd_pckg + pd_gpu + pd_pckg * node_ratio;		
-	pdomains_def[DOMAIN_NODE] = (float)(pd_pckg + (float)pd_pckg * node_ratio) / (float)pd_total;
+	pd_total = pd_pckg + pd_gpu + (pd_pckg + pd_gpu) * node_ratio;		
+	pdomains_def[DOMAIN_NODE] = ((float)pd_pckg +(float)pd_pckg * node_ratio) / (float)pd_total;
 	pdomains_def[DOMAIN_CPU] = (float) pd_pckg / (float)pd_total;
 	pdomains_def[DOMAIN_DRAM] = (float) pd_dram / (float)pd_total;
 	pdomains_def[DOMAIN_GPUS] = 0;
@@ -513,13 +513,13 @@ state_t pmgt_get_powercap_value(pwr_mgt_t *phandler,uint pid,ulong *powercap)
 {
 	state_t ret,gret;
 	ulong total=0;
-    uint parc;
+  ulong parc;
 	int i;
 	if (powercap == NULL) return EAR_ERROR;
 	for (i=0;i<NUM_DOMAINS;i++){
 		powercap[i] = 0;
 		ret=freturn(pcsyms_fun[i].get_powercap_value,pid,&parc);
-		if (domains_loaded[i]) powercap[i] = (ulong) parc;
+		if (domains_loaded[i]) powercap[i] =  parc;
 		if ((ret!=EAR_SUCCESS) && (domains_loaded[i])) gret=ret;
 	}
 	return gret;
@@ -584,34 +584,23 @@ void pmgt_set_pc_mode(pwr_mgt_t *phandler,uint mode)
 
 void pmgt_set_power_per_domain(pwr_mgt_t *phandler,dom_power_t *pdomain,uint st)
 {
-	#if 0
-	float pnode,pcpu,pdram,pgpu;
+	float pnode,pcpu,pdram,pgpu = 0.0;
+	int i;
 	memcpy(&pdist_per_domain,pdomain,sizeof(dom_power_t));
 	pnode=(float)(pdomain->platform-pdomain->gpu)/(float)pdomain->platform;
 	pcpu=(float)(pdomain->cpu+pdomain->dram)/(float)pdomain->platform;
 	pdram=(float)(pdomain->dram)/(float)pdomain->platform;
+	#if USE_GPUS
 	pgpu=(float)(pdomain->gpu)/(float)pdomain->platform;
+  #endif
 	verbose(1,"[NODE-GPU %f CPU %f DRAM %f GPU %f]",pnode,pcpu,pdram,pgpu);
-
-	switch(st){
-	case PC_STATUS_IDLE:
-		pdomains_idle[DOMAIN_NODE]=pnode;
-		pdomains_idle[DOMAIN_CPU]=pcpu;
-		pdomains_idle[DOMAIN_DRAM]=pdram;
-		pdomains_idle[DOMAIN_GPU]=pgpu;
-		break;
-	case PC_STATUS_RUN:
-		pdomains[DOMAIN_NODE]=pnode;
-		pdomains[DOMAIN_CPU]=pcpu;
-		pdomains[DOMAIN_DRAM]=pdram;
-		pdomains[DOMAIN_GPU]=pgpu;
-		break;
+	if (pdomain->platform > pmgt_limit){
+		verbose(1,"%s Warning! we are over the limit: Limit %u Power %u%s",COL_RED,pmgt_limit,pdomain->platform,COL_CLR);
+		for (i=0;i< NUM_DOMAINS; i++){
+			pdomains[i] = pdomains[i] - 0.05;
+		}
+		pmgt_reset_powercap();
 	}
-	if (st == PC_STATUS_RUN){
-		pmgt_powercap_status_per_domain();
-	}
-	#endif
-	//reallocate_power_between_domains();
 }
 
 void pmgt_set_app_req_freq(pwr_mgt_t *phandler,pc_app_info_t *pc_app)
