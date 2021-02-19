@@ -24,23 +24,20 @@
 int debug_channel	__attribute__((weak)) = 2;
 
 #if SHOW_DEBUGS
-#define debug_full(...) \
+#if 0
+#define debug(...) \
 { \
         dprintf(debug_channel, "%s:%s:%d: ", __FILE__, __FUNCTION__, __LINE__); \
         dprintf(debug_channel, __VA_ARGS__); \
         dprintf(debug_channel, "\n"); \
 }
+#else
 #define debug(...) \
 { \
         dprintf(debug_channel, __VA_ARGS__); \
         dprintf(debug_channel, "\n"); \
 }
-
-#define debugn(...) \
-{ \
-        dprintf(debug_channel, __VA_ARGS__); \
-}
-
+#endif
 #else
 #define debug(...)
 #endif
