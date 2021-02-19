@@ -462,22 +462,9 @@ void states_new_iteration(int my_id, uint period, uint iterations, uint level, u
 		case EVALUATING_GLOBAL_SIGNATURE:
 			//if (masters_info.my_master_rank>=0) verbose(1,"EVALUATING_GLOBAL_SIGNATURE");
 			st = policy_app_apply(&policy_freq,&ready);
-			EAR_POLICY_STATE = ready;
-			
 			/* State validation */
-			if (EAR_POLICY_STATE == EAR_POLICY_READY){
-			  /* New scenario */
-        /*if (policy_freq != policy_def_freq)*/
-        if (policy_freq != prev_f) {   
-            tries_current_loop++;
-            comp_N_begin = metrics_time();
-            EAR_STATE = RECOMPUTING_N;
-            if (masters_info.my_master_rank>=0){ 
-						  log_report_new_freq(application.job.id,application.job.step_id,policy_freq);
-					  }
-        } else {   
+			if (ready == EAR_POLICY_READY){
             EAR_STATE = EVALUATING_LOCAL_SIGNATURE;
-        }
 			}
 			break;
 

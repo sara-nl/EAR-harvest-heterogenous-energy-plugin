@@ -31,8 +31,8 @@
 #define DYN_PAR 			1
 //Specifies if specific node propagation can be used
 #define NODE_PROP			0
-/** Specifies if eard's rapi uses dynamic size commands. Set to 0 if you want 
- * compatibility with old EAR versions. */
+/** Specifies if eard's rapi uses dynamic size commands. */
+/* Backwards compatibility: Warning thist must be 0 for version 3.3 or previous compatibility */
 #define DYNAMIC_COMMANDS    0
 
 
